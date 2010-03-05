@@ -489,10 +489,26 @@ public class MakeOSGi extends Task {
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
         // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
                 osgi.putValue(tokenAttr, v);
+            }
+        }
+        String v = netbeans.getValue("OpenIDE-Module-Requires");
+        if (v != null) {
+            StringBuilder b = null;
+            for (String tok : v.split("[, ]+")) {
+                if (!tok.matches("org.openide.modules.ModuleFormat\\d+")) {
+                    if (b == null) {
+                        b = new StringBuilder(tok);
+                    } else {
+                        b.append(", ").append(tok);
+                    }
+                }
+            }
+            if (b != null) {
+                osgi.putValue("OpenIDE-Module-Requires", b.toString());
             }
         }
         // autoload, eager status are ignored since OSGi has no apparent equivalent

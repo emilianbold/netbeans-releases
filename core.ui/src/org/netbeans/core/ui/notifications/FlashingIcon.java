@@ -113,7 +113,9 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     @Override
     public void removeNotify() {
         NotificationDisplayerImpl displayer = NotificationDisplayerImpl.getInstance();
-        displayer.addPropertyChangeListener(this);
+        if (displayer != null) {
+            displayer.addPropertyChangeListener(this);
+        }
         currentNotification = null;
         super.removeNotify();
     }

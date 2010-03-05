@@ -75,7 +75,7 @@ abstract class RubyDeclarationFinderHelper {
         return new DeclarationLocation(null, lexOffset, element);
     }
 
-    protected static class RubyAltLocation implements AlternativeLocation {
+    static class RubyAltLocation implements AlternativeLocation {
 
         private IndexedElement element;
         private boolean isPreferred;
@@ -86,6 +86,7 @@ abstract class RubyDeclarationFinderHelper {
             this.isPreferred = isPreferred;
         }
 
+        @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.setMaxLength(120);
             if (cachedDisplayItem == null) {
@@ -216,6 +217,7 @@ abstract class RubyDeclarationFinderHelper {
             return cachedDisplayItem;
         }
 
+        @Override
         public DeclarationLocation getLocation() {
             Node node = AstUtilities.getForeignNode(element);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
@@ -225,10 +227,12 @@ abstract class RubyDeclarationFinderHelper {
             return loc;
         }
 
+        @Override
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int compareTo(final AlternativeLocation alternative) {
             RubyAltLocation alt = (RubyAltLocation) alternative;
 

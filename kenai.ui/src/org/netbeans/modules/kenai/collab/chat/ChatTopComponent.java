@@ -587,8 +587,8 @@ public class ChatTopComponent extends TopComponent {
 }//GEN-LAST:event_loginLinkMouseEntered
 
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
-        final Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
-        if (kenai.getStatus() == Kenai.Status.OFFLINE) {
+        final Kenai kenai = Utilities.getPreferredKenai();
+        if (kenai==null || kenai.getStatus() == Kenai.Status.OFFLINE) {
             UIUtils.showLogin();
         } else {
             if (!Utilities.isChatSupported(kenai)) {
