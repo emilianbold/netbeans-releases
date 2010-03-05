@@ -52,12 +52,12 @@ public class FileSystemNodeProvider extends HostNodesProvider {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE;
+        return ENABLE && execEnv.isRemote();
     }
 
     @Override
     public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+        return new FileSystemRootNode(execEnv);
     }
 
 }

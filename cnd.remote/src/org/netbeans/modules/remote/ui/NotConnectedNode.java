@@ -97,8 +97,8 @@ public class NotConnectedNode extends AbstractNode implements ConnectionListener
     @Override
     public void connected(ExecutionEnvironment env) {
         Node parent = getParentNode();
-        if (parent instanceof FileSystemNode) {
-            FileSystemNode fsn = (FileSystemNode) parent;
+        if (parent instanceof FileSystemRootNode) {
+            FileSystemRootNode fsn = (FileSystemRootNode) parent;
             fsn.refresh();
         }
     }
