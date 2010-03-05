@@ -79,7 +79,6 @@ public class CopyResourcesIndexer extends CustomIndexer {
             if (owner != null) {
                 FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
                 if( persistenceXmlLocation!=null ) {
-                    final FileObject projectDir = owner.getProjectDirectory();
                     final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
                     if (persistenceXML != null) {
                         final Date cts = persistenceXML.lastModified();
