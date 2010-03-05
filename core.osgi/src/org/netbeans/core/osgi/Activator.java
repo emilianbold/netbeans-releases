@@ -53,7 +53,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -141,21 +143,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         load(toLoad);
     }
 
-    public @Override void stop(BundleContext context) throws Exception {
-        context.removeBundleListener(this);
-        context = null;
-        framework = null;
-    }
-
-    private void unloadAll(List<Bundle> toUnloadInitial) {
-        List<Bundle> toUnload = new ArrayList<Bundle>(toUnloadInitial);
-        for (Bundle b : context.getBundles()) {
-            if (b.getState() == Bundle.ACTIVE) {
-                toUnload.addAll(queue.retract(b));
-            }
-        }
-        unload(toUnload, true);
-    }
+    public @Override void stop(BundleContext context) throws Exception {}
 
     public @Override void bundleChanged(BundleEvent event) {
         Bundle bundle = event.getBundle();
@@ -167,14 +155,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
-            List<Bundle> toUnload = queue.retract(bundle);
-            if (framework != null && framework.getState() == Bundle.STOPPING) {
+            if (framework.getState() == Bundle.STOPPING) {
 //                System.err.println("fwork stopping during " + bundle.getSymbolicName());
 //                ActiveQueue.stop();
-                context.removeBundleListener(this);
-                unloadAll(toUnload);
             } else {
-                unload(toUnload, false);
+                unload(queue.retract(bundle));
             }
             break;
         }
@@ -220,6 +205,8 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         return split;
     }
 
+    static final Map<Bundle,ModuleInstall> installers = new HashMap<Bundle,ModuleInstall>();
+
     private void load(List<Bundle> bundles) {
         if (bundles.isEmpty()) {
             return;
@@ -249,6 +236,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         for (Bundle bundle : bundles) {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
+                installers.put(bundle, mi);
                 mi.restored();
             }
         }
@@ -265,19 +253,15 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
     }
 
-    private void unload(List<Bundle> bundles, boolean shutdown) {
+    private void unload(List<Bundle> bundles) {
         if (bundles.isEmpty()) {
-            return;
-        }
-        if (shutdown) {
-            LOG.log(Level.FINE, "shutdown on: {0}", bundles);
-            // XXX could call closing/close
             return;
         }
         LOG.log(Level.FINE, "unloading: {0}", bundles);
         for (Bundle bundle : bundles) {
-            ModuleInstall mi = installerFor(bundle);
+            ModuleInstall mi = installers.remove(bundle);
             if (mi != null) {
+                LOG.log(Level.FINE, "uninstalled: {0}", bundle.getSymbolicName());
                 mi.uninstalled();
             }
         }
