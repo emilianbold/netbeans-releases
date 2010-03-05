@@ -42,13 +42,14 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.Dialog;
+import javax.lang.model.SourceVersion;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -80,9 +81,12 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         enableAPTEditorCheckBox.setModel(uiProperties.ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL);
 
         annotationProcessorsList.setModel(uiProperties.ANNOTATION_PROCESSORS_MODEL);
-        enableAPTCheckBoxActionPerformed(null);
+        
+        processorOptionsTable.setModel(uiProperties.PROCESSOR_OPTIONS_MODEL);
 
         additionalJavacParamsField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );
+
+        enableAPTCheckBoxActionPerformed(null);
     }
 
     public HelpCtx getHelpCtx() {
@@ -92,36 +96,36 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        debugInfoCheckBox = new javax.swing.JCheckBox();
         compileOnSave = new javax.swing.JCheckBox();
+        compileOnSaveDescription = new javax.swing.JLabel();
+        debugInfoCheckBox = new javax.swing.JCheckBox();
         deprecationCheckBox = new javax.swing.JCheckBox();
         doDependCheckBox = new javax.swing.JCheckBox();
-        additionalJavacParamsLabel = new javax.swing.JLabel();
-        additionalJavacParamsField = new javax.swing.JTextField();
-        additionalJavacParamsExample = new javax.swing.JLabel();
-        compileOnSaveDescription = new javax.swing.JLabel();
         enableAPTCheckBox = new javax.swing.JCheckBox();
         enableAPTEditorCheckBox = new javax.swing.JCheckBox();
         annotationProcessorsLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        AnnotationProcessorsScrollPane = new javax.swing.JScrollPane();
         annotationProcessorsList = new javax.swing.JList();
         addProcessorButton = new javax.swing.JButton();
         removeProcessorButton = new javax.swing.JButton();
-
-        org.openide.awt.Mnemonics.setLocalizedText(debugInfoCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox")); // NOI18N
+        processorOptionsLabel = new javax.swing.JLabel();
+        processorOptionsScrollPane = new javax.swing.JScrollPane();
+        processorOptionsTable = new javax.swing.JTable();
+        addOptionButton = new javax.swing.JButton();
+        removeOptionButton = new javax.swing.JButton();
+        additionalJavacParamsLabel = new javax.swing.JLabel();
+        additionalJavacParamsField = new javax.swing.JTextField();
+        additionalJavacParamsExample = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(compileOnSave, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("CustomizerCompile.CompileOnSave")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(compileOnSaveDescription, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CompileOnSaveDescription")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(debugInfoCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(deprecationCheckBox, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(doDependCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "CustomizerCompile.doDependCheckBox")); // NOI18N
-
-        additionalJavacParamsLabel.setLabelFor(additionalJavacParamsField);
-        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptions")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsExample, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptionsExample")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(compileOnSaveDescription, org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("LBL_CompileOnSaveDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(enableAPTCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Enable_Annotation_Processing")); // NOI18N
         enableAPTCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -145,7 +149,7 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                 annotationProcessorsListValueChanged(evt);
             }
         });
-        jScrollPane1.setViewportView(annotationProcessorsList);
+        AnnotationProcessorsScrollPane.setViewportView(annotationProcessorsList);
 
         org.openide.awt.Mnemonics.setLocalizedText(addProcessorButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Add_Annotation_Processor")); // NOI18N
         addProcessorButton.addActionListener(new java.awt.event.ActionListener() {
@@ -161,6 +165,45 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        processorOptionsLabel.setLabelFor(processorOptionsTable);
+        org.openide.awt.Mnemonics.setLocalizedText(processorOptionsLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Processor_Options")); // NOI18N
+
+        processorOptionsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        processorOptionsTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        processorOptionsTable.getTableHeader().setReorderingAllowed(false);
+        processorOptionsScrollPane.setViewportView(processorOptionsTable);
+        processorOptionsTable.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                processorOptionsListSelectionChanged(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(addOptionButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Add_Processor_Option")); // NOI18N
+        addOptionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addOptionButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(removeOptionButton, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Remove_Processor_Option")); // NOI18N
+        removeOptionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeOptionButtonActionPerformed(evt);
+            }
+        });
+
+        additionalJavacParamsLabel.setLabelFor(additionalJavacParamsField);
+        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptions")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsExample, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptionsExample")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -171,13 +214,6 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                     .add(layout.createSequentialGroup()
                         .add(21, 21, 21)
                         .add(compileOnSaveDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(addProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(removeProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(debugInfoCheckBox)
                     .add(deprecationCheckBox)
                     .add(doDependCheckBox)
@@ -188,12 +224,28 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                             .add(annotationProcessorsLabel)
                             .add(enableAPTEditorCheckBox)))
                     .add(layout.createSequentialGroup()
-                        .add(additionalJavacParamsLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .add(additionalJavacParamsExample))))
+                            .add(processorOptionsLabel)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, processorOptionsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                                    .add(AnnotationProcessorsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(removeOptionButton)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(addOptionButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(addProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(removeProcessorButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
                 .add(12, 12, 12))
+            .add(layout.createSequentialGroup()
+                .add(additionalJavacParamsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(additionalJavacParamsExample)
+                    .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -219,26 +271,35 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
                         .add(addProcessorButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeProcessorButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(12, 12, 12)
+                    .add(AnnotationProcessorsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(processorOptionsLabel)
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(processorOptionsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(addOptionButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(removeOptionButton)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(additionalJavacParamsLabel))
+                    .add(additionalJavacParamsLabel)
+                    .add(additionalJavacParamsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(additionalJavacParamsExample)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        debugInfoCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDebugInfo")); // NOI18N
         compileOnSave.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizerCompile.CompileOnSave")); // NOI18N
+        debugInfoCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDebugInfo")); // NOI18N
         deprecationCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jCheckBoxDeprecation")); // NOI18N
         doDependCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_doDependCheckBox")); // NOI18N
-        additionalJavacParamsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
         enableAPTCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Enable_Annotation_Processing")); // NOI18N
         enableAPTEditorCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Enable_Editor_Annotation_Processing")); // NOI18N
         annotationProcessorsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Annotation_Processors")); // NOI18N
         addProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Add_Annotation_Processor")); // NOI18N
         removeProcessorButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "AD_CustomizeCompile_Remove_Annotation_Processors")); // NOI18N
+        additionalJavacParamsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
     }// </editor-fold>//GEN-END:initComponents
 
     private void addProcessorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProcessorButtonActionPerformed
@@ -261,8 +322,19 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_addProcessorButtonActionPerformed
 
     private void removeProcessorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeProcessorButtonActionPerformed
-        int[] newSelection = ClassPathUiSupport.remove((DefaultListModel) annotationProcessorsList.getModel(), annotationProcessorsList.getSelectedIndices());
-        annotationProcessorsList.setSelectedIndices(newSelection);
+        DefaultListModel model = (DefaultListModel) annotationProcessorsList.getModel();
+        int[] indices = annotationProcessorsList.getSelectedIndices();
+        for (int i = indices.length - 1 ; i >= 0 ; i--) {
+            model.remove(indices[i]);
+        }
+        if (!model.isEmpty()) {
+            // Select reasonable item
+            int selectedIndex = indices[indices.length - 1] - indices.length  + 1; 
+            if (selectedIndex > model.size() - 1) {
+                selectedIndex = model.size() - 1;
+            }
+            annotationProcessorsList.setSelectedIndex(selectedIndex);
+        }
     }//GEN-LAST:event_removeProcessorButtonActionPerformed
 
     private void enableAPTCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableAPTCheckBoxActionPerformed
@@ -273,6 +345,11 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         addProcessorButton.setEnabled(b);
         int[] indices = annotationProcessorsList.getSelectedIndices();
         removeProcessorButton.setEnabled(b && indices != null && indices.length > 0);
+        processorOptionsLabel.setEnabled(b);
+        processorOptionsTable.setEnabled(b);
+        addOptionButton.setEnabled(b);
+        int[] rows = processorOptionsTable.getSelectedRows();
+        removeOptionButton.setEnabled(b && rows != null && rows.length > 0);
     }//GEN-LAST:event_enableAPTCheckBoxActionPerformed
 
     private void annotationProcessorsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_annotationProcessorsListValueChanged
@@ -280,7 +357,55 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         removeProcessorButton.setEnabled(enableAPTCheckBox.isSelected() && indices != null && indices.length > 0);
     }//GEN-LAST:event_annotationProcessorsListValueChanged
 
+    private void addOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addOptionButtonActionPerformed
+        final AddProcessorOption panel = new AddProcessorOption();
+        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage (CustomizerCompile.class, "LBL_AddProcessorOption_Title")); //NOI18N
+        desc.setValid(false);
+        panel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                String key = panel.getOptionKey();
+                for(String s : key.split("\\.", -1)) { //NOI18N
+                    if (!SourceVersion.isIdentifier(s)) {
+                        desc.setValid(false);
+                        return;
+                    }
+                }
+                desc.setValid(true);
+            }
+        });
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+        dlg.setVisible (true);
+        if (desc.getValue() == DialogDescriptor.OK_OPTION) {
+            ((DefaultTableModel)processorOptionsTable.getModel()).addRow(new String[] {panel.getOptionKey(), panel.getOptionValue()});
+        }
+        dlg.dispose();
+    }//GEN-LAST:event_addOptionButtonActionPerformed
+
+    private void removeOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeOptionButtonActionPerformed
+        DefaultTableModel model = (DefaultTableModel) processorOptionsTable.getModel();
+        int[] rows = processorOptionsTable.getSelectedRows();
+        for(int i = rows.length - 1 ; i >= 0 ; i--) {
+            model.removeRow(rows[i]);
+        }
+        if (model.getRowCount() > 0) {
+            // Select reasonable row
+            int selectedIndex = rows[rows.length - 1] - rows.length  + 1;
+            if ( selectedIndex > model.getRowCount() - 1) {
+                selectedIndex = model.getRowCount() - 1;
+            }
+            processorOptionsTable.setRowSelectionInterval(selectedIndex, selectedIndex);
+        }
+    }//GEN-LAST:event_removeOptionButtonActionPerformed
+
+    private void processorOptionsListSelectionChanged(javax.swing.event.ListSelectionEvent evt) {
+        int[] rows = processorOptionsTable.getSelectedRows();
+        removeOptionButton.setEnabled(enableAPTCheckBox.isSelected() && rows != null && rows.length > 0);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane AnnotationProcessorsScrollPane;
+    private javax.swing.JButton addOptionButton;
     private javax.swing.JButton addProcessorButton;
     private javax.swing.JLabel additionalJavacParamsExample;
     private javax.swing.JTextField additionalJavacParamsField;
@@ -294,7 +419,10 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     private javax.swing.JCheckBox doDependCheckBox;
     private javax.swing.JCheckBox enableAPTCheckBox;
     private javax.swing.JCheckBox enableAPTEditorCheckBox;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel processorOptionsLabel;
+    private javax.swing.JScrollPane processorOptionsScrollPane;
+    private javax.swing.JTable processorOptionsTable;
+    private javax.swing.JButton removeOptionButton;
     private javax.swing.JButton removeProcessorButton;
     // End of variables declaration//GEN-END:variables
 

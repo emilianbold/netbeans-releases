@@ -672,7 +672,16 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
-        if (aptUtils == null || !aptUtils.aptEnabled()) {
+        if (aptUtils != null && aptUtils.aptEnabled()) {
+            for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("-A").append(entry.getKey()); //NOI18N
+                if (entry.getValue() != null) {
+                    sb.append('=').append(entry.getValue()); //NOI18N
+                }
+                options.add(sb.toString())
+;            }
+        } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
         options.add("-XDfindDiamond"); //XXX: should be part of options

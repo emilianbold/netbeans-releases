@@ -39,15 +39,10 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
-import java.io.IOException;
-import java.util.Collection;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.netbeans.modules.nativeexecution.test.RcFile;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 /**
  *
  * @author Vladimir Kvashin
@@ -62,11 +57,6 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
         super(testName, execEnv);
     }
 
-    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, int count) throws Exception {
-        int timeout = getSampleBuildTimeout();
-        buildSample(sync, toolchain, projectName, projectDir, count, timeout, timeout);
-    }
-
     @ForAllEnvironments
     public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
         buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
@@ -75,11 +65,6 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
     @ForAllEnvironments
     public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
         buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
-    }
-
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_LexYacc() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_01", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
     }
 
     public static Test suite() {

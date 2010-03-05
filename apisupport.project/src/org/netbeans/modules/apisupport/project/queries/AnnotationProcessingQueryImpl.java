@@ -40,6 +40,8 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -92,6 +94,11 @@ public class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryI
         @Override
         public URL sourceOutputDirectory() {
             return dashS;
+        }
+
+        @Override
+        public Map<? extends String, ? extends String> processorOptions() {
+            return Collections.emptyMap();
         }
 
         @Override

@@ -382,6 +382,10 @@ made subject to such option by the copyright holder.
                 <folder name="bugs">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
+
+                <folder name="thread">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
             </folder>
 
             <folder name="suggestions">
