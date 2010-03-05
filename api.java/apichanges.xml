@@ -73,6 +73,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="ap-query-processoroptions">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery.Result.processorOptions</summary>
+            <version major="1" minor="26"/>
+            <date day="4" month="3" year="2010"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Adding AnnotationProcessingQuery.Result.processorOptions() to return options passed to annotation processors (-Akey=value).
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <issue number="181421"/>
+        </change>
         <change id="ap-query">
             <api name="classpath"/>
             <summary>Introducing AnnotationProcessingQuery</summary>

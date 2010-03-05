@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.editor;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -53,13 +54,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.View;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.view.spi.EstimatedSpanView;
-import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -222,86 +220,20 @@ public class JavaEditorWarmUpTask implements Runnable{
                 break;
                 
             case STATUS_TRAVERSE_VIEWS:
+                Dimension paneSize = pane.getPreferredSize();
+                Document doc = pane.getDocument();
+                int docLen = doc.getLength();
                 try {
-                    // Create buffered image for painting simulation
-                    BufferedImage bImage = new BufferedImage(
-                        IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
-                    bGraphics = bImage.getGraphics();
-                    bGraphics.setClip(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-
-                    // Do view-related operations
-                    AbstractDocument doc = (AbstractDocument)pane.getDocument();
-                    doc.readLock();
-                    try {
-                        final View rootView = Utilities.getDocumentView(pane);
-                        LockView lockView = LockView.get(rootView);
-                        if (lockView != null)
-                            lockView.lock();
-                        try {
-                            int viewCount = rootView.getViewCount();
-
-                            // Force switch the line views from estimated spans to exact measurements
-                            Runnable resetChildrenEstimatedSpans = new Runnable() {
-                                public void run() {
-                                    int cnt = rootView.getViewCount();                            
-                                    for (int j = 0; j < cnt; j++) {
-                                        View v = rootView.getView(j);
-                                        if (v instanceof EstimatedSpanView) {
-                                            ((EstimatedSpanView)v).setEstimatedSpan(false);
-                                        }
-                                    }
-                                }
-                            };
-                            if (rootView instanceof org.netbeans.lib.editor.view.GapDocumentView) {
-                                ((org.netbeans.lib.editor.view.GapDocumentView)rootView).
-                                    renderWithUpdateLayout(resetChildrenEstimatedSpans);
-                            } else { // not specialized instance => run normally
-                                resetChildrenEstimatedSpans.run();
-                            }
-
-                            // Get child allocation for each line
-                            for (int j = 0; j < viewCount; j++) {
-                                Rectangle alloc = new Rectangle(0, 0,
-                                    (int)rootView.getPreferredSpan(View.X_AXIS),
-                                    (int)rootView.getPreferredSpan(View.Y_AXIS)
-                                );
-                                rootView.getChildAllocation(j, alloc);
-                            }
-
-                            // Test modelToView and viewToModel
-                            if (false) { // Disabled because of #
-                                float rootViewYSpan = rootView.getPreferredSpan(View.Y_AXIS);
-                                float maybeLineSpan = rootViewYSpan / viewCount;
-                                Point point = new Point();
-                                point.x = 5; // likely somewhere inside the first char on the line
-                                for (int j = 0; j < viewCount; j++) {
-                                    pane.modelToView(rootView.getView(j).getStartOffset());
-
-                                    point.y = (int)(j * maybeLineSpan);
-                                    int pos = pane.viewToModel(point);
-                                }
-                            }
-
-                            int rootViewWidth = (int)rootView.getPreferredSpan(View.X_AXIS);
-                            int rootViewHeight = (int)rootView.getPreferredSpan(View.Y_AXIS);
-                            Rectangle alloc = new Rectangle(0, 0, rootViewWidth, rootViewHeight);
-
-                            // Paint into buffered image
-                            for (int i = PAINT_COUNT - 1; i >= 0; i--) {
-                                rootView.paint(bGraphics, alloc);
-                            }
-
-                        } finally {
-                            if (lockView != null)
-                                lockView.unlock();
-                        }
-                    } finally {
-                        doc.readUnlock();
+                    // Do model<=>view calculations several times
+                    int opCount = 10;
+                    for (int i = 0; i < opCount; i++) {
+                        pane.modelToView(docLen * i / opCount);
+                        pane.viewToModel(new Point(paneSize.height * i / opCount, paneSize.width * i / opCount));
                     }
                 } catch (BadLocationException e) {
                     Exceptions.printStackTrace(e);
                 }
-                    
+
                 status = STATUS_RENDER_FRAME;
                 SwingUtilities.invokeLater(this);
                 break;

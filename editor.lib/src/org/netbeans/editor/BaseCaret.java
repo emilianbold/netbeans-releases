@@ -348,6 +348,11 @@ AtomicLockListener, FoldHierarchyListener {
             try {
                 newCaretBounds = c.getUI().modelToView(
                         c, offset, Position.Bias.Forward);
+                // [TODO] Temporary fix - impl should remember real bounds computed by paintCustomCaret()
+                if (newCaretBounds != null) {
+                    newCaretBounds.width = Math.max(newCaretBounds.width, 2);
+                }
+
                 BaseDocument doc = Utilities.getDocument(c);
                 if (doc != null) {
                     doc.getChars(offset, this.dotChar, 0, 1);

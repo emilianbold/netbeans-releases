@@ -36,61 +36,48 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.loaders;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
+package org.netbeans.modules.cnd.source;
+
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * TODO: Is it needed class? All binaries data objects create binary support in constructors.
- * Source data objects do not need binary support.
- * Remove class or migrate binaries data objects from CookieSet to Lookup.
- *
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class, position = 1000)
-public final class CndCookieProviderImpl extends CndCookieProvider {
+public final class CppEditorSupportProvider extends CndCookieProvider {
+    static final CppEditorSupportFactory staticFactory = new CppEditorSupportFactory();
 
     @Override
     public void addLookup(DataObject dao, InstanceContent ic) {
-        MultiDataObject mdao = (MultiDataObject) dao;
-        if (!MIMENames.isFortranOrHeaderOrCppOrC(dao.getPrimaryFile().getMIMEType())){
-            ic.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
-        }
+        SourceDataObject sdao = (SourceDataObject) dao;
+        ic.add(sdao, staticFactory);
     }
 
-    private static class BinaryExecSupportFactory implements Convertor<Class<BinaryExecSupport>, BinaryExecSupport> {
-
-        private final MultiDataObject mdao;
-
-        public BinaryExecSupportFactory(MultiDataObject mdao) {
-            this.mdao = mdao;
+    private static class CppEditorSupportFactory implements Convertor<SourceDataObject, CppEditorSupport> {
+        public CppEditorSupportFactory() {
         }
 
         @Override
-        public BinaryExecSupport convert(Class<BinaryExecSupport> obj) {
-            return new BinaryExecSupport(mdao.getPrimaryEntry());
+        public CppEditorSupport convert(SourceDataObject obj) {
+            return new CppEditorSupport(obj);
         }
 
         @Override
-        public Class<? extends BinaryExecSupport> type(Class<BinaryExecSupport> obj) {
-            return BinaryExecSupport.class;
+        public Class<? extends CppEditorSupport> type(SourceDataObject obj) {
+            return CppEditorSupport.class;
         }
 
         @Override
-        public String id(Class<BinaryExecSupport> obj) {
-            return BinaryExecSupport.class.getName();
+        public String id(SourceDataObject obj) {
+            return CppEditorSupport.class.getName();
         }
 
         @Override
-        public String displayName(Class<BinaryExecSupport> obj) {
-            return BinaryExecSupport.class.getName();
+        public String displayName(SourceDataObject obj) {
+            return CppEditorSupport.class.getName();
         }
     }
 }

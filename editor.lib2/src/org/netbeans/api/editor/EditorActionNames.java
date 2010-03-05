@@ -64,8 +64,14 @@ public final class EditorActionNames {
     /** Toggle the visibility of the editor toolbar */
     public static final String toggleToolbar = "toggle-toolbar"; // NOI18N
 
-    /** Toggle visibility of line numbers*/
+    /** Toggle visibility of line numbers */
     public static final String toggleLineNumbers = "toggle-line-numbers"; // NOI18N
+
+    /** 
+     * Toggle visibility of non-printable characters.
+     * @since 1.20
+     */
+    public static final String toggleNonPrintableCharacters = "toggle-non-printable-characters"; // NOI18N
 
     /** Goto declaration depending on the context under the caret */
     public static final String gotoDeclaration = "goto-declaration"; // NOI18N

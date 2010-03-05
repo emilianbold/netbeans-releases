@@ -37,58 +37,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.editor.lib2.view;
 
-import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.InstanceContent.Convertor;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.EventObject;
+import java.util.List;
 
 /**
- * @author Alexey Vladykin
+ * Event fired by editor view factories upon change.
+ *
+ * @author Miloslav Metelka
  */
-@ServiceProvider(service = CndCookieProvider.class)
-public final class CppEditorSupportProvider extends CndCookieProvider {
+public final class EditorViewFactoryEvent extends EventObject {
+    
+    private final List<EditorViewFactory.Change> changes;
 
-    @Override
-    public void addLookup(DataObject dao, InstanceContent ic) {
-        MultiDataObject mdao = (MultiDataObject) dao;
-        if (!MIMENames.isBinary(dao.getPrimaryFile().getMIMEType())){
-            ic.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, ic));
-        }
+    public EditorViewFactoryEvent(EditorViewFactory factory, List<EditorViewFactory.Change> changes) {
+        super(factory);
+        this.changes = changes;
     }
 
-    private static class CppEditorSupportFactory implements Convertor<Class<CppEditorSupport>, CppEditorSupport> {
-
-        private final MultiDataObject mdao;
-        private final InstanceContent ic;
-
-        public CppEditorSupportFactory(MultiDataObject mdao, InstanceContent ic) {
-            this.mdao = mdao;
-            this.ic = ic;
-        }
-
-        @Override
-        public CppEditorSupport convert(Class<CppEditorSupport> obj) {
-            return new CppEditorSupport(mdao, ic);
-        }
-
-        @Override
-        public Class<? extends CppEditorSupport> type(Class<CppEditorSupport> obj) {
-            return CppEditorSupport.class;
-        }
-
-        @Override
-        public String id(Class<CppEditorSupport> obj) {
-            return CppEditorSupport.class.getName();
-        }
-
-        @Override
-        public String displayName(Class<CppEditorSupport> obj) {
-            return CppEditorSupport.class.getName();
-        }
+    /**
+     * @return changes that occurred in the view factory.
+     */
+    public List<EditorViewFactory.Change> getChanges() {
+        return changes;
     }
+
 }
