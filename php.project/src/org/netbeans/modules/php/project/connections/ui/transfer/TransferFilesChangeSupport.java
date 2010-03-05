@@ -36,41 +36,61 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring.actions;
 
-import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.project.connections.ui.transfer;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel.TransferFilesChangeListener;
+import org.openide.util.Exceptions;
 
 /**
- * TODO use the refactoring preview!!!
- *
- * @author marekfukala
+ * Inspired by {@link org.openide.util.ChangeSupport}.
  */
-public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
+public final class TransferFilesChangeSupport {
 
-    public ExtractInlinedStyleAction() {
-        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    final List<TransferFilesChangeListener> listeners = new CopyOnWriteArrayList<TransferFilesChangeListener>();
+    private final Object source;
+
+    public TransferFilesChangeSupport(Object source) {
+        this.source = source;
     }
 
-    @Override
-    public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
+    public void addChangeListener(TransferFilesChangeListener listener) {
+        if (listener == null) {
+            return;
+        }
+        listeners.add(listener);
     }
 
-    @Override
-    protected boolean enable(Lookup context) {
-        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
+    public void removeChangeListener(TransferFilesChangeListener listener) {
+        if (listener == null) {
+            return;
+        }
+        listeners.remove(listener);
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    public void fireSelectedFilesChange() {
+        for (TransferFilesChangeListener listener : listeners) {
+            try {
+                listener.selectedFilesChanged();
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
     }
 
+    public void fireFilterChange() {
+        for (TransferFilesChangeListener listener : listeners) {
+            try {
+                listener.filterChanged();
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+    }
 
-
-
-   
+    public boolean hasListeners() {
+        return !listeners.isEmpty();
+    }
 }

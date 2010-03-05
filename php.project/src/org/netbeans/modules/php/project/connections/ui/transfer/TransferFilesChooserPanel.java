@@ -36,41 +36,48 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring.actions;
 
-import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.project.connections.ui.transfer;
 
-/**
- * TODO use the refactoring preview!!!
- *
- * @author marekfukala
- */
-public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
+import java.util.Set;
+import javax.swing.JPanel;
+import org.netbeans.modules.php.project.connections.TransferFile;
 
-    public ExtractInlinedStyleAction() {
-        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+@SuppressWarnings("serial")
+public abstract class TransferFilesChooserPanel extends JPanel {
+
+    /**
+     * @param listener listener for changes in transfer files selection
+     */
+    public abstract void addChangeListener(TransferFilesChangeListener listener);
+
+    /**
+     * @param listener listener for changes in transfer files selection
+     */
+    public abstract void removeChangeListener(TransferFilesChangeListener listener);
+
+    /**
+     * @return selected transfer files
+     */
+    public abstract Set<TransferFile> getSelectedFiles();
+
+    /**
+     * @return panel for the transfer files
+     */
+    public abstract TransferFilesChooserPanel getEmbeddablePanel();
+
+    /**
+     * @return {@code true} if the panel has any files to transfer/show
+     */
+    public abstract boolean hasAnyTransferableFiles();
+
+    public interface TransferFilesChangeListener {
+
+        void selectedFilesChanged();
+
+        /**
+         * @throws UnsupportedOperationException if it is not supported by the panel
+         */
+        void filterChanged();
     }
-
-    @Override
-    public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
-    }
-
-    @Override
-    protected boolean enable(Lookup context) {
-        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-
-
-
-   
 }

@@ -36,41 +36,41 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring.actions;
+package org.netbeans.modules.html.editor.indexing;
 
-import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.web.common.api.FileReference;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
 
-/**
- * TODO use the refactoring preview!!!
- *
- * @author marekfukala
- */
-public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
+public class HtmlLinkEntry extends Entry {
 
-    public ExtractInlinedStyleAction() {
-        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private String tagName;
+    private String attributeName;
+    private FileReference ref;
+
+    public HtmlLinkEntry(FileObject baseFile, String link, OffsetRange astRange, OffsetRange documentRange, String tagName, String attributeName) {
+        super(link, astRange, documentRange);
+        this.tagName = tagName;
+        this.attributeName = attributeName;
+        this.ref = WebUtils.resolveToReference(baseFile, getName());
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    public String getTagName() {
+        return tagName;
+    }
+
+    public FileReference getFileReference() {
+        return ref;
     }
 
     @Override
-    public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
+    public String toString() {
+        return super.toString() + ", tag=" + getTagName() + ", attr=" + getAttributeName() + ", reference=" + getFileReference();
     }
 
-    @Override
-    protected boolean enable(Lookup context) {
-        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-
-
-
-   
 }
