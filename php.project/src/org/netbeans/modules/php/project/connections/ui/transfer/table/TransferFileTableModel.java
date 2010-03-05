@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.connections.ui;
+package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,15 +110,17 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         Object res = null;
 
         TransferFileUnit u = getUnitAtRow(row);
-        switch(col) {
-            case 0:
-                res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
-                break;
-            case 1:
-                res = u.getDisplayName();
-                break;
-            default:
-                assert false : "Unknown column index: " + col;
+        if (u != null) {
+            switch(col) {
+                case 0:
+                    res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+                    break;
+                case 1:
+                    res = u.getDisplayName();
+                    break;
+                default:
+                    assert false : "Unknown column index: " + col;
+            }
         }
         return res;
     }
@@ -284,6 +286,9 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
 
     public TransferFileUnit getUnitAtRow(int row) {
         assert getVisibleFileUnits().size() > row : String.format("Unknown row index [%d, size %d]", row, getVisibleFileUnits().size());
+        if (row < 0) {
+            return null;
+        }
         return getVisibleFileUnits().get(row);
     }
 
@@ -308,7 +313,8 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
         assert columnIndex == 0 : "Only first column is editable.";
         assert aValue instanceof Boolean : aValue + " must be instance of Boolean.";
         TransferFileUnit u = getUnitAtRow(rowIndex);
-        if ((Boolean) aValue != u.isMarked()) {
+        if (u != null
+                && (Boolean) aValue != u.isMarked()) {
             u.setMarked(!u.isMarked());
             fireUpdataUnitChange();
         }

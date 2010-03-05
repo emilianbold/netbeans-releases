@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.connections.ui;
+package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -50,17 +50,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -73,22 +70,23 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.php.project.connections.TransferFile;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChangeSupport;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
 import org.openide.awt.Mnemonics;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * @author  Radek Matous
  */
-public final class TransferFilter extends JPanel {
-    private static final long serialVersionUID = -1971424369225251471L;
-    private static final ImageIcon INFO_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/info_icon.png")); // NOI18N
+public final class TransferFilter extends TransferFilesChooserPanel {
+    private static final long serialVersionUID = -71871110754411L;
 
     final TransferFilterTable table;
     final TransferFileTableModel model;
+    final TransferFilesChangeSupport filesChangeSupport = new TransferFilesChangeSupport(this);
+
     private DocumentListener dlForSearch;
     private FocusListener flForSearch;
     private volatile String filter = "";
@@ -98,7 +96,7 @@ public final class TransferFilter extends JPanel {
         public void run() {
             if (filter != null) {
                 int row = getSelectedRow();
-                final TransferFileUnit unit = row != -1 ? getModel().getUnitAtRow(row) : null;
+                final TransferFileUnit unit = getModel().getUnitAtRow(row);
                 final Map<Integer, Boolean> state = TransferFileTableModel.captureState(model.getData());
                 Runnable runAfterWards = new Runnable() {
                     public void run() {
@@ -124,8 +122,19 @@ public final class TransferFilter extends JPanel {
         initComponents();
     }
 
-    private static TransferFilter create(TransferFilterTable table) {
-        TransferFilter transferFilter = new TransferFilter(table);
+    public static TransferFilter create(Set<TransferFile> transferFiles, TransferType transferType, long timestamp) {
+        TransferFileTableModel model = null;
+        switch (transferType) {
+            case DOWNLOAD:
+                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles, timestamp));
+                break;
+            case UPLOAD:
+                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown model type: " + transferType);
+        }
+        TransferFilter transferFilter = new TransferFilter(new TransferFilterTable(model));
         transferFilter.initPopup();
         transferFilter.listenOnSelection();
         transferFilter.listenOnUnitChanges();
@@ -133,67 +142,8 @@ public final class TransferFilter extends JPanel {
         return transferFilter;
     }
 
-    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp) {
-        return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp);
-    }
-
-    public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles, long timestamp) {
-        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, timestamp);
-    }
-
     public static TransferFilter getEmbeddableDownloadDialog(Set<TransferFile> transferFiles) {
-        TransferFileTableModel model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles));
-        return TransferFilter.create(new TransferFilterTable(model));
-    }
-
-    public static Set<TransferFile> getSelectedFiles(TransferFilter transferFilter) {
-        return unwrapFileUnits(transferFilter.getModel().getMarkedUnits());
-    }
-
-    public static boolean hasAnyTransferableFiles(Set<TransferFile> transferFiles) {
-        if (transferFiles == null) {
-            return false;
-        }
-        TransferFilter transferFilter = getEmbeddableDownloadDialog(transferFiles);
-        return !unwrapFileUnits(transferFilter.getModel().getMarkedUnits()).isEmpty();
-    }
-
-    // folders are not filtered although not showed to user
-    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp) {
-        TransferFileTableModel model = null;
-        String title = null;
-        switch (type) {
-            case DOWNLOAD:
-                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles, timestamp));
-                title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
-                break;
-            case UPLOAD:
-                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp));
-                title = NbBundle.getMessage(TransferFilter.class, "Upload_Title");
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown model type: " + type);
-        }
-        TransferFilter transferFilter = TransferFilter.create(new TransferFilterTable(model));
-        JButton okButton = new JButton();
-        Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(TransferFilter.class, "LBL_Ok"));
-        DialogDescriptor descriptor = new DialogDescriptor(
-                transferFilter,
-                title,
-                true,
-                new Object[] {okButton, DialogDescriptor.CANCEL_OPTION},
-                okButton,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-        if (DialogDisplayer.getDefault().notify(descriptor) == okButton) {
-            return getSelectedFiles(transferFilter);
-        }
-        return Collections.<TransferFile>emptySet();
-    }
-
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer) {
-        return wrapTransferFiles(toTransfer, -1);
+        return TransferFilter.create(transferFiles, TransferType.DOWNLOAD, -1);
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp) {
@@ -267,13 +217,7 @@ public final class TransferFilter extends JPanel {
     }
 
     public void refreshState() {
-        int units = model.getMarkedUnits().size();
         popupActionsSupport.tableDataChanged();
-        if (units == 0) {
-            cleanSelectionInfo();
-        } else {
-            setSelectionInfo(units);
-        }
     }
 
     private void initPopup() {
@@ -293,30 +237,6 @@ public final class TransferFilter extends JPanel {
         });
         popupActionsSupport = new PopupActionSupport(forPopup);
         table.addMouseListener(popupActionsSupport);
-    }
-
-    private void cleanSelectionInfo() {
-        lSelectionInfo.setText(" "); // NOI18N
-        lWarning.setText(" "); // NOI18N
-        lWarning.setIcon(null);
-    }
-
-    private void setSelectionInfo(int count) {
-        String operationNameKey = null;
-        switch (model.getType()) {
-            case UPLOAD:
-                operationNameKey = "FileConfirmationTableModel_Warning_Upload"; // NOI18N
-                break;
-            case DOWNLOAD:
-                operationNameKey = "FileConfirmationTableModel_Warning_Download"; // NOI18N
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown model type: " + model.getType());
-        }
-        String key = count == 1 ? "FileConfirmationPane_lHowManySelected_Single_Text" : "FileConfirmationPane_lHowManySelected_Many_Text"; // NOI18N
-        lSelectionInfo.setText((NbBundle.getMessage(TransferFilter.class, key, count)));
-        lWarning.setIcon(INFO_ICON);
-        lWarning.setText(NbBundle.getMessage(TransferFilter.class, operationNameKey));
     }
 
     private void listenOnSelection() {
@@ -342,25 +262,19 @@ public final class TransferFilter extends JPanel {
             public void updateUnitsChanged() {
                 // no need to refresh table data (they are sorted so it's already done)
                 refreshState();
+                filesChangeSupport.fireSelectedFilesChange();
             }
 
             public void filterChanged() {
                 model.fireTableDataChanged();
                 refreshState();
+                filesChangeSupport.fireFilterChange();
             }
         });
     }
 
-    public void addUpdateUnitListener(TransferFileTableChangeListener l) {
+    private void addUpdateUnitListener(TransferFileTableChangeListener l) {
         model.addUpdateUnitListener(l);
-    }
-
-    public void removeUpdateUnitListener(TransferFileTableChangeListener l) {
-        model.removeUpdateUnitListener(l);
-    }
-
-    void fireUpdataUnitChange() {
-        model.fireUpdataUnitChange();
     }
 
     DocumentListener getDocumentListener() {
@@ -387,6 +301,31 @@ public final class TransferFilter extends JPanel {
         return dlForSearch;
     }
 
+    @Override
+    public void addChangeListener(TransferFilesChangeListener listener) {
+        filesChangeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(TransferFilesChangeListener listener) {
+        filesChangeSupport.removeChangeListener(listener);
+    }
+
+    @Override
+    public Set<TransferFile> getSelectedFiles() {
+        return unwrapFileUnits(getModel().getMarkedUnits());
+    }
+
+    @Override
+    public TransferFilesChooserPanel getEmbeddablePanel() {
+        return this;
+    }
+
+    @Override
+    public boolean hasAnyTransferableFiles() {
+        return !unwrapFileUnits(getModel().getMarkedUnits()).isEmpty();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -395,67 +334,48 @@ public final class TransferFilter extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lSelectionInfo = new javax.swing.JLabel();
-        lSearch = new javax.swing.JLabel();
-        tfSearch = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = table;
-        lWarning = new javax.swing.JLabel();
+        lSearch = new javax.swing.JLabel();
+        tfSearch = new javax.swing.JTextField();
 
         setFocusTraversalPolicy(null);
-
-        org.openide.awt.Mnemonics.setLocalizedText(lSelectionInfo, org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.text")); // NOI18N
-
-        lSearch.setLabelFor(tfSearch);
-        org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(TransferFilter.class, "lSearch1.text")); // NOI18N
 
         jTable1.setModel(table.getModel());
         jScrollPane1.setViewportView(jTable1);
         jTable1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jTable1.AccessibleContext.accessibleName")); // NOI18N
         jTable1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jTable1.AccessibleContext.accessibleDescription")); // NOI18N
 
+        lSearch.setLabelFor(tfSearch);
+        org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(TransferFilter.class, "lSearch1.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lWarning)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lSearch)
-                        .addGap(4, 4, 4)
-                        .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(lSelectionInfo, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE))
-                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(175, Short.MAX_VALUE)
+                .addComponent(lSearch)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lSearch))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lSelectionInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lWarning))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
         );
 
-        lSelectionInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.AccessibleContext.accessibleName")); // NOI18N
-        lSelectionInfo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSelectionInfo.AccessibleContext.accessibleDescription")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
         lSearch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lSearch.AccessibleContext.accessibleName")); // NOI18N
         lSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "ACD_Search")); // NOI18N
         tfSearch.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.tfSearch.AccessibleContext.accessibleName")); // NOI18N
         tfSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.tfSearch.AccessibleContext.accessibleDescription")); // NOI18N
-        jScrollPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleName")); // NOI18N
-        jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
-        lWarning.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lWarning.AccessibleContext.accessibleName")); // NOI18N
-        lWarning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.lWarning.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransferFilter.class, "TransferFilter.AccessibleContext.accessibleDescription")); // NOI18N
@@ -815,8 +735,6 @@ public final class TransferFilter extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel lSearch;
-    private javax.swing.JLabel lSelectionInfo;
-    private javax.swing.JLabel lWarning;
     private javax.swing.JTextField tfSearch;
     // End of variables declaration//GEN-END:variables
 }

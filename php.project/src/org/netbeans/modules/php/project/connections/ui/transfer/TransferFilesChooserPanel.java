@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.ui;
 
-import java.util.List;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.project.connections.ui.transfer;
 
-/**
- * @author Radek Matous
- */
-public class TransferFileDownloadModel extends TransferFileTableModel {
-    private static final long serialVersionUID = 24074635121725824L;
+import java.util.Set;
+import javax.swing.JPanel;
+import org.netbeans.modules.php.project.connections.TransferFile;
 
-    public TransferFileDownloadModel(List<TransferFileUnit> fileUnits) {
-        setData(fileUnits);
-    }
+@SuppressWarnings("serial")
+public abstract class TransferFilesChooserPanel extends JPanel {
 
-    protected Type getType() {
-        return TransferFileTableModel.Type.DOWNLOAD;
-    }
+    /**
+     * @param listener listener for changes in transfer files selection
+     */
+    public abstract void addChangeListener(TransferFilesChangeListener listener);
 
-    protected String getTabTitle() {
-        return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Download_Title");
-    }
+    /**
+     * @param listener listener for changes in transfer files selection
+     */
+    public abstract void removeChangeListener(TransferFilesChangeListener listener);
 
-    protected String getFirstColumnName() {
-        return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Columns_Download");
+    /**
+     * @return selected transfer files
+     */
+    public abstract Set<TransferFile> getSelectedFiles();
+
+    /**
+     * @return panel for the transfer files
+     */
+    public abstract TransferFilesChooserPanel getEmbeddablePanel();
+
+    /**
+     * @return {@code true} if the panel has any files to transfer/show
+     */
+    public abstract boolean hasAnyTransferableFiles();
+
+    public interface TransferFilesChangeListener {
+
+        void selectedFilesChanged();
+
+        /**
+         * @throws UnsupportedOperationException if it is not supported by the panel
+         */
+        void filterChanged();
     }
 }
