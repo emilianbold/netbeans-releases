@@ -36,28 +36,34 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
-
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+public class SetDefaultHostAction extends SingleHostAction {
 
     @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE;
+    public String getName() {
+        return NbBundle.getMessage(HostListRootNode.class, "SetDefaultMenuItem");
     }
 
     @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+    protected boolean enable(ExecutionEnvironment env) {
+        return ! ServerList.getDefaultRecord().getExecutionEnvironment().equals(env);
     }
 
+    @Override
+    protected void performAction(ExecutionEnvironment env, Node node) {
+        ServerList.setDefaultRecord(ServerList.get(env));
+        if (node instanceof HostNode) {
+            ((HostNode) node).refresh(); // TODO: introduce listeners for server records
+        }
+    }
 }
