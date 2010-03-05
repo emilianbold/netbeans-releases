@@ -456,12 +456,10 @@ public class MakeOSGi extends Task {
             }
         }
         StringBuilder requireBundles = new StringBuilder();
-        /* XXX does not work for unknown reasons:
-        if (!cnb.matches("org[.](core[.]startup[.]|netbeans[.]bootstrap|openide[.](filesystems|modules|util|util[.]lookup))")) {
+        if (!STARTUP_PSEUDO_MODULES.contains(cnb)) {
             // do not need to import any API, just need it to be started:
             requireBundles.append("org.netbeans.core.osgi");
         }
-         */
         Set<String> imports = new TreeSet<String>(myInfo.importedPackages);
         hideImports(imports, myInfo);
         String dependencies = netbeans.getValue("OpenIDE-Module-Module-Dependencies");
@@ -914,6 +912,16 @@ public class MakeOSGi extends Task {
             "org.netbeans.core.netigso",
             "org.netbeans.libs.osgi",
             "org.netbeans.libs.felix"
+    ));
+
+    private static final Set<String> STARTUP_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.openide.util.lookup",
+            "org.openide.util",
+            "org.openide.modules",
+            "org.netbeans.bootstrap",
+            "org.openide.filesystems",
+            "org.netbeans.core.startup",
+            "org.netbeans.core.osgi"
     ));
 
 }
