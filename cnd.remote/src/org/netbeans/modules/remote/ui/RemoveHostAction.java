@@ -36,28 +36,54 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
-
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+public class RemoveHostAction extends SingleHostAction {
 
     @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE;
+    public String getName() {
+        return NbBundle.getMessage(HostListRootNode.class, "RemoveHostMenuItem");
     }
 
     @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+    public boolean isVisible(Node node) {
+        return isRemote(node);
     }
 
+    @Override
+    protected void performAction(final ExecutionEnvironment env, Node node) {
+        ServerRecord record = ServerList.get(env);
+        String title = NbBundle.getMessage(HostNode.class, "RemoveHostCaption");
+        String message = NbBundle.getMessage(HostNode.class, "RemoveHostQuestion", record.getDisplayName());
+
+        if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
+                message, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+            List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
+            hosts.remove(record);
+            cacheManager.setHosts(hosts);
+            ServerRecord defaultRecord = ServerList.getDefaultRecord();
+            if (defaultRecord.getExecutionEnvironment().equals(env)) {
+                defaultRecord = ServerList.get(ExecutionEnvironmentFactory.getLocal());
+            }
+            cacheManager.setDefaultRecord(defaultRecord);
+            cacheManager.applyChanges();
+        }
+    }
 }

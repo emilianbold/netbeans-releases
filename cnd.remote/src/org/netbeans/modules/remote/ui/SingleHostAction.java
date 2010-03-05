@@ -36,28 +36,68 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
+public abstract class SingleHostAction extends NodeAction {
 
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+    public SingleHostAction() {
+    }
 
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE;
+    /** @param env not null */
+    protected boolean enable(ExecutionEnvironment env) {
+        return true;
+    }
+
+    protected abstract void performAction(ExecutionEnvironment env, Node node);
+
+//    protected final ExecutionEnvironment getEnv(Node[] activatedNodes) {
+//        if (activatedNodes.length == 1) {
+//            return activatedNodes[0].getLookup().lookup(ExecutionEnvironment.class);
+//        }
+//        return null;
+//    }
+
+    public boolean isVisible(Node node) {
+        return true;
+    }
+
+    protected boolean isRemote(Node node) {
+        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
+        return env != null && env.isRemote();
+    }
+
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            ExecutionEnvironment env = activatedNodes[0].getLookup().lookup(ExecutionEnvironment.class);
+            if (env != null) {
+                return enable(env);
+            }
+        }
+        return false;
     }
 
     @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+        protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Node node = activatedNodes[0];
+            ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
+            if (env != null) {
+                performAction(env, node);
+            }
+        }
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
 }
