@@ -21,12 +21,12 @@
                 <package>javax.persistence.criteria</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/persistence/persistence-library1.jar</runtime-relative-path>
-                <binary-origin>external/persistence-library1.jar</binary-origin>
+                <runtime-relative-path>ext/persistence/toplink-essentials.jar</runtime-relative-path>
+                <binary-origin>external/toplink-essentials.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/persistence/persistence-library2.jar</runtime-relative-path>
-                <binary-origin>external/persistence-library2.jar</binary-origin>
+                <runtime-relative-path>ext/persistence/toplink-essentials-agent.jar</runtime-relative-path>
+                <binary-origin>external/toplink-essentials-agent.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
