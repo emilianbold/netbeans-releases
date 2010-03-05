@@ -921,6 +921,21 @@ public final class RubyIndex {
      * @return method or <code>null</code> if the was no such method.
      */
     public IndexedMethod getSuperMethod(String className, String methodName, boolean closest) {
+        return getSuperMethod(className, methodName, closest, true);
+    }
+
+    /**
+     * Gets either the most distant or the closest method in the hierarchy that the given method overrides or
+     * the method itself if it doesn't override any super methods.
+     *
+     * @param className the name of class where the given <code>methodName</code> is.
+     * @param methodName the name of the method.
+     * @param closest if true, gets the closest super method, otherwise the most distant.
+     * @param includeSelf if true, returns the method itself if it had no super methods.
+     *
+     * @return method or <code>null</code> if the was no such method.
+     */
+    IndexedMethod getSuperMethod(String className, String methodName, boolean closest, boolean includeSelf) {
         Set<IndexedMethod> methods = getInheritedMethods(className, methodName, QuerySupport.Kind.EXACT);
 
         // todo: performance?
@@ -938,6 +953,9 @@ public final class RubyIndex {
                 }
             }
         }
+        if (!includeSelf) {
+            return null;
+        }
         return !methods.isEmpty() ? methods.iterator().next() : null;
     }
 
@@ -949,11 +967,27 @@ public final class RubyIndex {
      * @return a set containing the overriding methods.
      */
     public Set<IndexedMethod> getOverridingMethods(String methodName, String className) {
+        return getOverridingMethods(methodName, className, false);
+    }
+
+    /**
+     * Gets all the methods that override the given method.
+     *
+     * @param methodName the name of the method.
+     * @param className the (fqn) class name where the method is defined.
+     * @param excludeSelf if true, excludes the overridden method itself from the results.
+     * 
+     * @return a set containing the overriding methods.
+     */
+    Set<IndexedMethod> getOverridingMethods(String methodName, String className, boolean excludeSelf) {
         Set<IndexedMethod> result = new HashSet<IndexedMethod>();
         Set<IndexedMethod> methods = getMethods(methodName, className, QuerySupport.Kind.EXACT);
         for (IndexedMethod method : methods) {
             Set<IndexedClass> subClasses = getSubClasses(method.getIn(), null, null, false);
             for (IndexedClass subClass : subClasses) {
+                if (excludeSelf && className.equals(subClass.getIn())) {
+                    continue;
+                }
                 result.addAll(getMethods(method.getName(), subClass.getName(), QuerySupport.Kind.EXACT));
             }
         }
