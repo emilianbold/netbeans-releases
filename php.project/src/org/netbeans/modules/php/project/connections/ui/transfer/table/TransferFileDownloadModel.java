@@ -38,59 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.connections.ui;
+package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
  */
-public class TransferFileUnit {
+public class TransferFileDownloadModel extends TransferFileTableModel {
+    private static final long serialVersionUID = 24074635121725824L;
 
-    private final TransferFile transferFile;
-    private boolean isMarked;
-
-    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
-        this.transferFile = transferFile;
-        this.isMarked = isMarked;
+    public TransferFileDownloadModel(List<TransferFileUnit> fileUnits) {
+        setData(fileUnits);
     }
 
-    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
-        return o1.getTransferFile().getRelativePath().compareTo(o2.getTransferFile().getRelativePath());
+    protected Type getType() {
+        return TransferFileTableModel.Type.DOWNLOAD;
     }
 
-    protected TransferFile getTransferFile() {
-        return transferFile;
+    protected String getTabTitle() {
+        return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Download_Title");
     }
 
-    public boolean isMarked() {
-        return isMarked;
-    }
-
-    public void setMarked(boolean isMarked) {
-        this.isMarked = isMarked;
-    }
-
-    public Integer getId() {
-        return getTransferFile().hashCode();
-    }
-
-    public boolean canBeMarked() {
-        return true;
-    }
-
-    public final boolean isVisible(final String filter) {
-        return getTransferFile().isFile()
-                && (!StringUtils.hasText(filter) || getDisplayName().toLowerCase().contains(filter));
-    }
-
-    String getDisplayName() {
-        return getTransferFile().getRelativePath();
-    }
-
-    @Override
-    public String toString() {
-        return getDisplayName();
+    protected String getFirstColumnName() {
+        return NbBundle.getMessage(TransferFileDownloadModel.class, "FileConfirmationTableModel_Columns_Download");
     }
 }
