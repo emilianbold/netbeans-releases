@@ -40,47 +40,40 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
-import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemManager;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class FileSystemNode extends AbstractNode {
+public class FileSystemRootNode extends AbstractNode {
 
     private final ExecutionEnvironment env;
-    private final FileObject fileObject;
+    private static enum Kind {
+        HOME,
+        MIRROR,
+        ROOT,
+        DISCONNECTED
+    }
 
-    public FileSystemNode(ExecutionEnvironment env, FileObject fileObject) {
-        super(createChildren(env, fileObject), Lookups.fixed(env, fileObject));
+    public FileSystemRootNode(ExecutionEnvironment env) {
+        super(createChildren(env), Lookups.fixed(env));
         this.env = env;
-        this.fileObject = fileObject;
-    }
-
-    private static Children createChildren(ExecutionEnvironment env, FileObject rootFileObject) {
-        return Children.create(new FileSystemChildren(env, rootFileObject), true);
-    }
-
-    @Override
-    public String getDisplayName() {
-        String path = fileObject.getPath();
-        if (path == null || path.length() == 0) {
-            return "/"; //NOI18N
-        } else {
-            return path;
-        }
     }
 
     @Override
@@ -93,39 +86,72 @@ public class FileSystemNode extends AbstractNode {
         return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/fs.gif"); // NOI18N
     }
 
-    private static class FileSystemChildren extends ChildFactory<FileObject> {
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "LBL_FileSystemRootNode");
+    }
+    
+    private static Children createChildren(ExecutionEnvironment env) {
+        return Children.create(new FileSystemRootChildren(env), true);
+    }
+
+    private static FileObject getRootFileObject(ExecutionEnvironment env) {
+        FileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+        FileObject fo = fs.getRoot();
+        return fo;
+    }
+
+    /*package*/ void refresh() {
+        setChildren(createChildren(env));
+    }
+
+    private static class FileSystemRootChildren extends ChildFactory<Kind> {
 
         private final ExecutionEnvironment env;
         private final FileObject rootFileObject;
 
-        public FileSystemChildren(ExecutionEnvironment env, FileObject rootFileObject) {
+        public FileSystemRootChildren(ExecutionEnvironment env) {
             this.env = env;
-            this.rootFileObject = rootFileObject;
+            rootFileObject = getRootFileObject(env);
         }
 
         @Override
-        protected boolean createKeys(List<FileObject> toPopulate) {
-            // TODO: add "Connect menu item and refresh"
+        protected boolean createKeys(List<Kind> toPopulate) {
             if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                FileObject[] children = rootFileObject.getChildren();
-                Collections.addAll(toPopulate, children);
-                return true;
+                toPopulate.add(Kind.ROOT);
+                toPopulate.add(Kind.HOME);
+                toPopulate.add(Kind.MIRROR);
             } else {
-                toPopulate.add(rootFileObject);
-                return true;
+                toPopulate.add(Kind.DISCONNECTED);
             }
+            return true;
         }
 
         @Override
-        protected Node createNodeForKey(FileObject key) {
-            try {
-                DataObject dao = DataObject.find(key);
-                Node node = dao.getNodeDelegate();
-                return node;
-            } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-                return null; //TODO: error processing
+        protected Node createNodeForKey(Kind key) {
+            FileObject fo;
+            switch (key) {
+                case DISCONNECTED:
+                    return new NotConnectedNode(env);
+                case HOME:
+                    String homeDir = RemoteUtil.getHomeDirectory(env);
+                    fo = rootFileObject.getFileObject(homeDir);
+                    break;
+                case MIRROR:
+                    String mirror = RemotePathMap.getRemoteSyncRoot(env);
+                    fo = rootFileObject.getFileObject(mirror);
+                    break;
+                case ROOT:
+                    fo = rootFileObject;
+                    break;
+                default:
+                    fo = rootFileObject;
+                    break;
             }
+            if (fo != null) {
+                return new FileSystemNode(env, fo);
+            }
+            return null; // TODO: error processing
         }
     }
 }
