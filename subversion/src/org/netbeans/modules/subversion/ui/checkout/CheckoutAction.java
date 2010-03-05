@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.ui.checkout;
 
+import org.netbeans.modules.subversion.util.CheckoutCompleted;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -136,7 +137,7 @@ public final class CheckoutAction extends CallableSystemAction {
                     return;
                 }
                 setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
-                if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, this);
+                if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, doExport, this);
             }
         };
         return support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
@@ -180,6 +181,7 @@ public final class CheckoutAction extends CallableSystemAction {
         final RepositoryFile[] repositoryFiles,
         final File workingDir,
         final boolean atWorkingDirLevel,
+        final boolean doExport,
         final SvnProgressSupport support)
     {
         String[] folders;
@@ -203,7 +205,7 @@ public final class CheckoutAction extends CallableSystemAction {
         if (support != null && support.isCanceled()) {
             return;
         }
-        cc.scanForProjects(support);
+        cc.scanForProjects(support, doExport ? CheckoutCompleted.Type.EXPORT : CheckoutCompleted.Type.CHECKOUT);
         return;
     }
 
