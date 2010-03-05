@@ -80,6 +80,7 @@ public abstract class SourceDataObject extends MultiDataObject {
         if (myLookup == null) {
             ic = new InstanceContent();
             ic.add(this);
+            ic.add(getPrimaryFile());
             ic.add(this, CppEditorSupportProvider.staticFactory);
             CndCookieProvider.getDefault().addLookup(this, ic);
             myLookup = new AbstractLookup(ic);

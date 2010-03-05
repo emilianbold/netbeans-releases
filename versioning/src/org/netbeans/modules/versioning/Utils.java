@@ -295,6 +295,20 @@ public class Utils {
         }
     }
 
+    public static Integer getPriority (VersioningSystem vs) {
+        Integer priority = null;
+        if (vs != null) {
+            Object o = vs.getProperty(VersioningManager.PROP_PRIORITY);
+            if (o instanceof Integer) {
+                priority = (Integer) o;
+            }
+        }
+        if (priority == null || priority <= 0) {
+            priority = Integer.MAX_VALUE;
+        }
+        return priority;
+    }
+
     static FileSystem getRootFilesystem() {
         if(filesystem == null) {
             try {

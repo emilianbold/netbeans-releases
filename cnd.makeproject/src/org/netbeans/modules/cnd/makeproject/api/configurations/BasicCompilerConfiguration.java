@@ -90,7 +90,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         getString("BITS_32"),
         getString("BITS_64"),};
     private IntConfiguration sixtyfourBits;
-    private BooleanConfiguration strip;
+    private InheritedBooleanConfiguration strip;
     public static final int MT_LEVEL_NONE = 0;
     public static final int MT_LEVEL_SAFE = 1;
     public static final int MT_LEVEL_AUTOMATIC = 2;
@@ -113,7 +113,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
         warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
         sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
-        strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", ""); // NOI18N
+        strip = new InheritedBooleanConfiguration(master != null ? master.getStrip() : null, false);
         mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
         additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
         tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
@@ -207,11 +207,11 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
     }
 
     // Strip
-    public void setStrip(BooleanConfiguration strip) {
+    public void setStrip(InheritedBooleanConfiguration strip) {
         this.strip = strip;
     }
 
-    public BooleanConfiguration getStrip() {
+    public InheritedBooleanConfiguration getStrip() {
         return strip;
     }
 

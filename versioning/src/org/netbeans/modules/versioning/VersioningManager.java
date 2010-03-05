@@ -89,6 +89,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      */
     public static final String EVENT_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
 
+
+    /**
+     * Priority defining the order of versioning systems used when determining the owner of a file. I.e. what versioning system should handle the file.
+     * @see #getProperty(String)
+     * @see #putProperty(String, Object)
+     */
+    static final String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
     
     private static VersioningManager instance;
 
@@ -112,7 +119,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * Holds all registered versioning systems.
      */
-    private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(2);
+    private final List<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(5);
 
     /**
      * What folder is versioned by what versioning system. 
@@ -177,6 +184,8 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
             // inline loadVersioningSystems(systems);
             versioningSystems.addAll(systems);
+            Collections.sort(versioningSystems, new ByPriorityComparator());
+            Collections.reverse(versioningSystems); // systems with higher priority should be at the end of the list, see getOwner logic
             for (VersioningSystem system : versioningSystems) {
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
@@ -432,6 +441,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             return ret;
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
+        }
+    }
+
+    /**
+     * Sorts versioning systems according to their priority. Systems with lower value (higher priority) will be stated before those with higher value (lower priority) in the given list.
+     */
+    private static final class ByPriorityComparator implements Comparator<VersioningSystem> {
+        @Override
+        public int compare(VersioningSystem o1, VersioningSystem o2) {
+            return Utils.getPriority(o1).compareTo(Utils.getPriority(o2));
         }
     }
 }

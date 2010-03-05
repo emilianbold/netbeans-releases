@@ -81,7 +81,7 @@ public class PackagingConfiguration {
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
-        verbose = new BooleanConfiguration(null, true);
+        verbose = new BooleanConfiguration(true);
         info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
         additionalInfo = new VectorConfiguration<String>(null); // NOI18N
         files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
