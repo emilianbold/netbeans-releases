@@ -40,7 +40,9 @@ package org.netbeans.modules.css.refactoring.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
@@ -59,6 +61,24 @@ import org.openide.util.Exceptions;
 public class CssRefactoring {
 
     private CssRefactoring() {
+    }
+
+    public static Collection<Entry> getAllIdSelectors(FileObject file) {
+        try {
+            return new CssFileModel(Source.create(file)).getIds();
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public static Collection<FileObject> findAllStyleSheets(FileObject baseFile) {
+        CssProjectSupport sup = CssProjectSupport.findFor(baseFile);
+        if(sup != null) {
+            CssIndex index = sup.getIndex();
+            return index.getAllIndexedFiles();
+        }
+        return Collections.emptyList();
     }
 
     public static Map<FileObject, Collection<EntryHandle>> findAllOccurances(String elementName, RefactoringElementType type, FileObject baseFile, boolean nonVirtualOnly) {

@@ -236,7 +236,7 @@ public final class RemoteClient implements Cancellable {
             }
             if (isVisible(f)) {
                 LOGGER.fine("File " + fo + " added to upload queue");
-                queue.offer(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+                queue.offer(TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath));
             } else {
                 LOGGER.fine("File " + fo + " NOT added to upload queue [invisible]");
             }
@@ -252,9 +252,11 @@ public final class RemoteClient implements Cancellable {
             TransferFile file = queue.poll();
 
             if (!files.add(file)) {
-                // file already in set
                 LOGGER.fine("File " + file + " already in queue");
-                continue;
+
+                // file already in set => remove the file from set and add this one (the previous can be root but apparently it is not)
+                files.remove(file);
+                files.add(file);
             }
 
             if (file.isDirectory()) {
@@ -264,7 +266,7 @@ public final class RemoteClient implements Cancellable {
                     for (File child : children) {
                         if (isVisible(child)) {
                             LOGGER.fine("File " + child + " added to upload queue");
-                            queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
+                            queue.offer(TransferFile.fromFile(file, child, baseLocalAbsolutePath));
                         } else {
                             LOGGER.fine("File " + child + " NOT added to upload queue [invisible]");
                         }
@@ -490,10 +492,10 @@ public final class RemoteClient implements Cancellable {
 
                 TransferFile tf = null;
                 if (f.exists()) {
-                    tf = TransferFile.fromFile(f, baseLocalAbsolutePath);
+                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath);
                 } else {
                     // assume folder for non-existing file => recursive fetch
-                    tf = TransferFile.fromFile(f, baseLocalAbsolutePath, true);
+                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath, true);
                 }
                 queue.offer(tf);
             } else {
@@ -511,9 +513,11 @@ public final class RemoteClient implements Cancellable {
             TransferFile file = queue.poll();
 
             if (!files.add(file)) {
-                // file already in set
                 LOGGER.fine("File " + file + " already in queue");
-                continue;
+
+                // file already in set => remove the file from set and add this one (the previous can be root but apparently it is not)
+                files.remove(file);
+                files.add(file);
             }
 
             if (file.isDirectory()) {
@@ -527,7 +531,7 @@ public final class RemoteClient implements Cancellable {
                     for (RemoteFile child : remoteClient.listFiles()) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.fine("File " + child + " added to download queue");
-                            queue.offer(TransferFile.fromRemoteFile(child, baseRemoteDirectory, relPath));
+                            queue.offer(TransferFile.fromRemoteFile(file, child, baseRemoteDirectory, relPath));
                         } else {
                             LOGGER.fine("File " + child + " NOT added to download queue [invisible]");
                         }

@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
@@ -226,6 +227,22 @@ public class CssIndex {
         }
 
         return Collections.emptyList();
+    }
+
+    public Collection<FileObject> getAllIndexedFiles() {
+        try {
+            Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);
+            Collection<FileObject> stylesheets = new LinkedList<FileObject>();
+            for(IndexResult result : results) {
+                if(result.getFile().getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
+                    stylesheets.add(result.getFile());
+                }
+            }
+            return stylesheets;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
+        }
     }
 
     /**

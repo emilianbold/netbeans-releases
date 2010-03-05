@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.php.project.connections.ui;
+package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
 import java.awt.Color;
 import java.awt.Component;
