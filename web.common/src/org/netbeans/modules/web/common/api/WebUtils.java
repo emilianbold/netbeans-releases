@@ -242,6 +242,12 @@ public class WebUtils {
      * @return
      */
     public static String getRelativePath(FileObject source, FileObject target) {
+        if(!source.isData()) {
+            throw new IllegalArgumentException("The source file " + source.getPath() + " is not a data file!");
+        }
+        if(!target.isData()) {
+            throw new IllegalArgumentException("The target file " + target.getPath() + " is not a data file!");
+        }
         if(!UNIT_TESTING) {
             FileObject root1 = ProjectWebRootQuery.getWebRoot(source);
             FileObject root2 = ProjectWebRootQuery.getWebRoot(target);
