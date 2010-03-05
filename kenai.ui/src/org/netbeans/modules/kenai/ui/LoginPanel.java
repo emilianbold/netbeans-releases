@@ -114,8 +114,8 @@ public class LoginPanel extends javax.swing.JPanel {
 //            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
 //            lblKenaiLogoLeft.setIcon(null);
 //        }
-        if (kenai!=null) {
         kenaiCombo.setSelectedItem(kenai);
+        if (kenai!=null) {
         setUsername(credentials.getUsername(kenai));
         setPassword(credentials.getPassword(kenai));
         setChkOnline();
