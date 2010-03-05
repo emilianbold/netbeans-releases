@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.checkout;
+package org.netbeans.modules.subversion.util;
 
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import java.io.File;
@@ -58,6 +58,11 @@ import org.openide.filesystems.FileUtil;
  */
 public class CheckoutCompleted {
 
+    public enum Type {
+        EXPORT,
+        CHECKOUT
+    }
+
     private final File workingFolder;
     private String[] checkedOutFolders;
 
@@ -66,7 +71,7 @@ public class CheckoutCompleted {
         this.workingFolder = workingFolder;
     }
 
-    public void scanForProjects(SvnProgressSupport support) {
+    public void scanForProjects(SvnProgressSupport support, Type type) {
 
         Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
@@ -93,6 +98,13 @@ public class CheckoutCompleted {
             }
         }
         // open project selection
-        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+        switch(type) {
+            case EXPORT:
+                ProjectUtilities.openExportedProjects(checkedOutProjects, workingFolder);
+                break;
+            case CHECKOUT:
+                ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+                break;
+        }
     }
 }
