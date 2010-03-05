@@ -86,9 +86,19 @@ public final class ProjectUtilities {
      * @param checkedOutProjects list of scanned checkout projects
      * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
      */
+    public static void openExportedProjects(Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.EXPORT, checkedOutProjects, workingFolder);
+        opener.openProjects();
+    }
+
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned checkout projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
     public static void openCheckedOutProjects(Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
-        ProjectOpener opener = new ProjectOpener(checkedOutProjects, workingFolder);
-        opener.openCheckedOutProjects();
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
+        opener.openProjects();
     }
 
     public static void selectAndExpandProject( final Project project ) {

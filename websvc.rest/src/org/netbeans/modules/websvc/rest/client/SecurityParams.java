@@ -52,6 +52,15 @@ public class SecurityParams {
     String signature;
     List<String> params = new ArrayList<String>();
     List<TemplateType.MethodDescriptor> methodDescriptors = new ArrayList<TemplateType.MethodDescriptor>();
+    List<TemplateType.FieldDescriptor> fieldDescriptors = new ArrayList<TemplateType.FieldDescriptor>();
+
+    public List<TemplateType.FieldDescriptor> getFieldDescriptors() {
+        return fieldDescriptors;
+    }
+
+    public void setFieldDescriptors(List<TemplateType.FieldDescriptor> fieldDescriptors) {
+        this.fieldDescriptors = fieldDescriptors;
+    }
 
     public List<String> getParams() {
         return params;

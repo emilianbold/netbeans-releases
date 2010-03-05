@@ -1144,6 +1144,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertFalse (r.interrupted);
     }
 
+    @RandomlyFails // NB-Core-Build #4158: !f.cancelled
     public void testCancelDoesInterruptIfRequestProcessorSpecifiesItEvenIfFalsePassedToFutureDotCancel() throws Exception {
         RequestProcessor rp = new RequestProcessor ("X", 3, true, true);
         final CountDownLatch releaseForRun = new CountDownLatch(1);

@@ -71,11 +71,16 @@ public abstract class SourceDataObject extends MultiDataObject {
         super(pf, loader);
     }
 
+    InstanceContent getInstanceContent(){
+        return ic;
+    }
+
     @Override
     public synchronized Lookup getLookup() {
         if (myLookup == null) {
             ic = new InstanceContent();
             ic.add(this);
+            ic.add(this, CppEditorSupportProvider.staticFactory);
             CndCookieProvider.getDefault().addLookup(this, ic);
             myLookup = new AbstractLookup(ic);
         }

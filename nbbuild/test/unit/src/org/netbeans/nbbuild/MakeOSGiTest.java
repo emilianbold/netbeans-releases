@@ -76,7 +76,15 @@ public class MakeOSGiTest extends NbTestCase {
                 "OpenIDE-Module: m\n", set("javax.swing", "javax.swing.text"), set());
         assertTranslation("{Bundle-SymbolicName=m, DynamicImport-Package=com.sun.source.tree, Import-Package=javax.swing}",
                 "OpenIDE-Module: m\n", set("javax.swing", "com.sun.source.tree"), set());
+        assertTranslation("{Bundle-SymbolicName=m, Require-Bundle=some.lib;bundle-version='[101.0.0,200)'}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Module-Dependencies: some.lib/1 > 1.0\n", set(), set());
         // XXX test hiddenPackages, that deps are not imported, etc.
+        assertTranslation("{Bundle-SymbolicName=m}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: org.openide.modules.ModuleFormat2\n", set(), set());
+        assertTranslation("{Bundle-SymbolicName=m, OpenIDE-Module-Requires=foo}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: foo, org.openide.modules.ModuleFormat1\n", set(), set());
+        assertTranslation("{Bundle-SymbolicName=m, OpenIDE-Module-Requires=foo, bar}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: foo, org.openide.modules.ModuleFormat1, bar\n", set(), set());
     }
     private void assertTranslation(String expectedOsgi, String netbeans, Set<String> importedPackages, Set<String> exportedPackages) throws Exception {
         assertTrue(netbeans.endsWith("\n")); // JRE bug
@@ -107,6 +115,7 @@ public class MakeOSGiTest extends NbTestCase {
         assertTranslateDependency("what.ever;bundle-version=\"[0.0.0,100)\"", "what.ever");
         assertTranslateDependency("org.netbeans.modules.java.sourceui", "org.netbeans.modules.java.sourceui = 15");
         assertTranslateDependency("editor.indent.project;bundle-version=\"[1.0.0,200)\"", "editor.indent.project/0-1 > 1.0");
+        assertTranslateDependency("", "org.netbeans.libs.osgi > 1.0");
         // XXX 3 or more items in sequence
     }
     private void assertTranslateDependency(String expected, String dependency) throws Exception {

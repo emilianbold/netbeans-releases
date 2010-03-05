@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
@@ -69,7 +70,7 @@ public class LeakingThisInConstructor {
     public static ErrorDescription hint(HintContext ctx) {
         IdentifierTree it = (IdentifierTree) ctx.getPath().getLeaf();
         CompilationInfo info = ctx.getInfo();
-        if (!isInConstructor(ctx)) {
+        if (!Utilities.isInConstructor(ctx)) {
             return null;
         }
 
@@ -96,7 +97,7 @@ public class LeakingThisInConstructor {
             || !((IdentifierTree) thisPath.getLeaf()).getName().contentEquals(THIS_KEYWORD)) {
             return null;
         }
-        if (!isInConstructor(ctx)) {
+        if (!Utilities.isInConstructor(ctx)) {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(),
@@ -105,11 +106,4 @@ public class LeakingThisInConstructor {
                     "MSG_org.netbeans.modules.java.hints.LeakingThisInConstructor"));
     }
 
-    private static boolean isInConstructor(HintContext ctx) {
-        TreePath method = OverridableMethodCallInConstructor.findEnclosingMethodOrConstructor(ctx.getPath());
-        if (method == null) return false;
-        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
-        return (enclosingMethodElement != null &&
-                enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
-    }
 }

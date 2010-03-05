@@ -159,12 +159,12 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
         ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("No connection to " + execEnv.getDisplayName()); // NOI18N
-        }
-
         if (info.getCommand() == null) {
             throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
+        }
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IOException("No connection to " + execEnv.getDisplayName()); // NOI18N
         }
 
         if (info.isPtyMode()) {

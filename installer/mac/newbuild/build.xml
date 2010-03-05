@@ -76,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/javaee/build"/>     
         <delete dir="${basedir}/netBeans/groovy/build"/>
         <delete dir="${basedir}/netBeans/php/build"/> 
+        <delete dir="${basedir}/netBeans/javame/build"/> 
         <delete dir="${basedir}/netBeans/webcommon/build"/>
         <delete dir="${basedir}/netBeans/ergonomics/build"/>
         <delete dir="${basedir}/tools/classes"/>           
@@ -101,6 +102,27 @@ Microsystems, Inc. All Rights Reserved.
            value="${basedir}/tools/classes"/>
     </target>        
 
+
+    <target name="prepare-javame-sdk-zip">
+        <mkdir dir="build"/> 
+        <get src="${javame_sdk30_bits_location}"  dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}-mobility-sdk.zip"/>
+        </exec>      
+        <delete file="${common.name}-mobility-sdk.zip"/>
+
+        <mkdir dir="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst"/>
+        <get src="${javame_sdk30_xml_location}"   dest="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
+
+        <exec executable="sh" failonerror="yes" dir="${basedir}/javametmpdir">
+            <arg value="-c"/>
+            <arg value="zip -r -1 ${common.name}${ml.suffix}-mobility-mac.zip *"/>
+        </exec>      
+        <delete dir="${basedir}/javametmpdir"/>
+    </target>
+
+
     <target name="init-clusters">
         <property name="main.clusters" value="
                                          cnd(cpp), dlight(cpp),
@@ -109,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
+                                         mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
@@ -121,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
 
     </target>
 
-    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters">
+    <target name="unzip-nb" description="Unzip clusters to modules" depends="init-clusters,prepare-javame-sdk-zip">
         <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
             <ant target="unzip-cluster"/>                           
             <exec executable="sh" failonerror="no">
@@ -138,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="unzip -o -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}${ml.suffix}-${cluster.name}.zip"/>
-        </exec>      
+        </exec>    
     </target>
     
     <target name="size-pack-module" description="Count up size of the module, pack200">           
@@ -248,9 +271,9 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
                                              -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg),
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
@@ -496,6 +519,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
                 <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
+                <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->

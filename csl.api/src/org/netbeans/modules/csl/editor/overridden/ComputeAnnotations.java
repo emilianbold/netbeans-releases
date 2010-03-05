@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -280,10 +281,14 @@ public class ComputeAnnotations extends ParserResultTask<Result> {
         return i.pos;
     }
 
-    public static final class FactoryImpl extends TaskFactory {
+    public static final class FactoryImpl extends AbstractTaskFactory {
+
+        public FactoryImpl() {
+            super(true);
+        }
 
         @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        protected Collection<? extends SchedulerTask> createTasks(Language language, Snapshot snapshot) {
             return Collections.singleton(new ComputeAnnotations());
         }
         

@@ -223,11 +223,12 @@ public class TableClosure {
             return false;
         }
         // can't add disabled tables
-        for (Table table : tables) {
-            if (table.isDisabled()) {
-                return false;
-            }
-        }
+// commented to have an ability to regenerate already created entities
+//        for (Table table : tables) {
+//            if (table.isDisabled()) {
+//                return false;
+//            }
+//        }
         return true;
     }
 
@@ -235,12 +236,14 @@ public class TableClosure {
         if (tables.size() <= 0) {
             return false;
         }
-        for (Table table : tables) {
-            if (!table.isDisabled()) {
-                return true;
-            }
-        }
-        return false;
+// commented to have an ability to regenerate already created entities
+//        for (Table table : tables) {
+//            if (!table.isDisabled()) {
+//                return true;
+//            }
+//        }
+//        return false;
+        return true;
     }
 
     public boolean canRemoveAllTables(Set<Table> tables) {
@@ -343,7 +346,9 @@ public class TableClosure {
 
     private static Set<Table> removeDisabledTables(Set<Table> tables) {
         for (Iterator<Table> i = tables.iterator(); i.hasNext();) {
-            if (i.next().isDisabled()) {
+            Table table = i.next();
+            // do not remove the tables for which the entities are exists
+            if (table.isDisabled() && !(table.getDisabledReason() instanceof Table.ExistingDisabledReason)) {
                 i.remove();
             }
         }

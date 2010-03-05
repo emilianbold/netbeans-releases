@@ -101,13 +101,7 @@ class Wadl2JavaHelper {
     private static final String PROP_XML_SCHEMA="xml_schema"; //NOI18N
     private static final String PROP_PACKAGE_NAME="package_name"; //NOI18N
     private static final String PROP_SOURCE_ROOT="source_root"; //NOI18N
-
-    private static final String API_KEY="api_key";
-    private static final String SESSION_KEY="session_key";
-    private static final String APPLICATION_SECRET="application_secret";
-    private static final String SESSION_SECRET="session_secret";
-    
-
+    private static final String SIGN_PARAMS_METHOD="signParams";
 
     static ClassTree addHttpMethods(WorkingCopy copy, ClassTree innerClass, WadlSaasResource saasResource, Security security) {
         List<WadlSaasMethod> saasMethods = saasResource.getMethods();
@@ -395,6 +389,7 @@ class Wadl2JavaHelper {
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
         ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
         throwsList.add(throwsTree);
+
         if (Security.Authentication.SESSION_KEY == security.getAuthentication()) {
             ExpressionTree ioExceptionTree = JavaSourceHelper.createTypeTree(copy, "java.io.IOException"); //NOI18N
             throwsList.add(ioExceptionTree);
@@ -470,7 +465,11 @@ class Wadl2JavaHelper {
                     queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
                     queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
                     if (Security.Authentication.SESSION_KEY == security.getAuthentication() && securityParams != null) {
-                        queryParamPart.append("String signature = signParams("+SESSION_SECRET+", queryParamNames, queryParamValues);"); //NOI18N
+                        String optParams = ""; //NOI18N
+                        if (httpParams.hasOptionalQueryParams()) {
+                            optParams = ", optionalQueryParams";
+                        }
+                        queryParamPart.append("String signature = "+SIGN_PARAMS_METHOD+"(queryParamNames, queryParamValues"+optParams+");"); //NOI18N
                         String sigParam = securityParams.getSignature();
                         queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam(\""+sigParam+"\", signature)"); //NOI18N
                     } else {
@@ -481,7 +480,17 @@ class Wadl2JavaHelper {
                     if (requiredParams.size() > 0) {
                         String paramName = requiredParams.get(0);
                         String paramValue = makeJavaIdentifier(requiredParams.get(0));
-                        queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N"
+                        if (Security.Authentication.SESSION_KEY == security.getAuthentication() && securityParams != null && httpParams.hasFormParams()) {
+                            String optParams = ""; //NOI18N
+                            if (httpParams.hasOptionalQueryParams()) {
+                                optParams = ", optionalQueryParams";
+                            }
+                            queryParamPart.append("String signature = "+SIGN_PARAMS_METHOD+"(formParamNames, formParamValues"+optParams+");"); //NOI18N
+                            String sigParam = securityParams.getSignature();
+                            queryP.append(".queryParam(\""+sigParam+"\", signature)"); //NOI18N
+                        } else {
+                            queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N
+                        }
                     } else {
                         Map<String, String> fixedParams = httpParams.getFixedQueryParams();
                         for (String paramName : fixedParams.keySet()) {
@@ -780,7 +789,7 @@ class Wadl2JavaHelper {
 
     private static String findGetterForParam(String param, List<TemplateType.MethodDescriptor> methodDescriptors) {
         for (TemplateType.MethodDescriptor method : methodDescriptors) {
-            if (param.contentEquals(method.getId())) {
+            if (param.equals(method.getId())) {
                 return method.getName()+"()"; //NOI18N
             }
         }
@@ -788,32 +797,29 @@ class Wadl2JavaHelper {
     }
 
     static ClassTree addSessionAuthMethods(WorkingCopy copy, ClassTree originalClass, Security security) {
-
+        ClassTree modifiedClass = originalClass;
         TreeMaker maker = copy.getTreeMaker();
-        ModifiersTree fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
-        VariableTree fieldTree = maker.Variable(fieldModif, API_KEY, maker.Identifier("String"), null); //NOI18N
-        ClassTree modifiedClass = maker.addClassMember(originalClass, fieldTree);
-
-        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
-        fieldTree = maker.Variable(fieldModif, SESSION_KEY, maker.Identifier("String"), null); //NOI18N
-        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
-
-        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
-        fieldTree = maker.Variable(fieldModif, APPLICATION_SECRET, maker.Identifier("String"), null); //NOI18N
-        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
-
-        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
-        fieldTree = maker.Variable(fieldModif, SESSION_SECRET, maker.Identifier("String"), null); //NOI18N
-        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
-
         SecurityParams securityParams = security.getSecurityParams();
         if (securityParams != null) {
+
+            for (TemplateType.FieldDescriptor field : securityParams.getFieldDescriptors()) {
+                ModifiersTree fieldModifier = null;
+                if ("public".equals(field.getModifier())) { //NOI18N
+                    fieldModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+                } else {
+                    fieldModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+                }
+                ExpressionTree fieldType = JavaSourceHelper.createTypeTree(copy, field.getType());
+                VariableTree fieldTree = maker.Variable(fieldModifier, field.getName(), fieldType, null); //NOI18N
+                modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+            }
+
             for (TemplateType.MethodDescriptor m : securityParams.getMethodDescriptors()) {
                 ModifiersTree methodModifier = null;
-                if ("private".equals(m.getModifier())) { //NOI18N
-                    methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
-                } else {
+                if ("public".equals(m.getModifier())) { //NOI18N
                     methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+                } else {
+                    methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
                 }
                 // add params
                 List<VariableTree> paramList = new ArrayList<VariableTree>();

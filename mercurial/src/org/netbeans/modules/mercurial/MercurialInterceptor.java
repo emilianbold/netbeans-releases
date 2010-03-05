@@ -161,7 +161,10 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
-        srcFile.renameTo(dstFile);
+        boolean result = srcFile.renameTo(dstFile);
+        if (!result) {
+            Mercurial.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
+        }
         // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         try {

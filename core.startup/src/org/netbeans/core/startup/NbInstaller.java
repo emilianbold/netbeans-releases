@@ -771,32 +771,11 @@ final class NbInstaller extends ModuleInstaller {
             Util.err.warning(rep.toString());
         }
     }
-    
+
     public @Override String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
             List<String> arr = new ArrayList<String>(4);
-            
-            if (Utilities.isUnix()) {
-                arr.add("org.openide.modules.os.Unix"); // NOI18N
-                if (!Utilities.isMac()) {
-                    arr.add("org.openide.modules.os.PlainUnix"); // NOI18N
-                }
-            }
-            if (Utilities.isWindows()) {
-                arr.add("org.openide.modules.os.Windows"); // NOI18N
-            }
-            if (Utilities.isMac()) {
-                arr.add("org.openide.modules.os.MacOSX"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
-                arr.add("org.openide.modules.os.OS2"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
-                arr.add("org.openide.modules.os.Linux"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
-                arr.add("org.openide.modules.os.Solaris"); // NOI18N
-            }
+            CoreBridge.defineOsTokens(arr);
             
             // module format is now 2
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N

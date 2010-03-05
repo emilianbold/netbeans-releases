@@ -420,11 +420,13 @@ public class ClientJavaSourceHelper {
                                 if ("desktop".equals(security.getProjectType())) { //NOI18N
                                     TemplateType tt = useTemplates.getDesktop();
                                     if (tt != null) {
+                                        securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
                                     }
                                 } else if ("web".equals(security.getProjectType())) { //NOI18N
                                     TemplateType tt = useTemplates.getWeb();
                                     if (tt != null) {
+                                        securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
                                     }
                                 }

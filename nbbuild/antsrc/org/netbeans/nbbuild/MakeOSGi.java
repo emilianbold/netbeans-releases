@@ -156,7 +156,7 @@ public class MakeOSGi extends Task {
                         String cnb = prescan(jf, info);
                         if (cnb == null) {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
-                        } else if (cnb.matches("org[.]netbeans[.](core[.]netigso|libs[.](felix|osgi))")) {
+                        } else if (SKIPPED_PSEUDO_MODULES.contains(cnb)) {
                             log("Skipping " + jar);
                             continue;
                         } else if (infos.containsKey(cnb)) {
@@ -205,7 +205,7 @@ public class MakeOSGi extends Task {
                 antlibJF.close();
             }
             for (String antlibImport : antlibPackages) {
-                if (!antlibImport.startsWith("org.apache.tools.")) {
+                if (!antlibImport.startsWith("org.apache.tools.") && !availablePackages.contains(antlibImport)) {
                     info.importedPackages.add(antlibImport);
                 }
             }
@@ -452,10 +452,10 @@ public class MakeOSGi extends Task {
         String dependencies = netbeans.getValue("OpenIDE-Module-Module-Dependencies");
         if (dependencies != null) {
             for (String dependency : dependencies.split(" *, *")) {
-                if (requireBundles.length() > 0) {
-                    requireBundles.append(", ");
-                }
                 String depCnb = translateDependency(requireBundles, dependency);
+                if (depCnb == null) {
+                    continue;
+                }
                 Info imported = infos.get(depCnb);
                 if (imported != null) {
                     imports.removeAll(imported.exportedPackages);
@@ -489,10 +489,26 @@ public class MakeOSGi extends Task {
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
         // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
                 osgi.putValue(tokenAttr, v);
+            }
+        }
+        String v = netbeans.getValue("OpenIDE-Module-Requires");
+        if (v != null) {
+            StringBuilder b = null;
+            for (String tok : v.split("[, ]+")) {
+                if (!tok.matches("org.openide.modules.ModuleFormat\\d+")) {
+                    if (b == null) {
+                        b = new StringBuilder(tok);
+                    } else {
+                        b.append(", ").append(tok);
+                    }
+                }
+            }
+            if (b != null) {
+                osgi.putValue("OpenIDE-Module-Requires", b.toString());
             }
         }
         // autoload, eager status are ignored since OSGi has no apparent equivalent
@@ -573,10 +589,16 @@ public class MakeOSGi extends Task {
             throw new IllegalArgumentException("bad dep: " + dependency);
         }
         String depCnb = m.group(1);
+        if (SKIPPED_PSEUDO_MODULES.contains(depCnb)) {
+            return null;
+        }
         String depMajLo = m.group(2);
         String depMajHi = m.group(3);
         String comparison = m.group(4);
         String version = m.group(5);
+        if (b.length() > 0) {
+            b.append(", ");
+        }
         b.append(depCnb);
         if (!"=".equals(comparison)) {
             if (version == null) {
@@ -816,6 +838,12 @@ public class MakeOSGi extends Task {
         "org.xml.sax",
         "org.xml.sax.ext",
         "org.xml.sax.helpers"
+    ));
+
+    private static final Set<String> SKIPPED_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.netbeans.core.netigso",
+            "org.netbeans.libs.osgi",
+            "org.netbeans.libs.felix"
     ));
 
 }

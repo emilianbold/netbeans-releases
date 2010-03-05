@@ -68,7 +68,8 @@ import org.openide.util.NbBundle;
 public class NewProjectIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 4589834546983L;
-    
+
+    private static final String IS_LIBRARY = "is_library";//NOI18N
     boolean platformInstall;
     int currentIndex;
     PlatformInstallPanel.WizardPanel platformPanel;
@@ -140,6 +141,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, null);
         templateWizard.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
         templateWizard.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
+        templateWizard.putProperty(IS_LIBRARY, !create);
         final DataObject dao = templateWizard.getTemplate();
         templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
@@ -167,7 +169,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         final Boolean createMIDlet = (Boolean) templateWizard.getProperty(ProjectPanel.PROJECT_CREATE_MIDLET);
         HashSet<DataObject> result = createMIDlet != null && createMIDlet.booleanValue() ? new HashSet<DataObject>() : null;
         
-        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES));
+        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES), (Boolean)templateWizard.getProperty(IS_LIBRARY));
         if (result == null) result = new HashSet<DataObject>();
         result.add(DataObject.find(helper.getProjectDirectory()));
         return result;

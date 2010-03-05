@@ -64,8 +64,8 @@ var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 var ZIP_FILES_LIST_NAME             = "Zip Files";
 var MODULE_CLUSTERS_FILES_LIST_NAME = "Module Clusters";
 
-var NOTE_SOLARIS = "Note: Java ME is only available for Windows and Linux.";
-var NOTE_MACOSX  = "Note: Java ME is only available for Windows and Linux.";
+var NOTE_SOLARIS = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
+var NOTE_MACOSX  = "Note: Java ME is only available for Windows, Linux and Mac OS X.";
 var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
 var MORE_LANGUAGES    = "More Languages...";

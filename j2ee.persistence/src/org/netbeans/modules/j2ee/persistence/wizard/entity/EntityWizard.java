@@ -171,7 +171,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
                 ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
                 if (punit != null){
-                    ProviderUtil.addPersistenceUnit(punit, project);
+                    Util.addPersistenceUnitToProject( project, punit);
                 }
             }
 

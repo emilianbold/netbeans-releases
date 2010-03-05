@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -376,6 +376,7 @@ public class LogViewMgr {
         // Don't this check too often, but often enough.
         if(System.currentTimeMillis() > lastVisibleCheck + VISIBILITY_CHECK_DELAY) {
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     if(visibleCheck.getAndSet(true)) {
                         try {
@@ -461,6 +462,7 @@ public class LogViewMgr {
          * Implementation of the Runnable interface. Here all tailing is
          * performed
          */
+        @Override
         public void run() {
             final String originalName = Thread.currentThread().getName();
             BufferedReader reader = null;
@@ -647,7 +649,12 @@ public class LogViewMgr {
             }
             Iterator<Recognizer> iterator = recognizers.iterator();
             while(iterator.hasNext() && listener == null) {
-                listener = iterator.next().processLine(message);
+                Recognizer r = iterator.next();
+                try {
+                    listener = r.processLine(message);
+                } catch (Exception ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "Recognizer " + r.getClass().getName() + " generated an exception.", ex);
+                }
             }
         }
 
@@ -715,6 +722,7 @@ public class LogViewMgr {
             message = ""; // NOI18N
         }
         
+        @Override
         public abstract String process(char c);
         
     }
@@ -758,6 +766,7 @@ public class LogViewMgr {
          *
          * !PW FIXME This parser should be checked for I18N stability.
          */
+        @Override
         public String process(char c) {
             String result = null;
 
@@ -824,6 +833,7 @@ public class LogViewMgr {
          *
          * !PW FIXME This parser should be checked for I18N stability.
          */
+        @Override
         public String process(char c) {
             String result = null;
 

@@ -58,6 +58,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -95,413 +96,392 @@ import org.apache.tools.ant.Task;
  *
  * @author Adam Sotona, David Kaspar
  */
-public class JadTask extends Task
-{
-    
-    private static final String TEST_KEYS[] = new String[] {"MicroEdition-Configuration", "MicroEdition-Profile", "MIDlet-Name", "MIDlet-Vendor", "MIDlet-Version"}; // NO I18N
-    
+public class JadTask extends Task {
+
+    private static final String LIBLET_NAME = "LIBlet-Name"; //NOI18N
+    private static final String MIDLET_PREFIX = "MIDlet-"; //NOI18N
+    private static final String LIBLET_PREFIX = "LIBlet-"; //NOI18N
+    private static final String MIDLET_TEST_KEYS[] = new String[]{"MicroEdition-Configuration", "MicroEdition-Profile", "MIDlet-Name", "MIDlet-Vendor", "MIDlet-Version"}; // NO I18N
+    private static final String LIBLET_TEST_KEYS[] = new String[]{"MicroEdition-Configuration", "MicroEdition-Profile", "LIBlet-Name", "LIBlet-Vendor", "LIBlet-Version"}; // NO I18N
     private static final String DEFAULT_ENCODING = "UTF-8"; // NO I18N
-    
-    private static final String JAR_URL_KEY = "MIDlet-Jar-URL"; // NO I18N
-    
-    private static final String JAR_SIZE_KEY = "MIDlet-Jar-Size"; // NO I18N
-    
+    private static final String JAR_URL_KEY = "Jar-URL"; // NO I18N
+    private static final String JAR_SIZE_KEY = "Jar-Size"; // NO I18N
     private static final String JAR_RSA_SHA1 = "MIDlet-Jar-RSA-SHA1"; // NO I18N
-    
+    private static final String LIBLET_JAR_SHA1 = "LIBlet-Jar-SHA1"; // NO I18N
     private static final String CERTIFICATE = "MIDlet-Certificate-{0}-{1}"; // NO I18N
-    
     private static final String SHA1withRSA = "SHA1withRSA"; // NO I18N
-    
+    private static final String SHA1 = "SHA-1"; //NOI18N
     private static final String MIDLET_1 = "MIDlet-1"; // NOI18N
-    
     private static final String PKCS12 = "PKCS12"; // NOI18N
-    
     /** Holds value of property jadFile. */
     private File jadFile;
-    
     /** Holds value of property jarFile. */
     private File jarFile;
-    
     /** Holds value of property output. */
     private File output;
-    
     /** Holds value of property url. */
     private String url;
-    
     /** Holds value of property encoding. */
     private String encoding;
-    
     /** Holds value of property sign. */
     private boolean sign = false;
-    
     /** Holds value of property keyStore. */
     private File keyStore = null;
-    
     /** Holds value of property keyStoreType. */
     private String keyStoreType = null;
-    
     /** Holds value of property keyStorePassword. */
     private String keyStorePassword = null;
-    
     /** Holds value of property alias. */
     private String alias = null;
-    
     /** Holds value of property aliasPassword. */
     private String aliasPassword = null;
-    
-    private final static String ERR_MissingAttr="ERR_MissingAttr";
-    
+    private final static String ERR_MissingAttr = "ERR_MissingAttr";
+
     /**
      * Do the work.
      * @throws BuildException if attribute is missing or there is a problem during jad file update.
      */
-    public void execute() throws BuildException
-    {
-        if (jadFile == null) throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "jadFile")); // NO I18N
-        if (jarFile == null) throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "jarFile")); // NO I18N
+    public void execute() throws BuildException {
+        if (jadFile == null) {
+            throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "jadFile")); // NO I18N
+        }
+        if (jarFile == null) {
+            throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "jarFile")); // NO I18N
+        }
         final File jadFrom = jadFile;
         final File jadTo = (output != null) ? output : jadFile;
-        if (!jadFrom.isFile()) throw new BuildException(Bundle.getMessage("ERR_SourceIsMissing", jadFrom.toString())); // NO I18N
-        if (!jarFile.isFile()) throw new BuildException(Bundle.getMessage("ERR_JarFileIsMissing", jarFile.toString())); // NO I18N
-//        if (output != null  &&  jadFrom.lastModified() <= jadTo.lastModified ()  &&  jarFile.lastModified () <= jadTo.lastModified()) {
+        if (!jadFrom.isFile()) {
+            throw new BuildException(Bundle.getMessage("ERR_SourceIsMissing", jadFrom.toString())); // NO I18N
+        }
+        if (!jarFile.isFile()) {
+            throw new BuildException(Bundle.getMessage("ERR_JarFileIsMissing", jarFile.toString())); // NO I18N
+        }//        if (output != null  &&  jadFrom.lastModified() <= jadTo.lastModified ()  &&  jarFile.lastModified () <= jadTo.lastModified()) {
 //            log (Bundle.getMessage ("MSG_JadIsUpToDate"), Project.MSG_VERBOSE); // No I18N
 //            return;
 //        }
-        try
-        {
+        try {
             log(Bundle.getMessage("MSG_Updating", jadTo.getAbsolutePath()), Project.MSG_INFO); // NO I18N
             log(Bundle.getMessage("MSG_Loading", jadFrom.toString()), Project.MSG_VERBOSE); // NO I18N
-            final HashMap<String,String> hash = new HashMap<String,String>();
+            final HashMap<String, String> hash = new HashMap<String, String>();
             final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(jadFrom), (encoding != null) ? encoding : DEFAULT_ENCODING));
-            try
-            {
-                for (;;)
-                {
+            try {
+                for (;;) {
                     final String readLine = br.readLine();
-                    if (readLine == null)
+                    if (readLine == null) {
                         break;
+                    }
                     if ("".equals(readLine)) //NOI18N
-                        continue;
-                    if (readLine.startsWith("#")) //NOI18N
-                        continue;
-                    final int colon = readLine.indexOf(':');
-                    if (colon < 0)
                     {
+                        continue;
+                    }
+                    if (readLine.startsWith("#")) //NOI18N
+                    {
+                        continue;
+                    }
+                    final int colon = readLine.indexOf(':');
+                    if (colon < 0) {
                         log(Bundle.getMessage("WARN_InvalidLineFormat", readLine), Project.MSG_WARN); // NO I18N
                         continue;
                     }
                     hash.put(readLine.substring(0, colon), readLine.substring(colon + 1).trim());
                 }
-            }
-            finally
-            {
+            } finally {
                 br.close();
             }
-            if (! hash.containsKey(MIDLET_1))
-            {
+            boolean isLiblet = hash.containsKey(LIBLET_NAME);
+            String prefix = isLiblet ? LIBLET_PREFIX : MIDLET_PREFIX;
+            if (!isLiblet && !hash.containsKey(MIDLET_1)) {
                 log(Bundle.getMessage("WARN_MissingMIDlets"), Project.MSG_WARN); // NOI18N
             }
-            
-            for (int i = 0; i<TEST_KEYS.length; i++)
-            {
-                if (!hash.containsKey(TEST_KEYS[i])) log(Bundle.getMessage("WARN_MissingAttribute", TEST_KEYS[i]), Project.MSG_WARN); // NO I18N
+
+            String testKeys[] = isLiblet ? LIBLET_TEST_KEYS : MIDLET_TEST_KEYS;
+            for (int i = 0; i < testKeys.length; i++) {
+                if (!hash.containsKey(testKeys[i])) {
+                    log(Bundle.getMessage("WARN_MissingAttribute", testKeys[i]), Project.MSG_WARN); // NO I18N
+                }
             }
 //            String version = (String)hash.get(MIDLET_VERSION);
 //            if (version != null && Pattern.matches("^[0-9][0-9][0-9][0-9][0-9][0-9]$", version)) { //NOI18N
 //                hash.put(MIDLET_VERSION, version.substring(0, 2) + '.' + version.substring(2, 4) + '.' + version.substring(4, 6));
 //            }
-            if (url == null)
-            {
-                if (!hash.containsKey(JAR_URL_KEY))
-                {
+            if (url == null) {
+                if (!hash.containsKey(prefix + JAR_URL_KEY)) {
                     final String jarname = jarFile.getName();
-                    log(Bundle.getMessage("WARN_MissingURL", JAR_URL_KEY, jarname), Project.MSG_WARN); // NO I18N
-                    hash.put(JAR_URL_KEY, jarname);
+                    log(Bundle.getMessage("WARN_MissingURL", prefix + JAR_URL_KEY, jarname), Project.MSG_WARN); // NO I18N
+                    hash.put(prefix + JAR_URL_KEY, jarname);
                 }
-            }
-            else
-            {
-                log(Bundle.getMessage("MSG_SettingAttribute", JAR_URL_KEY, url), Project.MSG_VERBOSE); // NO I18N
-                hash.put(JAR_URL_KEY, url);
+            } else {
+                log(Bundle.getMessage("MSG_SettingAttribute", prefix + JAR_URL_KEY, url), Project.MSG_VERBOSE); // NO I18N
+                hash.put(prefix + JAR_URL_KEY, url);
             }
             final String jarsize = String.valueOf(jarFile.length());
             log(Bundle.getMessage("MSG_JarSize", jarFile.getAbsolutePath(), jarsize), Project.MSG_INFO); // NO I18N
-            log(Bundle.getMessage("MSG_SettingAttribute", JAR_SIZE_KEY, jarsize), Project.MSG_VERBOSE); // NO I18N
-            hash.put(JAR_SIZE_KEY,  jarsize);
-            
+            log(Bundle.getMessage("MSG_SettingAttribute", prefix + JAR_SIZE_KEY, jarsize), Project.MSG_VERBOSE); // NO I18N
+            hash.put(prefix + JAR_SIZE_KEY, jarsize);
+
             // signing
-            if (sign)
-            {
-                if (keyStore == null  ||  !keyStore.exists()  ||  !keyStore.isFile())
-                    throw new BuildException(Bundle.getMessage(ERR_MissingAttr, keyStore==null?"keystore":keyStore.getAbsolutePath())); // NO I18N
-                if (keyStorePassword == null)
+            if (sign && !isLiblet) {
+                if (keyStore == null || !keyStore.exists() || !keyStore.isFile()) {
+                    throw new BuildException(Bundle.getMessage(ERR_MissingAttr, keyStore == null ? "keystore" : keyStore.getAbsolutePath())); // NO I18N
+                }
+                if (keyStorePassword == null) {
                     throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "keyStorePassword")); // NO I18N
-                if (alias == null)
+                }
+                if (alias == null) {
                     throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "alias")); // NO I18N
-                if (aliasPassword == null)
+                }
+                if (aliasPassword == null) {
                     throw new BuildException(Bundle.getMessage(ERR_MissingAttr, "aliasPassword")); // NO I18N
-                
+                }
                 log(Bundle.getMessage("MSG_Signing"), Project.MSG_INFO); // NO I18N
-                
+
                 KeyStore store;
-                try
-                {
-                    if (keyStoreType == null)
-                    {
+                try {
+                    if (keyStoreType == null) {
                         final String name = keyStore.getAbsolutePath().toLowerCase();
-                        if (name.endsWith(".p12")  ||  name.endsWith(".pkcs12")) // NOI18N
+                        if (name.endsWith(".p12") || name.endsWith(".pkcs12")) // NOI18N
+                        {
                             keyStoreType = PKCS12;
+                        }
                     }
-                    if (keyStoreType != null  &&  PKCS12.equals(keyStoreType)) // NO I18N
+                    if (keyStoreType != null && PKCS12.equals(keyStoreType)) // NO I18N
+                    {
                         store = KeyStore.getInstance("pkcs12", "SunJSSE"); // NO I18N
-                    else
+                    } else {
                         store = KeyStore.getInstance("JKS", "SUN"); // NO I18N
-                }
-                catch (NoSuchProviderException e)
-                {
+                    }
+                } catch (NoSuchProviderException e) {
                     throw new BuildException(Bundle.getMessage("ERR_UnsupportedKeyStoreProvider", keyStoreType != null ? keyStoreType : "default"), e); // NO I18N
-                }
-                catch (KeyStoreException e)
-                {
+                } catch (KeyStoreException e) {
                     throw new BuildException(Bundle.getMessage("ERR_UnsupportedKeyStoreType", keyStoreType != null ? keyStoreType : "default"), e); // NO I18N
                 }
                 final InputStream stream = new FileInputStream(keyStore);
-                try
-                {
+                try {
                     store.load(stream, keyStorePassword.toCharArray());
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     throw new BuildException(Bundle.getMessage("ERR_ErrorLoadingKeyStore", keyStore.getAbsolutePath()), e); // NO I18N
-                }
-                catch (NoSuchAlgorithmException e)
-                {
+                } catch (NoSuchAlgorithmException e) {
                     throw new BuildException(Bundle.getMessage("ERR_ErrorLoadingKeyStore", keyStore.getAbsolutePath()), e); // NO I18N
-                }
-                catch (CertificateException e)
-                {
+                } catch (CertificateException e) {
                     throw new BuildException(Bundle.getMessage("ERR_ErrorLoadingKeyStore", keyStore.getAbsolutePath()), e); // NO I18N
-                }
-                finally
-                {
+                } finally {
                     stream.close();
                 }
-                
+
                 hash.remove(JAR_RSA_SHA1);
-                for (int a = 1; ; a ++)
-                {
+                for (int a = 1;; a++) {
                     int b = 1;
-                    for (;; b ++)
-                    {
-                        if (hash.remove(MessageFormat.format(CERTIFICATE, new Object[] {Integer.toString(a), Integer.toString(b)})) == null)
+                    for (;; b++) {
+                        if (hash.remove(MessageFormat.format(CERTIFICATE, new Object[]{Integer.toString(a), Integer.toString(b)})) == null) {
                             break;
+                        }
                     }
-                    if (b <= 1)
+                    if (b <= 1) {
                         break;
+                    }
                 }
-                
+
                 Certificate[] certs;
                 Key key;
-                try
-                {
+                try {
                     certs = store.getCertificateChain(alias);
                     key = store.getKey(alias, aliasPassword.toCharArray());
-                }
-                catch (UnrecoverableKeyException e)
-                {
+                } catch (UnrecoverableKeyException e) {
                     e.printStackTrace();
-                    certs = null; key = null;
-                }
-                catch (NoSuchAlgorithmException e)
-                {
+                    certs = null;
+                    key = null;
+                } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
-                    certs = null; key = null;
-                }
-                catch (KeyStoreException e)
-                {
+                    certs = null;
+                    key = null;
+                } catch (KeyStoreException e) {
                     e.printStackTrace();
-                    certs = null; key = null;
+                    certs = null;
+                    key = null;
                 }
-                if (certs == null  ||  key == null)
+                if (certs == null || key == null) {
                     throw new BuildException(Bundle.getMessage("ERR_NoCertificateOrAlgorithm", alias)); // NO I18N
-                for (int a = 0; a < certs.length; a ++)
-                {
+                }
+                for (int a = 0; a < certs.length; a++) {
                     final Certificate cert = certs[a];
-                    final String certAttr = MessageFormat.format(CERTIFICATE, new Object[] { "1", Integer.toString(a + 1) }); //NOI18N
+                    final String certAttr = MessageFormat.format(CERTIFICATE, new Object[]{"1", Integer.toString(a + 1)}); //NOI18N
                     log(Bundle.getMessage("MSG_AddingCertificateAttr", certAttr), Project.MSG_VERBOSE); // NO I18N
-                    try
-                    {
+                    try {
                         hash.put(certAttr, Base64.encode(cert.getEncoded()));
-                    }
-                    catch (CertificateEncodingException e)
-                    {
+                    } catch (CertificateEncodingException e) {
                         throw new BuildException(Bundle.getMessage("ERR_CertificateEncoding"), e); // NO I18N
                     }
                 }
-                
+
                 Signature signature;
-                try
-                {
+                try {
                     signature = Signature.getInstance(SHA1withRSA); // NO I18N
-                }
-                catch (NoSuchAlgorithmException e)
-                {
+                } catch (NoSuchAlgorithmException e) {
                     throw new BuildException(Bundle.getMessage("ERR_NoSuchAlgorithmException", SHA1withRSA), e); // NO I18N
                 }
-                try
-                {
-                    if (!(key instanceof PrivateKey))
+                try {
+                    if (!(key instanceof PrivateKey)) {
                         key = null;
+                    }
                     signature.initSign((PrivateKey) key);
-                }
-                catch (InvalidKeyException e)
-                {
+                } catch (InvalidKeyException e) {
                     key = null;
                 }
-                if (key == null)
+                if (key == null) {
                     throw new BuildException(Bundle.getMessage("ERR_InvalidPrivateKey", alias)); // NO I18N
+                }
                 final byte[] mem = new byte[16384];
                 final FileInputStream fis = new FileInputStream(jarFile);
-                try
-                {
-                    for (;;)
-                    {
+                try {
+                    for (;;) {
                         int i = fis.read(mem);
-                        if (i < 0)
+                        if (i < 0) {
                             break;
-                        if (i >= 0)
+                        }
+                        if (i >= 0) {
                             signature.update(mem, 0, i);
+                        }
                     }
                     final byte signed[] = signature.sign();
                     log(Bundle.getMessage("MSG_AddingSignAttr", JAR_RSA_SHA1), Project.MSG_INFO); // NO I18N
                     hash.put(JAR_RSA_SHA1, Base64.encode(signed));
-                }
-                catch (SignatureException e)
-                {
+                } catch (SignatureException e) {
                     throw new BuildException(e);
-                }
-                finally
-                {
+                } finally {
                     fis.close();
                 }
             }
-            
+
+            if (isLiblet) { //calculation of SHA1
+                MessageDigest md;
+                try {
+                    md = MessageDigest.getInstance(SHA1);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new BuildException(Bundle.getMessage("ERR_NoSuchAlgorithmException", SHA1), e); // NO I18N
+                }
+                final byte[] mem = new byte[16384];
+                final FileInputStream fis = new FileInputStream(jarFile);
+                try {
+                    for (;;) {
+                        int i = fis.read(mem);
+                        if (i < 0) {
+                            break;
+                        }
+                        if (i >= 0) {
+                            md.update(mem, 0, i);
+                        }
+                    }
+                    final byte signed[] = md.digest();
+                    log(Bundle.getMessage("MSG_AddingSignAttr", LIBLET_JAR_SHA1), Project.MSG_INFO); // NO I18N
+                    hash.put(LIBLET_JAR_SHA1, Base64.encode(signed));
+                } finally {
+                    fis.close();
+                }
+            }
+
+
             // saving
             log(Bundle.getMessage("MSG_Saving", jadTo.toString()), Project.MSG_VERBOSE); // NO I18N
             final PrintStream out = new PrintStream(new FileOutputStream(jadTo), false, encoding == null ? DEFAULT_ENCODING : encoding);
             final Object[] keys = hash.keySet().toArray();
-            if (keys != null)
-            {
+            if (keys != null) {
                 Arrays.sort(keys);
-                for (int a = 0; a < keys.length; a ++)
+                for (int a = 0; a < keys.length; a++) {
                     out.println(keys[a] + ": " + hash.get(keys[a])); //NOI18N
+                }
             }
             out.flush();
             out.close();
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             throw new BuildException(ioe);
         }
     }
-    
+
     /** Setter for property jadFile.
      * @param jadFile New value of property jadFile.
      *
      */
-    public void setJadFile(final File jadFile)
-    {
+    public void setJadFile(final File jadFile) {
         this.jadFile = jadFile;
     }
-    
+
     /** Setter for property jarFile.
      * @param jarFile New value of property jarFile.
      *
      */
-    public void setJarFile(final File jarFile)
-    {
+    public void setJarFile(final File jarFile) {
         this.jarFile = jarFile;
     }
-    
+
     /** Setter for property output.
      * @param output New value of property output.
      *
      */
-    public void setOutput(final File output)
-    {
+    public void setOutput(final File output) {
         this.output = output;
     }
-    
+
     /** Setter for property url.
      * @param url New value of property url.
      *
      */
-    public void setUrl(final String url)
-    {
+    public void setUrl(final String url) {
         this.url = url;
     }
-    
+
     /** Setter for property encoding.
      * @param encoding New value of property encoding.
      *
      */
-    public void setEncoding(final String encoding)
-    {
+    public void setEncoding(final String encoding) {
         this.encoding = encoding;
     }
-    
+
     /**
      * Setter for property sign.
      * @param sign New value of property sign.
      */
-    public void setSign(final boolean sign)
-    {
+    public void setSign(final boolean sign) {
         this.sign = sign;
     }
-    
+
     /**
      * Setter for property keyStore.
      * @param keyStore New value of property keyStore.
      */
-    public void setKeyStore(final java.io.File keyStore)
-    {
+    public void setKeyStore(final java.io.File keyStore) {
         this.keyStore = keyStore;
     }
-    
+
     /**
      * Setter for property keyStoreType.
      * @param keyStoreType New value of property keyStoreType.
      */
-    public void setKeyStoreType(final java.lang.String keyStoreType)
-    {
+    public void setKeyStoreType(final java.lang.String keyStoreType) {
         this.keyStoreType = keyStoreType.toUpperCase();
     }
-    
+
     /**
      * Setter for property keyStorePassword.
      * @param keyStorePassword New value of property keyStorePassword.
      */
-    public void setKeyStorePassword(final java.lang.String keyStorePassword)
-    {
+    public void setKeyStorePassword(final java.lang.String keyStorePassword) {
         this.keyStorePassword = keyStorePassword;
     }
-    
+
     /**
      * Setter for property alias.
      * @param alias New value of property alias.
      */
-    public void setAlias(final java.lang.String alias)
-    {
+    public void setAlias(final java.lang.String alias) {
         this.alias = alias;
     }
-    
+
     /**
      * Setter for property aliasPassword.
      * @param aliasPassword New value of property aliasPassword.
      */
-    public void setAliasPassword(final java.lang.String aliasPassword)
-    {
+    public void setAliasPassword(final java.lang.String aliasPassword) {
         this.aliasPassword = aliasPassword;
     }
-    
 }
