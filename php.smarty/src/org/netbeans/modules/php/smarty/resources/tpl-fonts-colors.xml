@@ -13,6 +13,7 @@
     <fontcolor name="variable_modifier" foreColor="C6CA34" />
     <fontcolor name="comment" default="comment" />
     <fontcolor name="string" default="string" />
+    <fontcolor name="operator" default="operator" />
 
     
 

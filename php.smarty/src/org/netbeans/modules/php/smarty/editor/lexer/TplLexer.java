@@ -108,6 +108,28 @@ public class TplLexer implements Lexer<TplTokenId> {
         VARIABLE_MODIFIERS.add("wordwrap"); // NOI18N
     }
 
+    static final Set<String> OPERATORS = new HashSet<String>();
+    static {
+        // See http://www.smarty.net/manual/en/language.function.if.php
+        OPERATORS.add("div"); // NOI18N
+        OPERATORS.add("by"); // NOI18N
+        OPERATORS.add("even"); // NOI18N
+        OPERATORS.add("is"); // NOI18N
+        OPERATORS.add("not"); // NOI18N
+        OPERATORS.add("odd"); // NOI18N
+        OPERATORS.add("eq"); // NOI18N
+        OPERATORS.add("ge"); // NOI18N
+        OPERATORS.add("gt"); // NOI18N
+        OPERATORS.add("gte"); // NOI18N
+        OPERATORS.add("le"); // NOI18N
+        OPERATORS.add("lt"); // NOI18N
+        OPERATORS.add("lte"); // NOI18N
+        OPERATORS.add("mod"); // NOI18N
+        OPERATORS.add("ne"); // NOI18N
+        OPERATORS.add("neq"); // NOI18N
+        OPERATORS.add("not"); // NOI18N
+    }
+
     /**
      * Create new TplLexer.
      * @param info from which place it should start again
@@ -140,8 +162,9 @@ public class TplLexer implements Lexer<TplTokenId> {
     }
 
     private final boolean isEndOfWord(int character) {
-        if (Character.isWhitespace(character) || character == '-' ||
-                character == '.' || character == ':' || character == '=') {
+        if (Character.isWhitespace(character) || character == '-' || character == '|' ||
+                character == '.' || character == ':' || character == '=' ||
+                character == '<' || character == '!' || character == '>') {
             return true;
         }
         return false;
@@ -291,11 +314,20 @@ public class TplLexer implements Lexer<TplTokenId> {
             return TplTokenId.VARIABLE_MODIFIER;
         }
 
+        // check operators
+        if (isVariableOperator(keyword)) {
+            return TplTokenId.OPERATOR;
+        }
+
         return TplTokenId.TEXT;
     }
 
     private boolean  isVariableModifier(String keyword) {
         return VARIABLE_MODIFIERS.contains(keyword.toString().toLowerCase(Locale.ENGLISH));
+    }
+
+    private boolean isVariableOperator(String keyword) {
+        return OPERATORS.contains(keyword.toString().toLowerCase(Locale.ENGLISH));
     }
 
 }

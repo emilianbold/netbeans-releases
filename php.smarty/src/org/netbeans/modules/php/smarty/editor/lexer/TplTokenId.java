@@ -72,6 +72,7 @@ public enum TplTokenId implements TokenId {
     WHITESPACE(null, "whitespace"),
     COMMENT(null, "comment"),
     STRING(null, "string"),
+    OPERATOR(null, "operator"),
 
 
     PHP_TAG(null, "php_tag"),
