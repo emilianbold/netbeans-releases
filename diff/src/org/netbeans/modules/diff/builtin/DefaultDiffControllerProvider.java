@@ -58,4 +58,9 @@ public class DefaultDiffControllerProvider extends DiffControllerProvider {
     public DiffControllerImpl createDiffController(StreamSource base, StreamSource modified) throws IOException {
         return new EditableDiffView(base, modified);
     }
+
+    @Override
+    public DiffControllerImpl createEnhancedDiffController(StreamSource base, StreamSource modified) throws IOException {
+        return new EditableDiffView(base, modified, true);
+    }
 }
