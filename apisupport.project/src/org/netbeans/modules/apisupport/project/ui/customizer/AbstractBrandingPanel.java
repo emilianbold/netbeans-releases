@@ -40,6 +40,8 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
@@ -47,6 +49,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -147,7 +150,9 @@ abstract class AbstractBrandingPanel extends TopComponent implements MultiViewEl
 
     @Override
     public CloseOperationState canCloseElement() {
-        return CloseOperationState.STATE_OK;
+        if( null == editor || !editor.isModified() )
+            return CloseOperationState.STATE_OK;
+        return MultiViewFactory.createUnsafeCloseState(null, editor.getSaveAction(), null);
     }
 
     protected final BasicBrandingModel getBranding() {

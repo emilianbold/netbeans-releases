@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.apisupport.project.api;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
 
@@ -55,13 +57,21 @@ public class BrandingUtils {
     }
 
     /**
-     * Opens branding editor for given project.
+     * Opens branding editor for given project. Must be invoked from EDT.
      * @param displayName Editor's display name.
      * @param p Project to be branded.
      * @param brandingPath Path relative to project's directory where branded are stored in.
      */
     public static void openBrandingEditor( String displayName, Project p, String brandingPath ) {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            throw new IllegalStateException("This method must be invoked from EDT."); //NOI18N
+        }
+        boolean contextAvailable = true;
+        NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
+        if( null != moduleProvider && !moduleProvider.prepareContext() ) {
+            contextAvailable = false;
+        }
         BasicBrandingModel model = new BasicBrandingModel(p, brandingPath);
-        BrandingEditor.open( displayName, p, model );
+        BrandingEditor.open( displayName, p, model, contextAvailable );
     }
 }
