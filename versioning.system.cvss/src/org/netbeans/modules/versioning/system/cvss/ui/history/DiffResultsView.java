@@ -357,7 +357,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                         if (cancelled) {
                             return;
                         }
-                        DiffController view = DiffController.create(s1, s2);
+                        DiffController view = DiffController.createEnhanced(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             if (currentDiff != null) {
                                 currentDiff.removePropertyChangeListener(DiffResultsView.this);

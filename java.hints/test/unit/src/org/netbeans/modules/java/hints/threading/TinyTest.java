@@ -167,11 +167,11 @@ public class TinyTest extends TestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "     private void n(Thread t) {\n" +
-                            "         t.yield();\n" +
+                            "     private void n() {\n" +
+                            "         Thread.yield();\n" +
                             "     }\n" +
                             "}\n",
-                            "3:11-3:16:verifier:ERR_ThreadYield");
+                            "3:16-3:21:verifier:ERR_ThreadYield");
     }
 
     public void testThreadSuspend() throws Exception {
