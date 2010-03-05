@@ -41,14 +41,18 @@
 
 package org.netbeans.modules.versioning.util.projects;
 
+import org.netbeans.modules.versioning.util.projects.ProjectOpener.ProjectOpenerType;
+
 /**
  *
  * @author  Petr Kuzel
  */
-public final class CheckoutCompletedPanel extends javax.swing.JPanel {
+final class CheckoutCompletedPanel extends javax.swing.JPanel {
+    private final ProjectOpenerType type;
 
     /** Creates new form CheckoutCompletedPanel */
-    public CheckoutCompletedPanel() {
+    CheckoutCompletedPanel(ProjectOpener.ProjectOpenerType type) {
+        this.type = type;
         initComponents();
     }
 
@@ -63,7 +67,7 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3001")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, type.getMessage("BK3001"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -84,8 +88,7 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(openButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3003")); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/util/projects/Bundle"); // NOI18N
-        openButton.setToolTipText(bundle.getString("TT_OpenProject")); // NOI18N
+        openButton.setToolTipText(type.getMessage("TT_OpenProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -93,12 +96,13 @@ public final class CheckoutCompletedPanel extends javax.swing.JPanel {
         add(openButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(createButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3004")); // NOI18N
-        createButton.setToolTipText(bundle.getString("TT_CreateProject")); // NOI18N
+        createButton.setToolTipText(type.getMessage("TT_CreateProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         add(createButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3005")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/util/projects/Bundle"); // NOI18N
         closeButton.setToolTipText(bundle.getString("TT_Close")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

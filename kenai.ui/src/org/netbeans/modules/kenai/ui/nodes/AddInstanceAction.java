@@ -129,7 +129,11 @@ public class AddInstanceAction extends AbstractAction {
                     dialog.setVisible(false);
                     dialog.dispose();
                     if (ae != null && ae.getSource() instanceof JComboBox) {
-                        ((JComboBox) ae.getSource()).setSelectedIndex(0);
+                        JComboBox combo = (JComboBox) ae.getSource();
+                        if (combo.getModel().getElementAt(0) instanceof Kenai)
+                            combo.setSelectedIndex(0);
+                        else
+                            combo.setSelectedItem(null);
                     }
                 }
             }

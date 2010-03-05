@@ -186,6 +186,9 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         if (name != null) {
             deps.add(name);
         }
+        if ("org.openide.modules".equals(headers.get("Bundle-SymbolicName"))) {
+            CoreBridge.defineOsTokens(deps);
+        }
         return deps;
     }
 
@@ -200,12 +203,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
         }
         // XXX also check for BUNDLE_SYMBOLICNAME_ATTRIBUTE in IMPORT_PACKAGE (though not currently used by MakeOSGi)
-        for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
-            // XXX at least ModuleFormat1/2 should probably be filtered out by MakeOSGi
-            if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {
-                deps.add(tok);
-            }
-        }
+        deps.addAll(splitTokens((String) headers.get("OpenIDE-Module-Requires")));
         return deps;
     }
 

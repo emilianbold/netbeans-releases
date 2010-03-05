@@ -51,6 +51,8 @@ import org.osgi.framework.launch.Framework;
 
 class OSGiLifecycleManager extends LifecycleManager {
 
+    private static final Logger LOG = Logger.getLogger(OSGiLifecycleManager.class.getName());
+
     private final BundleContext context;
     private final AtomicBoolean exited = new AtomicBoolean();
 
@@ -70,12 +72,24 @@ class OSGiLifecycleManager extends LifecycleManager {
         if (exited.getAndSet(true)) {
             return; // cannot exit twice
         }
+        try {
+            Class<?> windowSystemClazz = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.core.WindowSystem");
+            Object windowSystem = Lookup.getDefault().lookup(windowSystemClazz);
+            if (windowSystem != null) {
+                windowSystemClazz.getMethod("hide").invoke(windowSystem);
+                windowSystemClazz.getMethod("save").invoke(windowSystem);
+            }
+        } catch (ClassNotFoundException x) {
+            // Fine, just not using window system.
+        } catch (Exception x) {
+            LOG.log(Level.WARNING, "Could not shut down window system", x);
+        }
         Bundle system = context.getBundle(0);
         if (system instanceof Framework) {
             try {
                 ((Framework) system).stop();
             } catch (BundleException x) {
-                Logger.getLogger(OSGiLifecycleManager.class.getName()).log(Level.WARNING, "Could not stop OSGi framework", x);
+                LOG.log(Level.WARNING, "Could not stop OSGi framework", x);
             }
         }
     }
