@@ -646,14 +646,13 @@ public class MakeOSGi extends Task {
                 NodeList nl = doc.getElementsByTagName("file");
                 for (int i = 0; i < nl.getLength(); i++) {
                     String path = ((Element) nl.item(i)).getAttribute("name");
-                    if (path.matches("config/(Modules|ModuleAutoDeps)/.+[.]xml")) {
+                    if (path.matches("config/(Modules|ModuleAutoDeps)/.+[.]xml|lib/nbexec.*")) {
                         continue;
                     }
                     File f = new File(cluster, path);
                     if (f.equals(module)) {
                         continue;
                     }
-                    // XXX exclude lib/nbexec{,.dll,.exe}, core/*felix*.jar
                     if (f.isFile()) {
                         result.put(path, f);
                     } else {
