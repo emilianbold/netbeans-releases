@@ -53,6 +53,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,41 +68,30 @@ import org.openide.util.NbBundle;
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c" // NOI18N
+        mimeType = MIMENames.C_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-c++" // NOI18N
+        mimeType = MIMENames.CPLUSPLUS_MIME_TYPE
     ),
     @EditorActionRegistration(
         name = "goto-declaration", // NOI18N
         menuPath = "GoTo", // NOI18N
         menuPosition = 900,
         menuText = "#goto-identifier-declaration", // NOI18N
-        mimeType = "text/x-h" // NOI18N
+        mimeType = MIMENames.HEADER_MIME_TYPE
     )
 })
 public class CCGoToDeclarationAction extends BaseAction {
 
     static final long serialVersionUID = 1L;
-    private static CCGoToDeclarationAction instance;
 
     public CCGoToDeclarationAction() {
         super();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public static synchronized CCGoToDeclarationAction getInstance() {
-        if (instance == null) {
-            instance = new CCGoToDeclarationAction();
-            String trimmedName = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-definition-declaration"); //NOI18N
-            instance.putValue(org.netbeans.editor.ext.ExtKit.TRIMMED_TEXT, trimmedName);
-            instance.putValue(BaseAction.POPUP_MENU_TEXT, trimmedName);
-        }
-        return instance;
     }
 
     public String getName() {
