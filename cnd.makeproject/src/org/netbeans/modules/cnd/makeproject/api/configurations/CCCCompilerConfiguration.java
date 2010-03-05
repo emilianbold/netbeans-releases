@@ -97,9 +97,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
         includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
-        inheritIncludes = new BooleanConfiguration(null, true, null, null);
+        inheritIncludes = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
-        inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
+        inheritPreprocessor = new BooleanConfiguration(true);
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {

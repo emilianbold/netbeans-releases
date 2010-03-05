@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,70 +31,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-public class BooleanConfiguration {
+/**
+ *
+ * @author Alexander Simon
+ */
+public class InheritedBooleanConfiguration extends BooleanConfiguration {
 
-    private boolean def;
-    private boolean value;
-    private boolean modified;
-    private boolean dirty = false;
+    private InheritedBooleanConfiguration master;
 
-    public BooleanConfiguration(boolean def) {
-        this.def = def;
-        reset();
+    public InheritedBooleanConfiguration(InheritedBooleanConfiguration master, boolean def) {
+        super(def);
+        this.master = master;
     }
 
-    public void setValue(boolean b) {
-        this.value = b;
-        setModified(b != getDefault());
+    protected BooleanConfiguration getMaster() {
+        return master;
     }
 
-    public boolean getValue() {
-        return value;
-    }
-
-    public final void setModified(boolean b) {
-        this.modified = b;
-    }
-
-    public boolean getModified() {
-        return modified;
-    }
-
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
-
-    public boolean getDirty() {
-        return dirty;
-    }
-
-    public boolean getDefault() {
-        return def;
-    }
-
-    public void setDefault(boolean b) {
-        def = b;
-        setModified(value != def);
-    }
-
-    public final void reset() {
-        value = getDefault();
-        setModified(false);
-    }
-
-    // Clone and Assign
-    public void assign(BooleanConfiguration conf) {
-        dirty |= conf.getValue() ^ getValue();
-        setValue(conf.getValue());
-        setModified(conf.getModified());
+    public void setMaster(InheritedBooleanConfiguration master) {
+        this.master = master;
     }
 
     @Override
-    public BooleanConfiguration clone() {
-        BooleanConfiguration clone = new BooleanConfiguration(def);
+    public void setValue(boolean b) {
+        super.setValue(b);
+        if (master != null) {
+            setModified(true);
+        }
+    }
+
+    @Override
+    public boolean getValue() {
+        if (master != null && !getModified()) {
+            return master.getValue();
+        } else {
+            return super.getValue();
+        }
+    }
+
+    // Clone and Assign
+    public void assign(InheritedBooleanConfiguration conf) {
+        super.assign(conf);
+    }
+
+    @Override
+    public InheritedBooleanConfiguration clone() {
+        InheritedBooleanConfiguration clone = new InheritedBooleanConfiguration(master, super.getDefault());
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;
