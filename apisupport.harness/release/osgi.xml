@@ -92,6 +92,8 @@ made subject to such option by the copyright holder.
         <property name="felix-sys-prop.felix.log.level" value="3"/> <!-- config.properties defaults to 4 but it is too noisy -->
         <property name="felix-sys-prop.org.osgi.service.http.port" value="8080"/> <!-- from config.properties -->
         <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/> <!-- from config.properties -->
+        <property name="osgi.run.cp.extra" value=""/>
+        <property name="osgi.run.args" value="-ea"/>
         <java fork="true" classname="org.apache.felix.main.Main">
             <classpath>
                 <pathfileset>
@@ -101,8 +103,9 @@ made subject to such option by the copyright holder.
                         <filename name="modules/ext/felix*.jar"/>
                     </or>
                 </pathfileset>
-                <fileset dir="${java.home}/../lib" includes="*.jar"/><!-- tools.jar etc.; XXX should this be done conditionally? -->
+                <pathelement path="${osgi.run.cp.extra}"/>
             </classpath>
+            <jvmarg line="${osgi.run.args}"/>
             <arg value="-b"/>
             <arg file="${osgi.dest.dir}"/>
             <arg file="${osgi.cache.dir}"/>
@@ -110,7 +113,6 @@ made subject to such option by the copyright holder.
                 <propertyref prefix="felix-sys-prop."/>
                 <mapper type="glob" from="felix-sys-prop.*" to="*"/>
             </syspropertyset>
-            <jvmarg value="-ea"/>
         </java>
     </target>
 

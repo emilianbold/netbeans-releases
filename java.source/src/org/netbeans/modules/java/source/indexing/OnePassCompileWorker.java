@@ -220,7 +220,6 @@ final class OnePassCompileWorker extends CompileWorker {
                             continue;
                         }
                     }
-                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
@@ -230,6 +229,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 } finally {
                     fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
                 }
+                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();

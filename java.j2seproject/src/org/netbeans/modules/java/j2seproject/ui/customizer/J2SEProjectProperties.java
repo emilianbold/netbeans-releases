@@ -101,6 +101,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -232,6 +233,7 @@ public class J2SEProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
+    DefaultTableModel PROCESSOR_OPTIONS_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
     // CustomizerCompileTest
@@ -364,6 +366,31 @@ public class J2SEProjectProperties {
             annotationProcessors = ""; //NOI18N
         ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
                 (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
+        String processorOptions = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+        if (processorOptions == null)
+            processorOptions = ""; //NOI18N
+        PROCESSOR_OPTIONS_MODEL = new DefaultTableModel(new String[][]{}, new String[] {
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Processor_Options_Key"), //NOI18N
+            NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Processor_Options_Value") //NOI18N
+        }) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        for (String option : processorOptions.split("\\s")) { //NOI18N
+            if (option.startsWith("-A") && option.length() > 2) { //NOI18N
+                int sepIndex = option.indexOf('='); //NOI18N
+                String key = null;
+                String value = null;
+                if (sepIndex == -1)
+                    key = option.substring(2);
+                else if (sepIndex >= 3) {
+                    key = option.substring(2, sepIndex);
+                    value = (sepIndex < option.length() - 1) ? option.substring(sepIndex + 1) : null;
+                }
+                PROCESSOR_OPTIONS_MODEL.addRow(new String[] {key, value});
+            }
+        }
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
         // CustomizerJar
@@ -572,6 +599,24 @@ public class J2SEProjectProperties {
         } else {
             projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
             projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
+
+        sb = new StringBuilder();
+        for (int i = 0; i < PROCESSOR_OPTIONS_MODEL.getRowCount(); i++) {
+            String key = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 0);
+            String value = (String) PROCESSOR_OPTIONS_MODEL.getValueAt(i, 1);
+            sb.append("-A").append(key); //NOI18N
+            if (value != null && value.length() > 0) {
+                sb.append('=').append(value); //NOI18N
+            }
+            if (i < PROCESSOR_OPTIONS_MODEL.getRowCount() - 1) {
+                sb.append(' '); //NOI18N
+            }
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, sb.toString());
+        } else {
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
         }
 
         // Store the property changes into the project

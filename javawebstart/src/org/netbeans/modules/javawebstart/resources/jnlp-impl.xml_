@@ -56,21 +56,57 @@ made subject to such option by the copyright holder.
     <target name="-init-platform" unless="platform.home">
         <property name="platform.home" value="${java.home}"/>
     </target>
-    
+
     <!-- Main target -->
-    
-    <target name="jnlp" depends="-init-filename,-test-jnlp-enabled,-jar-applet" if="is.jnlp.enabled">
+
+    <target name="jnlp" depends="-init-filename,-test-jnlp-enabled,-do-jar-jnlp" if="is.jnlp.enabled">
         <makeurl property="jnlp.local.codebase.url" file="${basedir}/dist" validate="false"/>
-        <delete file="dist/lib/javaws.jar" failonerror="false"/>
         <antcall target="generate-jnlp"/>
         <antcall target="generate-html-preview"/>
     </target>
 
-    <!-- Applet archiving -->
+    <!-- JNLP archiving -->
 
-    <target name="-test-is-applet" depends="-test-jnlp-enabled" if="is.jnlp.enabled">
+    <target name="-init-macrodef-jnlp-copylibs">
+        <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
+            <element name="customize" optional="true"/>
+            <sequential>
+                <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${run.classpath}"/>
+                    <map from="${build.classes.dir.resolved}" to=""/>
+                </pathconvert>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${tmp.manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+                    <fileset dir="${build.classes.dir}"/>
+                    <manifest>
+                        <customize/>
+                    </manifest>
+                </copylibs>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <target name="-init-macrodef-extend-manifest">
+        <macrodef name="extend-manifest" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
+            <element name="customize"/>
+            <sequential>
+                <manifest file="${tmp.manifest.file}" mode="update">
+                    <customize/>
+                </manifest>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <target name="-test-jnlp-type" depends="-test-jnlp-enabled" if="is.jnlp.enabled">
         <condition property="is.applet">
             <equals arg1="${jnlp.descriptor}" arg2="applet" trim="true"/>
+        </condition>
+        <condition property="is.application">
+            <equals arg1="${jnlp.descriptor}" arg2="application" trim="true"/>
+        </condition>
+        <condition property="is.component">
+            <equals arg1="${jnlp.descriptor}" arg2="component" trim="true"/>
         </condition>
         <condition property="is.applet+mkdist.available">
             <and>
@@ -78,32 +114,73 @@ made subject to such option by the copyright holder.
                 <istrue value="${is.applet}"/>
             </and>
         </condition>
-        <condition property="is.applet+mkdist.available-manifest">
+        <condition property="is.application+mkdist.available">
             <and>
-                <istrue value="${is.applet+mkdist.available}"/>
-                <not>
-                    <isset property="${manifest.file}"/>
-                </not>
+                <isset property="libs.CopyLibs.classpath"/>
+                <istrue value="${is.application}"/>
+            </and>
+        </condition>
+        <condition property="is.component+mkdist.available">
+            <and>
+                <isset property="libs.CopyLibs.classpath"/>
+                <istrue value="${is.component}"/>
             </and>
         </condition>
     </target>
 
-    <target name="-create-empty-manifest" depends="-test-is-applet" if="is.applet+mkdist.available-manifest">
-        <property name="manifest.file" value="${build.dir}/manifest.mf"/>
-        <touch file="${manifest.file}"/>
+    <target name="-create-tmp-manifest" unless="manifest.file">
+        <property name="tmp.manifest.file" value="${build.dir}/manifest.mf"/>
+        <delete file="${tmp.manifest.file}" failonerror="false"/>
+        <touch file="${tmp.manifest.file}"/>
     </target>
 
-    <target name="-jar-applet" depends="-test-is-applet,-create-empty-manifest" if="is.applet+mkdist.available">
-        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
-        <pathconvert property="run.classpath.without.build.classes.dir">
-            <path path="${run.classpath}"/>
-            <map from="${build.classes.dir.resolved}" to=""/>
-        </pathconvert>
-        <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
-        <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
-            <fileset dir="${build.classes.dir}"/>
-        </copylibs>
+    <target name="-copy-tmp-manifest" if="manifest.file">
+        <property name="tmp.manifest.file" value="${build.dir}/manifest.mf"/>
+        <copy file="${manifest.file}" tofile="${build.dir}/manifest.mf"/>
     </target>
+
+    <target name="-set-mixed-code-properties" depends="-check-signing-possible" if="jnlp.signed.true+signjars.task.available">
+        <property name="jnlp.mixed.code" value=""/>
+        <condition property="mixed.code.trusted.only">
+            <equals arg1="trusted_only" arg2="${jnlp.mixed.code}"/>
+        </condition>
+        <condition property="mixed.code.trusted.library">
+            <equals arg1="trusted_library" arg2="${jnlp.mixed.code}"/>
+        </condition>
+    </target>
+
+    <target name="-add-trusted-only-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.only">
+        <jnlp:extend-manifest>
+            <customize>
+                <attribute name="Trusted-Only" value="true"/>
+            </customize>
+        </jnlp:extend-manifest>
+    </target>
+
+    <target name="-add-trusted-library-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.library">
+        <jnlp:extend-manifest>
+            <customize>
+                <attribute name="Trusted-Library" value="true"/>
+            </customize>
+        </jnlp:extend-manifest>
+    </target>
+    <target name="-do-jar-applet" depends="-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.applet+mkdist.available">
+        <jnlp:copylibs/>
+    </target>
+    <target name="-do-jar-jnlp-application" depends="-init-filename,-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.application+mkdist.available">
+        <jnlp:copylibs>
+            <customize>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </customize>
+        </jnlp:copylibs>
+        <echo>To run this application from the command line without Ant, try:</echo>
+        <property location="${jnlp.dest.dir}/${jnlp.file}" name="jnlp.file.resolved"/>
+        <echo>javaws "${jnlp.file.resolved}"</echo>
+    </target>
+    <target name="-do-jar-jnlp-component" depends="-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.component+mkdist.available">
+        <jnlp:copylibs/>
+    </target>
+    <target name="-do-jar-jnlp" depends="-create-tmp-manifest,-copy-tmp-manifest,-add-trusted-only-attribute,-add-trusted-library-attribute,-do-jar-applet,-do-jar-jnlp-application,-do-jar-jnlp-component"/>
 
     <!-- Init jnlp filename -->
     
@@ -253,56 +330,7 @@ made subject to such option by the copyright holder.
         <echo message="Task required to sign JAR file is missing, probably the library 'JWS Ant Tasks' is missing either from shared folder or from IDE installation. JAR files will not be signed."/>
     </target>
 
-    <target name="-set-mixed-code-properties" depends="-check-signing-possible" if="jnlp.signed.true+signjars.task.available">
-        <property name="jnlp.mixed.code" value=""/>
-        <condition property="mixed.code.trusted.only">
-            <equals arg1="trusted_only" arg2="${jnlp.mixed.code}"/>
-        </condition>
-        <condition property="mixed.code.trusted.library">
-            <equals arg1="trusted_library" arg2="${jnlp.mixed.code}"/>
-        </condition>
-    </target>
-
-    <target name="-init-macrodef-extend-manifest">
-        <macrodef name="extend-manifest" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
-            <element name="customize"/>
-            <sequential>
-                <unzip src="${dist.jar}" dest="${build.dir}">
-                    <patternset>
-                        <include name="META-INF/MANIFEST.MF"/>
-                    </patternset>
-                </unzip>
-                <jar jarfile="${dist.jar}" update="true" manifest="${build.dir}/META-INF/MANIFEST.MF">
-                    <customize/>
-                </jar>
-            </sequential>
-        </macrodef>
-    </target>
-
-    <target name="-add-trusted-only-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.only">
-        <jnlp:extend-manifest>
-            <customize>
-                <manifest>
-                    <attribute name="Trusted-Only" value="true"/>
-                </manifest>
-            </customize>
-        </jnlp:extend-manifest>
-    </target>
-
-    <target name="-add-trusted-library-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.library">
-        <jnlp:extend-manifest>
-            <customize>
-                <manifest>
-                    <attribute name="Trusted-Library" value="true"/>
-                </manifest>
-            </customize>
-        </jnlp:extend-manifest>
-    </target>
-
-    <target name="-add-mixed-code-attributes" depends="-add-trusted-only-attribute,-add-trusted-library-attribute">
-    </target>
-
-    <target name="sign-jars" depends="-jnlp-init-keystore,-check-signing-possible,-add-mixed-code-attributes" if="jnlp.signed.true+signjars.task.available">
+    <target name="sign-jars" depends="-jnlp-init-keystore,-check-signing-possible" if="jnlp.signed.true+signjars.task.available">
         <taskdef name="sign-jars" classname="org.netbeans.modules.javawebstart.anttasks.SignJarsTask" 
             classpath="${libs.JWSAntTasks.classpath}"/>
         <sign-jars keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.storepass}" 
