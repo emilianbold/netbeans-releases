@@ -201,7 +201,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         showIssuesOnKenaiGUI();
         itSeparator.setVisible(false);
         createChatRoom.setVisible(false);
-        if (!panel.getKenai().getUrl().getHost().equals(("testkenai.com"))) { // NOI18N
+        if (panel.getKenai()!=null && !panel.getKenai().getUrl().getHost().equals(("testkenai.com"))) { // NOI18N
             createChatRoom.setSelected(false);
         }
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
@@ -223,7 +223,9 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
             public void run() {
                 Collection<KenaiService> services = null;
                 try {
-                    services = panel.getKenai().getServices();
+                    if (panel.getKenai()!=null) {
+                        services = panel.getKenai().getServices();
+                    }
                 } catch (KenaiException ex) {
                     // OK, no services
                     // XXX or show message that "Cannot connect to Kenai.com server" ???

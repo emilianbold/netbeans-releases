@@ -163,7 +163,7 @@ public final class UIUtils {
                 return showKenaiLogin(k);
             }
         }
-        return showKenaiLogin(KenaiManager.getDefault().getKenai("https://kenai.com"));
+        return showKenaiLogin(Utilities.getPreferredKenai());
     }
     /**
      * Loads password from the keyring. For settings compatibility,
