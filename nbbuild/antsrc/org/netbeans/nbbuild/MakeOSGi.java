@@ -501,7 +501,13 @@ public class MakeOSGi extends Task {
             osgi.putValue("DynamicImport-Package", dynamicImports.toString());
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
-        // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+        String javaDeps = netbeans.getValue("OpenIDE-Module-Java-Dependencies");
+        if (javaDeps != null) {
+            Matcher m = Pattern.compile("Java > (1.[6-9])").matcher(javaDeps); // 1.5 is not supported anyway
+            if (m.matches()) {
+                osgi.putValue("Bundle-RequiredExecutionEnvironment", "JavaSE-" + m.group(1));
+            }
+        }
         for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
