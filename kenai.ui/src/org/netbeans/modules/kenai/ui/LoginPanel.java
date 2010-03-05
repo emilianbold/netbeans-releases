@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -71,7 +72,11 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private URL getForgetPasswordUrl() {
         try {
+            if (kenai!=null) {
             return new URL(kenai.getUrl().toString() + "/people/forgot_password"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/forgot_password"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -80,7 +85,11 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private URL getRegisterUrl() {
         try {
+            if (kenai!=null) {
             return new URL(kenai.getUrl().toString() + "/people/signup"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/signup"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -94,7 +103,6 @@ public class LoginPanel extends javax.swing.JPanel {
         this.kenai = kenai;
         this.credentials = credentials;
         initComponents();
-        kenaiCombo.setSelectedItem(kenai);
 //        lblKenaiLogoCenter.setBorder(null);
 //        lblKenaiLogoLeft.setBorder(null);
 //        lblKenaiLogoRight.setBorder(null);
@@ -106,9 +114,14 @@ public class LoginPanel extends javax.swing.JPanel {
 //            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
 //            lblKenaiLogoLeft.setIcon(null);
 //        }
+        kenaiCombo.setSelectedItem(kenai);
+        if (kenai!=null) {
         setUsername(credentials.getUsername(kenai));
         setPassword(credentials.getPassword(kenai));
         setChkOnline();
+        } else {
+            setChildrenEnabled(false);
+        }
     }
 
     public boolean isStorePassword() {
@@ -144,6 +157,14 @@ public class LoginPanel extends javax.swing.JPanel {
         setLoginButtonEnabled(false);
     }
 
+    private void setChildrenEnabled(boolean enabled) {
+        for (Component c:getComponents()) {
+            if (c!=kenaiCombo && c!=kenaiLabel) {
+                c.setEnabled(enabled);
+            }
+        }
+    }
+
     public void clearStatus() {
         error.setVisible(false);
         progressBar.setVisible(false);
@@ -157,6 +178,8 @@ public class LoginPanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                if (kenai==null)
+                    return;
                 boolean is = Utilities.isChatSupported(kenai);
                 if (is) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -347,7 +370,8 @@ public class LoginPanel extends javax.swing.JPanel {
             setChkOnline();
             setUsername(credentials.getUsername(kenai));
             setPassword(credentials.getPassword(kenai));
-        } else {
+            setChildrenEnabled(true);
+        } else if (kenaiCombo.getSelectedItem() instanceof String) {
             final ActionEvent e = evt;
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -355,6 +379,8 @@ public class LoginPanel extends javax.swing.JPanel {
                 public void run() {
                     new AddInstanceAction().actionPerformed(e);
                     LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    if (LoginPanel.this.kenai==null)
+                        return;
                     forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
                     signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
@@ -362,9 +388,10 @@ public class LoginPanel extends javax.swing.JPanel {
                     signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
 
                     setChkOnline();
+                    setChildrenEnabled(true);
                 }
             });
-        }
+        } 
     }//GEN-LAST:event_kenaiComboActionPerformed
 
 

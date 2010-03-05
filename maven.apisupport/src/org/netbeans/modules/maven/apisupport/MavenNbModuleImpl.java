@@ -66,7 +66,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -74,14 +73,12 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -301,6 +298,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         File platformDir = findPlatformFolder();
         if( null == platformDir ) {
             //ask to find nb app module
+            return SelectPlatformAppModulePanel.findAppModule( project );
         }
         if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
             //platform needs to be built
@@ -434,8 +432,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
         FileObject appModuleDir = FileUtilities.convertStringToFileObject(strPathToApp);
         if( appModuleDir == null ) {
-            Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: " + strPathToApp); //NOI18N
-            return null;
+            //try relative path
+            File dir = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), strPathToApp);
+            appModuleDir = FileUtil.toFileObject(dir);
+            if( null == appModuleDir ) {
+                Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: " + strPathToApp); //NOI18N
+                return null;
+            }
         }
         try {
             Project appProject = ProjectManager.getDefault().findProject(appModuleDir);
