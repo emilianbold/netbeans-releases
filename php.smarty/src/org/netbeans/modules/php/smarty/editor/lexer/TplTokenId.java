@@ -66,11 +66,16 @@ public enum TplTokenId implements TokenId {
     TEXT(null, "text"),
     ERROR(null, "error"),
     PHP_VARIABLE(null, "php_variable"),
+    CONFIG_VARIABLE(null, "config_variable"),
     PIPE("|", "pipe"),
+    VARIABLE_MODIFIER(null, "variable_modifier"),
+    WHITESPACE(null, "whitespace"),
+    COMMENT(null, "comment"),
+    STRING(null, "string"),
 
 
     PHP_TAG(null, "php_tag"),
-    IDENTIFIER(null, "identifier"),
+    
     TEMPLATE_VAR(null, "template_var"),
     DB_LOOP("db_loop", "keyword"),
     LOOP("loop", "keyword"),
@@ -83,8 +88,8 @@ public enum TplTokenId implements TokenId {
     ITERATOR_END("/iterator", "keyword"),
     IF_END("/if", "keyword"),
     WHILE_END("/while", "keyword"),
-    INCLUDE("include", "include"),
-    WHITESPACE(null, "whitespace");
+    INCLUDE("include", "include");
+    
 
     private final String fixedText;
 

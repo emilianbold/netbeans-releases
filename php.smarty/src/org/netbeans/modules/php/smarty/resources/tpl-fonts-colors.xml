@@ -8,14 +8,18 @@
         <font style="bold" />
     </fontcolor>
     <fontcolor name="php_variable" foreColor="6D3206"/>
+    <fontcolor name="config_variable" foreColor="26309E"/>
     <fontcolor name="error" default="error"/>
+    <fontcolor name="variable_modifier" foreColor="C6CA34" />
+    <fontcolor name="comment" default="comment" />
+    <fontcolor name="string" default="string" />
 
+    
 
     <fontcolor name="template_var" foreColor="844D18" >
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="string" foreColor="FF9C4A" />
-    <fontcolor name="literal" default="keyword" />
+
     <fontcolor name="include_string" default="include">
         <font style="bold"/>
     </fontcolor>
