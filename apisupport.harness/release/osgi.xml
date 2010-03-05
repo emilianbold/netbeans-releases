@@ -94,6 +94,7 @@ made subject to such option by the copyright holder.
         <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/> <!-- from config.properties -->
         <property name="osgi.run.cp.extra" value=""/>
         <property name="osgi.run.args" value="-ea"/>
+        <property name="osgi.run.args.extra" value=""/>
         <java fork="true" classname="org.apache.felix.main.Main">
             <classpath>
                 <pathfileset>
@@ -106,6 +107,7 @@ made subject to such option by the copyright holder.
                 <pathelement path="${osgi.run.cp.extra}"/>
             </classpath>
             <jvmarg line="${osgi.run.args}"/>
+            <jvmarg line="${osgi.run.args.extra}"/>
             <arg value="-b"/>
             <arg file="${osgi.dest.dir}"/>
             <arg file="${osgi.cache.dir}"/>
@@ -115,5 +117,52 @@ made subject to such option by the copyright holder.
             </syspropertyset>
         </java>
     </target>
+
+    <target name="debug">
+        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
+            <classpath>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="**/*.jar"/>
+                </pathfileset>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </nbjpdastart>
+        <property name="debug.pause" value="n"/>
+        <property name="debug.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
+        <antcall target="run">
+            <param name="osgi.run.args.extra" value="${debug.args}"/>
+            <reference refid="cluster.path.id"/>
+        </antcall>
+    </target>
+
+    <!-- Does not work due to class loading issues:
+    <target name="profile">
+        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <nbprofiledirect jvmargsprefix="" jvmargsproperty="profiler.jvmargs">
+            <classpath>
+                <pathfileset>
+                    <path refid="cluster.path.id"/>
+                    <filename name="**/*.jar"/>
+                </pathfileset>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+            <rootspath>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </rootspath>
+        </nbprofiledirect>
+        <antcall target="run">
+            <param name="osgi.run.args.extra" value='"${profiler.jvmargs}"'/>
+            <reference refid="cluster.path.id"/>
+        </antcall>
+    </target>
+    -->
 
 </project>

@@ -154,6 +154,8 @@ public final class SuiteActions implements ActionProvider {
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null));
             m.add(ProjectSensitiveActions.projectCommandAction("run-osgi",
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("debug-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null));
             return m;
         }
     }
@@ -178,6 +180,7 @@ public final class SuiteActions implements ActionProvider {
             "build-osgi", // NOI18N
             "build-osgi-obr", // NOI18N
             "run-osgi", // NOI18N
+            "debug-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
@@ -291,10 +294,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.matches("build-osgi|build-osgi-obr|run-osgi|build-mac|nbms|profile")) { // NOI18N
-            targetNames = new String[] {command}; // NOI18N
         } else {
-            throw new IllegalArgumentException(command);
+            targetNames = new String[] {command};
         }
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
