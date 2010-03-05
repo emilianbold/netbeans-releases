@@ -47,6 +47,7 @@ import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -95,11 +96,16 @@ class OSGiLifecycleManager extends LifecycleManager {
             return; // cannot exit twice
         }
         try {
-            Class<?> windowSystemClazz = loader.loadClass("org.netbeans.core.WindowSystem");
-            Object windowSystem = Lookup.getDefault().lookup(windowSystemClazz);
+            final Class<?> windowSystemClazz = loader.loadClass("org.netbeans.core.WindowSystem");
+            final Object windowSystem = Lookup.getDefault().lookup(windowSystemClazz);
             if (windowSystem != null) {
-                windowSystemClazz.getMethod("hide").invoke(windowSystem);
-                windowSystemClazz.getMethod("save").invoke(windowSystem);
+                Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
+                        windowSystemClazz.getMethod("hide").invoke(windowSystem);
+                        windowSystemClazz.getMethod("save").invoke(windowSystem);
+                        return null;
+                    }
+                });
             }
         } catch (ClassNotFoundException x) {
             // Fine, just not using window system.
