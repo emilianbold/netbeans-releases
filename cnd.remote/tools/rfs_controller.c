@@ -442,12 +442,13 @@ static int init_files() {
                             report_unresolved_path(dir);
                             break;
                         }
+                        char *p = real_path;
+                        while (*p) {
+                            p++;
+                        }
+                        *(p++) = '/';
+                        strncpy(p, file, sizeof real_path - (p - real_path));
                     }
-                    char *p = real_path;
-                    while (*p) {
-                        p++;
-                    }
-                    strncpy(p, file, sizeof real_path - (p - real_path));
                 } else {
                     if (!realpath(path, real_path)) {
                        report_unresolved_path(path);
