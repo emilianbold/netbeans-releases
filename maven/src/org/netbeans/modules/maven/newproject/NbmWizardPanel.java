@@ -53,36 +53,23 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Panel just asking for basic info.
+ * Panel just asking for nb platform relatd information.
  * @author mkleint
  */
-public class BasicWizardPanel implements WizardDescriptor.Panel,
+public class NbmWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
-    private BasicPanelVisual component;
+    private NbmWizardPanelVisual component;
 
-    private final String[] eeLevels;
-    private final Archetype[] archs;
-    private final boolean isFinish;
-    private boolean additional;
+    private final Archetype archetype;
     private final ValidationGroup validationGroup;
     
-    /** Creates a new instance of templateWizardPanel */
-    public BasicWizardPanel(ValidationGroup vg, String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
-        this.archs = archs;
-        this.eeLevels = eeLevels;
-        this.isFinish = isFinish;
-        this.additional = additional;
-        this.validationGroup = vg;
-    }
 
-    public BasicWizardPanel(ValidationGroup vg) {
-        this(vg, new String[0], null, true, true);
-    }
 
-    public BasicWizardPanel(ValidationGroup vg, boolean isFinish) {
-        this(vg, new String[0], null, isFinish, false);
+    public NbmWizardPanel(ValidationGroup vg, Archetype arch) {
+        validationGroup = vg;
+        archetype = arch;
     }
 
     ValidationGroup getValidationGroup() {
@@ -92,35 +79,27 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new BasicPanelVisual(this);
-            component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
+            component = new NbmWizardPanelVisual(this);
+            component.setName(NbBundle.getMessage(NbmWizardPanel.class, "LBL_CreateProjectStepNbm"));
         }
         return component;
     }
 
-    boolean areAdditional() {
-        return additional;
-    }
 
-    Archetype[] getArchetypes() {
-        return archs;
-    }
-
-    String[] getEELevels() {
-        return eeLevels;
-    }
-    
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicWizardPanel.class);
+        return new HelpCtx(NbmWizardPanel.class);
     }
     
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -137,20 +116,24 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
     }
     
+    @Override
     public boolean isFinishPanel() {
-        return isFinish;
+        return true;
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return validationGroup.validateAll().equals(Problem.NO_PROBLEM);

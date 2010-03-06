@@ -92,6 +92,10 @@ import org.openide.util.RequestProcessor;
  * @author mkleint
  */
 public class ArchetypeWizardUtils {
+
+    //set in Nbmwizard
+    static final String OSGIDEPENDENCIES = "osgi.dependencies";
+    
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
 
     /**
@@ -310,6 +314,8 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = (Archetype) wiz.getProperty("archetype"); //NOI18N
         logUsage(arch.getGroupId(), arch.getArtifactId(), arch.getVersion());
+
+        Boolean setOsgiDeps = (Boolean)wiz.getProperty(OSGIDEPENDENCIES);
         
         @SuppressWarnings("unchecked")
         Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
@@ -346,12 +352,35 @@ public class ArchetypeWizardUtils {
                 handle.start(4);
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
+                if (setOsgiDeps) {
+                    //now we have the nbm-archetype (or the netbeans platform one).
+                    addNbmPluginOsgiParameter(projFile);
+
+                }
                 return openProjects(handle, projFile, 3);
             }
         } finally {
             handle.finish();
         }
     }
+
+
+    private static void addNbmPluginOsgiParameter(File projFile) throws IOException {
+        FileObject prjDir = FileUtil.toFileObject(projFile);
+        if (prjDir != null) {
+            FileObject pom = prjDir.getFileObject("pom.xml");
+            if (pom != null) {
+                Project prj = ProjectManager.getDefault().findProject(prjDir);
+                NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
+                ModelOperation<POMModel> op = new AddOSGiParamToNbmPluginConfiguration(true, mav.getMavenProject());
+                Utilities.performPOMModelOperations(pom, Collections.singletonList(op));
+            }
+        }
+        //TODO report inability to create? or if the file doesn't exist, it was already
+        //reported?
+   }
+
+
 
     private static final String loggerName = "org.netbeans.ui.metrics.maven"; // NOI18N
     private static final String loggerKey = "USG_PROJECT_CREATE_MAVEN"; // NOI18N

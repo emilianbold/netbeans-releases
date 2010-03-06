@@ -42,8 +42,12 @@ package org.netbeans.modules.maven.newproject;
 import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
@@ -54,7 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * mkleint: Should be more likely called Apisupport/Osgi wizard iterator.
  *@author Dafe Simonek
  */
 public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -63,9 +67,14 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
     private final Archetype archetype;
+    private boolean isNBM = false;
+    private final List<ChangeListener> listeners;
 
     private SimpleWizardIterator(Archetype archetype) {
         this.archetype = archetype;
+        isNBM = archetype.equals(ArchetypeWizardUtils.NB_APP_ARCH) ||
+                archetype.equals(ArchetypeWizardUtils.NB_MODULE_ARCH);
+        listeners = new ArrayList<ChangeListener>();
     }
     
     public static SimpleWizardIterator createNbModuleIterator() {
@@ -79,21 +88,29 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     public static SimpleWizardIterator createOSGiIterator() {
         return new SimpleWizardIterator(ArchetypeWizardUtils.OSGI_ARCH);
     }
-
-    public static SimpleWizardIterator createNbModuleOSGiIterator() {
-        return new SimpleWizardIterator(ArchetypeWizardUtils.NB_MODULE_OSGI_ARCH);
-    }
     
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
+        if (isNBM) {
+            return new WizardDescriptor.Panel[] {
+                new BasicWizardPanel(vg, true),
+                new NbmWizardPanel(vg, archetype)
+            };
+        }
         return new WizardDescriptor.Panel[] {
             new BasicWizardPanel(vg, true)
         };
     }
     
     private String[] createSteps() {
+        if (isNBM) {
+            return new String[] {
+                NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStep2"),
+                NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStepNbm")
+            };
+        }
         return new String[] {
-            NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStep2"),
+            NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStep2")
         };
     }
     
@@ -151,20 +168,28 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     
     @Override
     public boolean hasNext() {
-        return false;
+        return index < panels.length - 1;
     }
-    
+
     @Override
     public boolean hasPrevious() {
-        return false;
+        return index > 0;
     }
-    
+
     @Override
     public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
     }
-    
+
     @Override
     public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        index--;
     }
     
     @Override
@@ -174,8 +199,25 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     
     // If nothing unusual changes in the middle of the wizard, simply:
     @Override
-    public final void addChangeListener(ChangeListener l) {}
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+
     @Override
-    public final void removeChangeListener(ChangeListener l) {}
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    private void fireChange() {
+        synchronized (listeners) {
+            for (ChangeListener list : listeners) {
+                list.stateChanged(new ChangeEvent(this));
+            }
+        }
+    }
     
 }
