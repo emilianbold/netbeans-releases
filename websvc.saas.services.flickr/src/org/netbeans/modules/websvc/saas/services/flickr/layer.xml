@@ -70,6 +70,16 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
+            <!-- method body templates -->
+            <file name="FlickrGetFrob.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetFrob.template"/>
+            <file name="FlickrGetAuthToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetAuthToken.template"/>
+            <file name="FlickrLogout.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrLogout.template"/>
+            <file name="FlickrSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrSignParams.template"/>
+
             
             <!-- PHP templates -->
             <file name="FlickrAuthenticator.php" 
