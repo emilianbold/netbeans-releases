@@ -40,6 +40,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -122,6 +123,12 @@ public class MakeOSGiTest extends NbTestCase {
         StringBuilder b = new StringBuilder();
         MakeOSGi.translateDependency(b, dependency);
         assertEquals(expected, b.toString());
+    }
+
+    public void testFindFragmentHost() throws Exception {
+        assertEquals("org.netbeans.core.windows", MakeOSGi.findFragmentHost(new File(getWorkDir(), "modules/locale/org-netbeans-core-windows_nb.jar")));
+        assertEquals("org.netbeans.core.startup", MakeOSGi.findFragmentHost(new File(getWorkDir(), "core/locale/core_nb.jar")));
+        assertEquals("org.netbeans.bootstrap", MakeOSGi.findFragmentHost(new File(getWorkDir(), "lib/locale/boot_nb.jar")));
     }
 
 }

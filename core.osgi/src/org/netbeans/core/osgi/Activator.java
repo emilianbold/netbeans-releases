@@ -68,6 +68,7 @@ import org.netbeans.core.startup.RunLevel;
 import org.netbeans.core.startup.Splash;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.osgi.framework.Bundle;
@@ -106,6 +107,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             System.setProperty("netbeans.user", storage);
         }
         System.setProperty("TopSecurityManager.disable", "true");
+        NbBundle.setBranding(System.getProperty("branding.token"));
         OSGiMainLookup.initialize(context);
         queue = new DependencyQueue<String,Bundle>();
         this.context = context;
@@ -169,10 +171,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         Set<String> deps = new TreeSet<String>(splitTokens((String) headers.get("OpenIDE-Module-Provides")));
         String name = (String) headers.get(Constants.BUNDLE_SYMBOLICNAME);
         if (name != null) {
+            name = name.replaceFirst(";.+", "");
             deps.add(name);
-        }
-        if ("org.openide.modules".equals(headers.get("Bundle-SymbolicName"))) {
-            CoreBridge.defineOsTokens(deps);
+            if (name.equals("org.openide.modules")) {
+                CoreBridge.defineOsTokens(deps);
+            }
         }
         return deps;
     }
@@ -225,7 +228,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 showWindowSystem = true;
             }
         }
-        OSGiRepository.DEFAULT.addLayers(layersFor(bundles));
+        OSGiRepository.DEFAULT.addLayersFor(bundles);
         if (loadServicesFolder) {
             OSGiMainLookup.loadServicesFolder();
         }
@@ -265,33 +268,8 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 mi.uninstalled();
             }
         }
-        OSGiRepository.DEFAULT.removeLayers(layersFor(bundles));
+        OSGiRepository.DEFAULT.removeLayersFor(bundles);
         OSGiMainLookup.bundlesRemoved(bundles);
-    }
-
-    private static URL[] layersFor(List<Bundle> bundles) {
-        List<URL> layers = new ArrayList<URL>(2);
-        for (Bundle b : bundles) {
-            if (b.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
-                // Won't work anyway, so don't even try.
-                continue;
-            }
-            String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
-            if (explicit != null) {
-                URL layer = b.getResource(explicit);
-                if (layer != null) {
-                    layers.add(layer);
-                    // XXX could also add localized/branded variants
-                } else {
-                    LOG.log(Level.WARNING, "no such layer {0} in {1} of state {2}", new Object[] {explicit, b.getSymbolicName(), b.getState()});
-                }
-            }
-            URL generated = b.getResource("META-INF/generated-layer.xml");
-            if (generated != null) {
-                layers.add(generated);
-            }
-        }
-        return layers.toArray(new URL[layers.size()]);
     }
 
     private static ModuleInstall installerFor(Bundle b) {
