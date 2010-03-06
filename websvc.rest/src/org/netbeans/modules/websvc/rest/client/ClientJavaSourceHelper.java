@@ -143,10 +143,12 @@ public class ClientJavaSourceHelper {
 
         // set target project type
         // PENDING: need to consider web project as well
-        String targetProjectType = "desktop"; //NOI18N
+        String targetProjectType = null;
         Project project = FileOwnerQuery.getOwner(targetFo);
-        if (project != null && Wadl2JavaHelper.isNbProject(project)) {
-            targetProjectType = "nb-project"; //NOI18N
+        if (project != null) {
+            targetProjectType = Wadl2JavaHelper.getProjectType(project); //NOI18N
+        } else {
+            targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
         }
         security.setProjectType(targetProjectType);
 
@@ -417,17 +419,19 @@ public class ClientJavaSourceHelper {
                         if (authenticator != null) {
                             UseTemplates useTemplates = authenticator.getUseTemplates();
                             if (useTemplates != null) {
-                                if ("desktop".equals(security.getProjectType())) { //NOI18N
+                                if (Wadl2JavaHelper.PROJEC_TYPE_DESKTOP.equals(security.getProjectType())) { //NOI18N
                                     TemplateType tt = useTemplates.getDesktop();
                                     if (tt != null) {
                                         securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                        securityParams.setServletDescriptors(tt.getServletDescriptor());
                                     }
-                                } else if ("web".equals(security.getProjectType())) { //NOI18N
+                                } else if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) { //NOI18N
                                     TemplateType tt = useTemplates.getWeb();
                                     if (tt != null) {
                                         securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                        securityParams.setServletDescriptors(tt.getServletDescriptor());
                                     }
                                 }
                             }
@@ -480,8 +484,14 @@ public class ClientJavaSourceHelper {
                     body,
                     null); //NOI18N
             modifiedClass = maker.addClassMember(modifiedClass, methodTree);
-        } else if (Security.Authentication.SESSION_KEY == security.getAuthentication() && saasResource != null) {
-            modifiedClass = Wadl2JavaHelper.addSessionAuthMethods(copy, modifiedClass, security);
+        } else if (saasResource != null && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+            SecurityParams securityParams = security.getSecurityParams();
+            if (securityParams != null) {
+                modifiedClass = Wadl2JavaHelper.addSessionAuthMethods(copy, modifiedClass, securityParams);
+                if ("web".equals(security.getProjectType())) {
+                    modifiedClass = Wadl2JavaHelper.addSessionAuthServlets(copy, modifiedClass, securityParams);
+                }
+            }
         }
 
         if (security.isSSL()) {
