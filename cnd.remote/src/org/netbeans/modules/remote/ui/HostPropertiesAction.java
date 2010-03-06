@@ -36,28 +36,37 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
-
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+public class HostPropertiesAction extends SingleHostAction {
 
     @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE && execEnv.isRemote();
+    public String getName() {
+        return NbBundle.getMessage(HostListRootNode.class, "PropertirsMenuItem");
     }
 
     @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemRootNode(execEnv);
+    protected void performAction(final ExecutionEnvironment env, Node node) {
+        RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        HostPropertiesDialog.invokeMe(record);
+        if (node instanceof HostNode) {
+            ((HostNode) node).refresh(); // TODO: introduce listeners for server records
+        }
     }
 
+    @Override
+    public boolean isVisible(Node node) {
+        return isRemote(node);
+    }
 }
