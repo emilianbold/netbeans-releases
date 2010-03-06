@@ -45,6 +45,9 @@ import javax.swing.Action;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -64,7 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
-    public static Document doc = null;
+    public static Document doc = null; // FIXUP: hack to get the current document
 
     @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
@@ -74,7 +77,18 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
 
         Object assoc = ((CsmResultItem) item).getAssociatedObject();
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+        // How to get the NativeProject here?????
+//        if (assoc instanceof CsmObject) {
+//            CsmObject csmObject  = (CsmObject)assoc;
+//            if (csmObject instanceof CsmOffsetable) {
+//                CsmOffsetable csmOffsetable = (CsmOffsetable)csmObject;
+//                CsmFile csmFile = csmOffsetable.getContainingFile();
+//                CsmProject csmProject = csmFile.getProject();
+//                NativeProject nativeProject = (NativeProject)csmProject; // << is a LibProjectImpl and not NativeProject
+//            }
+//        }
+
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false); // FIXUP: hack to get current csmFile
 
         if (assoc instanceof CsmObject) {
             return new AsyncCompletionTask(new DocQuery((CsmObject) assoc, csmFile));
