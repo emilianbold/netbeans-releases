@@ -403,6 +403,9 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-editor-codegen-EqualsHashCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="300"/>
                     </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-ToStringGenerator$Factory.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
                     <file name="org-netbeans-modules-java-editor-codegen-DelegateMethodGenerator$Factory.instance">
                         <attr name="position" intvalue="400"/>
                     </file>

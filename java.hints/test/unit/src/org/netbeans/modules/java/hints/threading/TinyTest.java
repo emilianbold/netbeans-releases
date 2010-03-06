@@ -90,36 +90,36 @@ public class TinyTest extends TestBase {
     }
 
     public void testWaitOnCondition1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     private void n(java.util.concurrent.locks.Condition c) {\n" +
-                            "         c.wait();\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:11-3:15:verifier:ERR_WaitOnCondition");
+        performAnalysisContainsTest("test/Test.java",
+                                    "package test;\n" +
+                                    "public class Test {\n" +
+                                    "     private void n(java.util.concurrent.locks.Condition c) {\n" +
+                                    "         c.wait();\n" +
+                                    "     }\n" +
+                                    "}\n",
+                                    "3:11-3:15:verifier:ERR_WaitOnCondition");
     }
 
     public void testWaitOnCondition2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     private void n(java.util.concurrent.locks.Condition c) {\n" +
-                            "         c.wait(1L);\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:11-3:15:verifier:ERR_WaitOnCondition");
+        performAnalysisContainsTest("test/Test.java",
+                                    "package test;\n" +
+                                    "public class Test {\n" +
+                                    "     private void n(java.util.concurrent.locks.Condition c) {\n" +
+                                    "         c.wait(1L);\n" +
+                                    "     }\n" +
+                                    "}\n",
+                                    "3:11-3:15:verifier:ERR_WaitOnCondition");
     }
 
     public void testWaitOnCondition3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     private void n(java.util.concurrent.locks.Condition c) {\n" +
-                            "         c.wait(1L, 1);\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:11-3:15:verifier:ERR_WaitOnCondition");
+        performAnalysisContainsTest("test/Test.java",
+                                    "package test;\n" +
+                                    "public class Test {\n" +
+                                    "     private void n(java.util.concurrent.locks.Condition c) {\n" +
+                                    "         c.wait(1L, 1);\n" +
+                                    "     }\n" +
+                                    "}\n",
+                                    "3:11-3:15:verifier:ERR_WaitOnCondition");
     }
 
     public void testThreadRun() throws Exception {
@@ -161,7 +161,7 @@ public class TinyTest extends TestBase {
                             "}\n",
                             "4:11-4:16:verifier:ERR_ThreadStartInConstructor");
     }
-    
+
 
     public void testThreadYield() throws Exception {
         performAnalysisTest("test/Test.java",
@@ -335,6 +335,99 @@ public class TinyTest extends TestBase {
                             "public class Test {\n" +
                             "     private volatile String arr;\n" +
                             "}\n");
+    }
+
+    public void testUnlockNotInFinally() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private void n(java.util.concurrent.locks.Lock l) {\n" +
+                       "         l.lock();\n" +
+                       "         System.err.println(1);\n" +
+                       "         System.err.println(1);\n" +
+                       "         l.unlock();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:9-3:18:verifier:ERR_UnlockOutsideTryFinally",
+                       "FIX_UnlockOutsideTryFinally",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private void n(java.util.concurrent.locks.Lock l) {\n" +
+                        "         l.lock();\n" +
+                        "         try {\n" +
+                        "             System.err.println(1);\n" +
+                        "             System.err.println(1);\n" +
+                        "         } finally {\n" +
+                        "              l.unlock();\n" +
+                        "         }\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testUnsyncedWait1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(Object o) {\n" +
+                            "         o.wait();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:11-3:15:verifier:ERR_UnsyncedWait");
+    }
+
+    public void testUnsyncedWait2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(Object o) {\n" +
+                            "         wait();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:9-3:13:verifier:ERR_UnsyncedWait");
+    }
+
+    public void testUnsyncedWait3() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private synchronized void n(Object o) {\n" +
+                            "         o.wait();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:11-3:15:verifier:ERR_UnsyncedWait");
+    }
+
+    public void testUnsyncedWait4() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(Object o) {\n" +
+                            "         synchronized(o) {\n" +
+                            "             o.wait();\n" +
+                            "         }\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
+    public void testUnsyncedWait5() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private synchronized void n(Object o) {\n" +
+                            "         wait();\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
+    public void testUnsyncedNotify() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private synchronized void n(Object o) {\n" +
+                            "         o.notify();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:11-3:17:verifier:ERR_UnsyncedNotify");
     }
 
     @Override
