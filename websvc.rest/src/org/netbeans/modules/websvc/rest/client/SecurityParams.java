@@ -41,8 +41,9 @@ package org.netbeans.modules.websvc.rest.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
-import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType.MethodDescriptor;
+import org.netbeans.modules.websvc.saas.model.jaxb.FieldDescriptor;
+import org.netbeans.modules.websvc.saas.model.jaxb.MethodDescriptor;
+import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
 
 /**
  *
@@ -51,14 +52,23 @@ import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType.MethodDescriptor
 public class SecurityParams {
     String signature;
     List<String> params = new ArrayList<String>();
-    List<TemplateType.MethodDescriptor> methodDescriptors = new ArrayList<TemplateType.MethodDescriptor>();
-    List<TemplateType.FieldDescriptor> fieldDescriptors = new ArrayList<TemplateType.FieldDescriptor>();
+    List<MethodDescriptor> methodDescriptors = new ArrayList<MethodDescriptor>();
+    List<FieldDescriptor> fieldDescriptors = new ArrayList<FieldDescriptor>();
+    List<ServletDescriptor> servletDescriptors = new ArrayList<ServletDescriptor>();
 
-    public List<TemplateType.FieldDescriptor> getFieldDescriptors() {
+    public List<ServletDescriptor> getServletDescriptors() {
+        return servletDescriptors;
+    }
+
+    public void setServletDescriptors(List<ServletDescriptor> servletDescriptors) {
+        this.servletDescriptors = servletDescriptors;
+    }
+
+    public List<FieldDescriptor> getFieldDescriptors() {
         return fieldDescriptors;
     }
 
-    public void setFieldDescriptors(List<TemplateType.FieldDescriptor> fieldDescriptors) {
+    public void setFieldDescriptors(List<FieldDescriptor> fieldDescriptors) {
         this.fieldDescriptors = fieldDescriptors;
     }
 
