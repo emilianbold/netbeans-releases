@@ -39,64 +39,51 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType.MethodDescriptor;
 
 /**
  *
  * @author mkuchtiak
  */
-public class Security {
+public class SecurityParams {
+    String signature;
+    List<String> params = new ArrayList<String>();
+    List<TemplateType.MethodDescriptor> methodDescriptors = new ArrayList<TemplateType.MethodDescriptor>();
+    List<TemplateType.FieldDescriptor> fieldDescriptors = new ArrayList<TemplateType.FieldDescriptor>();
 
-    private boolean ssl;
-    private Authentication authentization;
-    private SecurityParams securityParams;
-    private String projectType; // desktop, nb-project, web
-
-    public Security(boolean ssl, Authentication authentization) {
-        this.ssl = ssl;
-        this.authentization = authentization;
+    public List<TemplateType.FieldDescriptor> getFieldDescriptors() {
+        return fieldDescriptors;
     }
 
-    public Authentication getAuthentication() {
-        return authentization;
+    public void setFieldDescriptors(List<TemplateType.FieldDescriptor> fieldDescriptors) {
+        this.fieldDescriptors = fieldDescriptors;
     }
 
-    public String getProjectType() {
-        return projectType;
+    public List<String> getParams() {
+        return params;
     }
 
-    public void setProjectType(String projectType) {
-        this.projectType = projectType;
+    public void setParams(List<String> params) {
+        this.params = params;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public List<MethodDescriptor> getMethodDescriptors() {
+        return methodDescriptors;
+    }
+
+    public void setMethodDescriptors(List<MethodDescriptor> methodDescriptors) {
+        this.methodDescriptors = methodDescriptors;
     }
     
-    public boolean isSSL() {
-        return ssl;
-    }
-
-    public SecurityParams getSecurityParams() {
-        return securityParams;
-    }
-
-    public void setSecurityParams(SecurityParams securityParams) {
-        this.securityParams = securityParams;
-    }
-
-    public static enum Authentication {
-        NONE("auth_none"),
-        BASIC("auth_basic"),
-        SESSION_KEY("auth_session_key");
-
-        private String displayName;
-
-        Authentication(String displayName) {
-            this.displayName = displayName;
-        }
-        
-        @Override
-        public String toString() {
-            return NbBundle.getMessage(Security.class, displayName);
-        }
-
-    }
-
 }

@@ -1061,12 +1061,12 @@ public class OutlineView extends JScrollPane {
                     return false;
                 }
             }
-
-            if (row != -1 && e instanceof MouseEvent &&
-                    SwingUtilities.isLeftMouseButton ((MouseEvent) e) &&
-                    ((MouseEvent) e).getClickCount() > 1) {
-                // Default action.
-                if (convertColumnIndexToModel(column) == 0) {
+            boolean res = false;
+            boolean isTreeColumn = convertColumnIndexToModel(column) == 0;
+            if (isTreeColumn && row != -1 && e instanceof MouseEvent && SwingUtilities.isLeftMouseButton ((MouseEvent) e)) {
+                int clickCount = ((MouseEvent) e).getClickCount();
+                if (clickCount > 1) {
+                    // Default action.
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
                         if (node.isLeaf () && !node.canRename()) {
@@ -1079,16 +1079,20 @@ public class OutlineView extends JScrollPane {
                                     Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
                                 }
                             }
+                        } else if (node.canRename()) {
+                            res = super.editCellAt(row, column, e);
                         }
                     }
+                } else {
+                    return false;
                 }
+            } else {
+                res = super.editCellAt(row, column, e);
             }
-            boolean res = super.editCellAt(row, column, e);
             if( !res && e instanceof MouseEvent ) {
                 //try invoking custom editor on disabled cell
             
                 final Rectangle r = getCellRect(row, column, true);
-                boolean isTreeColumn = convertColumnIndexToModel( column ) == 0;
                 if( ((MouseEvent) e).getX() > ((r.x + r.width) - 24) && ((MouseEvent) e).getX() < (r.x + r.width) 
                     && o instanceof Node.Property
                     && !isTreeColumn ) {

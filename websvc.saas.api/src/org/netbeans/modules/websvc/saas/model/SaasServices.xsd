@@ -514,6 +514,27 @@
                     <xsd:attribute name="href" type="xsd:string"/>
                 </xsd:complexType>
             </xsd:element>
+            <xsd:element name="field-descriptor" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:attribute name="modifier" type="xsd:string"/>
+                    <xsd:attribute name="name" type="xsd:string"/>
+                    <xsd:attribute name="type" type="xsd:string"/>
+                    <xsd:attribute name="init-value" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="method-descriptor" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:attribute name="modifier" type="xsd:string"/>
+                    <xsd:attribute name="id" type="xsd:string"/>
+                    <xsd:attribute name="name" type="xsd:string"/>
+                    <xsd:attribute name="return-type" type="xsd:string"/>
+                    <xsd:attribute name="throws" type="xsd:string"/>
+                    <xsd:attribute name="body" type="xsd:string"/>
+                    <xsd:attribute name="body-ref" type="xsd:string"/>
+                    <xsd:attribute name="param-types" type="xsd:string"/>
+                    <xsd:attribute name="param-names" type="xsd:string"/>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
     

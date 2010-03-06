@@ -70,7 +70,16 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+            <!-- method body templates -->
+            <file name="FacebookCreateToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookCreateToken.template"/>
+            <file name="FacebookGetSessionKey.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookGetSessionKey.template"/> 
+            <file name="FacebookLogout.method" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookLogout.template"/> 
+            <file name="FacebookSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookSignParams.template"/>
+
             <!-- PHP templates -->
             <file name="FacebookAuthenticatorDesktop.php" 
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/php/FacebookAuthenticatorDesktop.template">

@@ -91,6 +91,18 @@
                     <use-templates>
                         <desktop>
                             <template type="auth" href="FacebookAuthenticatorDesktop"/>
+                            <field-descriptor name="api_key" type="String"/>
+                            <field-descriptor name="session_key" type="String"/>
+                            <field-descriptor name="application_secret" type="String"/>
+                            <field-descriptor name="session_secret" type="String"/>
+                            <method-descriptor modifier="public" name="login" return-type="void" throws = "java.io.IOException" body = "{this.api_key=api_key; this.application_secret=application_secret; getSessionKey();}" param-types = "String, String" param-names = "api_key, application_secret"/>
+                            <method-descriptor modifier="public" name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookLogout.method"/>
+                            <method-descriptor id = "api_key" name="getApiKey" return-type="String" throws = "java.io.IOException" body = "{return api_key;}"/>
+                            <method-descriptor id = "call_id" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
+                            <method-descriptor id = "session_key" name="getSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookGetSessionKey.method"/>
+                            <method-descriptor name="createToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookCreateToken.method"/>
+                            <method-descriptor name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
+                            <method-descriptor name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
                         </desktop>
                         <web>
                             <template type="auth" href="FacebookAuthenticator"/>

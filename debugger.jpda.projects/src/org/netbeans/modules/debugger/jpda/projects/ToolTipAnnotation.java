@@ -237,7 +237,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
         }
 
-        if (false && tooltipVariable != null) {
+        if (tooltipVariable != null) {
             final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
             final ObjectVariable var = tooltipVariable;
             et.addExpansionListener(new ActionListener() {
@@ -245,6 +245,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 public void actionPerformed(ActionEvent e) {
                     et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
                     et.removeAll();
+                    et.setWidthCheck(false);
                     et.add(ToolTipView.getToolTipView(expression, var));
                     et.revalidate();
                     et.repaint();
