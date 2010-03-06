@@ -45,6 +45,12 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import java.io.File;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 
 /**
@@ -53,11 +59,25 @@ import org.openide.WizardDescriptor;
  */
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private final NbmWizardPanel panel;
+    private ValidationGroup vg;
+    boolean isApp = false;
 
     /** Creates new form NbmWizardPanelVisual */
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
+        isApp = ArchetypeWizardUtils.NB_APP_ARCH.equals(panel.getArchetype());
+        if (isApp) {
+            vg = ValidationGroup.create();
+            vg.add(txtAddModule, Validators.merge(true,
+                    MavenValidators.createArtifactIdValidators(),
+                    Validators.REQUIRE_VALID_FILENAME
+                    ));
+            txtAddModule.putClientProperty(ValidationListener.CLIENT_PROP_NAME, "NetBeans Module ArtifactId");
+        } else {
+            cbAddModule.setVisible(false);
+            txtAddModule.setVisible(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -71,6 +91,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
         cbOsgiDeps = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        txtAddModule = new javax.swing.JTextField();
+        cbAddModule = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbOsgiDeps, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.text")); // NOI18N
         cbOsgiDeps.addActionListener(new java.awt.event.ActionListener() {
@@ -80,6 +102,14 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.jLabel1.text")); // NOI18N
+
+        cbAddModule.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbAddModule, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbAddModule.text")); // NOI18N
+        cbAddModule.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbAddModuleActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -91,8 +121,12 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(29, 29, 29)
                         .addComponent(jLabel1))
-                    .addComponent(cbOsgiDeps))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(cbOsgiDeps)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbAddModule)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtAddModule, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -101,7 +135,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 .addComponent(cbOsgiDeps)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
-                .addContainerGap(239, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtAddModule, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbAddModule))
+                .addContainerGap(197, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -109,15 +147,33 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_cbOsgiDepsActionPerformed
 
+    private void cbAddModuleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAddModuleActionPerformed
+        // TODO add your handling code here:
+        txtAddModule.setEnabled(cbAddModule.isSelected());
+        vg.validateAll();
+}//GEN-LAST:event_cbAddModuleActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbAddModule;
     private javax.swing.JCheckBox cbOsgiDeps;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField txtAddModule;
     // End of variables declaration//GEN-END:variables
 
 
      void store(WizardDescriptor d) {
         d.putProperty(ArchetypeWizardUtils.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
+         File parent = (File) d.getProperty("projdir");
+         if (isApp) {
+             if (cbAddModule.isSelected()) {
+                 String ejbText = txtAddModule.getText().trim();
+                 d.putProperty("ejb_projdir", new File(parent, ejbText));
+                 d.putProperty("nbm_artifactId", txtAddModule.getText().trim());
+             } else {
+                 d.putProperty("nbm_ArtifactId", null);
+             }
+         }
     }
 
     void read(WizardDescriptor d) {
@@ -125,6 +181,22 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         if (b != null) {
             cbOsgiDeps.setSelected(b.booleanValue());
         }
-        
+        if (isApp) {
+            String artifId = (String) d.getProperty("artifactId");
+            String val = (String) d.getProperty("nbm_artifactid");
+            cbAddModule.setSelected(val != null);
+            if (val == null) {
+                val = artifId + "-sample";
+            }
+            txtAddModule.setText(val);
+
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    panel.getValidationGroup().addValidationGroup(vg, true);
+                }
+            });
+        }
     }
 }

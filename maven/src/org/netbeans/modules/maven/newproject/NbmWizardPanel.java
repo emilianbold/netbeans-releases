@@ -85,6 +85,9 @@ public class NbmWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
 
+    public Archetype getArchetype() {
+        return archetype;
+    }
 
     @Override
     public HelpCtx getHelp() {
