@@ -110,7 +110,7 @@ public class ArchetypeWizardUtils {
     public static final Archetype EA_ARCH;
     
     public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH;
-    public static final Archetype OSGI_ARCH, NB_MODULE_OSGI_ARCH;
+    public static final Archetype OSGI_ARCH;
 
     public static final String[] EE_LEVELS = new String[] {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
@@ -199,12 +199,6 @@ public class ArchetypeWizardUtils {
         OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
         OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
         OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
-
-        NB_MODULE_OSGI_ARCH = new Archetype();
-        NB_MODULE_OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
-        NB_MODULE_OSGI_ARCH.setArtifactId("nbm-osgi-archetype"); //NOI18N
-        NB_MODULE_OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }
 
 
