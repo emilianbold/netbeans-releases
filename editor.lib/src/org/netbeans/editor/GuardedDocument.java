@@ -185,10 +185,14 @@ public class GuardedDocument extends BaseDocument
 
     public boolean isPosGuarded(int offset) {
         int rel = guardedBlockChain.compareBlock(offset, offset) & MarkBlock.IGNORE_EMPTY;
-        // Return not guarded when inside line
-        return (rel == MarkBlock.INNER || (rel == MarkBlock.INSIDE_BEGIN && // and at line begining
-                (offset == 0 || org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this).
-                charAt(offset - 1) == '\n')));
+        // Return guarded when inside a block or at its beginning, but not at the beginning of a line
+        boolean b = (rel == MarkBlock.INNER ||
+                (rel == MarkBlock.INSIDE_BEGIN &&
+                 !(offset == 0 || org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this).charAt(offset - 1) == '\n')));
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "offset=" + offset + ", guarded=" + b);
+        }
+        return b;
     }
 
     /** This method is called automatically before the document
