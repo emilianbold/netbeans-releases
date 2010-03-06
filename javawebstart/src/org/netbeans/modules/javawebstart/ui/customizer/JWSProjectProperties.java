@@ -45,14 +45,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.ButtonGroup;
@@ -67,7 +71,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -76,6 +84,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -94,6 +103,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -126,6 +136,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String DEFAULT_APPLET_HEIGHT = "300";
 
     private static final String JAR_INDEX = "jar.index";    //NOI18N
+    private static final String JAR_ARCHIVE_DISABLED ="jar.archive.disabled";   //NOI18N
 
     public enum DescType {
         application, applet, component;
@@ -163,6 +174,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     public static final String CONFIG_TARGET_RUN = "jws-run";
     public static final String CONFIG_TARGET_DEBUG = "jws-debug";
+
+    private static final String LIB_JAVAWS = "javaws.jar";  //NOI18N
+    private static final String LIB_PLUGIN = "plugin.jar";  //NOI18N
 
     private DescType selectedDescType = null;
 
@@ -359,6 +373,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (editableProps.getProperty(JAR_INDEX) == null) {
             editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
         }
+        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
+            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
+        }
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
@@ -372,6 +389,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         try {
             final InputStream is = projPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     try {
                         ep.load(is);
@@ -394,6 +412,27 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                         }
                         if (os != null) {
                             os.close();
+                        }
+                    }
+                    FileObject srcRoot = null;
+                    for (SourceGroup sg : ProjectUtils.getSources(j2seProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                        if (!isTest(sg.getRootFolder(),j2seProject)) {
+                            srcRoot = sg.getRootFolder();
+                            break;
+                        }
+                    }
+                    if (srcRoot != null) {
+                        final Collection<? extends URL> toAdd  = isWebStart(ep) ? findWebStartJars(isApplet(ep)) : new LinkedList<URL>();
+                        final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
+                        final Collection<? extends URL> included = findWebStartJars(bootCp);
+                        final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
+                        toRemove.removeAll(toAdd);
+                        toAdd.removeAll(included);
+                        if (!toRemove.isEmpty()) {
+                            ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+                        }
+                        if (!toAdd.isEmpty()) {
+                            ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
                         }
                     }
                     return null;
@@ -735,5 +774,95 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             model.setSelectedItem(value);
         }
         return model;
+    }
+
+    private Collection<? extends URL> findWebStartJars(final boolean applet) throws IOException {
+        final List<URL> result = new ArrayList<URL>(2);
+        final String platformName = evaluator.getProperty("platform.active");   //NOI18N
+        if (platformName != null) {
+            JavaPlatform active = null;
+            for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                if (platformName.equals(platform.getProperties().get("platform.ant.name"))) {   //NOI18N
+                    active = platform;
+                    break;
+                }
+            }
+            if (active != null) {
+                URL lib = findLib(LIB_JAVAWS,active.getInstallFolders());
+                if (lib != null) {
+                    result.add(lib);
+                }
+                if (applet) {
+                    lib = findLib(LIB_PLUGIN,active.getInstallFolders());
+                    if (lib != null) {
+                        result.add(lib);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
+        final List<URL> result = new ArrayList<URL>(2);
+        Pattern pattern = Pattern.compile(
+                ".*/("+Pattern.quote(LIB_JAVAWS)+"|"+Pattern.quote(LIB_PLUGIN)+")!/",Pattern.CASE_INSENSITIVE); //NOI18N
+        for (ClassPath.Entry entry : cp.entries()) {
+            final URL url = entry.getURL();
+            if (pattern.matcher(url.toString()).matches()) {
+                result.add(url);
+            }
+        }
+        return result;
+    }
+
+    private static URL findLib(final String name, final Iterable<? extends FileObject> installFolders) throws IOException {
+        if (Utilities.isMac()) {
+            //On Mac deploy is fixed in /System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/
+            final File deployFramework = new File("/System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/");
+            final File lib = FileUtil.normalizeFile(new File(deployFramework,name));    //NOI18N
+            if (lib.exists()) {
+                return FileUtil.getArchiveRoot(lib.toURI().toURL());
+            }
+        } else {
+            for (FileObject installFolder : installFolders) {
+                FileObject lib = installFolder.getFileObject(String.format("jre/lib/%s",name)); //NOI18N
+                if (lib != null) {
+                    return FileUtil.getArchiveRoot(lib.getURL());
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isTest(final FileObject root, final Project project) {
+        assert root != null;
+        assert project != null;
+        final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        for (ClassPath.Entry entry : cp.entries()) {
+            final FileObject[] srcRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+            for (FileObject srcRoot : srcRoots) {
+                if (project.equals(FileOwnerQuery.getOwner(srcRoot))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWebStart (final EditableProperties ep) {
+        assert ep != null;
+        return isTrue(ep.getProperty(JNLP_ENABLED));
+    }
+
+    private static boolean isApplet(final EditableProperties ep) {
+        return DescType.applet.toString().equals(ep.getProperty(JNLP_DESCRIPTOR));
+    }
+
+    private static boolean isTrue(final String value) {
+        return value != null &&
+                (value.equalsIgnoreCase("true") ||  //NOI18N
+                 value.equalsIgnoreCase("yes") ||   //NOI18N
+                 value.equalsIgnoreCase("on"));     //NOI18N
     }
 }

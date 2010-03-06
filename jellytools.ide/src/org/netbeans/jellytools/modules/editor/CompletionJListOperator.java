@@ -308,7 +308,7 @@ public class CompletionJListOperator extends JListOperator {
         };
         
         public static void start() {
-            JTextComponent jtc = EditorRegistry.focusedComponent();
+            JTextComponent jtc = EditorRegistry.lastFocusedComponent();
             doc = jtc != null ? Utilities.getDocument(jtc) : null;
             if (doc != null) {
                 doc.addDocumentListener(listener);

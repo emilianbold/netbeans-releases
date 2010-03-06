@@ -71,12 +71,16 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -85,6 +89,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
 
 /**
  * @author mkleint
@@ -387,14 +393,16 @@ public class ArchetypeWizardUtils {
         if (fDir != null) {
             // the archetype generation didn't fail.
             resultSet.add(fDir);
-            processProjectFolder(fDir);
+            processProjectFolder(fDir, null);
+
+            FileObject nbAppModuleDir = findNbAppProjectDir(fDir);
             // Look for nested projects to open as well:
             Enumeration<? extends FileObject> e = fDir.getFolders(true);
             while (e.hasMoreElements()) {
                 FileObject subfolder = e.nextElement();
                 if (ProjectManager.getDefault().isProject(subfolder)) {
                     resultSet.add(subfolder);
-                    processProjectFolder(subfolder);
+                    processProjectFolder(subfolder, nbAppModuleDir);
                 }
             }
         }
@@ -402,7 +410,7 @@ public class ArchetypeWizardUtils {
         return resultSet;
     }
 
-    private static void processProjectFolder(FileObject fo) {
+    private static void processProjectFolder(final FileObject fo, final FileObject nbAppModuleDir) {
         try {
             Project prj = ProjectManager.getDefault().findProject(fo);
             if (prj == null) { //#143596
@@ -422,6 +430,10 @@ public class ArchetypeWizardUtils {
                     if (!file.exists()) {
                         file.mkdirs();
                     }
+
+                    if( nbAppModuleDir != null && NbMavenProject.TYPE_NBM.equals(watch.getPackagingType()) ) {
+                        storeNbAppModuleDirInfo( prj, nbAppModuleDir );
+                    }
                 }
                 //see #163529 for reasoning
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -436,6 +448,33 @@ public class ArchetypeWizardUtils {
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static FileObject findNbAppProjectDir( FileObject dir ) throws IOException {
+        FileObject res = null;
+        Enumeration<? extends FileObject> e = dir.getFolders(false); //scan top-level subfolders only
+        while (e.hasMoreElements()) {
+            FileObject subfolder = e.nextElement();
+            if (ProjectManager.getDefault().isProject(subfolder)) {
+                Project prj = ProjectManager.getDefault().findProject(subfolder);
+                if (prj != null) {
+                    NbMavenProject watch = prj.getLookup().lookup(NbMavenProject.class);
+                    if (watch != null && NbMavenProject.TYPE_NBM_APPLICATION.equals(watch.getPackagingType())) {
+                        res = subfolder;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    private static void storeNbAppModuleDirInfo( Project prj, FileObject nbAppModuleDir ) {
+        final AuxiliaryProperties auxConfig = prj.getLookup().lookup(AuxiliaryProperties.class);
+                //TODO the following works fine for current nb app suite archetype,
+                //otherwise calculate real relative path from nbAppModuleDir
+        auxConfig.put(Constants.PROP_PATH_NB_APPLICATION_MODULE, "../application", true); //NOI18N
     }
 
     private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {

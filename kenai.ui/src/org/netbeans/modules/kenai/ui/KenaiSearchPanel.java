@@ -45,14 +45,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
@@ -60,32 +53,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
@@ -138,8 +112,8 @@ public class KenaiSearchPanel extends JPanel {
             kenai = k;
             clear = true;
         }
-        projectURLPattern = Pattern.compile(kenai.getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
         initComponents();
+        setChildrenEnabled(this,kenai!=null);
 
         if (clear) {
             clearRecentAndFeatured();
@@ -152,6 +126,7 @@ public class KenaiSearchPanel extends JPanel {
                     invokeSearch();
                 } else {
                     kenai = ((Kenai) searchTextField.getSelectedKenai());
+                    setChildrenEnabled(KenaiSearchPanel.this,kenai!=null);
                     clearRecentAndFeatured();
                 }
             }
@@ -214,6 +189,16 @@ public class KenaiSearchPanel extends JPanel {
 //                kenaiRecentProjectsList=null;
 //            }
 //        });
+    }
+    private void setChildrenEnabled(Component root, boolean enabled) {
+        root.setEnabled(enabled);
+        if (root instanceof java.awt.Container) {
+            for (Component c : ((java.awt.Container) root).getComponents()) {
+                if (c != searchTextField) {
+                    setChildrenEnabled(c, enabled);
+                }
+            }
+        }
     }
     
     private void clearRecentAndFeatured() {
@@ -527,6 +512,9 @@ public class KenaiSearchPanel extends JPanel {
     }//GEN-LAST:event_createNewProjectButtonActionPerformed
 
     private void presentSpecialProjects(final JPanel wherePanel, final JScrollPane whereScrollPane, final JList whereList, final String type, final ProgressHandle ph) {
+        if (kenai==null) {
+            return;
+        }
         final JPanel progressPanel = createProgressPanel(ph);
         wherePanel.add(progressPanel, BorderLayout.CENTER);
         revalidate();
@@ -596,7 +584,6 @@ public class KenaiSearchPanel extends JPanel {
     }
     
     // added to support search by the projects root url...
-    private Pattern projectURLPattern;
     private static final int projectURLGroup = 1;
 
     private void invokeSearch() {
@@ -643,6 +630,7 @@ public class KenaiSearchPanel extends JPanel {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = searchTextField.getText();
+                Pattern projectURLPattern = Pattern.compile(kenai.getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
                 Matcher m = projectURLPattern.matcher(searchPattern);
                 if (m.matches()) {
                     searchPattern = m.group(projectURLGroup);

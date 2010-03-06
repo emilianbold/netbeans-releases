@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.UsingResolverImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
@@ -343,6 +344,9 @@ public final class Resolver3 implements Resolver {
     }
 
     private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken) {
+        if (isRecursionOnResolving(INFINITE_RECURSION)) {
+            return null;
+        }
         CsmObject result = null;
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
             String fqn = udir.getName() + "::" + nameToken; // NOI18N
@@ -352,7 +356,14 @@ public final class Resolver3 implements Resolver {
             }
         }
         if (result == null) {
-            for (CsmDeclaration decl : CsmUsingResolver.getDefault().findUsedDeclarations(containingNS)) {
+            CsmUsingResolver ur = CsmUsingResolver.getDefault();
+             Collection<CsmDeclaration> decls = null;
+            if (ur instanceof UsingResolverImpl) {
+                 decls = ((UsingResolverImpl)ur).findUsedDeclarations(containingNS,this);
+            } else {
+                 decls = ur.findUsedDeclarations(containingNS);
+            }
+            for (CsmDeclaration decl : decls) {
                 if (CharSequenceKey.Comparator.compare(nameToken, decl.getName()) == 0) {
                     if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
                         result = decl;

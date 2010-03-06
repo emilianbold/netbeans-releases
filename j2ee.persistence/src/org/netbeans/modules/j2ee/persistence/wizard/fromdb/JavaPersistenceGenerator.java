@@ -375,31 +375,35 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 FileObject packageFileObject = entityClass.getPackageFileObject();
                 beanMap.put(entityClassName, entityClass);
 
-                if (packageFileObject.getFileObject(entityClassName, "java") != null) { // NOI18N
-                    progressContributor.progress(i);
-                    continue;
-                }
                 String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
-
                 progressContributor.progress(progressMsg, i);
                 if (progressPanel != null){
                     progressPanel.setText(progressMsg);
                 }
 
-                generationPackageFOs.add(packageFileObject);
-                generatedEntityClasses.add(entityClassName);
+                UpdateType ut = UpdateType.valueOf(entityClass.getUpdateType());
+                FileObject entity = packageFileObject.getFileObject(entityClassName, "java"); //NOI18N
+                switch (ut){
+                    case RECREATE:
+                        entity.delete();
+                        entity = null;
+                    case NEW:{
+                        generationPackageFOs.add(packageFileObject);
+                        generatedEntityClasses.add(entityClassName);
 
-                // XXX Javadoc
-                FileObject entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
-                generatedEntityFOs.add(entity);
-                generatedFOs.add(entity);
-                
-                // NO PK classes for views
-                if (entityClass.isForTable() && !entityClass.isUsePkField()) {
-                    String pkClassName = createPKClassName(entityClassName);
-                    if (packageFileObject.getFileObject(pkClassName, "java") == null) { // NOI18N
-                        FileObject pkClass = GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
-                        generatedFOs.add(pkClass);
+                        // XXX Javadoc
+                        entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                        generatedEntityFOs.add(entity);
+                        generatedFOs.add(entity);
+
+                        // NO PK classes for views
+                        if (entityClass.isForTable() && !entityClass.isUsePkField()) {
+                            String pkClassName = createPKClassName(entityClassName);
+                            if (packageFileObject.getFileObject(pkClassName, "java") == null) { // NOI18N
+                                FileObject pkClass = GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
+                                generatedFOs.add(pkClass);
+                            }
+                        }
                     }
                 }
             }

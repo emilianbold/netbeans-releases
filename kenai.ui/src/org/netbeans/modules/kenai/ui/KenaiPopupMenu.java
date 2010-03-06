@@ -82,7 +82,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
 
-public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction, PropertyChangeListener {
+public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction {
 
     private static Map<Project, String> repoForProjCache = new WeakHashMap<Project, String>();
 
@@ -94,7 +94,6 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
     public static synchronized KenaiPopupMenu getDefault() {
         if (inst == null) {
             inst = new KenaiPopupMenu();
-            KenaiManager.getDefault().getKenai("https://kenai.com").addPropertyChangeListener(Kenai.PROP_URL_CHANGED, inst);
         }
         return inst;
     }
@@ -108,15 +107,9 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         assert false;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
-            repoForProjCache.clear();
-        }
-    }
-
     private KenaiProject getActualKenaiProject (Project p, String kenaiProjectName) throws KenaiException {
         KenaiProject defaultKenaiProject = KenaiProject.forRepository(repoForProjCache.get(p));
-        Kenai kenai = KenaiManager.getDefault().getKenai(defaultKenaiProject != null ? defaultKenaiProject.getKenai().getUrl().toString() : "https://kenai.com"); //NOI18N
+        Kenai kenai = defaultKenaiProject != null ? defaultKenaiProject.getKenai(): Utilities.getPreferredKenai(); //NOI18N
         KenaiProject kp = kenai == null ? null : kenai.getProject(kenaiProjectName);
         return kp;
     }

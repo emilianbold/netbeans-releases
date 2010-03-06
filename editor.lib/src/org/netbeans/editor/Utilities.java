@@ -54,6 +54,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
@@ -321,7 +322,7 @@ public class Utilities {
     throws BadLocationException {
         int rowStart = getRowStart(c, offset);
         int endInit = c.getUI().getNextVisualPositionFrom(c,
-                              rowStart, null, javax.swing.SwingConstants.WEST, null);
+                              rowStart, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
 
         if (x == BaseKit.MAGIC_POSITION_MAX){
             return endInit;
@@ -349,7 +350,7 @@ public class Utilities {
         
         int start = c.viewToModel(new java.awt.Point(Math.max(eui.textLeftMarginWidth, x - 2*r.width ),r.y));
         tempRect = c.modelToView(start);
-        if (tempRect == null && tempRect.x > x){
+        if (tempRect == null || tempRect.x > x){
             start = getRowStart(c, end);
         }
         
@@ -494,7 +495,7 @@ public class Utilities {
         int nextVisualPosition = -1;
         if (nextWordOffset > 0){
             nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                    nextWordOffset - 1, null, javax.swing.SwingConstants.EAST, null);
+                    nextWordOffset - 1, Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
         }
         return (nextVisualPosition == -1) ? nextWordOffset : nextVisualPosition;
     }
@@ -513,7 +514,7 @@ public class Utilities {
     throws BadLocationException {
         int prevWordOffset = getPreviousWord((BaseDocument)c.getDocument(), offset);
         int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                              prevWordOffset, null, javax.swing.SwingConstants.WEST, null);
+                              prevWordOffset, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
         if (nextVisualPosition == 0 && prevWordOffset == 0){
             return 0;
         }

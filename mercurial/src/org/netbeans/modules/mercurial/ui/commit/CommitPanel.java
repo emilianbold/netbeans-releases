@@ -527,7 +527,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
             NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
                     NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
         return result;
@@ -536,6 +536,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private void initializeTabs () {
          tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
          tabbedPane.addTab(NbBundle.getMessage(CommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+         tabbedPane.setPreferredSize(basePanel.getPreferredSize());
          add(tabbedPane);
          tabbedPane.addChangeListener(this);
     }

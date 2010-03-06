@@ -42,7 +42,6 @@
 package org.netbeans.updater;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.*;
 
@@ -84,6 +83,9 @@ public final class ModuleUpdater extends Thread {
 
     /** Extension of the distribution files */
     public static final String NBM_EXTENSION = "nbm"; // NOI18N
+
+    /** Extension of the OSGi distribution files */
+    public static final String JAR_EXTENSION = "jar"; // NOI18N
 
     /** The name of the log file */
     public static final String LOG_FILE_NAME = "update.log"; // NOI18N
@@ -263,6 +265,10 @@ public final class ModuleUpdater extends Thread {
             JarFile jarFile = null;
 
             try {
+                if(f.getName().endsWith(".jar")) {
+                    //OSGi bundle
+                    totalLength += f.length();
+                } else {
                 jarFile = new JarFile (f);
                 Enumeration<JarEntry> entries = jarFile.entries ();
                 while (entries.hasMoreElements ()) {
@@ -273,6 +279,7 @@ public final class ModuleUpdater extends Thread {
                     if ((entry.getName ().startsWith (UPDATE_NETBEANS_DIR) || entry.getName ().startsWith (ModuleUpdater.UPDATE_JAVA_EXT_DIR) || entry.getName ().startsWith (UPDATE_MAIN_DIR)) && ! entry.isDirectory ()) {
                         totalLength += entry.getSize ();
                     }
+                }
                 }
                 UpdaterFrame.setProgressValue (i ++);
             } catch (java.io.IOException e) {
@@ -358,6 +365,33 @@ public final class ModuleUpdater extends Thread {
                 try {
                     jarFile = new JarFile (nbm);
                     Enumeration<JarEntry> entries = jarFile.entries();
+
+                    if (jarFile.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                        //OSGi bundle
+                        File osgiJar = nbm;
+                        
+                        File destFile = new File(cluster, "modules/" + osgiJar.getName());
+                        if (destFile.exists()) {
+                            File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
+                            bckFile.getParentFile().mkdirs();
+                            // System.out.println("Backing up" ); // NOI18N
+                            copyStreams(new FileInputStream(destFile), new FileOutputStream(bckFile), -1);
+                            if (!destFile.delete() && isWindows()) {
+                                trickyDeleteOnWindows(destFile);
+                            }
+                        } else {
+                            destFile.getParentFile().mkdirs();
+                        }
+
+                        bytesRead = copyStreams(new FileInputStream(osgiJar), new FileOutputStream(destFile), bytesRead);
+                        long crc = UpdateTracking.getFileCRC(destFile);
+                        version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
+                        //create config/Modules/cnb.xml
+
+                        UpdaterFrame.setProgressValue(bytesRead);
+                        modtrack.setOSGi(true);
+                    } else {
+                        //NBM
                     List <String> executableFiles = readExecutableFilesList(jarFile);
                     List <File> filesToChmod = new ArrayList <File> ();
                     while( entries.hasMoreElements() ) {
@@ -432,6 +466,7 @@ public final class ModuleUpdater extends Thread {
 
                             deleteDir( getMainDirectory (cluster) );
                         }
+                    }
                     }
                 }
                 catch ( java.io.IOException e ) {
@@ -533,51 +568,12 @@ public final class ModuleUpdater extends Thread {
         if (isWindows() || executableFiles.isEmpty()) {
             return;
         }
-        // Determine if java.io.File.setExecutable method is supported
-        Method setExecutableMethod = null;
-        try {
-            setExecutableMethod = File.class.getMethod("setExecutable", Boolean.TYPE, Boolean.TYPE);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
 
-        if (setExecutableMethod != null) {
-            for (File executableFile : executableFiles) {
-                try {
-                    setExecutableMethod.invoke(executableFile, true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            // Find chmod
-            File chmod = new File("/bin/chmod"); // NOI18N
-            if (!chmod.isFile()) {
-                chmod = new File("/usr/bin/chmod"); // NOI18N
-            }
-            if (chmod.isFile()) {
-                Process process = null;
-                try {
-                    List<String> command = new ArrayList<String>();
-                    command.add(chmod.getAbsolutePath());
-                    command.add("a+x");
-                    for (File executableFile : executableFiles) {
-                        command.add(executableFile.getAbsolutePath());
-                    }
-                    process = new ProcessBuilder(command).start();
-                    process.waitFor();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (process != null) {
-                        process.destroy();
-                    }
-                }
-
-            }
-        }
+        for (File executableFile : executableFiles) {
+            executableFile.setExecutable(true, false);
+         }
     }
-
+        
     public static boolean trickyDeleteOnWindows(File destFile) {
         assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());

@@ -227,6 +227,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public void setIssue(BugzillaIssue issue) {
+        assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
@@ -2549,31 +2550,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void addNetbeansInfo() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Product Version = ");                                        // NOI18N
-        sb.append(getProductVersionValue ());
-        sb.append("\n");                                                        // NOI18N
-
-        sb.append("Operating System = ");                                       // NOI18N
-        sb.append(System.getProperty("os.name", "unknown"));                    // NOI18N
-        sb.append("version");                                                   // NOI18N
-        sb.append(System.getProperty("os.version", "unknown"));                 // NOI18N
-        sb.append("running on");                                                // NOI18N
-        sb.append(System.getProperty("os.arch", "unknown"));                    // NOI18N
-        sb.append("\n");                                                        // NOI18N
-
-        sb.append("Java; VM; Vendor = ");                                       // NOI18N
-        sb.append(System.getProperty("java.version", "unknown"));               // NOI18N
-        sb.append("\n");                                                        // NOI18N
-
-        sb.append("Runtime = ");                                                // NOI18N
-        sb.append(System.getProperty("java.vm.name", "unknown"));               // NOI18N
-        sb.append(" ");                                                         // NOI18N
-        sb.append(System.getProperty("java.vm.version", ""));                   // NOI18N
-        sb.append("\n");                                                        // NOI18N
-
-        addCommentArea.setText(sb.toString());
+        String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.newIssue.netbeansInfo"); // NOI18N
+        Object[] info = new Object[] {
+            getProductVersionValue(),
+            System.getProperty("os.name", "unknown"), // NOI18N
+            System.getProperty("os.version", "unknown"), // NOI18N
+            System.getProperty("os.arch", "unknown"),  // NOI18N
+            System.getProperty("java.version", "unknown"), // NOI18N
+            System.getProperty("java.vm.name", "unknown"), // NOI18N
+            System.getProperty("java.vm.version", "") // NOI18N
+        };
+        String infoTxt = MessageFormat.format(format, info);
+        addCommentArea.setText(infoTxt);
     }
 
     public static String getProductVersionValue () {

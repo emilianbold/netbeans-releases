@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -494,8 +495,12 @@ public class Util {
         if(providerClass != null){
             Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
             Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
-            if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
-                Util.addLibraryToProject(project, lib);
+            if (lib != null) {
+                if(!Util.isDefaultProvider(project, selectedProvider)) {
+                    Util.addLibraryToProject(project, lib);
+                } else if (selectedProvider.getAnnotationProcessor() != null){
+                    Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                }
             }
        }
 

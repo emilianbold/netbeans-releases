@@ -109,6 +109,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -952,18 +953,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(key.toUpperCase()); // XXX always uppercase?
-                    if (issue != null) {
-                        issue.open();
-                    } else {
-                        // XXX nice message?
-                    }
+                    openIssue((NbJiraIssue) repository.getIssue(key.toUpperCase()));
                 } finally {
                     handle.finish();
                 }
             }
         });
         t[0].schedule(0);
+    }
+
+    protected void openIssue(NbJiraIssue issue) {
+        if (issue != null) {
+            issue.open();
+        } else {
+            // XXX nice message?
+        }
     }
 
     private void onWeb() {

@@ -39,8 +39,8 @@
 package org.netbeans.modules.html.editor.indexing;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,10 +67,13 @@ import org.openide.filesystems.FileObject;
  */
 public class HtmlFileModel {
 
+    private static final String STYLE_TAG_NAME = "style"; //NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(HtmlFileModel.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
-    private Collection<Entry> references;
+    private List<HtmlLinkEntry> references;
+    private List<OffsetRange> embeddedCssSections;
     private HtmlParserResult parserResult;
 
     public HtmlFileModel(Source source) throws ParseException {
@@ -104,8 +107,12 @@ public class HtmlFileModel {
         return getSnapshot().getSource().getFileObject();
     }
 
-    public Collection<Entry> getReferences() {
-        return references == null ? Collections.<Entry>emptyList() : references;
+    public List<HtmlLinkEntry> getReferences() {
+        return references == null ? Collections.<HtmlLinkEntry>emptyList() : references;
+    }
+
+    public List<OffsetRange> getEmbeddedCssSections() {
+        return embeddedCssSections == null ? Collections.<OffsetRange>emptyList() : embeddedCssSections;
     }
 
     /**
@@ -116,34 +123,44 @@ public class HtmlFileModel {
         return null == references;
     }
 
-    private Collection<Entry> getReferencesCollectionInstance() {
+    private List<HtmlLinkEntry> getReferencesCollectionInstance() {
         if (references == null) {
-            references = new ArrayList<Entry>();
+            references = new ArrayList<HtmlLinkEntry>();
         }
         return references;
     }
 
+    private List<OffsetRange> getEmbeddedCssSectionsCollectionInstance() {
+        if (embeddedCssSections == null) {
+            embeddedCssSections = new ArrayList<OffsetRange>();
+        }
+        return embeddedCssSections;
+    }
+
     private void init() {
+        //XXX this scans only core html parse tree, what about the other namespaces????
         AstNode root = parserResult.root();
         if(root != null) {
             AstNodeUtils.visitChildren(root, new ReferencesSearch(), AstNode.NodeType.OPEN_TAG);
-        } //else completely broken source, no parser result
+        } else {
+            //completely broken source, no parser result
+        }
     }
 
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer(super.toString());
-        buf.append(":");
-        for (Entry c : getReferences()) {
-            buf.append(" references=");
+        buf.append(":"); //NOI18N
+        for (HtmlLinkEntry c : getReferences()) {
+            buf.append(" references="); //NOI18N
             buf.append(c);
-            buf.append(',');
+            buf.append(','); //NOI18N
         }
         return buf.toString();
     }
 
 
-    public Entry createEntry(String name, OffsetRange range) {
+    public HtmlLinkEntry createFileReferenceEntry(String name, OffsetRange range, String tagName, String attributeName) {
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
@@ -159,53 +176,14 @@ public class HtmlFileModel {
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
         }
-        return new Entry(name, range, documentRange);
-    }
-
-    public class Entry {
-
-        private String name;
-        private OffsetRange astRange;
-        private OffsetRange documentRange;
-
-        private Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
-            this.name = name;
-            this.astRange = astRange;
-            this.documentRange = documentRange;
-        }
-
-        public HtmlFileModel getModel() {
-            return HtmlFileModel.this;
-        }
-
-        public boolean isValidInSourceDocument() {
-            return documentRange != null;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public OffsetRange getDocumentRange() {
-            return documentRange;
-        }
-
-        public OffsetRange getRange() {
-            return astRange;
-        }
-
-        @Override
-        public String toString() {
-            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + 
-                    getName() + "; " + getRange().getStart() + " - " +
-                    getRange().getEnd() + "]";//NOI18N
-        }
+        return new HtmlLinkEntry(getFileObject(), name, range, documentRange, tagName, attributeName);
     }
 
     public class ReferencesSearch implements AstNodeVisitor {
 
         @Override
         public void visit(AstNode node) {
+            //XXX This is HTML specific - USE TagMetadata!!!
             //TODO this is a funny way how to figure out if the attribute contains
             //a file reference or not. The code needs to be generified later.
             Map<String, AttrValuesCompletion> completions = AttrValuesCompletion.getSupportsForTag(node.name());
@@ -215,12 +193,28 @@ public class HtmlFileModel {
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
                         getReferencesCollectionInstance().add(
-                                createEntry(attr.unquotedValue(),
+                                createFileReferenceEntry(attr.unquotedValue(),
                                 new OffsetRange(attr.unqotedValueOffset(),
-                                attr.unqotedValueOffset() + attr.unquotedValue().length())));
+                                attr.unqotedValueOffset() + attr.unquotedValue().length()),
+                                node.name(),
+                                attr.name()));
                     }
                 }
             }
+
+            //check if the tag can contain css code
+            if(STYLE_TAG_NAME.equalsIgnoreCase(node.name())) { //NOI18N
+                //XXX maybe we should also check the type attribute for text/css mimetype
+                if(!node.isEmpty()) {
+                    int from = node.endOffset();
+                    AstNode closeTag = node.getMatchingTag();
+                    if(closeTag != null) {
+                        int to = closeTag.startOffset();
+                        getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));
+                    }
+                }
+            }
+
         }
 
     }

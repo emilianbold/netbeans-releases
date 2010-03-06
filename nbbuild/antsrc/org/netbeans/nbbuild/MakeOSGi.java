@@ -156,6 +156,9 @@ public class MakeOSGi extends Task {
                         String cnb = prescan(jf, info);
                         if (cnb == null) {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
+                        } else if (SKIPPED_PSEUDO_MODULES.contains(cnb)) {
+                            log("Skipping " + jar);
+                            continue;
                         } else if (infos.containsKey(cnb)) {
                             log(jar + " appears to not be the only module named " + cnb, Project.MSG_WARN);
                         } else {
@@ -202,7 +205,7 @@ public class MakeOSGi extends Task {
                 antlibJF.close();
             }
             for (String antlibImport : antlibPackages) {
-                if (!antlibImport.startsWith("org.apache.tools.")) {
+                if (!antlibImport.startsWith("org.apache.tools.") && !availablePackages.contains(antlibImport)) {
                     info.importedPackages.add(antlibImport);
                 }
             }
@@ -287,14 +290,18 @@ public class MakeOSGi extends Task {
             Attributes netbeansAttr = netbeans.getMainAttributes();
             String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
             if (originalBundleName != null) { // #180201
+                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
+                if (bundleFile.lastModified() > module.lastModified()) {
+                    log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
+                    return;
+                }
                 Copy copy = new Copy();
                 copy.setProject(getProject());
                 copy.setOwningTarget(getOwningTarget());
                 copy.setFile(module);
-                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
                 copy.setTofile(bundleFile);
+                copy.setVerbose(true);
                 copy.execute();
-                log("Copying " + module + " unmodified into " + bundleFile, Project.MSG_VERBOSE);
                 return;
             }
             Manifest osgi = new Manifest();
@@ -395,11 +402,10 @@ public class MakeOSGi extends Task {
             throw new IllegalArgumentException("Does not appear to be a NetBeans module");
         }
         String cnb = codename.replaceFirst("/\\d+$", "");
-        if (cnb.equals("org.netbeans.core.netigso")) {
-            // special handling...
+        osgi.putValue("Bundle-SymbolicName", cnb);
+        if (cnb.equals("org.netbeans.core.osgi")) {
             osgi.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
         }
-        osgi.putValue("Bundle-SymbolicName", cnb);
         Info myInfo = infos.get(cnb);
         String spec = netbeans.getValue("OpenIDE-Module-Specification-Version");
         String bundleVersion = null;
@@ -435,19 +441,21 @@ public class MakeOSGi extends Task {
             }
         }
         StringBuilder requireBundles = new StringBuilder();
-        /* XXX does not work, perhaps because of cyclic dependencies:
-        // do not need to import any API, just need it to be started:
-        requireBundles.append("org.netbeans.core.netigso");
+        /* XXX does not work for unknown reasons:
+        if (!cnb.matches("org[.](core[.]startup[.]|netbeans[.]bootstrap|openide[.](filesystems|modules|util|util[.]lookup))")) {
+            // do not need to import any API, just need it to be started:
+            requireBundles.append("org.netbeans.core.osgi");
+        }
          */
         Set<String> imports = new TreeSet<String>(myInfo.importedPackages);
         hideImports(imports, myInfo);
         String dependencies = netbeans.getValue("OpenIDE-Module-Module-Dependencies");
         if (dependencies != null) {
             for (String dependency : dependencies.split(" *, *")) {
-                if (requireBundles.length() > 0) {
-                    requireBundles.append(", ");
-                }
                 String depCnb = translateDependency(requireBundles, dependency);
+                if (depCnb == null) {
+                    continue;
+                }
                 Info imported = infos.get(depCnb);
                 if (imported != null) {
                     imports.removeAll(imported.exportedPackages);
@@ -481,10 +489,26 @@ public class MakeOSGi extends Task {
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
         // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
                 osgi.putValue(tokenAttr, v);
+            }
+        }
+        String v = netbeans.getValue("OpenIDE-Module-Requires");
+        if (v != null) {
+            StringBuilder b = null;
+            for (String tok : v.split("[, ]+")) {
+                if (!tok.matches("org.openide.modules.ModuleFormat\\d+")) {
+                    if (b == null) {
+                        b = new StringBuilder(tok);
+                    } else {
+                        b.append(", ").append(tok);
+                    }
+                }
+            }
+            if (b != null) {
+                osgi.putValue("OpenIDE-Module-Requires", b.toString());
             }
         }
         // autoload, eager status are ignored since OSGi has no apparent equivalent
@@ -565,10 +589,16 @@ public class MakeOSGi extends Task {
             throw new IllegalArgumentException("bad dep: " + dependency);
         }
         String depCnb = m.group(1);
+        if (SKIPPED_PSEUDO_MODULES.contains(depCnb)) {
+            return null;
+        }
         String depMajLo = m.group(2);
         String depMajHi = m.group(3);
         String comparison = m.group(4);
         String version = m.group(5);
+        if (b.length() > 0) {
+            b.append(", ");
+        }
         b.append(depCnb);
         if (!"=".equals(comparison)) {
             if (version == null) {
@@ -808,6 +838,12 @@ public class MakeOSGi extends Task {
         "org.xml.sax",
         "org.xml.sax.ext",
         "org.xml.sax.helpers"
+    ));
+
+    private static final Set<String> SKIPPED_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.netbeans.core.netigso",
+            "org.netbeans.libs.osgi",
+            "org.netbeans.libs.felix"
     ));
 
 }

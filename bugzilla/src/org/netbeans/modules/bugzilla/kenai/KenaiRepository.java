@@ -146,7 +146,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true);
+            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true); // NOI18N
         }
         return allIssues;
     }

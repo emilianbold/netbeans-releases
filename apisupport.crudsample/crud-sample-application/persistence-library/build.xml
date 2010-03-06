@@ -6,21 +6,11 @@
     <description>Builds, tests, and runs the project org.netbeans.modules.persistencelibrary.</description>
     <import file="nbproject/build-impl.xml"/>
     <target name="netbeans-extra">
-        <fail message="persistence-library1.jar doesn't found on ${persistence-library1.jar}.">
-            <condition>
-                <not>
-                    <available file="${persistence-library1.jar}"/>
-                </not>
-            </condition>
-        </fail>
-        <copy file="${persistence-library1.jar}" tofile="${cluster}/modules/ext/persistence/persistence-library1.jar"/>
-        <fail message="persistence-library2.jar doesn't found on ${persistence-library2.jar}.">
-            <condition>
-                <not>
-                    <available file="${persistence-library2.jar}"/>
-                </not>
-            </condition>
-        </fail>
-        <copy file="${persistence-library2.jar}" tofile="${cluster}/modules/ext/persistence/persistence-library2.jar"/>
+        <property name="external_dir" value="external"/>
+        <copy todir="${cluster}/modules/ext/persistence/" failonerror="false" overwrite="true" verbose="true">
+            <fileset dir="${external_dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
     </target>
 </project>

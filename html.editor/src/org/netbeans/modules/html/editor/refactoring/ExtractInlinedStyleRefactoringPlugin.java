@@ -1,0 +1,247 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.html.editor.refactoring;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.css.refactoring.api.CssRefactoring;
+import org.netbeans.modules.css.refactoring.api.Entry;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author marekfukala
+ */
+public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
+
+    private boolean cancelled;
+    private ExtractInlinedStyleRefactoring refactoring;
+
+    public ExtractInlinedStyleRefactoringPlugin(ExtractInlinedStyleRefactoring refactoring) {
+        this.refactoring = refactoring;
+    }
+
+    //TODO implement the checks!
+
+    @Override
+    public Problem preCheck() {
+        return null;
+    }
+
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+
+    @Override
+    public void cancelRequest() {
+        cancelled = true;
+    }
+
+    @Override
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        if(cancelled) {
+            return null;
+        }
+        ModificationResult modificationResult = new ModificationResult();
+        RefactoringContext context = refactoring.getRefactoringSource().lookup(RefactoringContext.class);
+        assert context != null;
+
+        switch(refactoring.getMode()) {
+            case refactorToExistingEmbeddedSection:
+                refactorToEmbeddedSection(modificationResult, context, refactoringElements);
+        }
+
+        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+
+        for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+            for (Difference diff : modificationResult.getDifferences(fo)) {
+                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+            }
+        }
+
+        return null;
+
+    }
+
+    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, RefactoringElementsBag refactoringElements) {
+        List<InlinedStyleInfo> inlinedStyles = context.getInlinedStyles();
+        CloneableEditorSupport currentFileEditor = GsfUtilities.findCloneableEditorSupport(context.getFile());
+        List<Difference> diffs = new LinkedList<Difference>();
+        int embeddedSectionEnd = refactoring.getExistingEmbeddedCssSection().getEnd();
+        assert embeddedSectionEnd >= 0;
+
+
+        //get existing id selectors
+        //XXX clarify the parsing of embedded source model - this call parses the file again!
+        //should be likely done in different way
+        Collection<Entry> existingIds = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<String> allIds = new LinkedList<String>();
+        for(Entry e : existingIds) {
+            allIds.add(e.getName());
+        }
+
+        for(InlinedStyleInfo si : inlinedStyles) {
+            try {
+                //TODO define some pattern for the generation in the css options!
+
+                //find first free id selector name
+                String idSelectorNameBase = si.getTag() + "id";
+                String idSelectorName;
+                int counter = 0;
+                while(allIds.contains(idSelectorName = idSelectorNameBase + (counter++ == 0 ? "" : counter))) {
+                }
+                allIds.add(idSelectorName);
+
+                //delete the inlined style - attribute name, equal sign, whitespaces and the value
+                //and replace with id selector reference
+                int deleteFrom = si.getAttributeStartOffset();
+                int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
+                String idSelectorUsageText = "id=\""+ idSelectorName + "\""; //NOI18N
+
+                Difference changeDiff = new Difference(Difference.Kind.CHANGE,
+                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                        context.getDocument().getText(deleteFrom, deleteTo - deleteFrom),
+                        idSelectorUsageText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
+
+                diffs.add(changeDiff);
+
+                String[] lines = new String[]{
+                    "", //empty line = will add new line
+                    "#" + idSelectorName + "{",
+                    "\t" + WebUtils.unquotedValue(si.getInlinedCssValue()) + ";",
+                    "}"}; //NOI18N
+                String idSelectorText = formatCssCode(context.getDocument(), embeddedSectionEnd, lines);
+                    
+                //generate the embedded id selector section
+                Difference cssIdSelectorDiff = new Difference(Difference.Kind.INSERT,
+                        currentFileEditor.createPositionRef(embeddedSectionEnd, Bias.Forward),
+                        currentFileEditor.createPositionRef(embeddedSectionEnd, Bias.Backward),
+                        null,
+                        idSelectorText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_IntroduceNewIDSelector")); //NOI18N
+                
+                diffs.add(cssIdSelectorDiff);
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        modifications.addDifferences(context.getFile(), diffs);
+    }
+
+    //TODO there should be a generic facility allowing to reformat a piece of code
+    //according to the css formatter options. I could possibly invoke the formatter
+    //on an artificial document with the new code content, but since we do not have the
+    //pretty printer it would not help much.
+    private String formatCssCode(final Document doc, final int cssSectionEnd, String... lines) {
+        StringBuilder b = new StringBuilder();
+        final AtomicInteger ret = new AtomicInteger(0); //default is 0 indent if something fails in the later runnable
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    //find last nonwhite line indent
+                    int firstNonWhiteBw = Utilities.getFirstNonWhiteBwd((BaseDocument) doc, cssSectionEnd);
+                    //get the line indent
+                    ret.set(Utilities.getRowIndent((BaseDocument)doc, firstNonWhiteBw));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+
+        });
+
+        int baseIndent = ret.get();
+        int indentLevelSize = IndentUtils.indentLevelSize(doc);
+
+        for(String line : lines) {
+            //add base indent
+            b.append(IndentUtils.createIndentString(doc, baseIndent));
+
+            //replace each \t by proper indentation level size
+            //and copy the line to the buffer
+            for(int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if(c == '\t') { //NOI18N
+                    b.append(IndentUtils.createIndentString(doc, indentLevelSize));
+                } else {
+                    b.append(c);
+                }
+            }
+
+            //and new line at the end
+            b.append('\n'); //NOI18N
+        }
+
+
+        return b.toString();
+    }
+
+}

@@ -86,7 +86,22 @@ public final class MacroExpanderFactory {
                 // should not occur - as info is available
             }
         }
+        if (result == null) {
+            // avoid unexpected NPE in clients
+            // TODO: fix empty cathces above
+            result = new MacroExpander() {
 
+                @Override
+                public String expandPredefinedMacros(String string) throws ParseException {
+                    return  string;
+                }
+
+                @Override
+                public String expandMacros(String string, Map<String, String> envVariables) throws ParseException {
+                    return  string;
+                }
+            };
+        }
         return result;
     }
 
@@ -146,11 +161,13 @@ public final class MacroExpanderFactory {
             return result == null ? "${" + macro + "}" : result; // NOI18N
         }
 
+        @Override
         public final String expandPredefinedMacros(
                 final String string) throws ParseException {
             return expandMacros(string, predefinedMacros);
         }
 
+        @Override
         public final String expandMacros(
                 final String string,
                 final Map<String, String> map) throws ParseException {
@@ -228,7 +245,7 @@ public final class MacroExpanderFactory {
             return res.toString();
         }
 
-        protected void setupPredefined(ExpanderStyle style) {
+        protected final void setupPredefined(ExpanderStyle style) {
             String soext;
             String osname;
             switch (hostInfo.getOSFamily()) {
