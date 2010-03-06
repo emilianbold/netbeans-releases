@@ -62,7 +62,7 @@ public class MeasureJ2SEActionsTest {
         System.setProperty("suite", "UI Responsiveness J2SE Actions suite");
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
-        .addTest(SearchTest.class)
+//        .addTest(SearchTest.class)
 //  needs to be fixed      .addTest(CloseAllEditorsTest.class)
 //  needs to be fixed      .addTest(CloseEditorTest.class)
 //  needs to be fixed      .addTest(CloseEditorModifiedTest.class)
