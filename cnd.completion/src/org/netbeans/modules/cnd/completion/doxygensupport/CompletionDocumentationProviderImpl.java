@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.completion.doxygensupport;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -62,6 +64,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
+    public static Document doc = null;
+
     @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
         if (!(item instanceof CsmResultItem)) {
@@ -70,8 +74,10 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
 
         Object assoc = ((CsmResultItem) item).getAssociatedObject();
 
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+
         if (assoc instanceof CsmObject) {
-            return new AsyncCompletionTask(new DocQuery((CsmObject) assoc));
+            return new AsyncCompletionTask(new DocQuery((CsmObject) assoc, csmFile));
         }
 
         return null;
@@ -80,9 +86,11 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
     private static class DocQuery extends AsyncCompletionQuery {
 
         private final CsmObject obj;
+        private final CsmFile file;
 
-        public DocQuery(CsmObject obj) {
+        public DocQuery(CsmObject obj, CsmFile file) {
             this.obj = obj;
+            this.file = file;
         }
 
         @Override
@@ -90,7 +98,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
 
             if (documentation == null) {
-                documentation = ManDocumentation.getDocumentation(obj);
+                documentation = ManDocumentation.getDocumentation(obj, file);
             }
 
             if (documentation == null) {

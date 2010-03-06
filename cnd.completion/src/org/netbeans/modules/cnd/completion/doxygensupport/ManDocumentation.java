@@ -47,8 +47,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,8 +56,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
@@ -96,29 +102,29 @@ public class ManDocumentation {
         return manPath;
     }
 
-    public static CompletionDocumentation getDocumentation(CsmObject obj) {
+    public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) {
         if (obj instanceof CsmFunction) {
-            return getDocumentation(((CsmFunction) obj).getName().toString());
+            return getDocumentation(((CsmFunction) obj).getName().toString(), file);
         }
 
         return null;
     }
 
-    public static CompletionDocumentation getDocumentation(String name) {
-        return getDocumentation(name, 3); /**Supposing all functions goes from chapter 3*/
+    public static CompletionDocumentation getDocumentation(String name, CsmFile file) {
+        return getDocumentation(name, 3, file); /**Supposing all functions goes from chapter 3*/
     }
 
-    public static CompletionDocumentation getDocumentation(String name, int chapter) {
-        String doc = getDocumentationForName(name, chapter);
+    public static CompletionDocumentation getDocumentation(String name, int chapter, CsmFile file) {
+        String doc = getDocumentationForName(name, chapter, file);
 
         if (doc == null) {
             return null;
         }
 
-        return new CompletionDocumentationImpl(doc);
+        return new CompletionDocumentationImpl(doc, file);
     }
 
-    public static String getDocumentationForName(String name, int chapter) {
+    public static String getDocumentationForName(String name, int chapter, CsmFile file) {
         try {
             File cache = getCacheFile(name, chapter);
 
@@ -126,7 +132,7 @@ public class ManDocumentation {
                 return readFile(cache);
             }
 
-            String doc = createDocumentationForName(name, chapter);
+            String doc = createDocumentationForName(name, chapter, file);
 
             if (doc != null) {
                 OutputStream out = null;
@@ -187,34 +193,20 @@ public class ManDocumentation {
         return res;
     }
 
-    private static String createDocumentationForName(String name, int chapter) throws IOException {
-        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
-//        ExitStatus exitStatus = ProcessUtils.execute(execEnv, "man", name); // NOI18N
-//        StringReader sr;
-//        if (exitStatus.isOK() && exitStatus.output.length() > 0) {
-//            sr = new StringReader(exitStatus.output);
-//        } else {
-//            sr = new StringReader(exitStatus.error);
-//        }
-//        BufferedReader br = new BufferedReader(sr);
-//        String text = new Man2HTML(br).getHTML();
-//        br.close();
-
-        if (getManPath() == null) {
-            return null;
+    private static String createDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
+        NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
+        NativeProject np = nfi.getNativeProject();
+        NativeExitStatus exitStatus = np.execute("man", new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}, name); // NOI18N
+        StringReader sr;
+        if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+            sr = new StringReader(exitStatus.output);
+        } else {
+            sr = new StringReader(exitStatus.error);
         }
-        
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
-        InputStream is = p0.getInputStream();
-        InputStreamReader ist = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(ist);
+        BufferedReader br = new BufferedReader(sr);
         String text = new Man2HTML(br).getHTML();
         br.close();
-        ist.close();
-        is.close();
-        bos.close();
-
+        sr.close();
         return text;
     }
 
@@ -271,9 +263,11 @@ public class ManDocumentation {
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
 
         private String doc;
+        private CsmFile file;
 
-        public CompletionDocumentationImpl(String doc) {
+        public CompletionDocumentationImpl(String doc, CsmFile file) {
             this.doc = doc;
+            this.file = file;
         }
 
         @Override
@@ -303,7 +297,7 @@ public class ManDocumentation {
             int chapter = Integer.parseInt(chapterAndName[0]);
             String name = chapterAndName[1];
 
-            return ManDocumentation.getDocumentation(name, chapter);
+            return ManDocumentation.getDocumentation(name, chapter, file);
         }
 
         @Override
