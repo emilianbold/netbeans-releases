@@ -142,6 +142,7 @@ public class MakeOSGi extends Task {
             throw new BuildException("missing destdir");
         }
         List<File> jars = new ArrayList<File>();
+        List<File> fragments = new ArrayList<File>();
         Map<String,Info> infos = new HashMap<String,Info>();
         log("Prescanning JARs...");
         for (ResourceCollection rc : modules) {
@@ -149,6 +150,10 @@ public class MakeOSGi extends Task {
             while (it.hasNext()) {
                 File jar = ((FileResource) it.next()).getFile();
                 log("Prescanning " + jar, Project.MSG_VERBOSE);
+                if (jar.getParentFile().getName().equals("locale")) {
+                    fragments.add(jar);
+                    continue;
+                }
                 try {
                     JarFile jf = new JarFile(jar);
                     try {
@@ -158,16 +163,15 @@ public class MakeOSGi extends Task {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
                         } else if (SKIPPED_PSEUDO_MODULES.contains(cnb)) {
                             log("Skipping " + jar);
-                            continue;
                         } else if (infos.containsKey(cnb)) {
                             log(jar + " appears to not be the only module named " + cnb, Project.MSG_WARN);
                         } else {
                             infos.put(cnb, info);
+                            jars.add(jar);
                         }
                     } finally {
                         jf.close();
                     }
-                    jars.add(jar);
                 } catch (Exception x) {
                     throw new BuildException("Could not prescan " + jar + ": " + x, x, getLocation());
                 }
@@ -179,11 +183,22 @@ public class MakeOSGi extends Task {
             } catch (Exception x) {
                 throw new BuildException("Could not process " + jar + ": " + x, x, getLocation());
             }
-       }
+        }
+        for (File jar : fragments) {
+            try {
+                processFragment(jar);
+            } catch (Exception x) {
+                throw new BuildException("Could not process " + jar + ": " + x, x, getLocation());
+            }
+        }
     }
 
     private String prescan(JarFile module, Info info) throws Exception {
-        Attributes attr = module.getManifest().getMainAttributes();
+        Manifest manifest = module.getManifest();
+        if (manifest == null) {
+            return null;
+        }
+        Attributes attr = manifest.getMainAttributes();
         String cnb = attr.getValue("OpenIDE-Module");
         if ("org.netbeans.libs.osgi".equals(cnb)) {
             // Otherwise get e.g. CCE: org.netbeans.core.osgi.Activator cannot be cast to org.osgi.framework.BundleActivator
@@ -307,7 +322,7 @@ public class MakeOSGi extends Task {
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
             translate(netbeansAttr, osgiAttr, infos);
-            String cnb = osgiAttr.getValue("Bundle-SymbolicName");
+            String cnb = osgiAttr.getValue("Bundle-SymbolicName").replaceFirst(";.+", "");
             File bundleFile = findDestFile(cnb, osgiAttr.getValue("Bundle-Version"));
             if (bundleFile.lastModified() > module.lastModified()) {
                 log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
@@ -677,6 +692,62 @@ public class MakeOSGi extends Task {
                     importedPackages.add(clazz.substring(0, idx));
                 }
             }
+        }
+    }
+
+    private void processFragment(File fragment) throws Exception {
+        String cnb = findFragmentHost(fragment);
+        File bundleFile = new File(destdir, fragment.getName());
+        if (bundleFile.lastModified() > fragment.lastModified()) {
+            log("Skipping " + fragment + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
+            return;
+        }
+        log("Processing " + fragment + " into " + bundleFile);
+        Manifest mf = new Manifest();
+        Attributes attr = mf.getMainAttributes();
+        attr.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        attr.putValue("Bundle-ManifestVersion", "2");
+        attr.putValue("Bundle-SymbolicName", cnb + "-branding");
+        attr.putValue("Fragment-Host", cnb);
+        JarFile jar = new JarFile(fragment);
+        try {
+            OutputStream bundle = new FileOutputStream(bundleFile);
+            try {
+                ZipOutputStream zos = new JarOutputStream(bundle, mf);
+                Set<String> parents = new HashSet<String>();
+                Enumeration<? extends ZipEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String path = entry.getName();
+                    if (path.endsWith("/") || path.equals("META-INF/MANIFEST.MF")) {
+                        continue;
+                    }
+                    InputStream is = jar.getInputStream(entry);
+                    try {
+                        writeEntry(zos, path, is, parents);
+                    } finally {
+                        is.close();
+                    }
+                }
+                zos.finish();
+                zos.close();
+            } finally {
+                bundle.close();
+            }
+        } finally {
+            jar.close();
+        }
+    }
+
+    static String findFragmentHost(File jar) {
+        String cnb = jar.getName().replaceFirst("(_[a-z][a-z0-9]*)*[.]jar$", "").replace('-', '.');
+        // Historical naming patterns:
+        if (cnb.equals("core") && jar.getParentFile().getParentFile().getName().equals("core")) {
+            return "org.netbeans.core.startup";
+        } else if (cnb.equals("boot") && jar.getParentFile().getParentFile().getName().equals("lib")) {
+            return "org.netbeans.bootstrap";
+        } else {
+            return cnb;
         }
     }
 

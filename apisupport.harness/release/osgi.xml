@@ -51,6 +51,12 @@ made subject to such option by the copyright holder.
 
     <target name="build" depends="init">
         <mkdir dir="${osgi.dest.dir}"/>
+        <pathconvert property="osgi.platform.update.tracking">
+            <pathfileset>
+                <path refid="cluster.path.id"/>
+                <filename name="update_tracking/*.xml"/>
+            </pathfileset>
+        </pathconvert>
         <makeosgi destdir="${osgi.dest.dir}">
             <pathfileset>
                 <path refid="cluster.path.id"/>
@@ -59,11 +65,15 @@ made subject to such option by the copyright holder.
                         <filename name="modules/*.jar"/>
                         <filename name="lib/*.jar"/>
                         <filename name="core/*.jar"/>
+                        <filename name="modules/locale/*.jar"/>
+                        <filename name="lib/locale/*.jar"/>
+                        <filename name="core/locale/*.jar"/>
                     </or>
                     <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                         <param name="excludeModules" value="${disabled.modules}"/>
                         <param name="includeClusters" value="${enabled.clusters}"/>
                         <param name="excludeClusters" value="${disabled.clusters}"/>
+                        <param name="updateTrackingFiles" value="${osgi.platform.update.tracking}"/>
                     </custom>
                 </and>
             </pathfileset>
@@ -71,6 +81,9 @@ made subject to such option by the copyright holder.
                 <include name="modules/*.jar"/>
                 <include name="lib/*.jar"/>
                 <include name="core/*.jar"/>
+                <include name="modules/locale/*.jar"/>
+                <include name="lib/locale/*.jar"/>
+                <include name="core/locale/*.jar"/>
             </fileset>
         </makeosgi>
     </target>
@@ -92,6 +105,9 @@ made subject to such option by the copyright holder.
         <property name="felix-sys-prop.felix.log.level" value="3"/> <!-- config.properties defaults to 4 but it is too noisy -->
         <property name="felix-sys-prop.org.osgi.service.http.port" value="8080"/> <!-- from config.properties -->
         <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/> <!-- from config.properties -->
+        <condition property="felix-sys-prop.branding.token" value="${branding.token}">
+            <isset property="branding.token"/>
+        </condition>
         <property name="osgi.run.cp.extra" value=""/>
         <property name="osgi.run.args" value="-ea"/>
         <property name="osgi.run.args.extra" value=""/>
