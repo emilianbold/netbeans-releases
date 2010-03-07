@@ -46,12 +46,17 @@ import org.openide.nodes.Node;
  *
  * @author Vladimir Kvashin
  */
-public interface HostNodesProvider {
+public abstract class HostNodesProvider {
+
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return true;
+    }
+
     /**
      * Creates a node.
      * This note is used in ChildFactory (its key is implementor's class;
      * so this operation can be slow
      * @return
      */
-    public Node createNode(ExecutionEnvironment execEnv);
+    public abstract Node createNode(ExecutionEnvironment execEnv);
 }

@@ -40,23 +40,16 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.AbstractNode;
@@ -65,11 +58,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -79,6 +71,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     private final ExecutionEnvironment env;
 
+    @SuppressWarnings("LeakingThisInConstructor") // it's ok to just add this as a listener
     public HostNode(ExecutionEnvironment execEnv) {
         super(createChildren(execEnv), Lookups.singleton(execEnv));
         this.env = execEnv;
@@ -112,7 +105,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         }
     }
 
-    private void refresh() {
+    /*package*/ void refresh() {
         fireDisplayNameChange("", getDisplayName()); // to make Node refresh
     }
 
@@ -135,11 +128,16 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     }
 
     @Override
+    public String getDisplayName() {
+        return RemoteUtil.getDisplayName(env);
+    }
+
+    @Override
     public String getHtmlDisplayName() {
         String displayName = RemoteUtil.getDisplayName(env);
         ServerRecord defRec = ServerList.getDefaultRecord();
         if (defRec != null && defRec.getExecutionEnvironment().equals(env)) {
-            displayName = "<b>" + displayName + "<\b>"; // NOI18N
+            displayName = "<b>" + displayName + "</b>"; // NOI18N
         }
         return displayName;
     }
@@ -147,18 +145,22 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            new PropertiesAction(),
-            new SetDefaultAction(),
-            new ConnectAction(env),
-            new DisconnectAction(),
-            new RemoveHostAction()            
-        };
+        List<Action> list = new ArrayList<Action>();
+        for (Action action : Utilities.actionsForPath("Remote/Host/Actions")) { // NOI18N
+            if (!(action instanceof SingleHostAction) || ((SingleHostAction) action).isVisible(this)) {
+                list.add(action);
+            }
+        }
+        return list.toArray(new Action[list.size()]);
     }
 
     @Override
     public Action getPreferredAction() {
-        return new PropertiesAction();
+        if (env.isLocal()) {
+            return super.getPreferredAction();
+        } else {
+            return SharedClassObject.findObject(HostPropertiesAction.class, true);
+        }
     }
 
 
@@ -168,12 +170,17 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     private static class HostSubnodeChildren extends ChildFactory<HostNodesProvider> {
 
-        private final Collection<? extends HostNodesProvider> providers;
+        private final Collection<HostNodesProvider> providers;
         private final ExecutionEnvironment execEnv;
 
         public HostSubnodeChildren(ExecutionEnvironment execEnv, Collection<? extends HostNodesProvider> providers) {
             this.execEnv = execEnv;
-            this.providers = providers;
+            this.providers = new ArrayList<HostNodesProvider>(providers.size());
+            for (HostNodesProvider provider : providers) {
+                if (provider.isApplicable(execEnv)) {
+                    this.providers.add(provider);
+                }
+            }
         }
 
         @Override
@@ -185,79 +192,6 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         @Override
         protected Node createNodeForKey(HostNodesProvider key) {
             return key.createNode(execEnv);
-        }
-    }
-
-    private class RemoveHostAction extends AbstractAction { // extends HostAction
-
-        public RemoveHostAction() {
-            super(NbBundle.getMessage(HostListRootNode.class, "RemoveHostMenuItem"));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ServerRecord record = ServerList.get(getExecutionEnvironment());
-            String title = NbBundle.getMessage(HostNode.class, "RemoveHostCaption");
-            String message = NbBundle.getMessage(HostNode.class, "RemoveHostQuestion", record.getDisplayName());
-
-            if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
-                    message, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
-                List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
-                hosts.remove(record);
-                cacheManager.setHosts(hosts);
-                ServerRecord defaultRecord = ServerList.getDefaultRecord();
-                if (defaultRecord.getExecutionEnvironment().equals(getExecutionEnvironment())) {
-                    defaultRecord = ServerList.get(ExecutionEnvironmentFactory.getLocal());
-                }
-                cacheManager.setDefaultRecord(defaultRecord);
-                cacheManager.applyChanges();
-            }
-        }
-    }
-
-    private class SetDefaultAction extends AbstractAction { // extends HostAction
-
-        public SetDefaultAction() {
-            super(NbBundle.getMessage(HostListRootNode.class, "SetDefaultMenuItem"));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ServerList.setDefaultRecord(ServerList.get(getExecutionEnvironment()));
-        }
-    }
-
-    private class PropertiesAction extends AbstractAction { // extends HostAction
-
-        public PropertiesAction() {
-            super(NbBundle.getMessage(HostListRootNode.class, "PropertirsMenuItem"));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
-            HostPropertiesDialog.invokeMe(record);
-            refresh(); // TODO: introduce listeners for server records
-        }
-    }
-
-    private class DisconnectAction extends AbstractAction implements Runnable {
-
-        public DisconnectAction() {
-            super(NbBundle.getMessage(HostListRootNode.class, "DisconnectMenuItem"));
-            setEnabled(ConnectionManager.getInstance().isConnectedTo(env));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(this);
-        }
-
-        public void run() {
-            if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                ConnectionManager.getInstance().disconnect(env);
-            }
         }
     }
 }

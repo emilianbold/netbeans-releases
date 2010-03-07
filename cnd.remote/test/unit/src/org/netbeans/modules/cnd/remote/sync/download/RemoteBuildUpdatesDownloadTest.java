@@ -71,7 +71,7 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
 
     private void checkInfo(List<FileDownloadInfo> updates, String shortFileName, FileDownloadInfo.State state) {
         FileDownloadInfo info = find(updates, shortFileName);
-        assertNotNull("Can not fine FileDownloadInfo for " + shortFileName, info);
+        assertNotNull("Can not find FileDownloadInfo for " + shortFileName, info);
         assertEquals("Unexpected download info state for "  + shortFileName, state, info.getState());
     }
 
