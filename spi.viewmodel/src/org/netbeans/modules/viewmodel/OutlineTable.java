@@ -657,6 +657,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                 ci++;
             } else {
                 tableColumns[i] = tcm.getColumn(0);
+                if (columns[i] instanceof Column) {
+                    tableColumns[i].setCellEditor(((Column)columns[i]).getTableCellEditor());
+                }
             }
         }
         if (logger.isLoggable(Level.FINE)) {

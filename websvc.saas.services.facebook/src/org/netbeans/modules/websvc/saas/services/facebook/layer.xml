@@ -70,7 +70,31 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+            <!-- method body templates -->
+            <file name="FacebookCreateToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookCreateToken.template"/>
+            <file name="FacebookGetSessionKey.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookGetSessionKey.template"/> 
+            <file name="FacebookLogout.method" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookLogout.template"/>
+            <file name="FacebookSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookSignParams.template"/>
+            <!-- Web templates -->
+            <file name="FacebookWebLogout.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLogout.template"/>
+            <file name="FacebookWebGetSessionKey.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookGetSessionKey.template"/>
+            <file name="FacebookCreateSessionKey.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCreateSessionKey.template"/>
+            <file name="FacebookDispatch.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookDispatch.template"/>
+            <file name="FacebookWebSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookSignParams.template"/>
+            <file name="FacebookLoginDoGet.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLoginDoGet.template"/>
+            <file name="FacebookCallbackDoGet.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCallbackDoGet.template"/>
+
             <!-- PHP templates -->
             <file name="FacebookAuthenticatorDesktop.php" 
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/php/FacebookAuthenticatorDesktop.template">
