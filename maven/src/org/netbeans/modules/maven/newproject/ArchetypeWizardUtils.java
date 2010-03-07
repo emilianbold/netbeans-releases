@@ -113,7 +113,7 @@ public class ArchetypeWizardUtils {
     public static Archetype[] EAR_ARCHS;
     public static final Archetype EA_ARCH;
     
-    public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH;
+    public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
     public static final Archetype OSGI_ARCH;
 
     public static final String[] EE_LEVELS = new String[] {
@@ -197,6 +197,12 @@ public class ArchetypeWizardUtils {
         NB_APP_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
         NB_APP_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
+
+        NB_SUITE_ARCH = new Archetype();
+        NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
+        NB_SUITE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         OSGI_ARCH = new Archetype();
         OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
@@ -353,7 +359,7 @@ public class ArchetypeWizardUtils {
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
                 if (nbm_artifactId != null && projFile.exists()) {
-                    //NOW we have the nbm-Platform template
+                    //NOW we have the nbm-Platform or nbm suite template
                     //create the nbm module
                     ProjectInfo nbm = new ProjectInfo();
                     nbm.artifactId = nbm_artifactId;

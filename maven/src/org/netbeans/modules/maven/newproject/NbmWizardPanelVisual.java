@@ -61,13 +61,15 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private final NbmWizardPanel panel;
     private ValidationGroup vg;
     boolean isApp = false;
+    boolean isSuite = false;
 
     /** Creates new form NbmWizardPanelVisual */
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
         isApp = ArchetypeWizardUtils.NB_APP_ARCH.equals(panel.getArchetype());
-        if (isApp) {
+        isSuite = ArchetypeWizardUtils.NB_SUITE_ARCH.equals(panel.getArchetype());
+        if (isApp || isSuite) {
             vg = ValidationGroup.create();
             vg.add(txtAddModule, Validators.merge(true,
                     MavenValidators.createArtifactIdValidators(),
@@ -165,10 +167,9 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
      void store(WizardDescriptor d) {
         d.putProperty(ArchetypeWizardUtils.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
          File parent = (File) d.getProperty("projdir");
-         if (isApp) {
+         if (isApp || isSuite) {
              if (cbAddModule.isSelected()) {
                  String ejbText = txtAddModule.getText().trim();
-                 d.putProperty("ejb_projdir", new File(parent, ejbText));
                  d.putProperty("nbm_artifactId", txtAddModule.getText().trim());
              } else {
                  d.putProperty("nbm_ArtifactId", null);
@@ -181,7 +182,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         if (b != null) {
             cbOsgiDeps.setSelected(b.booleanValue());
         }
-        if (isApp) {
+        if (isApp || isSuite) {
             String artifId = (String) d.getProperty("artifactId");
             String val = (String) d.getProperty("nbm_artifactid");
             cbAddModule.setSelected(val != null);
@@ -191,7 +192,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             txtAddModule.setText(val);
 
             SwingUtilities.invokeLater(new Runnable() {
-
                 @Override
                 public void run() {
                     panel.getValidationGroup().addValidationGroup(vg, true);
