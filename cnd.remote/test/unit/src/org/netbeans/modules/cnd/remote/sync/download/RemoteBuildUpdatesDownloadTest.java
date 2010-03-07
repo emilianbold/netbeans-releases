@@ -43,6 +43,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
@@ -59,20 +60,63 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
         super(testName, execEnv);
     }
 
+    private static class NameStatePair {
+        public final String shortFileName;
+        public final FileDownloadInfo.State state;
+        public NameStatePair(String shortFileName, State state) {
+            this.shortFileName = shortFileName;
+            this.state = state;
+        }
+    }
+
     @ForAllEnvironments
     public void testBuildSample_Rfs_Gnu_LexYacc() throws Exception {
+        NameStatePair[] filesToCheck = new NameStatePair[] {
+            new NameStatePair("y.tab.c", FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair("y.tab.h", FileDownloadInfo.State.UNCONFIRMED),
+            new NameStatePair("lex.yy.c", FileDownloadInfo.State.UNCONFIRMED)
+        };
         List<FileDownloadInfo> updates;
         buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_01", 1);
         updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
-        checkInfo(updates, "y.tab.c", FileDownloadInfo.State.UNCONFIRMED);
-        checkInfo(updates, "y.tab.h", FileDownloadInfo.State.UNCONFIRMED);
-        checkInfo(updates, "lex.yy.c", FileDownloadInfo.State.UNCONFIRMED);
+        checkInfo(updates, filesToCheck);
     }
 
-    private void checkInfo(List<FileDownloadInfo> updates, String shortFileName, FileDownloadInfo.State state) {
-        FileDownloadInfo info = find(updates, shortFileName);
-        assertNotNull("Can not find FileDownloadInfo for " + shortFileName, info);
-        assertEquals("Unexpected download info state for "  + shortFileName, state, info.getState());
+    private void checkInfo(List<FileDownloadInfo> updates, NameStatePair[] pairsToCheck) {
+        boolean success = true;
+        StringBuilder notFoundMessage = new StringBuilder();
+        StringBuilder wrongStateFoundMessage = new StringBuilder();
+        for (NameStatePair pair : pairsToCheck) {
+            FileDownloadInfo info = find(updates, pair.shortFileName);
+            if (info == null) {
+                success = false;
+                if (notFoundMessage.length() == 0) {
+                    notFoundMessage.append("Can not find FileDownloadInfo for ");
+                } else {
+                    notFoundMessage.append(", ");
+                }
+                notFoundMessage.append(pair.shortFileName);
+            } else {
+                FileDownloadInfo.State state = info.getState();
+                if (!state.equals(pair.state)) {
+                    success = false;
+                    if (wrongStateFoundMessage.length() == 0) {
+                        wrongStateFoundMessage.append("Wrong state: ");
+                    } else {
+                        wrongStateFoundMessage.append(", ");
+                    }
+                }
+                wrongStateFoundMessage.append(pair.shortFileName + ": expected " + pair.state + " found " + state);
+            }
+        }
+        if (!success) {
+            StringBuilder message = new StringBuilder(notFoundMessage);
+            if (message.length() > 0 && wrongStateFoundMessage.length() > 0) {
+                message.append(";\n");
+            }
+            message.append(wrongStateFoundMessage);
+            assertTrue(message.toString(), false);
+        }
     }
 
     private FileDownloadInfo find(List<FileDownloadInfo> updates, String shortFileName) {
