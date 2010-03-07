@@ -1062,6 +1062,7 @@ public class OutlineView extends JScrollPane {
                 }
             }
             boolean res = false;
+            boolean actionPerformed = false;
             boolean isTreeColumn = convertColumnIndexToModel(column) == 0;
             if (isTreeColumn && row != -1 && e instanceof MouseEvent && SwingUtilities.isLeftMouseButton ((MouseEvent) e)) {
                 int clickCount = ((MouseEvent) e).getClickCount();
@@ -1075,18 +1076,16 @@ public class OutlineView extends JScrollPane {
                             if (a != null) {
                                 if (a.isEnabled ()) {
                                     a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                    actionPerformed = true;
                                 } else {
                                     Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
                                 }
                             }
-                        } else if (node.canRename()) {
-                            res = super.editCellAt(row, column, e);
                         }
                     }
-                } else {
-                    return false;
                 }
-            } else {
+            }
+            if (!actionPerformed) {
                 res = super.editCellAt(row, column, e);
             }
             if( !res && e instanceof MouseEvent ) {
