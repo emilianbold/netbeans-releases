@@ -73,7 +73,8 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     private SimpleWizardIterator(Archetype archetype) {
         this.archetype = archetype;
         isNBM = archetype.equals(ArchetypeWizardUtils.NB_APP_ARCH) ||
-                archetype.equals(ArchetypeWizardUtils.NB_MODULE_ARCH);
+                archetype.equals(ArchetypeWizardUtils.NB_MODULE_ARCH) ||
+                archetype.equals(ArchetypeWizardUtils.NB_SUITE_ARCH);
         listeners = new ArrayList<ChangeListener>();
     }
     
@@ -83,6 +84,10 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
 
     public static SimpleWizardIterator createNbAppIterator() {
         return new SimpleWizardIterator(ArchetypeWizardUtils.NB_APP_ARCH);
+    }
+
+    public static SimpleWizardIterator createNbSuiteIterator() {
+        return new SimpleWizardIterator(ArchetypeWizardUtils.NB_SUITE_ARCH);
     }
 
     public static SimpleWizardIterator createOSGiIterator() {
