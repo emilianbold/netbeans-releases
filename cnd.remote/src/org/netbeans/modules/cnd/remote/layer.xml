@@ -42,20 +42,40 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="NativeRemote">
+            <file name="org.netbeans.modules.remote.ui.ConnectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.ConnectAction"/>
+            </file>
+            <file name="org.netbeans.modules.remote.ui.HostPropertiesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.HostPropertiesAction"/>
+            </file>
+            <file name="org.netbeans.modules.remote.ui.SetDefaultHostAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.SetDefaultHostAction"/>
+            </file>
+            <file name="org.netbeans.modules.remote.ui.DisconnectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.DisconnectAction"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Remote">
         <folder name="Host">
             <folder name="Actions">
-                <file name="org.netbeans.modules.remote.ui.ConnectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.ConnectAction"/>
+                <file name="ConnectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.ConnectAction.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <file name="org.netbeans.modules.remote.ui.HostPropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.HostPropertiesAction"/>
+                <file name="SetDefaultHostAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.SetDefaultHostAction.instance"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <file name="org.netbeans.modules.remote.ui.SetDefaultHostAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.SetDefaultHostAction"/>
+                <file name="DisconnectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.DisconnectAction.instance"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
-                <file name="org.netbeans.modules.remote.ui.DisconnectAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.remote.ui.DisconnectAction"/>
+                <file name="HostPropertiesAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/NativeRemote/org.netbeans.modules.remote.ui.HostPropertiesAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
         </folder>
