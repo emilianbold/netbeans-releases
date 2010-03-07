@@ -59,7 +59,9 @@ import javax.swing.Action;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -193,9 +195,36 @@ public class ManDocumentation {
         return res;
     }
 
+    static NativeProject getNativeProject(CsmFile csmFile) {
+        NativeProject nativeProject = null;
+        if (csmFile != null) {
+            CsmProject csmProject = csmFile.getProject();
+            if (csmProject.getPlatformProject() instanceof NativeProject) {
+                nativeProject = (NativeProject) csmProject.getPlatformProject();
+            } else {
+                loop:
+                for (CsmProject project : CsmModelAccessor.getModel().projects()) {
+                    for (CsmProject lib : project.getLibraries()) {
+                        if (lib.equals(csmProject)) {
+                            if (project.getPlatformProject() instanceof NativeProject) {
+                                nativeProject = (NativeProject) project.getPlatformProject();
+                                break loop;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return nativeProject;
+    }
+
+
     private static String createDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
-        NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
-        NativeProject np = nfi.getNativeProject();
+        //NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
+        NativeProject np = getNativeProject(file);
+        if (np == null) {
+            return "";
+        }
         NativeExitStatus exitStatus = np.execute("man", new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}, name); // NOI18N
         StringReader sr;
         if (exitStatus.isOK() && exitStatus.output.length() > 0) {

@@ -44,9 +44,11 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
@@ -74,27 +76,24 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
         if (!(item instanceof CsmResultItem)) {
             return null;
         }
+        CsmFile csmFile = getCsmFile(item);
+        NativeProject nativeProject = ManDocumentation.getNativeProject(csmFile);
 
-        Object assoc = ((CsmResultItem) item).getAssociatedObject();
-
-        // How to get the NativeProject here?????
-//        if (assoc instanceof CsmObject) {
-//            CsmObject csmObject  = (CsmObject)assoc;
-//            if (csmObject instanceof CsmOffsetable) {
-//                CsmOffsetable csmOffsetable = (CsmOffsetable)csmObject;
-//                CsmFile csmFile = csmOffsetable.getContainingFile();
-//                CsmProject csmProject = csmFile.getProject();
-//                NativeProject nativeProject = (NativeProject)csmProject; // << is a LibProjectImpl and not NativeProject
-//            }
-//        }
-
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false); // FIXUP: hack to get current csmFile
-
-        if (assoc instanceof CsmObject) {
-            return new AsyncCompletionTask(new DocQuery((CsmObject) assoc, csmFile));
+        if (csmFile != null) {
+            return new AsyncCompletionTask(new DocQuery((CsmObject) ((CsmResultItem) item).getAssociatedObject(), csmFile));
         }
 
         return null;
+    }
+
+    private CsmFile getCsmFile(CompletionItem item) {
+        CsmFile csmFile = null;
+        Object assoc = ((CsmResultItem) item).getAssociatedObject();
+        if (CsmKindUtilities.isOffsetable(assoc)){
+            CsmOffsetable csmOffsetable = (CsmOffsetable) assoc;
+            csmFile = csmOffsetable.getContainingFile();
+        }
+        return csmFile;
     }
 
     private static class DocQuery extends AsyncCompletionQuery {
