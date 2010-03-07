@@ -50,7 +50,7 @@ public interface NativeProject {
      * org.netbeans.api.project.Project
      */
     public Object getProject();
-    
+
      /**
      * Returns file path to project root
      * @return file path to project root
@@ -149,4 +149,13 @@ public interface NativeProject {
      * Add task which will be run then <NativeProject> is ready to provide Code Model data
      */
     public void runOnCodeModelReadiness(Runnable task);
+
+    /**
+     * Execute a command from user's PATH in the context of the native project
+     * @param executable Executable name (not path)
+     * @param env Additional environment variables
+     * @param args Arguments
+     * @return NativeExitStatus
+     */
+    public NativeExitStatus execute(final String executable, final String[] env, final String... args);
 }

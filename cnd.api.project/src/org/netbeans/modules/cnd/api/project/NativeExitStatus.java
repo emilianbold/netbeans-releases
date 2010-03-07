@@ -1,3 +1,5 @@
+package org.netbeans.modules.cnd.api.project;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -37,27 +39,23 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.ui;
-
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.nodes.Node;
-
 /**
- * @author Vladimir Kvashin
+ *
+ * @author thp
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
+public final class NativeExitStatus {
 
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+    public final int exitCode;
+    public final String error;
+    public final String output;
 
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE && execEnv.isRemote();
+    public NativeExitStatus(int exitCode, String output, String error) {
+        this.exitCode = exitCode;
+        this.error = error;
+        this.output = output;
     }
 
-    @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemRootNode(execEnv);
+    public boolean isOK() {
+        return exitCode == 0;
     }
-
 }

@@ -36,28 +36,48 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
-public class FileSystemNodeProvider extends HostNodesProvider {
-
-    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+public class DisconnectAction extends SingleHostAction {
 
     @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE && execEnv.isRemote();
+    public String getName() {
+        return NbBundle.getMessage(HostListRootNode.class, "DisconnectMenuItem");
+    }
+
+    protected boolean enable(ExecutionEnvironment env) {
+        return ConnectionManager.getInstance().isConnectedTo(env);
     }
 
     @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemRootNode(execEnv);
+    public boolean isVisible(Node node) {
+        return isRemote(node);
     }
 
+
+    @Override
+    protected void performAction(final ExecutionEnvironment env, Node node) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                    ConnectionManager.getInstance().disconnect(env);
+                }
+            }
+        });
+    }
 }

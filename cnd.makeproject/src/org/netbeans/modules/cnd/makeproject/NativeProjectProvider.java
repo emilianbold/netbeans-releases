@@ -42,7 +42,12 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -54,6 +59,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -75,6 +81,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
@@ -758,5 +768,44 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private void clearCache() {
         cachedDependency.clear();
+    }
+
+    @Override
+    public NativeExitStatus execute(String executable, String[] env, String... args) {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ExecutionEnvironment ev = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        if (ev.isLocal()) {
+            String exePath = Path.findCommand(executable);
+            String arguments = "";
+            for (String s : args) {
+                arguments += " " + s; // NOI18N
+            }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            StringBuffer output = new StringBuffer();
+
+            try {
+                Process p0 = Runtime.getRuntime().exec(exePath + " " + arguments, env); // NOI18N
+                InputStream is = p0.getInputStream();
+                InputStreamReader ist = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(ist);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    output.append(line + "\n"); // NOI18N
+                }
+                br.close();
+                ist.close();
+                is.close();
+                bos.close();
+                return new NativeExitStatus(0, output.toString(), "");
+            }
+            catch (IOException ioe) {
+                return new NativeExitStatus(-1, "", output.toString());
+            }
+        }
+        else {
+            ExitStatus exitStatus = ProcessUtils.execute(ev, executable, args); // NOI18N
+            // FIXUP: need to handle env!
+            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+        }
     }
 }
