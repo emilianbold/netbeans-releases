@@ -120,6 +120,13 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             case refactorToNewEmbeddedSection:
                 refactorToNewEmbeddedSection(modificationResult, context);
                 break;
+            case refactorToReferedExternalSheet:
+                refactorToStyleSheet(modificationResult, context);
+                break;
+            case refactorToExistingExternalSheet:
+                importStyleSheet(modificationResult, context);
+                refactorToStyleSheet(modificationResult, context);
+                break;
         }
 
         refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
@@ -133,6 +140,84 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         return null;
 
     }
+
+    private boolean importStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
+        try {
+            //create a new html link to the stylesheet
+            AstNode root = context.getModel().getParserResult().root();
+            final AtomicInteger insertPositionRef = new AtomicInteger();
+            final AtomicBoolean increaseIndent = new AtomicBoolean();
+            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+
+                @Override
+                public void visit(AstNode node) {
+                    if ("head".equalsIgnoreCase(node.name())) {
+                        //NOI18N
+                        //append the section as first head's child if there are
+                        //no existing link attribute
+                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                        increaseIndent.set(true);
+                    } else if ("link".equalsIgnoreCase(node.name())) {
+                        //NOI18N
+                        //existing link => append the new section after the last one
+                        insertPositionRef.set(node.getLogicalRange()[1]); //end of the end tag offset
+                        increaseIndent.set(false);
+                    }
+                }
+            }, AstNode.NodeType.OPEN_TAG);
+            int embeddedInsertOffset = insertPositionRef.get();
+            if (embeddedInsertOffset == -1) {
+                //TODO probably missing head tag? - generate? html tag may be missing as well
+                return false;
+            }
+            int insertOffset = context.getModel().getSnapshot().getOriginalOffset(embeddedInsertOffset);
+            if (insertOffset == -1) {
+                return false; //cannot properly map back
+            }
+            int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
+            if (increaseIndent.get()) {
+                //add one indent level (after HEAD open tag)
+                baseIndent += IndentUtils.indentLevelSize(context.getDocument());
+            }
+
+            //generate the embedded id selector section
+            String baseIndentString = IndentUtils.createIndentString(context.getDocument(), baseIndent);
+            String linkRelativePath = WebUtils.getRelativePath(context.getFile(), refactoring.getExternalSheet());
+            String linkText = new StringBuilder().append('\n').
+                    append(baseIndentString).
+                    append("<link href=\"").
+                    append(linkRelativePath).
+                    append("\" type=\"text/css\">\n").toString(); //NOI18N
+
+            CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFile());
+            Difference diff = new Difference(Difference.Kind.INSERT,
+                        editor.createPositionRef(insertOffset, Bias.Forward),
+                        editor.createPositionRef(insertOffset, Bias.Backward),
+                        null,
+                        linkText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_InsertStylesheetLink")); //NOI18N
+
+            modificationResult.addDifferences(context.getFile(), Collections.singletonList(diff));
+
+            return true;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return false;
+
+    }
+
+    private void refactorToStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
+        Document extSheetDoc = GsfUtilities.getDocument(refactoring.getExternalSheet(), true);
+
+        int insertOffset = extSheetDoc.getLength();
+        int baseIndent = getPreviousLineIndent(extSheetDoc, insertOffset);
+
+        refactorToEmbeddedSection(modificationResult, context, refactoring.getExternalSheet(),
+                insertOffset, baseIndent, null, null);
+    }
+
 
     private void refactorToNewEmbeddedSection(ModificationResult modifications, RefactoringContext context) {
         try {
@@ -185,7 +270,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     append(baseIndentString).
                     append("</style>").toString(); //NOI18N
 
-            refactorToEmbeddedSection(modifications, context, insertOffset, baseIndent, prefix, postfix);
+            refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, prefix, postfix);
 
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -194,31 +279,13 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     }
 
     private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, final int insertOffset) {
-        final Document doc = context.getDocument();
-        final AtomicInteger ret = new AtomicInteger(0); //default is 0 indent if something fails in the later runnable
-        doc.render(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    //find last nonwhite line indent
-                    int firstNonWhiteBw = Utilities.getFirstNonWhiteBwd((BaseDocument) doc, insertOffset);
-                    //get the line indent
-                    ret.set(Utilities.getRowIndent((BaseDocument)doc, firstNonWhiteBw));
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-            }
-
-        });
-
-        int baseIndent = ret.get();
-        
-        refactorToEmbeddedSection(modifications, context, insertOffset, baseIndent, null, null);
+        int baseIndent = getPreviousLineIndent(context.getDocument(), insertOffset);
+        refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, null, null);
     }
 
-    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, int insertOffset, int baseIndent, String prefix, String postfix) {
+    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, 
+            FileObject targetStylesheet,
+            int insertOffset, int baseIndent, String prefix, String postfix) {
         List<InlinedStyleInfo> inlinedStyles = context.getInlinedStyles();
         CloneableEditorSupport currentFileEditor = GsfUtilities.findCloneableEditorSupport(context.getFile());
         List<Difference> diffs = new LinkedList<Difference>();
@@ -226,14 +293,21 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         //get existing id selectors
         //XXX clarify the parsing of embedded source model - this call parses the file again!
         //should be likely done in different way
-        Collection<Entry> existingIds = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<Entry> existingIdsInEditedFile = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<Entry> existingIdsInTargetFile = CssRefactoring.getAllIdSelectors(targetStylesheet);
+
         Collection<String> allIds = new LinkedList<String>();
-        for(Entry e : existingIds) {
+        for(Entry e : existingIdsInEditedFile) {
+            allIds.add(e.getName());
+        }
+        for(Entry e : existingIdsInTargetFile) {
             allIds.add(e.getName());
         }
 
         StringBuilder generatedIdSelectorsSection = new StringBuilder();
-        generatedIdSelectorsSection.append(prefix);
+        if(prefix != null) {
+            generatedIdSelectorsSection.append(prefix);
+        }
 
         for(InlinedStyleInfo si : inlinedStyles) {
             try {
@@ -277,16 +351,20 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             }
         }
 
-        generatedIdSelectorsSection.append(postfix);
+        modifications.addDifferences(context.getFile(), diffs);
+
+        if(postfix != null) {
+            generatedIdSelectorsSection.append(postfix);
+        }
         //generate the cumulated embedded id selector section
-        diffs.add(new Difference(Difference.Kind.INSERT,
-                currentFileEditor.createPositionRef(insertOffset, Bias.Forward),
-                currentFileEditor.createPositionRef(insertOffset, Bias.Backward),
+        CloneableEditorSupport targetStylesheetEditor = GsfUtilities.findCloneableEditorSupport(targetStylesheet);
+        modifications.addDifferences(targetStylesheet, Collections.singletonList(new Difference(Difference.Kind.INSERT,
+                targetStylesheetEditor.createPositionRef(insertOffset, Bias.Forward),
+                targetStylesheetEditor.createPositionRef(insertOffset, Bias.Backward),
                 null,
                 generatedIdSelectorsSection.toString(),
-                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_GenerateIDSelectors"))); //NOI18N
+                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_GenerateIDSelectors")))); //NOI18N
 
-        modifications.addDifferences(context.getFile(), diffs);
     }
 
     //TODO there should be a generic facility allowing to reformat a piece of code
@@ -325,6 +403,28 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
 
         return b.toString();
+    }
+
+    private static int getPreviousLineIndent(final Document doc, final int insertOffset) {
+        final AtomicInteger ret = new AtomicInteger(0); //default is 0 indent if something fails in the later runnable
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    //find last nonwhite line indent
+                    int firstNonWhiteBw = Utilities.getFirstNonWhiteBwd((BaseDocument) doc, insertOffset);
+                    //get the line indent
+                    ret.set(Utilities.getRowIndent((BaseDocument)doc, firstNonWhiteBw));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+
+        });
+
+        return ret.get();
     }
 
 }
