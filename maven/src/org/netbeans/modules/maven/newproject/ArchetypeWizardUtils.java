@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -333,7 +334,7 @@ public class ArchetypeWizardUtils {
 
                 handle.start(8 + (web_vi != null ? 3 : 0) + (ejb_vi != null ? 3 : 0));
                 File rootFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
-                        (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
+                        arch, additional, 0); //NOI18N
                 createFromArchetype(handle, (File)wiz.getProperty("ear_projdir"), ear_vi, //NOI18N
                         (Archetype)wiz.getProperty("ear_archetype"), null, 4); //NOI18N
                 int progressCounter = 6;
@@ -355,9 +356,8 @@ public class ArchetypeWizardUtils {
 
                 String nbm_artifactId = (String) wiz.getProperty("nbm_artifactId");
                 handle.start( nbm_artifactId == null ? 4 : (4 + 3));
-                
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
-                        (Archetype)wiz.getProperty("archetype"), additional, 0); //NOI18N
+                        arch, additional, 0); //NOI18N
                 if (nbm_artifactId != null && projFile.exists()) {
                     //NOW we have the nbm-Platform or nbm suite template
                     //create the nbm module
@@ -369,6 +369,9 @@ public class ArchetypeWizardUtils {
                     File nbm_folder = createFromArchetype(handle, new File(projFile, nbm_artifactId), nbm, //NOI18N
                             ArchetypeWizardUtils.NB_MODULE_ARCH, null, 3); //NOI18N
                     trimInheritedFromNbmProject(nbm_folder);
+                    if (ArchetypeWizardUtils.NB_APP_ARCH.equals(arch)) {
+                        addModuleToApplication(new File(projFile, "application"), nbm, null);
+                    }
                 }
                 if (setOsgiDeps) {
                     //now we have the nbm-archetype (or the netbeans platform one).
@@ -537,19 +540,31 @@ public class ArchetypeWizardUtils {
         if (earDirFO == null) {
             return;
         }
-        //TODO this will save the file twice - suboptimal
+        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
         if (ejbVi != null) {
             // EAR ---> ejb
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), ejbVi.groupId, //NOI18N
-                    ejbVi.artifactId, ejbVi.version, "ejb", null, null, true); //NOI18N
+            operations.add(new AddDependencyOperation(ejbVi, "ejb"));
         }
         if (webVi != null) {
             // EAR ---> war
-            ModelUtils.addDependency(earDirFO.getFileObject("pom.xml"), webVi.groupId, //NOI18N
-                    webVi.artifactId, webVi.version, "war", null, null, false); //NOI18N
+            operations.add(new AddDependencyOperation(webVi, "war"));
         }
+
+        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations);
         progressCounter++;
     }
+
+    private static void addModuleToApplication(File file, ProjectInfo nbm, Object object) {
+        FileObject appPrjFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (appPrjFO == null) {
+            return;
+        }
+        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
+        operations.add(new AddDependencyOperation(nbm, null));
+        Utilities.performPOMModelOperations(appPrjFO.getFileObject("pom.xml"), operations);
+    }
+
+
 
     private static void updateProjectName (final File projDir, final String newName) {
         FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml")); //NOI18N
@@ -606,5 +621,32 @@ public class ArchetypeWizardUtils {
             }
         }
 
+    }
+
+    private static class AddDependencyOperation implements ModelOperation<POMModel> {
+        private final String group;
+        private final String artifact;
+        private final String version;
+        private final String type;
+
+        public AddDependencyOperation(ProjectInfo info, String type) {
+            this.group = info.groupId;
+            this.artifact = info.artifactId;
+            this.version = info.version;
+            this.type = type;
+        }
+        public AddDependencyOperation(String g, String a, String v, String t) {
+            group = g;
+            artifact = a;
+            version = v;
+            type = t;
+        }
+
+        @Override
+        public void performOperation(POMModel model) {
+            Dependency dep = ModelUtils.checkModelDependency(model, group, artifact, true);
+            dep.setVersion(version);
+            dep.setType(type);
+        }
     }
 }
