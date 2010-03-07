@@ -293,9 +293,14 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         //get existing id selectors
         //XXX clarify the parsing of embedded source model - this call parses the file again!
         //should be likely done in different way
-        Collection<Entry> existingIds = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<Entry> existingIdsInEditedFile = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<Entry> existingIdsInTargetFile = CssRefactoring.getAllIdSelectors(targetStylesheet);
+
         Collection<String> allIds = new LinkedList<String>();
-        for(Entry e : existingIds) {
+        for(Entry e : existingIdsInEditedFile) {
+            allIds.add(e.getName());
+        }
+        for(Entry e : existingIdsInTargetFile) {
             allIds.add(e.getName());
         }
 
