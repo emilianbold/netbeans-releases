@@ -127,6 +127,9 @@ public class GoToSupport {
         }
 
         final Language language = identifyActiveFindersLanguage(doc, offset);
+        if (language == null) {
+            return null; // #181565
+        }
         //I tend to put assert language != null, sincen the perform() method
         //should be only called when identifyActiveFindersLanguage() before
         //returned non-null value. But probably can become false?!?!?!

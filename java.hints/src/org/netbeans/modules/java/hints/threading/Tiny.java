@@ -39,19 +39,31 @@
 
 package org.netbeans.modules.java.hints.threading;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -78,6 +90,8 @@ public class Tiny {
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"))
     })
     public static ErrorDescription notifyOnCondition(HintContext ctx) {
+        if (!isCondition(ctx, "$cond")) return null;
+        
         String method = methodName((MethodInvocationTree) ctx.getPath().getLeaf());
         String toName = method.endsWith("All") ? "signalAll" : "signal";
 
@@ -105,6 +119,8 @@ public class Tiny {
                         })
     })
     public static ErrorDescription waitOnCondition(HintContext ctx) {
+        if (!isCondition(ctx, "$cond")) return null;
+
         //TODO: =>await?
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_WaitOnCondition");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -242,6 +258,144 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
+    @Hint(category="thread", suppressWarnings="LockAcquiredButNotSafelyReleased")
+    @TriggerPattern(value="$lock.lock(); $statements$; $lock.unlock();",
+                    constraints=@Constraint(variable="$lock", type="java.util.concurrent.locks.Lock"))
+    public static ErrorDescription unlockOutsideTryFinally(HintContext ctx) {
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_UnlockOutsideTryFinally");
+        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_UnlockOutsideTryFinally");
+
+        //XXX:
+        Tree mark;
+        Tree matched = ctx.getPath().getLeaf();
+
+        if (matched.getKind() == Kind.BLOCK) {
+            List<? extends StatementTree> s = ((BlockTree) matched).getStatements();
+            int count = ctx.getMultiVariables().get("$$1$").size();
+
+            mark = s.get(count);
+        } else {
+            mark = matched;
+        }
+
+        return ErrorDescriptionFactory.forName(ctx, mark, displayName, f);
+    }
+
+    @Hint(category="thread", suppressWarnings="WaitWhileNotSynced")
+    @TriggerPatterns({
+        @TriggerPattern(value="$site.wait()",
+                        constraints=@Constraint(variable="$site", type="java.lang.Object")),
+        @TriggerPattern(value="$site.wait($timeout)",
+                        constraints={
+                             @Constraint(variable="$site", type="java.lang.Object"),
+                             @Constraint(variable="$timeout", type="long")
+                        }),
+        @TriggerPattern(value="$site.wait($timeout, $nanos)",
+                        constraints={
+                             @Constraint(variable="$site", type="java.lang.Object"),
+                             @Constraint(variable="$timeout", type="long"),
+                             @Constraint(variable="$nanos", type="int")
+                        })
+    })
+    public static ErrorDescription unsyncWait(HintContext ctx) {
+        return unsyncHint(ctx, "ERR_UnsyncedWait");
+    }
+    
+    @Hint(category="thread", suppressWarnings="NotifyWhileNotSynced")
+    @TriggerPatterns({
+        @TriggerPattern(value="$site.notify()",
+                        constraints=@Constraint(variable="$site", type="java.lang.Object")),
+        @TriggerPattern(value="$site.notifyAll()",
+                        constraints=@Constraint(variable="$site", type="java.lang.Object"))
+    })
+    public static ErrorDescription unsyncNotify(HintContext ctx) {
+        return unsyncHint(ctx, "ERR_UnsyncedNotify");
+    }
+
+    private static final Set<ElementKind> VARIABLES = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+
+    private static ErrorDescription unsyncHint(HintContext ctx, String key) {
+        VariableElement syncedOn;
+        TreePath site = ctx.getVariables().get("$site");
+
+        if (site != null) {
+            Element siteEl = ctx.getInfo().getTrees().getElement(site);
+
+            if (siteEl == null || !VARIABLES.contains(siteEl.getKind())) {
+                return null;
+            }
+
+            syncedOn = (VariableElement) siteEl;
+        } else {
+            syncedOn = attributeThis(ctx.getInfo(), ctx.getPath());
+        }
+
+        TreePath inspect = ctx.getPath();
+
+        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS) {
+            if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
+                Element current = ctx.getInfo().getTrees().getElement(new TreePath(inspect, ((SynchronizedTree) inspect.getLeaf()).getExpression()));
+
+                if (syncedOn.equals(current)) {
+                    return null;
+                }
+            }
+
+            if (inspect.getLeaf().getKind() == Kind.METHOD) {
+                if (((MethodTree) inspect.getLeaf()).getModifiers().getFlags().contains(Modifier.SYNCHRONIZED)) {
+                    if (syncedOn.equals(attributeThis(ctx.getInfo(), inspect))) {
+                        return null;
+                    }
+                }
+
+                break;
+            }
+
+            inspect = inspect.getParentPath();
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, key);
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+    
+    @Hint(category="thread", suppressWarnings="")
+    @TriggerPatterns({
+        @TriggerPattern(value="java.lang.Thread.sleep($to)",
+                        constraints=@Constraint(variable="$to", type="long")),
+        @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
+                        constraints=@Constraint(variable="$to", type="long"),
+                        constraints=@Constraint(variable="$nanos", type="int"))
+    })
+    public static ErrorDescription sleepInSync(HintContext ctx) {
+        if (!isSynced(ctx, ctx.getPath())) {
+            return null;
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_SleepInSync");
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+
+    @Hint(category="thread", suppressWarnings="")
+    @TriggerPatterns({
+        @TriggerPattern(value="java.lang.Thread.sleep($to)",
+                        constraints=@Constraint(variable="$to", type="long")),
+        @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
+                        constraints=@Constraint(variable="$to", type="long"),
+                        constraints=@Constraint(variable="$nanos", type="int"))
+    })
+    public static ErrorDescription sleepInLoop(HintContext ctx) {
+        if (findLoop(ctx.getPath()) == null) {
+            return null;
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_SleepInLoop");
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+
     private static String methodName(MethodInvocationTree mit) {
         ExpressionTree select = mit.getMethodSelect();
 
@@ -250,5 +404,67 @@ public class Tiny {
             case MEMBER_SELECT: return ((MemberSelectTree) select).getIdentifier().toString();
             default: throw new UnsupportedOperationException(select.getKind().toString());
         }
+    }
+
+    private static VariableElement attributeThis(CompilationInfo info, TreePath tp) {
+        //XXX:
+        Scope scope = info.getTrees().getScope(tp);
+        ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+
+        info.getTreeUtilities().attributeTree(thisTree, scope);
+
+        return (VariableElement) info.getTrees().getElement(new TreePath(tp, thisTree));
+    }
+
+    private static boolean isSynced(HintContext ctx, TreePath inspect) {
+        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS) {
+            if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
+                return true;
+            }
+
+            if (inspect.getLeaf().getKind() == Kind.METHOD) {
+                if (((MethodTree) inspect.getLeaf()).getModifiers().getFlags().contains(Modifier.SYNCHRONIZED)) {
+                    return true;
+                }
+
+                break;
+            }
+
+            inspect = inspect.getParentPath();
+        }
+
+        return false;
+    }
+
+    private static final Set<Kind> LOOP_KINDS = EnumSet.of(Kind.DO_WHILE_LOOP, Kind.ENHANCED_FOR_LOOP, Kind.FOR_LOOP, Kind.WHILE_LOOP);
+
+    private static TreePath findLoop(TreePath inspect) {
+        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS && !LOOP_KINDS.contains(inspect.getLeaf().getKind())) {
+            inspect = inspect.getParentPath();
+        }
+
+        return LOOP_KINDS.contains(inspect.getLeaf().getKind()) ? inspect : null;
+    }
+
+    
+
+
+    //Workarounding #181580:
+    private static boolean isCondition(HintContext ctx, String variable) {
+        TypeElement condEl = ctx.getInfo().getElements().getTypeElement("java.util.concurrent.locks.Condition");
+        TreePath var = ctx.getVariables().get(variable);
+
+        if (condEl == null || var == null) {
+            return false;
+        }
+        
+        TypeMirror  varType = ctx.getInfo().getTrees().getTypeMirror(var);
+        TypeMirror  condType = condEl.asType();
+
+        if (condType == null || varType == null) {
+            return false;
+        }
+
+        return ctx.getInfo().getTypes().isSubtype(varType, condType);
     }
 }

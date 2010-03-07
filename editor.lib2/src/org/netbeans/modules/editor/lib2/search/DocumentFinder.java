@@ -217,7 +217,7 @@ public class DocumentFinder
             blockSearchStartOffset = blockSearchEndOffset;
             blockSearchEndOffset = tmp;
         }
-        CharSequence docText = DocumentUtilities.getText(doc);
+        CharSequence docText = DocumentUtilities.getText(doc).subSequence(0, doc.getLength()); // exclude the artificial last \n
         CharSequence blockText = blockSearch
                 ? docText.subSequence(blockSearchStartOffset, blockSearchEndOffset)
                 : docText;
