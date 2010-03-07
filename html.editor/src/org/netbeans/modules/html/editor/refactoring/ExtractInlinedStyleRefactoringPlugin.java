@@ -52,7 +52,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
@@ -123,6 +122,11 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 break;
             case refactorToReferedExternalSheet:
                 refactorToStyleSheet(modificationResult, context);
+                break;
+            case refactorToExistingExternalSheet:
+                importStyleSheet(modificationResult, context);
+                refactorToStyleSheet(modificationResult, context);
+                break;
         }
 
         refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
@@ -134,6 +138,73 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         }
 
         return null;
+
+    }
+
+    private boolean importStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
+        try {
+            //create a new html link to the stylesheet
+            AstNode root = context.getModel().getParserResult().root();
+            final AtomicInteger insertPositionRef = new AtomicInteger();
+            final AtomicBoolean increaseIndent = new AtomicBoolean();
+            AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+
+                @Override
+                public void visit(AstNode node) {
+                    if ("head".equalsIgnoreCase(node.name())) {
+                        //NOI18N
+                        //append the section as first head's child if there are
+                        //no existing link attribute
+                        insertPositionRef.set(node.endOffset()); //end of the open tag offset
+                        increaseIndent.set(true);
+                    } else if ("link".equalsIgnoreCase(node.name())) {
+                        //NOI18N
+                        //existing link => append the new section after the last one
+                        insertPositionRef.set(node.getLogicalRange()[1]); //end of the end tag offset
+                        increaseIndent.set(false);
+                    }
+                }
+            }, AstNode.NodeType.OPEN_TAG);
+            int embeddedInsertOffset = insertPositionRef.get();
+            if (embeddedInsertOffset == -1) {
+                //TODO probably missing head tag? - generate? html tag may be missing as well
+                return false;
+            }
+            int insertOffset = context.getModel().getSnapshot().getOriginalOffset(embeddedInsertOffset);
+            if (insertOffset == -1) {
+                return false; //cannot properly map back
+            }
+            int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
+            if (increaseIndent.get()) {
+                //add one indent level (after HEAD open tag)
+                baseIndent += IndentUtils.indentLevelSize(context.getDocument());
+            }
+
+            //generate the embedded id selector section
+            String baseIndentString = IndentUtils.createIndentString(context.getDocument(), baseIndent);
+            String linkRelativePath = WebUtils.getRelativePath(context.getFile(), refactoring.getExternalSheet());
+            String linkText = new StringBuilder().append('\n').
+                    append(baseIndentString).
+                    append("<link href=\"").
+                    append(linkRelativePath).
+                    append("\" type=\"text/css\">\n").toString(); //NOI18N
+
+            CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFile());
+            Difference diff = new Difference(Difference.Kind.INSERT,
+                        editor.createPositionRef(insertOffset, Bias.Forward),
+                        editor.createPositionRef(insertOffset, Bias.Backward),
+                        null,
+                        linkText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_InsertStylesheetLink")); //NOI18N
+
+            modificationResult.addDifferences(context.getFile(), Collections.singletonList(diff));
+
+            return true;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return false;
 
     }
 
