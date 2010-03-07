@@ -49,6 +49,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -84,20 +85,20 @@ public class NotConnectedNode extends AbstractNode implements ConnectionListener
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new ConnectAction(env)
+            SharedClassObject.findObject(ConnectAction.class, true)
         };
     }
 
     @Override
     public Action getPreferredAction() {
-        return new ConnectAction(env);
+        return SharedClassObject.findObject(ConnectAction.class, true);
     }
 
     @Override
     public void connected(ExecutionEnvironment env) {
         Node parent = getParentNode();
-        if (parent instanceof FileSystemNode) {
-            FileSystemNode fsn = (FileSystemNode) parent;
+        if (parent instanceof FileSystemRootNode) {
+            FileSystemRootNode fsn = (FileSystemRootNode) parent;
             fsn.refresh();
         }
     }
