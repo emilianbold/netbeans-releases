@@ -430,6 +430,30 @@ public class TinyTest extends TestBase {
                             "3:11-3:17:verifier:ERR_UnsyncedNotify");
     }
 
+    public void testSleepInSync() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private synchronized void n() throws Exception {\n" +
+                            "         Thread.sleep(1000);\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:16-3:21:verifier:ERR_SleepInSync");
+    }
+
+    public void testSleepInLoop() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n() throws Exception {\n" +
+                            "         while(true) {\n" +
+                            "             Thread.sleep(1000);\n" +
+                            "         }\n" +
+                            "     }\n" +
+                            "}\n",
+                            "4:20-4:25:verifier:ERR_SleepInLoop");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

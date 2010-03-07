@@ -360,6 +360,42 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
     
+    @Hint(category="thread", suppressWarnings="")
+    @TriggerPatterns({
+        @TriggerPattern(value="java.lang.Thread.sleep($to)",
+                        constraints=@Constraint(variable="$to", type="long")),
+        @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
+                        constraints=@Constraint(variable="$to", type="long"),
+                        constraints=@Constraint(variable="$nanos", type="int"))
+    })
+    public static ErrorDescription sleepInSync(HintContext ctx) {
+        if (!isSynced(ctx, ctx.getPath())) {
+            return null;
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_SleepInSync");
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+
+    @Hint(category="thread", suppressWarnings="")
+    @TriggerPatterns({
+        @TriggerPattern(value="java.lang.Thread.sleep($to)",
+                        constraints=@Constraint(variable="$to", type="long")),
+        @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
+                        constraints=@Constraint(variable="$to", type="long"),
+                        constraints=@Constraint(variable="$nanos", type="int"))
+    })
+    public static ErrorDescription sleepInLoop(HintContext ctx) {
+        if (findLoop(ctx.getPath()) == null) {
+            return null;
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_SleepInLoop");
+
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+    }
+
     private static String methodName(MethodInvocationTree mit) {
         ExpressionTree select = mit.getMethodSelect();
 
@@ -380,8 +416,37 @@ public class Tiny {
         return (VariableElement) info.getTrees().getElement(new TreePath(tp, thisTree));
     }
 
+    private static boolean isSynced(HintContext ctx, TreePath inspect) {
+        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS) {
+            if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
+                return true;
+            }
 
+            if (inspect.getLeaf().getKind() == Kind.METHOD) {
+                if (((MethodTree) inspect.getLeaf()).getModifiers().getFlags().contains(Modifier.SYNCHRONIZED)) {
+                    return true;
+                }
 
+                break;
+            }
+
+            inspect = inspect.getParentPath();
+        }
+
+        return false;
+    }
+
+    private static final Set<Kind> LOOP_KINDS = EnumSet.of(Kind.DO_WHILE_LOOP, Kind.ENHANCED_FOR_LOOP, Kind.FOR_LOOP, Kind.WHILE_LOOP);
+
+    private static TreePath findLoop(TreePath inspect) {
+        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS && !LOOP_KINDS.contains(inspect.getLeaf().getKind())) {
+            inspect = inspect.getParentPath();
+        }
+
+        return LOOP_KINDS.contains(inspect.getLeaf().getKind()) ? inspect : null;
+    }
+
+    
 
 
     //Workarounding #181580:
