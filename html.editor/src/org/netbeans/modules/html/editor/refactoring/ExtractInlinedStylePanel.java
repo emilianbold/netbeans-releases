@@ -41,8 +41,8 @@
 package org.netbeans.modules.html.editor.refactoring;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,13 +68,13 @@ import org.openide.util.Exceptions;
  *
  * @author mfukala@netbeans.org
  */
-public class ExtractInlinedStylePanel extends JPanel implements CustomRefactoringPanel, ActionListener {
+public class ExtractInlinedStylePanel extends JPanel implements CustomRefactoringPanel, ItemListener {
 
     private List<FileObject> allStylesheets;
     private RefactoringContext context;
     private Mode selection;
     private FileObject newStyleSheet;
-    
+
     /** Creates new form RenamePanelName */
     public ExtractInlinedStylePanel(RefactoringContext context) {
         this.context = context;
@@ -84,22 +84,24 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     }
 
     private void initUI() {
-        existingEmbeddedSectionRB.addActionListener(this);
-        createNewEmbeddedSectionRB.addActionListener(this);
-        usedExternalSheetRB.addActionListener(this);
-        existingExternalSheetRB.addActionListener(this);
-        newExternalSheetRB.addActionListener(this);
+        buttonGroup1.getSelection();
+
+        existingEmbeddedSectionRB.addItemListener(this);
+        createNewEmbeddedSectionRB.addItemListener(this);
+        usedExternalSheetRB.addItemListener(this);
+        existingExternalSheetRB.addItemListener(this);
+        newExternalSheetRB.addItemListener(this);
 
         //default button group selection
-        if(!context.getExistingEmbeddedCssSections().isEmpty()) {
-            setMode(Mode.refactorToExistingEmbeddedSection);
+        if (!context.getExistingEmbeddedCssSections().isEmpty()) {
+            setButtonsGroupSelection(Mode.refactorToExistingEmbeddedSection);
         } else {
-            setMode(Mode.refactorToNewEmbeddedSection);
+            setButtonsGroupSelection(Mode.refactorToNewEmbeddedSection);
         }
-        
+
     }
 
-    private void setMode(Mode mode) {
+    private void setButtonsGroupSelection(Mode mode) {
         this.selection = mode;
         JRadioButton select;
         switch (selection) {
@@ -123,18 +125,20 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void itemStateChanged(ItemEvent e) {
         Object s = e.getSource();
-        if(s == existingEmbeddedSectionRB) {
-            selection = Mode.refactorToExistingEmbeddedSection;
-        } else if(s == createNewEmbeddedSectionRB) {
-            selection = Mode.refactorToNewEmbeddedSection;
-        } else if(s == usedExternalSheetRB) {
-            selection = Mode.refactorToReferedExternalSheet;
-        } else if(s == existingExternalSheetRB) {
-            selection = Mode.refactorToExistingExternalSheet;
-        } else if(s == newExternalSheetRB) {
-            selection = Mode.refactorToNewExternalSheet;
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            if (s == existingEmbeddedSectionRB) {
+                selection = Mode.refactorToExistingEmbeddedSection;
+            } else if (s == createNewEmbeddedSectionRB) {
+                selection = Mode.refactorToNewEmbeddedSection;
+            } else if (s == usedExternalSheetRB) {
+                selection = Mode.refactorToReferedExternalSheet;
+            } else if (s == existingExternalSheetRB) {
+                selection = Mode.refactorToExistingExternalSheet;
+            } else if (s == newExternalSheetRB) {
+                selection = Mode.refactorToNewExternalSheet;
+            }
         }
     }
 
@@ -287,7 +291,6 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     private void existingExternalStyleSheetsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingExternalStyleSheetsComboBoxActionPerformed
         existingExternalSheetRB.setSelected(true);
     }//GEN-LAST:event_existingExternalStyleSheetsComboBoxActionPerformed
-                                                             
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JRadioButton createNewEmbeddedSectionRB;
@@ -306,26 +309,28 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     private ComboBoxModel createExistingEmbeddedCssSectionsModel() {
         List<OffsetRange> ranges = context.getExistingEmbeddedCssSections();
         String[] values = new String[ranges.size()];
-        for(int i = 0; i < values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             values[i] = getRenderStringFromOffsetRange(ranges.get(i));
         }
-        return new DefaultComboBoxModel(values) {};
+        return new DefaultComboBoxModel(values) {
+        };
     }
 
     private ComboBoxModel createExternalStylesheetsModel() {
         List<HtmlLinkEntry> links = context.getLinkedExternalStylesheets();
         String[] values = new String[links.size()];
-        for(int i = 0; i < values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             values[i] = links.get(i).getName();
         }
-        return new DefaultComboBoxModel(values) {};
+        return new DefaultComboBoxModel(values) {
+        };
     }
 
     private ComboBoxModel createExistingExternalSheetsModel() {
         FileObject webRoot = ProjectWebRootQuery.getWebRoot(context.getFile());
         String[] values = new String[allStylesheets.size()];
         int index = 0;
-        for(FileObject file : allStylesheets) {
+        for (FileObject file : allStylesheets) {
             String relativePath = FileUtil.getRelativePath(webRoot, file);
             values[index++] = relativePath;
         }
@@ -367,13 +372,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                     Exceptions.printStackTrace(ex);
                 }
             }
-
         });
 
         OffsetRange line = ret.get();
-        
-        return new StringBuilder().
-                append("Section from line ").
+
+        return new StringBuilder().append("Section from line ").
                 append(line.getStart() + 1). //lines in editor are counted from 1
                 append(" to ").
                 append(line.getEnd() + 1). //lines in editor are counted from 1
