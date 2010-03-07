@@ -103,10 +103,13 @@ public class ExtractInlinedStyleRefactoringUI implements RefactoringUI, Refactor
                 break;
             case refactorToReferedExternalSheet:
                 refactoring.setExternalSheet(panel.getSelectedUsedExternalStylesheet());
+                break;
             case refactorToNewExternalSheet:
                 refactoring.setExternalSheet(panel.getNewStyleSheet());
+                break;
             case refactorToExistingExternalSheet:
                 refactoring.setExternalSheet(panel.getSelectedExternalStyleSheet());
+                break;
             default:
                 break;
         }
