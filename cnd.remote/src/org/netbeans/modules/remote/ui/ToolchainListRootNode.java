@@ -90,7 +90,7 @@ public class ToolchainListRootNode extends AbstractNode {
         public ToolchainListChildren(ExecutionEnvironment env) {
             this.env = env;
         }
-        
+
         @Override
         protected boolean createKeys(List<CompilerSet> toPopulate) {
             toPopulate.addAll(CompilerSetManager.get(env).getCompilerSets());
@@ -115,7 +115,11 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         public String getHtmlDisplayName() {
-            return null;
+            String displayName = getDisplayName();
+            if (CompilerSetManager.get(env).isDefaultCompilerSet(compilerSet)) {
+                displayName = "<i>" + displayName + "</i>"; // NOI18N
+            }
+            return displayName;
         }
 
         @Override
