@@ -48,9 +48,7 @@ made subject to such option by the copyright holder.
                 <folder name="ApiSupport">
                     <file name="FcbModuleProject" url="FcbModuleProject.zip">
                         <attr name="position" intvalue="4000"/>
-                    <!--
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/fcbapp.png"/>
-                    -->
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/facebook_16.png"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.facebooksample.Bundle#Templates/Project/Samples/APISupport/FcbModuleProject"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.facebooksample.FcbModuleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/FcbModuleDescription.html"/>

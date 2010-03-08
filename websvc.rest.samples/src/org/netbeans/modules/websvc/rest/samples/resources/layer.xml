@@ -111,7 +111,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="Maven">
                     <file name="FcbMavenModuleProject" url="FcbMavenModuleProject.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/facebook_16.png"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle#Templates/Project/Samples/Maven/FcbMavenModuleProject"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.FcbMavenModuleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/ui/FcbMavenModuleDescription.html"/>
