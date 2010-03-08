@@ -37,29 +37,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.osgi;
+package org.netbeans.modules.maven.grammar.spi;
+
+import java.util.Enumeration;
+import java.util.List;
+import org.jdom.Element;
+import org.netbeans.modules.xml.api.model.GrammarResult;
+import org.netbeans.modules.xml.api.model.HintContext;
 
 /**
  *
- * @author mkleint
+ * @author dafe
  */
-public interface OSGIConstants {
-    public static final String ARTIFACTID_BUNDLE_PLUGIN = "maven-bundle-plugin"; //NOI18N
-    public static final String GROUPID_FELIX = "org.apache.felix"; //NOI18N
+public interface GrammarExtensionProvider {
 
-    public static final String GOAL_MANIFEST = "manifest"; //NOI18N
-    public static final String PARAM_INSTRUCTIONS = "instructions"; //NOI18N
+    List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element parent);
 
-    public static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; //NOI18N
-    public static final String PRIVATE_PACKAGE = "Private-Package"; //NOI18N
-    public static final String EXPORT_PACKAGE = "Export-Package"; //NOI18N
-    public static final String IMPORT_PACKAGE = "Import-Package"; //NOI18N
-    public static final String INCLUDE_RESOURCE = "Include-Resource"; //NOI18N
-    public static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName"; //NOI18N
+    Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el);
 
-    public static final String EMBED_DEPENDENCY = "Embed-Dependency"; //NOI18N
-    public static final String EMBED_DIRECTORY = "Embed-Directory"; //NOI18N
-    public static final String EMBED_STRIP_GROUP = "Embed-StripGroup"; //NOI18N
-    public static final String EMBED_STRIP_VERSION = "Embed-StripVersion"; //NOI18N
-    public static final String EMBED_TRANSITIVE = "Embed-Transitive"; //NOI18N
 }
