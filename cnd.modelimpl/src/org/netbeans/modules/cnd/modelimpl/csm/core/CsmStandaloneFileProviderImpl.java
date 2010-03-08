@@ -461,6 +461,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 	public NativeExitStatus execute(String executable, String[] env, String... args) {
 	    return null;
         }
+        
+        @Override
+        public String getPlatformName() {
+            return null;
+        }
     }
 
     private static final class NativeFileItemImpl implements NativeFileItem {
