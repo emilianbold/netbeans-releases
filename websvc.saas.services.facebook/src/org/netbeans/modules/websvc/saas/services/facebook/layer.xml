@@ -72,28 +72,50 @@
             </file>
             <!-- method body templates -->
             <file name="FacebookCreateToken.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookCreateToken.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookCreateToken.template">
+                <attr name="position" intvalue="36010"/>
+            </file>
             <file name="FacebookGetSessionKey.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookGetSessionKey.template"/> 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookGetSessionKey.template">
+                <attr name="position" intvalue="36020"/>
+            </file>
             <file name="FacebookLogout.method" 
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookLogout.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookLogout.template">
+                <attr name="position" intvalue="36030"/>
+            </file>
             <file name="FacebookSignParams.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookSignParams.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookSignParams.template">
+                <attr name="position" intvalue="36040"/>
+            </file>
             <!-- Web templates -->
             <file name="FacebookWebLogout.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLogout.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLogout.template">
+                <attr name="position" intvalue="36210"/>
+            </file>
             <file name="FacebookWebGetSessionKey.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookGetSessionKey.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookGetSessionKey.template">
+                <attr name="position" intvalue="36220"/>
+            </file>
             <file name="FacebookCreateSessionKey.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCreateSessionKey.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCreateSessionKey.template">
+                <attr name="position" intvalue="36230"/>
+            </file>
             <file name="FacebookDispatch.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookDispatch.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookDispatch.template">
+                <attr name="position" intvalue="36240"/>
+            </file>
             <file name="FacebookWebSignParams.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookSignParams.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookSignParams.template">
+                <attr name="position" intvalue="36250"/>
+            </file>
             <file name="FacebookLoginDoGet.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLoginDoGet.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLoginDoGet.template">
+                <attr name="position" intvalue="36260"/>
+            </file>
             <file name="FacebookCallbackDoGet.method"
-                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCallbackDoGet.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookCallbackDoGet.template">
+                <attr name="position" intvalue="36270"/>
+            </file>
 
             <!-- PHP templates -->
             <file name="FacebookAuthenticatorDesktop.php" 

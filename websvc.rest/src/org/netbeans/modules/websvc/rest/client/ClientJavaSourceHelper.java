@@ -419,8 +419,8 @@ public class ClientJavaSourceHelper {
                         if (authenticator != null) {
                             UseTemplates useTemplates = authenticator.getUseTemplates();
                             if (useTemplates != null) {
-                                if (Wadl2JavaHelper.PROJEC_TYPE_DESKTOP.equals(security.getProjectType())) { //NOI18N
-                                    TemplateType tt = useTemplates.getDesktop();
+                                if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(security.getProjectType())) { //NOI18N
+                                    TemplateType tt = useTemplates.getNbModule();
                                     if (tt != null) {
                                         securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
@@ -428,6 +428,13 @@ public class ClientJavaSourceHelper {
                                     }
                                 } else if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) { //NOI18N
                                     TemplateType tt = useTemplates.getWeb();
+                                    if (tt != null) {
+                                        securityParams.setFieldDescriptors(tt.getFieldDescriptor());
+                                        securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                        securityParams.setServletDescriptors(tt.getServletDescriptor());
+                                    }
+                                } else {
+                                    TemplateType tt = useTemplates.getDesktop();
                                     if (tt != null) {
                                         securityParams.setFieldDescriptors(tt.getFieldDescriptor());
                                         securityParams.setMethodDescriptors(tt.getMethodDescriptor());
