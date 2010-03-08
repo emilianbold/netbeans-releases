@@ -82,7 +82,7 @@ public class FmtStyle extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
-        setName(org.openide.util.NbBundle.getMessage(FmtStyle.class, "LBL_Alignment")); // NOI18N
+        setName(org.openide.util.NbBundle.getMessage(FmtStyle.class, "LBL_Style")); // NOI18N
         setOpaque(false);
 
         jLabel1.setLabelFor(jComboBox1);
