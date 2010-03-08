@@ -13,7 +13,7 @@
         if (sessionKey != null) {
             out.println("<p>Already logged in.</b>");
         } else {
-            String perms = (read_only) ? "read" : "delete";
+            String perms = "delete"; // setting read+write+delete permissions. Other possible values are write|read
             String[] queryParamNames = new String[]{"api_key", "perms"};
             String[] queryParamValues = new String[]{api_key, perms};
             String sig = signParams(queryParamNames, queryParamValues);

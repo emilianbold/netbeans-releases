@@ -94,11 +94,10 @@
                             <field-descriptor modifiers="private" name="application_secret" type="String"/>
                             <field-descriptor modifiers="private" name="auth_token" type="String"/>
                             <field-descriptor modifiers="private" name="user_nsid" type="String"/>
-                            <field-descriptor modifiers="private" name="read_only" type="boolean" init-value="false"/>
                             <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body = "{this.api_key=api_key; this.application_secret=application_secret; getAuthToken();}" param-types = "String, String" param-names = "api_key, application_secret"/>
                             <method-descriptor modifiers="public" name="logout" return-type="void" body-ref  = "Templates/SaaSServices/FlickrLogout.method"/>
                             <method-descriptor modifiers="private" id = "api_key" name="getApiKey" return-type="String" body = "{return api_key;}"/>
-                            <method-descriptor modifiers="private" name="getUserNsid" return-type="String" body = "{return user_nsid;}"/>
+                            <method-descriptor modifiers="public" name="getUserNsid" return-type="String" body = "{return user_nsid;}"/>
                             <method-descriptor modifiers="private" id = "auth_token" name="getAuthToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrGetAuthToken.method"/>
                             <method-descriptor modifiers="private" name="getFrob" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrGetFrob.method"/>
                             <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
@@ -110,16 +109,14 @@
                             <template type="callback" href="FlickrAuthenticatorCallback"/>
                             <field-descriptor modifiers="private,static" name="api_key" type="String"/>
                             <field-descriptor modifiers="private,static" name="application_secret" type="String"/>
-                            <field-descriptor modifiers="private,static" name="user_nsid" type="String"/>
-                            <field-descriptor modifiers="private,static" name="read_only" type="boolean"/>
                             <field-descriptor modifiers="private" name="httpServletRequest" type="javax.servlet.http.HttpServletRequest"/>
                             <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body = "{api_key=apiKey; application_secret=applicationSecret; httpServletRequest=request; dispatch(request, response);}" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, String, String" param-names = "request, response, apiKey, applicationSecret"/>
                             <method-descriptor modifiers="public" name="setHttpServletRequest" return-type="void" body = "{this.httpServletRequest=request;}" param-types = "javax.servlet.http.HttpServletRequest" param-names="request"/>
                             <method-descriptor modifiers="public" name="logout" return-type="void" body-ref = "Templates/SaaSServices/FlickrWebLogout.method" param-types = "javax.servlet.http.HttpServletRequest" param-names="request"/>
                             <method-descriptor id="api_key" modifiers="private" name="getApiKey" return-type="String" body = "{return api_key;}"/>
-                            <method-descriptor modifiers="public" name="getUserNsid" return-type="String" body = "{return user_nsid;}"/>
+                            <method-descriptor modifiers="public" name="getUserNsid" return-type="String" body-ref = "Templates/SaaSServices/FlickrGetUserNsid.method"/>
                             <method-descriptor id="auth_token" modifiers="private" name="getAuthToken" return-type="String" body-ref = "Templates/SaaSServices/FlickrWebGetAuthToken.method" />
-                            <method-descriptor modifiers="private,static" name="createAuthToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrCreateAuthToken.method" param-types = "String" param-names="frob"/>
+                            <method-descriptor modifiers="private,static" name="createAuthToken" return-type="void" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrCreateAuthToken.method" param-types = "javax.servlet.http.HttpServletRequest, String" param-names="request, frob"/>
                             <method-descriptor modifiers="private,static" name="dispatch" return-type="void" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrDispatch.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names="request, response"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>

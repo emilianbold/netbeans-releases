@@ -84,6 +84,8 @@
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogout.template"/>
             <file name="FlickrWebGetAuthToken.method"
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetAuthToken.template"/>
+            <file name="FlickrGetUserNsid.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetUserNsid.template"/>
             <file name="FlickrCreateAuthToken.method"
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken.template"/>
             <file name="FlickrDispatch.method"

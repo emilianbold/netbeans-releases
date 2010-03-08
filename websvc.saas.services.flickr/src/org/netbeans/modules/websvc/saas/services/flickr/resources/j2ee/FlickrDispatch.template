@@ -9,7 +9,7 @@
         // obtain the session key using the auth token.  If there is no
         // auth token, we redirect to the login page.
         if (frob != null) {
-            session.setAttribute("flickr_auth_token", createAuthToken(frob));
+            createAuthToken(request, frob);
             String returnUrl = (String) session.getAttribute("flickr_return_url");
             if (returnUrl != null) {
                 session.removeAttribute("flickr_return_url");
