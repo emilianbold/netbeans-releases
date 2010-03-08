@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,7 +61,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
     public void testCreateClassForNewExpression() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1);}}", 114 - 48, "CreateClass:test.NonExisting:[]:CLASS");
     }
-    
+
     public void testCreateClassVariable() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {NonExisting n;}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS");
     }
@@ -224,6 +224,14 @@ public class CreateClassTest extends ErrorHintsTestBase {
                 "CreateClass:test.FooException2:[]:CLASS");
     }
 
+    public void testCreateClassForArray() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private St|ate[] arr;}",
+                       "CreateClass:test.State:[]:CLASS",
+                       "test/State.java",
+                       "package test; class State { public State() { } } "
+                       );
+    }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
