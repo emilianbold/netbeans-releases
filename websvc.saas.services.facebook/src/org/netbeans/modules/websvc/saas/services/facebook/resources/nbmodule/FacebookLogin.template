@@ -1,0 +1,6 @@
+{
+    java.util.prefs.Preferences prefs = org.openide.util.NbPreferences.forModule(this.getClass());
+    prefs.put("facebook_api_key", api_key);
+    prefs.put("facebook_application_secret", application_secret);
+    getSessionKey();
+}

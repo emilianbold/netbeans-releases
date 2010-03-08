@@ -70,7 +70,8 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            <!-- method body templates -->
+
+            <!-- desktop method templates -->
             <file name="FacebookCreateToken.method"
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookCreateToken.template">
                 <attr name="position" intvalue="36010"/>
@@ -87,7 +88,30 @@
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/java/FacebookSignParams.template">
                 <attr name="position" intvalue="36040"/>
             </file>
-            <!-- Web templates -->
+
+            <!-- nb-module method templates -->
+            <file name="FacebookNbCreateToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/nbmodule/FacebookCreateToken.template">
+                <attr name="position" intvalue="36110"/>
+            </file>
+            <file name="FacebookNbGetSessionKey.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/nbmodule/FacebookGetSessionKey.template">
+                <attr name="position" intvalue="36120"/>
+            </file>
+            <file name="FacebookNbLogin.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/nbmodule/FacebookLogin.template">
+                <attr name="position" intvalue="36130"/>
+            </file>
+            <file name="FacebookNbLogout.method" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/nbmodule/FacebookLogout.template">
+                <attr name="position" intvalue="36140"/>
+            </file>
+            <file name="FacebookNbSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/nbmodule/FacebookSignParams.template">
+                <attr name="position" intvalue="36150"/>
+            </file>
+
+            <!-- web method templates -->
             <file name="FacebookWebLogout.method"
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/j2ee/FacebookLogout.template">
                 <attr name="position" intvalue="36210"/>
