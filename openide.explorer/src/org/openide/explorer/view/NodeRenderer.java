@@ -235,7 +235,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
             return VisualizerNode.getVisualizer(null, (Node)value);
         } else if (value instanceof VisualizerNode) {
             return (VisualizerNode)value;
-        } else if (value == null) {
+        } else if (value == null || " ".equals(value) || "".equals(value)) {
             return VisualizerNode.EMPTY;
         } else {
             throw new ClassCastException("Unexpected value: " + value);
