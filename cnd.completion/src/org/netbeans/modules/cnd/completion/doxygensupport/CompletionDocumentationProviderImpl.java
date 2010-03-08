@@ -69,7 +69,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
-    public static Document doc = null; // FIXUP: hack to get the current document
+//    public static Document doc = null; // FIXUP: hack to get the current document
 
     @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
@@ -77,7 +77,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             return null;
         }
         CsmFile csmFile = getCsmFile(item);
-        NativeProject nativeProject = ManDocumentation.getNativeProject(csmFile);
+//        NativeProject nativeProject = ManDocumentation.getNativeProject(csmFile);
 
         if (csmFile != null) {
             return new AsyncCompletionTask(new DocQuery((CsmObject) ((CsmResultItem) item).getAssociatedObject(), csmFile));
