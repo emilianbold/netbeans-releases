@@ -159,4 +159,10 @@ public interface NativeProject {
      * @return NativeExitStatus
      */
     public NativeExitStatus execute(final String executable, final String[] env, final String... args) throws IOException;
+
+    /**
+     * Return the name of the development platform (Solaris-x86, Solaris-sparc, MacOSX, Windows, Linux-x86)
+     * @return development platform name
+     */
+    public String getPlatformName();
 }
