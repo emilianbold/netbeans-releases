@@ -48,9 +48,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
@@ -66,6 +70,8 @@ import org.openide.windows.TopComponent;
  * @author Jan Stola
  */
 public class FindSupport {
+    private static final String FIND_NEXT_ACTION = "find-next"; // NOI18N
+    private static final String FIND_PREVIOUS_ACTION = "find-previous"; // NOI18N
     private TopComponent tc;
     private FindBar bar;
     // Highlighters
@@ -82,11 +88,29 @@ public class FindSupport {
         bar = new FindBar(this);
         ActionMap actionMap = tc.getActionMap();
         CallbackSystemAction a = SystemAction.get(org.openide.actions.FindAction.class);
-        actionMap.put(a.getActionMapKey(), new FindAction());
+        actionMap.put(a.getActionMapKey(), new FindAction(true));
+        actionMap.put(FIND_NEXT_ACTION, new FindAction(true));
+        actionMap.put(FIND_PREVIOUS_ACTION, new FindAction(false));
+        // Hack ensuring the same shortcuts as editor
+        JEditorPane pane = new JEditorPane();
+        for (Action action : pane.getEditorKitForContentType("text/x-java").getActions()) { // NOI18N
+            Object name = action.getValue(Action.NAME);
+            if (FIND_NEXT_ACTION.equals(name) || FIND_PREVIOUS_ACTION.equals(name)) {
+                reuseShortcut(action);
+            }
+        }
         // PENDING the colors below should not be hardcoded
         highlighterAll = new DefaultHighlighter.DefaultHighlightPainter(new Color(255,180,66));
         highlighterCurrent = new DefaultHighlighter.DefaultHighlightPainter(new Color(176,197,227));
         pattern = Pattern.compile("$^"); // NOI18N
+    }
+
+    private void reuseShortcut(Action action) {
+        Object key = action.getValue(Action.ACCELERATOR_KEY);
+        if (key instanceof KeyStroke) {
+            InputMap inputMap = tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            inputMap.put((KeyStroke)key, action.getValue(Action.NAME));
+        }
     }
 
     public static FindSupport create(TopComponent tc) {
@@ -320,11 +344,20 @@ public class FindSupport {
     }
 
     private class FindAction extends AbstractAction {
+        private boolean forward;
+
+        FindAction(boolean forward) {
+            this.forward = forward;
+        }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if (bar.isVisible()) {
-                findNext();
+                if (forward) {
+                    findNext();
+                } else {
+                    findPrevious();
+                }
             } else {
                 bar.setVisible(true);
                 bar.requestFocusInWindow();
