@@ -50,7 +50,6 @@ import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -66,7 +65,7 @@ public final class SvnPropertiesAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        return super.enable(nodes) && nodes.length == 1;
+        return super.enable(nodes);
     }
     
     @Override
@@ -86,28 +85,23 @@ public final class SvnPropertiesAction extends ContextAction {
         return NbBundle.getMessage(SvnPropertiesAction.class, "CTL_PropertiesAction");      // NOI18N
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Properties";   // NOI18N
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {       
         final Context ctx = getContext(nodes);
         String ctxDisplayName = getContextDisplayName(nodes);       
-        File[] roots = SvnUtils.getActionRoots(ctx);
+        File[] roots = ctx.getRootFiles();
         if(roots == null || roots.length == 0) {
             return;
         }
-
-        File interestingFile;
-        if(roots.length == 1) {
-            interestingFile = roots[0];
-        } else {
-            interestingFile = SvnUtils.getPrimaryFile(roots[0]);
-        }
-        openProperties(interestingFile, ctxDisplayName);
+        openProperties(roots, ctxDisplayName);
     }
 
-    public static void openProperties(File root, String ctxDisplayName) {
+    public static void openProperties(File[] roots, String ctxDisplayName) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }       
@@ -120,7 +114,7 @@ public final class SvnPropertiesAction extends ContextAction {
         JComponent component = propTable.getComponent();
         panel.propsPanel.setLayout(new BorderLayout());
         panel.propsPanel.add(component, BorderLayout.CENTER);
-        SvnProperties svnProperties = new SvnProperties(panel, propTable, root);   
+        SvnProperties svnProperties = new SvnProperties(panel, propTable, roots);
         JButton btnClose = new JButton();
         Mnemonics.setLocalizedText(btnClose, getString("CTL_Properties_Action_Close"));   //NOI18N
         btnClose.getAccessibleContext().setAccessibleDescription(getString("CTL_Properties_Action_Close")); //NOI18N
