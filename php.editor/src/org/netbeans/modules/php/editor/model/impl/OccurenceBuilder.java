@@ -51,13 +51,17 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.IndexedType;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -69,9 +73,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -586,44 +588,40 @@ class OccurenceBuilder {
             ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
             String methodName = nodeInfo.getName();
             final Scope scope = entry.getValue();
+            Collection<MethodElement> allMethods = Collections.emptyList();
             if (isNameEquality(nodeCtxInfo, nodeInfo,scope)) {
-                QualifiedName queryQN = nodeCtxInfo.getTypeQualifiedName();
-                QualifiedName nodeQN = ASTNodeInfo.toQualifiedName(nodeInfo.getOriginalNode(), true);
-                 Collection<ModelElement> methods = new HashSet<ModelElement>();
-                final String clzName = nodeQN.toName().toString();
+                QualifiedName queryTypeName = nodeCtxInfo.getTypeQualifiedName();
+                QualifiedName currentTypeName = ASTNodeInfo.toQualifiedName(nodeInfo.getOriginalNode(), true);
+
+                Collection<ModelElement> methods = new HashSet<ModelElement>();
+                final String clzName = currentTypeName.toName().toString();
                 if (clzName == null) return;
                 boolean isParent = clzName.equalsIgnoreCase("parent");//NOI18N
                 boolean isSelf = clzName.equalsIgnoreCase("self");//NOI18N
-
-                NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryQN.toString());
+                
+                NamespaceIndexFilter filterQuery = new NamespaceIndexFilter(queryTypeName.toString());
                 if (isParent || isSelf) {
                     TypeScope typeScope = ModelUtils.getFirst(VariousUtils.getStaticTypeName(scope, clzName));
                     if (typeScope != null) {
-                        nodeQN = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
+                        currentTypeName = typeScope.getNamespaceName().append(QualifiedName.create(typeScope.getName()));
                     }
                 }
                 IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
-                PHPIndex index = indexScope.getIndex();
-                Collection<IndexedClassMember<IndexedFunction>> allMethods = Collections.emptyList();
-                allMethods = index.getAllMethods(null, nodeQN, methodName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
-                /*if (isParent) {
-                    allMethods = index.getAllMethods(null, nodeQN, methodName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
-                } else {
-                    allMethods = index.getAllMethods(null, nodeQN, methodName, QuerySupport.Kind.EXACT, PhpModifiers.STATIC);
-                }*/
+                Index index = indexScope.getIndex();
+                allMethods = index.getAllMethods(NameKind.exact(currentTypeName), NameKind.exact(methodName));
+                //allMethods = indexScope.findMethods(null, methodName, modifiers)
                 if (!isParent && !isSelf) {
                     allMethods = filterQuery.filter(allMethods, true);
                 }
-                for (IndexedClassMember<IndexedFunction> indexedClassMember : allMethods) {
-                    IndexedType type = indexedClassMember.getType();
-                    IndexedFunction member = indexedClassMember.getMember();
+                for (MethodElement method : allMethods) {
+                    TypeElement type = method.getType();
                     TypeScopeImpl csi = null;
-                    if (type instanceof IndexedClass) {
-                        csi = new ClassScopeImpl(indexScope, (IndexedClass) type);
-                    } else if (type instanceof IndexedInterface) {
-                        csi = new InterfaceScopeImpl(indexScope, (IndexedInterface) type);
+                    if (type instanceof ClassElement) {
+                        csi = new ClassScopeImpl(indexScope, (ClassElement) type);
+                    } else if (type instanceof InterfaceElement) {
+                        csi = new InterfaceScopeImpl(indexScope, (InterfaceElement) type);
                     }
-                    methods.add(new MethodScopeImpl(csi, member));
+                    methods.add(new MethodScopeImpl(csi, method));
                 }
                 
                 if (methods != null && !methods.isEmpty()) {
@@ -660,22 +658,21 @@ class OccurenceBuilder {
                     }
                 }
                 IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
-                PHPIndex index = indexScope.getIndex();
-                Collection<IndexedClassMember<IndexedConstant>> allFields = Collections.emptyList();
-                allFields = index.getAllFields(null, nodeQN, fieldName, QuerySupport.Kind.EXACT, PHPIndex.ANY_ATTR);
+                Index index = indexScope.getIndex();
+                Collection<FieldElement> allFields = Collections.emptyList();
+                allFields = index.getAlllFields(NameKind.exact(nodeQN), NameKind.exact(fieldName));
                 if (!isParent && !isSelf) {
                     allFields = filterQuery.filter(allFields, true);
                 }
-                for (IndexedClassMember<IndexedConstant> indexedClassMember : allFields) {
-                    IndexedType type = indexedClassMember.getType();
-                    IndexedConstant member = indexedClassMember.getMember();
+                for (FieldElement field : allFields) {
+                    TypeElement type = field.getType();
                     TypeScopeImpl csi = null;
-                    if (type instanceof IndexedClass) {
-                        csi = new ClassScopeImpl(indexScope, (IndexedClass) type);
-                    } else if (type instanceof IndexedInterface) {
-                        csi = new InterfaceScopeImpl(indexScope, (IndexedInterface) type);
+                    if (type instanceof ClassElement) {
+                        csi = new ClassScopeImpl(indexScope, (ClassElement) type);
+                    } else if (type instanceof InterfaceElement) {
+                        csi = new InterfaceScopeImpl(indexScope, (InterfaceElement) type);
                     }
-                    methods.add(new FieldElementImpl(csi, member));
+                    methods.add(new FieldElementImpl(csi, field));
                 }
 
                 if (methods != null && !methods.isEmpty()) {
@@ -707,22 +704,21 @@ class OccurenceBuilder {
                     }
                 }
                 IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
-                PHPIndex index = indexScope.getIndex();
-                Collection<IndexedClassMember<IndexedConstant>> allConstants = Collections.emptyList();
-                allConstants = index.getAllTypeConstants(null, nodeQN, constName, QuerySupport.Kind.EXACT);
+                Index index = indexScope.getIndex();
+                Collection<TypeConstantElement> allConstants = Collections.emptyList();
+                allConstants = index.getAllTypeConstants(NameKind.exact(nodeQN), NameKind.exact(constName));
                 if (!isParent && !isSelf) {
                     allConstants = filterQuery.filter(allConstants, true);
                 }
-                for (IndexedClassMember<IndexedConstant> indexedClassMember : allConstants) {
-                    IndexedType type = indexedClassMember.getType();
-                    IndexedConstant member = indexedClassMember.getMember();
+                for (TypeConstantElement constant : allConstants) {
+                    TypeElement type = constant.getType();
                     TypeScopeImpl csi = null;
-                    if (type instanceof IndexedClass) {
-                        csi = new ClassScopeImpl(indexScope, (IndexedClass) type);
-                    } else if (type instanceof IndexedInterface) {
-                        csi = new InterfaceScopeImpl(indexScope, (IndexedInterface) type);
+                    if (type instanceof ClassElement) {
+                        csi = new ClassScopeImpl(indexScope, (ClassElement) type);
+                    } else if (type instanceof InterfaceElement) {
+                        csi = new InterfaceScopeImpl(indexScope, (InterfaceElement) type);
                     }
-                    constants.add(new ClassConstantElementImpl(csi, member));
+                    constants.add(new ClassConstantElementImpl(csi, constant));
                 }
 
                 if (constants != null && !constants.isEmpty()) {
@@ -736,8 +732,8 @@ class OccurenceBuilder {
         for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
             PhpDocTypeTagInfo nodeInfo = entry.getKey();
             if (Kind.CLASS.equals(nodeInfo.getKind()) && isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.CLASS);
-                collectTypeDeclarations(fileScope, PhpKind.IFACE);
+                collectTypeDeclarations(fileScope, PhpElementKind.CLASS);
+                collectTypeDeclarations(fileScope, PhpElementKind.IFACE);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -749,7 +745,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<ClassInstanceCreation>, Scope> entry : clasInstanceCreations.entrySet()) {
             ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
             if (isNameEquality(query, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.CONSTRUCTOR);
+                collectTypeDeclarations(fileScope, PhpElementKind.CONSTRUCTOR);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -761,7 +757,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<ClassName>, Scope> entry : clasNames.entrySet()) {
             ASTNodeInfo<ClassName> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.CLASS);
+                collectTypeDeclarations(fileScope, PhpElementKind.CLASS);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -773,7 +769,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<Expression>, Scope> entry : ifaceIDs.entrySet()) {
             ASTNodeInfo<Expression> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.IFACE);
+                collectTypeDeclarations(fileScope, PhpElementKind.IFACE);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -785,7 +781,7 @@ class OccurenceBuilder {
         for (Entry<ASTNodeInfo<Expression>, Scope> entry : clasIDs.entrySet()) {
             ASTNodeInfo<Expression> nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.CLASS);
+                collectTypeDeclarations(fileScope, PhpElementKind.CLASS);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -797,7 +793,7 @@ class OccurenceBuilder {
         for (Entry<InterfaceDeclarationInfo, InterfaceScope> entry : ifaceDeclarations.entrySet()) {
             InterfaceDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(nodeCtxInfo, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.IFACE);
+                collectTypeDeclarations(fileScope, PhpElementKind.IFACE);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -810,7 +806,7 @@ class OccurenceBuilder {
         for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
             ClassDeclarationInfo nodeInfo = entry.getKey();
             if (isNameEquality(query, nodeInfo, entry.getValue())) {
-                collectTypeDeclarations(fileScope, PhpKind.CLASS);
+                collectTypeDeclarations(fileScope, PhpElementKind.CLASS);
                 if (!declarations.isEmpty()) {
                     fileScope.addOccurence(new OccurenceImpl(declarations, nodeInfo.getRange(), fileScope));
                 }
@@ -1022,13 +1018,13 @@ class OccurenceBuilder {
 
     }
 
-    private void collectTypeDeclarations(FileScopeImpl fileScope, PhpKind kind) {
-        if (declarations.isEmpty() /*|| !declarations.iterator().next().getPhpKind().equals(kind)*/) {
+    private void collectTypeDeclarations(FileScopeImpl fileScope, PhpElementKind kind) {
+        if (declarations.isEmpty() /*|| !declarations.iterator().next().getPhpElementKind().equals(kind)*/) {
             declarations.clear();
             IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
             List<? extends ModelElement> foundElems = Collections.emptyList();
             Collection<QualifiedName> composedNames = currentContextInfo.getComposedNames();
-            PHPIndex index = indexScope.getIndex();
+            Index index = indexScope.getIndex();
             if (!composedNames.isEmpty()) {
                 switch(kind) {
                     case CLASS:                        
@@ -1039,19 +1035,19 @@ class OccurenceBuilder {
                         break;
                     case CONSTRUCTOR:
                         Collection<ModelElement> elements = new HashSet<ModelElement>();
-                        Collection<IndexedClass> classes = new HashSet<IndexedClass>(index.getClasses(null, currentContextInfo.getName(), QuerySupport.Kind.EXACT));
-                        Collection<IndexedClassMember<IndexedFunction>> constructors = new HashSet<IndexedClassMember<IndexedFunction>>();
-                        for (IndexedClass cls : classes) {
-                            final Collection<IndexedClassMember<IndexedFunction>> tmpConstruct = index.getConstructors(null, cls);
+                        Collection<ClassElement> classes = new HashSet<ClassElement>(index.getClasses(NameKind.exact(currentContextInfo.getName())));
+                        Collection<MethodElement> constructors = new HashSet<MethodElement>();
+                        for (ClassElement cls : classes) {
+                            final Collection<MethodElement> tmpConstruct = index.getDeclaredConstructors(cls);
                             if (!tmpConstruct.isEmpty()) {
                                 constructors.addAll(tmpConstruct);
                             } else {
                                 elements.add(new ClassScopeImpl(indexScope, cls));
                             }
                         }                        
-                        for (IndexedClassMember<IndexedFunction> clsMember : constructors) {
-                            ClassScopeImpl csi = new ClassScopeImpl(indexScope, (IndexedClass) clsMember.getType());
-                            elements.add(new MethodScopeImpl(csi, clsMember.getMember()));
+                        for (MethodElement clsMember : constructors) {
+                            ClassScopeImpl csi = new ClassScopeImpl(indexScope, (ClassElement) clsMember.getType());
+                            elements.add(new MethodScopeImpl(csi, clsMember));
 
                         }
                         foundElems = new ArrayList<ModelElement>(elements);
@@ -1116,7 +1112,7 @@ class OccurenceBuilder {
 
         final Set<FieldElementImpl> fldSet = new HashSet<FieldElementImpl>();
         for (ClassScope classScope : classes) {
-            fldSet.addAll((List<FieldElementImpl>) CachingSupport.getInheritedFields(classScope, name, fileScope, PHPIndex.ANY_ATTR));
+            fldSet.addAll((List<FieldElementImpl>) CachingSupport.getInheritedFields(classScope, name, fileScope, PhpModifiers.ALL_FLAGS));
         }
 
         final List<FieldElementImpl> fields = new ArrayList<FieldElementImpl>(fldSet);
@@ -1125,18 +1121,25 @@ class OccurenceBuilder {
 
     private static List<MethodScope> name2Methods(FileScopeImpl fileScope, final String name, ASTNodeInfo<MethodInvocation> nodeInfo ) {
         IndexScope indexScope = fileScope.getIndexScope();
-        PHPIndex index = indexScope.getIndex();
+        Index index = indexScope.getIndex();
         List<MethodScope> retval = new ArrayList<MethodScope>();
         FunctionInvocation functionInvocation = nodeInfo.getOriginalNode().getMethod();
         int paramCount = functionInvocation.getParameters().size();
-        Collection<IndexedFunction> methods = index.getMethods(null, (String) null, name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
-        for (IndexedFunction meth : methods) {
-            List<? extends Parameter> parameters = meth.getParameters();
+        Collection<MethodElement> methods = index.getMethods(NameKind.prefix(name));
+        for (MethodElement meth : methods) {
+            List<? extends ParameterElement> parameters = meth.getParameters();
             if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, meth.getName()) && paramCount >= numberOfMandatoryParams(parameters) && paramCount <= parameters.size()) {            
                 String in = meth.getIn();
                 if (in != null) {
                     ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
-                    retval.add(new MethodScopeImpl(clz, meth));
+                    if (clz != null) {
+                        retval.add(new MethodScopeImpl(clz, meth));
+                    } else {
+                        InterfaceScope iface = ModelUtils.getFirst(CachingSupport.getInterfaces(in, fileScope));
+                        if (iface != null) {
+                            retval.add(new MethodScopeImpl(iface, meth));
+                        }
+                    }
                 }
             }
         }
@@ -1145,15 +1148,22 @@ class OccurenceBuilder {
 
     private static List<FieldElementImpl> name2Fields(FileScopeImpl fileScope, String name) {
         IndexScope indexScope = fileScope.getIndexScope();
-        PHPIndex index = indexScope.getIndex();
+        Index index = indexScope.getIndex();
         List<FieldElementImpl> retval = new ArrayList<FieldElementImpl>();
-        Collection<IndexedConstant> fields = index.getFields(null, (String) null, name.startsWith("$") ? name.substring(1) : name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, PHPIndex.ANY_ATTR);
-        for (IndexedConstant fld : fields) {
+        Collection<FieldElement> fields = index.getFields(NameKind.prefix(name.startsWith("$") ? name.substring(1) : name));
+        for (FieldElement fld : fields) {
             if (ModelElementImpl.nameKindMatch(name, QuerySupport.Kind.EXACT, fld.getName())) {
                 String in = fld.getIn();
                 if (in != null) {
                     ClassScope clz = ModelUtils.getFirst(CachingSupport.getClasses(in, fileScope));
-                    retval.add(new FieldElementImpl(clz, fld));
+                    if (clz != null) {
+                        retval.add(new FieldElementImpl(clz, fld));
+                    } else {
+                        InterfaceScope iface = ModelUtils.getFirst(CachingSupport.getInterfaces(in, fileScope));
+                        if (iface != null) {
+                            retval.add(new FieldElementImpl(iface, fld));
+                        }
+                    }
                 }
             }
         }
@@ -1166,9 +1176,9 @@ class OccurenceBuilder {
     int getOffset() {
         return offset;
     }
-    private static int numberOfMandatoryParams(List<? extends Parameter> params) {
+    private static int numberOfMandatoryParams(List<? extends ParameterElement> params) {
             int mandatory = 0;
-            for (Parameter parameter : params) {
+            for (ParameterElement parameter : params) {
                 if (parameter.isMandatory()) {
                     mandatory++;
                 }

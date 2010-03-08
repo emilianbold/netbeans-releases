@@ -52,7 +52,7 @@ import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
@@ -232,7 +232,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
             EXECUTOR.submit(new Runnable() {
                 public void run() {
                     EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-                    PhpElement phpElement = editorSupport.getElement(fo, offset);
+                    PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
                     if (phpElement == null) {
                         return;
                     }

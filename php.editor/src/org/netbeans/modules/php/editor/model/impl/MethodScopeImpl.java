@@ -41,15 +41,18 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
+import java.util.Set;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -75,9 +78,9 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         classNormName = inScope.getNormalizedName();
     }
 
-    MethodScopeImpl(Scope inScope, IndexedFunction element) {
-        super(inScope, element, PhpKind.METHOD);
-        assert inScope instanceof TypeScope;
+    MethodScopeImpl(Scope inScope, BaseFunctionElement element) {
+        super(inScope, element, PhpElementKind.METHOD);
+        assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
     }
 
@@ -109,7 +112,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     public boolean isMagic() {
-        return PredefinedSymbols.MAGIC_METHODS.containsKey(getName().toLowerCase());
+        return PredefinedSymbols.MAGIC_METHODS.contains(getName().toLowerCase());
     }
 
     public boolean isConstructor() {
@@ -130,18 +133,20 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
         sb.append("function").append(" ").append(getName());//NOI18N
         sb.append("(");//NOI18N
-        List<? extends Parameter> parameterList = getParameters();
+        List<? extends ParameterElement> parameterList = getParameters();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
                 if (i > 0) {
                     sb.append(", ");
                 }
-                final Parameter param = parameterList.get(i);
-                    if (param.hasRawType()) {
-                        List<QualifiedName> types = param.getTypes();
+                final ParameterElement param = parameterList.get(i);
+                    if (param.hasDeclaredType()) {
+                        Set<TypeResolver> types = param.getTypes();
                         if (types.size() == 1) {
-                            for (QualifiedName qName : types) {
-                                sb.append(qName.toString()).append(' ');//NOI18N
+                            for (TypeResolver typeResolver : types) {
+                                if (typeResolver.isResolved()) {
+                                    sb.append(typeResolver.getTypeName(false)).append(' ');//NOI18N
+                                }
                             }
                         }
                     }
@@ -202,20 +207,20 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     private String getSignatureLastPart() {
         StringBuilder sb = new StringBuilder();
         sb.append(getOffset()).append(";"); //NOI18N
-        List<? extends Parameter> parameters = getParameters();
+        List<? extends ParameterElement> parameters = getParameters();
         for (int idx = 0; idx < parameters.size(); idx++) {
-            Parameter parameter = parameters.get(idx);
+            ParameterElementImpl parameter = (ParameterElementImpl) parameters.get(idx);
             if (idx > 0) {
                 sb.append(','); //NOI18N
             }
-            sb.append(parameter.getIndexSignature());
+            sb.append(parameter.getSignature());
         }
         sb.append(";"); //NOI18N
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
             sb.append(returnType);
         }
         sb.append(";"); //NOI18N
-        sb.append(getPhpModifiers().toBitmask()).append(";");
+        sb.append(getPhpModifiers().toFlags()).append(";");
         return sb.toString();
     }
 }

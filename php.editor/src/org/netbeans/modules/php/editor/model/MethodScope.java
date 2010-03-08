@@ -43,15 +43,10 @@ package org.netbeans.modules.php.editor.model;
  * @author Radek Matous
  */
 public interface MethodScope extends FunctionScope, VariableScope, ClassMemberElement {
-    PhpModifiers getPhpModifiers();
     boolean isMagic();
     boolean isConstructor();
     TypeScope getTypeScope();
     String getClassSkeleton();
     String getInterfaceSkeleton();
     public String getConstructorIndexSignature();
-    //TODO:
-    //boolean implementedMethod();
-    //boolean overridenMethod();
-    //List<? extends MethodScope> getMethodChain();
 }

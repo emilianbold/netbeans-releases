@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -119,25 +120,25 @@ public final class PHPIndexer extends EmbeddingIndexer {
     // ;flags;;args;offset;docoffset;browsercompat;types;
     // (between flags and args you have the case sensitive name for flags)
 
-    static final String FIELD_BASE = "base"; //NOI18N
-    static final String FIELD_EXTEND = "extend"; //NOI18N
-    static final String FIELD_CLASS = "clz"; //NOI18N
-    static final String FIELD_IFACE = "iface"; //NOI18N
-    static final String FIELD_CONST = "const"; //NOI18N
-    static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
-    static final String FIELD_FIELD = "field"; //NOI18N
-    static final String FIELD_METHOD = "method"; //NOI18N
-    static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
-    static final String FIELD_INCLUDE = "include"; //NOI18N
-    static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
-    static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
-    static final String FIELD_NAMESPACE = "ns"; //NOI18N
+    public static final String FIELD_BASE = "base"; //NOI18N
+    public static final String FIELD_EXTEND = "extend"; //NOI18N
+    public static final String FIELD_CLASS = "clz"; //NOI18N
+    public static final String FIELD_IFACE = "iface"; //NOI18N
+    public static final String FIELD_CONST = "const"; //NOI18N
+    public static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
+    public static final String FIELD_FIELD = "field"; //NOI18N
+    public static final String FIELD_METHOD = "method"; //NOI18N
+    public static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
+    public static final String FIELD_INCLUDE = "include"; //NOI18N
+    public static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
+    public static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+    public static final String FIELD_NAMESPACE = "ns"; //NOI18N
 
-    static final String FIELD_VAR = "var"; //NOI18N
+    public static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
-    static final String FIELD_TOP_LEVEL = "top"; //NOI18N
+    public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    static final String [] ALL_FIELDS = new String [] {
+    public static final String [] ALL_FIELDS = new String [] {
         FIELD_BASE,
         FIELD_EXTEND,
         FIELD_CLASS,
@@ -183,7 +184,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
-            PHPIndex.clearNamespaceCache();
+            IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = r.getModel();

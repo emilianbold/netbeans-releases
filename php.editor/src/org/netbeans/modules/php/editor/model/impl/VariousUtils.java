@@ -54,7 +54,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
@@ -65,8 +65,8 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -392,7 +392,7 @@ public class VariousUtils {
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         List<TypeScope> newRecentTypes = new ArrayList<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
-                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, varScope, PHPIndex.ANY_ATTR);
+                            Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
                                 newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
@@ -437,7 +437,7 @@ public class VariousUtils {
                                     cls = ModelUtils.getFirst(cls.getSuperClasses());
                                     if (cls == null) continue;
                                 }
-                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], varScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends MethodScope> inheritedMethods = CachingSupport.getInheritedMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
                                    newRecentTypes.addAll(meth.getReturnTypes(true));
                                 }
@@ -492,7 +492,7 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             if (type instanceof ClassScope) {
                                 ClassScope cls = (ClassScope) type;
-                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PHPIndex.ANY_ATTR);
+                                Collection<? extends FieldElement> inheritedFields = CachingSupport.getInheritedFields(cls, fldName, varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement fieldElement : inheritedFields) {
                                     if (var != null) {
                                         final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
@@ -578,7 +578,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frag, topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getInheritedMethods(cls, frag, topScope, PhpModifiers.ALL_FLAGS));
                         if (meth == null) {
                             return emptyStack;
                         } else {
@@ -612,7 +612,7 @@ public class VariousUtils {
                             semiTypeName = null;
                             break;
                         } else {
-                            MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, "__construct",topScope, PHPIndex.ANY_ATTR));//NOI18N
+                            MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, "__construct",topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                             if (meth != null) {
                                 retval.push(meth);
                             } else {
@@ -632,7 +632,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PHPIndex.ANY_ATTR));
+                        MethodScope meth = ModelUtils.getFirst(CachingSupport.getMethods(cls, frgs[1],topScope, PhpModifiers.ALL_FLAGS));
                                 //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
                         if (meth == null) {
                             return emptyStack;
@@ -695,7 +695,7 @@ public class VariousUtils {
                             return emptyStack;
                         }
                         FieldElement fieldElement = ModelUtils.getFirst(CachingSupport.getInheritedFields(cls, 
-                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PHPIndex.ANY_ATTR));//NOI18N
+                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PhpModifiers.ALL_FLAGS));//NOI18N
                         if (fieldElement == null) {
                             return emptyStack;
                         } else {

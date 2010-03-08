@@ -1,0 +1,50 @@
+
+
+Document 0
+Searchable Keys:
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  base : af;af;71;$pClass:ParameterClass:1:,$pIface:ParameterIface:1:,$pDefault::0:"test";;;
+  base : bf;bf;156;;;;
+  base : cf;cf;175;;;;
+  top : af
+  top : bf
+  top : cf
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  clz : parameterclass;ParameterClass;14;;;;1;
+  top : parameterclass
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  identifier_used : af;
+  identifier_used : bf;
+  identifier_used : cf;
+  identifier_used : parameterclass;
+  identifier_used : parameterclass;
+  identifier_used : parameteriface;
+  identifier_used : parameteriface;
+  identifier_used : pclass;
+  identifier_used : pdefault;
+  identifier_used : piface;
+
+Not Searchable Keys:
+
+
+Document 4
+Searchable Keys:
+  iface : parameteriface;ParameterIface;43;;;
+  top : parameteriface
+
+Not Searchable Keys:

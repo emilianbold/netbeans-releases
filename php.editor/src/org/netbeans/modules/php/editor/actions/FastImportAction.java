@@ -47,6 +47,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
@@ -134,9 +136,8 @@ public class FastImportAction extends BaseAction {
             File baseFolder = baseFile.getParentFile();
             final LinkedHashSet<String> privileged = new LinkedHashSet<String>();
             final LinkedHashSet<String> denied = new LinkedHashSet<String>();
-            List<ModelElement> allDeclarations = new ArrayList<ModelElement>(occurence.getAllDeclarations());
-            allDeclarations.add(occurence.getDeclaration());
-            for (ModelElement declaration : allDeclarations) {
+            Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
+            for (PhpElement declaration : allDeclarations) {
                 FileObject includedFo = declaration.getFileObject();
                 File includedFile = FileUtil.toFile(includedFo);
                 FileType fileType = PhpSourcePath.getFileType(includedFo);
@@ -146,12 +147,12 @@ public class FastImportAction extends BaseAction {
                 LinkedHashSet<String> list = null;
                 if (fileType.equals(FileType.INTERNAL)) {
                     //list = denied;
-                    String elementInfo = declaration.getPhpKind()+" " + declaration.getName();//NOI18N
+                    String elementInfo = declaration.getPhpElementKind()+" " + declaration.getName();//NOI18N
                     StatusDisplayer.getDefault().setStatusText(
                             NbBundle.getMessage(FastImportAction.class, "MSG_NO_IMPORTS_FOR_PLATFORM",elementInfo));//NOI18N
                     continue;
                 } else if (baseFo == includedFo) {
-                    String elementInfo = declaration.getPhpKind()+" " + declaration.getName();//NOI18N
+                    String elementInfo = declaration.getPhpElementKind()+" " + declaration.getName();//NOI18N
                     StatusDisplayer.getDefault().setStatusText(
                             NbBundle.getMessage(FastImportAction.class,
                             "MSG_NO_IMPORTS_FOR_CURRENT_FILE",elementInfo, baseFile.getAbsolutePath()));//NOI18N
