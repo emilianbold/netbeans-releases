@@ -57,6 +57,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,10 +76,12 @@ import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * View representing the whole document.
@@ -87,6 +92,7 @@ import org.openide.util.LookupListener;
  * @author Miloslav Metelka
  */
 
+@SuppressWarnings("ClassWithMultipleLoggers") //NOI18N
 public final class DocumentView extends EditorBoxView
         implements PropertyChangeListener, ChangeListener
 {
@@ -173,8 +179,6 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
-    private boolean showNonprintingCharacters = true;
-
     private LineWrapType lineWrapType = LineWrapType.CHARACTER_BOUND;
 
     private TextLayout newlineTextLayout;
@@ -188,6 +192,10 @@ public final class DocumentView extends EditorBoxView
     private JViewport listeningOnViewport;
 
     private boolean previewOnly;
+
+    private Preferences prefs;
+
+    private PreferenceChangeListener prefsListener;
 
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
@@ -303,7 +311,7 @@ public final class DocumentView extends EditorBoxView
             float newWidth = viewport.getExtentSize().width;
             if (newWidth != visibleWidth) {
                 visibleWidth = newWidth;
-                if (lineWrapType != LineWrapType.NONE) {
+                if (getLineWrapType() != LineWrapType.NONE) {
                     reinitViews();
                 }
             }
@@ -334,6 +342,22 @@ public final class DocumentView extends EditorBoxView
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             updateDefaultFontAndColors(result);
             result.addLookupListener(lookupListener);
+        }
+
+        if (prefs == null) {
+            String mimeType = DocumentUtilities.getMimeType(textComponent);
+            prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+            prefsListener = new PreferenceChangeListener() {
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    if (evt.getKey().equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
+                        synchronized (getMonitor()) {
+                            reinitViews();
+                        }
+                    }
+                }
+            };
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
         }
     }
 
@@ -496,10 +520,12 @@ public final class DocumentView extends EditorBoxView
     }
 
     public boolean isShowNonprintingCharacters() {
-        return showNonprintingCharacters;
+        checkSettingsInfo();
+        return prefs.getBoolean(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, false);
     }
 
     LineWrapType getLineWrapType() {
+        checkSettingsInfo();
         return lineWrapType;
     }
 
