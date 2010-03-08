@@ -43,18 +43,22 @@ package org.netbeans.modules.terminal.ui;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 
-import org.netbeans.modules.terminal.ioprovider.TerminalContainer;
 
 /**
  * A Top component which provides an IOContainer for displaying "Terminal"
  * InputOutput's.
+ * @deprecated Please create your own TopComponent and follow the instructions
+ * in {@link org.netbeans.modules.terminal.api.TerminalContainer} to enable
+ * terminal support in it.
  */
+@Deprecated
 public final class TermTopComponent extends TopComponent {
 
     private static TermTopComponent instance;
