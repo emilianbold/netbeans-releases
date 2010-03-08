@@ -48,9 +48,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
@@ -228,7 +229,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
                 @Override
 		public void run() {
-		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset));
+		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset, CssTokenId.language()));
 		}
 	    });
 	    return ref.get();

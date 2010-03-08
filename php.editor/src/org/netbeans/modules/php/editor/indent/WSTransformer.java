@@ -260,7 +260,23 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    else {
 		String text = token.text().toString();
 		if (".".equals(text)) { // NOI18N
-		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
+		    int offset = ts.offset();
+		    boolean isStringConcat = false;
+		    if (ts.moveNext()) {
+			token = LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+			isStringConcat =  (token.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) ? true : false;
+			ts.move(offset);
+			ts.moveNext();
+		    }
+		    if (!isStringConcat && ts.movePrevious()) {
+			token = LexUtilities.findPrevious(ts, WS_AND_COMMENT_TOKENS);	
+			isStringConcat =  (token.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) ? true : false;
+			ts.move(offset);
+			ts.moveNext();
+		    }
+		    if (isStringConcat) {
+			checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
+		    }
 		}
 		else if (",".equals(text)) { // NOI18N
 		    int offset = ts.offset();

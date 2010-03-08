@@ -136,8 +136,19 @@ public class CssCompletionItem implements CompletionProposal {
                 Kind kind,
                 int anchorOffset,
                 boolean related) {
-        return new SelectorCompletionItem(element, value, kind, anchorOffset, related);
 
+        return new SelectorCompletionItem(element, value, kind, anchorOffset, related);
+    }
+
+    public static CssCompletionItem createFileCompletionItem(CssElement element,
+                String value,
+                int anchorOffset,
+                Color color,
+                ImageIcon icon,
+                boolean addQuotes,
+                boolean addSemicolon) {
+
+        return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
 
 
@@ -534,5 +545,65 @@ public class CssCompletionItem implements CompletionProposal {
         public int getSortPrioOverride() {
             return super.getSortPrioOverride() + (related ? 1 : 0);
         }
+    }
+
+    private static class FileCompletionItem extends CssCompletionItem {
+
+        private ImageIcon icon;
+        private String colorCode;
+        private boolean addQuotes;
+        private boolean addSemicolon;
+
+        private FileCompletionItem(CssElement element,
+                String value,
+                int anchorOffset,
+                Color color,
+                ImageIcon icon,
+                boolean addQuotes,
+                boolean addSemicolon) {
+            super(element, value, null, anchorOffset, false);
+            this.icon = icon;
+            this.colorCode =  WebUtils.toHexCode(color).substring(1);
+            this.addQuotes = addQuotes;
+            this.addSemicolon = addSemicolon;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return icon;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FILE;
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            StringBuilder b = new StringBuilder();
+            if(addQuotes) {
+                b.append('"'); //NOI18N
+            }
+            b.append(getName());
+            if(addQuotes) {
+                b.append('"'); //NOI18N
+            } 
+            if(addSemicolon) {
+                b.append(';'); //NOI18N
+            }
+            return b.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.appendHtml(String.format("<font color=\"%s\">", colorCode)); //NOI18N
+            formatter.appendText(getName());
+            formatter.appendHtml("</font>"); //NOI18N
+
+            return formatter.getText();
+        }
+
+
+
     }
 }
