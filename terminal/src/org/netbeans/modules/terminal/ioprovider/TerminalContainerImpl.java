@@ -1,3 +1,41 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
 package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.BorderLayout;
@@ -19,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.terminalemulator.support.FindBar;
 import org.netbeans.lib.terminalemulator.support.FindState;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
@@ -57,7 +96,7 @@ import org.openide.windows.TopComponent;
  * </ul>
  * @author ivan
  */
-public final class TerminalContainer extends JComponent implements IOContainer.Provider {
+final public class TerminalContainerImpl extends TerminalContainer implements IOContainer.Provider {
 
     private final TopComponent owner;
     private final String originalName;
@@ -81,11 +120,11 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
      *        Usually @{link TopComponent.getName()}
      * @return a TerminalContainer.
      */
-    public static TerminalContainer create(TopComponent tc, String name) {
-        return new TerminalContainer(tc, name);
+    public static TerminalContainerImpl create(TopComponent tc, String name) {
+        return new TerminalContainerImpl(tc, name);
     }
 
-    TerminalContainer(TopComponent owner, String originalName) {
+    public TerminalContainerImpl(TopComponent owner, String originalName) {
         super();
         this.owner = owner;
         this.originalName = originalName;
@@ -151,7 +190,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 	    @Override
             public void close(FindBar fb) {
                 findBar.getState().setVisible(false);
-                TerminalContainer.super.remove(findBar);
+                TerminalContainerImpl.super.remove(findBar);
                 validate();
             }
         });
@@ -193,7 +232,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         b.setBorderPainted(false);
         b.setOpaque(false);
         b.setText(null);
-        b.putClientProperty("hideActionText", Boolean.TRUE);
+        b.putClientProperty("hideActionText", Boolean.TRUE);	// NOI18N
         // NOI18N
         return b;
     }
@@ -272,7 +311,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
             return;
         }
         if (nTerm <= 0) {
-            throw new IllegalStateException("<= 0 Terminals");
+            throw new IllegalStateException("<= 0 Terminals");	// NOI18N
         }
         nTerm--;
         if (nTerm >= 1) {
@@ -302,7 +341,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
             title = originalName;
         }
         if (nTerm == 1) {
-            owner.setName(originalName + " - " + title);
+            owner.setName(originalName + " - " + title);	// NOI18N
         } else {
             owner.setName(originalName);
             tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
@@ -324,6 +363,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
     /**
      * Handle delegation from containing TopComponent.
      */
+    @Override
     public void componentActivated() {
 	activated = true;
         Component component;
@@ -341,6 +381,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
      * Handle delegation from containing TopComponent.
      */
 
+    @Override
     public void componentDeactivated() {
 	activated = false;
         Component component;
@@ -389,7 +430,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 	if (comp instanceof Terminal) {
 	    select((Terminal) comp);
 	} else {
-	    throw new UnsupportedOperationException("Can't select non-Terminals");
+	    throw new UnsupportedOperationException("Can't select non-Terminals");	// NOI18N
 	}
 
     }
@@ -410,12 +451,12 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 
     @Override
     public void setToolTipText(JComponent comp, String text) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
     @Override
     public void setIcon(JComponent comp, Icon icon) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
     @Override
@@ -432,9 +473,10 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 
     @Override
     public boolean isCloseable(JComponent comp) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
+    @Override
     public IOContainer ioContainer() {
 	if (ioContainer == null)
 	    ioContainer = IOContainer.create(this);
