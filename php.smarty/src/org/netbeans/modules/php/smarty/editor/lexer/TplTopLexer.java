@@ -40,6 +40,7 @@ package org.netbeans.modules.php.smarty.editor.lexer;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -54,9 +55,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private final TplTopColoringLexer scanner;
     private TokenFactory<TplTopTokenId> tokenFactory;
 
+    private boolean inPhpSources;
+
     private TplTopLexer(LexerRestartInfo<TplTopTokenId> info) {
         State state = info.state() == null? State.INIT : (State)info.state();
         this.tokenFactory = info.tokenFactory();
+        this.inPhpSources = false;
         scanner = new TplTopColoringLexer(info, state);
     }
 
@@ -88,9 +92,14 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private enum State {
         INIT,
         OUTER,
+        AFTER_PHP_DELIMITER,
+        AFTER_DELIMITER,
         OPEN_DELIMITER,
         CLOSE_DELIMITER,
-        IN_SMARTY
+        IN_COMMENT,
+        IN_SMARTY,
+        IN_PHP,
+        IN_PHP_TAG
     }
 
     private class TplTopColoringLexer {
@@ -129,11 +138,82 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         }
                         break;
                     case OPEN_DELIMITER:
-                        state = State.IN_SMARTY;
+                        state = State.AFTER_DELIMITER;
                         return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
                     case CLOSE_DELIMITER:
                         state = State.OUTER;
                         return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                    case AFTER_DELIMITER:
+                        // whitespaces after SMARTY delimiter
+                        if (LexerUtils.isWS(c)) {
+                            return TplTopTokenId.T_SMARTY;
+                        }
+                        // begin of SMARTY commands
+                        else {
+                            switch(c) {
+                                case '*':
+                                    state = State.IN_COMMENT;
+                                    break;
+                                case 'p':
+                                    if (input.read() == 'h') {
+                                        if (input.read() == 'p') {
+                                            state = State.IN_PHP_TAG;
+                                            return TplTopTokenId.T_PHP_DEL;
+                                        }
+                                        input.backup(1);
+                                    }
+                                    input.backup(1);
+                                default:
+                                    state = State.IN_SMARTY;
+                                    input.backup(1);
+                            }
+                        }
+                        break;
+                    case IN_COMMENT:
+                        if (cc == '*') {
+                            state = State.IN_SMARTY;
+                            return TplTopTokenId.T_COMMENT;
+                        }
+                        return TplTopTokenId.T_COMMENT;
+                    case IN_PHP_TAG:
+                        if( LexerUtils.isWS(c) ) {
+                            return TplTopTokenId.T_SMARTY;
+                        } else if (c == SmartyFramework.TPL_CLOSE_DELIMITER) {
+                            if (!inPhpSources) {
+                                state = State.IN_PHP;
+                                inPhpSources = true;
+                            }
+                            else {
+                                state = State.OUTER;
+                                inPhpSources = false;
+                            }
+                            return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                        } else {
+                            return TplTopTokenId.T_ERROR;
+                        }
+                    case IN_PHP:
+                        if (cc == SmartyFramework.TPL_OPEN_DELIMITER) {
+                            if (input.read() == '/') {
+                                if (input.read() == 'p') {
+                                    if (input.read() == 'h') {
+                                        if (input.read() == 'p') {
+                                            state = State.AFTER_PHP_DELIMITER;
+                                            input.backup(4);
+                                            return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                                        }
+                                        input.backup(1);
+                                    }
+                                    input.backup(1);
+                                }
+                                input.backup(1);
+                            }
+                            input.backup(1);
+                        }
+                        return TplTopTokenId.T_PHP;
+                    case AFTER_PHP_DELIMITER:
+                        state = State.IN_SMARTY;
+                        input.read(); input.read(); input.read();
+                        return TplTopTokenId.T_PHP_DEL;
                     case IN_SMARTY:
                         if (cc == SmartyFramework.TPL_CLOSE_DELIMITER) {
                             if (textLength == 1) {

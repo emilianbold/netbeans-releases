@@ -45,6 +45,7 @@ import java.util.Locale;
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -66,7 +67,61 @@ public class TplLexer implements Lexer<TplTokenId> {
     private final InputAttributes inputAttributes;
     private int lexerState = INIT;
 
-    private final String phpEmbeddingDelimiter = "php";
+     private class CompoundState {
+        private int lexerState;
+        private boolean isArgumentValue;
+        private boolean isEndingTag;
+        private String keyword;
+
+        public CompoundState(int lexerState, boolean isArgumentValue, boolean isEndingTag, String keyword) {
+            this.lexerState = lexerState;
+            this.isArgumentValue = isArgumentValue;
+            this.isEndingTag = isEndingTag;
+            this.keyword = keyword;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CompoundState other = (CompoundState) obj;
+            if (this.lexerState != other.lexerState) {
+                return false;
+            }
+            if (this.isArgumentValue != other.isArgumentValue) {
+                return false;
+            }
+            if (this.isEndingTag != other.isEndingTag) {
+                return false;
+            }
+            if (this.keyword != other.keyword && (this.keyword == null || !this.keyword.equals(other.keyword))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 17 * hash + this.lexerState;
+            hash = 17 * hash + (this.isArgumentValue? 1 : 0);
+            hash = 17 * hash + (this.isEndingTag? 1 : 0);
+            hash = 17 * hash + (this.keyword != null ? this.keyword.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "State(hash=" + hashCode() + ",s=" + lexerState + ",iAV=" +
+                    isArgumentValue + ",iET=" + isEndingTag + ",keyword=" +
+                    keyword + ")"; //NOI18N
+        }
+
+    }
 
     // Internal states
     private static final int INIT = 0;
@@ -83,7 +138,6 @@ public class TplLexer implements Lexer<TplTokenId> {
     private static final int ISA_STAR = 11;         // Is after hash - "*_" "* _"
     private static final int ISI_QUOT = 12;         // Is in quot - "'_" "'asd_"
     private static final int ISI_DQUOT = 13;        // Is in double quot - "\"_" "\"asdfasd_"
-    private static final int ISI_PHP = 14;          // Is in PHP code - "{php}_" "php _"
 
 
 
@@ -152,7 +206,6 @@ public class TplLexer implements Lexer<TplTokenId> {
         FUNCTIONS.add("ldelim"); // NOI18N,
         FUNCTIONS.add("rdelim"); // NOI18N
         FUNCTIONS.add("literal"); // NOI18N
-//        FUNCTIONS.add("php"); // NOI18N
         FUNCTIONS.add("section"); // NOI18N,
         FUNCTIONS.add("sectionelse"); // NOI18N
         FUNCTIONS.add("strip"); // NOI18N
@@ -184,29 +237,22 @@ public class TplLexer implements Lexer<TplTokenId> {
         this.input = info.input();
         this.inputAttributes = info.inputAttributes();
         this.tokenFactory = info.tokenFactory();
-        this.keyword = "";
-        this.argValue = false;
-        this.endingTag = false;
         if (info.state() == null) {
+            this.keyword = "";
+            this.argValue = false;
+            this.endingTag = false;
             this.lexerState = INIT;
         } else {
-            lexerState = (Integer) info.state();
+            CompoundState cs = (CompoundState) info.state();
+            lexerState = cs.lexerState;
+            argValue = cs.isArgumentValue;
+            endingTag = cs.isEndingTag;
+            keyword = cs.keyword;
         }
     }
 
     public Object state() {
-        return lexerState; // always in default state after token recognition
-    }
-
-    private final boolean isVariablePart(int character) {
-        return Character.isJavaIdentifierPart(character);
-    }
-
-    private final boolean isWS(int character) {
-        if (Character.isWhitespace(character)) {
-            return true;
-        }
-        return false;
+        return new CompoundState(lexerState, argValue, endingTag, keyword);
     }
 
     private final boolean isEndOfWord(int character) {
@@ -238,9 +284,6 @@ public class TplLexer implements Lexer<TplTokenId> {
                         case '#':           // Hash, e.g. #
                             lexerState = ISA_HASH;
                             break;
-                        case '*':           // Hash, e.g. *
-                            lexerState = ISA_STAR;
-                            break;
                         case '\'':          
                             lexerState = ISI_QUOT;
                             break;
@@ -254,11 +297,18 @@ public class TplLexer implements Lexer<TplTokenId> {
                             argValue = true;
                             return token(TplTokenId.TEXT);
                         case '|':           // Pipe, e.g. $var|, ''|
-                            return token(TplTokenId.PIPE);
+                            if (input.read() == '|') {
+                                return token(TplTokenId.TEXT);
+                            }
+                            else {
+                                input.backup(1);
+                                return token(TplTokenId.PIPE);
+                            }
                         case '\n':
                         case ' ':
                         case '\r':
                         case '\t':
+                            argValue = false;
                             lexerState = ISA_WS;
                             return token(TplTokenId.WHITESPACE);
                         case EOF:
@@ -291,13 +341,6 @@ public class TplLexer implements Lexer<TplTokenId> {
                         return token(TplTokenId.ERROR);
                     }
 
-                case ISA_STAR:            // '*_', '* afssd_'
-                    if (actChar == '*' || actChar == EOF) {
-                        lexerState = INIT;
-                        return token(TplTokenId.COMMENT);
-                    }
-                    break;
-
                 case ISI_QUOT:            // ''_', '' afssd_'
                     argValue = false;
                     if (actChar == '\'' || actChar == EOF) {
@@ -315,7 +358,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISI_VAR_PHP:           // '$a_'
-                    if (isVariablePart(actChar)) {
+                    if (LexerUtils.isVariablePart(actChar)) {
                         break;    // Still in tag identifier, eat next char
                     }
                     lexerState = INIT;
@@ -326,7 +369,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISA_WS:         // '$var _', '$var?|'
-                    if( isWS( actChar ) ) {
+                    if( LexerUtils.isWS( actChar ) ) {
                         return token(TplTokenId.WHITESPACE);
                     }
                     input.backup(1);
@@ -337,11 +380,8 @@ public class TplLexer implements Lexer<TplTokenId> {
                     lexerState = INIT;
                     return token(TplTokenId.ERROR);
 
-                case ISI_PHP:
-                    return token(TplTokenId.PHP_EMBEDDING);
-
                 case ISI_TEXT:
-                    if( isVariablePart(actChar) ) {
+                    if( LexerUtils.isVariablePart(actChar) ) {
                         keyword += Character.toString((char)actChar);
                         break;
                     } else if (input.readLength() == 1) {
@@ -380,30 +420,43 @@ public class TplLexer implements Lexer<TplTokenId> {
             return TplTokenId.OPERATOR;
         }
 
-        // check start and end of embedded PHP code
-        if (keyword.toString().toLowerCase(Locale.ENGLISH).equals(phpEmbeddingDelimiter)) {
-            if (endingTag) {
-                lexerState = INIT;
-                return TplTokenId.PHP_EMBEDDING_DEL;
-            }
-            else {
-                lexerState = ISI_PHP;
-                return TplTokenId.PHP_EMBEDDING_DEL;
-            }
-        }
-
         // check functions
         if (isSmartyFunction(keyword)) {
-            endingTag = false;
-            return TplTokenId.FUNCTION;
+            if (input.read() != '.') {
+                input.backup(1);
+                endingTag = false;
+                return TplTokenId.FUNCTION;
+            }
+            else {
+                input.backup(1);
+                return TplTokenId.TEXT;
+            }
         }
 
-        // check if it's argument of its value
+        // check if it's argument, its value or another text
         if (argValue) {
             return TplTokenId.ARGUMENT_VALUE;
         }
         else {
-            return TplTokenId.ARGUMENT;
+            int readChars = 1;
+            int c = input.read();
+            while (LexerUtils.isWS(c)) {
+                readChars++;
+                c = input.read();
+            }
+            if (c == '=') {
+                readChars++;
+                c = input.read();
+                input.backup(readChars);
+                if (c == '=') {
+                    return TplTokenId.TEXT;
+                }
+                else {
+                    return TplTokenId.ARGUMENT;
+                }
+            } else {
+                return TplTokenId.TEXT;
+            }
         }
     }
 

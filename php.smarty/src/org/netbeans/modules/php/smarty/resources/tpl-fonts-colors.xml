@@ -19,7 +19,7 @@
     </fontcolor>
     <fontcolor name="argument" foreColor="4757B7" />
     <fontcolor name="argument_value" foreColor="C67300" />
-    <fontcolor name="php_embedding_del" bgColor="F8DAB7" foreColor="9C2568">
+    <fontcolor name="php_del" bgColor="F8DAB7" foreColor="9C2568">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="php_embedding" bgColor="F8DAB7" />

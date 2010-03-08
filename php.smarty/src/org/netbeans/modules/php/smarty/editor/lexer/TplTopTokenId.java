@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -63,7 +64,11 @@ public enum TplTopTokenId implements TokenId {
     T_HTML (null, "smartytop"),
     T_SMARTY (null, "smarty"),
     T_SMARTY_CLOSE_DELIMITER (null, "smarty_delimiter"),
-    T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter");
+    T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter"),
+    T_PHP(null, "php_embedding"),
+    T_COMMENT(null, "comment"),
+    T_ERROR(null, "error"),
+    T_PHP_DEL(null, "php_del");
 
     private final String fixedText;
     private final String primaryCategory;
@@ -119,6 +124,8 @@ public enum TplTopTokenId implements TokenId {
                     } 
                     else if (id == T_SMARTY) {
                         return LanguageEmbedding.create(TplTokenId.language(), 0, 0, false);
+                    } else if (id == T_PHP) {
+                        return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
                     }
 
                     return null; // No embedding
