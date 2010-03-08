@@ -117,6 +117,13 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/ui/FcbMavenModuleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="RestRCPMvnAppSampleProject.zip" url="RestRCPMvnAppSampleProject.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/facebook_16.png"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle#Templates/Project/Samples/Maven/RestRCPMvnAppSampleProject.zip"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.RestRCPMvnAppSampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/RestRCPMvnAppSampleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
