@@ -61,12 +61,12 @@ import javax.swing.event.DocumentEvent;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.*;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 
 /**
  * Customization of commits.
@@ -90,12 +90,12 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         private final CommitOptions options;
         private final CvsFileNode   node;
 
-        public CommitFile(CvsFileNode node, CommitOptions options) {
+        CommitFile(CvsFileNode node, CommitOptions options) {
             this.node = node;
             this.options = options;
         }
 
-        public CommitOptions getOptions() {
+        CommitOptions getOptions() {
             return options;
         }
 
@@ -132,12 +132,14 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         return taMessage.getText();
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 taMessage.selectAll();
                 taMessage.requestFocus();  // #67106
@@ -145,12 +147,14 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         });
     }
 
+    @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             commitTable.dataChanged();
@@ -185,16 +189,20 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
 
         taMessage.getDocument().addDocumentListener(this);
         onCommitMessageChanged();
+        Spellchecker.register (taMessage);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         onCommitMessageChanged();
     }
@@ -384,6 +392,7 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     private org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea taMessage;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
