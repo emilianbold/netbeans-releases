@@ -23,6 +23,11 @@
             <file name="org-netbeans-terminal-example-ShellTermAction.instance"/>
             <file name="org-netbeans-terminal-example-CmdTermAction.instance"/>
             <file name="org-netbeans-terminal-example-TermWindowAction.instance"/>
+            <file name="org-netbeans-terminal-example-topcomponent-TerminalAction.instance">
+                <attr name="component" methodvalue="org.netbeans.terminal.example.topcomponent.TerminalTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.topcomponent.Bundle#CTL_TerminalAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
         </folder>
     </folder>
 
@@ -47,18 +52,15 @@
         </folder>
         <folder name="BuildProject">    <!-- aka Run -->
             <file name="ShellTermAction.shadow">
-                <attr name="originalFile"
-                      stringvalue="Actions/Window/org-netbeans-terminal-example-ShellTermAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-ShellTermAction.instance"/>
                 <attr name="position" intvalue="3"/>
             </file>
             <file name="CmdTermAction.shadow">
-                <attr name="originalFile"
-                      stringvalue="Actions/Window/org-netbeans-terminal-example-CmdTermAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-CmdTermAction.instance"/>
                 <attr name="position" intvalue="5"/>
             </file>
             <file name="TermSeparator.instance">
-                <attr name="instanceClass"
-                      stringvalue="javax.swing.JSeparator"/>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
         </folder>
         <folder name="Window">
@@ -66,6 +68,19 @@
                 <file name="TermWindowAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-TermWindowAction.instance"/>
                 </file>
+            </folder>
+            <file name="TerminalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-topcomponent-TerminalAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TerminalTopComponent.settings" url="topcomponent/TerminalTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="TerminalTopComponent.wstcref" url="topcomponent/TerminalTopComponentWstcref.xml"/>
             </folder>
         </folder>
     </folder>

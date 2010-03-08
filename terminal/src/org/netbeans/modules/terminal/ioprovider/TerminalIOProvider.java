@@ -61,7 +61,7 @@ public final class TerminalIOProvider extends IOProvider {
      */
     @Override
     public OutputWriter getStdOut() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
 }

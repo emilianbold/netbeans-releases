@@ -43,30 +43,34 @@ package org.netbeans.modules.terminal.ui;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 
-import org.netbeans.modules.terminal.ioprovider.TerminalContainer;
 
 /**
  * A Top component which provides an IOContainer for displaying "Terminal"
  * InputOutput's.
+ * @deprecated Please create your own TopComponent and follow the instructions
+ * in {@link org.netbeans.modules.terminal.api.TerminalContainer} to enable
+ * terminal support in it.
  */
+@Deprecated
 public final class TermTopComponent extends TopComponent {
 
     private static TermTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "TermTopComponent";
+    private static final String PREFERRED_ID = "TermTopComponent";	// NOI18N
 
     TermTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(TermTopComponent.class, "CTL_TermTopComponent"));
-        setToolTipText(NbBundle.getMessage(TermTopComponent.class, "HINT_TermTopComponent"));
+        setName(NbBundle.getMessage(TermTopComponent.class, "CTL_TermTopComponent"));	// NOI18N
+        setToolTipText(NbBundle.getMessage(TermTopComponent.class, "HINT_TermTopComponent"));	// NOI18N
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
         initComponents2(getName());
     }
@@ -103,15 +107,15 @@ public final class TermTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(TermTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");	// NOI18N
             return getDefault();
         }
         if (win instanceof TermTopComponent) {
             return (TermTopComponent) win;
         }
         Logger.getLogger(TermTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID +	// NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior.");	// NOI18N
         return getDefault();
     }
 
@@ -122,14 +126,14 @@ public final class TermTopComponent extends TopComponent {
 
         if (win == null) {
             Logger.getLogger(TermTopComponent.class.getName()).warning(
-                    "Cannot find " + preferredID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + preferredID + " component. It will not be located properly in the window system.");	// NOI18N
             // fall back
             win = TermTopComponent.findInstance();
 
         } else if (! (win instanceof TermTopComponent)) {
             Logger.getLogger(TermTopComponent.class.getName()).warning(
-                    "There seem to be multiple components with the '" + preferredID +
-                    "' ID. That is a potential source of errors and unexpected behavior.");
+                    "There seem to be multiple components with the '" + preferredID +	// NOI18N
+                    "' ID. That is a potential source of errors and unexpected behavior.");	// NOI18N
 
             // fall back
             win = TermTopComponent.findInstance();

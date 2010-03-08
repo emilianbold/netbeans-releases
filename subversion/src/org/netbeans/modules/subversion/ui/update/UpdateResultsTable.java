@@ -341,7 +341,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
 
     private void performOpenSvnProperties(File file) {        
-        SvnPropertiesAction.openProperties(file, file.getName());        
+        SvnPropertiesAction.openProperties(new File[] {file}, file.getName());
     }
     
     private File[] getSelectedFiles(int[] selection) {
