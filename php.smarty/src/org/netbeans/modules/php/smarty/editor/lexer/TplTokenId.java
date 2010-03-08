@@ -72,14 +72,21 @@ public enum TplTokenId implements TokenId {
     WHITESPACE(null, "whitespace"),
     COMMENT(null, "comment"),
     STRING(null, "string"),
-    OPERATOR(null, "operator"),
+    OPERATOR(null, "smarty_operator"),
+    FUNCTION(null, "smarty_function"),
+    ARGUMENT(null, "argument"),
+    ARGUMENT_VALUE(null, "argument_value"),
+    CHAR(null, "char"),
+    PHP_EMBEDDING_DEL(null, "php_embedding_del"),
+    PHP_EMBEDDING(null, "php_embedding"),
 
 
-    PHP_TAG(null, "php_tag"),
+
+
     
-    TEMPLATE_VAR(null, "template_var"),
+    
     DB_LOOP("db_loop", "keyword"),
-    LOOP("loop", "keyword"),
+    
     ELSE("else", "keyword"),
     ITERATOR("iterator", "keyword"),
     IF("if", "keyword"),
@@ -143,7 +150,7 @@ public enum TplTokenId implements TokenId {
         @Override
         protected LanguageEmbedding<?> embedding(
         Token<TplTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            if (token.id() == PHP_TAG)
+            if (token.id() == PHP_EMBEDDING)
                 return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
 
             return null; // No embedding

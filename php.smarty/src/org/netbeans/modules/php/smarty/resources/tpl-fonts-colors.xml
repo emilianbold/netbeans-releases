@@ -8,20 +8,19 @@
         <font style="bold" />
     </fontcolor>
     <fontcolor name="php_variable" foreColor="6D3206"/>
-    <fontcolor name="config_variable" foreColor="26309E"/>
+    <fontcolor name="config_variable" foreColor="FF0000"/>
     <fontcolor name="error" default="error"/>
     <fontcolor name="variable_modifier" foreColor="C6CA34" />
     <fontcolor name="comment" default="comment" />
     <fontcolor name="string" default="string" />
-    <fontcolor name="operator" default="operator" />
-
-    
-
-    <fontcolor name="template_var" foreColor="844D18" >
-        <font style="bold"/>
+    <fontcolor name="smarty_operator" default="operator" />
+    <fontcolor name="smarty_function" foreColor="2C9C25">
+        <font style="bold" />
     </fontcolor>
-
-    <fontcolor name="include_string" default="include">
-        <font style="bold"/>
+    <fontcolor name="argument" foreColor="4757B7" />
+    <fontcolor name="argument_value" foreColor="C67300" />
+    <fontcolor name="php_embedding_del" bgColor="F8DAB7" foreColor="9C2568">
+        <font style="bold" />
     </fontcolor>
+    <fontcolor name="php_embedding" bgColor="F8DAB7" />
 </fontscolors>

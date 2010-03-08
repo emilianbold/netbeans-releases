@@ -60,10 +60,14 @@ public class TplLexer implements Lexer<TplTokenId> {
     private static final int EOF = LexerInput.EOF;
     private final LexerInput input;
     private String keyword;
+    private boolean argValue;
+    private boolean endingTag;
     private final TokenFactory<TplTokenId> tokenFactory;
     private final InputAttributes inputAttributes;
     private int lexerState = INIT;
-    
+
+    private final String phpEmbeddingDelimiter = "php";
+
     // Internal states
     private static final int INIT = 0;
     private static final int ISI_TEXT = 1;          // Plain text
@@ -79,6 +83,7 @@ public class TplLexer implements Lexer<TplTokenId> {
     private static final int ISA_STAR = 11;         // Is after hash - "*_" "* _"
     private static final int ISI_QUOT = 12;         // Is in quot - "'_" "'asd_"
     private static final int ISI_DQUOT = 13;        // Is in double quot - "\"_" "\"asdfasd_"
+    private static final int ISI_PHP = 14;          // Is in PHP code - "{php}_" "php _"
 
 
 
@@ -130,6 +135,47 @@ public class TplLexer implements Lexer<TplTokenId> {
         OPERATORS.add("not"); // NOI18N
     }
 
+    static final Set<String> FUNCTIONS = new HashSet<String>();
+    static {
+        // See http://www.smarty.net/manual/en/language.builtin.functions.php,
+        //     http://www.smarty.net/manual/en/language.custom.functions.php
+        FUNCTIONS.add("capture"); // NOI18N
+        FUNCTIONS.add("config_load"); // NOI18N
+        FUNCTIONS.add("foreach"); // NOI18N,
+        FUNCTIONS.add("foreachelse"); // NOI18N
+        FUNCTIONS.add("if"); // NOI18N,
+        FUNCTIONS.add("elseif"); // NOI18N,
+        FUNCTIONS.add("else"); // NOI18N
+        FUNCTIONS.add("include"); // NOI18N
+        FUNCTIONS.add("include_php"); // NOI18N
+        FUNCTIONS.add("insert"); // NOI18N
+        FUNCTIONS.add("ldelim"); // NOI18N,
+        FUNCTIONS.add("rdelim"); // NOI18N
+        FUNCTIONS.add("literal"); // NOI18N
+//        FUNCTIONS.add("php"); // NOI18N
+        FUNCTIONS.add("section"); // NOI18N,
+        FUNCTIONS.add("sectionelse"); // NOI18N
+        FUNCTIONS.add("strip"); // NOI18N
+        FUNCTIONS.add("assign"); // NOI18N
+        FUNCTIONS.add("counter"); // NOI18N
+        FUNCTIONS.add("cycle"); // NOI18N
+        FUNCTIONS.add("debug"); // NOI18N
+        FUNCTIONS.add("eval"); // NOI18N
+        FUNCTIONS.add("fetch"); // NOI18N
+        FUNCTIONS.add("html_checkboxes"); // NOI18N
+        FUNCTIONS.add("html_image"); // NOI18N
+        FUNCTIONS.add("html_options"); // NOI18N
+        FUNCTIONS.add("html_radios"); // NOI18N
+        FUNCTIONS.add("html_select_date"); // NOI18N
+        FUNCTIONS.add("html_select_time"); // NOI18N
+        FUNCTIONS.add("html_table"); // NOI18N
+        FUNCTIONS.add("mailto"); // NOI18N
+        FUNCTIONS.add("math"); // NOI18N
+        FUNCTIONS.add("popup"); // NOI18N
+        FUNCTIONS.add("popup_init"); // NOI18N
+        FUNCTIONS.add("textformat"); // NOI18N
+    }
+
     /**
      * Create new TplLexer.
      * @param info from which place it should start again
@@ -139,6 +185,8 @@ public class TplLexer implements Lexer<TplTokenId> {
         this.inputAttributes = info.inputAttributes();
         this.tokenFactory = info.tokenFactory();
         this.keyword = "";
+        this.argValue = false;
+        this.endingTag = false;
         if (info.state() == null) {
             this.lexerState = INIT;
         } else {
@@ -196,9 +244,15 @@ public class TplLexer implements Lexer<TplTokenId> {
                         case '\'':          
                             lexerState = ISI_QUOT;
                             break;
+                        case '/':
+                            endingTag = true;
+                            break;
                         case '"':
                             lexerState = ISI_DQUOT;
                             break;
+                        case '=':
+                            argValue = true;
+                            return token(TplTokenId.TEXT);
                         case '|':           // Pipe, e.g. $var|, ''|
                             return token(TplTokenId.PIPE);
                         case '\n':
@@ -217,6 +271,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISA_DOLLAR:            // '$_'
+                    argValue = false;
                     if (Character.isJavaIdentifierStart(actChar)) {
                         lexerState = ISI_VAR_PHP;
                     } else {
@@ -226,6 +281,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISA_HASH:            // '#_'
+                    argValue = false;
                     if (Character.isJavaIdentifierPart(actChar)) {
                         break;
                     } else if (actChar == '#' && input.readLength() > 2) {
@@ -243,6 +299,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISI_QUOT:            // ''_', '' afssd_'
+                    argValue = false;
                     if (actChar == '\'' || actChar == EOF) {
                         lexerState = INIT;
                         return token(TplTokenId.STRING);
@@ -250,6 +307,7 @@ public class TplLexer implements Lexer<TplTokenId> {
                     break;
 
                 case ISI_DQUOT:            // '"_', '" afssd_'
+                    argValue = false;
                     if (actChar == '"' || actChar == EOF) {
                         lexerState = INIT;
                         return token(TplTokenId.STRING);
@@ -279,8 +337,11 @@ public class TplLexer implements Lexer<TplTokenId> {
                     lexerState = INIT;
                     return token(TplTokenId.ERROR);
 
+                case ISI_PHP:
+                    return token(TplTokenId.PHP_EMBEDDING);
+
                 case ISI_TEXT:
-                    if( !isEndOfWord(actChar) && actChar != EOF ) {
+                    if( isVariablePart(actChar) ) {
                         keyword += Character.toString((char)actChar);
                         break;
                     } else if (input.readLength() == 1) {
@@ -319,7 +380,31 @@ public class TplLexer implements Lexer<TplTokenId> {
             return TplTokenId.OPERATOR;
         }
 
-        return TplTokenId.TEXT;
+        // check start and end of embedded PHP code
+        if (keyword.toString().toLowerCase(Locale.ENGLISH).equals(phpEmbeddingDelimiter)) {
+            if (endingTag) {
+                lexerState = INIT;
+                return TplTokenId.PHP_EMBEDDING_DEL;
+            }
+            else {
+                lexerState = ISI_PHP;
+                return TplTokenId.PHP_EMBEDDING_DEL;
+            }
+        }
+
+        // check functions
+        if (isSmartyFunction(keyword)) {
+            endingTag = false;
+            return TplTokenId.FUNCTION;
+        }
+
+        // check if it's argument of its value
+        if (argValue) {
+            return TplTokenId.ARGUMENT_VALUE;
+        }
+        else {
+            return TplTokenId.ARGUMENT;
+        }
     }
 
     private boolean  isVariableModifier(String keyword) {
@@ -328,6 +413,10 @@ public class TplLexer implements Lexer<TplTokenId> {
 
     private boolean isVariableOperator(String keyword) {
         return OPERATORS.contains(keyword.toString().toLowerCase(Locale.ENGLISH));
+    }
+
+    private boolean isSmartyFunction(String keyword) {
+        return FUNCTIONS.contains(keyword.toString().toLowerCase(Locale.ENGLISH));
     }
 
 }
