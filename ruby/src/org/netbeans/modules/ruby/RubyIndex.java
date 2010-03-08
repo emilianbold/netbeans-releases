@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,9 +180,9 @@ public final class RubyIndex {
         return Collections.<IndexResult>emptySet();
     }
 
-    private boolean search(String key, String name, QuerySupport.Kind kind, Set<IndexResult> result) {
+    private boolean search(String key, String name, QuerySupport.Kind kind, Collection<IndexResult> result, String... fieldsToLoad) {
         try {
-            result.addAll(querySupport.query(key, name, kind,  (String[]) null));
+            result.addAll(querySupport.query(key, name, kind,  fieldsToLoad));
             return true;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -799,7 +800,7 @@ public final class RubyIndex {
         QuerySupport.Kind kind = QuerySupport.Kind.EXACT;
         String field = FIELD_FQN_NAME;
 
-        search(field, fqn, kind, result);
+        search(field, fqn, kind, result, FIELD_FQN_NAME, FIELD_EXTENDS_NAME);
 
         // XXX Uhm... there could be multiple... Shouldn't I return a set here?
         // (e.g. you can have your own class named File which has nothing to
@@ -846,7 +847,7 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, FIELD_EXTENDS_NAME, FIELD_FQN_NAME);
 
         boolean foundIt = result.size() > 0;
 
@@ -876,7 +877,7 @@ public final class RubyIndex {
      * context of the usage. */
     public Set<IndexedClass> getSubClasses(String fqn, String possibleFqn, String name, boolean directOnly) {
         //String field = FIELD_FQN_NAME;
-        Set<IndexedClass> classes = new HashSet<IndexedClass>();
+        Set<IndexedClass> classes = new LinkedHashSet<IndexedClass>();
         Set<String> scannedClasses = new HashSet<String>();
         Set<String> seenClasses = new HashSet<String>();
         
@@ -1054,6 +1055,28 @@ public final class RubyIndex {
         return methods;
     }
 
+    /**
+     * Like {@link #getInheritedMethods(java.lang.String, java.lang.String, org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind) }, 
+     * ut if {@code includeSelf} is false, excludes results from the class itself.
+     * @param classFqn
+     * @param prefix
+     * @param kind
+     * @param includeSelf specifies whether methods from {@code classFqn} should be included.
+     * @return
+     */
+    Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind, boolean includeSelf) {
+        Set<IndexedMethod> inherited = getInheritedMethods(classFqn, prefix, kind);
+        if (includeSelf) {
+            return inherited;
+        }
+        Set<IndexedMethod> result = new HashSet<IndexedMethod>(inherited.size());
+        for (IndexedMethod each : inherited) {
+            if (!classFqn.equals(each.getClz())) {
+                result.add(each);
+            }
+        }
+        return result;
+    }
 
     /** Return whether the specific class referenced (classFqn) was found or not. This is
      * not the same as returning whether any classes were added since it may add
@@ -1062,7 +1085,7 @@ public final class RubyIndex {
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
         boolean haveRedirected, boolean inheriting) {
-        
+
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
             return false;
@@ -1071,7 +1094,7 @@ public final class RubyIndex {
         scannedClasses.add(classFqn);
 
 
-        Set<IndexResult> result = new HashSet<IndexResult>();
+        Set<IndexResult> result = new LinkedHashSet<IndexResult>();
 
         search(FIELD_FQN_NAME, classFqn, QuerySupport.Kind.EXACT, result);
 
