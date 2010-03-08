@@ -70,30 +70,76 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
+
             <!-- desktop method body templates -->
             <file name="FlickrGetFrob.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetFrob.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetFrob.template">
+                <attr name="position" intvalue="37010"/>
+            </file>
             <file name="FlickrGetAuthToken.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetAuthToken.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetAuthToken.template">
+                <attr name="position" intvalue="37020"/>
+            </file>
             <file name="FlickrLogout.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrLogout.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrLogout.template">
+                <attr name="position" intvalue="37030"/>
+            </file>
             <file name="FlickrSignParams.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrSignParams.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrSignParams.template">
+                <attr name="position" intvalue="37040"/>
+            </file>
+
+            <!-- nb-module method body templates -->
+            <file name="FlickrNbGetFrob.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/nbmodule/FlickrGetFrob.template">
+                <attr name="position" intvalue="37110"/>
+            </file>
+            <file name="FlickrNbGetAuthToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/nbmodule/FlickrGetAuthToken.template">
+                <attr name="position" intvalue="37120"/>
+            </file>
+            <file name="FlickrNbLogin.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/nbmodule/FlickrLogin.template">
+                <attr name="position" intvalue="37130"/>
+            </file>
+            <file name="FlickrNbLogout.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/nbmodule/FlickrLogout.template">
+                <attr name="position" intvalue="37140"/>
+            </file>
+            <file name="FlickrNbSignParams.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/nbmodule/FlickrSignParams.template">
+                <attr name="position" intvalue="37150"/>
+            </file>
+
             <!-- web method body templates -->
             <file name="FlickrWebLogout.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogout.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogout.template">
+                <attr name="position" intvalue="37210"/>
+            </file>
             <file name="FlickrWebGetAuthToken.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetAuthToken.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetAuthToken.template">
+                <attr name="position" intvalue="37220"/>
+            </file>
             <file name="FlickrGetUserNsid.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetUserNsid.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetUserNsid.template">
+                <attr name="position" intvalue="37230"/>
+            </file>
             <file name="FlickrCreateAuthToken.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken.template">
+                <attr name="position" intvalue="37240"/>
+            </file>
             <file name="FlickrDispatch.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrDispatch.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrDispatch.template">
+                <attr name="position" intvalue="37250"/>
+            </file>
             <file name="FlickrLoginDoGet.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLoginDoGet.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLoginDoGet.template">
+                <attr name="position" intvalue="37260"/>
+            </file>
             <file name="FlickrCallbackDoGet.method"
-                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCallbackDoGet.template"/>
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCallbackDoGet.template">
+                <attr name="position" intvalue="37270"/>
+            </file>
 
             
             <!-- PHP templates -->

@@ -502,7 +502,8 @@
     <xsd:complexType name="UseTemplates">
         <xsd:sequence>
             <xsd:element name="desktop" type="saas:TemplateType" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="web" type="saas:TemplateType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="nb-module" type="saas:TemplateType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="web" type="saas:TemplateType" minOccurs="0" maxOccurs="1"/>       
         </xsd:sequence>
     </xsd:complexType>
 
