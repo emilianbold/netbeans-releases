@@ -1,0 +1,7 @@
+{
+        if (httpServletRequest == null) {
+            throw new NullPointerException("httpServletRequest is null");
+        }
+        javax.servlet.http.HttpSession session = httpServletRequest.getSession(false);
+        return (String) session.getAttribute("flickr_user_nsid");
+}

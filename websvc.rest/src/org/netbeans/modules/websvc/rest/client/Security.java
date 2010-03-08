@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author mkuchtiak
@@ -47,23 +49,54 @@ public class Security {
 
     private boolean ssl;
     private Authentication authentization;
+    private SecurityParams securityParams;
+    private String projectType; // desktop, nb-project, web
 
     public Security(boolean ssl, Authentication authentization) {
         this.ssl = ssl;
         this.authentization = authentization;
     }
 
-    public Authentication getAuthentization() {
+    public Authentication getAuthentication() {
         return authentization;
     }
 
+    public String getProjectType() {
+        return projectType;
+    }
+
+    public void setProjectType(String projectType) {
+        this.projectType = projectType;
+    }
+    
     public boolean isSSL() {
         return ssl;
     }
 
+    public SecurityParams getSecurityParams() {
+        return securityParams;
+    }
+
+    public void setSecurityParams(SecurityParams securityParams) {
+        this.securityParams = securityParams;
+    }
+
     public static enum Authentication {
-        NONE,
-        BASIC;
+        NONE("auth_none"),
+        BASIC("auth_basic"),
+        SESSION_KEY("auth_session_key");
+
+        private String displayName;
+
+        Authentication(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(Security.class, displayName);
+        }
+
     }
 
 }

@@ -137,7 +137,7 @@ public class WatchesNodeModelFilter extends VariablesNodeModel implements Extend
     }
     
     public boolean canRename(ExtendedNodeModel model, Object node) throws UnknownTypeException {
-        return model.canRename(node);
+        return model.canRename(node) || isEmptyWatch(node);
     }
 
     public boolean canCopy(ExtendedNodeModel model, Object node) throws UnknownTypeException {

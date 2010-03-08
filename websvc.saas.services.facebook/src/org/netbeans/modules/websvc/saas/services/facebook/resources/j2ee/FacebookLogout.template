@@ -1,0 +1,13 @@
+{
+    javax.servlet.http.HttpSession session = request.getSession(true);
+    String sessionKey = (String) session.getAttribute("facebook_session_key");
+    if (sessionKey != null) {
+        String[] queryParamNames = new String[]{"api_key", "session_key", "v", "method"};
+        String[] queryParamValues = new String[]{api_key, sessionKey, "1.0", "facebook.auth.expireSession"};
+        String sig = signParams(queryParamNames, queryParamValues);
+        String resp = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
+    }
+    session.removeAttribute("facebook_session_key");
+    session.removeAttribute("facebook_auth_token");
+    httpServletRequest = null;
+}

@@ -1,0 +1,25 @@
+{
+    javax.servlet.http.HttpSession session = request.getSession(true);
+    String sessionKey = (String) session.getAttribute("facebook_session_key");
+
+    // If there is already a session key, we are already logged in.
+    // Simply return.
+    if (sessionKey == null) {
+        String authToken = (String) session.getAttribute("facebook_auth_token");
+        // If there is an auth token instead of a session key, we need to
+        // obtain the session key using the auth token.  If there is no
+        // auth token, we redirect to the login page.
+        if (authToken != null) {
+            session.setAttribute("facebook_session_key", createSessionKey(authToken));
+            String returnUrl = (String) session.getAttribute("facebook_return_url");
+
+            if (returnUrl != null) {
+                session.removeAttribute("facebook_return_url");
+                response.sendRedirect(returnUrl);
+            }
+        } else {
+            session.setAttribute("facebook_return_url", request.getRequestURI());
+            response.sendRedirect(request.getContextPath() + "/FacebookJerseyClientLogin");
+        }
+    }
+}
