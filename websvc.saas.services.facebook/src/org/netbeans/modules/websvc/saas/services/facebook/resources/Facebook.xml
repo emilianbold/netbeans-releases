@@ -104,6 +104,16 @@
                             <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
                             <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
                         </desktop>
+                        <nb-module>
+                            <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookNbLogin.method" param-types = "String, String" param-names = "api_key, application_secret"/>
+                            <method-descriptor modifiers="public" name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookNbLogout.method"/>
+                            <method-descriptor modifiers="private" id = "api_key" name="getApiKey" return-type="String" body = "{return org.openide.util.NbPreferences.forModule(this.getClass()).get(&quot;facebook_api_key&quot;, null);}"/>
+                            <method-descriptor modifiers="private" id = "call_id" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
+                            <method-descriptor modifiers="private" id = "session_key" name="getSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbGetSessionKey.method"/>
+                            <method-descriptor modifiers="private" name="createToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbCreateToken.method"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
+                        </nb-module>
                         <web>
                             <template type="auth" href="FacebookAuthenticator"/>
                             <template type="login" href="FacebookAuthenticatorLogin"/>

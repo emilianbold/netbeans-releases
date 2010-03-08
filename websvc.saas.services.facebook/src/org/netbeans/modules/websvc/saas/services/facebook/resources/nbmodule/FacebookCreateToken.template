@@ -1,0 +1,19 @@
+{
+    String api_key = org.openide.util.NbPreferences.forModule(this.getClass()).get("facebook_api_key", null);
+    if (api_key == null) {
+        throw new NullPointerException("api_key is null");
+    }
+
+    String token = null;
+    String[] queryParamNames = new String[]{"api_key", "v", "method"};
+    String[] queryParamValues = new String[]{api_key, "1.0", "facebook.auth.createToken"};
+    String sig = signParams(queryParamNames, queryParamValues);
+    String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
+    try {
+        token = result.substring(result.indexOf("<auth_createToken_response"), result.indexOf("</auth_createToken_response>"));
+        token = token.substring(token.indexOf(">") + 1);
+    } catch (Exception ex) {
+        throw new java.io.IOException("Failed to get session token: " + result);
+    }
+    return token;
+}
