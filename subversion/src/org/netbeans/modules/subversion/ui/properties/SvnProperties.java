@@ -51,7 +51,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.subversion.Subversion;
@@ -76,49 +81,62 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Peter Pis
  * @author Marian Petras
  */
-public class SvnProperties implements ActionListener {
+public final class SvnProperties implements ActionListener {
 
     /** Subversion properties that may be set only on directories */
-    private static final String[] DIR_ONLY_PROPERTIES = new String[] {
+    private static final HashSet<String> DIR_ONLY_PROPERTIES = new HashSet<String>(Arrays.asList(new String[] {
                                                             "svn:ignore",
-                                                            "svn:externals"};
+                                                            "svn:externals"}));
  
     /** Subversion properties that may be set only on files (not directories) */
-    private static final String[] FILE_ONLY_PROPERTIES = new String[] {
+    private static final HashSet<String> FILE_ONLY_PROPERTIES = new HashSet<String>(Arrays.asList(new String[] {
                                                             "svn:eol-style",
                                                             "svn:executable",
                                                             "svn:keywords",
                                                             "svn:needs-lock",
-                                                            "svn:mime-type"};
+                                                            "svn:mime-type"}));
+
+    private static final HashSet<String> MIXED_PROPERTIES = new HashSet<String>(DIR_ONLY_PROPERTIES.size() + FILE_ONLY_PROPERTIES.size());
+    static {
+        MIXED_PROPERTIES.addAll(DIR_ONLY_PROPERTIES);
+        MIXED_PROPERTIES.addAll(FILE_ONLY_PROPERTIES);
+    }
 
     private PropertiesPanel panel;
-    private File root;
+    private File[] roots;
     private PropertiesTable propTable;
     private SvnProgressSupport support;
     private boolean loadedFromFile;
     private File loadedValueFile;
+    private final Set<File> folders = new HashSet<File>();
+    private final Set<File> files = new HashSet<File>();
+    private final Map<String, Set<File>> filesPerProperty = new HashMap<String, Set<File>>();
 
     /** Creates a ew instance of SvnProperties */
-    public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, File root) {
+    public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, File[] files) {
         this.panel = panel;
         this.propTable = propTable;
-        this.root = root;
+        this.roots = files;
         propTable.getTable().addMouseListener(new TableMouseListener());
         panel.btnRefresh.addActionListener(this);
         panel.btnAdd.addActionListener(this);
         panel.btnRemove.addActionListener(this);
         panel.btnBrowse.addActionListener(this);
         panel.comboName.setEditable(true);
-        boolean rootIsDirectory = root.isDirectory();
-        panel.setForDirectory(rootIsDirectory);
-        if (rootIsDirectory) {
+        for (File f : files) {
+            if (f.isDirectory()) {
+                folders.add(f);
+            } else {
+                this.files.add(f);
+            }
+        }
+        panel.setForDirectory(!folders.isEmpty());
+        if (folders.isEmpty()) {
             panel.setIllegalPropertyNames(
-                    FILE_ONLY_PROPERTIES,
-                    "PropertiesPanel.errInvalidPropertyForDirectory");  //NOI18N
-        } else {
-            panel.setIllegalPropertyNames(
-                    DIR_ONLY_PROPERTIES,
+                    DIR_ONLY_PROPERTIES.toArray(new String[DIR_ONLY_PROPERTIES.size()]),
                     "PropertiesPanel.errInvalidPropertyForFile");       //NOI18N
+        } else {
+            panel.setRecursiveProperties(FILE_ONLY_PROPERTIES);
         }
         setLoadedValueFile(null);
         initPropertyNameCbx();
@@ -135,19 +153,15 @@ public class SvnProperties implements ActionListener {
         this.panel = panel;
     }
 
-    public File getRoot() {
-        return root;
+    public File[] getFiles () {
+        return roots;
     }
 
-    public void setRoot(File root) {
-        this.root = root;
-    }
-
-    public void setLoadedValueFile(File file) {
+    private void setLoadedValueFile(File file) {
         this.loadedValueFile = file;
     }
 
-    public File getLoadedValueFile() {
+    private File getLoadedValueFile() {
         return loadedValueFile;
     }
 
@@ -173,9 +187,9 @@ public class SvnProperties implements ActionListener {
 
     protected void initPropertyNameCbx() {
         if (panel.comboName.isEditable()) {
-            panel.setPredefinedPropertyNames(root.isDirectory()
-                                             ? DIR_ONLY_PROPERTIES
-                                             : FILE_ONLY_PROPERTIES);
+            panel.setPredefinedPropertyNames(folders.isEmpty()
+                                             ? FILE_ONLY_PROPERTIES.toArray(new String[FILE_ONLY_PROPERTIES.size()])
+                                             : MIXED_PROPERTIES.toArray(new String[MIXED_PROPERTIES.size()]));
         }
     }
 
@@ -200,7 +214,7 @@ public class SvnProperties implements ActionListener {
 
     public void handleBinaryFile(File source) {
         setLoadedValueFile(source);
-        StringBuffer txtValue = new StringBuffer();
+        StringBuilder txtValue = new StringBuilder();
         txtValue.append(NbBundle.getMessage(SvnProperties.class, "Binary_Content"));
         txtValue.append("\n");
         try {
@@ -222,7 +236,7 @@ public class SvnProperties implements ActionListener {
             chooser.removeChoosableFileFilter(fileFilter);
         }
 
-        chooser.setCurrentDirectory(root.getParentFile()); // NOI18N
+        chooser.setCurrentDirectory(roots[0].getParentFile()); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
                 return f.exists();
@@ -269,7 +283,7 @@ public class SvnProperties implements ActionListener {
     protected void refreshProperties() {
         final SVNUrl repositoryUrl;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -279,42 +293,61 @@ public class SvnProperties implements ActionListener {
         try {
             support = new SvnProgressSupport() {
                 SvnClient client;
-                ISVNProperty[] isvnProps;
+                HashMap<String, String> properties;
                 protected void perform() {
                     try {
                         client = Subversion.getInstance().getClient(repositoryUrl);
-                        ISVNStatus status = client.getSingleStatus(root);
-                        if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-                            return;
+                        properties = new HashMap<String, String>();
+                        for (File f : roots) {
+                            ISVNStatus status = client.getSingleStatus(f);
+                            if (!status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                                addProperties(f, client.getProperties(f));
+                            }
                         }
-                        isvnProps = client.getProperties(root);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            String[] propNames = new String[isvnProps.length];
-                            SvnPropertiesNode[] svnProps = new SvnPropertiesNode[isvnProps.length];
-                            for (int i = 0; i < isvnProps.length; i++) {
-                                if (isvnProps[i] == null) {
-                                    return;
-                                }
-                                String name = isvnProps[i].getName();
+                            String[] propNames = new String[properties.size()];
+                            SvnPropertiesNode[] svnProps = new SvnPropertiesNode[properties.size()];
+                            int i = 0;
+                            for (Map.Entry<String, String> e : properties.entrySet()) {
+                                String name = e.getKey();
                                 propNames[i] = name;
-                                String value;
-                                if (SvnUtils.isBinary(isvnProps[i].getData())) {
-                                    value = org.openide.util.NbBundle.getMessage(SvnProperties.class, "Binary_Content");
-                                } else {
-                                    String tmp = isvnProps[i].getValue();
-                                    value = tmp != null ? tmp : "";
-                                }
+                                String value = e.getValue();
                                 svnProps[i] = new SvnPropertiesNode(name, value);
+                                ++i;
                             }
                             propTable.setNodes(svnProps);
                             panel.setExistingPropertyNames(propNames);
                         }
                     });
+                }
+
+                private void addProperties (File file, ISVNProperty[] toAddProps) {
+                    for (ISVNProperty prop : toAddProps) {
+                        String propName = prop.getName();
+                        String propValue;
+                        if (SvnUtils.isBinary(prop.getData())) {
+                            propValue = org.openide.util.NbBundle.getMessage(SvnProperties.class, "Binary_Content"); //NOI18N
+                        } else {
+                            String tmp = prop.getValue();
+                            propValue = tmp != null ? tmp : ""; //NOI18N
+                        }
+                        String existingValue = properties.get(propName);
+                        if (existingValue != null && !existingValue.equals(propValue)) {
+                            propValue = org.openide.util.NbBundle.getMessage(SvnProperties.class, "SvnProperties.VariousValues"); //NOI18N"
+                        }
+                        properties.put(propName, propValue);
+                        Set<File> filesPerProp = filesPerProperty.get(propName);
+                        if (filesPerProp == null) {
+                            filesPerProp = new HashSet<File>();
+                            filesPerProperty.put(propName, filesPerProp);
+                        }
+                        filesPerProp.add(file);
+                    }
                 }
             };
             support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(SvnProperties.class, "LBL_Properties_Progress"));
@@ -323,10 +356,10 @@ public class SvnProperties implements ActionListener {
         }
     }
 
-    public void setProperties() {
+    private void setProperties() {
         final SVNUrl repositoryUrl;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -346,16 +379,19 @@ public class SvnProperties implements ActionListener {
                     }
                     boolean recursively = panel.cbxRecursively.isSelected();
                     try {
-                        addFile(client, root, recursively);
-                        if (isLoadedFromFile()) {
-                            try {
-                                client.propertySet(root, getPropertyName(), getLoadedValueFile(), recursively);
-                            } catch (IOException ex) {
-                                Subversion.LOG.log(Level.SEVERE, null, ex);
-                                return;
+                        String propName = getPropertyName();
+                        for (File root : getAllowedFiles(propName, recursively)) {
+                            addFile(client, root, recursively);
+                            if (isLoadedFromFile()) {
+                                try {
+                                    client.propertySet(root, propName, getLoadedValueFile(), recursively);
+                                } catch (IOException ex) {
+                                    Subversion.LOG.log(Level.SEVERE, null, ex);
+                                    return;
+                                }
+                            } else {
+                                client.propertySet(root, propName, getPropertyValue(), recursively);
                             }
-                        } else {
-                            client.propertySet(root, getPropertyName(), getPropertyValue(), recursively);
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -376,6 +412,27 @@ public class SvnProperties implements ActionListener {
         refreshProperties();
     }
 
+    private File[] getAllowedFiles (String propertyName, boolean recursively) {
+        List<File> fileList = new LinkedList<File>();
+        for (File root : roots) {
+            boolean isFile = files.contains(root);
+            if (!(isFile && DIR_ONLY_PROPERTIES.contains(propertyName) // do not set folder properties on files
+                    || !isFile && !recursively && FILE_ONLY_PROPERTIES.contains(propertyName))) { // do not set file properties on folders
+                fileList.add(root);
+            }
+        }
+        return fileList.toArray(new File[fileList.size()]);
+    }
+
+    private File[] getFilesWithProperty (String propertyName) {
+        Set<File> filesWithProperty = filesPerProperty.get(propertyName);
+        Set<File> fileList = new HashSet<File>();
+        if (filesWithProperty != null) {
+            fileList.addAll(filesWithProperty);
+        }
+        return fileList.toArray(new File[fileList.size()]);
+    }
+
     private void addFile(SvnClient client, File file, boolean recursively) throws SVNClientException {
         if(SvnUtils.isPartOfSubversionMetadata(file)) return;
         ISVNStatus status = client.getSingleStatus(file);
@@ -391,10 +448,10 @@ public class SvnProperties implements ActionListener {
         }
     }
 
-    public void removeProperties() {
+    private void removeProperties() {
         final SVNUrl repositoryUrl;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -418,26 +475,32 @@ public class SvnProperties implements ActionListener {
                         List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);
                         for (int i = rows.length - 1; i >= 0; i--) {
                             String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName();
-                            client.propertyDel(root, svnPropertyName, recursively);
+                            for (File root : getFilesWithProperty(svnPropertyName)) {
+                                client.propertyDel(root, svnPropertyName, recursively);
+                            }
                             try {
                                 lstSvnPropertiesNodes.remove(svnPropertiesNodes[propTable.getModelIndex(rows[i])]);
                             } catch (UnsupportedOperationException e) {
                             }
                         }
-                        SvnPropertiesNode[] remainingNodes
+                        final SvnPropertiesNode[] remainingNodes
                                 = (SvnPropertiesNode[]) lstSvnPropertiesNodes.toArray();
-                        propTable.setNodes(remainingNodes);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                propTable.setNodes(remainingNodes);
 
-                        if (remainingNodes.length == 0) {
-                            panel.setExistingPropertyNames(new String[0]);
-                        } else {
-                            String[] propNames = new String[remainingNodes.length];
-                            for (int i = 0; i < propNames.length; i++) {
-                                propNames[i] = remainingNodes[i].getName();
+                                if (remainingNodes.length == 0) {
+                                    panel.setExistingPropertyNames(new String[0]);
+                                } else {
+                                    String[] propNames = new String[remainingNodes.length];
+                                    for (int i = 0; i < propNames.length; i++) {
+                                        propNames[i] = remainingNodes[i].getName();
+                                    }
+                                    panel.setExistingPropertyNames(propNames);
+                                }
                             }
-                            panel.setExistingPropertyNames(propNames);
-                        }
-                        //refreshProperties();
+                        });
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;

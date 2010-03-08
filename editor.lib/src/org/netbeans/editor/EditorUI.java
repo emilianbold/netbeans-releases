@@ -496,10 +496,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                  * and when either the caret is in guarded block
                  * or when selection spans any guarded block(s).
                  */
-                private boolean isCaretGuarded(){
+                private boolean [] isCaretGuarded() {
                     JTextComponent c = component;
                     BaseDocument bdoc = getDocument();
-                    boolean inGuardedBlock = false;
                     if (bdoc instanceof GuardedDocument){
                         GuardedDocument gdoc = (GuardedDocument)bdoc;
 
@@ -510,11 +509,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                                 break;
                             }
                         }
-                        
-                        inGuardedBlock = (gdoc.isPosGuarded(c.getCaretPosition()) ||
-                            selectionSpansGuardedSection);
+
+                        if (selectionSpansGuardedSection) {
+                            return new boolean [] { true, true };
+                        } else {
+                            int offset = c.getCaretPosition();
+                            boolean guarded = gdoc.isPosGuarded(offset);
+                            return new boolean [] {
+                                guarded,
+                                guarded && !(offset == 0 || org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(bdoc).charAt(offset - 1) == '\n') //NOI18N
+                            };
+                        }
                     }
-                    return inGuardedBlock;
+                    return new boolean [] { false, false };
                 }
                 
                 public void run() {
@@ -524,7 +531,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                         if (kit != null) {
                             boolean isEditable = c.isEditable();
                             boolean selectionVisible = Utilities.isSelectionShowing(c);
-                            boolean caretGuarded = isCaretGuarded();
+                            boolean [] caretGuarded = isCaretGuarded();
 
                             Action a = kit.getActionByName(BaseKit.copyAction);
                             if (a != null) {
@@ -535,14 +542,14 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
                             a = kit.getActionByName(BaseKit.cutAction);
                             if (a != null) {
-                                a.setEnabled(!caretGuarded && isEditable);
+                                a.setEnabled(!caretGuarded[0] && isEditable);
                             }
 
                             a = kit.getActionByName(BaseKit.removeSelectionAction);
                             if (a != null) {
-                                a.setEnabled(selectionVisible && !caretGuarded && isEditable);
+                                a.setEnabled(selectionVisible && !caretGuarded[0] && isEditable);
                             }
-                            
+
                             a = kit.getActionByName(BaseKit.pasteAction);
                             if (a != null) {
                                 if (!isPasteActionInited) {
@@ -550,12 +557,12 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                                     a.setEnabled(!a.isEnabled());
                                     isPasteActionInited = true;
                                 }
-                                a.setEnabled(!caretGuarded && isEditable);
+                                a.setEnabled(!caretGuarded[1] && isEditable);
                             }
 
                             a = kit.getActionByName(BaseKit.pasteFormatedAction);
                             if (a != null) {
-                                a.setEnabled(!caretGuarded && isEditable);
+                                a.setEnabled(!caretGuarded[1] && isEditable);
                             }
                         }
                     }

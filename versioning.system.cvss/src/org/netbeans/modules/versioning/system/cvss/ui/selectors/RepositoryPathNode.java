@@ -162,6 +162,8 @@ public class RepositoryPathNode extends AbstractNode {
                 setKeys(Collections.singleton(errorNode(e)));
             } catch (AuthenticationException e) {
                 setKeys(Collections.singleton(errorNode(e)));
+            } catch (IllegalArgumentException e) {
+                setKeys(Collections.singleton(errorNode(e)));
             } finally {
                 try {
                     client.getConnection().close();
