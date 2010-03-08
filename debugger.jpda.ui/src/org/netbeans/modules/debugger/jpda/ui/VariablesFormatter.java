@@ -313,6 +313,14 @@ public class VariablesFormatter implements Cloneable {
 
 
     private static VariablesFormatter[] createDefaultFormatters() {
+        VariablesFormatter charSequence = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CharSequenceFormatter"));
+        charSequence.setClassTypes("java.lang.CharSequence");
+        charSequence.setIncludeSubTypes(true);
+        charSequence.setChildrenFormatCode(null);
+        charSequence.setChildrenExpandTestCode("false");
+        charSequence.setValueFormatCode("toString()");
+        charSequence.isDefault = true;
+
         VariablesFormatter collection = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CollectionFormatter"));
         collection.setClassTypes("java.util.Collection");
         collection.setIncludeSubTypes(true);
@@ -338,7 +346,7 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
-        return new VariablesFormatter[] { collection, map, mapEntry };
+        return new VariablesFormatter[] { charSequence, collection, map, mapEntry };
     }
 
 

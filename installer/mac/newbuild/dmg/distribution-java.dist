@@ -105,6 +105,7 @@ function checkChoiceUpgradeAction() {
             <line choice="baseide"></line>
             <line choice="javase"></line>
             <line choice="javaee"></line>
+            <line choice="javame"></line>
             <line choice="groovy"></line>
             <line choice="ergonomics"></line>
         </line>
@@ -130,6 +131,9 @@ function checkChoiceUpgradeAction() {
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
+    <choice id="javame" title="javame-title" description="javame-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javame.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.javame"></pkg-ref>
+    </choice>
     <choice id="groovy" title="groovy-title" description="groovy-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.groovy.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.groovy"></pkg-ref>
     </choice>
@@ -143,6 +147,7 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javame" version="0.0.0.0.1" installKBytes="@SIZE_JAVAME@" auth="Root" onConclusion="None">file:./Contents/Packages/javame-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">file:./Contents/Packages/ergonomics-@NB_ID@.pkg</pkg-ref>
  

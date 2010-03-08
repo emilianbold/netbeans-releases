@@ -505,6 +505,35 @@
             <xsd:element name="web" type="saas:TemplateType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
     </xsd:complexType>
+
+    <xsd:complexType name="MethodDescriptor">
+        <xsd:attribute name="modifiers" type="xsd:string"/> <!-- private, protected, public, static (comma selected) -->
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="return-type" type="xsd:string"/>
+        <xsd:attribute name="throws" type="xsd:string"/>
+        <xsd:attribute name="body" type="xsd:string"/>
+        <xsd:attribute name="body-ref" type="xsd:string"/>
+        <xsd:attribute name="param-types" type="xsd:string"/>
+        <xsd:attribute name="param-names" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="FieldDescriptor">
+        <xsd:attribute name="modifiers" type="xsd:string"/> <!-- private, protected, public, static (comma selected) -->
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string"/>
+        <xsd:attribute name="init-value" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ServletDescriptor">
+        <xsd:sequence>
+            <xsd:element name="method-descriptor" type="saas:MethodDescriptor" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="field-descriptor" type="saas:FieldDescriptor" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="modifiers" type="xsd:string"/> <!-- private, protected, public, static (comma selected) -->
+        <xsd:attribute name="class-name" type="xsd:string"/>
+        <xsd:attribute name="servlet-mapping" type="xsd:string"/>
+    </xsd:complexType>
     
     <xsd:complexType name="TemplateType">
         <xsd:sequence>
@@ -514,6 +543,9 @@
                     <xsd:attribute name="href" type="xsd:string"/>
                 </xsd:complexType>
             </xsd:element>
+            <xsd:element name="field-descriptor" type="saas:FieldDescriptor" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="method-descriptor" type="saas:MethodDescriptor" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="servlet-descriptor" type="saas:ServletDescriptor" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
     
