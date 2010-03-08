@@ -813,6 +813,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    public String getPlatformName() {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        String platformName = makeConfiguration.getDevelopmentHost().getBuildPlatformName();
+        return platformName;
+    }
+
     private static String getString(String s, String s2) {
         return NbBundle.getMessage(NativeProjectProvider.class, s, s2);
     }
