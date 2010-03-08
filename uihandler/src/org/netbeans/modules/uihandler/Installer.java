@@ -295,7 +295,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -473,7 +473,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     File f1 = logFile(1);
                     if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
                         LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
-                        LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
+                        LOG.log(Level.INFO, "Log file:{0} Size:{1} Bytes", new Object[]{f, f.length()}); // NOI18N
                         closeLogStream();
                         logsSize = 0;
                         if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
@@ -483,13 +483,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                     if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
                         LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
-                        LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
+                        LOG.log(Level.INFO, "Log file:{0} Size:{1} Bytes", new Object[]{f1, f1.length()}); // NOI18N
                         f1.delete();
                     }
                 }
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -531,7 +531,7 @@ public class Installer extends ModuleInstall implements Runnable {
                                 //Size is over limit delete file
                                 f1.delete();
                                 if (!f.renameTo(f1)) {
-                                    LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                                    LOG.log(Level.INFO, "Failed to rename file:{0} to:{1}", new Object[]{f, f1}); // NOI18N
                                 }
                             } else {
                                 //Size is below limit, append data
@@ -540,12 +540,12 @@ public class Installer extends ModuleInstall implements Runnable {
                         } else {
                             f1.delete();
                             if (!f.renameTo(f1)) {
-                                LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                                LOG.log(Level.INFO, "Failed to rename file:{0} to:{1}", new Object[]{f, f1}); // NOI18N
                             }
                         }
                     } else {
                         if (!f.renameTo(f1)) {
-                            LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                            LOG.log(Level.INFO, "Failed to rename file:{0} to:{1}", new Object[]{f, f1}); // NOI18N
                         }
                     }
                     logsSizeMetrics = 0;
@@ -563,7 +563,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 RP.post(new Auto()).waitFinished();
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -770,7 +770,11 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    private static File logsDirectory(){
+    static File getDeadlockDumpFile(){
+        return new File(logsDirectory(), "deadlock.dump");
+    }
+
+    static File logsDirectory(){
         String ud = System.getProperty("netbeans.user"); // NOI18N
         if (ud == null || "memory".equals(ud)) { // NOI18N
             return null;
@@ -1300,7 +1304,7 @@ public class Installer extends ModuleInstall implements Runnable {
         if (heapDumpFile.exists() && heapDumpFile.canRead() && heapDumpFile.length() > 0) {
             return heapDumpFile;
         }
-        LOG.info("heap dump was not created at " + heapDumpPath);
+        LOG.log(Level.INFO, "heap dump was not created at {0}", heapDumpPath);
         return null;
     }
     
@@ -1376,7 +1380,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         } while ("UTF-8".equals(replace.group(1)));
                         text = text.substring(0, replace.start(1)) + "UTF-8" + text.substring(replace.end(1));
                     }
-                    LOG.fine("Downloaded with encoding '" + enc + "':\n" + text);
+                    LOG.log(Level.FINE, "Downloaded with encoding ''{0}'':\n{1}", new Object[]{enc, text});
                 } else {
                     LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
                 }
@@ -1496,7 +1500,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     //End
                     is = new FileInputStream(tmp);
                     parseButtons(is, exitMsg, dd);
-                    LOG.log(Level.FINE, "doShow, parsing buttons: " + Arrays.toString(dd.getOptions())); // NOI18N
+                    LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
                     alterMessage(dd);
                     is.close();
                     url = tmp.toURI().toURL();
@@ -1746,7 +1750,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 connection.setReadTimeout(20000);
                 Reader reader = new InputStreamReader(connection.getInputStream());
                 int length = reader.read(array);
-                checkingResult = new Boolean(new String(array, 0, length));
+                checkingResult = Boolean.valueOf(new String(array, 0, length));
             } catch (UnsupportedEncodingException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (Exception exception) {
@@ -2118,7 +2122,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         protected void showURL(URL u, boolean inIDE) {
-            LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
+            LOG.log(Level.FINE, "opening URL: {0}", u); // NOI18N
             if (inIDE){
                 ReporterResultTopComponent.showUploadDone(u);
             }else{
