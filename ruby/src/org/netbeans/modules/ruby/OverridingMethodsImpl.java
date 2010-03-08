@@ -36,18 +36,23 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.elements.ClassElement;
+import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.MethodElement;
@@ -59,6 +64,15 @@ import org.netbeans.modules.ruby.elements.MethodElement;
  */
 final class OverridingMethodsImpl implements OverridingMethods {
 
+    private static final class Cache {
+        /** Cache for inherited methods */
+        final Map<String, Set<IndexedMethod>> inherited = new HashMap<String, Set<IndexedMethod>>();
+        /** Cache for subclasses */
+        final Map<String, Set<IndexedClass>> subClasses = new HashMap<String, Set<IndexedClass>>();
+    }
+
+    private final Map<ParserResult, Cache> cacheHolder = new HashMap<ParserResult, Cache>(1);
+
     public OverridingMethodsImpl() {
     }
 
@@ -66,10 +80,10 @@ final class OverridingMethodsImpl implements OverridingMethods {
     public Collection<? extends AlternativeLocation> overrides(ParserResult info, ElementHandle handle) {
         if (handle.getKind() == ElementKind.METHOD) {
             MethodElement methodElement = (MethodElement) handle;
-            RubyIndex index = RubyIndex.get(info);
-            IndexedMethod superMethod = index.getSuperMethod(methodElement.getIn(), methodElement.getName(), true, false);
-            if (superMethod != null) {
-                return asLocations(Collections.singleton(superMethod));
+            for (IndexedMethod each : getInheritedMethods(methodElement.getIn(), info)) {
+                if (methodElement.getName().equals(each.getName())) {
+                    return asLocations(Collections.singleton(each));
+                }
             }
         }
         return null;
@@ -82,18 +96,59 @@ final class OverridingMethodsImpl implements OverridingMethods {
 
     @Override
     public Collection<? extends AlternativeLocation> overriddenBy(ParserResult info, ElementHandle handle) {
+        // handles only classes (and method in classes), ignoring modules for now at least
         if (handle.getKind() == ElementKind.CLASS) {
             ClassElement classElement = (ClassElement) handle;
-            RubyIndex index = RubyIndex.get(info);
-            return asLocations(index.getSubClasses(classElement.getFqn(), null, null, false));
+            return asLocations(getSubclasses(classElement.getFqn(), info));
         }
         if (handle.getKind() == ElementKind.METHOD) {
             MethodElement methodElement = (MethodElement) handle;
+            Set<IndexedClass> subclzs = getSubclasses(methodElement.getIn(), info);
+            if (subclzs.isEmpty()) {
+                return null;
+            }
             RubyIndex index = RubyIndex.get(info);
-            return asLocations(index.getOverridingMethods(methodElement.getName(), methodElement.getIn(), true));
+            Set<IndexedMethod> overriding = new LinkedHashSet<IndexedMethod>();
+            for (IndexedClass subClz : subclzs) {
+                overriding.addAll(index.getMethods(methodElement.getName(), subClz.getFqn(), Kind.EXACT));
+            }
+            return asLocations(overriding);
         }
 
         return null;
+    }
+
+    private Set<IndexedClass> getSubclasses(String fqn, ParserResult info) {
+        Cache cache = getCache(info);
+        if (cache.subClasses.containsKey(fqn)) {
+            return cache.subClasses.get(fqn);
+        }
+        RubyIndex index = RubyIndex.get(info);
+        Set<IndexedClass> result = index.getSubClasses(fqn, null, null, false);
+        cache.subClasses.put(fqn, result);
+        return result;
+
+    }
+
+    private Set<IndexedMethod> getInheritedMethods(String fqn, ParserResult info) {
+        Cache cache = getCache(info);
+        if (cache.inherited.containsKey(fqn)) {
+            return cache.inherited.get(fqn);
+        }
+        RubyIndex index = RubyIndex.get(info);
+        Set<IndexedMethod> result = index.getInheritedMethods(fqn, "", Kind.PREFIX, false);
+        cache.inherited.put(fqn, result);
+        return result;
+    }
+
+    private Cache getCache(ParserResult info) {
+        if (cacheHolder.containsKey(info)) {
+            return cacheHolder.get(info);
+        }
+        cacheHolder.clear();
+        Cache result = new Cache();
+        cacheHolder.put(info, result);
+        return result;
     }
 
     private static Collection<RubyDeclarationFinderHelper.RubyAltLocation> asLocations(
@@ -110,5 +165,4 @@ final class OverridingMethodsImpl implements OverridingMethods {
         return result;
 
     }
-
 }
