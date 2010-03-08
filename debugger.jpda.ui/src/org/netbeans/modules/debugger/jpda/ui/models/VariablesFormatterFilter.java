@@ -84,6 +84,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     //private JPDADebugger debugger;
     private IOManager ioManager;
     private boolean formattersLoopWarned = false;
+    private Map<ObjectVariable, Boolean> childrenExpandTest = new WeakHashMap<ObjectVariable, Boolean>();
 
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -147,11 +148,15 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         int to
     ) throws UnknownTypeException {
 
+        Object[] children;
         if (!(variable instanceof ObjectVariable)) {
-            original.getChildren (variable, from, to);
-        }
-        return getChildren(original, variable, from, to,
+            children = original.getChildren (variable, from, to);
+        } else {
+            children = getChildren(original, variable, from, to,
                            new FormattersLoopControl());
+        }
+        //doExpandTest(children); - non-functional here, we get just variables in getChildren()
+        return children;
     }
 
     private Object[] getChildren (
@@ -267,6 +272,32 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         return Integer.MAX_VALUE;
     }
 
+    void doExpandTest(Object[] children) {
+        for (Object variable : children) {
+            if (variable instanceof ObjectVariable) {
+                ObjectVariable ov = (ObjectVariable) variable;
+                JPDAClassType ct = ov.getClassType();
+                if (ct == null) {
+                    continue;
+                }
+                VariablesFormatter f = getFormatterForType(ct, new FormattersLoopControl().getFormatters());
+                if (f != null) {
+                    String expandTestCode = f.getChildrenExpandTestCode();
+                    if (expandTestCode != null && expandTestCode.length() > 0) {
+                        try {
+                            java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
+                            evaluateMethod.setAccessible(true);
+                            Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
+                            childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Returns true if node is leaf.
      * 
@@ -285,23 +316,10 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             if (ct == null) {
                 return original.isLeaf (variable);
             }
-
-            /* TODO: Must not be performed in AWT!
-            VariablesFormatter f = getFormatterForType(ct);
-            if (f != null) {
-                String expandTestCode = f.getChildrenExpandTestCode();
-                if (expandTestCode != null && expandTestCode.length() > 0) {
-                    try {
-                        java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
-                        evaluateMethod.setAccessible(true);
-                        Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
-                        return !"true".equals(ret.getValue());
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+            Boolean leaf = childrenExpandTest.get(ov);
+            if (leaf != null) {
+                return leaf;
             }
-             */
         }
         String type = variable.getType ();
         // PATCH for J2ME
@@ -512,7 +530,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
         public boolean canUse(VariablesFormatter f, String type) {
             boolean can = usedFormatters.put(type, f) == null;
-            if (!can && ioManager != null) {
+            if (!can && ioManager != null && !String.class.getName().equals(type)) {
                 if (!formattersLoopWarned) {
                     formattersLoopWarned = true;
                     ioManager.println(

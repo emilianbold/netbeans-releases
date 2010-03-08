@@ -147,7 +147,7 @@ public class DefaultPropertyParsers {
         }
         
         public String encode(Object value,  AntProjectHelper antProjectHelper,  ReferenceHelper refHelper ) {
-            return ((Boolean)value).booleanValue() ? "true" : "false"; // NOI18N
+            return value.toString();
         }
         
     }

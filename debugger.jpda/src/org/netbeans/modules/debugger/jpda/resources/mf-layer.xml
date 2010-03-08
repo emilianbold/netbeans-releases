@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-java">
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.jpda.actions.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
                 </file>
             </folder>
         </folder>

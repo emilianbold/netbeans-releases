@@ -204,6 +204,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         
         private JButton expButton;
+        private boolean widthCheck = true;
 
         public ExpandableTooltip(String toolTipText) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
@@ -240,14 +241,20 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             expButton.addActionListener(treeExpansionListener);
         }
 
+        void setWidthCheck(boolean widthCheck) {
+            this.widthCheck = widthCheck;
+        }
+
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
-            if (width >= prefSize.width) {
-                width = prefSize.width;
-            } else { // smaller available width
-                super.setSize(width, 10000); // the height is unimportant
-                prefSize = getPreferredSize(); // re-read new pref width
+            if (widthCheck) {
+                if (width >= prefSize.width) {
+                    width = prefSize.width;
+                } else { // smaller available width
+                    super.setSize(width, 10000); // the height is unimportant
+                    prefSize = getPreferredSize(); // re-read new pref width
+                }
             }
             if (height >= prefSize.height) { // enough height
                 height = prefSize.height;

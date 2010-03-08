@@ -47,6 +47,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,7 +84,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:115-0:127:verifier:Remove the outer conditional statement"
+            "0:115-0:127:verifier:ERR_DoubleCheck"
         );
     }
     public void testSomeCodeAfterTheOuterIf() throws Exception {
@@ -165,8 +167,8 @@ public class DoubleCheckTest extends TreeRuleTestBase {
         
         String golden = (before1 + before3 + after1 + after3).replace("\n", " ");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "4:0-4:12:verifier:Remove the outer conditional statement",
-            "FixDoubleCheck",
+            "4:0-4:12:verifier:ERR_DoubleCheck",
+            "FIX_DoubleCheck",
             golden
         );
     }
@@ -205,7 +207,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
 
         performAnalysisTest("test/Test.java",
                             code,
-                            "4:0-4:12:verifier:Remove the outer conditional statement");
+                            "4:0-4:12:verifier:ERR_DoubleCheck");
     }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
@@ -214,5 +216,14 @@ public class DoubleCheckTest extends TreeRuleTestBase {
     }
     
     private String sourceLevel = "1.5";
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    static {
+        NbBundle.setBranding("test");
+    }
     
 }
