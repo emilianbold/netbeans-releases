@@ -295,6 +295,9 @@ public class LogViewMgr {
     }
 
     private OutputWriter getWriter(boolean error) {
+        if (null == io) {
+            return null;
+        }
         OutputWriter writer = error ? io.getErr() : io.getOut();
         if(LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() + " [ " + (error ? "STDERR" : "STDOUT") + " ]" + ", output error flag = " + writer.checkError()); // NOI18N
