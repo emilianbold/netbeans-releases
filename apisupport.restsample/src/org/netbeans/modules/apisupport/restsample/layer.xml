@@ -47,8 +47,8 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="ApiSupport">
                     <file name="RESTSampleProject.zip" url="RESTSampleProject.zip">
-                        <!--<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/crudsample/sampleCRUD.png"/>-->
-                        <attr name="position" intvalue="4000"/>
+                        <attr name="position" intvalue="4100"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/restsample/restservice.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.restsample.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.restsample.RESTSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/restsample/RESTSampleDescription.html"/>
