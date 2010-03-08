@@ -1,9 +1,5 @@
 {
-    if (httpServletRequest == null) {
-        throw new NullPointerException("httpServletRequest is null");
-    }
-    javax.servlet.http.HttpSession session = httpServletRequest.getSession(true);
+    javax.servlet.http.HttpSession session = request.getSession(true);
     session.removeAttribute("flickr_frob");
     session.removeAttribute("flickr_auth_token");
-    httpServletRequest = null;
 }
