@@ -214,11 +214,6 @@
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtWrapping.getController"/>
                           <attr name="position" intvalue="750"/>
                       </file>
-		      <file name="Style.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtStyle.getController"/>
-                          <attr name="position" intvalue="900"/>
-                      </file>
                     </folder>
                 </folder>
             </folder>
