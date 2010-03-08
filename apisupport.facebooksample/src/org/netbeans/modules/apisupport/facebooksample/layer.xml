@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                     <!--
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/fcbapp.png"/>
                     -->
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.facebooksample.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.facebooksample.Bundle#Templates/Project/Samples/APISupport/FcbModuleProject"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.facebooksample.FcbModuleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/FcbModuleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
