@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.api.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public interface NativeProject {
@@ -157,5 +158,5 @@ public interface NativeProject {
      * @param args Arguments
      * @return NativeExitStatus
      */
-    public NativeExitStatus execute(final String executable, final String[] env, final String... args);
+    public NativeExitStatus execute(final String executable, final String[] env, final String... args) throws IOException;
 }
