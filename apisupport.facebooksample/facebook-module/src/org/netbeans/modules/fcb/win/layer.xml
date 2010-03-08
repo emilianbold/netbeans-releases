@@ -65,7 +65,7 @@
             <file name="FcbTopComponent.settings" url="FcbTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="rightSlidingSide">
+            <folder name="commonpalette">
                 <file name="FcbTopComponent.wstcref" url="FcbTopComponentWstcref.xml"/>
             </folder>
         </folder>

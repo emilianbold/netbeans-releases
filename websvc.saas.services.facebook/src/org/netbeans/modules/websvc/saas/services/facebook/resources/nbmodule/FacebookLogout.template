@@ -1,0 +1,13 @@
+{
+    java.util.prefs.Preferences prefs = org.openide.util.NbPreferences.forModule(this.getClass());
+    String session_key = prefs.get("facebook_session_key", null);
+    if (session_key != null) {
+        String api_key = prefs.get("facebook_api_key", null);
+        String[] queryParamNames = new String[] {"api_key", "session_key", "v", "method"};
+        String[] queryParamValues = new String[] {api_key, session_key, "1.0", "facebook.auth.expireSession"};
+        String sig = signParams(queryParamNames, queryParamValues);
+        String resp = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
+        prefs.remove("facebook_session_key");
+        prefs.remove("facebook_session_secret");
+    }
+}

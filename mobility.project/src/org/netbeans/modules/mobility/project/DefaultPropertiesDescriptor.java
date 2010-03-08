@@ -99,6 +99,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String RUN_METHOD = "run.method"; //NOI18N
     public static final String RUN_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
     public static final String RUN_SECURITY_DOMAIN = "run.security.domain"; //NOI18N
+    public static final String MANIFEST_IS_LIBLET = "manifest.is.liblet"; //NOI18N
     public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
     public static final String MANIFEST_APIPERMISSIONS = "manifest.apipermissions"; //NOI18N
     public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
@@ -197,6 +198,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(APP_VERSION_AUTOINCREMENT, false, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(APP_VERSION_NUMBER, false, DefaultPropertyParsers.STRING_PARSER, "0.0.1")); //NOI18N
             set.add(new PropertyDescriptor(APP_VERSION_COUNTER, false, DefaultPropertyParsers.INTEGER_PARSER, "2")); //NOI18N
+            set.add(new PropertyDescriptor(MANIFEST_IS_LIBLET, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(MANIFEST_MIDLETS, true, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER, EMPTY));
             set.add(new PropertyDescriptor(MANIFEST_APIPERMISSIONS, true, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER, EMPTY));
             set.add(new PropertyDescriptor(MANIFEST_PUSHREGISTRY, true, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER, EMPTY));

@@ -184,12 +184,14 @@ public class AddParameterOrLocalFix implements Fix {
     private boolean initExpression(StatementTree statement, TreeMaker make, final String name, TypeMirror proposedType, final WorkingCopy wc, TreePath tp) {
         ExpressionTree exp = ((ExpressionStatementTree) statement).getExpression();
         if (exp.getKind() == Kind.ASSIGNMENT) {
-            //replace the expression statement with a variable declaration:
             AssignmentTree at = (AssignmentTree) exp;
-            VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), at.getExpression());
-            vt = Utilities.copyComments(wc, statement, vt);
-            wc.rewrite(statement, vt);
-            return true;
+            if (at.getVariable().getKind() == Kind.IDENTIFIER && ((IdentifierTree) at.getVariable()).getName().contentEquals(name)) {
+                //replace the expression statement with a variable declaration:
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), at.getExpression());
+                vt = Utilities.copyComments(wc, statement, vt);
+                wc.rewrite(statement, vt);
+                return true;
+            }
         }
         return false;
     }

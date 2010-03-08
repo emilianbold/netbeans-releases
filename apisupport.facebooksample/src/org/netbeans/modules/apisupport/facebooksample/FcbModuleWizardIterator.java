@@ -48,10 +48,14 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -62,6 +66,7 @@ import org.openide.util.NbBundle;
 
 public class FcbModuleWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
 
+    private static final Logger L = Logger.getLogger(FcbModuleWizardIterator.class.getName());
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
@@ -110,6 +115,14 @@ public class FcbModuleWizardIterator implements WizardDescriptor./*Progress*/Ins
             ProjectChooser.setProjectsFolder(parent);
         }
 
+        Project p = ProjectManager.getDefault().findProject(dir);
+        try {
+            ActionUtils.runTarget(p.getProjectDirectory().getFileObject("build.xml"), new String[]{"model-gen"}, null); //NOI18N
+        } catch (IOException ex) {
+            L.log(Level.WARNING, ex.getMessage(), ex);
+        } catch (IllegalArgumentException ex) {
+            L.log(Level.SEVERE, ex.getMessage(), ex);
+        }
         return resultSet;
     }
 

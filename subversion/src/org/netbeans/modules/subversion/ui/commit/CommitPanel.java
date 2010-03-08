@@ -84,6 +84,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.ui.diff.MultiDiffPanel;
@@ -169,6 +170,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
                 if(ts.isAutofill()) {
@@ -318,9 +320,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
+                @Override
                 public void run() {
                     commitTable.dataChanged();
                     listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
@@ -335,6 +339,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
@@ -434,6 +439,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onTemplate();
             }
         });
+        Spellchecker.register (messageTextArea);
     }
 
     private Component makeVerticalStrut(JComponent compA,

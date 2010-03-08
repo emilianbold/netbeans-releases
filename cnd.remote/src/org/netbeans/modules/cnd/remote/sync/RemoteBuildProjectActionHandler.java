@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -73,6 +74,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     private PrintWriter out;
     private PrintWriter err;
+
+    private static final String testWorkerRunningProp = "cnd.remote.sync.worker.running"; // for tests only
 
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -139,13 +142,15 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
 
         Map<String, String> env2add = new HashMap<String, String>();
-        if (worker.startup(env2add)) {
+        System.setProperty(testWorkerRunningProp, "true");
+        if (worker.startup(env2add)) {            
             final ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
                 }
                 public void executionFinished(int rc) {
                     worker.shutdown();
                     delegate.removeExecutionListener(this);
+                    System.setProperty(testWorkerRunningProp, "false");
                 }
             };
             delegate.addExecutionListener(listener);
@@ -158,9 +163,26 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             }
             delegate.execute(io);
         } else {
+            System.setProperty(testWorkerRunningProp, "false");
             for (ExecutionListener l : listeners) {
                 l.executionFinished(-8);
             }
+        }
+    }
+
+    /**
+     * For test purposes: wait until workeris finished
+     * @param timeout timeout IN SECONDS
+     */
+    /* package */ static void testWaitWorkerFinished(int timeout) throws TimeoutException, InterruptedException {
+        long end = System.currentTimeMillis() + timeout * 1000;
+        while (Boolean.getBoolean(testWorkerRunningProp)) {
+            long rest = end - System.currentTimeMillis();
+            if (rest < 0) {
+                throw new TimeoutException();
+            }
+            RemoteUtil.LOGGER.finest("Waiting until sync worker is finished");
+            Thread.sleep(rest < 200 ? rest : 200);
         }
     }
 }
