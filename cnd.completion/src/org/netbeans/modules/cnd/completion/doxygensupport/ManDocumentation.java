@@ -122,13 +122,18 @@ public class ManDocumentation {
     }
 
     public static String getDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
-        File cache = getCacheFile(name, chapter);
+        NativeProject np = getNativeProject(file);
+        if (np == null) {
+            return "";
+        }
+        String platformName = np.getPlatformName();
+        File cache = getCacheFile(name, chapter, platformName);
 
         if (cache.exists()) {
             return readFile(cache);
         }
 
-        String doc = createDocumentationForName(name, chapter, file);
+        String doc = createDocumentationForName(name, chapter, np);
 
         if (doc != null) {
             OutputStream out = null;
@@ -179,8 +184,8 @@ public class ManDocumentation {
         return cache;
     }
 
-    private static File getCacheFile(String name, int chapter) {
-        File res = new File(getCacheDir(), name + "." + chapter); // NOI18N
+    private static File getCacheFile(String name, int chapter, String platformName) {
+        File res = new File(getCacheDir(), name + "." + platformName + "." + chapter); // NOI18N
 
         return res;
     }
@@ -208,12 +213,12 @@ public class ManDocumentation {
         return nativeProject;
     }
 
-    private static String createDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
+    private static String createDocumentationForName(String name, int chapter, NativeProject np) throws IOException {
         //NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
-        NativeProject np = getNativeProject(file);
-        if (np == null) {
-            return "";
-        }
+//        NativeProject np = getNativeProject(file);
+//        if (np == null) {
+//            return "";
+//        }
         NativeExitStatus exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
         StringReader sr;
         if (exitStatus != null) {
