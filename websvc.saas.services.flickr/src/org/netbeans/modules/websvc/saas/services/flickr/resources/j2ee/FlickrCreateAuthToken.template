@@ -1,0 +1,16 @@
+{
+    String[] queryParamNames = new String[]{"api_key", "frob", "method"};
+    String[] queryParamValues = new String[]{api_key, frob, "flickr.auth.getToken"};
+    String sig = signParams(queryParamNames, queryParamValues);
+    Client c = new Client();
+    WebResource webRes = c.resource(BASE_URI).path("services/rest");
+    String result = webRes.queryParam("api_key", api_key).queryParam("frob", frob).queryParam("method", "flickr.auth.getToken").queryParam("api_sig", sig).get(String.class);
+    c.destroy();
+    try {
+        user_nsid = result.substring(result.indexOf("nsid=\"") + 6);
+        user_nsid = user_nsid.substring(0, user_nsid.indexOf("\""));
+        return result.substring(result.indexOf("<token>") + 7,result.indexOf("</token>"));
+    } catch (Exception ex) {
+        throw new java.io.IOException("Failed to get authentication token: " + result);
+    }
+}

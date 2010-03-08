@@ -70,7 +70,7 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            <!-- method body templates -->
+            <!-- desktop method body templates -->
             <file name="FlickrGetFrob.method"
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrGetFrob.template"/>
             <file name="FlickrGetAuthToken.method"
@@ -79,6 +79,19 @@
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrLogout.template"/>
             <file name="FlickrSignParams.method"
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/java/FlickrSignParams.template"/>
+            <!-- web method body templates -->
+            <file name="FlickrWebLogout.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLogout.template"/>
+            <file name="FlickrWebGetAuthToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrGetAuthToken.template"/>
+            <file name="FlickrCreateAuthToken.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCreateAuthToken.template"/>
+            <file name="FlickrDispatch.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrDispatch.template"/>
+            <file name="FlickrLoginDoGet.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrLoginDoGet.template"/>
+            <file name="FlickrCallbackDoGet.method"
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/j2ee/FlickrCallbackDoGet.template"/>
 
             
             <!-- PHP templates -->
