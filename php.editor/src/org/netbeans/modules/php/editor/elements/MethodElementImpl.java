@@ -108,7 +108,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     public static MethodElement createMagicMethod(final TypeElement type, String methodName, int flags, String... arguments) {
         MethodElement retval = new MethodElementImpl(type, methodName, true, 0, flags ,//NOI18N
-                type.getFilenameUrl(), type.getElementQuery(), fromParameterNames(arguments), Collections.<TypeResolver>emptySet());
+                type.getFilenameUrl(), null, fromParameterNames(arguments), Collections.<TypeResolver>emptySet());
         return retval;
     }
 

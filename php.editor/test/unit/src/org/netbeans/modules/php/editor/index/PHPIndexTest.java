@@ -463,7 +463,7 @@ public class PHPIndexTest extends TestBase {
         checkIndexer(getTestPath());
     }
 
-    @Test
+    /*@Test
     public void testGetNamespaces_NameKind() throws Exception {
         Collection<String> nsNames = Arrays.asList(new String[]{
             "\\my\\name",
@@ -492,7 +492,7 @@ public class PHPIndexTest extends TestBase {
         assertEquals(4, index.getNamespaces(NameKind.prefix(QualifiedName.create("nam"))).size());
         assertEquals(4, index.getNamespaces(NameKind.prefix(QualifiedName.create("sur"))).size());
 
-    }
+    }*/
 
     /**
      * Test of getConstants method, of class PHPIndex.
