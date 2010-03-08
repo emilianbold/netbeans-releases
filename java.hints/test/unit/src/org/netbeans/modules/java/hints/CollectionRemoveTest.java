@@ -189,6 +189,17 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "}");
     }
 
+    public void testExtendsWildcard2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test (boolean b) {" +
+                            "        test(get().cont|ains(\"\"));\n" +
+                            "    }\n" +
+                            "    private java.util.List<? extends String> get() {return null;}\n" +
+                            "}");
+    }
+
     public void testSuperWildcard() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;" +
@@ -199,7 +210,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "    }" +
                             "}");
     }
-    
+
     public void testWildcard() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;" +

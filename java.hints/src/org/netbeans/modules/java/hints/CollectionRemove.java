@@ -181,7 +181,7 @@ public class CollectionRemove extends AbstractHint {
 
             for (Entry<Integer,Integer> e : md.parametersMapping.entrySet()) {
                 TypeMirror actualParam = info.getTrees().getTypeMirror(new TreePath(tp, mit.getArguments().get(e.getKey())));
-                TypeMirror designedType = againstType.getParameterTypes().get(e.getValue());
+                TypeMirror designedType = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, againstType.getParameterTypes().get(e.getValue()));
 
                 if (designedType.getKind() == TypeKind.WILDCARD) {
                     designedType = ((WildcardType) designedType).getExtendsBound();
