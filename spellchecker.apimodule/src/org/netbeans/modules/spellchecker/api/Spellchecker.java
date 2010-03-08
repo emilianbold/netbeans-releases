@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spellchecker;
 
-import java.awt.AWTEvent;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JTextArea;
+package org.netbeans.modules.spellchecker.api;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.openide.modules.ModuleInstall;
+
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author hanz
  */
-public class Installer extends ModuleInstall {
+public class Spellchecker {
 
-    private static PropertyChangeListener l = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            JTextComponent c = EditorRegistry.focusedComponent();
-
-            if (c != null) {
-                ComponentPeer.assureInstalled(c);
-            }
+    public static void register (
+        JTextComponent          textComponent
+    ) {
+        ClassLoader systemClassLoader = Lookup.getDefault ().lookup (ClassLoader.class);
+        try {
+            Class componentPeerClass = systemClassLoader.loadClass ("org.netbeans.modules.spellchecker.ComponentPeer");
+            Method assureInstalledMethod = componentPeerClass.getMethod ("assureInstalled", Class.forName ("javax.swing.text.JTextComponent"));
+            assureInstalledMethod.invoke (null, textComponent);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace (ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace (ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace (ex);
+        } catch (ClassNotFoundException ex) {
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace (ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace (ex);
         }
-    };
-
-    public @Override void restored() {
-        EditorRegistry.addPropertyChangeListener(l);
-        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
-            public void eventDispatched(AWTEvent event) {
-                if (event instanceof FocusEvent) {
-                    FocusEvent fe = (FocusEvent) event;
-
-                    if (!fe.isTemporary() && fe.getSource() instanceof JTextArea && ((JTextArea) fe.getSource()).isEditable()) {
-                        ComponentPeer.assureInstalled((JTextComponent) fe.getSource());
-                    }
-                }
-            }
-        }, AWTEvent.FOCUS_EVENT_MASK);
     }
-    
 }
