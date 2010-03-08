@@ -107,7 +107,7 @@ public class ImplementAbstractMethods extends AbstractRule {
             if (!isInside(typeScope.getOffset(), lineBegin, lineEnd)) continue;
             LinkedHashSet<MethodScope> abstrMethods = new LinkedHashSet<MethodScope>();
             ClassScope cls = (typeScope instanceof ClassScope) ? ModelUtils.getFirst(((ClassScope) typeScope).getSuperClasses()) : null;
-            Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaces();
+            Collection<? extends InterfaceScope> interfaces = typeScope.getSuperInterfaceScopes();
             if ((cls != null || interfaces.size() > 0) && !typeScope.getPhpModifiers().isAbstract() && typeScope instanceof ClassScope) {
                 Set<String> methNames = new HashSet<String>();
                 Collection<? extends MethodScope> allInheritedMethods = typeScope.getMethods();

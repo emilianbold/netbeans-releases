@@ -41,8 +41,8 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
@@ -98,11 +98,11 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         Modifier modifier = getOriginalNode().getModifier();
 
         if (modifier.equals(Modifier.ABSTRACT)) {
-            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.ABSTRACT);
+            return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC, PhpModifiers.ABSTRACT);
         } else if (modifier.equals(Modifier.FINAL)) {
-            return new PhpModifiers(PhpModifiers.PUBLIC, PhpModifiers.FINAL);
+            return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC, PhpModifiers.FINAL);
         }
-        return new PhpModifiers(PhpModifiers.PUBLIC);
+        return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
 
 }

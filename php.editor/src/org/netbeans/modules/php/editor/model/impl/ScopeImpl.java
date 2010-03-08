@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +46,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -71,24 +71,24 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         setBlockRange(block);
     }
 
-    ScopeImpl(Scope inScope, IndexedElement element, PhpKind kind) {
+    ScopeImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
         super(inScope, element, kind);
     }
     //old contructors
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpKind kind) {
+            OffsetRange offsetRange, PhpElementKind kind) {
         super(inScope, name, file, offsetRange, kind);
         assert isScopeKind(kind): kind.toString();
     }
 
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpKind kind,
+            OffsetRange offsetRange, PhpElementKind kind,
             PhpModifiers modifier) {
         super(inScope, name, file, offsetRange, kind, modifier);
         assert isScopeKind(kind) : kind.toString();
     }
 
-    private static boolean isScopeKind(PhpKind kind) {
+    private static boolean isScopeKind(PhpElementKind kind) {
         switch (kind) {
             case PROGRAM:
             case NAMESPACE_DECLARATION:

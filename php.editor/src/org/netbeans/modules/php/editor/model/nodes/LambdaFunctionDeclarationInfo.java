@@ -45,7 +45,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 
@@ -86,8 +87,8 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
         return new OffsetRange(fnc.getStartOffset(), fnc.getEndOffset());
     }
 
-    public List<? extends Parameter> getParameters() {
-        List<Parameter> retval = new ArrayList<Parameter>();
+    public List<? extends ParameterElement> getParameters() {
+        List<ParameterElement> retval = new ArrayList<ParameterElement>();
         List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
             FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
