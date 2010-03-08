@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,91 +34,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.api;
+package org.netbeans.modules.web.common.api;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
  * @author marekfukala
  */
-public class Utils {
+public class LexerUtils {
 
-    /** returns top most joined html token seuence for the document at the specified offset. */
-    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
+    public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
+        Collection<TokenId> skip = Arrays.asList(skipIds);
+        int index = ts.index();
+        while(backwards ? ts.movePrevious() : ts.moveNext()) {
+            Token token = ts.token();
+            TokenId id = token.id();
+            if(id == searchedId) {
+                if(repositionBack) {
+                    assert ts.moveIndex(index) == 0 && ts.moveNext();
+                }
+                return token;
+            }
+            if(!skip.contains(id)) {
+                break;
+            }
+        }
+        
+        return null;
+    }
+
+      /** returns top most joined html token seuence for the document at the specified offset. */
+    public static TokenSequence getJoinedTokenSequence(Document doc, int offset, Language language) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence();
-        //XXX this seems to be wrong, the return code should be checked
         ts.move(offset);
 
         while(ts.moveNext() || ts.movePrevious()) {
-            if(ts.language() == HTMLTokenId.language()) {
+            if(ts.language() == language) {
                 return ts;
             }
-            
+
             ts = ts.embeddedJoined();
-            
+
             if(ts == null) {
                 break;
             }
 
             //position the embedded ts so we can search deeper
-            //XXX this seems to be wrong, the return code should be checked
             ts.move(offset);
         }
 
         return null;
-        
+
     }
 
-    /**
-     * Finds and returns a tag open token in token sequence positioned inside an html tag.
-     * If tokens sequence contains <div onclick="alert()"/> and is positioned on a token
-     * within the tag it will return OPEN_TAG token for the "div" text
-     *
-     * @param ts a TokenSequence to be used
-     * @return
-     */
-    public static Token<HTMLTokenId> findTagOpenToken(TokenSequence ts) {
-        assert ts != null;
 
-        //skip the tag close symbol if the sequence points to it
-        if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-            if(!ts.movePrevious()) {
-                return null;
-            }
-        }
-
-        do {
-            Token t = ts.token();
-            TokenId id = t.id();
-            if( id == HTMLTokenId.TAG_OPEN) {
-                return t;
-            }
-
-            if(id == HTMLTokenId.TAG_OPEN_SYMBOL || id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
-                    id == HTMLTokenId.TEXT) {
-                break;
-            }
-
-
-        } while (ts.movePrevious());
-
-        return null;
-    }
-
-  
 }
