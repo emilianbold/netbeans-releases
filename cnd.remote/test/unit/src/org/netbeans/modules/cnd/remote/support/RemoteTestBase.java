@@ -293,7 +293,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
             }
         }
-        Thread.sleep(500); // give building thread time to finish and to kill rfs_controller
+        Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
