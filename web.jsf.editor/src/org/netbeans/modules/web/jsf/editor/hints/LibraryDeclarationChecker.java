@@ -188,7 +188,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                         }
                     }, AstNode.NodeType.OPEN_TAG);
 
-                    usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+                    usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib) ? 1 : 0;
 
                     if (usages[0] == 0) {
                         //unused declaration
@@ -229,7 +229,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     }
 
-    private boolean isFunctionLibraryPrefixUsadInEL(RuleContext context, FaceletsLibrary lib) {
+    private boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, FaceletsLibrary lib) {
         String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
         Document doc = context.doc;
 
