@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,9 +41,15 @@
 
 package org.netbeans.modules.derby;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -53,8 +59,10 @@ import org.openide.util.actions.SystemAction;
  * @author David Van Couvering
  */
 public class DerbyServerNode extends AbstractNode implements Comparable {
-    private static final DerbyServerNode DEFAULT = new DerbyServerNode();
-    
+    private static final DerbyDatabasesImpl DATABASES_IMPL = DerbyDatabasesImpl.getDefault();
+    private static final ChildFactory FACTORY = new ChildFactory(DATABASES_IMPL);
+    private static final DerbyServerNode DEFAULT = new DerbyServerNode(FACTORY);
+
     private SystemAction[] actions = new SystemAction[] {
             SystemAction.get(StartAction.class),
             SystemAction.get(StopAction.class),
@@ -69,9 +77,8 @@ public class DerbyServerNode extends AbstractNode implements Comparable {
         return DEFAULT;
     }
     
-    private DerbyServerNode() {
-        // No node children at this time, maybe later... 
-        super(Children.LEAF);
+    private DerbyServerNode(ChildFactory f) {
+        super(Children.create(f, true));
         this.setIconBaseWithExtension(ICON_BASE);
     }
     
@@ -82,7 +89,7 @@ public class DerbyServerNode extends AbstractNode implements Comparable {
     }
    
     @Override
-    public SystemAction[] getActions() {
+    public SystemAction[] getActions(boolean b) {
         return actions;
     }
     
@@ -107,13 +114,50 @@ public class DerbyServerNode extends AbstractNode implements Comparable {
     }
     
     @Override
-    public SystemAction getDefaultAction() {
+    public SystemAction getPreferredAction() {
         return null;
-    } 
-    
+    }
+
+    @Override
     public int compareTo(Object other) {
         Node otherNode = (Node)other;
         return this.getDisplayName().compareTo(otherNode.getDisplayName());
+    }
+
+    private static class ChildFactory
+            extends org.openide.nodes.ChildFactory<String> implements ChangeListener {
+
+        private DerbyDatabasesImpl databasesImpl;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public ChildFactory(DerbyDatabasesImpl impl) {
+            this.databasesImpl = impl;
+            impl.addChangeListener(
+                WeakListeners.create(ChangeListener.class, this, impl));
+        }
+
+        @Override
+        protected Node createNodeForKey(String db) {
+            return new DerbyDatabaseNode(db, databasesImpl);
+        }
+
+        @Override
+        protected boolean createKeys(List<String> toPopulate) {
+            List<String> fresh = new ArrayList<String>();
+
+            fresh.addAll(databasesImpl.getDatabases());
+
+            Collections.sort(fresh);
+            toPopulate.addAll(fresh);
+
+            return true;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            refresh(false);
+        }
+
     }
 
 }
