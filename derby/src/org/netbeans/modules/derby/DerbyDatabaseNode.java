@@ -63,6 +63,7 @@ class DerbyDatabaseNode extends AbstractNode implements Comparable {
         super(Children.LEAF);
         this.database = dbName;
         this.server = server;
+        setName(dbName);
         setDisplayName(dbName);
         setShortDescription(NbBundle.getMessage(DerbyDatabaseNode.class, "DerbyDatabaseNode_ShortDescription", dbName, DerbyOptions.getDefault().getLocation()));
         setIconBaseWithExtension(ICON_BASE);
@@ -75,7 +76,7 @@ class DerbyDatabaseNode extends AbstractNode implements Comparable {
             return super.getActions(context);
         } else {
             return new SystemAction[] {
-                // XXX - SystemAction.get(ConnectAction.class),
+                SystemAction.get(ConnectDatabaseAction.class),
                 SystemAction.get(DeleteAction.class)
             };
         }
@@ -97,5 +98,4 @@ class DerbyDatabaseNode extends AbstractNode implements Comparable {
         return this.getDisplayName().compareTo(othernode.getDisplayName());
     }
 
-        
 }

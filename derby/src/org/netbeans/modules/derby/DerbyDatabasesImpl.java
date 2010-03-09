@@ -58,6 +58,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -69,6 +70,7 @@ import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -80,6 +82,10 @@ public final class DerbyDatabasesImpl {
     private static final DerbyDatabasesImpl INSTANCE = new DerbyDatabasesImpl();
 
     private  Set<ChangeListener> changeListeners = new HashSet<ChangeListener> ();
+    private static final String PATH_TO_DATABASE_PREFERENCES = "/org/netbeans/modules/derby/databases/"; // NOI18N
+    private static final String USER_KEY = "user"; // NOI18N
+    private static final String SCHEMA_KEY = "schema"; // NOI18N
+    private static final String PASSWORD_KEY = "password"; // NOI18N
 
     private DerbyDatabasesImpl() {}
 
@@ -437,6 +443,10 @@ public final class DerbyDatabasesImpl {
         if (drivers.length == 0) {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
+        Preferences pref = NbPreferences.root().node(PATH_TO_DATABASE_PREFERENCES + databaseName);
+        pref.put(USER_KEY, user);
+        pref.put(SCHEMA_KEY, schema);
+        pref.put(PASSWORD_KEY, password);
         DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
         if (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
             ConnectionManager.getDefault().addConnection(dbconn);
@@ -514,6 +524,38 @@ public final class DerbyDatabasesImpl {
         for ( ChangeListener listener : changeListeners ) {
             listener.stateChanged(evt);
         }
+    }
+
+    List<DatabaseConnection> findDatabaseConnections(String databaseName) {
+        String url = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName;
+        List<DatabaseConnection> result = new ArrayList<DatabaseConnection>();
+
+        DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
+
+        for (DatabaseConnection conn : connections) {
+            // If there's already a connection registered, we're done
+            if (conn.getDriverClass().equals(DerbyOptions.DRIVER_CLASS_NET)
+                    && conn.getDatabaseURL().equals(url)) {
+                result.add(conn);
+            }
+        }
+
+        return result;
+    }
+
+    String getUser(String databaseName) {
+        Preferences pref = NbPreferences.root().node(PATH_TO_DATABASE_PREFERENCES + databaseName);
+        return pref.get(USER_KEY, "");
+   }
+
+    String getSchema(String databaseName) {
+        Preferences pref = NbPreferences.root().node(PATH_TO_DATABASE_PREFERENCES + databaseName);
+        return pref.get(SCHEMA_KEY, "");
+    }
+
+    String getPassword(String databaseName) {
+        Preferences pref = NbPreferences.root().node(PATH_TO_DATABASE_PREFERENCES + databaseName);
+        return pref.get(PASSWORD_KEY, "");
     }
 
 }
