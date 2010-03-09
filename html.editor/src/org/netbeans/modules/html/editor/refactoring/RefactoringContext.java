@@ -155,6 +155,8 @@ public class RefactoringContext {
         //seek for all tag's attributes with css embedding representing an inlined style
         String tag = null;
         String attr = null;
+        String styleAttr = null;
+        int styleAttrOffset = -1;
         int attrOffset = -1;
         String tagsClass = null;
         String value = null;
@@ -163,15 +165,15 @@ public class RefactoringContext {
             Token<HTMLTokenId> t = ts.token();
             if (t.id() == HTMLTokenId.TAG_OPEN) {
                 tag = t.text().toString();
-                attr = tagsClass = null;
-                attrOffset = -1;
+                attr = styleAttr = tagsClass = null;
+                attrOffset = styleAttrOffset = -1;
                 range = null;
                 value = null;
             } else if (t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                 //closing tag, produce the info
                 if (tag != null && range != null) {
                     //some inlined code found
-                    found.add(new InlinedStyleInfo(tag, tagsClass, attr, attrOffset, range, value));
+                    found.add(new InlinedStyleInfo(tag, tagsClass, styleAttr, styleAttrOffset, range, value));
                 }
             } else if (t.id() == HTMLTokenId.ARGUMENT) {
                 attr = t.text().toString();
@@ -184,6 +186,8 @@ public class RefactoringContext {
                     int diff = WebUtils.isValueQuoted(t.text()) ? 1 : 0;
                     range = new OffsetRange(ts.offset() + diff, ts.offset() + t.length() - diff);
                     value = WebUtils.unquotedValue(t.text().toString());
+                    styleAttrOffset = attrOffset;
+                    styleAttr = attr;
                 }
             } else if (t.id() == HTMLTokenId.VALUE) {
                 //TODO use TagMetadata for getting the info a the attribute represents a css or not
