@@ -923,7 +923,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             final LinkedHashSet<TypeMemberElement> typeMembers =
                     getDirectInheritedTypesWithMembers(typeElement, typeKinds, memberKinds);
             retval.addAll(forComparingNameKinds(retval).reverseFilter(typeMembers));
-            for (final TypeElement tp : toTypes(typeMembers)) {
+            for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
             }
         }
