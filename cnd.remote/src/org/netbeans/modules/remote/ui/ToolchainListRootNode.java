@@ -117,7 +117,7 @@ public class ToolchainListRootNode extends AbstractNode {
         public String getHtmlDisplayName() {
             String displayName = getDisplayName();
             if (CompilerSetManager.get(env).isDefaultCompilerSet(compilerSet)) {
-                displayName = "<i>" + displayName + "</i>"; // NOI18N
+                displayName = "<b>" + displayName + "</b>"; // NOI18N
             }
             return displayName;
         }
