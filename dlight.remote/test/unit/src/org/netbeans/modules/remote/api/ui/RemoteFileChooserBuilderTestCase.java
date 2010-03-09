@@ -37,22 +37,56 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.remote.api.ui;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.test.RemoteApiBaseTestSuite;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiBaseTestSuite extends NativeExecutionBaseTestSuite {
+public class RemoteFileChooserBuilderTestCase extends NativeExecutionBaseTestCase {
 
-    public RemoteApiBaseTestSuite(String name) {
+    public RemoteFileChooserBuilderTestCase(String name, ExecutionEnvironment env) {
+        super(name, env);
+    }
+
+    public RemoteFileChooserBuilderTestCase(String name) {
         super(name);
     }
-    
-    public RemoteApiBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(testClasses);
+
+    @ForAllEnvironments(section="RemoteFileChooserBuilderTestCase")
+    public void testRemoteFileChoser() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);
+        RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(env);
+        JFileChooser chooser = fcb.createFileChooser();
+        int ret = chooser.showDialog(null, "Choose file at " + env.getDisplayName());
+        switch (ret) {
+            case JFileChooser.CANCEL_OPTION:
+                System.err.printf("Canclled\n");
+                break;
+            case JFileChooser.APPROVE_OPTION:
+                System.err.printf("Approved\n");
+                File file = chooser.getSelectedFile();
+                System.err.printf("Selected: %s\n", file);
+                break;
+            case JFileChooser.ERROR_OPTION:
+                System.err.printf("Error\n");
+                break;
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Test suite() {
+        return new RemoteApiBaseTestSuite(RemoteFileChooserBuilderTestCase.class);
     }
 }

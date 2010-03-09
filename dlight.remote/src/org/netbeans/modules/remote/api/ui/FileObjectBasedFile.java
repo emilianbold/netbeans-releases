@@ -37,22 +37,80 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.remote.api.ui;
 
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.io.File;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author ak119685
  */
-public class RemoteApiBaseTestSuite extends NativeExecutionBaseTestSuite {
+/*package*/ class FileObjectBasedFile extends File {
 
-    public RemoteApiBaseTestSuite(String name) {
-        super(name);
+    private final FileObject fo;
+    private File[] NO_CHILDREN = new File[0];
+
+    public FileObjectBasedFile(String path) {
+        super(path);
+        this.fo = null;
     }
-    
-    public RemoteApiBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(testClasses);
+
+    public FileObjectBasedFile(FileObject fo) {
+        super("".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
+        this.fo = fo;
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return fo == null ? false : fo.isFolder();
+    }
+
+    @Override
+    public boolean exists() {
+        return fo == null ? false : fo.isValid();
+    }
+
+    @Override
+    public File getParentFile() {
+        if (fo == null) {
+            return null;
+        }
+
+        FileObject parent = fo.getParent();
+        return parent == null ? null : new FileObjectBasedFile(parent);
+    }
+
+    @Override
+    public boolean isFile() {
+        return !isDirectory();
+    }
+
+    @Override
+    public File[] listFiles() {
+        if (fo == null) {
+            return NO_CHILDREN;
+        }
+
+        FileObject[] children = fo.getChildren();
+
+        if (children.length == 0) {
+            fo.refresh();
+            children = fo.getChildren();
+        }
+
+        File[] res = new File[children.length];
+        int idx = 0;
+        for (FileObject child : children) {
+            res[idx++] = new FileObjectBasedFile(child);
+        }
+
+        return res;
+    }
+
+    @Override
+    public File getCanonicalFile() throws IOException {
+        return this;
     }
 }
