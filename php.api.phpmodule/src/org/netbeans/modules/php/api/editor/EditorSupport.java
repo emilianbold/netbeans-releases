@@ -72,5 +72,5 @@ public interface EditorSupport {
      * @return {@link PhpElement PHP element}, can be <code>null</code> if not in any
      * @since 1.17
      */
-    PhpElement getElement(FileObject fo, int offset);
+    PhpBaseElement getElement(FileObject fo, int offset);
 }

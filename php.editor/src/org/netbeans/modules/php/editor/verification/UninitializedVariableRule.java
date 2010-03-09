@@ -39,14 +39,9 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collection;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -123,15 +118,18 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
                 // check the globals from included files
-                Collection<IndexedVariable> topLevelVars = context.getIndex().getTopLevelVariables((PHPParseResult) context.parserResult,
-                        "$" + varName, QuerySupport.Kind.EXACT); //NOI18N
-                
-                for (IndexedVariable topLevelVar : topLevelVars) {
-                    if (topLevelVar.isResolved()){
-                        return;
-                    }
-                }
-                
+//                Collection<IndexedVariable> topLevelVars = context.getIndex().getTopLevelVariables((PHPParseResult) context.parserResult,
+//                        "$" + varName, QuerySupport.Kind.EXACT); //NOI18N
+//
+
+//                for (IndexedVariable topLevelVar : topLevelVars) {
+//                    if (topLevelVar.isResolved()){
+//                        return;
+//                    }
+//
+                // XXX something like this makes more sense than looking into index
+                //ModelUtils.resolveType(, var);
+
                 OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
 
                 Hint hint = new Hint(UninitializedVariableRule.this, getDisplayName(),

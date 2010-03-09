@@ -231,6 +231,7 @@ made subject to such option by the copyright holder.
         <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
+                <include name="*.jar"/> <!-- #181025: bare OSGi bundles -->
             </fileset>
             <updaterjar>
                 <resources refid="updater.jar"/>
@@ -527,6 +528,18 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
 
     <target name="run-osgi" depends="build-osgi" description="Runs this suite in an OSGi container.">
         <ant antfile="${harness.dir}/osgi.xml" target="run">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
+    <target name="debug-osgi" depends="build-osgi" description="Debugs this suite in an OSGi container.">
+        <ant antfile="${harness.dir}/osgi.xml" target="debug">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
+    <target name="profile-osgi" depends="build-osgi" description="Profiles this suite in an OSGi container.">
+        <ant antfile="${harness.dir}/osgi.xml" target="profile">
             <reference refid="cluster.path.id"/>
         </ant>
     </target>

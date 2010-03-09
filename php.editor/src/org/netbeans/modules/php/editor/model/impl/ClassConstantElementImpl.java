@@ -1,9 +1,9 @@
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -11,8 +11,8 @@ import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 class ClassConstantElementImpl extends ModelElementImpl implements ClassConstantElement {
     private String typeName;
 
-    ClassConstantElementImpl(Scope inScope, IndexedConstant indexedConstant) {
-        super(inScope, indexedConstant, PhpKind.CLASS_CONSTANT);
+    ClassConstantElementImpl(Scope inScope, TypeConstantElement indexedConstant) {
+        super(inScope, indexedConstant, PhpElementKind.TYPE_CONSTANT);
         assert inScope instanceof TypeScope;
         String in = indexedConstant.getIn();
         if (in != null) {
@@ -23,7 +23,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
     }
 
     ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst) {
-        super(inScope, clsConst, PhpModifiers.EMPTY);
+        super(inScope, clsConst, PhpModifiers.noModifiers());
         typeName = inScope.getName();
     }
 

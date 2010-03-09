@@ -284,7 +284,7 @@ public class NetBeansFrontend {
    * send back the current selected focussed source full path info
    */
   public String getCurrentSource() {
-    JTextComponent jtc = EditorRegistry.focusedComponent();
+    JTextComponent jtc = EditorRegistry.lastFocusedComponent();
     if (jtc != null) {
       Document doc = jtc.getDocument();
       System.out.println("NB currentSource =" + Utils.getDocumentSource(doc));

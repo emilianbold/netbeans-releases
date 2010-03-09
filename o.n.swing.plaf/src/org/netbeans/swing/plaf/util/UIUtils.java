@@ -158,7 +158,7 @@ public final class UIUtils {
     private static Image loadWithImageIO (String s) {
         Image result = null;
         try {
-            URL url = UIUtils.class.getResource ( s );
+            URL url = UIUtils.class.getClassLoader().getResource(s);
             if (url != null) {
                 result = ImageIO.read(url);
             } else {

@@ -38,12 +38,13 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import java.util.Set;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -51,6 +52,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
@@ -376,7 +380,7 @@ public class ParameterInfoSupport {
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
-                        ModelElement declaration = occurence.getDeclaration();
+                        PhpElement declaration = occurence.getDeclaration();
                         if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
                             FunctionScope functionScope = (FunctionScope) declaration;
                             return new ParameterInfo(toParamNames(functionScope), idx, anchor);
@@ -399,30 +403,10 @@ public class ParameterInfoSupport {
     @CheckForNull
     private static List<String> toParamNames(FunctionScope functionScope) {
         List<String> paramNames = new ArrayList<String>();
-        List<? extends Parameter> parameters = functionScope.getParameters();
-        for (Parameter parameter : parameters) {
-            String paramString = paramToStr(parameter);
-            paramNames.add(paramString);
+        List<? extends ParameterElement> parameters = functionScope.getParameters();
+        for (ParameterElement parameter : parameters) {
+            paramNames.add(parameter.asString());
         }
         return paramNames;
     }
-    private static String paramToStr(Parameter parameter) {
-        StringBuilder sb = new StringBuilder();
-        List<QualifiedName> types = parameter.getTypes();
-        if (types.size() > 1) {
-            sb.append("mixed ");
-        } else {
-            for (QualifiedName qualifiedName : types) {
-                sb.append(qualifiedName.toString()).append(" "); //NOI18N
-            }
-        }
-        sb.append(parameter.getName());
-        String defaultValue = parameter.getDefaultValue();
-        if (defaultValue != null) {
-            sb.append(" = ").append(defaultValue); //NOI18N
-        }
-        final String paramString = sb.toString();
-        return paramString;
-    }
-
 }

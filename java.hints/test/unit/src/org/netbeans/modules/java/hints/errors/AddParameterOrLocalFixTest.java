@@ -54,7 +54,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "AddParameterOrLocalFix:bbb:int:true",
                        "package test; public class Test {public void test(int bbb,String... a) {bbb = 0;}}");
     }
-    
+
     public void testAddToTheEnd() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(String[] a) {bbb = 0;}}",
@@ -62,7 +62,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "AddParameterOrLocalFix:bbb:int:true",
                        "package test; public class Test {public void test(String[] a, int bbb) {bbb = 0;}}");
     }
-    
+
     public void testAddToTheEmptyParamsList() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {bbb = 0;}}",
@@ -70,16 +70,16 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "AddParameterOrLocalFix:bbb:int:true",
                        "package test; public class Test {public void test(int bbb) {bbb = 0;}}");
     }
-    
+
     public void testAddLocalVariableWithComments() throws Exception {
         parameter = false;
-        
+
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {int a;\n //test\n |bbb = 0;\n int c; }}",
                        "AddParameterOrLocalFix:bbb:int:false",
                        "package test; public class Test {public void test() {int a; //test int bbb = 0; int c; }}");
     }
-    
+
     public void testAddLocalVariableNotInPlace() throws Exception {
         parameter = false;
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
@@ -98,7 +98,7 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
 
     public void testAddLocalVariableNotInPlaceInConstr() throws Exception {
         parameter = false;
-        
+
         boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
 
         try {
@@ -270,6 +270,29 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                 "         return null;\n" +
                 "     }\n" +
                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testAssignmentToValid181120() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.util.Date;\n" +
+                "public class Test {\n" +
+                "     public String test(int i) {\n" +
+                "         String s;\n" +
+                "         s = test(i|i);\n" +
+                "     }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:ii:int:false",
+                ("package test;\n" +
+                 "import java.util.Date;\n" +
+                 "public class Test {\n" +
+                 "     public String test(int i) {\n" +
+                 "         String s;\n" +
+                 "         int ii;\n" +
+                 "         s = test(ii);\n" +
+                 "     }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {

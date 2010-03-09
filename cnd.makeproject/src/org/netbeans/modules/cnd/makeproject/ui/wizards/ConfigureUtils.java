@@ -69,7 +69,7 @@ public final class ConfigureUtils {
     public static String findConfigureScript(String folder){
         String pattern[] = new String[]{"configure"}; // NOI18N
         File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+        if (!(file.isDirectory() && (file.canRead()||file.canExecute()))) {
             return null;
         }
         for (String name : pattern) {
@@ -116,7 +116,7 @@ public final class ConfigureUtils {
     }
 
     public static boolean isRunnable(File file) {
-        if (file.exists() && file.isFile() && file.canRead()) {
+        if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
             FileObject configureFileObject = FileUtil.toFileObject(file);
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
@@ -151,7 +151,7 @@ public final class ConfigureUtils {
     public static String findMakefile(String folder){
         String pattern[] = new String[]{"GNUmakefile", "makefile", "Makefile",}; // NOI18N
         File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead() && file.canWrite())) {
+        if (!(file.isDirectory() && file.canRead())) {
             return null;
         }
         for (String name : pattern) {

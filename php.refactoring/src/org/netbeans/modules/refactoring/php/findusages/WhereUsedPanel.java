@@ -51,8 +51,8 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.util.NbPreferences;
 
@@ -117,7 +117,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         c_subclasses.setVisible(false);
         m_overriders.setVisible(false);
         label.setText(lblText);
-        if (usage.getKind() == PhpKind.METHOD) {
+        if (usage.getKind() == PhpElementKind.METHOD) {
             add(methodsPanel, BorderLayout.CENTER);
             methodsPanel.setVisible(true);
             m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
@@ -130,7 +130,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 m_isBaseClass.setVisible(false);
                 m_isBaseClass.setSelected(false);
             }
-        } else if (usage.getKind() == PhpKind.CLASS) {
+        } else if (usage.getKind() == PhpElementKind.CLASS) {
             add(classesPanel, BorderLayout.CENTER);            
             classesPanel.setVisible(true);
         } else {
@@ -173,7 +173,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 bundleKey = "DSC_ConstantUsages"; //NOI18N
 
                 break;
-            case CLASS_CONSTANT:
+            case TYPE_CONSTANT:
                 bundleKey = "DSC_ClassConstantUsages"; //NOI18N
 
                 break;

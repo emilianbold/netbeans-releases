@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -141,7 +140,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     private void _execute(final InputOutput io) {
-        final String rcfile = null; // For debugging only...
         final Type actionType = pae.getType();
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
@@ -263,7 +261,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         ProcessChangeListener processChangeListener =
                 new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName(), rcfile, !runInInternalTerminal);
+                converter, io, pae.getActionName(), !runInInternalTerminal);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                 .setWorkingDirectory(workingDirectory)
@@ -438,17 +436,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final String actionName;
         private long startTimeMillis;
         private Runnable postRunnable;
-        private String rcfile;
         private final boolean outSummary;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, String rcfile, boolean outSummary) {
+                InputOutput tab, String actionName, boolean outSummary) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
-            this.rcfile = rcfile;
             this.outSummary = outSummary;
         }
 
@@ -546,7 +542,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            int rc = readReturnCode(rcfile, process.exitValue());
+                            int rc = process.exitValue();
                             if (outSummary) {
                                 StringBuilder res = new StringBuilder();
                                 res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
@@ -593,43 +589,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     ex.printStackTrace();
                 }
             }
-        }
-
-        private int readReturnCode(String rcfile, int rc) {
-            if (rcfile != null) {
-                File file = null;
-                FileReader fr = null;
-
-                try {
-                    file = new File(rcfile);
-
-                    if (file.exists()) {
-                        fr = new FileReader(file);
-
-                        if (fr.ready()) {
-                            char[] cbuf = new char[256];
-                            int i = fr.read(cbuf);
-                            if (i > 0) {
-                                rc = Integer.parseInt(String.valueOf(cbuf, 0, i - 1));
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    // do nothing
-                } finally {
-                    if (fr != null) {
-                        try {
-                            fr.close();
-                        } catch (IOException ex) {
-                            // do nothing
-                        }
-                    }
-                    if (file != null && file.exists()) {
-                        file.delete();
-                    }
-                }
-            }
-            return rc;
         }
 
         @Override

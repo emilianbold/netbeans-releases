@@ -54,6 +54,7 @@ public final class MavenVersionSettings {
     public static final String VERSION_ASSEMBLY = "maven-assembly-plugin"; //NOI18N
     public static final String VERSION_JAR = "maven-jar-plugin"; //NOI18N
     public static final String VERSION_FELIX = "felix-bundle-plugin"; //NOI18N
+    public static final String VERSION_NBM = "nbm-maven-plugin"; //NOI18N
     
     public static MavenVersionSettings getDefault() {
         return INSTANCE;
@@ -97,6 +98,8 @@ public final class MavenVersionSettings {
             }
             else if (VERSION_FELIX.equals(plugin)) {
                 toRet = "2.0.1"; //NOI18N
+            } else if (VERSION_NBM.equals(plugin)) {
+                toRet = "3.2";
             }
         }
         if (toRet == null) {

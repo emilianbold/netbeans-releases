@@ -58,7 +58,7 @@ public class Signature {
         private String signature;
         private int[] positions;
 
-        static Signature get(String signature) {
+        public static Signature get(String signature) {
             return new Signature(signature);
         }
         
@@ -80,10 +80,9 @@ public class Signature {
                 return Integer.parseInt(item);
             } else {
                 return -1;
-            }
-                    
+            }                    
         }
-
+        
         private static int[] parseSignature(String signature) {
             synchronized(SHARED) {
                 int count = 0;

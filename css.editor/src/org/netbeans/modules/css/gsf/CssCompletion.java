@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,7 +52,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -69,7 +73,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.CssPropertyValue;
-import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
@@ -83,6 +86,8 @@ import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -115,6 +120,13 @@ public class CssCompletion implements CodeCompletionHandler {
 
         assert ts != null;
 
+        //handle lexical completion only
+        CodeCompletionResult lexicalCompletionResult = handleLexicalBasedCompletion(file, ts, snapshot, caretOffset);
+        if(lexicalCompletionResult != null) {
+            return lexicalCompletionResult;
+        }
+
+        //continue with AST completion
         int offset = caretOffset - prefix.length();
         int astOffset = snapshot.getEmbeddedOffset(offset);
         boolean unmappableClassOrId = false;
@@ -132,7 +144,6 @@ public class CssCompletion implements CodeCompletionHandler {
 
         ts.move(astOffset);
         boolean hasNext = ts.moveNext();
-
 
         SimpleNode root = info.root();
         if (root == null) {
@@ -517,6 +528,13 @@ public class CssCompletion implements CodeCompletionHandler {
         return CodeCompletionResult.NONE;
     }
 
+
+
+    private List<? extends CompletionProposal> completeImport(FileObject base, int offset, String prefix, boolean addQuotes, boolean addSemicolon) {
+        FileReferenceCompletion<CssCompletionItem> fileCompletion = new CssLinkCompletion(addQuotes, addSemicolon);
+        return fileCompletion.getItems(base, offset, prefix);
+    }
+
     private List<CompletionProposal> completeHtmlSelectors(String prefix, int offset) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
         for (String tagName : HtmlTags.getTags()) {
@@ -784,12 +802,15 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
         Token t = ts.token();
-
+        int skipPrefixChars = 0;
         if (t.id() == CssTokenId.COLON) {
             return ""; //NOI18N
-        } else {
-            return t.text().subSequence(0, diff == 0 ? t.text().length() : diff).toString().trim();
+        } else if(t.id() == CssTokenId.STRING) {
+            skipPrefixChars = 1; //skip the leading quotation char
         }
+
+        return t.text().subSequence(skipPrefixChars, diff == 0 ? t.text().length() : diff).toString().trim();
+        
     }
 
     @Override
@@ -800,7 +821,7 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         char c = typedText.charAt(typedText.length() - 1);
 
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset);
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(component.getDocument(), offset, CssTokenId.language());
         if (ts != null) {
             int diff = ts.move(offset);
             TokenId currentTokenId = null;
@@ -861,7 +882,86 @@ public class CssCompletion implements CodeCompletionHandler {
         return ParameterInfo.NONE;
     }
 
+    private CodeCompletionResult handleLexicalBasedCompletion(FileObject file, TokenSequence<CssTokenId> ts, Snapshot snapshot, int caretOffset) {
+        //position the token sequence on the caret position, not the recomputed offset with substracted prefix length
+        int tokenDiff = ts.move(snapshot.getEmbeddedOffset(caretOffset));
+        if (ts.moveNext() || ts.movePrevious()) {
+            boolean addSemicolon = true;
+            switch (ts.token().id()) {
+                case SEMICOLON: //@import |;
+                    addSemicolon = false;
+                case S: //@import |
+                    if(addSemicolon) {
+                        Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMICOLON, false, true, CssTokenId.S);
+                        addSemicolon = (semicolon == null);
+                    }
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.S)) {
+                        List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, caretOffset, "", true, addSemicolon);
+                        int moveBack = (addSemicolon ? 1 : 0) + 1; //+1 means the added quotation mark length
+                        return new CssFileCompletionResult(imports, moveBack);
+                    }
+                    break;
+                case STRING: //@import "|"; or @import "fil|";
+                    Token<CssTokenId> originalToken = ts.token();
+                    addSemicolon = false;
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.S)) {
+                        //strip off the leading quote and the rest of token after caret
+                        String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
+                        List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, 
+                                caretOffset, valuePrefix, false, addSemicolon);
+                        int moveBack = addSemicolon ? 1 : 0;
+                        return new CssFileCompletionResult(imports, moveBack);
 
+                    }
+                    break;
+
+            }
+        }
+
+        return null;
+    }
+
+    private static class CssFileCompletionResult extends DefaultCompletionResult {
+
+        private int moveCaretBack;
+
+        public CssFileCompletionResult(List<CompletionProposal> list, int moveCaretBack) {
+            super(list, false);
+            this.moveCaretBack = moveCaretBack;
+        }
+
+        @Override
+        public void afterInsert(CompletionProposal item) {
+            Caret c = EditorRegistry.lastFocusedComponent().getCaret();
+            c.setDot(c.getDot() - moveCaretBack);
+        }
+
+
+    }
+
+    private static class CssLinkCompletion extends FileReferenceCompletion<CssCompletionItem> {
+
+        private static final String GO_UP_TEXT = "../"; //NOI18N
+
+        private boolean addQuotes;
+        private boolean addSemicolon;
+
+        public CssLinkCompletion(boolean addQuotes, boolean addSemicolon) {
+            this.addQuotes = addQuotes;
+            this.addSemicolon = addSemicolon;
+        }
+
+        @Override
+        public CssCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
+            return CssCompletionItem.createFileCompletionItem(new CssElement(name), name, anchor, color, icon, addQuotes, addSemicolon);
+        }
+
+        @Override
+        public CssCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
+            return CssCompletionItem.createFileCompletionItem(new CssElement(GO_UP_TEXT), GO_UP_TEXT, anchor, color, icon, addQuotes, addSemicolon);
+        }
+
+    }
 
    
 }

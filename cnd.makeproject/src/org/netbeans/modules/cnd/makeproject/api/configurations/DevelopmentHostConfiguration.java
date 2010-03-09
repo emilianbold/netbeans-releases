@@ -323,6 +323,15 @@ public class DevelopmentHostConfiguration {
         }
     }
 
+    public String getBuildPlatformName() {
+        if (isConfigured()) {
+            return Platforms.getPlatform(getBuildPlatform()).getName();
+        }
+        else {
+            return "";
+        }
+    }
+
     /**
      * @return the buildPlatformConfiguration
      */

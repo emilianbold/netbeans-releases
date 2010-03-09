@@ -47,18 +47,20 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -70,108 +72,109 @@ import org.openide.util.NbBundle;
  */
 public class ManDocumentation {
 
-    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
-    private static String manPath = null;
+//    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
+//    private static String manPath = null;
+//
+//    private static String getPath(String cmd) {
+//        String path = null;
+//        path = Path.findCommand(cmd);
+//        if (path == null) {
+//            if (new File("/usr/bin/" + cmd).exists()) { // NOI18N
+//                path = "/usr/bin/" + cmd; // NOI18N
+//            }
+//        }
+//        if (path == null) {
+//            if (new File("/bin/" + cmd).exists()) { // NOI18N
+//                path = "/bin/" + cmd; // NOI18N
+//            }
+//        }
+//        return path;
+//    }
+//
+//    private static String getManPath() {
+//        if (manPath == null) {
+//            manPath = getPath("man"); // NOI18N
+//        }
+//        return manPath;
+//    }
 
-    private static String getPath(String cmd) {
-        String path = null;
-        path = Path.findCommand(cmd);
-        if (path == null) {
-            if (new File("/usr/bin/" + cmd).exists()) { // NOI18N
-                path = "/usr/bin/" + cmd; // NOI18N
-            }
-        }
-        if (path == null) {
-            if (new File("/bin/" + cmd).exists()) { // NOI18N
-                path = "/bin/" + cmd; // NOI18N
-            }
-        }
-        return path;
-    }
-
-    private static String getManPath() {
-        if (manPath == null) {
-            manPath = getPath("man"); // NOI18N
-        }
-        return manPath;
-    }
-
-    public static CompletionDocumentation getDocumentation(CsmObject obj) {
+    public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
         if (obj instanceof CsmFunction) {
-            return getDocumentation(((CsmFunction) obj).getName().toString());
+            return getDocumentation(((CsmFunction) obj).getName().toString(), file);
         }
 
         return null;
     }
 
-    public static CompletionDocumentation getDocumentation(String name) {
-        return getDocumentation(name, 3); /**Supposing all functions goes from chapter 3*/
+    public static CompletionDocumentation getDocumentation(String name, CsmFile file) throws IOException {
+        return getDocumentation(name, 3, file);
+        /**Supposing all functions goes from chapter 3*/
     }
 
-    public static CompletionDocumentation getDocumentation(String name, int chapter) {
-        String doc = getDocumentationForName(name, chapter);
+    public static CompletionDocumentation getDocumentation(String name, int chapter, CsmFile file) throws IOException {
+        String doc = getDocumentationForName(name, chapter, file);
 
         if (doc == null) {
             return null;
         }
 
-        return new CompletionDocumentationImpl(doc);
+        return new CompletionDocumentationImpl(doc, file);
     }
 
-    public static String getDocumentationForName(String name, int chapter) {
-        try {
-            File cache = getCacheFile(name, chapter);
+    public static String getDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
+        NativeProject np = getNativeProject(file);
+        if (np == null) {
+            return "";
+        }
+        String platformName = np.getPlatformName();
+        File cache = getCacheFile(name, chapter, platformName);
 
-            if (cache.exists()) {
-                return readFile(cache);
-            }
+        if (cache.exists()) {
+            return readFile(cache);
+        }
 
-            String doc = createDocumentationForName(name, chapter);
+        String doc = createDocumentationForName(name, chapter, np);
 
-            if (doc != null) {
-                OutputStream out = null;
+        if (doc != null) {
+            OutputStream out = null;
 
-                try {
-                    out = new FileOutputStream(cache);
+            try {
+                out = new FileOutputStream(cache);
 
-                    out.write(doc.getBytes());
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                out.write(doc.getBytes());
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-
-                return doc;
             }
-        } catch (IOException e) {
-            LOG.log(Level.FINE, null, e);
+
+            return doc;
         }
 
         return null;
     }
 
-    public static String constructWarning(CsmObject obj) {
-        if (obj instanceof CsmFunction) {
-            StringBuilder w = new StringBuilder();
-
-            if (getManPath() == null) { // NOI18N
-                w.append("<p>"); // NOI18N
-                w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
-                w.append("</p>\n"); // NOI18N
-            }
-
-            return w.toString();
-        }
-
-        return "";
-    }
-
+//    public static String constructWarning(CsmObject obj) {
+//        if (obj instanceof CsmFunction) {
+//            StringBuilder w = new StringBuilder();
+//
+//            if (getManPath() == null) { // NOI18N
+//                w.append("<p>"); // NOI18N
+//                w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
+//                w.append("</p>\n"); // NOI18N
+//            }
+//
+//            return w.toString();
+//        }
+//
+//        return "";
+//    }
     private static File getCacheDir() {
         String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
         File cache = new File(nbuser, "var/cache/cnd/manpages"); // NOI18N
@@ -181,31 +184,58 @@ public class ManDocumentation {
         return cache;
     }
 
-    private static File getCacheFile(String name, int chapter) {
-        File res = new File(getCacheDir(), name + "." + chapter); // NOI18N
+    private static File getCacheFile(String name, int chapter, String platformName) {
+        File res = new File(getCacheDir(), name + "." + platformName + "." + chapter); // NOI18N
 
         return res;
     }
 
-    private static String createDocumentationForName(String name, int chapter) throws IOException {
-        if (getManPath() == null) {
-            return null;
+    static NativeProject getNativeProject(CsmFile csmFile) {
+        NativeProject nativeProject = null;
+        if (csmFile != null) {
+            CsmProject csmProject = csmFile.getProject();
+            if (csmProject.getPlatformProject() instanceof NativeProject) {
+                nativeProject = (NativeProject) csmProject.getPlatformProject();
+            } else {
+                loop:
+                for (CsmProject project : CsmModelAccessor.getModel().projects()) {
+                    for (CsmProject lib : project.getLibraries()) {
+                        if (lib.equals(csmProject)) {
+                            if (project.getPlatformProject() instanceof NativeProject) {
+                                nativeProject = (NativeProject) project.getPlatformProject();
+                                break loop;
+                            }
+                        }
+                    }
+                }
+            }
         }
-        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
-        InputStream is = p0.getInputStream();
-        InputStreamReader ist = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(ist);
-        String text = new Man2HTML(br).getHTML();
-        br.close();
-        ist.close();
-        is.close();
-        bos.close();
-
-        return text;
+        return nativeProject;
     }
 
+    private static String createDocumentationForName(String name, int chapter, NativeProject np) throws IOException {
+        //NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
+//        NativeProject np = getNativeProject(file);
+//        if (np == null) {
+//            return "";
+//        }
+        NativeExitStatus exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
+        StringReader sr;
+        if (exitStatus != null) {
+            if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+                sr = new StringReader(exitStatus.output);
+            } else {
+                throw new IOException(exitStatus.error);
+            }
+        } else {
+            return null;
+        }
+        BufferedReader br = new BufferedReader(sr);
+        String text = new Man2HTML(br).getHTML();
+        br.close();
+        sr.close();
+        return text;
+    }
     private static final Map<String, String> TRANSLATE;
 
     static {
@@ -259,9 +289,11 @@ public class ManDocumentation {
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
 
         private String doc;
+        private CsmFile file;
 
-        public CompletionDocumentationImpl(String doc) {
+        public CompletionDocumentationImpl(String doc, CsmFile file) {
             this.doc = doc;
+            this.file = file;
         }
 
         @Override
@@ -291,7 +323,11 @@ public class ManDocumentation {
             int chapter = Integer.parseInt(chapterAndName[0]);
             String name = chapterAndName[1];
 
-            return ManDocumentation.getDocumentation(name, chapter);
+            try {
+                return ManDocumentation.getDocumentation(name, chapter, file);
+            } catch (IOException ioe) {
+                return new CompletionDocumentationImpl(ioe.getMessage(), file);
+            }
         }
 
         @Override

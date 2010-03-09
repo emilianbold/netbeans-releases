@@ -42,11 +42,20 @@
 package org.netbeans.modules.j2ee.jboss4.ide;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -73,11 +82,36 @@ import org.openide.windows.InputOutput;
  * @author Libor Kotouc
  */
 class JBStartRunnable implements Runnable {
+    
+    private final static String CONF_FILE_NAME = 
+            "run.conf.bat";                             // NOI18N
+    
+    private final static String RUN_FILE_NAME = 
+            "run.bat";                                  // NOI18N
+    
+    private final static String JBOSS_HOME 
+            = "JBOSS_HOME";                             // NOI18N
 
-    private final static String STARTUP_SH = File.separator + "bin" + File.separator + "run.sh";
-    private final static String STARTUP_BAT = File.separator + "bin" + File.separator + "run.bat";
-
-    private static final SpecificationVersion JDK_14 = new SpecificationVersion("1.4");
+    private final static String STARTUP_SH = File.separator + 
+            "bin" + File.separator + "run.sh";          // NOI18N
+    private final static String STARTUP_BAT = File.separator + 
+            "bin" + File.separator + RUN_FILE_NAME;     // NOI18N
+                             
+    private final static String CONF_BAT = File.separator + 
+            "bin" + File.separator + CONF_FILE_NAME;    // NOI18N
+    
+    private final static String JAVA_OPTS = "JAVA_OPTS";// NOI18N   
+    
+    private final static Pattern IF_JAVA_OPTS_PATTERN =
+        Pattern.compile(".*if(\\s+not)?\\s+(\"x%"+JAVA_OPTS+
+                "%\"\\s+==\\s+\"x\")\\s+.*",            // NOI18N 
+                Pattern.DOTALL);
+    
+    private final static String NEW_IF_CONDITION_STRING = 
+                "\"xx\" == \"x\"";                      // NOI18N 
+    
+    private static final SpecificationVersion 
+        JDK_14 = new SpecificationVersion("1.4");       // NOI18N
 
     private JBDeploymentManager dm;
     private String instanceName;
@@ -194,7 +228,8 @@ class JBStartRunnable implements Runnable {
         String envp[] = new String[] {
             "JAVA=" + javaHome + File.separator +"bin" + File.separator + "java",   // NOI18N
             "JAVA_HOME=" + javaHome,            // NOI18N
-            "JAVA_OPTS=" + javaOpts,            // NOI18N
+            JBOSS_HOME+"="+ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),    // NOI18N
+            JAVA_OPTS+"=" + javaOpts,            // NOI18N
         };
         return envp;
     }
@@ -248,10 +283,11 @@ class JBStartRunnable implements Runnable {
         return true;
     }
 
-    private NbProcessDescriptor createProcessDescriptor(InstanceProperties ip) {
-        
-        final String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-        final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
+    private NbProcessDescriptor createProcessDescriptor(InstanceProperties ip, 
+            String[] envp ) 
+    {
+        // fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
+        String serverRunFileName = getRunFileName(ip, envp);
         if (!new File(serverRunFileName).exists()){
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_FNF"));//NOI18N
             return null;
@@ -261,8 +297,12 @@ class JBStartRunnable implements Runnable {
         String args = ("all".equals(instanceName) ? "-b 127.0.0.1 " : "") + "-c " + instanceName; // NOI18N
         return new NbProcessDescriptor(serverRunFileName, args);
     }
-
     
+    private String getRunFileName( InstanceProperties ip, String[] envp ){
+        SpacesInPathFix fix = new SpacesInPathFix( ip , envp );
+        return fix.getRunFileName();
+    }
+
     private static String getJavaHome(JavaPlatform platform) {
         FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
         return FileUtil.toFile(fo).getAbsolutePath();
@@ -286,12 +326,12 @@ class JBStartRunnable implements Runnable {
             if (logWriter != null && logWriter.isRunning()) logWriter.stop();
         }
         
-        NbProcessDescriptor pd = createProcessDescriptor(ip);
+        String envp[] = createEnvironment(ip);
+        
+        NbProcessDescriptor pd = createProcessDescriptor(ip, envp);
         if (pd == null) {
             return null;
         }
-
-        String envp[] = createEnvironment(ip);
 
         try {
             return pd.exec(null, envp, true, null );
@@ -353,6 +393,151 @@ class JBStartRunnable implements Runnable {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_StartServerTimeout"));
         }
         
+    }
+    
+    // Fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
+    private class SpacesInPathFix {
+        
+        SpacesInPathFix( InstanceProperties ip, String[] envp ) {
+            myProps = ip;
+            needChange = runFileNeedChange(envp);
+        }
+        
+        String getRunFileName(){
+            String serverLocation = getProperties().getProperty(
+                    JBPluginProperties.PROPERTY_ROOT_DIR);
+            String serverRunFileName = serverLocation + 
+                (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
+            if ( needChange ){
+                String contentRun = readFile(serverRunFileName);
+                String contentConf = readFile(serverLocation + CONF_BAT);
+                Matcher matcherRun = IF_JAVA_OPTS_PATTERN.matcher(contentRun);
+                Matcher matcherConf = IF_JAVA_OPTS_PATTERN.matcher(contentConf);
+                
+                boolean needChangeRun = matcherRun.matches();
+                boolean needChangeConf = matcherConf.matches();
+                try {
+                    if (needChangeRun || needChangeConf) {
+                        File startBat = File.createTempFile(RUN_FILE_NAME, ".bat"); // NOI18N
+                        File confBat = File.createTempFile(CONF_FILE_NAME, ".bat",  // NOI18N
+                                startBat.getParentFile()); // NOI18N
+                        startBat.deleteOnExit();
+                        confBat.deleteOnExit();
+                        int start = 0;
+                        contentRun = replaceJavaOpts(contentRun, matcherRun);
+                        contentConf = replaceJavaOpts(contentConf, matcherConf);
+                        contentRun = contentRun.replace(CONF_FILE_NAME, confBat
+                                .getName());
+                        writeFile(startBat, contentRun);
+                        writeFile(confBat, contentConf);
+                        return startBat.getAbsolutePath();
+                    }
+                }
+                catch (IOException e) {
+                    Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
+                            JBStartRunnable.class, "ERR_WriteError"));          // NOI18N
+                    Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
+                }
+            }
+            return serverRunFileName;
+        }
+        
+        private String replaceJavaOpts( String content, Matcher matcher ) {
+            String result = content;
+            int start = 0;
+            List<String> replacementString = new ArrayList<String>(1);
+            while( matcher.find(start)){
+                if ( matcher.groupCount() <=1 ){
+                    continue;
+                }
+                start = matcher.end( 2 );
+                replacementString.add( matcher.group(2));
+            }
+            for( String replace : replacementString ){
+                result = result.replace(replace, NEW_IF_CONDITION_STRING );
+            }
+            return result;
+        }
+        
+        private void writeFile(File file , String content ){
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter( new FileWriter( file ));
+                writer.write( content );
+            }
+            catch (IOException e ){
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
+                    JBStartRunnable.class, "ERR_WriteError"));              // NOI18N
+                Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
+            }
+            finally {
+                try {
+                    if ( writer!= null ){
+                        writer.close();
+                    }
+                }
+                catch (IOException e ){
+                    Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+                }
+            }
+        }
+
+        private String readFile( String file ) 
+        {
+            StringBuilder builder = null;
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader( 
+                    new FileReader(new File(file)));
+                builder = new StringBuilder();
+
+                String line = "";
+                do {
+                    builder.append(line);
+                    builder.append("\r\n");     // NOI18N
+                    line = reader.readLine();
+                }
+                while ( line != null);
+            }
+            catch (IOException e ){
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
+                        JBStartRunnable.class, "ERR_ReadError"));       // NOI18N
+                Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+                return null;
+            }
+            finally {
+                try {
+                    if ( reader!= null ){
+                        reader.close();
+                    }
+                }
+                catch (IOException e ){
+                    Logger.getLogger("global").log(Level.WARNING, null, e);// NOI18N
+                }
+            }
+            return builder.toString();
+        }
+        
+        private InstanceProperties getProperties(){
+            return myProps;
+        }
+        
+        private boolean runFileNeedChange( String[] envp ){
+            JBProperties properties = dm.getProperties();
+            if ( properties.isVersion(JBPluginUtils.JBOSS_5_0_1) && 
+                    Utilities.isWindows())
+            {
+                for( String env : envp ){
+                    if ( env.startsWith(JAVA_OPTS+"=")){
+                        return env.indexOf('"')>=0;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private InstanceProperties myProps;
+        private boolean needChange;
     }
     
 }

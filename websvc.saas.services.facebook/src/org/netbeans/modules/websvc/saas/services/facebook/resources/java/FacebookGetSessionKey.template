@@ -16,7 +16,7 @@
 
         String[] queryParamNames = new String[]{"api_key", "auth_token", "v", "method"};
         String[] queryParamValues = new String[]{api_key, auth_token, "1.0", "facebook.auth.getSession"};
-        String sig = signParams(application_secret, queryParamNames, queryParamValues);
+        String sig = signParams(queryParamNames, queryParamValues);
         String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
         try {
              this.session_secret = result.substring(result.indexOf("<secret>") + 8,result.indexOf("</secret>"));

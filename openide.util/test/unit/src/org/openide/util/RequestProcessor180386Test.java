@@ -106,6 +106,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue(r.hasRun);
     }
 
+    @RandomlyFails // NB-Core-Build #4168: notRun.empty
     public void testSomeTasksNotRunIfShutDown() throws Exception {
         final Object lock = new Object();
         int count = 10;
@@ -424,6 +425,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertEquals(names, s);
     }
 
+    @RandomlyFails // NB-Core-Build #4165: res==null
     public void testInvokeAny() throws Exception {
         int count = 20;
         final RequestProcessor rp = new RequestProcessor("TestRP", count + 1);
@@ -1144,6 +1146,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertFalse (r.interrupted);
     }
 
+    @RandomlyFails // NB-Core-Build #4158: !f.cancelled
     public void testCancelDoesInterruptIfRequestProcessorSpecifiesItEvenIfFalsePassedToFutureDotCancel() throws Exception {
         RequestProcessor rp = new RequestProcessor ("X", 3, true, true);
         final CountDownLatch releaseForRun = new CountDownLatch(1);

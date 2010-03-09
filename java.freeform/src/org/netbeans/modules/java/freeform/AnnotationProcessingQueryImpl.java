@@ -40,6 +40,8 @@
 package org.netbeans.modules.java.freeform;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
@@ -63,8 +65,12 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
             public @Override URL sourceOutputDirectory() {
                 return null;
             }
+            public @Override Map<? extends String, ? extends String> processorOptions() {
+                return Collections.emptyMap();
+            }
             public @Override void addChangeListener(ChangeListener l) {}
             public @Override void removeChangeListener(ChangeListener l) {}
+
         };
     }
 

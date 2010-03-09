@@ -40,8 +40,6 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
@@ -55,31 +53,26 @@ public class FaceletsLibraryMetadata {
     private static Map<String, LibraryMetadata> libMap = new TreeMap<String, LibraryMetadata>();
 
     static {
-        List<LibraryMetadata> libs = new ArrayList<LibraryMetadata>();
-        InputStream is = FaceletsLibraryMetadata.class.getResourceAsStream("jsfcorelib.xml");
-        
-        try {
-            libs.add(LibraryMetadata.readFromXML(is));
-
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        //        libs.add(new LibraryMetadata("http://java.sun.com/jsf/core", Arrays.asList(
-        //                    new TagMetadata("convertDateTime", Arrays.asList(
-        //                        new TagAttrMetadata("dateStyle", AttrValueType.enumAttrValue(new String[]{
-        //                            "default", "short", "long" , "medium", "full"
-        //                        }))
-        //                    ))
-        //                )));
-        //
-        for (LibraryMetadata lib : libs) {
-            libMap.put(lib.getId(), lib);
-        }
-        
+        loadLib("composite");  //NOI18N
+        loadLib("core");  //NOI18N
+        loadLib("functions");  //NOI18N
+        loadLib("html");  //NOI18N
+        loadLib("ui");  //NOI18N
     }
 
     public static LibraryMetadata get(String libraryURL){
         return libMap.get(libraryURL);
+    }
+
+    private static void loadLib(String filePath){
+        InputStream is = FaceletsLibraryMetadata.class.getResourceAsStream("libdefs/" + filePath + ".xml"); //NOI18N
+
+        try {
+            LibraryMetadata lib = LibraryMetadata.readFromXML(is);
+            libMap.put(lib.getId(), lib);
+
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

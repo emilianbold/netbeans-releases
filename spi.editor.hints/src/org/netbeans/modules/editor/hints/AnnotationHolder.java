@@ -1143,13 +1143,15 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 }
 
                 left = value.getOffset();
-            }
+                assert left != -1 : "o1=" + o1 + ", value=" + value; //NOI18N
 
-            if (o1 instanceof Integer) {
+            } else if (o1 instanceof Integer) {
                 left = ((Integer) o1);
-            }
+                assert left != -1 : "o1=" + o1;
 
-            assert left != -1;
+            } else {
+                assert false : "Unexpected type: o1=" + o1; //NOI18N
+            }
 
             int right = -1;
 
@@ -1162,13 +1164,15 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 }
 
                 right = value.getOffset();
-            }
+                assert right != -1 : "o2=" + o2 + ", value=" + value; //NOI18N
 
-            if (o2 instanceof Integer) {
+            } else if (o2 instanceof Integer) {
                 right = ((Integer) o2);
-            }
+                assert right != -1 : "o2=" + o2;
 
-            assert right != -1;
+            } else {
+                assert false : "Unexpected type: o2=" + o2; //NOI18N
+            }
 
             return left - right;
         }

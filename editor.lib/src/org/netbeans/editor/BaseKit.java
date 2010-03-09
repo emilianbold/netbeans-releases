@@ -559,7 +559,9 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        return null;
+        return Boolean.getBoolean("org.netbeans.editor.linewrap")
+                ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
+                : null;
     }
 
     /** Create caret to navigate through document */

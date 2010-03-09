@@ -48,7 +48,7 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
-import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassElement;
+import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassElementAttribute;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -86,8 +86,8 @@ public class ASTNodeUtilities {
             } else if (node instanceof ClassDeclaration) {
                 ignoreGlobalScope = true;
                 AttributedElement element = attr.getElement(node);
-                if (element instanceof ClassElement) {
-                    ClassElement classEl = (ClassElement) element;
+                if (element instanceof ClassElementAttribute) {
+                    ClassElementAttribute classEl = (ClassElementAttribute) element;
                     for (AttributedElement variableEl : classEl.getElements(Kind.VARIABLE)) {
                         String name = variableEl.getName();
                         if (acceptor.acceptVariable(name)) {

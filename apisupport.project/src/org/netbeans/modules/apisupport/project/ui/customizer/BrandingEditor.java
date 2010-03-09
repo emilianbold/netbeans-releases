@@ -51,15 +51,21 @@ import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
+import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -82,7 +88,7 @@ public class BrandingEditor {
     public static void open( SuiteProject suite ) {
         SuiteProperties properties = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
         BasicBrandingModel model = new BasicBrandingModel(properties);
-        open( properties.getProjectDisplayName() + " - Branding", suite, model );
+        open( properties.getProjectDisplayName() + " - Branding", suite, model, true );
     }
 
     /**
@@ -90,12 +96,14 @@ public class BrandingEditor {
      * @param displayName Branding editor's display name.
      * @param p Project to be branded.
      * @param model Branding model.
+     * @param contextAvailable True if the given project knows which platform
+     * app it belongs and the platform jars/projects are available, false otherwise.
      */
-    public static void open( String displayName, Project p, BasicBrandingModel model ) {
+    public static void open( String displayName, Project p, BasicBrandingModel model, boolean contextAvailable ) {
         synchronized( project2editor ) {
             BrandingEditor editor = project2editor.get(p);
             if( null == editor ) {
-                editor = new BrandingEditor(displayName, p, model);
+                editor = new BrandingEditor(displayName, p, model, contextAvailable);
                 project2editor.put(p, editor);
             }
             editor.open();
@@ -113,17 +121,25 @@ public class BrandingEditor {
     private boolean isModified = false;
     private boolean isValid = true;
     private Set<JLabel> errorLabels = new HashSet<JLabel>(10);
+    private final boolean contextAvailable;
 
-    private BrandingEditor( String title, Project p, final BasicBrandingModel model ) {
+    private BrandingEditor( String title, Project p, final BasicBrandingModel model, boolean contextAvailable ) {
         this.project = p;
         this.title = title;
+        this.contextAvailable = contextAvailable;
         final OpenProjects projects = OpenProjects.getDefault();
         projects.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( evt.getPropertyName() ) ) {
                     if( !projects.isProjectOpen(project) && null != tc ) {
-                        tc.close();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if( null != tc )
+                                    tc.close();
+                            }
+                        });
                         projects.removePropertyChangeListener(this);
                     }
                 }
@@ -135,6 +151,7 @@ public class BrandingEditor {
             new SplashBrandingPanel(model),
             new WindowSystemBrandingPanel(model)
         };
+        //TODO restrict the functionality of generic resource bundle editor when platform context isn't available
         saveAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -148,6 +165,10 @@ public class BrandingEditor {
     void setModified() {
         isModified = true;
         saveAction.setEnabled(isModified && isValid);
+    }
+
+    boolean isModified() {
+        return isModified;
     }
 
     Action getSaveAction() {
@@ -184,7 +205,7 @@ public class BrandingEditor {
         }
         MultiViewDescription[] tabs = new MultiViewDescription[panels.length];
         System.arraycopy(panels, 0, tabs, 0, panels.length);
-        TopComponent res = MultiViewFactory.createMultiView(tabs, tabs[0]);
+        TopComponent res = MultiViewFactory.createMultiView(tabs, tabs[0], createCloseHandler());
         res.setDisplayName(title);
         return res;
     }
@@ -220,5 +241,28 @@ public class BrandingEditor {
             lbl.setVisible(!isValid);
         }
         saveAction.setEnabled(isModified && isValid);
+    }
+
+    CloseOperationHandler createCloseHandler() {
+        return new CloseOperationHandler() {
+            @Override
+            public boolean resolveCloseOperation(CloseOperationState[] elements) {
+                if( isModified ) {
+                    Object response = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(NbBundle.getMessage(BrandingEditor.class,
+                            "Ask_SaveBrandingChanges"), tc.getDisplayName())); //NOI18N
+                    if( response == NotifyDescriptor.NO_OPTION ) {
+                        synchronized( project2editor ) {
+                            project2editor.remove(project);
+                        }
+                        return true;
+                    }
+                    if( response == NotifyDescriptor.CANCEL_OPTION )
+                        return false;
+                    doSave();
+                }
+                return true;
+            }
+        };
     }
 }

@@ -40,10 +40,14 @@
  */
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
+import java.io.IOException;
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -62,44 +66,62 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
+//    public static Document doc = null; // FIXUP: hack to get the current document
     @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
         if (!(item instanceof CsmResultItem)) {
             return null;
         }
-
-        Object assoc = ((CsmResultItem) item).getAssociatedObject();
-
-        if (assoc instanceof CsmObject) {
-            return new AsyncCompletionTask(new DocQuery((CsmObject) assoc));
+//        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false); // FIXUP: hack to get current csmFile
+        CsmFile csmFile = getCsmFile(item);
+        if (csmFile != null) {
+            return new AsyncCompletionTask(new DocQuery((CsmObject) ((CsmResultItem) item).getAssociatedObject(), csmFile));
         }
 
         return null;
     }
 
+    private CsmFile getCsmFile(CompletionItem item) {
+        CsmFile csmFile = null;
+        Object assoc = ((CsmResultItem) item).getAssociatedObject();
+        if (CsmKindUtilities.isOffsetable(assoc)) {
+            CsmOffsetable csmOffsetable = (CsmOffsetable) assoc;
+            csmFile = csmOffsetable.getContainingFile();
+        }
+        return csmFile;
+    }
+
     private static class DocQuery extends AsyncCompletionQuery {
 
         private final CsmObject obj;
+        private final CsmFile file;
 
-        public DocQuery(CsmObject obj) {
+        public DocQuery(CsmObject obj, CsmFile file) {
             this.obj = obj;
+            this.file = file;
         }
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
+            String errorText = null;
 
             if (documentation == null) {
-                documentation = ManDocumentation.getDocumentation(obj);
+                try {
+                    documentation = ManDocumentation.getDocumentation(obj, file);
+                } catch (IOException ioe) {
+                    errorText = ioe.getMessage();
+                }
             }
 
             if (documentation == null) {
                 StringBuilder w = new StringBuilder();
 
-                w.append("<html><body><p>"); // NOI18N
-                w.append(getString("NO_DOC_FOUND")); // NOI18N
-                w.append("</p>"); // NOI18N
-                w.append(ManDocumentation.constructWarning(obj));
+                w.append("<html><body>"); // NOI18N
+                w.append("<p>" + getString("NO_DOC_FOUND") + "</p>"); // NOI18N
+                if (errorText != null) {
+                    w.append("<p>" + errorText + "</p>");
+                }
                 documentation = new EmptyCompletionDocumentationImpl(w.toString());
             }
 

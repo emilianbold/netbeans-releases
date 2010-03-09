@@ -43,16 +43,16 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 public class IntConfiguration {
 
     private IntConfiguration master;
-    private int def;
+    private byte def;
     private String[] names;
     private String[] options;
-    private int value;
+    private byte value;
     private boolean modified;
     private boolean dirty = false;
 
     public IntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
         this.master = master;
-        this.def = def;
+        this.def = (byte) def;
         this.names = names;
         this.options = options;
         reset();
@@ -67,7 +67,7 @@ public class IntConfiguration {
     }
 
     public void setValue(int value) {
-        this.value = value;
+        this.value = (byte) value;
         if (master != null) {
             setModified(true);
         } else {
@@ -115,12 +115,12 @@ public class IntConfiguration {
     }
 
     public void setDefault(int def) {
-        this.def = def;
+        this.def = (byte) def;
         setModified(value != getDefault());
     }
 
     public final void reset() {
-        value = getDefault();
+        value = (byte) getDefault();
         setModified(false);
     }
 

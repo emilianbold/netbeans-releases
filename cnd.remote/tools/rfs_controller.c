@@ -56,9 +56,10 @@
 #include <limits.h>
 #include <sys/stat.h>
 
- #include <netinet/in.h>
- #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <alloca.h>
+#include <libgen.h>
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
@@ -380,9 +381,9 @@ static int init_files() {
 
         enum file_state state;
         int file_size;
-        const char *path;
+        char *path;
 
-        scan_line(buffer, bufsize, &state, &file_size, &path);
+        scan_line(buffer, bufsize, &state, &file_size, (const char**) &path);
         trace("\t\tpath=%s size=%d state=%c (0x%x)\n", path, file_size, (char) state, (char) state);
 
         if (state == -1) {
@@ -420,13 +421,42 @@ static int init_files() {
 
             if (*path == '/') {
                 char real_path [PATH_MAX + 1];
-                if (realpath(path, real_path)) {
-                    trace("\t\tadded %s with state '%c' (0x%x)\n", real_path, (char) new_state, (char) new_state);
-                    add_file_data(real_path, new_state);
+                if (state == INEXISTENT) {
+                    char *dir = path;
+                    char *file = path;
+                    // find trailing zero
+                    while (*file) {
+                        file++;
+                    }
+                    // we'll find '/' for sure - at least the starting one
+                    while(*file != '/') {
+                        file--;
+                    }
+                    if (file == path) { // the file resides in root directory
+                        strcpy(real_path, path);
+                    } else {
+                        // NB: we modify the path!
+                        *file = 0;
+                        file++; 
+                        if (!realpath(dir, real_path)) {
+                            report_unresolved_path(dir);
+                            break;
+                        }
+                        char *p = real_path;
+                        while (*p) {
+                            p++;
+                        }
+                        *(p++) = '/';
+                        strncpy(p, file, sizeof real_path - (p - real_path));
+                    }
                 } else {
-                    report_unresolved_path(path);
-                    break;
+                    if (!realpath(path, real_path)) {
+                       report_unresolved_path(path);
+                       break; 
+                    }
                 }
+                trace("\t\tadded %s with state '%c' (0x%x)\n", real_path, (char) new_state, (char) new_state);
+                add_file_data(real_path, new_state);
             } else {
                 report_error("prodocol error: %s is not absoulte\n", path);
                 break;

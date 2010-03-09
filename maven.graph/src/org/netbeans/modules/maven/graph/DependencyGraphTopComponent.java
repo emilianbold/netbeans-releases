@@ -61,6 +61,8 @@ import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.artifact.Artifact;
@@ -180,6 +182,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                 }
             }
         });
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
     }
     
     private void checkFindValue() {
@@ -375,6 +380,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         createScene();
     }
@@ -444,15 +450,40 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         }
     }
 
+    @Override
     public JComponent getVisualRepresentation() {
         jPanel1.removeAll();
         jToolBar1.removeAll();
         return this;
     }
 
+    public static class EditorToolbar extends org.openide.awt.Toolbar {
+        public EditorToolbar() {
+            Border b = UIManager.getBorder("Nb.Editor.Toolbar.border"); //NOI18N
+            setBorder(b);
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+        }
+
+        @Override
+        public String getUIClassID() {
+            if( UIManager.get("Nb.Toolbar.ui") != null ) { //NOI18N
+                return "Nb.Toolbar.ui"; //NOI18N
+            }
+            return super.getUIClassID();
+        }
+
+        @Override
+        public String getName() {
+            return "editorToolbar"; //NOI18N
+        }
+    }
+
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new JToolBar();
+            toolbar = new EditorToolbar();
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
 //            Action[] a = new Action[1];

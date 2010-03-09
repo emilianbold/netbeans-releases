@@ -65,6 +65,7 @@ public class HashNameAnalyzerTest {
 
     @Test
     public void testCollect() {
+        // this format is used e.g. in AM:Validations
         List<String> rdoc = new ArrayList<String>();
         rdoc.add("Some method");
         rdoc.add("");
@@ -77,6 +78,19 @@ public class HashNameAnalyzerTest {
 
     @Test
     public void testCollect2() {
+        // this format is used e.g. in AR:Associations
+        List<String> rdoc = new ArrayList<String>();
+        rdoc.add("Some method");
+        rdoc.add("");
+        rdoc.add("=== Supported options");
+        rdoc.add("[:first_opt]");
+        rdoc.add("[:second_opt]");
+
+        assertEquals("options(=>first_opt|second_opt)", HashNameAnalyzer.collect("options", rdoc));
+    }
+
+    @Test
+    public void testCollect3() {
         List<String> rdoc = new ArrayList<String>();
         rdoc.add("Some method");
         rdoc.add("");

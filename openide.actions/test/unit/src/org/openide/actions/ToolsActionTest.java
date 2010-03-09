@@ -39,18 +39,24 @@
 
 package org.openide.actions;
 
+import java.util.Arrays;
+import javax.swing.JComponent;
+import org.openide.awt.DynamicMenuContent;
 import javax.swing.Action;
 import java.util.List;
+import javax.swing.JMenuItem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.actions.ActionPerformer;
 import static org.junit.Assert.*;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ToolsActionTest extends NbTestCase {
+public class ToolsActionTest extends NbTestCase implements ActionPerformer {
 
     public ToolsActionTest(String n) {
         super(n);
@@ -75,6 +81,26 @@ public class ToolsActionTest extends NbTestCase {
         assertEquals("Separator in middle", null, ToolActions.get(2));
         assertEquals("Copy last", copy, ToolActions.get(3));
 
+        ToolsAction ta = ToolsAction.get(ToolsAction.class);
+        JMenuItem mp = ta.getMenuPresenter();
+        DynamicMenuContent mc = null;
+        if (mp instanceof DynamicMenuContent) {
+            mc = (DynamicMenuContent) mp;
+        } else {
+            fail("Shall be instance of DynamicMenuContent: " + mp);
+        }
+
+        JComponent[] arr = mc.getMenuPresenters();
+        assertEquals("None " + Arrays.asList(arr), 0, arr.length);
+        CutAction.get(CutAction.class).setActionPerformer(this);
+
+        arr = mc.getMenuPresenters();
+        assertEquals("One " + Arrays.asList(arr), 1, arr.length);
+    }
+
+    @Override
+    public void performAction(SystemAction action) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

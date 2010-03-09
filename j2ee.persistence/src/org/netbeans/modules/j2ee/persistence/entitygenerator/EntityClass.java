@@ -60,6 +60,7 @@ public class EntityClass {
     private final String className;
     private final String packageName;
     private final Set<List<String>> uniqueConstraints;
+    private final String updateType;
     
     private List<RelationshipRole> roles;
     private List<EntityMember> fields;
@@ -70,13 +71,14 @@ public class EntityClass {
     private boolean forTable = true;  // false means forView
     
     public EntityClass( String catalogName, String schemaName, String tableName, 
-            FileObject rootFolder, String packageName, String className, Set<List<String>> uniqueConstraints) {
+            FileObject rootFolder, String packageName, String className, String updateType, Set<List<String>> uniqueConstraints) {
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
         this.rootFolder = rootFolder;
         this.packageName = packageName;
         this.className = className;
+        this.updateType = updateType;
         this.uniqueConstraints = uniqueConstraints;
         
         roles = Collections.<RelationshipRole>emptyList();
@@ -147,6 +149,10 @@ public class EntityClass {
     
     public String getClassName() {
         return className;
+    }
+
+    public String getUpdateType() {
+        return updateType;
     }
 
     public FileObject getPackageFileObject() {

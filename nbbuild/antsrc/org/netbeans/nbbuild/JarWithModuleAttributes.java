@@ -193,7 +193,7 @@ public class JarWithModuleAttributes extends Jar {
                     for (String one : moduleDeps.split(",")) {
                         int great = one.indexOf('>');
                         sb.append(sep);
-                        sep = ",";
+                        sep = ", ";
                         if (great == -1) {
                             int equals = one.indexOf('=');
                             if (equals == -1) {
@@ -204,14 +204,23 @@ public class JarWithModuleAttributes extends Jar {
                         } else {
                             int[] version = parseDecimal(one.substring(great + 1).trim(), 3);
                             int slash = one.indexOf('/');
+                            int hiMajor;
                             String cnb;
                             if (slash >= 0) {
                                 cnb = one.substring(0, slash).trim();
-                                version[0] += 100 * Integer.parseInt(one.substring(slash + 1, great).trim());
+                                String range = one.substring(slash + 1, great).trim();
+                                int dash = range.indexOf('-');
+                                if (dash == -1) {
+                                    hiMajor = Integer.parseInt(range);
+                                    version[0] += 100 * hiMajor;
+                                } else {
+                                    hiMajor = Integer.parseInt(range.substring(dash + 1));
+                                    version[0] += 100 * Integer.parseInt(range.substring(0, dash));
+                                }
                             } else {
                                 cnb = one.substring(0, great).trim();
+                                hiMajor = 0;
                             }
-                            int nextMajor = version[0] + 1;
                             sb.append(cnb).append(";bundle-version=\"[");
                             String conditionalDot = "";
                             for (int i = 0; i < version.length; i++) {
@@ -219,7 +228,7 @@ public class JarWithModuleAttributes extends Jar {
                                 sb.append(version[i]);
                                 conditionalDot = ".";
                             }
-                            sb.append(", ").append(nextMajor).append(")\"");
+                            sb.append(",").append((hiMajor + 1) * 100).append(")\"");
                         }
                     }
 
