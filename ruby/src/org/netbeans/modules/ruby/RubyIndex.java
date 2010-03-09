@@ -847,7 +847,8 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, FIELD_EXTENDS_NAME, FIELD_FQN_NAME);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, 
+                FIELD_EXTENDS_NAME, FIELD_FQN_NAME, FIELD_CLASS_NAME, FIELD_CLASS_ATTRS, FIELD_REQUIRE);
 
         boolean foundIt = result.size() > 0;
 
