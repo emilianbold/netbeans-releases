@@ -51,6 +51,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class SymfonyUtils {
     public static final String ACTION_METHOD_PREFIX = "execute"; // NOI18N
+    public static final String ACTION_CLASS_SUFFIX = "actions";
 
     private static final String FILE_ACTION = "actions.class.php"; // NOI18N
     private static final String FILE_ACTION_RELATIVE = "../actions/" + FILE_ACTION; // NOI18N
@@ -83,6 +84,10 @@ public final class SymfonyUtils {
             return FileUtil.toFileObject(action);
         }
         return null;
+    }
+
+    public static String getActionName(FileObject view) {
+        return ACTION_METHOD_PREFIX + view.getNameExt().replace(VIEW_FILE_SUFFIX, "").toLowerCase(); // NOI18N
     }
 
     public static FileObject getView(FileObject fo, PhpBaseElement phpElement) {
