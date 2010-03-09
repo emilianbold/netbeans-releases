@@ -63,7 +63,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TplTokenId implements TokenId {
 
-    TEXT(null, "text"),
+    OTHER(null, "other"),
     ERROR(null, "error"),
     PHP_VARIABLE(null, "php_variable"),
     CONFIG_VARIABLE(null, "config_variable"),
@@ -75,26 +75,7 @@ public enum TplTokenId implements TokenId {
     FUNCTION(null, "smarty_function"),
     ARGUMENT(null, "argument"),
     ARGUMENT_VALUE(null, "argument_value"),
-    CHAR(null, "char"),
-
-
-
-
-    
-    
-    DB_LOOP("db_loop", "keyword"),
-    
-    ELSE("else", "keyword"),
-    ITERATOR("iterator", "keyword"),
-    IF("if", "keyword"),
-    WHILE("while", "keyword"),
-    DB_LOOP_END("/db_loop", "keyword"),
-    LOOP_END("/loop", "keyword"),
-    ITERATOR_END("/iterator", "keyword"),
-    IF_END("/if", "keyword"),
-    WHILE_END("/while", "keyword"),
-    INCLUDE("include", "include");
-    
+    CHAR(null, "char");
 
     private final String fixedText;
 

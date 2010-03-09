@@ -187,6 +187,8 @@ public class TplLexer implements Lexer<TplTokenId> {
         OPERATORS.add("ne"); // NOI18N
         OPERATORS.add("neq"); // NOI18N
         OPERATORS.add("not"); // NOI18N
+        OPERATORS.add("or"); // NOI18N
+        OPERATORS.add("and"); // NOI18N
     }
 
     static final Set<String> FUNCTIONS = new HashSet<String>();
@@ -295,10 +297,10 @@ public class TplLexer implements Lexer<TplTokenId> {
                             break;
                         case '=':
                             argValue = true;
-                            return token(TplTokenId.TEXT);
+                            return token(TplTokenId.OTHER);
                         case '|':           // Pipe, e.g. $var|, ''|
                             if (input.read() == '|') {
-                                return token(TplTokenId.TEXT);
+                                return token(TplTokenId.OTHER);
                             }
                             else {
                                 input.backup(1);
@@ -384,9 +386,12 @@ public class TplLexer implements Lexer<TplTokenId> {
                     if( LexerUtils.isVariablePart(actChar) ) {
                         keyword += Character.toString((char)actChar);
                         break;
-                    } else if (input.readLength() == 1) {
+                    } else if (input.readLengthEOF() == 1) {
                         lexerState = INIT;
-                        return token(TplTokenId.WHITESPACE);
+                        if (LexerUtils.isWS(actChar))
+                            return token(TplTokenId.WHITESPACE);
+                        else
+                            return token(TplTokenId.OTHER);
                     }
                     input.backup(1);
                     TplTokenId tokenId = resolveStringToken(keyword);
@@ -395,11 +400,11 @@ public class TplLexer implements Lexer<TplTokenId> {
                     return token(tokenId);
 
                 default:
-                    return token(TplTokenId.TEXT);
+                    return token(TplTokenId.OTHER);
             } // end of switch (c)
         } // end of while(true)
 
-//        return token(TplTokenId.TEXT);
+//        return token(TplTokenId.OTHER);
     }
 
     public void release() {
@@ -429,7 +434,7 @@ public class TplLexer implements Lexer<TplTokenId> {
             }
             else {
                 input.backup(1);
-                return TplTokenId.TEXT;
+                return TplTokenId.OTHER;
             }
         }
 
@@ -449,13 +454,14 @@ public class TplLexer implements Lexer<TplTokenId> {
                 c = input.read();
                 input.backup(readChars);
                 if (c == '=') {
-                    return TplTokenId.TEXT;
+                    return TplTokenId.OTHER;
                 }
                 else {
                     return TplTokenId.ARGUMENT;
                 }
             } else {
-                return TplTokenId.TEXT;
+                input.backup(readChars);
+                return TplTokenId.OTHER;
             }
         }
     }

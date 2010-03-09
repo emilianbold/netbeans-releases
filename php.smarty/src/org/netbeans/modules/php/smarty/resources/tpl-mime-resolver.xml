@@ -47,9 +47,7 @@ made subject to such option by the copyright holder.
     <!-- Resolve according to root element: -->
     <file>
         <ext name="tpl"/>
-        <ext name="TPL"/>
-        <resolver mime="text/x-tpl">
-        </resolver>
+        <resolver mime="text/x-tpl" />
     </file>
 
 </MIME-resolver>
