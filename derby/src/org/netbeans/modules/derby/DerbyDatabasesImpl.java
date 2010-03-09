@@ -381,6 +381,16 @@ public final class DerbyDatabasesImpl {
         if (systemHome.length() <= 0) { // NOI18N
             return false;
         }
+        // remove all connections first
+        for (DatabaseConnection conn : findDatabaseConnections(dbname)) {
+            try {
+                ConnectionManager.getDefault().removeConnection(conn);
+            } catch (DatabaseException ex) {
+                Logger.getLogger(DerbyServerNode.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+
+        // remove database from disk
         File databaseFile = new File(systemHome, dbname);
         FileObject fo = FileUtil.toFileObject(databaseFile);
         try {
@@ -389,6 +399,8 @@ public final class DerbyDatabasesImpl {
             Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, ex.getLocalizedMessage());
             return false;
         }
+
+        // notify change
         notifyChange();
         return true;
     }
