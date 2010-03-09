@@ -96,6 +96,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
         testExecutionEnvironment = null;
+        setupUserDir();
     }
 
     /**
@@ -109,6 +110,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
+        setupUserDir();
     }
 
     @Override
@@ -120,6 +122,21 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    private void setupUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File userDir = getUserDir();
+        userDir.mkdirs();
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+    }
+
+    protected File getUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        return userDir;
     }
 
     private void setupProperties() throws IOException, FormatException {

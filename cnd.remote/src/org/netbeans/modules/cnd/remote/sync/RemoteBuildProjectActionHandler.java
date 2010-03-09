@@ -75,7 +75,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private PrintWriter out;
     private PrintWriter err;
 
-    private static final String testWorkerRunningProp = "cnd.remote.sync.worker.running"; // for tests only
+    private static final String testWorkerRunningProp = "cnd.remote.sync.worker.running"; // for tests only // NOI18N
 
     /* package-local */
     RemoteBuildProjectActionHandler() {
@@ -142,7 +142,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         }
 
         Map<String, String> env2add = new HashMap<String, String>();
-        System.setProperty(testWorkerRunningProp, "true");
+        System.setProperty(testWorkerRunningProp, "true"); // NOI18N
         if (worker.startup(env2add)) {            
             final ExecutionListener listener = new ExecutionListener() {
                 public void executionStarted(int pid) {
@@ -150,7 +150,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 public void executionFinished(int rc) {
                     worker.shutdown();
                     delegate.removeExecutionListener(this);
-                    System.setProperty(testWorkerRunningProp, "false");
+                    System.setProperty(testWorkerRunningProp, "false"); // NOI18N
                 }
             };
             delegate.addExecutionListener(listener);
@@ -163,7 +163,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             }
             delegate.execute(io);
         } else {
-            System.setProperty(testWorkerRunningProp, "false");
+            System.setProperty(testWorkerRunningProp, "false"); // NOI18N
             for (ExecutionListener l : listeners) {
                 l.executionFinished(-8);
             }
