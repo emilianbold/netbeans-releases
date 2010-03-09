@@ -39,23 +39,11 @@
 
 package org.netbeans.modules.remote.api.ui;
 
-import java.awt.AWTError;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.LayoutManager;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
@@ -71,7 +59,6 @@ final class RemoteFileChooserBuilder {
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
     private static final String readOnlyKey = "FileChooser.readOnly"; // NOI18N
     private final ExecutionEnvironment env;
-//    private final boolean addProgressBar = true;
 
     public RemoteFileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
@@ -97,83 +84,16 @@ final class RemoteFileChooserBuilder {
         return chooser;
     }
 
-    private class JFileChooserImpl extends JFileChooser
+    private static class JFileChooserImpl extends JFileChooser
             implements PropertyChangeListener {
-
-        private JPanel outerPanel;
-        private final JPanel progressPanel;
-        private final JLabel progressBar;
-        private final int progressBarW;
-        private final int progressBarH;
-//        private final JLabel progressText;
 
         public JFileChooserImpl(String currentDirectory, FileSystemView fsv) {
             super(currentDirectory, fsv);
-            super.setLayout(new BorderLayout());
-            progressPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-//            progressText = new JLabel();
-//            progressText.setVisible(false);
-            progressPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
-//            Icon pbImage = ImageUtilities.loadImageIcon("com/sun/dlight/spi/impl/resources/progress.gif", false); // NOI18N
-            Icon pbImage = new ImageIcon(getClass().getResource("/org/netbeans/modules/remote/api/ui/progress.gif")); // NOI18N
-            progressBarW = pbImage.getIconWidth();
-            progressBarH = pbImage.getIconHeight();
-//            progressPanel.setPreferredSize(new Dimension(100, pbImage.getIconHeight() + 10));
-//            progressPanel.setBounds(0, 0, 200, pbImage.getIconHeight() + 10);
-            progressBar = new JLabel(pbImage);
-            progressBar.setVisible(false);
-            progressPanel.add(progressBar);
-//            progressPanel.add(progressText);
-            super.add(progressPanel, BorderLayout.CENTER);
-            super.add(outerPanel, BorderLayout.CENTER);
-            addComponentListener(new ComponentAdapter() {
-
-                @Override
-                public void componentResized(ComponentEvent e) {
-                    Dimension newSize = outerPanel.getSize();
-                    progressPanel.setBounds(10,
-                            newSize.height - progressBarH,
-                            progressBarW + 10, progressBarH + 10);
-                    Component comp = SwingUtilities.getDeepestComponentAt(outerPanel, 24 + progressBarW, newSize.height - progressBarH / 2);
-                    // TODO: a silly attempt...
-                    if (comp != null && !(comp instanceof JPanel)) {
-                        progressPanel.setVisible(false);
-                    } else {
-                        progressPanel.setVisible(true);
-                    }
-                }
-            });
         }
 
         @Override
         protected void setup(FileSystemView view) {
-            outerPanel = new JPanel();
             super.setup(view);
-        }
-
-        @Override
-        public Component add(Component comp) {
-            try {
-                return outerPanel.add(comp);
-            } catch (AWTError e) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-
-        @Override
-        public void add(Component comp, Object constraints) {
-            outerPanel.add(comp, constraints);
-        }
-
-        @Override
-        public void setLayout(LayoutManager mgr) {
-            outerPanel.setLayout(mgr);
-        }
-
-        @Override
-        public LayoutManager getLayout() {
-            return outerPanel.getLayout();
         }
 
         @Override
@@ -191,15 +111,12 @@ final class RemoteFileChooserBuilder {
         public void propertyChange(final PropertyChangeEvent evt) {
             if (RemoteFileSystemView.LOADING_STATUS.equals(evt.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         FileObjectBasedFile file = (FileObjectBasedFile) evt.getNewValue();
                         if (file == null) {
-//                            progressText.setText("");
-                            progressBar.setVisible(false);
+                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         } else {
-//                            progressText.setText("Loading " + file.getName() + " ... ");
-                            progressBar.setVisible(true);
+                            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                         }
                     }
                 });
