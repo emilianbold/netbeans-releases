@@ -153,7 +153,8 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     }
                     boolean showContextNode = true;
                     NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-                    if( null != moduleProvider && !moduleProvider.prepareContext() ) {
+                    if( null != moduleProvider 
+                            && !moduleProvider.prepareContext(NbBundle.getMessage(LayerNode.class, "LBL_XML_layer_in_context")) ) { //NOI18N
                         //don't show 'layer in context' if the context classpath didn't initialize properly
                         showContextNode = false;
                     }
