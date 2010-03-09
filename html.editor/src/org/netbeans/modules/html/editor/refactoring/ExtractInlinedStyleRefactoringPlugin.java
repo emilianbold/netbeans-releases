@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -344,21 +345,31 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                         originalText,
                         idSelectorUsageText,
                         NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
+
+                    List<String> lines = new ArrayList<String>();
+                    lines.add(""); //empty line = will add new line
+
+                    lines.add(new StringBuilder().append('#').append(idSelectorName).append('{').toString()); //NOI18N
+
+                    //parse the inlined code and put each declaration on separate line, possibly add semicolon if missing
+                    for (String declaration : si.getParsedDeclarations()) {
+                        StringBuilder b = new StringBuilder();
+                        b.append('\t'); //NOI18N
+                        b.append(declaration);
+                        if (!declaration.endsWith(";")) { //NOI18N
+                            b.append(';'); //NOI18N
+                        }
+                        lines.add(b.toString());
+                    }
+
+                    lines.add("}"); //NOI18N
+
+                    //if prefix is set indent the content by one level
+                    String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
+                    generatedIdSelectorsSection.append(idSelectorText);
                 }
 
-                
-
                 diffs.add(diff);
-
-                String[] lines = new String[]{
-                    "", //empty line = will add new line
-                    "#" + idSelectorName + "{",
-                    "\t" + WebUtils.unquotedValue(si.getInlinedCssValue()) + ";",
-                    "}"}; //NOI18N
-
-                //if prefix is set indent the content by one level
-                String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines);
-                generatedIdSelectorsSection.append(idSelectorText);
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
