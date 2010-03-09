@@ -113,11 +113,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
         AstNode root = result.root();
         AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+            @Override
             public void visit(AstNode node) {
                 if (node.type() == AstNode.NodeType.OPEN_TAG) {
                     //put all NS attributes to the namespace2Attribute map for #1.
                     Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
 
+                        @Override
                         public boolean accepts(Attribute attribute) {
                             return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
                         }
@@ -180,6 +182,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     final int[] usages = new int[1];
                     AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 
+                        @Override
                         public void visit(AstNode node) {
                             usages[0]++;
                         }
@@ -274,13 +277,16 @@ public class LibraryDeclarationChecker extends HintsProvider {
             this.ranges = ranges;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_REMOVE_ALL_UNUSED_LIBRARIES_DECLARATION");
         }
 
+        @Override
         public void implement() throws Exception {
             document.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         for (PositionRange range : ranges) {
@@ -303,10 +309,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
             });
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
