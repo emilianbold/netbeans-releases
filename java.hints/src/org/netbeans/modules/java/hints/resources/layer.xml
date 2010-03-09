@@ -146,10 +146,18 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
-                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
-                <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
-                <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
-                <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance"/>
+                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance">
+                    <attr name="position" intvalue="6000"/>
+                </file>
+                <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance">
+                    <attr name="position" intvalue="6100"/>
+                </file>
+                <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance">
+                    <attr name="position" intvalue="6200"/>
+                </file>
+                <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance">
+                    <attr name="position" intvalue="6300"/>
+                </file>
                 <folder name="AnnotationProcessors">
                     <file name="org-netbeans-modules-java-hints-infrastructure-SuppressWarningsCompletion.instance" />
                 </folder>
