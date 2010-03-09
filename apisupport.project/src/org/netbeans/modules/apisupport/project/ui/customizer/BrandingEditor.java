@@ -39,10 +39,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.openide.util.NbBundle;
 
 /**
  * Creates a multi-view TopComponent from <code>AbstractBrandingPanel</code>s.
@@ -53,8 +52,6 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
  */
 public class BrandingEditor {
 
-    private static final Map<Project, BrandingEditorPanel> project2editor = new WeakHashMap<Project, BrandingEditorPanel>(10);
-
     /**
      * Open branding editor for given suite project.
      * @param suite
@@ -62,7 +59,7 @@ public class BrandingEditor {
     public static void open( SuiteProject suite ) {
         SuiteProperties properties = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
         BasicBrandingModel model = new BasicBrandingModel(properties);
-        open( properties.getProjectDisplayName() + " - Branding", suite, model, true );
+        open( NbBundle.getMessage(BrandingEditor.class, "Title_BrandingEditor", properties.getProjectDisplayName()), suite, model, true );
     }
 
     /**
@@ -74,14 +71,8 @@ public class BrandingEditor {
      * app it belongs and the platform jars/projects are available, false otherwise.
      */
     public static void open( String displayName, Project p, BasicBrandingModel model, boolean contextAvailable ) {
-        synchronized( project2editor ) {
-            BrandingEditorPanel editor = project2editor.get(p);
-            if( null == editor ) {
-                editor = new BrandingEditorPanel(displayName, p, model, contextAvailable);
-                project2editor.put(p, editor);
-            }
-            editor.open();
-        }
+        BrandingEditorPanel editor = new BrandingEditorPanel(displayName, p, model, contextAvailable);
+        editor.open();
     }
 
 
