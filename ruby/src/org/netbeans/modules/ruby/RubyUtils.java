@@ -908,4 +908,25 @@ public class RubyUtils {
 
     }
 
+    /**
+     * Adds the given {@code toAdd} to the end of the given {@code array}.
+     * 
+     * @param array
+     * @param toAdd
+     * @return
+     */
+    static String[] addToArray(String[] array, String... toAdd) {
+        if (toAdd == null || toAdd.length == 0) {
+            return array;
+        }
+        String[] result = new String[array.length + toAdd.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        for (int i = array.length; i < array.length + toAdd.length; i++) {
+            result[i] = toAdd[i - array.length];
+        }
+        return result;
+    }
+
 }
