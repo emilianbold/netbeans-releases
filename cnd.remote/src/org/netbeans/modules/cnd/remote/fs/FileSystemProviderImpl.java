@@ -37,22 +37,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiBaseTestSuite extends NativeExecutionBaseTestSuite {
+@ServiceProvider(service=org.netbeans.modules.remote.impl.spi.FileSystemProvider.class)
+public class FileSystemProviderImpl extends org.netbeans.modules.remote.impl.spi.FileSystemProvider {
 
-    public RemoteApiBaseTestSuite(String name) {
-        super(name);
+    @Override
+    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+        return RemoteFileSystemManager.getInstance().get(env);
     }
-    
-    public RemoteApiBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(testClasses);
-    }
+
 }

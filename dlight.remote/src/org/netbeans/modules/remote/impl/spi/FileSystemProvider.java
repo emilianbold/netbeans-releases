@@ -37,22 +37,44 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.test;
+package org.netbeans.modules.remote.impl.spi;
 
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.util.Collection;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 
 /**
- *
+ * A temporary solution until we have an official file system provider in thus module
+ * @author Andrew Krasny
  * @author Vladimir Kvashin
  */
-public class RemoteApiBaseTestSuite extends NativeExecutionBaseTestSuite {
+public abstract class FileSystemProvider {
 
-    public RemoteApiBaseTestSuite(String name) {
-        super(name);
+    private static final FileSystemProvider DEFAULT = new FileSystemProviderImpl();
+
+    protected FileSystemProvider() {
     }
-    
-    public RemoteApiBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(testClasses);
+
+    protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
+
+    public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
+        return DEFAULT.getFileSystemImpl(env, root);
+    }
+
+    private static class FileSystemProviderImpl extends FileSystemProvider {
+
+        public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            FileSystem result = null;
+
+            for (FileSystemProvider provider : allProviders) {
+                if ((result = provider.getFileSystemImpl(env, root)) != null) {
+                    break;
+                }
+            }
+
+            return result;
+        }
     }
 }
