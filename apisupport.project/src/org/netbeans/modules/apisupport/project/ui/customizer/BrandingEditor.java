@@ -140,7 +140,8 @@ public class BrandingEditor {
         panels = new AbstractBrandingPanel[] {
             new BasicBrandingPanel(model),
             new SplashBrandingPanel(model),
-            new WindowSystemBrandingPanel(model)
+            new WindowSystemBrandingPanel(model),
+            new ResourceBundleBrandingPanel(model)
         };
         saveAction = new AbstractAction() {
             @Override
