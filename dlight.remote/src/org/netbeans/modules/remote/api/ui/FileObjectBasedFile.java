@@ -37,42 +37,80 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makefile.model;
+package org.netbeans.modules.remote.api.ui;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author ak119685
  */
-public final class MakefileUtils {
+/*package*/ class FileObjectBasedFile extends File {
 
-    private MakefileUtils() {}
+    private final FileObject fo;
+    private File[] NO_CHILDREN = new File[0];
 
-    private static final Set<String> PREFERRED_TARGETS = new HashSet<String>(Arrays.asList(
-            // see http://www.gnu.org/prep/standards/html_node/Standard-Targets.html
-            "all", // NOI18N
-            "install", // NOI18N
-            "uninstall", // NOI18N
-            "clean", // NOI18N
-            "distclean", // NOI18N
-            "dist", // NOI18N
-            "check", // NOI18N
-
-            // targets written by CND
-            "build", // NOI18N
-            "build-tests", // NOI18N
-            "clobber", // NOI18N
-            "help", // NOI18N
-            "test")); // NOI18N
-
-    public static boolean isPreferredTarget(String target) {
-        return PREFERRED_TARGETS.contains(target);
+    public FileObjectBasedFile(String path) {
+        super(path);
+        this.fo = null;
     }
 
-    public static boolean isRunnableTarget(String target) {
-        return 0 < target.length() && target.charAt(0) != '.' && !target.contains("%"); // NOI18N
+    public FileObjectBasedFile(FileObject fo) {
+        super("".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
+        this.fo = fo;
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return fo == null ? false : fo.isFolder();
+    }
+
+    @Override
+    public boolean exists() {
+        return fo == null ? false : fo.isValid();
+    }
+
+    @Override
+    public File getParentFile() {
+        if (fo == null) {
+            return null;
+        }
+
+        FileObject parent = fo.getParent();
+        return parent == null ? null : new FileObjectBasedFile(parent);
+    }
+
+    @Override
+    public boolean isFile() {
+        return !isDirectory();
+    }
+
+    @Override
+    public File[] listFiles() {
+        if (fo == null) {
+            return NO_CHILDREN;
+        }
+
+        FileObject[] children = fo.getChildren();
+
+        if (children.length == 0) {
+            fo.refresh();
+            children = fo.getChildren();
+        }
+
+        File[] res = new File[children.length];
+        int idx = 0;
+        for (FileObject child : children) {
+            res[idx++] = new FileObjectBasedFile(child);
+        }
+
+        return res;
+    }
+
+    @Override
+    public File getCanonicalFile() throws IOException {
+        return this;
     }
 }

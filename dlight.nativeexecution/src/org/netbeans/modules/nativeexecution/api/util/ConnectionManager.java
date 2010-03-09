@@ -349,7 +349,7 @@ public final class ConnectionManager {
                     }
                 }
                 // Should not happen
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex.getMessage(), cause);
             } finally {
                 ph.finish();
             }
