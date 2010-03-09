@@ -106,11 +106,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-javame-sdk-zip">
         <mkdir dir="build"/> 
         <get src="${javame_sdk30_bits_location}"  dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+
+        <mkdir dir="${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}-mobility-sdk.zip"/>
+            <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk.zip"/>
         </exec>      
-        <delete file="${common.name}-mobility-sdk.zip"/>
+        <delete file="${common.name}${ml.suffix}-mobility-sdk.zip"/>
 
         <mkdir dir="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst"/>
         <get src="${javame_sdk30_xml_location}"   dest="${basedir}/javametmpdir/mobility/config/emulator-descriptor-inst/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
