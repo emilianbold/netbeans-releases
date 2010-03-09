@@ -75,7 +75,7 @@ abstract class TerminalAction implements ActionListener {
                     public void run() {
                         final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-                        npb.setExecutable("sh").setArguments("-i"); // FIXUP: NOI18N
+                        npb.setExecutable(getShell());
                         NativeExecutionDescriptor descr;
                         descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
                         NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
@@ -89,6 +89,7 @@ abstract class TerminalAction implements ActionListener {
     }
 
     protected abstract ExecutionEnvironment getEnvironment();
+    protected abstract String getShell();
 
     private static Action[] actions;
     private synchronized static Action[] getActions() {

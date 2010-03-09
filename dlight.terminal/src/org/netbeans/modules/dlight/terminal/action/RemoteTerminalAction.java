@@ -38,16 +38,50 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
+import java.awt.Dialog;
+import org.netbeans.modules.dlight.terminal.ui.ConnectionProgressDialog;
+import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class RemoteTerminalAction extends TerminalAction {
+    private final RemoteInfoDialog cfgPanel;
+
+    public RemoteTerminalAction() {
+        cfgPanel = new RemoteInfoDialog();
+    }
+
 
     @Override
     protected ExecutionEnvironment getEnvironment() {
-        return null;
+        DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog", // NOI18N
+                true, DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION, null);
+
+        Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
+        cfgDialog.setVisible(true);
+
+        if (dd.getValue() != DialogDescriptor.OK_OPTION) {
+            return null;
+        }
+
+        final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
+
+        ConnectionProgressDialog.ensureConnected(env);
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            return null;
+        }
+        return env;
+    }
+
+    @Override
+    protected String getShell() {
+        return cfgPanel.getShell();
     }
 }
