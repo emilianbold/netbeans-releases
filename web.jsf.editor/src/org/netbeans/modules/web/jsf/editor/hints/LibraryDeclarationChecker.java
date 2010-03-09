@@ -93,12 +93,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //        - or search all the libraries for such component and offer the match/es
     //
     private void checkLibraryDeclarations(final List<Hint> hints, final RuleContext context) {
-        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        final HtmlParserResult result = (HtmlParserResult) context.parserResult;
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
+        final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
         JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
         Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
         if (jsfSupport != null) {
@@ -168,37 +168,43 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        Collection<PositionRange> ranges = new ArrayList<PositionRange>();
-        for (FaceletsLibrary lib : declaredLibraries) {
-            AstNode rootNode = result.root(lib.getNamespace());
-            if (rootNode == null) {
-                continue; //no parse result for this namespace, the namespace is not declared
-            }
-            final int[] usages = new int[1];
-            AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
+        final Collection<PositionRange> ranges = new ArrayList<PositionRange>();
+        context.doc.render(new Runnable() { //isFunctionLibraryPrefixUsadInEL accesses the document's token hierarchy
+            @Override
+            public void run() {
+                for (FaceletsLibrary lib : declaredLibraries) {
+                    AstNode rootNode = result.root(lib.getNamespace());
+                    if (rootNode == null) {
+                        continue; //no parse result for this namespace, the namespace is not declared
+                    }
+                    final int[] usages = new int[1];
+                    AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 
-                public void visit(AstNode node) {
-                    usages[0]++;
-                }
-            }, AstNode.NodeType.OPEN_TAG);
+                        public void visit(AstNode node) {
+                            usages[0]++;
+                        }
+                    }, AstNode.NodeType.OPEN_TAG);
 
-            usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+                    usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
 
-            if (usages[0] == 0) {
-                //unused declaration
-                Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
-                if (declAttr != null) {
-                    int from = declAttr.nameOffset();
-                    int to = declAttr.valueOffset() + declAttr.value().length();
-                    try {
-                        ranges.add(new PositionRange(context, from, to));
-                    } catch (BadLocationException ex) {
-                        //just ignore
+                    if (usages[0] == 0) {
+                        //unused declaration
+                        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+                        if (declAttr != null) {
+                            int from = declAttr.nameOffset();
+                            int to = declAttr.valueOffset() + declAttr.value().length();
+                            try {
+                                ranges.add(new PositionRange(context, from, to));
+                            } catch (BadLocationException ex) {
+                                //just ignore
+                            }
+                        }
+
                     }
                 }
-
             }
-        }
+        });
+        
 
         //generate remove all unused declarations
         for (PositionRange range : ranges) {
