@@ -37,12 +37,6 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-/*
- * ResourceBundleBrandingPanel.java
- *
- * Created on Mar 3, 2010, 2:07:50 PM
- */
-
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
