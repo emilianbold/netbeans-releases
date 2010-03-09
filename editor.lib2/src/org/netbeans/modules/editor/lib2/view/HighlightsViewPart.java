@@ -181,7 +181,7 @@ public final class HighlightsViewPart extends EditorView {
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        HighlightsView.paint(g, alloc, clipBounds, this, getDocumentView(), getTextLayout());
+        HighlightsView.paint(g, alloc, clipBounds, fullView, getTextLayout(), shift, getLength());
     }
 
     @Override
@@ -192,13 +192,13 @@ public final class HighlightsViewPart extends EditorView {
 
     @Override
     public View createFragment(int p0, int p1) {
+        int startOffset = getStartOffset();
+        ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + getStartOffset() + "," + // NOI18N
+            LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + startOffset + "," + // NOI18N
                     getEndOffset() + ">\n"); // NOI18N
         }
-        int partShift = p0 - getStartOffset();
-        int partLen = p1 - p0;
-        return new HighlightsViewPart(fullView, shift + partShift, partLen);
+        return new HighlightsViewPart(fullView, shift + p0 - startOffset, p1 - p0);
     }
 
     @Override

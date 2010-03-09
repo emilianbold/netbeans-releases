@@ -41,49 +41,36 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+
 /**
- * Information about a single visual line in a wrapped paragraph.
- * 
+ * Save and restore painting info of a graphics.
+ *
  * @author Miloslav Metelka
  */
+public final class PaintState {
 
-final class WrapLine {
-
-    WrapLine() {
-        this.startViewIndex = this.endViewIndex = -1;
+    public static PaintState save(Graphics2D g) {
+        return new PaintState(g);
     }
 
-    /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
-     */
-    EditorView startViewPart;
+    private final Graphics2D g;
 
-    /**
-     * Ending view of this line that was obtained by breaking a view
-     * at (endViewIndex - 1).
-     * It may be null if the line ends at view boundary.
-     */
-    EditorView endViewPart;
+    private final Font font;
 
-    float startViewX;
+    private final Color color;
 
-    /**
-     * Index of the first (full) view that is located at this line.
-     * It may be preceded by startView. The index must be processed
-     *
-     */
-    int startViewIndex;
-
-    int endViewIndex;
-
-    boolean isInited() {
-        return (startViewIndex != -1);
+    private PaintState(Graphics2D g) {
+        this.g = g;
+        font = g.getFont();
+        color = g.getColor();
     }
 
-    boolean hasFullViews() {
-        return startViewIndex != endViewIndex;
+    public void restore() {
+        g.setColor(color);
+        g.setFont(font);
     }
 
 }
