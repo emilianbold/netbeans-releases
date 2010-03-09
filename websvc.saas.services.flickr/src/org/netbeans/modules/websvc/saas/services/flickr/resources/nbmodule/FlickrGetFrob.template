@@ -23,15 +23,33 @@
 
     String loginUrl = "http://www.flickr.com/services/auth/?api_key=" + api_key + "&frob=" + frob + "&perms=" + perms + "&api_sig=" + sig;
 
-    if (javax.swing.JOptionPane.showInputDialog(null,
-            "Please log into your Flickr account using the following URL to authorize this application and click OK after you are done:",
-            "Flickr Authorization Dialog",
-            javax.swing.JOptionPane.INFORMATION_MESSAGE,
-            null,
-            null,
-            loginUrl) == null) {
-        throw new IOException("Authorizatoin declined");
+
+    class DialogPanel extends javax.swing.JPanel {
+        DialogPanel(final java.net.URL url) {
+            setLayout(new java.awt.BorderLayout());
+            javax.swing.JButton button = new javax.swing.JButton();
+            button.setForeground(java.awt.Color.BLUE);
+            button.setBorderPainted(false);
+            button.setContentAreaFilled(false);
+            String urlText = url.toString();
+            String text = "<html><b><u>" + urlText.substring(0,80)+"<br/>"+urlText.substring(80) + "</u></b></html>";
+            button.setText(text);
+            button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            button.addActionListener(new java.awt.event.ActionListener() {
+
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
+                }
+            });
+            add(new javax.swing.JLabel("Click the URL link below to open the browser, and authorize the application to access your data:"), java.awt.BorderLayout.NORTH);
+            add(button, java.awt.BorderLayout.CENTER);
+            add(new javax.swing.JLabel("After you allow the application to access your data, press OK."), java.awt.BorderLayout.SOUTH);
+        }
     }
+
+    org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(new DialogPanel(new java.net.URL(loginUrl)), "Flickr Authentication Dialog");
+    org.openide.DialogDisplayer.getDefault().notify(dd);
 
     return frob;
 }
