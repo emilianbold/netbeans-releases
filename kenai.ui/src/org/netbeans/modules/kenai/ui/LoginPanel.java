@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
@@ -356,6 +355,7 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
         NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+        System.out.println(chkIsOnline.isEnabled());
     }//GEN-LAST:event_chkIsOnlineActionPerformed
 
     private void kenaiComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
@@ -367,10 +367,10 @@ public class LoginPanel extends javax.swing.JPanel {
             forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
             signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
             
-            setChkOnline();
             setUsername(credentials.getUsername(kenai));
             setPassword(credentials.getPassword(kenai));
             setChildrenEnabled(true);
+            setChkOnline();
         } else if (kenaiCombo.getSelectedItem() instanceof String) {
             final ActionEvent e = evt;
             SwingUtilities.invokeLater(new Runnable() {
@@ -387,8 +387,8 @@ public class LoginPanel extends javax.swing.JPanel {
                     forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
                     signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
 
-                    setChkOnline();
                     setChildrenEnabled(true);
+                    setChkOnline();
                 }
             });
         } 
