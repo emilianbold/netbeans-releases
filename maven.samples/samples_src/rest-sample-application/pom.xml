@@ -1,0 +1,120 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>demo.rest.mvn</groupId>
+    <artifactId>rest-sample-application</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>rest-sample-application - NetBeans Platform Application</name>
+    <repositories>
+        <!-- this is a remote repository hosting the netbeans api artifacts.
+         the versions of the artifacts are netbeans IDE release based, eg. RELEASE65
+         You might want to use your own repository. To create one, use the nbm:populate-repository goal.
+          -->
+        <repository>
+            <id>netbeans</id>
+            <name>repository hosting netbeans.org api artifacts</name>
+            <url>http://bits.netbeans.org/maven2</url>
+        </repository>
+        <repository>
+            <id>netbeans.snapshot</id>
+            <name>repository hosting netbeans.org api snapshot artifacts</name>
+            <url>http://bits.netbeans.org/netbeans/trunk/maven-snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+
+        <repository>
+            <!-- Allows usage of annotations within netbeans modules
+                 this section is necessary until http://jira.codehaus.org/browse/MCOMPILER-98
+                 gets integrated into a released version of maven-compiler-plugin.
+                 Afterwards this should be be deleted.
+                 -->
+            <id>plexus-snapshot</id>
+            <url>http://oss.repository.sonatype.org/content/repositories/plexus-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+
+        <repository>
+            <id>codehaus.snapshot</id>
+            <name>repository hosting snapshot of the nbm-maven-plugin</name>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>apache.snapshot</id>
+            <name>repository hosting snapshot of the maven-compiler-plugin</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codehaus.snapshot</id>
+            <name>repository hosting snapshot of the nbm-maven-plugin</name>
+            <url>http://snapshots.repository.codehaus.org</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>apache.snapshot</id>
+            <name>repository hosting snapshot of the maven-compiler-plugin</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>nbm-maven-plugin</artifactId>
+                    <version>3.2-SNAPSHOT</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <brandingToken>${brandingToken}</brandingToken>
+                        <cluster>foobar</cluster>
+                    </configuration>
+                </plugin>
+                
+                <plugin>
+                    <!-- netbeans modules in 6.9+ are 1.6 compatible
+                     2.2-SNAPSHOT is required to have netbeans api annotations work properly,
+                     if you are not using these annotations, you can fallback to the latest released
+                     maven-compiler-plugin version.
+                    -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.2-SNAPSHOT</version>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <modules>
+        <module>branding</module>
+        <module>application</module>
+    </modules>
+    <properties>
+        <netbeans.version>SNAPSHOT</netbeans.version>
+        <brandingToken>foo</brandingToken>
+    </properties>
+</project>
