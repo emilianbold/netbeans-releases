@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -82,6 +81,8 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     protected static final String END_OF_LAST_SEQUENCE = "end_of_last_sequence"; //NOI18N
     protected static final String IN_STYLE = "in_style"; //NOI18N
     protected static final String IN_INLINED_STYLE = "in_inlined_style"; //NOI18N
+    protected static final String CURRENT_TAG = "current_tag"; //NOI18N
+    protected static final String CURRENT_ATTR = "current_attr"; //NOI18N
     private static final String QUTE_CUT = "quote_cut"; //NOI18N
     //TODO rewrite the whole embedding provider to the parser based version so
     //we do not have to parse what's already parsed - like the <link ... /> tag
@@ -134,85 +135,80 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                         state.remove(QUTE_CUT);
                         embeddings.add(snapshot.create(";\n}\n", CSS_MIME_TYPE));
 
-
                     }
                 }
 
                 if (htmlId == HTMLTokenId.TAG_OPEN) {
-                    //look at the tag and try to find the style="xx" attribute
-                    //TODO make it work at the border of embedded sections
+                    //remember we are in a tag
+                    state.put(CURRENT_TAG, htmlToken.text().toString());
+                } else if (htmlId == HTMLTokenId.TAG_CLOSE_SYMBOL || htmlId == HTMLTokenId.TEXT) {
+                    //out of a tag
+                    state.remove(CURRENT_TAG);
+                } else if (htmlId == HTMLTokenId.ARGUMENT) {
+                    state.put(CURRENT_ATTR, htmlToken.text().toString());
+                } else if (htmlId == HTMLTokenId.VALUE) {
+                    String currentTag = (String) state.get(CURRENT_TAG);
+                    String currentAttr = (String) state.get(CURRENT_ATTR);
 
-                    //TokenSequence<? extends HTMLTokenId> ts = ts.subSequence(ts.offset());
-                    //ts.moveStart();
-                    boolean isLinkTag = LINK_TAG_NAME.equals(htmlToken.text().toString().toLowerCase(Locale.ENGLISH));
-                    String currentAttributeName = null;
-                    while (ts.moveNext()) {
-                        Token<? extends HTMLTokenId> t = ts.token();
-                        TokenId id = t.id();
+                    if (currentTag == null || currentAttr == null) {
+                        continue; //should not happen, if so ignore this token
+                    }
 
-                        if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                            break;
-                        } else if (id == HTMLTokenId.ARGUMENT) {
-                            currentAttributeName = t.text().toString();
-                        } else if (id == HTMLTokenId.VALUE_CSS) {
-                            //found inlined css
-                            int sourceStart = ts.offset();
-                            String text = t.text().toString();
+                    boolean isLinkTag = LINK_TAG_NAME.equalsIgnoreCase(currentTag.toLowerCase(Locale.ENGLISH));
+                    boolean isHrefAttr = HREF_ATTR_NAME.equals(currentAttr.toLowerCase(Locale.ENGLISH));
 
-                            if (text.startsWith("\"") || text.startsWith("'")) {
-                                sourceStart++;
-                                text = text.substring(1);
-                            }
+                    if (isLinkTag && isHrefAttr) {
+                        String unquotedValue = WebUtils.unquotedValue(htmlToken.text().toString().toString());
+                        //found href value, generate virtual css import
+                        StringBuilder buf = new StringBuilder();
+                        buf.append("@import \""); //NOI18N
+                        buf.append(unquotedValue);
+                        buf.append("\";"); //NOI18N
+                        //insert the import at the beginning of the virtual source
+                        embeddings.add(0, snapshot.create(buf, CSS_MIME_TYPE));
+                    }
+                } else if (htmlId == HTMLTokenId.VALUE_CSS) {
+                    //found inlined css
+                    int sourceStart = ts.offset();
+                    String text = htmlToken.text().toString();
 
-                            int sourceEnd = sourceStart + text.length();
-                            if (text.endsWith("\"") || text.endsWith("'")) {
-                                sourceEnd--;
-                                state.put(QUTE_CUT, Boolean.TRUE);
-                                text = text.substring(0, text.length() - 1);
-                            }
+                    if (text.startsWith("\"") || text.startsWith("'")) {
+                        sourceStart++;
+                        text = text.substring(1);
+                    }
 
-                            //determine the inlined css type
-                            String valueCssType = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
-                            if (valueCssType != null) {
-                                //XXX we do not support templating code in the value!
-                                //class or id attribute value - generate fake selector with # or . prefix
-                                StringBuilder buf = new StringBuilder();
-                                //#180576 - filter out "illegal" characters from the selector name
-                                if(text.indexOf(".") == -1 && text.indexOf(":") == -1) {
-                                    buf.append("\n ");
-                                    buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
-                                    embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
-                                    embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
-                                    embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
-                                }
+                    int sourceEnd = sourceStart + text.length();
+                    if (text.endsWith("\"") || text.endsWith("'")) {
+                        sourceEnd--;
+                        state.put(QUTE_CUT, Boolean.TRUE);
+                        text = text.substring(0, text.length() - 1);
+                    }
 
-                            } else {
-                                //style attribute value - wrap with a fake selector
-                                embeddings.add(snapshot.create("\n SELECTOR {\n\t", CSS_MIME_TYPE));
-                                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
-
-                                state.put(IN_INLINED_STYLE, Boolean.TRUE);
-
-                                break;
-                            }
-                        } else if (id == HTMLTokenId.VALUE) {
-                            if (isLinkTag && HREF_ATTR_NAME.equals(currentAttributeName.toLowerCase(Locale.ENGLISH))) {
-                                String unquotedValue = WebUtils.unquotedValue(t.text().toString().toString());
-                                //found href value, generate virtual css import
-                                StringBuilder buf = new StringBuilder();
-                                buf.append("@import \""); //NOI18N
-                                buf.append(unquotedValue);
-                                buf.append("\";"); //NOI18N
-                                //insert the import at the beginning of the virtual source
-                                embeddings.add(0, snapshot.create(buf, CSS_MIME_TYPE));
-
-                            }
+                    //determine the inlined css type
+                    String valueCssType = (String) htmlToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
+                    if (valueCssType != null) {
+                        //XXX we do not support templating code in the value!
+                        //class or id attribute value - generate fake selector with # or . prefix
+                        StringBuilder buf = new StringBuilder();
+                        //#180576 - filter out "illegal" characters from the selector name
+                        if (text.indexOf(".") == -1 && text.indexOf(":") == -1) {
+                            buf.append("\n ");
+                            buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
+                            embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
+                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                            embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
                         }
 
+                    } else {
+                        //style attribute value (inilined css code) - wrap with a fake selector
+                        embeddings.add(snapshot.create("\n SELECTOR {\n\t", CSS_MIME_TYPE));
+                        embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+
+                        state.put(IN_INLINED_STYLE, Boolean.TRUE);
                     }
+
                 }
             }
         }
-
     }
 }

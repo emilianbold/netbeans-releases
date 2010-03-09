@@ -181,7 +181,7 @@ abstract public class CsmCompletionQuery {
     public CsmCompletionResult query(JTextComponent component, int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         BaseDocument doc = (BaseDocument) component.getDocument();
-        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
+//        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
         return query(component, doc, offset, openingSource, sort, instantiateTypes);
     }
 
