@@ -39,17 +39,21 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.net.MalformedURLException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Convert {@link PhpElement PHP element} to {@link CompletionProposal}.
+ * Convert {@link PhpBaseElement PHP element} to {@link CompletionProposal}.
  * @author Tomas Mysik
  */
 public final class PhpElementCompletionItem {
@@ -69,18 +73,34 @@ public final class PhpElementCompletionItem {
         private final PhpVariable variable;
 
         public PhpVariableCompletionItem(PhpVariable variable, CompletionRequest request) {
-            super(new VariableElementImpl(variable.getName(), variable.getOffset(), null, null, Collections.<TypeResolver>emptySet()), request);
+            super(new VariableElementImpl(variable.getName(), variable.getOffset(), getFileNameUrl(variable), null, Collections.<TypeResolver>emptySet()), request);
             this.variable = variable;
         }
 
         @Override
         protected String getTypeName() {
-            return variable.getFullyQualifiedName();
+            String fullyQualifiedName = variable.getFullyQualifiedName();
+            if (fullyQualifiedName != null) {
+                return fullyQualifiedName;
+            }
+            return super.getTypeName();
         }
 
         @Override
         public boolean isSmart() {
             return true;
+        }
+
+        private static String getFileNameUrl(PhpVariable variable) {
+            FileObject file = variable.getFile();
+            if (file != null && file.isValid()) {
+                try {
+                    return FileUtil.toFile(file).toURI().toURL().toExternalForm();
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(PhpElementCompletionItem.class.getName()).log(Level.WARNING, null, ex);
+                }
+            }
+            return null;
         }
     }
 }
