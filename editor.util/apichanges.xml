@@ -104,6 +104,21 @@ is the proper place.
 
   <changes>
 
+    <change id="DocumentUtilities.document-property-listeners">
+      <summary>Added support for document property listeners</summary>
+        <version major="1" minor="35"/>
+        <date day="9" month="3" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Adding <code>DocumentUtilities.addPropertyChangeListener(Document, PropertyChangeListener)</code>
+            and <code>DocumentUtilities.removePropertyChangeListener(Document, PropertyChangeListener)</code> in order
+            to support listening on document property changes.
+        </p>
+        </description>
+    </change>
+
     <change id="DocumentUtilities.getDocumentTimestamp-added">
       <summary>Added DocumentUtilities.getDocumentTimestamp(Document)</summary>
         <version major="1" minor="34"/>

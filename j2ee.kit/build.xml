@@ -7,10 +7,15 @@
         <test test.type="qa-functional"/>
     </target>
 
-    <target name="register-servers" depends="check-v3ee6-root-property,check-catalinahome-property,register-glassfish,register-tomcat"/>
+    <target name="register-servers"
+        depends="check-v3ee6-root-property,check-aas-root-property,check-catalinahome-property,register-glassfish,register-tomcat"/>
 
     <target name="check-v3ee6-root-property" if="org.glassfish.v3ee6.installRoot">
         <property name="glassfish.home" value="${org.glassfish.v3ee6.installRoot}"/>
+    </target>
+
+    <target name="check-aas-root-property" if="com.sun.aas.installRoot">
+        <property name="glassfish.home" value="${com.sun.aas.installRoot}"/>
     </target>
 
     <target name="check-catalinahome-property" if="org.netbeans.modules.tomcat.autoregister.catalinaHome">
@@ -18,6 +23,7 @@
     </target>
 
     <target name="register-glassfish" if="glassfish.home">
+        <echo message="GlassFish Root Directory: ${glassfish.home}"/>
         <java classname="org.netbeans.modules.glassfish.common.registration.AutomaticRegistration"
               fork="true">
             <arg value="${netbeans.dest.dir}/enterprise"/>
@@ -40,6 +46,7 @@
     </target>
 
     <target name="register-tomcat" if="tomcat.home">
+        <echo message="Tomcat Root Directory: ${tomcat.home}"/>
          <java classname="org.netbeans.modules.tomcat5.registration.AutomaticRegistration"
               fork="true">
             <arg value="${netbeans.dest.dir}/enterprise"/>
