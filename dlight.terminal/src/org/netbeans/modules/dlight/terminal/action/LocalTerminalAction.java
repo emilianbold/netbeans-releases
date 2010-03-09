@@ -51,9 +51,4 @@ public final class LocalTerminalAction extends TerminalAction {
     protected ExecutionEnvironment getEnvironment() {
         return ExecutionEnvironmentFactory.getLocal();
     }
-
-    @Override
-    protected String getShell() {
-        return "sh"; // FIXUP: NOI18N
-    }
 }

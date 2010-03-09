@@ -79,9 +79,4 @@ public final class RemoteTerminalAction extends TerminalAction {
         }
         return env;
     }
-
-    @Override
-    protected String getShell() {
-        return cfgPanel.getShell();
-    }
 }

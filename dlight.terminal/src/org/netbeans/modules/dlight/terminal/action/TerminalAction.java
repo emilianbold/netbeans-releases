@@ -41,13 +41,17 @@ package org.netbeans.modules.dlight.terminal.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOContainer;
@@ -73,14 +77,21 @@ abstract class TerminalAction implements ActionListener {
 
                     @Override
                     public void run() {
-                        final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
-                        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-                        npb.setExecutable(getShell());
-                        NativeExecutionDescriptor descr;
-                        descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
-                        NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
-                        es.run();
-                        io.select();
+                        try {
+                            final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
+                            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                            String shell = HostInfoUtils.getHostInfo(env).getShell();
+                            npb.setExecutable(shell);
+                            NativeExecutionDescriptor descr;
+                            descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
+                            NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
+                            es.run();
+                            io.select();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (CancellationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 };
                 RequestProcessor.getDefault().post(runnable);
@@ -89,7 +100,6 @@ abstract class TerminalAction implements ActionListener {
     }
 
     protected abstract ExecutionEnvironment getEnvironment();
-    protected abstract String getShell();
 
     private static Action[] actions;
     private synchronized static Action[] getActions() {
