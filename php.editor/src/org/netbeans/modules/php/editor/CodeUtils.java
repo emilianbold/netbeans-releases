@@ -38,32 +38,13 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.IndexedTypedElement;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
-import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
@@ -81,7 +62,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -91,7 +71,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -290,129 +269,6 @@ public class CodeUtils {
         return null;
     }
 
-    public static boolean isTypeResolved(IndexedTypedElement var){
-
-        if (var.getTypeName() != null && var.getTypeName().startsWith("@")){
-            return false;
-        }
-
-        return true;
-    }
-
-    private static String findClassNameEnclosingDeclaration(PHPParseResult context,
-            IndexedElement variable) {
-        if (context.getSnapshot().getSource().getFileObject().equals(variable.getFileObject())){
-            return findClassNameEnclosingDeclaration(context.getProgram(), variable);
-        }
-
-        
-        ClassNameExtractor task = new ClassNameExtractor(variable);
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(variable.getFileObject())), task);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return task.className;
-    }
-
-    private static class ClassNameExtractor extends UserTask {
-        private IndexedElement element;
-        private String className;
-
-        public ClassNameExtractor(IndexedElement element) {
-            this.element = element;
-        }
-
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult parameter = (ParserResult)resultIterator.getParserResult();
-            Program program = Utils.getRoot(parameter);
-            className = findClassNameEnclosingDeclaration(program, element);
-        }
-    }
-
-    private static String findClassNameEnclosingDeclaration(Program program,
-            IndexedElement variable) {
-        ASTNode node = Utils.getNodeAtOffset(program,
-                variable.getOffset(), ClassDeclaration.class);
-
-        if (node instanceof ClassDeclaration) {
-            ClassDeclaration classDeclaration = (ClassDeclaration) node;
-            return classDeclaration.getName().getName();
-        }
-
-        return null;
-    }
-
-    public static void resolveFunctionType(PHPParseResult context,
-            PHPIndex index,
-            Map<String, IndexedVariable> varStack,
-            IndexedVariable variable){
-
-        String rawType = variable.getTypeName();
-
-        if (!isTypeResolved(variable)){
-            String varType = null;
-            boolean unresolvedType = true;
-
-            if (rawType.startsWith(FUNCTION_TYPE_PREFIX)) {
-
-                String fname = rawType.substring(FUNCTION_TYPE_PREFIX.length());
-
-                for (IndexedFunction func : index.getFunctions(context, fname, QuerySupport.Kind.EXACT)) {
-                    varType = func.getReturnType();
-                }
-            } else if (rawType.startsWith(STATIC_METHOD_TYPE_PREFIX)){
-                String parts[] = rawType.substring(STATIC_METHOD_TYPE_PREFIX.length()).split("\\.");
-                String className = parts[0];
-
-                if ("self".equals(className) || "parent".equals(className)){ //NOI18N
-                    className = findClassNameEnclosingDeclaration(context, variable);
-                }
-
-                String methodName = parts[1];
-
-                for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(context, className,
-                        methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
-                    IndexedFunction func = classMember.getMember();
-
-                    varType = func.getReturnType();
-                }
-            } else if (rawType.startsWith(METHOD_TYPE_PREFIX)) {
-                String parts[] = rawType.substring(METHOD_TYPE_PREFIX.length()).split("\\.");
-                String varName = parts[0];
-                String methodName = parts[1];
-                String className = null;
-
-                if ("$this".equals(varName)) { //NOI18N
-                    className = findClassNameEnclosingDeclaration(context, variable);
-                } else {
-                    IndexedVariable dispatcher = varStack.get(varName);
-
-                    if (dispatcher != null
-                            // preventing infinite loop
-                            && dispatcher != variable) {
-                        resolveFunctionType(context, index, varStack, dispatcher);
-                        className = dispatcher.getTypeName();
-                    }
-                }
-
-                if (className != null) {
-                    for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(context, className,
-                            methodName, QuerySupport.Kind.EXACT, Integer.MAX_VALUE)) {
-                        IndexedFunction func = classMember.getMember();
-                        varType = func.getReturnType();
-                    }
-                }
-            } else {
-                unresolvedType = false;
-            }
-
-            if (unresolvedType){
-                variable.setTypeName(varType);
-            }
-        }
-    }
 
     public static String extractVariableType(Assignment assignment) {
         Expression rightSideExpression = assignment.getRightHandSide();
@@ -496,8 +352,10 @@ public class CodeUtils {
         if (expr instanceof Scalar) {
             Scalar scalar = (Scalar) expr;
                 return scalar.getStringValue();
+        } else if (expr instanceof ArrayCreation) {
+            return "array()";//NOI18N
         }
-        return expr == null ? null : "";//NOI18N
+        return expr == null ? null : " ";//NOI18N
     }
     
     public static String getParamDisplayName(FormalParameter param) {

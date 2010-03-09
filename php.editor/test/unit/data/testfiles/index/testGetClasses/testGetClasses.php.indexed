@@ -1,0 +1,79 @@
+
+
+Document 0
+Searchable Keys:
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  clz : aaa;AAA;12;;;IAAA;1;
+  top : aaa
+
+Not Searchable Keys:
+
+
+Document 3
+Searchable Keys:
+  clz : bbb;BBB;40;AAA;;IBBB;1;
+  top : bbb
+
+Not Searchable Keys:
+
+
+Document 4
+Searchable Keys:
+  clz : ccc;CCC;80;BBB;;ICCC;1;
+  top : ccc
+
+Not Searchable Keys:
+
+
+Document 5
+Searchable Keys:
+  identifier_used : aaa;
+  identifier_used : aaa;
+  identifier_used : bbb;
+  identifier_used : bbb;
+  identifier_used : ccc;
+  identifier_used : iaaa;
+  identifier_used : iaaa;
+  identifier_used : iaaa;
+  identifier_used : ibbb;
+  identifier_used : ibbb;
+  identifier_used : ibbb;
+  identifier_used : iccc;
+  identifier_used : iccc;
+
+Not Searchable Keys:
+
+
+Document 6
+Searchable Keys:
+  iface : iaaa;IAAA;124;;;
+  top : iaaa
+
+Not Searchable Keys:
+
+
+Document 7
+Searchable Keys:
+  iface : ibbb;IBBB;142;IAAA;;
+  top : ibbb
+
+Not Searchable Keys:
+
+
+Document 8
+Searchable Keys:
+  iface : iccc;ICCC;173;IBBB;;
+  top : iccc
+
+Not Searchable Keys:

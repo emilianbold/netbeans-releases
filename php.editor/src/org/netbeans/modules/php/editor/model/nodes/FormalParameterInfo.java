@@ -39,14 +39,17 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
-import org.netbeans.modules.php.editor.model.impl.ParameterImpl;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 
@@ -55,7 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
  * @author Radek Matous
  */
 public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
-    private ParameterImpl parameter;
+    private ParameterElement parameter;
     private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
         super(node);
         FormalParameter formalParameter = getOriginalNode();
@@ -67,7 +70,7 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         if (types == null) {
             types = Collections.emptyList();
         }
-        parameter = new ParameterImpl(name, defVal, types, isRawType,getRange());
+        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(), TypeResolverImpl.forNames(types), isRawType);
     }
 
     public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
@@ -98,7 +101,7 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         return ASTNodeInfo.toOffsetRange(formalParameter.getParameterName());
     }
 
-    public Parameter toParameter() {
+    public ParameterElement toParameter() {
         return parameter;
     }
 }

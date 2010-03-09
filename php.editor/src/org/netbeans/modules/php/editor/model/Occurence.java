@@ -40,16 +40,17 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 
 /**
  * @author Radek Matous
  */
 public interface Occurence{
-    ModelElement getDeclaration();
+    PhpElement getDeclaration();
     /**mostly the same as getDeclaration. In case of __constructor are different*/
-    ModelElement gotoDeclaratin();
+    PhpElement gotoDeclaratin();
     boolean gotoDeclarationEnabled();
-    Collection<? extends ModelElement> getAllDeclarations();
+    Collection<? extends PhpElement> getAllDeclarations();
     Collection<Occurence> getAllOccurences();
     OffsetRange getOccurenceRange();
 }

@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;

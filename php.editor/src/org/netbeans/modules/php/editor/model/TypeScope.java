@@ -40,7 +40,8 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
 /**
  * @author Radek Matous
@@ -52,8 +53,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
  * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
  * ClassScope: Collection<? extends ClassScope> getSuperClasses();
  */
-public interface TypeScope extends Scope {
-    PhpModifiers getPhpModifiers();
+public interface TypeScope extends Scope, FullyQualifiedElement, TypeElement {
     /**
      * @return declared methods only
      */
@@ -69,13 +69,6 @@ public interface TypeScope extends Scope {
 
     Collection<? extends ClassConstantElement> getDeclaredConstants();
     Collection<? extends ClassConstantElement> getInheritedConstants();
-    Collection<? extends InterfaceScope> getSuperInterfaces();
+    Collection<? extends InterfaceScope> getSuperInterfaceScopes();
     Collection<? extends String> getSuperInterfaceNames();
-
-    Collection<? extends ClassConstantElement> findInheritedConstants(String constName);
-    Collection<? extends MethodScope> findInheritedMethods(final String queryName);
-    Collection<? extends MethodScope> findDeclaredMethods(final String queryName, final int... modifiers);
-    Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final String... queryName);
-    Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName);
 }

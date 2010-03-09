@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

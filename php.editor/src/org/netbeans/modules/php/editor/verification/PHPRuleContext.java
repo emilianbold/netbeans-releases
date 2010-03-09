@@ -42,7 +42,9 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.List;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
@@ -53,13 +55,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 class PHPRuleContext extends RuleContext {
     PHPVerificationVisitor.VariableStack variableStack;
     List<ASTNode> path;
-    private PHPIndex index;
+    private ElementQuery.Index index;
     @NullAllowed
     FileScope fileScope;
 
-    public PHPIndex getIndex() {
+    public ElementQuery.Index getIndex() {
         if (index == null) {
-            index = PHPIndex.get(parserResult);
+            index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(parserResult));
         }
         return index;
     }

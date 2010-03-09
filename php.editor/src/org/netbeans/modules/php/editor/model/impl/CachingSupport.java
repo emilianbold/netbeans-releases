@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -56,8 +57,7 @@ import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 
@@ -96,7 +96,7 @@ class CachingSupport {
         if (modelSupport != null) {
             retval = modelSupport.getInheritedMergedConstants((ClassScopeImpl)clsScope, constName);
         } else {
-            retval = clsScope.findInheritedConstants(constName);
+            retval = ModelUtils.filter(clsScope.getInheritedConstants(), constName);
         }
         return retval;
     }
@@ -109,7 +109,7 @@ class CachingSupport {
         if (cachingSupport != null) {
             retval = cachingSupport.getInheritedMergedFields((ClassScopeImpl)clsScope, fieldName);
         } else {
-            retval = clsScope.findInheritedFields(fieldName);
+            retval = ModelUtils.filter(clsScope.getInheritedFields(), fieldName);
         }
         return retval;
     }
@@ -120,7 +120,8 @@ class CachingSupport {
         if (cachingSupport != null) {
             retval = cachingSupport.getMergedMethods((ClassScopeImpl)clsScope, methodName);
         } else {
-            retval = clsScope.findDeclaredMethods(methodName, modifiers);
+            //retval = clsScope.findDeclaredMethods(methodName, modifiers);
+            retval = ModelUtils.filter(clsScope.getInheritedMethods(), methodName);
         }
         return retval;
     }
@@ -132,7 +133,8 @@ class CachingSupport {
         if (cachingSupport != null) {
             retval = cachingSupport.getInheritedMergedMethods((TypeScopeImpl)typeScope, methodName);
         } else {
-            retval = typeScope.findInheritedMethods(methodName);
+            //retval = typeScope.findInheritedMethods(methodName);
+            retval = ModelUtils.filter(typeScope.getInheritedMethods(), methodName);
         }
         return retval;
     }
@@ -201,8 +203,7 @@ class CachingSupport {
     private Collection<? extends ClassConstantElement> getInheritedMergedConstants(ClassScopeImpl clsScope, String constName) {
         Collection<? extends ClassConstantElement> fields = getCachedClassConstants(clsScope, constName);
         if (fields.isEmpty()) {
-            clsScope.findInheritedConstants(constName);
-            fields = (clsScope != null ? clsScope.findInheritedConstants(constName) : Collections.<ClassConstantElementImpl>emptyList());
+            fields = (clsScope != null ? ModelUtils.filter(clsScope.getInheritedConstants(), constName) : Collections.<ClassConstantElementImpl>emptyList());
             if (fields.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 fields = (clsScope != null ? indexScope.findInheritedClassConstants(clsScope,constName) : Collections.<ClassConstantElementImpl>emptyList());
@@ -222,7 +223,10 @@ class CachingSupport {
     private List<? extends FieldElement>  getInheritedMergedFields(ClassScopeImpl clsScope, String fieldName) {
         List<? extends FieldElement> fields = getCachedFields(clsScope, fieldName);
         if (fields.isEmpty()) {
-            fields = (clsScope != null ? clsScope.findInheritedFields(fieldName) : Collections.<FieldElementImpl>emptyList());
+            fields = ModelUtils.filter(clsScope.getDeclaredFields(), fieldName);
+            if (fields.isEmpty()) {
+                fields = (clsScope != null ? ModelUtils.filter(clsScope.getInheritedFields(), fieldName) : Collections.<FieldElementImpl>emptyList());
+            }
             if (fields.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
                 fields = (clsScope != null ? indexScope.findInheritedFields(clsScope,fieldName) : Collections.<FieldElementImpl>emptyList());
@@ -243,7 +247,7 @@ class CachingSupport {
         if (methods.isEmpty()) {
             methods = ModelUtils.filter(typeScope.getDeclaredMethods(), methodName);
             if (methods.isEmpty()) {
-                methods = (typeScope != null ? typeScope.findInheritedMethods(methodName) : Collections.<MethodScopeImpl>emptyList());
+                methods = (typeScope != null ? ModelUtils.filter(typeScope.getInheritedMethods(), methodName) : Collections.<MethodScopeImpl>emptyList());
             }
             if (methods.isEmpty()) {
                 IndexScope indexScope = fileScope.getIndexScope();
@@ -372,7 +376,7 @@ class CachingSupport {
     private List<? extends InterfaceScope> getCachedInterfaces(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(ifaceScopes, new ModelUtils.ElementFilter<InterfaceScope>() {
             public boolean isAccepted(InterfaceScope element) {
-                return element.getPhpKind().equals(PhpKind.IFACE) &&
+                return element.getPhpElementKind().equals(PhpElementKind.IFACE) &&
                         (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
@@ -385,7 +389,7 @@ class CachingSupport {
     private List<? extends ClassScope> getCachedClasses(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(classScopes, new ModelUtils.ElementFilter<ClassScope>() {
             public boolean isAccepted(ClassScope element) {
-                return element.getPhpKind().equals(PhpKind.CLASS) &&
+                return element.getPhpElementKind().equals(PhpElementKind.CLASS) &&
                         (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
@@ -400,10 +404,10 @@ class CachingSupport {
         if (toFilter == null) return Collections.emptyList();
         return ModelUtils.filter(toFilter, new ModelUtils.ElementFilter<FieldElement>() {
             public boolean isAccepted(FieldElement element) {
-                return element.getPhpKind().equals(PhpKind.FIELD) &&
+                return element.getPhpElementKind().equals(PhpElementKind.FIELD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
                         (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
+                        (element.getPhpModifiers().toFlags() & PhpModifiers.fromBitMask(modifiers).toFlags()) != 0);
             }
         });
     }
@@ -416,7 +420,7 @@ class CachingSupport {
         if (toFilter == null) return Collections.emptyList();
         return ModelUtils.filter(toFilter, new ModelUtils.ElementFilter<ClassConstantElement>() {
             public boolean isAccepted(ClassConstantElement element) {
-                return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
+                return element.getPhpElementKind().equals(PhpElementKind.TYPE_CONSTANT) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName);
             }
         });
@@ -433,9 +437,9 @@ class CachingSupport {
 
         List<? extends MethodScope> retval = ModelUtils.filter(toFilter, new ModelUtils.ElementFilter<MethodScope>() {
             public boolean isAccepted(MethodScope element) {
-                return element.getPhpKind().equals(PhpKind.METHOD) &&
+                return element.getPhpElementKind().equals(PhpElementKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
-                        (modifiers.length == 0 || (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
+                        (modifiers.length == 0 || (element.getPhpModifiers().toFlags() & PhpModifiers.fromBitMask(modifiers).toFlags()) != 0);
             }
 
         });
@@ -475,7 +479,7 @@ class CachingSupport {
     public List<? extends FunctionScope> getCachedFunctions(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(fncScopes, new ModelUtils.ElementFilter<FunctionScope>() {
             public boolean isAccepted(FunctionScope element) {
-                return element.getPhpKind().equals(PhpKind.FUNCTION)  &&
+                return element.getPhpElementKind().equals(PhpElementKind.FUNCTION)  &&
                         (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
@@ -488,7 +492,7 @@ class CachingSupport {
     private List<? extends ConstantElement> getCachedConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         return ModelUtils.filter(constantScopes, new ModelUtils.ElementFilter<ConstantElement>() {
             public boolean isAccepted(ConstantElement element) {
-                return element.getPhpKind().equals(PhpKind.CONSTANT)  &&
+                return element.getPhpElementKind().equals(PhpElementKind.CONSTANT)  &&
                         (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
             }
         });
