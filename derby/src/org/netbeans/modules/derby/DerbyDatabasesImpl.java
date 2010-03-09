@@ -530,7 +530,7 @@ public final class DerbyDatabasesImpl {
         changeListeners.remove(listener);
     }
 
-    private  void notifyChange() {
+    void notifyChange() {
         ChangeEvent evt = new ChangeEvent(this);
 
         for ( ChangeListener listener : changeListeners ) {
