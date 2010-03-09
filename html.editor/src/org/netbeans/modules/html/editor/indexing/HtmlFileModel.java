@@ -50,6 +50,7 @@ import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,6 +59,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
@@ -186,10 +188,10 @@ public class HtmlFileModel {
             //XXX This is HTML specific - USE TagMetadata!!!
             //TODO this is a funny way how to figure out if the attribute contains
             //a file reference or not. The code needs to be generified later.
-            Map<String, AttrValuesCompletion> completions = AttrValuesCompletion.getSupportsForTag(node.name());
+            Map<String, ValueCompletion<HtmlCompletionItem>> completions = AttrValuesCompletion.getSupportsForTag(node.name());
             if(completions != null) {
                 for(Attribute attr : node.getAttributes()) {
-                    AttrValuesCompletion avc = completions.get(attr.name());
+                    ValueCompletion<HtmlCompletionItem> avc = completions.get(attr.name());
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
                         getReferencesCollectionInstance().add(

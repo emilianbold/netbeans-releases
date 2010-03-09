@@ -1,0 +1,37 @@
+{
+    String api_key = org.openide.util.NbPreferences.forModule(this.getClass()).get("flickr_api_key", null);
+    if (api_key == null) {
+        throw new NullPointerException("api_key is null");
+    }
+    String frob = null;
+    String[] queryParamNames = new String[]{"api_key", "method"};
+    String[] queryParamValues = new String[]{api_key, "flickr.auth.getFrob"};
+    String sig = signParams(queryParamNames, queryParamValues);
+
+    String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("api_sig", sig).get(String.class);
+
+    try {
+        frob = result.substring(result.indexOf("<frob>") + 6, result.indexOf("</frob>"));
+    } catch (Exception ex) {
+        throw new IOException("Failed to get frob: " + result);
+    }
+
+    String perms = "delete"; // setting read+write+delete permissions. Other possible values are write|read
+    queryParamNames = new String[]{"api_key", "frob", "perms"};
+    queryParamValues = new String[]{api_key, frob, perms};
+    sig = signParams(queryParamNames, queryParamValues);
+
+    String loginUrl = "http://www.flickr.com/services/auth/?api_key=" + api_key + "&frob=" + frob + "&perms=" + perms + "&api_sig=" + sig;
+
+    if (javax.swing.JOptionPane.showInputDialog(null,
+            "Please log into your Flickr account using the following URL to authorize this application and click OK after you are done:",
+            "Flickr Authorization Dialog",
+            javax.swing.JOptionPane.INFORMATION_MESSAGE,
+            null,
+            null,
+            loginUrl) == null) {
+        throw new IOException("Authorizatoin declined");
+    }
+
+    return frob;
+}

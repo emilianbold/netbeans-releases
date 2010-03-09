@@ -68,6 +68,7 @@ public class KTextArea extends JTextArea {
         setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backward);        
     }
     
+    @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         if (tab.equals(ks) || shiftTab.equals(ks)) return false;
         return super.processKeyBinding(ks, e, condition, pressed);

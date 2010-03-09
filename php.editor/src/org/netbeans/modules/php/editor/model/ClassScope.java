@@ -39,27 +39,20 @@
 package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 
 /**
  * @author Radek Matous
  */
-public interface ClassScope extends TypeScope, VariableScope {
-    Collection<? extends InterfaceScope> getSuperInterfaces();
+public interface ClassScope extends TypeScope, VariableScope, ClassElement {
     Collection<? extends ClassScope> getSuperClasses();
     Collection<? extends String> getSuperClassNames();
     Collection<? extends MethodScope> getDeclaredConstructors();
-    Collection<? extends MethodScope> getDeclaredMethods();
-    Collection<? extends MethodScope> getMethods();
-    Collection<? extends FieldElement> getDeclaredFields();
-    Collection<? extends ClassConstantElement> getDeclaredConstants();
-    Collection<? extends FieldElement> getFields();
-
-    
-    Collection<? extends FieldElement> findDeclaredFields(final int... modifiers);
-    Collection<? extends FieldElement> findDeclaredFields(final String queryName, final int... modifiers);
-    Collection<? extends FieldElement> findDeclaredFields(final QuerySupport.Kind nameKind, final String queryName, final int... modifiers);
-    Collection<? extends FieldElement> findInheritedFields(String fieldName);
+    Collection<? extends FieldElement> getDeclaredFields();    
+    /**
+     * @return inherited fields only
+     */
+    Collection<? extends FieldElement> getInheritedFields();
 
     public String getDefaultConstructorIndexSignature();
     //TODO: add getAllInheritedSuperClasses()

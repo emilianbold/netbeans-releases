@@ -1,0 +1,165 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.netbeans.modules.fcb</groupId>
+    <artifactId>facebook-module</artifactId>
+    <packaging>nbm</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>Netbeans Module facebook-module</name>
+    
+    <repositories>
+        <!-- this is a remote repository hosting the netbeans api artifacts.
+         the versions of the artifacts are netbeans IDE release based, eg. RELEASE65.
+         You might want to use your own repository. To create one, use the nbm:populate-repository goal.
+          -->
+        <repository>
+            <id>netbeans</id>
+            <name>repository hosting netbeans.org api artifacts</name>
+            <url>http://bits.netbeans.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>netbeans.snapshot</id>
+            <name>repository hosting netbeans.org api snapshot artifacts</name>
+            <url>http://bits.netbeans.org/netbeans/trunk/maven-snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+
+        <repository>
+            <id>codehaus.snapshot</id>
+            <name>repository hosting snapshot of the nbm-maven-plugin</name>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>apache.snapshot</id>
+            <name>repository hosting snapshot of the maven-compiler-plugin</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codehaus.snapshot</id>
+            <name>repository hosting snapshot of the nbm-maven-plugin</name>
+            <url>http://snapshots.repository.codehaus.org</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>apache.snapshot</id>
+            <name>repository hosting snapshot of the maven-compiler-plugin</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-windows</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-awt</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-websvc-restlib</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <artifactId>org-netbeans-api-progress</artifactId>
+            <groupId>org.netbeans.api</groupId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <artifactId>org-netbeans-modules-settings</artifactId>
+            <groupId>org.netbeans.api</groupId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <artifactId>org-openide-dialogs</artifactId>
+            <groupId>org.netbeans.api</groupId>
+            <version>SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <artifactId>org-openide-filesystems</artifactId>
+            <groupId>org.netbeans.api</groupId>
+            <version>SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <version>3.2-SNAPSHOT</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <descriptor>src/main/nbm/module.xml</descriptor>
+                </configuration>
+            </plugin>
+            
+            <!-- netbeans modules in 6.9+ are 1.6 compatible
+             2.2-SNAPSHOT is required to have netbeans api annotations work properly,
+             if you are not using these annotations, you can fallback to the latest released
+             maven-compiler-plugin version.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.2-SNAPSHOT</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <!-- to have the jar plugin pickup the nbm generated manifest -->
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <packageName>facebook.socialnetworkingservice.facebookresponse</packageName> <!-- The name of your generated source package -->
+                    <!--<outputDirectory>${basedir}/src/main/generated-source</outputDirectory>-->
+                    <schemaDirectory>${basedir}/src/main/resources/org/netbeans/saas/resources</schemaDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

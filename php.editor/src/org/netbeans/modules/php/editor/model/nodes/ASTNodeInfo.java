@@ -40,8 +40,8 @@ package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -133,37 +133,37 @@ public class ASTNodeInfo<T extends ASTNode> {
         return (kind == null) ? toKind(getOriginalNode()) : kind;
     }
 
-    public PhpKind getPhpKind() {
+    public PhpElementKind getPhpElementKind() {
         Kind k = getKind();
         switch (k) {
             case INCLUDE:
-                return PhpKind.INCLUDE;
+                return PhpElementKind.INCLUDE;
             case IFACE:
-                return PhpKind.IFACE;
+                return PhpElementKind.IFACE;
             case CLASS:
-                return PhpKind.CLASS;
+                return PhpElementKind.CLASS;
             case CLASS_INSTANCE_CREATION:
-                return PhpKind.CLASS;
+                return PhpElementKind.CLASS;
             case METHOD:
-                return PhpKind.METHOD;
+                return PhpElementKind.METHOD;
             case STATIC_METHOD:
-                return PhpKind.METHOD;
+                return PhpElementKind.METHOD;
             case FIELD:
-                return PhpKind.FIELD;
+                return PhpElementKind.FIELD;
             case STATIC_FIELD:
-                return PhpKind.FIELD;
+                return PhpElementKind.FIELD;
             case CLASS_CONSTANT:
-                return PhpKind.CLASS_CONSTANT;
+                return PhpElementKind.TYPE_CONSTANT;
             case STATIC_CLASS_CONSTANT:
-                return PhpKind.CLASS_CONSTANT;
+                return PhpElementKind.TYPE_CONSTANT;
             case VARIABLE:
-                return PhpKind.VARIABLE;
+                return PhpElementKind.VARIABLE;
             case CONSTANT:
-                return PhpKind.CONSTANT;
+                return PhpElementKind.CONSTANT;
             case FUNCTION:
-                return PhpKind.FUNCTION;
+                return PhpElementKind.FUNCTION;
             case USE_STATEMENT:
-                return PhpKind.USE_STATEMENT;
+                return PhpElementKind.USE_STATEMENT;
         }
         throw new IllegalStateException();
     }

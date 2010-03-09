@@ -41,9 +41,9 @@ package org.netbeans.modules.php.editor.model.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
@@ -153,6 +153,6 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     }
 
     public PhpModifiers getAccessModifiers() {
-        return new PhpModifiers(PhpModifiers.PUBLIC);
+        return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
 }

@@ -1,0 +1,33 @@
+{
+    if (application_secret == null) {
+        throw new NullPointerException("secret is null");
+    }
+    java.util.TreeMap<String, String> map = new java.util.TreeMap<String, String>();
+    for (int i = 0; i < paramNames.length; i++) {
+        String key = paramNames[i];
+        String value = paramValues[i];
+        if (value != null) {
+            map.put(key, value);
+        }
+    }
+    for (String param : optionalParams) {
+        String[] par = param.split("=");
+        if (par.length > 1) {
+            map.put(par[0], par[1]);
+        }
+    }
+    try {
+        String signature = "";
+        java.util.Set<java.util.Map.Entry<String, String>> entrySet = map.entrySet();
+        for (java.util.Map.Entry<String, String> entry : entrySet) {
+            signature += entry.getKey() + "=" + entry.getValue();
+        }
+        signature += application_secret;
+        java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+        byte[] sum = md.digest(signature.getBytes("UTF-8"));
+        java.math.BigInteger bigInt = new java.math.BigInteger(1, sum);
+        return bigInt.toString(16);
+    } catch (java.security.NoSuchAlgorithmException ex) {
+    }
+    return "";
+}

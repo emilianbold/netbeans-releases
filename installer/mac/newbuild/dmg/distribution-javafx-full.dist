@@ -107,6 +107,7 @@ function checkChoiceUpgradeAction() {
             <line choice="javase"></line>
             <line choice="javafx"></line>
             <line choice="javaee"></line>
+            <line choice="javame"></line>
             <line choice="cpp"></line>
             <line choice="ruby"></line>
             <line choice="groovy"></line>
@@ -142,6 +143,9 @@ function checkChoiceUpgradeAction() {
     <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
+    <choice id="javame" title="javame-title" description="javame-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javame.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+        <pkg-ref id="ident.pkg.javame"></pkg-ref>
+    </choice>
     <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.cpp"></pkg-ref>
     </choice>
@@ -165,6 +169,7 @@ function checkChoiceUpgradeAction() {
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javafx" version="0.0.0.0.1" installKBytes="@SIZE_JAVAFX@" auth="Root" onConclusion="None">file:./Contents/Packages/javafx-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javame" version="0.0.0.0.1" installKBytes="@SIZE_JAVAME@" auth="Root" onConclusion="None">file:./Contents/Packages/javame-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">file:./Contents/Packages/groovy-@NB_ID@.pkg</pkg-ref>

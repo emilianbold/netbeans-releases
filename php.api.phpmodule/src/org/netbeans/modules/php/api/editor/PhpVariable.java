@@ -44,7 +44,7 @@ package org.netbeans.modules.php.api.editor;
  * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpVariable extends PhpElement {
+public final class PhpVariable extends PhpBaseElement {
 
     public PhpVariable(String name, String fullyQualifiedName, String description) {
         super(name, fullyQualifiedName, description);

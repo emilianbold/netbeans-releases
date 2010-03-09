@@ -91,6 +91,7 @@ import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
@@ -432,6 +433,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onTemplate();
             }
         });
+        Spellchecker.register (messageTextArea);
     }
 
     private Component makeVerticalStrut(JComponent compA,

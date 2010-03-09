@@ -43,10 +43,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 
@@ -104,8 +105,8 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
             }
 
             @Override
-            public PhpKind getPhpKind() {
-                return PhpKind.CLASS;
+            public PhpElementKind getPhpElementKind() {
+                return PhpElementKind.CLASS;
             }
         };
     }
@@ -140,11 +141,11 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
                 typeOffset+getReturnType().length());
     }
 
-    public List<? extends Parameter> getParameters() {
+    public List<? extends ParameterElement> getParameters() {
         return Collections.emptyList();
     }
     
     public PhpModifiers getAccessModifiers() {
-        return new PhpModifiers(PhpModifiers.PUBLIC);
+        return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
 }

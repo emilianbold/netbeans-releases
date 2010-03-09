@@ -44,7 +44,7 @@ package org.netbeans.modules.php.api.editor;
  * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpFunction extends PhpElement {
+public final class PhpFunction extends PhpBaseElement {
 
     public PhpFunction(String name, String fullyQualifiedName, String description) {
         super(name, fullyQualifiedName, description);

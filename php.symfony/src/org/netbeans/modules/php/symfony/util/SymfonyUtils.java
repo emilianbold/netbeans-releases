@@ -41,7 +41,7 @@ package org.netbeans.modules.php.symfony.util;
 
 import java.io.File;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,7 +85,7 @@ public final class SymfonyUtils {
         return null;
     }
 
-    public static FileObject getView(FileObject fo, PhpElement phpElement) {
+    public static FileObject getView(FileObject fo, PhpBaseElement phpElement) {
         FileObject view = null;
         if (phpElement instanceof PhpClass.Method) {
             String methodName = phpElement.getName();

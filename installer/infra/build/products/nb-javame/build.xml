@@ -66,6 +66,9 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="linux"/>
         </antcall>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+        </antcall>
     </target>
     
     <!--
@@ -83,6 +86,10 @@
             <param name="product.platforms" value="linux"/>
             <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
         </antcall>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.macosx}"/>
+        </antcall>
     </target>
     
     <!--
@@ -99,6 +106,10 @@
         <antcall target="release-platform">
             <param name="product.platforms" value="linux"/>
             <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
+        </antcall>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.macosx}"/>
         </antcall>
     </target>
     
@@ -162,6 +173,17 @@
             </if>
 
             <if property="product.platforms" value="windows">
+            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
+            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
+
+            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
+                <fileset dir="${data.directory}">
+		    <exclude name="${mobility.cluster}"/>
+		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
+                </fileset>
+            </move>
+            </if>
+            <if property="product.platforms" value="macosx-x86 macosx-ppc">
             <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
             <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
 

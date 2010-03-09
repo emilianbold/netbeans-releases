@@ -47,5 +47,4 @@ import java.util.Collection;
  */
 public interface FieldElement extends ClassMemberElement, TypeAssignments {
     Collection<? extends String> getDefaultTypeNames();
-    PhpModifiers getPhpModifiers();
 }

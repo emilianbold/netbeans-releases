@@ -45,18 +45,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
-import org.netbeans.modules.php.editor.index.IndexedVariable;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -90,7 +90,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     };
     private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
     private boolean globallyVisible;
-    VariableNameImpl(IndexScope inScope, IndexedVariable indexedVariable) {
+    VariableNameImpl(IndexScope inScope, VariableElement indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
@@ -105,7 +105,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 toName(variable), inScope.getFile(), toOffsetRange(variable), globallyVisible);
     }
     VariableNameImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, boolean globallyVisible) {
-        super(inScope, name, file, offsetRange, PhpKind.VARIABLE);
+        super(inScope, name, file, offsetRange, PhpElementKind.VARIABLE);
         this.globallyVisible = globallyVisible;
     }
 
@@ -369,6 +369,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         final String varName = getName();
         sb.append(varName.toLowerCase()).append(";");//NOI18N
         sb.append(varName).append(";");//NOI18N
+        //makes little sense because the variable with the same name can exists in huge number of files
+        /*
+        Set<String> typeNames = new HashSet<String>(getTypeNames(getNameRange().getEnd()+1));
+        if (typeNames.size() == 1) {
+            for (String typeName : typeNames) {
+                if (!typeName.contains("@")) {
+                    sb.append(typeName);
+                    break;
+                }
+            }
+        }*/
         sb.append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
         return sb.toString();
@@ -424,7 +435,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             TypeScope type = ModelUtils.getFirst(types);
             if (type instanceof ClassScope) {
                 ClassScope cls = (ClassScope) type;
-                field = (FieldElementImpl) ModelUtils.getFirst(cls.findDeclaredFields(fldName, PHPIndex.ANY_ATTR));
+                field = (FieldElementImpl) ModelUtils.getFirst(cls.getDeclaredFields(), fldName);
                 if (field != null) {
                     FieldAssignmentImpl fa = new FieldAssignmentImpl(VariableNameImpl.this, (FieldElementImpl) field, scope, scope.getBlockRange(), range, typeName);
                     addElement(fa);

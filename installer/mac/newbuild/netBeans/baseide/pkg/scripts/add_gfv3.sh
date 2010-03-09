@@ -12,6 +12,8 @@ fi
 if [ -d "$nb_dir" ] && [ -d "$gf_dir" ]
 then
   cd "$nb_dir" 
+  cd Contents/Resources/NetBeans*/
+  curdir=`pwd`
   dirname=`dirname "$0"`
   jdk_home=`"$dirname"/get_current_jdk.sh`
   "$jdk_home"/bin/java -cp \
@@ -19,7 +21,7 @@ then
                            \
                            org.netbeans.modules.glassfish.common.registration.AutomaticRegistration \
                            \
-                           "$nb_dir/nb" \
+                           "$curdir/nb" \
                            "$gf_dir/glassfish"
   val=$?
 

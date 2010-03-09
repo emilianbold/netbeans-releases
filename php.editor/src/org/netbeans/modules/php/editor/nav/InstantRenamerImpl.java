@@ -47,15 +47,15 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 
 /**
  *
@@ -76,7 +76,7 @@ public class InstantRenamerImpl implements InstantRenamer {
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
             if (IS_RENAME_REFACTORING_ENABLED) {
-                ModelElement decl = caretOccurence.getDeclaration();
+                PhpElement decl = caretOccurence.getDeclaration();
                 if (caretOccurence.getAllDeclarations().size() > 1) {
                     return false;
                 }

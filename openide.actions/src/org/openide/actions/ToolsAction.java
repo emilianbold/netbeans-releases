@@ -58,8 +58,10 @@ import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.util.LookupListener;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
@@ -150,8 +152,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         arr.addAll(Arrays.<Action>asList(am.getContextActions()));
 
         String pref = arr.isEmpty() ? null : "";
-        Lookup.Result<Action> result = Lookups.forPath("UI/ToolActions").lookupResult(Action.class); // NOI18N
-        for (Lookup.Item<Action> item : result.allItems()) {
+        for (Lookup.Item<Action> item : gl().result.allItems()) {
             final Action action = item.getInstance();
             if (action == null) {
                 continue;
@@ -387,15 +388,18 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     //------------------------------------------------
     //----------------------------------------------------------
-    private static class G implements PropertyChangeListener {
+    private static class G implements PropertyChangeListener, LookupListener {
         public static final String PROP_STATE = "actionsState"; // NOI18N
         private int timestamp = 1;
         private Action[] actions = null;
         private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+        final Lookup.Result<Action> result;
 
         public G() {
             ActionManager am = ActionManager.getDefault();
             am.addPropertyChangeListener(this);
+            result = Lookups.forPath("UI/ToolActions").lookupResult(Action.class); // NOI18N
+            result.addLookupListener(this);
             actionsListChanged();
         }
 
@@ -428,7 +432,10 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             }
 
             ActionManager am = ActionManager.getDefault();
-            copy = am.getContextActions();
+            List<Action> all = new ArrayList<Action>();
+            all.addAll(Arrays.asList(am.getContextActions()));
+            all.addAll(result.allInstances());
+            copy = all.toArray(new Action[0]);
 
             for (int i = 0; i < copy.length; i++) {
                 Action act = copy[i];
@@ -498,6 +505,11 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
         private int getTimestamp() {
             return timestamp;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            actionsListChanged();
         }
     }
 

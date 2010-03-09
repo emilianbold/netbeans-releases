@@ -39,28 +39,23 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.PHPElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
 /**
  * @author Radek Matous
  */
-public interface ModelElement {
-    String getName();
+public interface ModelElement extends PhpElement {
     @CheckForNull
     String getIndexSignature();
-    PhpKind getPhpKind();
     public Union2<String, FileObject> getFile();
-    FileObject getFileObject();
-    int getOffset();
     Scope getInScope();
-    PHPElement getPHPElement();
+    ElementHandle getPHPElement();
     OffsetRange getNameRange();
-    PhpModifiers getPhpModifiers();
     QualifiedName getNamespaceName();
-    //PhpFileScope getFileScope();
-    //IndexScope getIndexScope();
 }

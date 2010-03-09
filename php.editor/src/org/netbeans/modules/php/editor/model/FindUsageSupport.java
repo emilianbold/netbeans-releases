@@ -50,7 +50,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -62,11 +62,11 @@ public final class FindUsageSupport {
     private Set<FileObject> files;
     private ModelElement element;
 
-    public static FindUsageSupport getInstance(PHPIndex index, ModelElement element) {
+    public static FindUsageSupport getInstance(ElementQuery.Index index, ModelElement element) {
         return new FindUsageSupport(index, element);
     }
 
-    private FindUsageSupport(PHPIndex index, ModelElement element) {
+    private FindUsageSupport(ElementQuery.Index index, ModelElement element) {
         this.element = element;
         this.files = new LinkedHashSet<FileObject>();
         this.files.add(element.getFileObject());
@@ -74,7 +74,7 @@ public final class FindUsageSupport {
         if (name.startsWith("$")) {//NOI18N
             name = name.substring(1);
         }
-        this.files.addAll(index.filesWithIdentifiers(name));
+        this.files.addAll(index.getLocationsForIdentifiers(name));
     }
 
     @CheckForNull

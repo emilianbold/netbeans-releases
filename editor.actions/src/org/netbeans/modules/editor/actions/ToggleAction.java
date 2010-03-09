@@ -74,7 +74,7 @@ import org.netbeans.api.editor.EditorActionNames;
         menuPath = "View",
         menuPosition = 870,
         menuText = "#" + EditorActionNames.toggleNonPrintableCharacters + "_menu_text",
-        preferencesKey = "" //SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE
+        preferencesKey = SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE
     )
 })
 public final class ToggleAction extends AbstractEditorAction {
