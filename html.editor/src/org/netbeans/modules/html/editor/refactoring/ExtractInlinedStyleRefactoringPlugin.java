@@ -326,13 +326,27 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 int deleteFrom = si.getAttributeStartOffset();
                 int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
                 String idSelectorUsageText = "id=\""+ idSelectorName + "\""; //NOI18N
+                String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
 
-                Difference diff = new Difference(Difference.Kind.CHANGE,
+                Difference diff;
+                if(si.getRange().isEmpty()) {
+                    //empty value of the style attribute - just delete
+                    diff = new Difference(Difference.Kind.REMOVE,
                         currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
                         currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
-                        context.getDocument().getText(deleteFrom, deleteTo - deleteFrom),
+                        originalText,
+                        null,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveEmptyStyleAttribute")); //NOI18N
+                } else {
+                    diff = new Difference(Difference.Kind.CHANGE,
+                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                        originalText,
                         idSelectorUsageText,
                         NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
+                }
+
+                
 
                 diffs.add(diff);
 
