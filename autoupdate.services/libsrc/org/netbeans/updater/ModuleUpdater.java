@@ -99,7 +99,7 @@ public final class ModuleUpdater extends Thread {
     public static final String UPDATER_JAR = "updater.jar"; // NOI18N
     public static final String AUTOUPDATE_UPDATER_JAR_PATH = "netbeans/modules/ext/" + UPDATER_JAR; // NOI18N
 
-    public static final String EXECUTABLE_FILES_ENTRY = "Info/executable.list";
+    public static final String EXECUTABLE_FILES_ENTRY = "Info/executables.list";
     
     /** files that are supposed to be installed (when running inside the ide) */
     private Collection<File> forInstall;
