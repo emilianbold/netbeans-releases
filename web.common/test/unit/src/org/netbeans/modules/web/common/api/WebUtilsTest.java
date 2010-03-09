@@ -88,4 +88,19 @@ public class WebUtilsTest extends CslTestBase {
 
     }
 
+    public void testResolveInvalidLinks() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        //test resolve invalid path reference
+        FileReference resolved = WebUtils.resolveToReference(one, "xyz");
+        assertNull(resolved);
+        
+        resolved = WebUtils.resolveToReference(one, "");
+        assertNull(resolved);
+
+    }
+
 }
