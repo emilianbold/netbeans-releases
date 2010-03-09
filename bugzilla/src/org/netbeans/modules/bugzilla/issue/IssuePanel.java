@@ -534,7 +534,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
-        if (force) {
+        if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
         updateTasklistButton();

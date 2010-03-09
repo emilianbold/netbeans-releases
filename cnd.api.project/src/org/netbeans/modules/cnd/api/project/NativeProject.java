@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.api.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public interface NativeProject {
@@ -157,5 +158,11 @@ public interface NativeProject {
      * @param args Arguments
      * @return NativeExitStatus
      */
-    public NativeExitStatus execute(final String executable, final String[] env, final String... args);
+    public NativeExitStatus execute(final String executable, final String[] env, final String... args) throws IOException;
+
+    /**
+     * Return the name of the development platform (Solaris-x86, Solaris-sparc, MacOSX, Windows, Linux-x86)
+     * @return development platform name
+     */
+    public String getPlatformName();
 }

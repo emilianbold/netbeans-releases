@@ -1812,10 +1812,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        StatusDisplayer.getDefault().setStatusText(
-                            FormUtils.getFormattedBundleString(
-                                "FMT_PreparingForm", // NOI18N
-                                new Object[] { formEditor.getFormDataObject().getName() }));
+                        if (formEditor != null) {
+                            StatusDisplayer.getDefault().setStatusText(
+                                FormUtils.getFormattedBundleString(
+                                    "FMT_PreparingForm", // NOI18N
+                                    new Object[] { formEditor.getFormDataObject().getName() }));
+                        }
                     }
                 });
             }

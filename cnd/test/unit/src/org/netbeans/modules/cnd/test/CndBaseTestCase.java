@@ -169,27 +169,10 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
         super(testName);
-        setupUserDir();
     }
 
     public CndBaseTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
-        setupUserDir();
-    }
-
-    private void setupUserDir() {
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
-        File userDir = getUserDir();
-        userDir.mkdirs();
-        System.setProperty("netbeans.user", userDir.getAbsolutePath());
-    }
-
-    protected File getUserDir() {
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
-        File dataDir = getDataDir();
-        File dataDirParent = dataDir.getParentFile();
-        File userDir = new File(dataDirParent, "userdir");
-        return userDir;
     }
 
     @Override
