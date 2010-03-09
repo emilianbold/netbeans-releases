@@ -290,6 +290,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         @Override
         void updateUI( Manager manager, TestSession session) {
             manager.displayReport(session, session.getReport(toMillis(matcher.group(1))));
+            manager.sessionFinished(session);
         }
     }
 

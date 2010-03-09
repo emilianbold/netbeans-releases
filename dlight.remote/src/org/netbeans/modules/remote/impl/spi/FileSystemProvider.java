@@ -37,42 +37,44 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makefile.model;
+package org.netbeans.modules.remote.impl.spi;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 
 /**
- *
- * @author Alexey Vladykin
+ * A temporary solution until we have an official file system provider in thus module
+ * @author Andrew Krasny
+ * @author Vladimir Kvashin
  */
-public final class MakefileUtils {
+public abstract class FileSystemProvider {
 
-    private MakefileUtils() {}
+    private static final FileSystemProvider DEFAULT = new FileSystemProviderImpl();
 
-    private static final Set<String> PREFERRED_TARGETS = new HashSet<String>(Arrays.asList(
-            // see http://www.gnu.org/prep/standards/html_node/Standard-Targets.html
-            "all", // NOI18N
-            "install", // NOI18N
-            "uninstall", // NOI18N
-            "clean", // NOI18N
-            "distclean", // NOI18N
-            "dist", // NOI18N
-            "check", // NOI18N
-
-            // targets written by CND
-            "build", // NOI18N
-            "build-tests", // NOI18N
-            "clobber", // NOI18N
-            "help", // NOI18N
-            "test")); // NOI18N
-
-    public static boolean isPreferredTarget(String target) {
-        return PREFERRED_TARGETS.contains(target);
+    protected FileSystemProvider() {
     }
 
-    public static boolean isRunnableTarget(String target) {
-        return 0 < target.length() && target.charAt(0) != '.' && !target.contains("%"); // NOI18N
+    protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
+
+    public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
+        return DEFAULT.getFileSystemImpl(env, root);
+    }
+
+    private static class FileSystemProviderImpl extends FileSystemProvider {
+
+        public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
+            FileSystem result = null;
+
+            for (FileSystemProvider provider : allProviders) {
+                if ((result = provider.getFileSystemImpl(env, root)) != null) {
+                    break;
+                }
+            }
+
+            return result;
+        }
     }
 }
