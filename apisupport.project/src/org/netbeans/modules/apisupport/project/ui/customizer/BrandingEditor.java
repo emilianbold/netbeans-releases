@@ -149,7 +149,8 @@ public class BrandingEditor {
         panels = new AbstractBrandingPanel[] {
             new BasicBrandingPanel(model),
             new SplashBrandingPanel(model),
-            new WindowSystemBrandingPanel(model)
+            new WindowSystemBrandingPanel(model),
+            new ResourceBundleBrandingPanel(model)
         };
         //TODO restrict the functionality of generic resource bundle editor when platform context isn't available
         saveAction = new AbstractAction() {
