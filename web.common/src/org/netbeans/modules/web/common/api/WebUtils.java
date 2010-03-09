@@ -109,7 +109,11 @@ public class WebUtils {
                     FileObject parent = source.getParent();
                     if(parent != null) {
                         FileObject resolvedFileObject = parent.getFileObject(importedFileName);
-                        if (resolvedFileObject != null && resolvedFileObject.isValid()) {
+                        //test if the link is resolved to something else than the parent file,
+                        //which may happen at least in the case of empty importedFileName string
+                        if (resolvedFileObject != null &&
+                                resolvedFileObject.isValid() &&
+                                !resolvedFileObject.equals(parent)) {
                             //normalize the file (may contain xxx/../../yyy parts which
                             //causes that fileobject representing the same file are not equal
                             File resolvedFile = FileUtil.toFile(resolvedFileObject);
