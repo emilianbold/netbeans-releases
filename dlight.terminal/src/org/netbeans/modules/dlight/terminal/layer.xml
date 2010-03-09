@@ -49,7 +49,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="TerminalContainerTopComponent.wstcref" url="ui/TerminalContainerTopComponentWstcref.xml"/>
+                <file name="TerminalContainerTopComponent.wstcref" url="ui/TerminalContainerTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2750"/>
+                </file>
             </folder>
         </folder>
     </folder>
