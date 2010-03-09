@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>demo.rest.mvn</groupId>
     <artifactId>rest-sample-application</artifactId>
@@ -87,6 +87,7 @@
                     <version>3.2-SNAPSHOT</version>
                     <extensions>true</extensions>
                     <configuration>
+                        <descriptor>src/main/nbm/module.xml</descriptor>
                         <brandingToken>${brandingToken}</brandingToken>
                         <cluster>foobar</cluster>
                     </configuration>
@@ -112,6 +113,7 @@
     <modules>
         <module>branding</module>
         <module>application</module>
+        <module>restsample</module>
     </modules>
     <properties>
         <netbeans.version>SNAPSHOT</netbeans.version>
