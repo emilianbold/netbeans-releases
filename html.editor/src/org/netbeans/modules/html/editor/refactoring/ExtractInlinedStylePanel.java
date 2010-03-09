@@ -212,8 +212,10 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         buttonGroup1.add(existingExternalSheetRB);
         org.openide.awt.Mnemonics.setLocalizedText(existingExternalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ChooseExternalStyleSheet")); // NOI18N
+        existingExternalSheetRB.setEnabled(!allStylesheets.isEmpty());
 
         existingExternalStyleSheetsComboBox.setModel(createExistingExternalSheetsModel());
+        existingExternalStyleSheetsComboBox.setEnabled(!allStylesheets.isEmpty());
         existingExternalStyleSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 existingExternalStyleSheetsComboBoxActionPerformed(evt);
