@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.api;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -51,6 +50,7 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.openide.filesystems.FileObject;
 
@@ -92,7 +92,7 @@ public interface ElementQuery {
 
     Set<MethodElement> getConstructors(NameKind typeQuery);
 
-    Set<PhpElement> getTypeMembers(NameKind.Exact typeQuery, NameKind memberQuery);
+    Set<TypeMemberElement> getTypeMembers(NameKind.Exact typeQuery, NameKind memberQuery);
 
     Set<MethodElement> getMethods(NameKind.Exact typeQuery, NameKind methodQuery);
 
@@ -122,7 +122,7 @@ public interface ElementQuery {
 
         Set<MethodElement> getAccessibleMagicMethods(TypeElement type);
 
-        Set<PhpElement> getDeclaredTypeMembers(TypeElement typeElement);
+        Set<TypeMemberElement> getDeclaredTypeMembers(TypeElement typeElement);
 
         Set<MethodElement> getDeclaredMethods(TypeElement typeElement);
 
@@ -177,7 +177,7 @@ public interface ElementQuery {
          */
         Set<TypeConstantElement> getInheritedTypeConstants(TypeElement typeElement);
 
-        Set<PhpElement> getAccessibleTypeMembers(TypeElement typeElement, TypeElement calledFromEnclosingType);
+        Set<TypeMemberElement> getAccessibleTypeMembers(TypeElement typeElement, TypeElement calledFromEnclosingType);
 
         /**
          * @param typeElement
@@ -205,7 +205,9 @@ public interface ElementQuery {
          */
         Set<FieldElement> getAccessibleStaticFields(TypeElement classElement, TypeElement calledFromEnclosingType);
 
-        Set<PhpElement> getAllTypeMembers(TypeElement typeElement);
+        Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement);
+        
+        Set<TypeMemberElement> getAllTypeMembers(TypeElement typeElement);
 
         /**
          * @return declared + inherited elements (private,protected, public) - only overriden elements are filtered
