@@ -44,6 +44,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
+import org.openide.util.NbBundle;
 
 /**
  * Utility class to expose NB platform application branding editor.
@@ -68,7 +69,8 @@ public class BrandingUtils {
         }
         boolean contextAvailable = true;
         NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-        if( null != moduleProvider && !moduleProvider.prepareContext() ) {
+        if( null != moduleProvider 
+                && !moduleProvider.prepareContext(NbBundle.getMessage(BrandingUtils.class, "Lbl_BrandingEditor")) ) { //NOI18N
             contextAvailable = false;
         }
         BasicBrandingModel model = new BasicBrandingModel(p, brandingPath);

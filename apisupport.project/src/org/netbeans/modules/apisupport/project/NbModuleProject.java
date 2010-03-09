@@ -972,7 +972,7 @@ public final class NbModuleProject implements Project {
         }
 
         @Override
-        public boolean prepareContext() throws IllegalStateException {
+        public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
             return true;
         }
     }
