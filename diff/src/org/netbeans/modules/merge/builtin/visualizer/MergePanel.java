@@ -50,6 +50,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -1496,6 +1498,11 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         if (line <= totLines) {
             offset = org.openide.text.NbDocument.findLineOffset(doc, line);
             //offset = doc.getDefaultRootElement().getElement(line).getStartOffset();
+        } else {
+            offset = lastOffset - 1;
+            Logger logger = Logger.getLogger(MergePanel.class.getName());
+            logger.log(Level.WARNING, "line({0}) > totLines({1}): final offset({2})", new Object[] {line, totLines, offset}); //NOI18N
+            logger.log(Level.INFO, null, new Exception());
         }
         //int endOffset = doc.getEndPosition().getOffset();
         //if (offset > endOffset) offset = endOffset;
