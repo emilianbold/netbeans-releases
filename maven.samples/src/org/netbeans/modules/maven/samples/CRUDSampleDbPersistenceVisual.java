@@ -54,6 +54,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.derby.spi.support.DerbySupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 
@@ -229,10 +230,20 @@ public class CRUDSampleDbPersistenceVisual extends JPanel implements DocumentLis
     private static String getDerbyInstallation() {
         File f = null;
         String javaDBHome = System.getProperty(JAVADB_HOME);
+        Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).finest("System.getProperty(\"javadb.home\") returns " + javaDBHome);
         if (javaDBHome == null) {
-            String javaHome = System.getProperty("java.home");
-            // path to JavaDB in JDK6
-            f = new File(javaHome + File.separator + ".." + File.separator + "db" + File.separator);
+            String javaDBLoc = DerbySupport.getLocation();
+            Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).finer("DerbySupport.getLocation() returns " + javaDBLoc);
+            if (javaDBLoc != null && javaDBLoc.length() > 0) {
+                f = new File(javaDBLoc);
+            }
+            if (f == null || ! f.exists()) {
+                // fallback to JDK6
+                String javaHome = System.getProperty("java.home");
+                // path to JavaDB in JDK6
+                f = new File(javaHome + File.separator + ".." + File.separator + "db" + File.separator);
+                Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).finer("JavaDB in JDK6 is " + f);
+            }
         } else {
             f = new File(javaDBHome);
         }
@@ -242,6 +253,7 @@ public class CRUDSampleDbPersistenceVisual extends JPanel implements DocumentLis
         } catch (IOException ex) {
             path = f != null && f.exists() ? f.getAbsolutePath() : null;
         }
+        Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).fine("Java DB installation is " + path);
         return path;
     }
 

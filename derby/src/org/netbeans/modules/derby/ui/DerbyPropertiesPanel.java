@@ -61,7 +61,6 @@ import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,14 +78,17 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
    
     private DocumentListener docListener = new DocumentListener() {
         
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
 
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
 
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
             validatePanel();
         }
@@ -324,7 +326,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
 
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         String location = getInstallLocation();
         if (location.length() > 0) {
@@ -345,7 +347,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         String derbySystemHome = getDerbySystemHome();
         if (derbySystemHome.length() > 0) {
@@ -383,6 +385,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             }
         }
         private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
+            @Override
             public void driversChanged() {
                 registerDatabase();
             }
@@ -400,6 +403,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             }
 
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
