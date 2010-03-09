@@ -37,42 +37,56 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makefile.model;
+package org.netbeans.modules.remote.api.ui;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
+import javax.swing.JFileChooser;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.remote.test.RemoteApiBaseTestSuite;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author Vladimir Kvashin
  */
-public final class MakefileUtils {
+public class RemoteFileChooserBuilderTestCase extends NativeExecutionBaseTestCase {
 
-    private MakefileUtils() {}
-
-    private static final Set<String> PREFERRED_TARGETS = new HashSet<String>(Arrays.asList(
-            // see http://www.gnu.org/prep/standards/html_node/Standard-Targets.html
-            "all", // NOI18N
-            "install", // NOI18N
-            "uninstall", // NOI18N
-            "clean", // NOI18N
-            "distclean", // NOI18N
-            "dist", // NOI18N
-            "check", // NOI18N
-
-            // targets written by CND
-            "build", // NOI18N
-            "build-tests", // NOI18N
-            "clobber", // NOI18N
-            "help", // NOI18N
-            "test")); // NOI18N
-
-    public static boolean isPreferredTarget(String target) {
-        return PREFERRED_TARGETS.contains(target);
+    public RemoteFileChooserBuilderTestCase(String name, ExecutionEnvironment env) {
+        super(name, env);
     }
 
-    public static boolean isRunnableTarget(String target) {
-        return 0 < target.length() && target.charAt(0) != '.' && !target.contains("%"); // NOI18N
+    public RemoteFileChooserBuilderTestCase(String name) {
+        super(name);
+    }
+
+    @ForAllEnvironments(section="RemoteFileChooserBuilderTestCase")
+    public void testRemoteFileChoser() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        ConnectionManager.getInstance().connectTo(env);
+        RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(env);
+        JFileChooser chooser = fcb.createFileChooser();
+        int ret = chooser.showDialog(null, "Choose file at " + env.getDisplayName());
+        switch (ret) {
+            case JFileChooser.CANCEL_OPTION:
+                System.err.printf("Canclled\n");
+                break;
+            case JFileChooser.APPROVE_OPTION:
+                System.err.printf("Approved\n");
+                File file = chooser.getSelectedFile();
+                System.err.printf("Selected: %s\n", file);
+                break;
+            case JFileChooser.ERROR_OPTION:
+                System.err.printf("Error\n");
+                break;
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Test suite() {
+        return new RemoteApiBaseTestSuite(RemoteFileChooserBuilderTestCase.class);
     }
 }
