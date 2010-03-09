@@ -63,6 +63,7 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="position" intvalue="4000"/>
                 </file>
             </folder>
         </folder>

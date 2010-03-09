@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-guards-JavaGuardedSections.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.java.guards.JavaGuardedSectionsFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.guards.GuardedSectionsFactory"/>
+                    <attr name="position" intvalue="5000"/>
                 </file>
             </folder>
         </folder>
