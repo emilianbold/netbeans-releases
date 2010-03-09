@@ -130,7 +130,7 @@ public interface NbModuleProvider {
     /**
      * checks the declared version of the given dependency
      * @param codenamebase 
-     * @return
+     * @return a known version, or null if unknown
      * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;

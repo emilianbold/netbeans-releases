@@ -412,7 +412,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         //TODO search local repository?? that's probably irrelevant here..
         
         //we're completely clueless.
-        return new SpecificationVersion("1.0"); //NOI18N
+        return null;
     }
     
     private File lookForModuleInPlatform(String artifactId) {
