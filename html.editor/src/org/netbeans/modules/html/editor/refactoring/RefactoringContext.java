@@ -174,6 +174,8 @@ public class RefactoringContext {
                 if (tag != null && range != null) {
                     //some inlined code found
                     found.add(new InlinedStyleInfo(tag, tagsClass, styleAttr, styleAttrOffset, range, value));
+                    tag = attr = styleAttr = tagsClass = null;
+                    attrOffset = styleAttrOffset = -1;
                 }
             } else if (t.id() == HTMLTokenId.ARGUMENT) {
                 attr = t.text().toString();
