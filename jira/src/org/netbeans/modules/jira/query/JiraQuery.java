@@ -144,7 +144,8 @@ public class JiraQuery extends Query {
 
     @Override
     public boolean refresh() { // XXX what if already running! - cancel task
-        return refreshIntern(false);
+        getController().onRefresh();
+        return true;
     }
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task

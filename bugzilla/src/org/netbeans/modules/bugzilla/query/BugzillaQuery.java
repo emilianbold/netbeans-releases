@@ -140,7 +140,8 @@ public class BugzillaQuery extends Query {
 
     @Override
     public boolean refresh() { // XXX what if already running! - cancel task
-        return refreshIntern(false);
+        getController().onRefresh();
+        return true; // XXX
     }
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
