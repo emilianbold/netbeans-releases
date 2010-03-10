@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -264,7 +265,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         @Override
         public String getHtmlDisplayName() {
             if (isBundleBranded(bundlepath, codenamebase))
-                return "<b>" + bundlepath + "</b>";
+                return "<b>" + bundlepath + "</b>"; // NOI18N
             else
                 return bundlepath;
         }
@@ -367,7 +368,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         public String getHtmlDisplayName() {
             String key = getDisplayName();
             if (isKeyBranded(bundlepath, codenamebase, key))
-                return "<b>" + key + "</b>";
+                return "<b>" + key + "</b>"; // NOI18N
             else
                 return key;
         }
@@ -429,8 +430,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
     private boolean addKeyToBranding (String bundlepath, String codenamebase, String key) {
         BrandingSupport.BundleKey bundleKey = getBranding().getGeneralBundleKeyForModification(codenamebase, bundlepath, key);
-        NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(key + " = ", bundlepath, // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        KeyInput inputLine = new KeyInput(key + ":", bundlepath); // NOI18N
         String oldValue = bundleKey.getValue();
         inputLine.setInputText(oldValue);
         if (DialogDisplayer.getDefault().notify(inputLine)==NotifyDescriptor.OK_OPTION) {
@@ -489,4 +489,29 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     private org.openide.explorer.view.BeanTreeView view;
     // End of variables declaration//GEN-END:variables
 
+    public static class KeyInput extends NotifyDescriptor {
+
+        protected ResourceBundleKeyPanel keyPanel;
+
+        public KeyInput(final String text, final String title) {
+            this(text, title, OK_CANCEL_OPTION, PLAIN_MESSAGE);
+        }
+
+        public KeyInput(final String text, final String title, final int optionType, final int messageType) {
+            super(null, title, optionType, messageType, null, null);
+            super.setMessage(createDesign(text));
+        }
+
+        public String getInputText() {
+            return keyPanel.getText();
+        }
+
+        public void setInputText(final String text) {
+            keyPanel.setText(text);
+        }
+
+        protected Component createDesign(final String text) {
+            return keyPanel = new ResourceBundleKeyPanel(text);
+        }
+    }
 }
