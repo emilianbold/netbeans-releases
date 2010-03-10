@@ -652,6 +652,12 @@ public class BasicBrandingModel {
         return null != bKey ? bKey : getBranding().getBundleKey(codenamebase, bundlepath, key);
     }
 
+    public String getKeyValue (String bundlepath, String codenamebase, String key) {
+        BrandingSupport.BundleKey bKey = findInModifiedGeneralBundleKeys(codenamebase, bundlepath, key);
+        return null != bKey ? bKey.getValue()
+                : getBranding().getBundleKey(codenamebase, bundlepath, key).getValue();
+    }
+
     public boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
         // in modified keys?
         for (BundleKey bundleKey : generalResourceBundleKeys) {

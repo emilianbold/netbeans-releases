@@ -345,6 +345,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
     private class KeyNode extends FilterNode implements EditCookie, OpenCookie {
 
+        private String key;
         private String bundlepath;
         private String codenamebase;
 
@@ -360,17 +361,31 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                     | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_SET_SHORT_DESCRIPTION
                     | DELEGATE_GET_ACTIONS);
 
+            this.key = orig.getDisplayName();
             this.bundlepath = bundlepath;
             this.codenamebase = codenamebase;
         }
 
         @Override
+        public String getDisplayName() {
+            return key + " = " + getKeyValue (bundlepath, codenamebase, key); // NOI18N
+        }
+
+        @Override
         public String getHtmlDisplayName() {
-            String key = getDisplayName();
             if (isKeyBranded(bundlepath, codenamebase, key))
-                return "<b>" + key + "</b>"; // NOI18N
+                return "<b>" + key + "</b>" + // NOI18N
+                        " = <font color=\"#ce7b00\">" + // NOI18N
+                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
+                        "</font>"; // NOI18N
             else
-                return key;
+                return key + " = <font color=\"#ce7b00\">" + // NOI18N
+                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
+                        "</font>"; // NOI18N
+        }
+
+        private String escapeTagDefinitions (String text) {
+            return text.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
         }
 
         public void refresh() {
@@ -443,6 +458,10 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             }
         }
         return false;
+    }
+
+    private String getKeyValue (String bundlepath, String codenamebase, String key) {
+        return getBranding().getKeyValue (bundlepath, codenamebase, key);
     }
 
     private boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
