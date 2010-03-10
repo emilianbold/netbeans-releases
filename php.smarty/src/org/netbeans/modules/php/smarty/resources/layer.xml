@@ -145,14 +145,14 @@
     <!-- Templates registrations -->
     <folder name="Templates">
         <folder name="Scripting">
-            <file name="SMARTY Template" url="nbresloc:/org/netbeans/modules/php/smarty/resources/TplTemplate.tpl">
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="PHP"/>
-                <attr name="position" intvalue="450"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/TplDescription.html"/>
+            <file name="SmartyTemplate.tpl" url="nbresloc:/org/netbeans/modules/php/smarty/resources/TplTemplate.tpl">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/TplDescription.html"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="450"/>
             </file>
         </folder>
     </folder>
