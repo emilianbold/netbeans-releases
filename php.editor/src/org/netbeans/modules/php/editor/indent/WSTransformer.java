@@ -591,44 +591,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 	// wrapping method/function parameters
 	if (parameters != null && parameters.size() > 1) {
 	    CodeStyle.WrapStyle style = CodeStyle.get(context.document()).wrapMethodParams();
-	    for (int i = 1; i < parameters.size(); i++) {
-		FormalParameter param = parameters.get(i);
-		TokenSequence<PHPTokenId> ts = tokenSequence(param.getStartOffset());
-		ts.move(param.getStartOffset());
-		if (ts.moveNext() && ts.movePrevious()) {
-		    Token<PHPTokenId> token = ts.token();
-		    int tokenOffset = ts.offset();
-		    if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-
-			if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-			    if (token.id() == PHPTokenId.WHITESPACE) {
-				replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
-			    }
-			}
-			else {
-			    if (token.id() == PHPTokenId.WHITESPACE) {
-				if (countOfNewLines(token.text()) != 1) {
-				    replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
-				}
-			    } else {
-				replacements.add(new Replacement(tokenOffset + token.length(), 0, "\n", 1));
-			    }
-			}
-		    }
-		    else if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-			if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-			    if (token.id() == PHPTokenId.WHITESPACE) {
-				replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
-			    }
-			}
-			else {
-			    if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) > 1) {
-				replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
-			    }
-			}
-		    }
-		}
-	    }
+	    wrapNodes(parameters, false, style);
 	}
     }
 
@@ -1318,6 +1281,47 @@ class WSTransformer extends DefaultTreePathVisitor {
         }
         
         return retVal;
+    }
+
+    private void wrapNodes(List<? extends ASTNode> nodes, boolean wrapFirst, CodeStyle.WrapStyle style) {
+	for (int i = (wrapFirst ? 0 : 1) ; i < nodes.size(); i++) {
+	    ASTNode node = nodes.get(i);
+	    TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+	    ts.move(node.getStartOffset());
+	    if (ts.moveNext() && ts.movePrevious()) {
+		Token<PHPTokenId> token = ts.token();
+		int tokenOffset = ts.offset();
+		if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
+
+		    if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+			if (token.id() == PHPTokenId.WHITESPACE) {
+			    replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
+			}
+		    }
+		    else {
+			if (token.id() == PHPTokenId.WHITESPACE) {
+			    if (countOfNewLines(token.text()) != 1) {
+				replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
+			    }
+			} else {
+			    replacements.add(new Replacement(tokenOffset + token.length(), 0, "\n", 1));
+			}
+		    }
+		}
+		else if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+		    if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+			if (token.id() == PHPTokenId.WHITESPACE) {
+			    replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
+			}
+		    }
+		    else {
+			if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) > 1) {
+			    replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
+			}
+		    }
+		}
+	    }
+	}
     }
 
     private static final boolean textContainsBreak(CharSequence charSequence){
