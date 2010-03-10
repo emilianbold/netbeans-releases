@@ -241,7 +241,7 @@ public class FmtOptions {
     public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
     
     public static final String WRAP_ALWAYS = CodeStyle.WrapStyle.WRAP_ALWAYS.name();
-    public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
+    //public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
     public static final String WRAP_NEVER = CodeStyle.WrapStyle.WRAP_NEVER.name();
 
     private static Map<String,String> defaults;
@@ -404,7 +404,7 @@ public class FmtOptions {
 
 	private static final ComboItem  wrap[] = new ComboItem[] {
                 new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
-                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
+//                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
                 new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
             };
 

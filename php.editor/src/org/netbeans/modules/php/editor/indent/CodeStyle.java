@@ -573,7 +573,7 @@ public final class CodeStyle {
 
     public enum WrapStyle {
         WRAP_ALWAYS,
-        WRAP_IF_LONG,
+        //WRAP_IF_LONG,
         WRAP_NEVER
     }
 }
