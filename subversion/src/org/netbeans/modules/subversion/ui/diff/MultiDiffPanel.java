@@ -287,17 +287,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     public SaveCookie[] getSaveCookies (boolean ommitOpened) {
-        EditorCookie[] editorCookiesCopy = getEditorCookies(ommitOpened);
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
         SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
         return saveCookies;
     }
 
     public EditorCookie[] getEditorCookies (boolean ommitOpened) {
-        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
-        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
-        if (ommitOpened) {
-            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
-        }
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
         int count = 0, length = editorCookiesCopy.length;
         EditorCookie[] editorCookiesShorten = new EditorCookie[length];
         for (int i = 0; i < length; i++) {
@@ -308,6 +304,15 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             editorCookiesShorten[count++] = editorCookie;
         }
         return CollectionUtils.shortenArray(editorCookiesShorten, count);
+    }
+
+    private EditorCookie[] getEditorCookiesIntern (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        return editorCookiesCopy;
     }
 
     private static SaveCookie[] getSaveCookies(Setup[] setups,
