@@ -239,6 +239,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
     private class BundleNode extends FilterNode implements OpenCookie, Comparable<BundleNode> {
 
+        private String bundlepath;
+        private String codenamebase;
+
         public BundleNode(Node orig, String bundlepath, String codenamebase) {
             this (orig, bundlepath, codenamebase, new InstanceContent());
         }
@@ -253,6 +256,21 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
             setDisplayName(bundlepath);
             setShortDescription(codenamebase);
+
+            this.bundlepath = bundlepath;
+            this.codenamebase = codenamebase;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isBundleBranded(bundlepath, codenamebase))
+                return "<b>" + bundlepath + "</b>";
+            else
+                return bundlepath;
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -346,6 +364,19 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
 
         @Override
+        public String getHtmlDisplayName() {
+            String key = getDisplayName();
+            if (isKeyBranded(bundlepath, codenamebase, key))
+                return "<b>" + key + "</b>";
+            else
+                return key;
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
+        }
+
+        @Override
         public Action[] getActions(boolean context) {
             return new Action[] { editRBAction.createContextAwareInstance(getLookup()),
                 openRBAction.createContextAwareInstance(getLookup()) };
@@ -363,7 +394,13 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
         @Override
         public void edit() {
-            addKeyToBranding (bundlepath, codenamebase, getOriginal().getDisplayName());
+            if (addKeyToBranding(bundlepath, codenamebase, getOriginal().getDisplayName())) {
+                refresh();
+                Node parent = getParentNode();
+                if (parent instanceof BundleNode) {
+                    ((BundleNode) parent).refresh();
+                }
+            }
         }
 
         @Override
@@ -390,7 +427,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private void addKeyToBranding (String bundlepath, String codenamebase, String key) {
+    private boolean addKeyToBranding (String bundlepath, String codenamebase, String key) {
         BrandingSupport.BundleKey bundleKey = getBranding().getGeneralBundleKeyForModification(codenamebase, bundlepath, key);
         NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(key + " = ", bundlepath, // NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
@@ -402,8 +439,18 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                 bundleKey.setValue(newValue);
                 getBranding().addModifiedGeneralBundleKey(bundleKey);
                 setModified();
+                return true;
             }
         }
+        return false;
+    }
+
+    private boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
+        return getBranding().isKeyBranded(bundlepath, codenamebase, key);
+    }
+
+    private boolean isBundleBranded (String bundlepath, String codenamebase) {
+        return getBranding().isBundleBranded(bundlepath, codenamebase);
     }
 
     @Override
