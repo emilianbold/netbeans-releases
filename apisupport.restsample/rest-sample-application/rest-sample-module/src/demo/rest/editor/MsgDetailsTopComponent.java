@@ -64,6 +64,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import demo.rest.Message;
+import java.util.logging.Level;
 
 /**
  * Top component which displays something.
@@ -81,6 +82,7 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     private Lookup.Result result = null;
     private final InstanceContent content;
     private Message message;
+    private static final Logger L = Logger.getLogger(MsgDetailsTopComponent.class.getName());
 
     public MsgDetailsTopComponent() {
         initComponents();
@@ -203,18 +205,10 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Confirmation msg = new NotifyDescriptor.Confirmation("Do you want to save new message?",
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE);
-
-        Object r = DialogDisplayer.getDefault().notify(msg);
-
-        if (NotifyDescriptor.YES_OPTION.equals(r)) {
-            message.setCreated(new Date());
-            message.setMessage(jTextArea1.getText());
-            MessageBoardClient client = new MessageBoardClient();
-            client.addMessage(message);
-            ExplorerTopComponent.refresh();
+        try {
+            impl.save();
+        } catch (IOException ex) {
+            L.log(Level.WARNING, ex.getMessage(), ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -334,22 +328,32 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
 
         @Override
         public void save() throws IOException {
+            Confirmation msg = null;
+            boolean doUpdate = false;
+            if (message.getUniqueId() < 0) {
+                msg = new NotifyDescriptor.Confirmation("Do you want to save new message?",
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE);
+            } else {
+                msg = new NotifyDescriptor.Confirmation("Do you want to update existing message?",
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE);
+                doUpdate = true;
+            }
 
-            Confirmation msg = new NotifyDescriptor.Confirmation("Do you want to update existing message?",
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object r = DialogDisplayer.getDefault().notify(msg);
 
-            Object result = DialogDisplayer.getDefault().notify(msg);
-
-            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                fire(false);
+            if (NotifyDescriptor.YES_OPTION.equals(r)) {
                 message.setCreated(new Date());
                 message.setMessage(jTextArea1.getText());
                 MessageBoardClient client = new MessageBoardClient();
-                client.updateMessage(message);
+                if (doUpdate) {
+                    client.updateMessage(message);
+                } else {
+                    client.addMessage(message);
+                }
                 ExplorerTopComponent.refresh();
             }
-
         }
     }
 }
