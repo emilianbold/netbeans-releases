@@ -1968,6 +1968,9 @@ public class Installer extends ModuleInstall implements Runnable {
             } catch (InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            if (d == null){
+                throw new IllegalStateException("Dialog was not created correctly");
+            }
         }
 
         public void hyperlinkUpdate(HyperlinkEvent e) {
