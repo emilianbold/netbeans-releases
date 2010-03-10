@@ -84,11 +84,6 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
     }
 
     @Override
-    protected boolean extendLastViewAllocation() {
-        return true;
-    }
-
-    @Override
     protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
         return (wrapInfo != null) ? wrapInfo.majorAxisChildrenSpan : super.getMajorAxisChildrenSpan(boxView);
     }
