@@ -536,7 +536,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 cs.addPathCandidate(PredefinedToolKind.QMakeTool, p);
             }
             if (kind != PredefinedToolKind.UnknownTool) {
-                cs.addTool(executionEnvironment, name, p, kind);
+                cs.addTool(executionEnvironment, name, p, kind, null);
             }
         }
         return cs;
@@ -704,17 +704,17 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         for (String name : names) {
             File file = new File(dir, name);
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
             file = new File(dir, name + ".exe"); // NOI18N
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
             File file2 = new File(dir, name + ".exe.lnk"); // NOI18N
             if (file2.exists() && !file2.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
         }
@@ -853,7 +853,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             String path = ToolUtils.findCommand(name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
-                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                                 }
                                             }
                                         }
@@ -862,7 +862,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         if (path != null) {
                                             String name = ToolUtils.getBaseName(path);
                                             if (notSkipedName(cs, descriptor, path, name)) {
-                                                return cs.addNewTool(env, name, path, tool);
+                                                return cs.addNewTool(env, name, path, tool, null);
                                             }
                                         }
                                     }
@@ -874,7 +874,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                                 String path = ToolUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
                                                     if (notSkipedName(cs, descriptor, path, name)) {
-                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                                     }
                                                 }
                                             }
@@ -887,7 +887,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         for(String name : descriptor.getNames()){
                                             String path = ToolUtils.findCommand(name, method);
                                             if (path != null) {
-                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                             }
                                         }
                                     } else {
@@ -908,7 +908,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             if (family.equals(method)){
                                                 Tool other = s.findTool(tool);
                                                 if (other != null){
-                                                    return cs.addNewTool(env, other.getName(), other.getPath(), tool);
+                                                    return cs.addNewTool(env, other.getName(), other.getPath(), tool, other.getFlavor());
                                                 }
                                             }
                                         }
@@ -928,7 +928,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         if (name.equals(method) || "*".equals(method)){ // NOI18N
                                             Tool other = s.findTool(tool);
                                             if (other != null){
-                                                return cs.addNewTool(env, other.getName(), other.getPath(), tool);
+                                                return cs.addNewTool(env, other.getName(), other.getPath(), tool, other.getFlavor());
                                             }
                                         }
                                     }
@@ -940,7 +940,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 }
             }
         }
-        return cs.addTool(env, "", "", tool); // NOI18N
+        return cs.addTool(env, "", "", tool, null); // NOI18N
     }
 
     private static boolean notSkipedName(CompilerSet cs, ToolDescriptor descriptor, String path, String name){
