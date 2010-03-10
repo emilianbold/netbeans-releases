@@ -45,6 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
@@ -56,8 +59,8 @@ import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
-import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,8 +113,25 @@ public class ComponentUsagesChecker extends HintsProvider {
                 continue;
             }
 
+            final Document doc = snapshot.getSource().getDocument(true);
+            final AtomicReference<String> docTextRef = new AtomicReference<String>();
+            doc.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        docTextRef.set(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+            });
+            final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+
             AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+                @Override
                 public void visit(AstNode node) {
                     if (node.type() == AstNode.NodeType.OPEN_TAG) {
                         String tagName = node.getNameWithoutPrefix();
@@ -121,7 +141,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName()),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                    JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.endOffset()),
+                                    JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.endOffset()),
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                             hints.add(hint);
                         } else {
@@ -145,7 +165,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_REQUIRED_ATTRIBUTE", attr.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.endOffset()),
+                                                    JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.endOffset()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                         }
@@ -162,7 +182,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                                                    JsfUtils.createOffsetRange(snapshot, nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
+                                                    JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.nameOffset(), nodeAttr.valueOffset() + nodeAttr.value().length()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                                             hints.add(hint);
                                     }
