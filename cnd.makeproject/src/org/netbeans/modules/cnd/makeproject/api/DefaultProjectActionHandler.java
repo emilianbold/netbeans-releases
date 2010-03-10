@@ -301,7 +301,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         .frontWindow(false)
                         .inputVisible(showInput)
                         .inputOutput(io)
-                        .outLineBased(true)
+                        .outLineBased(!unbuffer)
                         .showProgress(true)
                         .postExecution(processChangeListener)
                         .errConvertorFactory(new LineConvertorFactory() {
@@ -327,7 +327,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .frontWindow(true)
                     .inputVisible(showInput)
                     .inputOutput(io)
-                    .outLineBased(true)
+                    .outLineBased(!unbuffer)
                     .showProgress(true)
                     .postExecution(processChangeListener)
                     .errConvertorFactory(processChangeListener)
