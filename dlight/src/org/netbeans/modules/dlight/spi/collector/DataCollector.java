@@ -49,6 +49,7 @@ import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 
 /**
  * DataCollector collects data from application/system.
@@ -82,6 +83,13 @@ public interface DataCollector<G extends DataCollectorConfiguration>
      * @param target target this collector serve for
      */
     void init(Map<DataStorageType, DataStorage> storages, DLightTarget target);
+
+
+    /**
+     *  Initialize with service info data storage
+     * @param infoStorage service info data storage
+     */
+    void init(ServiceInfoDataStorage infoStorage);
 
     /**
      * DataCollector can attach to the {@link org.netbeans.modules.dlight.api.execution.DLightTarget}.

@@ -150,6 +150,10 @@ public abstract class DLightTarget {
         return info.put(name, value);
     }
 
+    protected final String getInfo(String name) {
+        return info.getInfo().get(name);
+    }
+
     /**
      * Returns {@link org.netbeans.modules.nativeexecution.api.ExecutionEnvironment} this
      * target will be run at
