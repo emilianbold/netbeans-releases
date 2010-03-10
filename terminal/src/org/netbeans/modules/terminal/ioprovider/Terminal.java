@@ -290,7 +290,7 @@ public final class Terminal extends JComponent {
     }
 
     public String getTitle() {
-        return title;
+        return title == null ? name : title;
     }
 
     FindState getFindState() {

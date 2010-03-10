@@ -49,9 +49,8 @@ package org.netbeans.modules.editor.lib2.view;
 
 final class WrapLine {
 
-    WrapLine(int startViewIndex) {
-        this.startViewIndex = startViewIndex;
-        this.endViewIndex = startViewIndex;
+    WrapLine() {
+        this.startViewIndex = this.endViewIndex = -1;
     }
 
     /**
@@ -78,6 +77,10 @@ final class WrapLine {
     int startViewIndex;
 
     int endViewIndex;
+
+    boolean isInited() {
+        return (startViewIndex != -1);
+    }
 
     boolean hasFullViews() {
         return startViewIndex != endViewIndex;

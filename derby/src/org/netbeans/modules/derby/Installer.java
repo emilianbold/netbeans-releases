@@ -61,14 +61,16 @@ public class Installer extends ModuleInstall {
 
     private static final Logger LOGGER = Logger.getLogger(Installer.class.getName());
 
+    @Override
     public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(new RegisterJDKDerby());
     }
 
     private static final class RegisterJDKDerby implements Runnable {
 
-        private final JDKDerbyHelper helper = JDKDerbyHelper.forDefaultPlatform();
+        private final JDKDerbyHelper helper = JDKDerbyHelper.forDefault();
 
+        @Override
         public void run() {
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(this);

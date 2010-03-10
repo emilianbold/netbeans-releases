@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,50 +44,44 @@ package org.netbeans.modules.derby;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 
 /**
  *
- * @author Andrei Badea
+ * @author Andrei Badea, Jiri Rechtacek
  */
 public class JDKDerbyHelper {
 
-    private static final  Logger LOGGER = Logger.getLogger(JDKDerbyHelper.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JDKDerbyHelper.class.getName());
+    private static final JDKDerbyHelper INSTANCE = new JDKDerbyHelper();
+    private final String javaHome;
+    private final String javaVersion;
 
-    private final JavaPlatform platform;
-
-    public static JDKDerbyHelper forDefaultPlatform() {
-        return new JDKDerbyHelper(JavaPlatformManager.getDefault().getDefaultPlatform());
+    public static JDKDerbyHelper forDefault() {
+        return INSTANCE;
     }
 
-    private JDKDerbyHelper(JavaPlatform javaPlatform) {
-        this.platform = javaPlatform;
+    private JDKDerbyHelper() {
+        this.javaHome = System.getProperty("java.home");
+        this.javaVersion = System.getProperty("java.version");
     }
 
     public boolean canBundleDerby() {
-        Specification specification = platform.getSpecification();
-        if (specification == null) {
-            return false;
-        }
-        SpecificationVersion version = specification.getVersion();
-        if (version == null) {
-            return false;
-        }
-        if (version.compareTo(new SpecificationVersion("1.6")) < 0) { // NOI18N
-            return false;
-        }
+        // IMHO, most JDK1.6 contains Java DB
         return true;
     }
 
     public String findDerbyLocation() {
         if (!canBundleDerby()) {
             return null;
+        }
+        File locInJDK = getLocationInJDK(javaHome);
+        if (locInJDK != null) {
+            LOGGER.log(Level.FINE, "JavaDB in JDK(" + javaVersion + "):  " + locInJDK);
+            String result = testDerbyInstallLocation(locInJDK);
+            if (result != null) {
+                return result;
+            }
         }
         // see issue 83144
         if (Utilities.isWindows()) {
@@ -117,16 +111,16 @@ public class JDKDerbyHelper {
                 return result;
             }
         }
-        for (Object dir : platform.getInstallFolders()) {
-            FileObject derbyDir = ((FileObject)dir).getFileObject("db"); // NOI18N
-            if (derbyDir != null) {
-                String result = testDerbyInstallLocation(FileUtil.toFile(derbyDir));
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
+
         return null;
+    }
+
+    private static File getLocationInJDK(String javaHome) {
+        File dir = new File(javaHome);
+        assert dir != null && dir.exists() && dir.isDirectory() : "java.home is directory";
+        // path to JavaDB in JDK6
+        File loc = new File(dir.getParentFile(), "db"); // NOI18N
+        return loc != null && loc.exists() && loc.isDirectory() ? loc : null;
     }
 
     private static String testDerbyInstallLocation(File directory) {

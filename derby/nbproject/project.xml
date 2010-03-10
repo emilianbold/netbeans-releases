@@ -73,20 +73,11 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.dbapi</code-name-base>
+                    <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.9</specification-version>
+                        <specification-version>6.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -216,12 +207,15 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.apisupport.crudsample</friend>
+                <friend>org.netbeans.modules.db.kit</friend>
                 <friend>org.netbeans.modules.derby.bundled</friend>
                 <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.j2ee.blueprints</friend>
                 <friend>org.netbeans.modules.j2ee.samples</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
+                <friend>org.netbeans.modules.maven.samples</friend>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <package>org.netbeans.modules.derby.api</package>
                 <package>org.netbeans.modules.derby.spi.support</package>
