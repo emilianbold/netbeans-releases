@@ -40,8 +40,9 @@ public final class ConnectionProgressDialog extends JDialog implements TaskListe
     public void setVisible(boolean show) {
         if (show && worker != null) {
             JComponent c = ProgressHandleFactory.createProgressComponent(progressHandle);
-            c.setPreferredSize(new Dimension(3 * c.getPreferredSize().width, 3 * c.getPreferredSize().height));
-            c.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
+            c.setPreferredSize(new Dimension(2 * c.getPreferredSize().width, (12 * c.getPreferredSize().height) / 10));
+            c.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
             getContentPane().add(c);
             pack();
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

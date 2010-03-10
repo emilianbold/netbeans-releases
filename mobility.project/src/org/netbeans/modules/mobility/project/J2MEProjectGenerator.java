@@ -272,7 +272,11 @@ public class J2MEProjectGenerator {
         ProjectManager.getDefault().saveProject(prj);
         return h;
     }
-    
+  
+    public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates) throws IOException {
+        return createNewProject(projectLocation, name, platform, createHelloMIDlet, cfgTemplates, false); 
+    }
+      
     public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates, final boolean library) throws IOException {
         ClassPreloader.stop(); //#147403
         return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates, library));

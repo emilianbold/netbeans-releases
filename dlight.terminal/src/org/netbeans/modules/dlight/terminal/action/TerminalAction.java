@@ -47,6 +47,7 @@ import java.util.concurrent.CancellationException;
 import javax.swing.Action;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
@@ -80,7 +81,9 @@ abstract class TerminalAction implements ActionListener {
                         try {
                             final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-                            String shell = HostInfoUtils.getHostInfo(env).getShell();
+                            final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                            String shell = hostInfo.getShell();
+//                            npb.setWorkingDirectory("${HOME}");
                             npb.setExecutable(shell);
                             NativeExecutionDescriptor descr;
                             descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
