@@ -40,12 +40,15 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
@@ -60,6 +63,7 @@ import org.openide.util.Union2;
 public class ElementInfo  {
     private Scope scope;
     private Union2<ASTNodeInfo, ModelElement> element;
+    private Set<PhpElement> declarations = Collections.emptySet();
 
     public ElementInfo(ModelElement element) {
         this.element = Union2.createSecond(element);
@@ -143,11 +147,11 @@ public class ElementInfo  {
         }
         ASTNodeInfo.Kind kind = null;
         ModelElement modelElemnt = getModelElemnt();
-        switch (modelElemnt.getPhpKind()) {
+        switch (modelElemnt.getPhpElementKind()) {
             case CLASS:
                 kind = Kind.CLASS;
                 break;
-            case CLASS_CONSTANT:
+            case TYPE_CONSTANT:
                 kind = Kind.CLASS_CONSTANT;
                 break;
             case CONSTANT:
@@ -193,5 +197,12 @@ public class ElementInfo  {
     }
     private ModelElement getModelElemnt() {
         return element.hasSecond() ? element.second() : null;
+    }
+
+    /**
+     * @return the declarations
+     */
+    public Set<PhpElement> getDeclarations() {
+        return declarations;
     }
 }

@@ -64,7 +64,7 @@ PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
     <tocitem text="Adding Columns to a Database Table" target="addcopycols" />
     <tocitem text="Deleting Database Objects" target="delobj" />
     <tocitem text="Browsing Database Structures" target="browstruct" />
-        <tocitem text="Viewing Data in a Database Table" target="viewdata" />
+        <tocitem text="Viewing and Modifying Data in a Database Table" target="viewdata" />
             <tocitem text="Executing SQL Statements" target="dbmod" />
             </tocitem>
             

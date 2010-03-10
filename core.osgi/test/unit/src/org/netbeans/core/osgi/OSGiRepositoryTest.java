@@ -156,4 +156,24 @@ public class OSGiRepositoryTest extends NbTestCase {
         }
     }
 
+    public void testBrandingLayers() throws Exception {
+        System.setProperty("branding.token", "custom");
+        new OSGiProcess(getWorkDir()).
+                newModule().sourceFile("m1/layer.xml", "<filesystem><folder name='Menu'>",
+                "<folder name='Help'/>",
+                "</folder></filesystem>").sourceFile("m1/layer_custom.xml", "<filesystem><folder name='Menu'>",
+                "<file name='Help_hidden'/>",
+                "</folder></filesystem>").manifest(
+                "OpenIDE-Module: m1",
+                "OpenIDE-Module-Layer: m1/layer.xml",
+                "OpenIDE-Module-Install: " + BrandingLayersInstall.class.getName()
+                ).clazz(BrandingLayersInstall.class).done().run();
+        assertEquals("true", System.getProperty("branded.out"));
+    }
+    public static class BrandingLayersInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("branded.out", Boolean.toString(FileUtil.getConfigFile("Menu/Help") == null));
+        }
+    }
+
 }

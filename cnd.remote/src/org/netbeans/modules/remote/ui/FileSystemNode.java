@@ -42,11 +42,9 @@ package org.netbeans.modules.remote.ui;
 import java.awt.Image;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -54,7 +52,6 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -62,26 +59,28 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Kvashin
  */
 public class FileSystemNode extends AbstractNode {
+
     private final ExecutionEnvironment env;
+    private final FileObject fileObject;
 
-    public FileSystemNode(ExecutionEnvironment env) {
-        super(createChildren(env), Lookups.fixed(env, getRootFileObject(env)));
+    public FileSystemNode(ExecutionEnvironment env, FileObject fileObject) {
+        super(createChildren(env, fileObject), Lookups.fixed(env, fileObject));
         this.env = env;
+        this.fileObject = fileObject;
     }
 
-    private static FileObject getRootFileObject(ExecutionEnvironment env) {
-        FileSystem fs = RemoteFileSystemManager.getInstance().get(env);
-        FileObject fo = fs.getRoot();
-        return fo;
-    }
-
-    private static Children createChildren(ExecutionEnvironment env) {
-        return Children.create(new FileSystemChildren(env), true);
+    private static Children createChildren(ExecutionEnvironment env, FileObject rootFileObject) {
+        return Children.create(new FileSystemChildren(env, rootFileObject), true);
     }
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "LBL_FileSystemRootNode");
+        String path = fileObject.getPath();
+        if (path == null || path.length() == 0) {
+            return "/"; //NOI18N
+        } else {
+            return path;
+        }
     }
 
     @Override
@@ -94,30 +93,21 @@ public class FileSystemNode extends AbstractNode {
         return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/fs.gif"); // NOI18N
     }
 
-    /*package*/ void refresh() {
-        setChildren(createChildren(env));
-    }
-    
     private static class FileSystemChildren extends ChildFactory<FileObject> {
 
         private final ExecutionEnvironment env;
         private final FileObject rootFileObject;
 
-        public FileSystemChildren(ExecutionEnvironment env) {
+        public FileSystemChildren(ExecutionEnvironment env, FileObject rootFileObject) {
             this.env = env;
-            rootFileObject = getRootFileObject(env);
-        }
-
-        /*package*/ void refresh() {
-            super.refresh(false);
+            this.rootFileObject = rootFileObject;
         }
 
         @Override
         protected boolean createKeys(List<FileObject> toPopulate) {
             // TODO: add "Connect menu item and refresh"
             if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                FileObject fo = getRootFileObject(env);
-                FileObject[] children = fo.getChildren();
+                FileObject[] children = rootFileObject.getChildren();
                 Collections.addAll(toPopulate, children);
                 return true;
             } else {
@@ -128,17 +118,13 @@ public class FileSystemNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(FileObject key) {
-            if (key == rootFileObject) { // == sic!
-                return new NotConnectedNode(env);
-            } else {
-                try {
-                    DataObject dao = DataObject.find(key);
-                    Node node = dao.getNodeDelegate();
-                    return node;
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                    return null; //TODO: error processing
-                }
+            try {
+                DataObject dao = DataObject.find(key);
+                Node node = dao.getNodeDelegate();
+                return node;
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+                return null; //TODO: error processing
             }
         }
     }

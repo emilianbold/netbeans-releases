@@ -43,8 +43,9 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.util.Collection;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /** Interface to environment that the Module system needs around itself.
  *
@@ -150,6 +151,34 @@ public abstract class CoreBridge {
 
         public int cli(String[] string, InputStream inputStream, OutputStream outputStream, OutputStream errorStream, File file) {
             return 0;
+        }
+    }
+
+    /**
+     * Define {@code org.openide.modules.os.*} tokens according to the current platform.
+     * @param provides a collection that may be added to
+     */
+    public static void defineOsTokens(Collection<? super String> provides) {
+        if (Utilities.isUnix()) {
+            provides.add("org.openide.modules.os.Unix"); // NOI18N
+            if (!Utilities.isMac()) {
+                provides.add("org.openide.modules.os.PlainUnix"); // NOI18N
+            }
+        }
+        if (Utilities.isWindows()) {
+            provides.add("org.openide.modules.os.Windows"); // NOI18N
+        }
+        if (Utilities.isMac()) {
+            provides.add("org.openide.modules.os.MacOSX"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
+            provides.add("org.openide.modules.os.OS2"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
+            provides.add("org.openide.modules.os.Linux"); // NOI18N
+        }
+        if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
+            provides.add("org.openide.modules.os.Solaris"); // NOI18N
         }
     }
     

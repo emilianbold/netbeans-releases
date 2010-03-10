@@ -49,12 +49,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -94,6 +96,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         super(name);
         System.setProperty("nativeexecution.mode.unittest", "true");
         testExecutionEnvironment = null;
+        setupUserDir();
     }
 
     /**
@@ -107,10 +110,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         System.setProperty("nativeexecution.mode.unittest", "true");
         this.testExecutionEnvironment = testExecutionEnvironment;
         assertNotNull(testExecutionEnvironment);
+        setupUserDir();
     }
 
     @Override
     protected void setUp() throws Exception {
+        setupProperties();
         super.setUp();
     }
 
@@ -118,6 +123,31 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
+
+    private void setupUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File userDir = getUserDir();
+        userDir.mkdirs();
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+    }
+
+    protected File getUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        return userDir;
+    }
+
+    private void setupProperties() throws IOException, FormatException {
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String section = getClass().getSimpleName() + ".properties";
+        Collection<String> keys = rcFile.getKeys(section);
+        for (String key : keys) {
+            String value = rcFile.get(section, key);
+            System.setProperty(key, value);
+        }
+    }    
 
     @Override
     protected int timeOut() {

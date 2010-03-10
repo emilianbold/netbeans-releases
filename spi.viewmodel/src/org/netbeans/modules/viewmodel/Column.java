@@ -42,7 +42,9 @@
 package org.netbeans.modules.viewmodel;
 
 import java.beans.PropertyEditor;
-import javax.swing.SwingUtilities;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.table.TableCellEditor;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
@@ -182,5 +184,23 @@ public class Column extends PropertySupport.ReadWrite {
     public PropertyEditor getPropertyEditor () {
         return propertyEditor;
     }
+
+    TableCellEditor getTableCellEditor () {
+        try {
+            // [TODO] get rid off reflection after ColumnModel API is extended by getTableCellEditor() method
+            Method method = columnModel.getClass().getMethod("getTableCellEditor");
+            if (!TableCellEditor.class.isAssignableFrom(method.getReturnType())) {
+                return null;
+            }
+            return (TableCellEditor) method.invoke(columnModel);
+        } catch (IllegalAccessException ex) {
+        } catch (IllegalArgumentException ex) {
+        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        }
+        return null;
+    }
+
 }
 

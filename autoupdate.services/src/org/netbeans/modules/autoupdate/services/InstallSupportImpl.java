@@ -359,9 +359,7 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US));
-                    
-                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
+                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), source);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
                     
                     // check if 'updater.jar' is being installed
@@ -707,9 +705,7 @@ public class InstallSupportImpl {
             throw new OperationException (OperationException.ERROR_TYPE.INSTALL, errorString);
         }
 
-        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
-
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
         
         // skip already downloaded modules
         if (dest.exists ()) {
@@ -779,8 +775,7 @@ public class InstallSupportImpl {
         File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
 
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
-        boolean isNbm = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
-        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbm);
+        File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), source);
         assert dest.exists () : dest.getAbsolutePath();        
         
         int wasVerified = 0;
@@ -791,22 +786,25 @@ public class InstallSupportImpl {
         return wasVerified;
     }
     
-    static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
+    static File getDestination (File targetCluster, String codeName, URL source) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
         File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
         String fileName = codeName.replace ('.', '-');
-        File destFile = new File (destDir, fileName + (isNbmFile ? Utilities.NBM_EXTENTSION : ""));
+        String filePath = source.getFile().toLowerCase(Locale.US);
+        String ext = filePath.endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US)) ?
+            Utilities.NBM_EXTENTSION : (
+            filePath.endsWith(Utilities.JAR_EXTENSION.toLowerCase(Locale.US)) ?
+                Utilities.JAR_EXTENSION : ""
+            );
+
+        File destFile = new File (destDir, fileName + ext);
         err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }
     
-    private static File getDestination (File targetCluster, String codeName) {
-        return getDestination (targetCluster, codeName, true);
-    }
-
     private boolean cancelled() {
         synchronized (this) {
             return STEP.CANCEL == currentStep;

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="LocalTerminalAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.dlight.terminal.action.LocalTerminalAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#CTL_LocalTerminal"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/terminal/action/local_term.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
+            <file name="RemoteTerminalAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.dlight.terminal.action.RemoteTerminalAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#CTL_RemoteTerminalAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/terminal/action/remote_term.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
+        </folder>
+        <folder name="Terminal">
+            <file name="org-netbeans-modules-dlight-terminal-action-LocalTerminal.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/LocalTerminalAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="org-netbeans-modules-dlight-terminal-action-RemoteTerminalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/RemoteTerminalAction.instance"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <folder name="Output">
+                <file name="org-netbeans-modules-dlight-terminal-action-LocalTerminal.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/LocalTerminalAction.instance"/>
+                    <attr name="position" intvalue="2600"/>
+                </file>
+                <file name="org-netbeans-modules-dlight-terminal-action-RemoteTerminalAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/RemoteTerminalAction.instance"/>
+                    <attr name="position" intvalue="2700"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TerminalContainerTopComponent.settings" url="ui/TerminalContainerTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="TerminalContainerTopComponent.wstcref" url="ui/TerminalContainerTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2750"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

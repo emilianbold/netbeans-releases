@@ -38,7 +38,10 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import java.util.Collection;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
@@ -83,12 +86,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope, NamespaceDeclarationInfo info) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         isDefault = false;
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope) {
-        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpKind.NAMESPACE_DECLARATION);
+        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpElementKind.NAMESPACE_DECLARATION);
         isDefault = true;
     }
 
@@ -100,7 +103,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends ClassScopeImpl> getDeclaredClasses() {
         return filter(getElements(), new ElementFilter<ClassScopeImpl>() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CLASS);
+                return element.getPhpElementKind().equals(PhpElementKind.CLASS);
             }
         });
     }
@@ -108,7 +111,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends InterfaceScope> getDeclaredInterfaces() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.IFACE);
+                return element.getPhpElementKind().equals(PhpElementKind.IFACE);
             }
         });
     }
@@ -116,7 +119,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends ConstantElement> getDeclaredConstants() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CONSTANT);
+                return element.getPhpElementKind().equals(PhpElementKind.CONSTANT);
             }
         });
     }
@@ -125,7 +128,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.FUNCTION);
+                return element.getPhpElementKind().equals(PhpElementKind.FUNCTION);
             }
         });
     }
@@ -133,7 +136,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends UseElement> getDeclaredUses() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.USE_STATEMENT);
+                return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);
             }
         });
     }
@@ -149,7 +152,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE);
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }

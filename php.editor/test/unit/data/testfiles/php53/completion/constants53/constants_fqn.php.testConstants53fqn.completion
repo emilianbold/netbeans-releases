@@ -2,4 +2,4 @@ Code completion result for source line:
 echo \test\ns\constants\ctx\CONSTANT_XY|Z;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-GLOBAL     CONSTANT_XYZ                               constants.php
+GLOBAL     CONSTANT_XYZ                               test\ns\constants\ctx

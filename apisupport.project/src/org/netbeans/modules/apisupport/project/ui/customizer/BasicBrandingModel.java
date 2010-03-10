@@ -132,6 +132,9 @@ public class BasicBrandingModel {
     
     /**all above splash BundleKeys in set*/
     private final Set<BrandingSupport.BundleKey> winsysKeys = new HashSet<BrandingSupport.BundleKey>();
+
+    /**all BundleKeys the user may have modified through Resource Bundle editor panel */
+    private final Set<BrandingSupport.BundleKey> generalResourceBundleKeys = new HashSet<BrandingSupport.BundleKey>();
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
@@ -281,6 +284,10 @@ public class BasicBrandingModel {
         return relativePath;
     }
 
+    public Project getProject() {
+        return null != suiteProps ? suiteProps.getProject() : project;
+    }
+
     private File getProjectDirectoryFile() {
         if( null == suiteProps ) {
             return FileUtil.toFile(project.getProjectDirectory());
@@ -313,6 +320,9 @@ public class BasicBrandingModel {
                 getBranding().brandFile(splash);
             }
             getBranding().brandBundleKeys(winsysKeys);
+
+            getBranding().brandBundleKeys(generalResourceBundleKeys);
+            
         } else {
             if (brandingChanged && null != suiteProps) {//#115737
                 suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
@@ -618,8 +628,19 @@ public class BasicBrandingModel {
             winsysKeys.add(wsEnableSliding);
         }
         winsysKeys.remove(null);
+
+        generalResourceBundleKeys.clear();
 }
-    
+
+    public void addModifiedGeneralBundleKey (BrandingSupport.BundleKey key) {
+        generalResourceBundleKeys.add (key);
+    }
+
+    public BrandingSupport.BundleKey getGeneralBundleKeyForModification
+            (String codenamebase, String bundlepath, String key) {
+        return getBranding().getBundleKey(codenamebase, bundlepath, key);
+    }
+
     public @CheckForNull BrandingSupport.BundleKey getSplashWidth() {
         return splashWidth;
     }

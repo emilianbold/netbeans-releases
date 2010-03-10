@@ -504,6 +504,11 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="600"/>
                 </file>
             </folder>
+            <folder name="test.single">
+                <file name="test-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
         </folder>        <!-- BuildAction -->
         <folder name="NoBuildAction">
             <folder name="build">
@@ -581,6 +586,11 @@ made subject to such option by the copyright holder.
             <folder name="test">
                 <file name="test">
                     <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="test.single">
+                <file name="test-single">
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>        <!-- NoBuildAction -->

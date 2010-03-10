@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,18 +53,15 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -97,19 +93,19 @@ class DocRenderer {
             return predefinedSymbolElement.getDoc();
         }
 
-        if (element instanceof IndexedElement) {
-            return documentIndexedElement(info, (IndexedElement) element);
+        if (element instanceof PhpElement) {
+            return documentIndexedElement(info, (PhpElement) element);
         }
 
-        if (element instanceof IndexedClassMember) {
-            IndexedClassMember indexedClassMember = (IndexedClassMember) element;
-            return documentIndexedElement(info, indexedClassMember.getMember());
+        if (element instanceof TypeMemberElement) {
+            TypeMemberElement indexedClassMember = (TypeMemberElement) element;
+            return documentIndexedElement(info, indexedClassMember);
         }
 
         return null;
     }
 
-    private static String documentIndexedElement(ParserResult info, IndexedElement indexedElement) {
+    private static String documentIndexedElement(ParserResult info, PhpElement indexedElement) {
 
         StringBuilder description = new StringBuilder();
         final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
@@ -181,9 +177,9 @@ class DocRenderer {
 
         private CCDocHtmlFormatter header;
         private StringBuilder phpDoc;
-        private IndexedElement indexedElement;
+        private PhpElement indexedElement;
 
-        public PHPDocExtractor(CCDocHtmlFormatter header, StringBuilder phpDoc, IndexedElement indexedElement) {
+        public PHPDocExtractor(CCDocHtmlFormatter header, StringBuilder phpDoc, PhpElement indexedElement) {
             this.header = header;
             this.phpDoc = phpDoc;
             this.indexedElement = indexedElement;
@@ -332,7 +328,7 @@ class DocRenderer {
                     doFunctionDeclaration((FunctionDeclaration) node);
                 } else {
                     header.name(indexedElement.getKind(), true);
-                    header.appendText(indexedElement.getDisplayName());
+                    header.appendText(indexedElement.getName());
                     header.name(indexedElement.getKind(), false);                    
                 }
 

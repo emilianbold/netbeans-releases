@@ -123,15 +123,13 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         assertNotNull(buildScript);
         assertTrue(buildScript.isValid());
         Properties props = new Properties();
-        File toplinkJar1 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials.jar");
-        assertTrue(toplinkJar1.getAbsolutePath(), toplinkJar1.isFile());
-        assert toplinkJar1.exists() : "toplinkJar1 exists";
-        File toplinkJar2 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials-agent.jar");
-        assertTrue(toplinkJar2.getAbsolutePath(), toplinkJar2.isFile());
-        assert toplinkJar2.exists() : "toplinkJar2 exists";
-        props.setProperty("persistence-library1.jar", toplinkJar1.getAbsolutePath());
-        props.setProperty("persistence-library2.jar", toplinkJar2.getAbsolutePath());
-        props.setProperty("libs.toplink.classpath", "" + toplinkJar1 + File.pathSeparator + toplinkJar2);
+        File externalDir = new File(destDirF, "java/modules/ext/toplink/");
+        assertTrue(externalDir.getAbsolutePath(), externalDir.isDirectory());
+        assert externalDir.exists() : "java/modules/ext/toplink/ exists";
+        props.setProperty("external_dir", externalDir.getAbsolutePath());
+        props.setProperty("libs.toplink.classpath",
+                externalDir + File.separator + "toplink-essentials.jar" +
+                File.pathSeparator + externalDir + File.separator + "toplink-essentials-agent.jar");
 
         System.out.println("------------- BUILD OUTPUT --------------");
         ExecutorTask et = ActionUtils.runTarget(buildScript, targets, props);

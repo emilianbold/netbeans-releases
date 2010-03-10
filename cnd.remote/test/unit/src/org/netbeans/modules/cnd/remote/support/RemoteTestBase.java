@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -230,15 +232,17 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         tcm.applyChanges();
     }
 
-    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
+            throws InterruptedException, IllegalArgumentException, TimeoutException {
         buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
     }
 
-    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
+            throws InterruptedException, IllegalArgumentException, TimeoutException {
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
     }
 
-    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException {
+    protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException, TimeoutException {
 
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
@@ -293,7 +297,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
             }
         }
-        Thread.sleep(500); // give building thread time to finish and to kill rfs_controller
+        //Thread.sleep(3000); // give building thread time to finish and to kill rfs_controller
+        RemoteSyncTestSupport.waitWorkerFinished(10);
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 

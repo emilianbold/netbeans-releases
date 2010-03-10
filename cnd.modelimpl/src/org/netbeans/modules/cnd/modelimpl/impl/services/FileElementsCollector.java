@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
-import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -152,8 +151,8 @@ public class FileElementsCollector {
     private synchronized Collection<CsmDeclaration> _getUsedDeclarations() {
         Collection<CsmDeclaration> res = visibleUsedDeclarations;
         if (res == null) {
-            res = CsmUsingResolver.extractDeclarations(globalUsingDeclarations);
-            res.addAll(CsmUsingResolver.extractDeclarations(localUsingDeclarations));
+            res = UsingResolverImpl.extractDeclarations(globalUsingDeclarations, null);
+            res.addAll(UsingResolverImpl.extractDeclarations(localUsingDeclarations, null));
             visibleUsedDeclarations = res;
         }
         return Collections.unmodifiableCollection(res);

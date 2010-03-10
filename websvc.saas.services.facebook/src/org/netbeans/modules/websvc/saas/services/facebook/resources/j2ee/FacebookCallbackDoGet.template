@@ -1,0 +1,30 @@
+{
+    response.setContentType("text/html;charset=UTF-8");
+    java.io.PrintWriter out = response.getWriter();
+    try {
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        String authToken = request.getParameter("auth_token");
+        session.setAttribute("facebook_auth_token", authToken);
+
+        dispatch(request, response);
+
+        String returnUrl = (String) session.getAttribute("facebook_return_url");
+        if (returnUrl != null) {
+            session.removeAttribute("facebook_return_url");
+            response.sendRedirect(returnUrl);
+        }
+
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Servlet Facebook Callback</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<h1>Servlet FacebookCallback at " + request.getContextPath() + "</h1>");
+        out.println("<p> Your Session Key is " + session.getAttribute("facebook_session_key") + "</p>");
+        out.println("</body>");
+        out.println("</html>");
+
+    } finally {
+        out.close();
+    }
+}

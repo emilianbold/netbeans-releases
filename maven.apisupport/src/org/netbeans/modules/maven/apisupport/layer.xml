@@ -79,12 +79,12 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/nbmicon.png"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
-                <file name="NbModuleOSGi">
-                    <attr name="position" intvalue="420"/>
+                <file name="NbSuite">
+                    <attr name="position" intvalue="450"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbModuleOSGiIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbModuleOSGiDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/nbmicon.png"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbSuiteIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbSuiteDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="NbApp">

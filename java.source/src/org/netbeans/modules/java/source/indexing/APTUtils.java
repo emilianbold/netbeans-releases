@@ -129,6 +129,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return result;
     }
 
+    public Map<? extends String, ? extends String> processorOptions() {
+        return aptOptions.processorOptions();
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
         verifyAttributes(root, false);

@@ -42,6 +42,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Exact;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Occurence;
@@ -52,30 +67,36 @@ import org.netbeans.modules.php.editor.model.Occurence;
  */
 class OccurenceImpl implements Occurence {
     private OffsetRange occurenceRange;
-    private ModelElement declaration;
-    private Collection<? extends ModelElement> allDeclarations;
+    private PhpElement declaration;
+    private Collection<? extends PhpElement> allDeclarations;
     private FileScopeImpl fileScope;
-    private ModelElement gotDeclaration;
+    private PhpElement gotDeclaration;
 
 
-    public OccurenceImpl(Collection<? extends ModelElement> allDeclarations, OffsetRange occurenceRange,FileScopeImpl fileScope) {
+    public OccurenceImpl(Collection<? extends PhpElement> allDeclarations, OffsetRange occurenceRange,FileScopeImpl fileScope) {
         this(allDeclarations, ModelUtils.getFirst(allDeclarations), occurenceRange, fileScope);
     }
 
-    public OccurenceImpl(Collection<? extends ModelElement> allDeclarations, ModelElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
-        this.allDeclarations = allDeclarations;
-        this.declaration = declaration;
+    public OccurenceImpl(Collection<? extends PhpElement> allDeclarations, PhpElement declaration, OffsetRange occurenceRange,FileScopeImpl fileScope) {
+        if ((declaration instanceof MethodScope) && ((MethodScope)declaration).isConstructor()) {
+            ModelElement modelElement = (ModelElement) declaration;
+            this.declaration = modelElement.getInScope();
+            setGotoDeclaration(modelElement);
+        } else {
+            this.allDeclarations = allDeclarations;
+            this.declaration = declaration;
+        }
         this.occurenceRange = occurenceRange;
         this.fileScope = fileScope;
     }
 
-    public OccurenceImpl(ModelElement declaration, OffsetRange occurenceRange, FileScopeImpl fileScope) {
+    public OccurenceImpl(PhpElement declaration, OffsetRange occurenceRange, FileScopeImpl fileScope) {
         this.occurenceRange = occurenceRange;
         this.declaration = declaration;
         this.fileScope = fileScope;
     }
 
-    public ModelElement geModelElement() {
+    public PhpElement geElement() {
         return declaration;
     }
 
@@ -88,42 +109,100 @@ class OccurenceImpl implements Occurence {
     }
 
     @SuppressWarnings("unchecked")
-    public Collection<? extends ModelElement> getAllDeclarations() {
+    public Collection<? extends PhpElement> getAllDeclarations() {
         if ((gotDeclaration != null)) {
             return Collections.<ModelElement>emptyList();
         }
         if (allDeclarations == null) {
             allDeclarations = Collections.<ModelElement>emptyList();
-            IndexScopeImpl indexScope = (IndexScopeImpl) ModelUtils.getIndexScope(geModelElement());
-            switch (geModelElement().getPhpKind()) {
+            final PhpElement element = geElement();
+            ElementQuery elementQuery = element.getElementQuery();
+            switch (element.getPhpElementKind()) {
                 case CONSTANT:
-                    allDeclarations = indexScope.findConstants(geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findConstants(modelElement.getName());
+                    } else {
+                        ConstantElement constant = (ConstantElement) element;
+                        allDeclarations = elementQuery.getConstants(NameKind.exact(constant.getFullyQualifiedName()));
+                    }
                     break;
                 case FUNCTION:
-                    allDeclarations = indexScope.findFunctions(geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findFunctions(modelElement.getName());
+                    } else {
+                        FunctionElement functions = (FunctionElement) element;
+                        allDeclarations = elementQuery.getFunctions(NameKind.exact(functions.getFullyQualifiedName()));
+                    }
                     break;
                 case CLASS:
-                    allDeclarations = indexScope.findClasses(geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findClasses(modelElement.getName());
+                    } else {
+                        ClassElement classes = (ClassElement) element;
+                        allDeclarations = elementQuery.getClasses(NameKind.exact(classes.getFullyQualifiedName()));
+                    }
                     break;
                 case IFACE:
-                    allDeclarations = indexScope.findInterfaces(geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findInterfaces(modelElement.getName());
+                    } else {
+                        InterfaceElement ifaces = (InterfaceElement) element;
+                        allDeclarations = elementQuery.getInterfaces(NameKind.exact(ifaces.getFullyQualifiedName()));
+                    }
                     break;
                 case METHOD:
-                    allDeclarations = indexScope.findMethods((TypeScopeImpl) geModelElement().getInScope(),
-                            geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findMethods((TypeScopeImpl) modelElement.getInScope(),
+                                modelElement.getName());
+                    } else {
+                        MethodElement methods = (MethodElement) element;
+                        if (elementQuery.getQueryScope().isIndexScope()) {
+                            ElementQuery.Index index = (Index) elementQuery;
+                            Exact methodName = NameKind.exact(methods.getName());
+                            allDeclarations = ElementFilter.forName(methodName).filter(index.getAllMethods(methods.getType()));
+                        } else {
+                            assert false;
+                        }
+                    }
+
                     break;
                 case FIELD:
-                    allDeclarations = indexScope.findFields((ClassScopeImpl) geModelElement().getInScope(),
-                            geModelElement().getName());
+                    if (element instanceof ModelElement) {
+                        ModelElement modelElement = (ModelElement) element;
+                        IndexScope indexScope = ModelUtils.getIndexScope(modelElement);
+                        allDeclarations = indexScope.findFields((ClassScopeImpl) modelElement.getInScope(),
+                            geElement().getName());
+                    } else {
+                        FieldElement field = (FieldElement) element;
+                        if (elementQuery.getQueryScope().isIndexScope()) {
+                            ElementQuery.Index index = (Index) elementQuery;
+                            Exact fieldName = NameKind.exact(field.getName());
+                            final TypeElement type = field.getType();
+                            allDeclarations = ElementFilter.forName(fieldName).filter(index.getAlllFields(type));
+                        } else {
+                            assert false;
+                        }
+                    }
+
                     break;
-                case CLASS_CONSTANT:
+                case TYPE_CONSTANT:
                     //TODO: not implemented yet
                 case VARIABLE:
                 case INCLUDE:
-                    allDeclarations = Collections.<ModelElement>singletonList(declaration);
+                    allDeclarations = Collections.<PhpElement>singletonList(declaration);
                     break;
                 default:
-                    throw new UnsupportedOperationException(geModelElement().getPhpKind().toString());
+                    throw new UnsupportedOperationException(geElement().getPhpElementKind().toString());
             }
         }
         return this.allDeclarations;
@@ -133,15 +212,15 @@ class OccurenceImpl implements Occurence {
         return ModelVisitor.getAllOccurences(fileScope,this);
     }
 
-    public ModelElement getDeclaration() {
-        return geModelElement();
+    public PhpElement getDeclaration() {
+        return geElement();
     }
 
     public void setGotoDeclaration(ModelElement gotDeclaration) {
         this.gotDeclaration = gotDeclaration;
     }
 
-    public ModelElement gotoDeclaratin() {
+    public PhpElement gotoDeclaratin() {
         return (gotDeclaration != null) ? gotDeclaration : getDeclaration();
     }
 

@@ -52,19 +52,18 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
@@ -112,8 +111,8 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
             Occurence caretOccurence = occurencesSupport.getOccurence();
             if (caretOccurence != null) {
-                ModelElement decl = caretOccurence.getDeclaration();
-                if (decl != null && !decl.getPhpKind().equals(PhpKind.INCLUDE)) {
+                PhpElement decl = caretOccurence.getDeclaration();
+                if (decl != null && !decl.getPhpElementKind().equals(PhpElementKind.INCLUDE)) {
                     Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
                     for (Occurence occurence : allOccurences) {
                         result.add(occurence.getOccurenceRange());

@@ -28,8 +28,7 @@ import org.netbeans.lib.richexecution.program.Shell;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-
-import org.netbeans.modules.terminal.ui.TermTopComponent;
+import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
@@ -106,7 +105,7 @@ public final class TerminalIOProviderSupport {
 
 
     public static IOContainer getIOContainer() {
-	TermTopComponent ttc = TermTopComponent.findInstance();
+	TerminalTopComponent ttc = TerminalTopComponent.findInstance();
 	return ttc.ioContainer();
     }
 

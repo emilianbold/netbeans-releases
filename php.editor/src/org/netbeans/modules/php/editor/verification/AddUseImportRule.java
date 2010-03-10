@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -50,15 +51,15 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -166,8 +167,8 @@ public class AddUseImportRule extends AbstractRule {
                 if (isFunctionName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedFunction> functions = context.getIndex().getFunctions(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedFunction indexedFunction : functions) {
+                        Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(nodeName));
+                        for (FunctionElement indexedFunction : functions) {
                             addImportHints(indexedFunction, nodeName, currenNamespace, node);
                         }
                     }
@@ -175,8 +176,8 @@ public class AddUseImportRule extends AbstractRule {
                 } else if (isClassName(parentNode)) {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedClass> classes = context.getIndex().getClasses(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedClass indexedClass : classes) {
+                        Set<ClassElement> classes = context.getIndex().getClasses(NameKind.exact(nodeName));
+                        for (ClassElement indexedClass : classes) {
                             addImportHints(indexedClass, nodeName, currenNamespace, node);
                         }
                     }
@@ -184,8 +185,8 @@ public class AddUseImportRule extends AbstractRule {
                 } else {
                     final QualifiedName nodeName = QualifiedName.create(node);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedConstant cnst : constants) {
+                        Set<ConstantElement> constants = context.getIndex().getConstants(NameKind.exact(nodeName));
+                        for (ConstantElement cnst : constants) {
                             addImportHints(cnst, nodeName, currenNamespace, node);
                         }
                     }
@@ -209,8 +210,8 @@ public class AddUseImportRule extends AbstractRule {
                         node.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
                     final QualifiedName nodeName = QualifiedName.create(stringValue);
                     if (!nodeName.getKind().isFullyQualified()) {
-                        Collection<IndexedConstant> constants = context.getIndex().getConstants(null, nodeName.toName().toString(), Kind.EXACT);
-                        for (IndexedConstant cnst : constants) {
+                        Set<ConstantElement> constants = context.getIndex().getConstants(NameKind.exact(nodeName));
+                        for (ConstantElement cnst : constants) {
                             addImportHints(cnst, nodeName, currenNamespace, node);
                         }
                     }
@@ -219,8 +220,8 @@ public class AddUseImportRule extends AbstractRule {
             super.visit(node);
         }
 
-        private void addImportHints(IndexedFullyQualified idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
-            final QualifiedName indexedName = idxElement.getQualifiedName();
+        private void addImportHints(FullyQualifiedElement idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
+            final QualifiedName indexedName = idxElement.getFullyQualifiedName();//getQualifiedName() used before
             QualifiedName importName = QualifiedName.getPrefix( indexedName, nodeName, true);
 
             if (importName != null) {
@@ -236,7 +237,7 @@ public class AddUseImportRule extends AbstractRule {
                         }
                     });
                     if (suitableUses.isEmpty()) {
-                        if (idxElement instanceof IndexedClass || !nodeName.getKind().isUnqualified()) {
+                        if (idxElement instanceof ClassElement || !nodeName.getKind().isUnqualified()) {
                             AddImportFix importFix = new AddImportFix(doc, currentScope, importName);
                             hints.add(new Hint(AddUseImportRule.this,
                                     importFix.getDescription(),

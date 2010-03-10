@@ -39,30 +39,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle;
 
 /**
  * Creates a multi-view TopComponent from <code>AbstractBrandingPanel</code>s.
@@ -73,8 +52,6 @@ import org.openide.windows.TopComponent;
  */
 public class BrandingEditor {
 
-    private static final Map<Project, BrandingEditor> project2editor = new WeakHashMap<Project, BrandingEditor>(10);
-
     /**
      * Open branding editor for given suite project.
      * @param suite
@@ -82,7 +59,7 @@ public class BrandingEditor {
     public static void open( SuiteProject suite ) {
         SuiteProperties properties = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
         BasicBrandingModel model = new BasicBrandingModel(properties);
-        open( properties.getProjectDisplayName() + " - Branding", suite, model );
+        open( NbBundle.getMessage(BrandingEditor.class, "Title_BrandingEditor", properties.getProjectDisplayName()), suite, model, true );
     }
 
     /**
@@ -90,135 +67,15 @@ public class BrandingEditor {
      * @param displayName Branding editor's display name.
      * @param p Project to be branded.
      * @param model Branding model.
+     * @param contextAvailable True if the given project knows which platform
+     * app it belongs and the platform jars/projects are available, false otherwise.
      */
-    public static void open( String displayName, Project p, BasicBrandingModel model ) {
-        synchronized( project2editor ) {
-            BrandingEditor editor = project2editor.get(p);
-            if( null == editor ) {
-                editor = new BrandingEditor(displayName, p, model);
-                project2editor.put(p, editor);
-            }
-            editor.open();
-        }
+    public static void open( String displayName, Project p, BasicBrandingModel model, boolean contextAvailable ) {
+        BrandingEditorPanel editor = new BrandingEditorPanel(displayName, p, model, contextAvailable);
+        editor.open();
     }
 
 
-    private final Project project;
-    private final String title;
-    private final BasicBrandingModel model;
-    private TopComponent tc;
-    private final Action saveAction;
-    private final InstanceContent content = new InstanceContent();
-    private final AbstractBrandingPanel[] panels;
-    private boolean isModified = false;
-    private boolean isValid = true;
-    private Set<JLabel> errorLabels = new HashSet<JLabel>(10);
-
-    private BrandingEditor( String title, Project p, final BasicBrandingModel model ) {
-        this.project = p;
-        this.title = title;
-        final OpenProjects projects = OpenProjects.getDefault();
-        projects.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( evt.getPropertyName() ) ) {
-                    if( !projects.isProjectOpen(project) && null != tc ) {
-                        tc.close();
-                        projects.removePropertyChangeListener(this);
-                    }
-                }
-            }
-        });
-        this.model = model;
-        panels = new AbstractBrandingPanel[] {
-            new BasicBrandingPanel(model),
-            new SplashBrandingPanel(model),
-            new WindowSystemBrandingPanel(model)
-        };
-        saveAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doSave();
-            }
-        };
-        saveAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/apisupport/project/ui/resources/save.png", true)); //NOI18N
-        saveAction.setEnabled(false);
-    }
-
-    void setModified() {
-        isModified = true;
-        saveAction.setEnabled(isModified && isValid);
-    }
-
-    Action getSaveAction() {
-        return saveAction;
-    }
-
-
-    private void open() {
-        if( null == tc ) {
-            tc = createWindow();
-        }
-        tc.open();
-        tc.requestActive();
-    }
-
-    private void doSave() {
-        for( AbstractBrandingPanel panel : panels ) {
-            panel.store();
-        }
-        try {
-            model.store();
-        } catch( IOException ioE ) {
-            Exceptions.printStackTrace(ioE);
-        }
-
-        isModified = false;
-        saveAction.setEnabled(false);
-    }
-
-    private TopComponent createWindow() {
-        Lookup lkp = new AbstractLookup(content);
-        for( AbstractBrandingPanel panel : panels ) {
-            panel.init(this, lkp);
-        }
-        MultiViewDescription[] tabs = new MultiViewDescription[panels.length];
-        System.arraycopy(panels, 0, tabs, 0, panels.length);
-        TopComponent res = MultiViewFactory.createMultiView(tabs, tabs[0]);
-        res.setDisplayName(title);
-        return res;
-    }
-
-    Image getIcon() {
-        Image res = null;
-        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
-        if( null != pi ) {
-            res = ImageUtilities.icon2Image(pi.getIcon());
-        }
-        return res;
-    }
-
-    JLabel createErrorLabel() {
-        JLabel res = new JLabel();
-        res.setVisible(false);
-        res.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/apisupport/project/ui/resources/error.gif", true)); //NOI18N
-        errorLabels.add( res );
-        return res;
-    }
-
-    void onBrandingValidation() {
-        isValid = true;
-        String errMessage = null;
-        for( AbstractBrandingPanel panel : panels ) {
-            isValid &= panel.isBrandingValid();
-            String msg = panel.getErrorMessage();
-            if( null != msg && null == errMessage )
-                errMessage = msg;
-        }
-        for( JLabel lbl : errorLabels ) {
-            lbl.setText(errMessage);
-            lbl.setVisible(!isValid);
-        }
-        saveAction.setEnabled(isModified && isValid);
+    private BrandingEditor() {
     }
 }

@@ -91,6 +91,7 @@ import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
@@ -432,6 +433,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onTemplate();
             }
         });
+        Spellchecker.register (messageTextArea);
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -527,7 +529,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
             NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
                     NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
         return result;

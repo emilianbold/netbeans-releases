@@ -42,12 +42,17 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -115,7 +120,18 @@ public class SubprojectProviderImplTest extends TestBase {
     public void testInclusionOfHigherBin() throws Exception {
         checkSubprojects("servletapi", new String[0]);
     }
-    
+
+    public void testInclusionOfUnresolvedRef() throws Exception {
+        clearWorkDir();
+        initializeBuildProperties(getWorkDir(), null);
+        NbModuleProject p = generateStandaloneModule("prj");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put("cp.extra", "${unknown.jar}");
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        checkSubprojects(p);
+    }
+
+    @Deprecated // relies on nb_all source root
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
         SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
@@ -134,7 +150,17 @@ public class SubprojectProviderImplTest extends TestBase {
         }
         assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
-    
+
+    private void checkSubprojects(Project project, String... subprojectNames) throws Exception {
+        SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
+        assertNotNull("have SPP in " + project, spp);
+        SortedSet<String> actual = new TreeSet<String>();
+        for (Project sp : spp.getSubprojects()) {
+            actual.add(ProjectUtils.getInformation(sp).getName());
+        }
+        assertEquals("correct subprojects for " + project, new TreeSet<String>(Arrays.asList(subprojectNames)).toString(), actual.toString());
+    }
+
     private Project project(String path) throws Exception {
         FileObject dir = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), path));
 //        FileObject dir = nbRoot().getFileObject(path);

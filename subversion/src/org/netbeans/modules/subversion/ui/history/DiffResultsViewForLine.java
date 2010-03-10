@@ -166,7 +166,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
                             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
-                        final DiffController view = DiffController.create(leftSource, rightSource);
+                        final DiffController view = DiffController.createEnhanced(leftSource, rightSource);
                         int leftMaxLineNumber = getLastLineIndex(leftSource);
                         int rightMaxLineNumber = getLastLineIndex(rightSource);
                         if (currentTask == ShowDiffTask.this) {

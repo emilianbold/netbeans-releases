@@ -243,7 +243,9 @@ class OSGiProcess {
         for (Bundle bundle : installed) {
             bundle.start();
         }
-        f.stop();
+        if (f.getState() != Bundle.STOPPING) {
+            f.stop();
+        }
         f.waitForStop(0);
     }
 

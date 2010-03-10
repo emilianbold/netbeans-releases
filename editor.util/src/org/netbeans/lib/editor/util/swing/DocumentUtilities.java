@@ -41,6 +41,8 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -897,5 +899,44 @@ public final class DocumentUtilities {
     public static long getDocumentTimestamp(Document doc) {
         Object version = doc.getProperty(LAST_MODIFICATION_TIMESTAMP_PROP);
         return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
+    }
+
+    /**
+     * Adds <code>PropertyChangeListener</code> to a document.
+     *
+     * <p>In general, document properties are key-value pairs where both the key
+     * and the value can be any <code>Object</code>. Contrary to that <code>PropertyChangeListener</code>s
+     * can only handle named properties that can have an arbitrary value, but have <code>String</code> names.
+     * Therefore the listenera attached to a document will only ever recieve document
+     * properties, which keys are of <code>java.lang.String</code> type.
+     *
+     * <p>Additionally, the list of document properties that clients can listen on
+     * is not part of this contract.
+     *
+     * @param doc The document to add the listener to.
+     * @param l The listener to add to the document.
+     *
+     * @since 1.35
+     */
+    public static void addPropertyChangeListener(Document doc, PropertyChangeListener l) {
+        PropertyChangeSupport pcs = (PropertyChangeSupport) doc.getProperty(PropertyChangeSupport.class);
+        if (pcs != null) {
+            pcs.addPropertyChangeListener(l);
+        }
+    }
+
+    /**
+     * Removes <code>PropertyChangeListener</code> from a document.
+     *
+     * @param doc The document to remove the listener from.
+     * @param l The listener to remove from the document.
+     *
+     * @since 1.35
+     */
+    public static void removePropertyChangeListener(Document doc, PropertyChangeListener l) {
+        PropertyChangeSupport pcs = (PropertyChangeSupport) doc.getProperty(PropertyChangeSupport.class);
+        if (pcs != null) {
+            pcs.removePropertyChangeListener(l);
+        }
     }
 }

@@ -1,0 +1,80 @@
+<library id="http://java.sun.com/jsf/core">
+    <common_attributes>
+        <attr name="disabled">
+            <type name="boolean"/>
+        </attr>
+    </common_attributes>
+    <tag name="ajax">
+        <attr name="immediate">
+            <type name="boolean"/>
+        </attr>
+    </tag>
+    <tag name="convertDateTime">
+        <attr name="dateStyle">
+            <type name="enum">
+                <val>default</val>
+                <val>short</val>
+                <val>medium</val>
+                <val>long</val>
+                <val>full</val>
+            </type>
+        </attr>
+        <attr name="type">
+            <type name="enum">
+                <val>date</val>
+                <val>time</val>
+                <val>both</val>
+            </type>
+        </attr>
+    </tag>
+    <tag name="convertNumber">
+        <attr name="groupingUsed">
+            <type name="boolean"/>
+        </attr>
+        <attr name="integerOnly">
+            <type name="boolean"/>
+        </attr>
+        <attr name="type">
+            <type name="enum">
+                <val>number</val>
+                <val>currency</val>
+                <val>percent</val>
+            </type>
+        </attr>
+    </tag>
+    <tag name="event">
+        <attr name="name">
+            <type name="enum">
+                <val>preRenderComponent</val>
+                <val>PostAddToView</val>
+                <val>preValidate</val>
+                <val>postValidate</val>
+            </type>
+        </attr>
+    </tag>
+    <tag name="param">
+        <attr name="disable">
+            <type name="boolean"/>
+        </attr>
+    </tag>
+    <tag name="selectItem">
+        <attr name="noSelectionOption">
+            <type name="boolean"/>
+        </attr>
+    </tag>
+    <tag name="selectItems">
+        <attr name="itemDisabled">
+            <type name="boolean"/>
+        </attr>
+        <attr name="itemLabelEscaped">
+            <type name="boolean"/>
+        </attr>
+    </tag>
+    <tag name="subview">
+        <attr name="rendered">
+            <type name="boolean"/>
+        </attr>
+    </tag>
+    <tag name="validateDoubleRange">
+    </tag>
+</library>

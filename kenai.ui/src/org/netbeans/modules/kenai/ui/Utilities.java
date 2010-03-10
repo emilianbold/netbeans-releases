@@ -40,12 +40,14 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -96,5 +98,24 @@ public class Utilities {
         assert name!=null;
         assert name.contains("@"): "name must be FQN";
         assert !name.contains("/"): "name cannot contain '/'";
+    }
+
+    public static Kenai getPreferredKenai() {
+        Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
+        Kenai kenai = null;
+        for (Kenai k:kenais) {
+            if (k.getUrl().getHost().equals("kenai.com")) { //NOI!18N
+                kenai = k;
+            }
+            if (k.getUrl().getHost().endsWith("java.net")) { //NOI!18N
+                return k;
+            }
+        }
+        if (kenai!=null)
+            return kenai;
+        if (!kenais.isEmpty()) {
+            return kenais.iterator().next();
+        }
+        return null;
     }
 }

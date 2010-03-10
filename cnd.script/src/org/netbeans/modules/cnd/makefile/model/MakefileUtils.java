@@ -63,8 +63,10 @@ public final class MakefileUtils {
 
             // targets written by CND
             "build", // NOI18N
+            "build-tests", // NOI18N
             "clobber", // NOI18N
-            "help")); // NOI18N
+            "help", // NOI18N
+            "test")); // NOI18N
 
     public static boolean isPreferredTarget(String target) {
         return PREFERRED_TARGETS.contains(target);

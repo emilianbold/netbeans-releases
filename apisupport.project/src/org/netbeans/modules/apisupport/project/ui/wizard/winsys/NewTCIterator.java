@@ -222,7 +222,7 @@ final class NewTCIterator extends BasicWizardIterator {
         boolean actionLessTC;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.windows");
-            actionLessTC = current.compareTo(new SpecificationVersion("6.24")) >= 0; // NOI18N
+            actionLessTC = current == null || current.compareTo(new SpecificationVersion("6.24")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
             actionLessTC = false;
@@ -230,7 +230,7 @@ final class NewTCIterator extends BasicWizardIterator {
         boolean propertiesPersistence;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.netbeans.modules.settings");
-            propertiesPersistence = current.compareTo(new SpecificationVersion("1.18")) >= 0; // NOI18N
+            propertiesPersistence = current == null || current.compareTo(new SpecificationVersion("1.18")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
             propertiesPersistence = false;

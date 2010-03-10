@@ -44,6 +44,7 @@ package org.openide.loaders;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
@@ -155,12 +156,19 @@ final class DataLdrActions extends FolderInstance {
     
     /** Creates the actions and notifies the loader.
      */
+    @Override
     protected Object createInstance (org.openide.cookies.InstanceCookie[] cookies) throws java.io.IOException, ClassNotFoundException {
         ArrayList<javax.swing.Action> list = new ArrayList<javax.swing.Action> ();
         for (int i = 0; i < cookies.length; i++) {
-            Class clazz = cookies[i].instanceClass ();
-            if (javax.swing.JSeparator.class.isAssignableFrom (clazz)) {
-                list.add (null);
+            try {
+                Class clazz = cookies[i].instanceClass();
+                if (javax.swing.JSeparator.class.isAssignableFrom(clazz)) {
+                    list.add(null);
+                    continue;
+                }
+            } catch (ClassNotFoundException cnf) {
+                err().log(Level.INFO, "Cannot resolve registration of {0}", cookies[i]); // NOI18N
+                err().log(Level.CONFIG, cnf.getMessage(), cnf);
                 continue;
             }
             

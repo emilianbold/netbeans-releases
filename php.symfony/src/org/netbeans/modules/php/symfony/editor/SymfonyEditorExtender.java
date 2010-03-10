@@ -43,7 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.symfony.util.SymfonyUtils;
@@ -53,13 +53,13 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Mysik
  */
 public class SymfonyEditorExtender extends EditorExtender {
-    private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
+    private static final List<PhpBaseElement> ELEMENTS = Arrays.<PhpBaseElement>asList(
             new PhpVariable("$sf_user", "sfUser"), // NOI18N
             new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
             new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
 
     @Override
-    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+    public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
         if (SymfonyUtils.isView(fo)) {
             return ELEMENTS;
         }
@@ -69,7 +69,7 @@ public class SymfonyEditorExtender extends EditorExtender {
     @Override
     public PhpClass getClass(FileObject fo, String variableName) {
         if (SymfonyUtils.isView(fo)) {
-            for (PhpElement element : ELEMENTS) {
+            for (PhpBaseElement element : ELEMENTS) {
                 if (element.getName().equals(variableName)) {
                     return new PhpClass(element.getName(), element.getFullyQualifiedName());
                 }

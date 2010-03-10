@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -57,7 +58,9 @@ public class HtmlRefactoringPluginFactory implements RefactoringPluginFactory {
 	    if (null != refactoring.getRefactoringSource().lookup(FileObject.class)) {
 		return new HtmlRenameRefactoringPlugin((RenameRefactoring)refactoring);
 	    }
-	}
+	} else if(refactoring instanceof ExtractInlinedStyleRefactoring) {
+            return new ExtractInlinedStyleRefactoringPlugin((ExtractInlinedStyleRefactoring)refactoring);
+        }
         
 	return null;
 

@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * CVS registration class.
@@ -64,10 +65,13 @@ import java.util.prefs.PreferenceChangeListener;
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
     private VCSVisibilityQuery visibilityQuery;
+    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
+    private final static Integer priority = Utils.getPriority("cvs"); //NOI18N
 
     public CVS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(CVS.class, "CTL_CVS_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(CVS.class, "CTL_CVS_MainMenu"));
+        putProperty(PROP_PRIORITY, priority);
         CvsVersioningSystem.getInstance().addVersioningListener(this);
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);

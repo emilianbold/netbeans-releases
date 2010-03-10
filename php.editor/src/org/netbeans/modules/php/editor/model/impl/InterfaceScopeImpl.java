@@ -38,18 +38,18 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
 import java.util.HashSet;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+
 
 /**
  *
@@ -60,7 +60,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         super(inScope, nodeInfo);
     }
 
-    InterfaceScopeImpl(IndexScope inScope, IndexedInterface indexedIface) {
+    InterfaceScopeImpl(IndexScope inScope, InterfaceElement indexedIface) {
         //TODO: in idx is no info about ifaces
         super(inScope, indexedIface);
     }
@@ -69,7 +69,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaces();
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
         if (implementedInterfaces.size() > 0) {
             sb.append(" implements ");
             for (InterfaceScope interfaceScope : implementedInterfaces) {
@@ -78,20 +78,38 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return sb.toString();
     }
+    @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
         Set<MethodScope> allMethods = new HashSet<MethodScope>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScope.getIndex();
+        ElementQuery.Index index = indexScope.getIndex();
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
-        interfaceScopes.addAll(getSuperInterfaces());
+        interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
-            Collection<IndexedClassMember<IndexedFunction>> indexedFunctions = index.getAllMethods(null, iface.getName(), "", QuerySupport.Kind.PREFIX, Modifier.PUBLIC | Modifier.PROTECTED);
-            for (IndexedClassMember<IndexedFunction> classMember : indexedFunctions) {
-                IndexedFunction indexedFunction = classMember.getMember();
-                allMethods.add(new MethodScopeImpl((InterfaceScopeImpl) iface, indexedFunction));
+            Collection<MethodElement> indexedFunctions = index.getInheritedMethods(iface);
+            for (MethodElement classMember : indexedFunctions) {
+                MethodElement indexedFunction = classMember;
+                allMethods.add(new MethodScopeImpl(iface, indexedFunction));
             }
         }
         return allMethods;
+    }
+
+    @Override
+    public final Collection<? extends ClassConstantElement> getInheritedConstants() {
+        Set<ClassConstantElement> allConstants = new HashSet<ClassConstantElement>();
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        ElementQuery.Index index = indexScope.getIndex();
+        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        interfaceScopes.addAll(getSuperInterfaceScopes());
+        for (InterfaceScope iface : interfaceScopes) {
+            Collection<TypeConstantElement> indexedConstants = index.getInheritedTypeConstants(iface);
+            for (TypeConstantElement classMember : indexedConstants) {
+                TypeConstantElement indexedFunction = classMember;
+                allConstants.add(new ClassConstantElementImpl(iface, indexedFunction));
+            }
+        }
+        return allConstants;
     }
 
     public final Collection<? extends MethodScope> getMethods() {
@@ -124,9 +142,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
 
     @Override
     public QualifiedName getNamespaceName() {
-        if (indexedElement instanceof IndexedInterface) {
-            IndexedInterface indexedInterface = (IndexedInterface)indexedElement;
-            return QualifiedName.create(indexedInterface.getNamespaceName());
+        if (indexedElement instanceof InterfaceElement) {
+            InterfaceElement indexedInterface = (InterfaceElement)indexedElement;
+            return indexedInterface.getNamespaceName();
         }
         return super.getNamespaceName();
     }

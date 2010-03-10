@@ -186,8 +186,8 @@ final class NewLoaderIterator extends BasicWizardIterator {
         boolean lookupReadyObject;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
-            loaderlessObject = current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
-            lookupReadyObject = current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
+            loaderlessObject = current == null || current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
+            lookupReadyObject = current == null || current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
             loaderlessObject = false;

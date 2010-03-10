@@ -42,12 +42,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
@@ -59,8 +61,8 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
 
     private CachingSupport cachedModelSupport;
     private ParserResult info;
-    private Map<ModelElement, List<Occurence>> occurences =
-            new HashMap<ModelElement, List<Occurence>>();
+    private Map<PhpElement, List<Occurence>> occurences =
+            new HashMap<PhpElement, List<Occurence>>();
     private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
 
     FileScopeImpl(ParserResult info) {
@@ -68,7 +70,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     }
 
     private FileScopeImpl(ParserResult info, String name) {
-        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), PhpKind.PROGRAM);//NOI18N
+        super(null, name, Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null), new OffsetRange(0, 0), PhpElementKind.PROGRAM);//NOI18N
         this.info = info;
         this.cachedModelSupport = new CachingSupport(this);
     }
@@ -78,11 +80,11 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     }
 
     void addOccurence(Occurence occurence) {
-        final ModelElement declaration = occurence.getDeclaration();
+        PhpElement declaration = occurence.getDeclaration();
         addOccurence(declaration, occurence);
     }
 
-    void addOccurence(final ModelElement declaration, Occurence occurence) {
+    void addOccurence(final PhpElement declaration, Occurence occurence) {
         List<Occurence> ocList = occurences.get(declaration);
         if (ocList == null) {
             ocList = new ArrayList<Occurence>();
@@ -109,7 +111,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         return ocList;
     }
 
-    List<Occurence> getAllOccurences(ModelElement declaration) {
+    List<Occurence> getAllOccurences(PhpElement declaration) {
         final List<Occurence> retval = occurences.get(declaration);
         return retval != null ? retval : Collections.<Occurence>emptyList();
     }
@@ -128,7 +130,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
     public Collection<? extends NamespaceScope> getDeclaredNamespaces() {
         return filter(getElements(), new ElementFilter<NamespaceScope>() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.NAMESPACE_DECLARATION);
+                return element.getPhpElementKind().equals(PhpElementKind.NAMESPACE_DECLARATION);
             }
         });
     }
