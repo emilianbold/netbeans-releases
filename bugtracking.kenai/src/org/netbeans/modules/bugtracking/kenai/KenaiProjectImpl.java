@@ -102,19 +102,7 @@ class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiP
     @Override
     public BugtrackingType getType() {
         if (type == null) {
-            try {
-                KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-                for (KenaiFeature f : features) {
-                    if (KenaiService.Names.BUGZILLA.equals(f.getService())) {
-                        type = BugtrackingType.BUGZILLA;
-                    } else if (KenaiService.Names.JIRA.equals(f.getService())) {
-                        type = BugtrackingType.JIRA;
-                    }
-                    break;
-                }
-            } catch (KenaiException kenaiException) {
-                Support.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
-            }
+            setupFeature();
         }
         return type;
     }
@@ -131,16 +119,39 @@ class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiP
 
     private KenaiFeature getFeature() {
         if(feature == null) {
-            try {
-                KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-                for (KenaiFeature f : features) {
-                    feature = f;
-                }
-            } catch (KenaiException kenaiException) {
-                Support.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
-            }
+            setupFeature();
         }
         return feature;
+    }
+
+    private void setupFeature() {
+        try {
+            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
+
+            // XXX check for available connectors and if only one available then
+            // lookup only the relevant bugtracking type
+
+            // look for bugzilla first ...
+            for (KenaiFeature f : features) {
+                if (KenaiService.Names.BUGZILLA.equals(f.getService())) {
+                    type = BugtrackingType.BUGZILLA;
+                    feature = f;
+                    break;
+                }
+            }
+            // ... then jira if no bugzilla found
+            if(type == null) {
+                for (KenaiFeature f : features) {
+                    if (KenaiService.Names.JIRA.equals(f.getService())) {
+                        type = BugtrackingType.JIRA;
+                        feature = f;
+                        break;
+                    }
+                }
+            }
+        } catch (KenaiException kenaiException) {
+            Support.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
+        }
     }
 
 }
