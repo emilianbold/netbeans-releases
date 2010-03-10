@@ -332,7 +332,6 @@ class KenaiHandler {
             if(evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)) {
                 closeQueries();
             } else if(evt.getPropertyName().equals(KenaiProject.PROP_PROJECT_NOTIFICATION)) {
-                System.out.println(" p notif " + ph.getDisplayName());
                 Object newValue = evt.getNewValue();
                 if (newValue instanceof KenaiNotification) {
                     KenaiNotification kn = (KenaiNotification) newValue;
