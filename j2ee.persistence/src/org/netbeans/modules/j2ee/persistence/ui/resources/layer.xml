@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <file name="CopyResourcesIndexer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory"/>
-                    <attr name="position" intvalue="10"/><!-- Need to be before org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory -->
+                    <!--attr name="position" intvalue="10"/-->
                 </file>
                 <!-- TODO: RETOUCHE
                 <folder name="CompletionProviders">
