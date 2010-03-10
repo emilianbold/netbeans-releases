@@ -809,11 +809,16 @@ class WSTransformer extends DefaultTreePathVisitor {
 		checkSpaceAroundToken(ts, space);
 	    }
 	}
-	ts.move(node.getIfTrue().getEndOffset());
-        if (ts.movePrevious() && ts.moveNext()) {
-	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
-	    if (ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) {
-		checkSpaceAroundToken(ts, space);
+	
+	// the true part doesn't have to be defined
+	// exmaple: $sPhase = substr($sPhaseTeam, 1, 1) ?: '';
+	if (node.getIfTrue() != null) {
+	    ts.move(node.getIfTrue().getEndOffset());
+	    if (ts.movePrevious() && ts.moveNext()) {
+		LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+		if (ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) {
+		    checkSpaceAroundToken(ts, space);
+		}
 	    }
 	}
 
