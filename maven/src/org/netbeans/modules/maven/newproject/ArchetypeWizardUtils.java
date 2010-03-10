@@ -373,7 +373,7 @@ public class ArchetypeWizardUtils {
                         addModuleToApplication(new File(projFile, "application"), nbm, null);
                     }
                 }
-                if (setOsgiDeps) {
+                if (setOsgiDeps != null && setOsgiDeps.booleanValue()) {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
                 }

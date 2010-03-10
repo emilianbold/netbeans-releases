@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,49 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.api;
+package org.netbeans.modules.derby;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
-import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
+import javax.swing.Action;
+import org.openide.actions.DeleteAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Utility class to expose NB platform application branding editor.
- *
- * @since 1.39
- * @author S. Aubrecht
+ * Represents a database. 
+ * 
+ * @author Jiri Rechtacek
  */
-public class BrandingUtils {
+class DerbyDatabaseNode extends AbstractNode implements Comparable {
+    
+    private static final String ICON_BASE = "org/netbeans/modules/derby/resources/database.gif";
 
-    private BrandingUtils() {
+    private String database;
+    private DerbyDatabasesImpl server;
+    
+    public DerbyDatabaseNode(String dbName, DerbyDatabasesImpl server) {
+        super(Children.LEAF);
+        this.database = dbName;
+        this.server = server;
+        setName(dbName);
+        setDisplayName(dbName);
+        setShortDescription(NbBundle.getMessage(DerbyDatabaseNode.class, "DerbyDatabaseNode_ShortDescription", dbName, DerbyOptions.getDefault().getLocation()));
+        setIconBaseWithExtension(ICON_BASE);
+    }
+        
+   
+    @Override
+    public Action[] getActions(boolean context) {
+        if ( context ) {
+            return super.getActions(context);
+        } else {
+            return new SystemAction[] {
+                SystemAction.get(ConnectDatabaseAction.class),
+                SystemAction.get(DeleteAction.class)
+            };
+        }
+    }
+    
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+    
+    @Override
+    public void destroy() {
+        server.dropDatabase(database);
+    }
+    
+    @Override
+    public int compareTo(Object other) {
+        Node othernode = (Node)other;
+        return this.getDisplayName().compareTo(othernode.getDisplayName());
     }
 
-    /**
-     * Opens branding editor for given project. Must be invoked from EDT.
-     * @param displayName Editor's display name.
-     * @param p Project to be branded.
-     * @param brandingPath Path relative to project's directory where branded are stored in.
-     */
-    public static void openBrandingEditor( String displayName, Project p, String brandingPath ) {
-        if( !SwingUtilities.isEventDispatchThread() ) {
-            throw new IllegalStateException("This method must be invoked from EDT."); //NOI18N
-        }
-        boolean contextAvailable = true;
-        NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-        if( null != moduleProvider 
-                && !moduleProvider.prepareContext(NbBundle.getMessage(BrandingUtils.class, "Lbl_BrandingEditor")) ) { //NOI18N
-            contextAvailable = false;
-        }
-        BasicBrandingModel model = new BasicBrandingModel(p, brandingPath);
-        BrandingEditor.open( displayName, p, model, contextAvailable );
-    }
 }

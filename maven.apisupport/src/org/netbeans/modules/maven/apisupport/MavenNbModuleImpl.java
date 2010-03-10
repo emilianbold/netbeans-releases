@@ -59,9 +59,14 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import java.awt.BorderLayout;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
@@ -74,10 +79,14 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -294,16 +303,37 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
 
     @Override
-    public boolean prepareContext() throws IllegalStateException {
+    public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
         File platformDir = findPlatformFolder();
         if( null == platformDir ) {
             //ask to find nb app module
-            return SelectPlatformAppModulePanel.findAppModule( project );
+            if( SelectPlatformAppModulePanel.findAppModule( project ) ) {
+                platformDir = findPlatformFolder(); //look for platfrom app module again
+            } else {
+                return false;
+            }
         }
         if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
             //platform needs to be built
+            notifyBuildNeeded( featureDisplayName );
+            return false;
         }
         return true;
+    }
+
+    private void notifyBuildNeeded(String featureDisplayName) {
+        if( !NbPreferences.forModule(MavenNbModuleImpl.class).getBoolean("showNextTime_BuildNeeded", true) ) //NOI18N
+            return;
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add( new JLabel(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_BuildNeeded")), BorderLayout.CENTER ); //NOI18N
+        JCheckBox checkShowNextTime = new JCheckBox(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_ShowNextTime")); //NOI18N
+        checkShowNextTime.setSelected(true);
+        panel.add(checkShowNextTime, BorderLayout.SOUTH);
+        JButton btnClose= new JButton(NbBundle.getMessage(MavenNbModuleImpl.class, "Lbl_Close")); //NOI18N
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor(panel, featureDisplayName,
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[]{btnClose}, btnClose));
+        NbPreferences.forModule(MavenNbModuleImpl.class).putBoolean("showNextTime_BuildNeeded", checkShowNextTime.isSelected()); //NOI18N
     }
     
     private class DependencyAdder implements Runnable {
@@ -382,7 +412,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         //TODO search local repository?? that's probably irrelevant here..
         
         //we're completely clueless.
-        return new SpecificationVersion("1.0"); //NOI18N
+        return null;
     }
     
     private File lookForModuleInPlatform(String artifactId) {

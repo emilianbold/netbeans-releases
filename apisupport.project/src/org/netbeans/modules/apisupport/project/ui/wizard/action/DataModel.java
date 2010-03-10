@@ -157,8 +157,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         boolean actionContext;
         try {
             SpecificationVersion current = getModuleInfo().getDependencyVersion("org.openide.awt");
-            actionProxy = current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
-            actionContext = current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
+            actionProxy = current == null || current.compareTo(new SpecificationVersion("7.3")) >= 0; // NOI18N
+            actionContext = current == null || current.compareTo(new SpecificationVersion("7.10")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, ex);
             actionProxy = false;
