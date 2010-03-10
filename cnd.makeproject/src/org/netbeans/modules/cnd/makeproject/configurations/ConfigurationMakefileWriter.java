@@ -807,6 +807,9 @@ public class ConfigurationMakefileWriter {
                     String additionalDep = null;
                     for (int i = 0; i < items.length; i++) {
                         ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
+                        if(itemConfiguration == null) {
+                            continue;
+                        }
                         if (itemConfiguration.getExcluded().getValue()) {
                             continue;
                         }

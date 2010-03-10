@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,6 +52,7 @@ public class Security {
     private Authentication authentization;
     private SecurityParams securityParams;
     private String projectType; // desktop, nb-project, web
+    private FileObject deploymentDescriptor;
 
     public Security(boolean ssl, Authentication authentization) {
         this.ssl = ssl;
@@ -79,6 +81,14 @@ public class Security {
 
     public void setSecurityParams(SecurityParams securityParams) {
         this.securityParams = securityParams;
+    }
+
+    public FileObject getDeploymentDescriptor() {
+        return deploymentDescriptor;
+    }
+
+    public void setDeploymentDescriptor(FileObject deploymentDescriptor) {
+        this.deploymentDescriptor = deploymentDescriptor;
     }
 
     public static enum Authentication {

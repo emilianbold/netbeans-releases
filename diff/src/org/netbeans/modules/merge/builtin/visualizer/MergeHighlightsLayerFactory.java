@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,24 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package demo.rest.mvn.restsample.explorer;
+package org.netbeans.modules.merge.builtin.visualizer;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.lookup.Lookups;
-import demo.rest.mvn.restsample.Message;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.ZOrder;
 
 /**
- *
- * @author lukas
+ * Provides highlighting in Merge dialogs.
+ * 
+ * @author Ondra Vrabec
  */
-public class MessagesRootNode extends AbstractNode {
+public class MergeHighlightsLayerFactory implements HighlightsLayerFactory {
 
-    public MessagesRootNode(Children children) {
-        super(children, Lookups.fixed(new Message(null, null, -1)));
-        setDisplayName("Messages"); //NOI18N
-        setName("Messages"); //NOI18N
-        setShortDescription("All Messages"); //NOI18N
+    static final String HIGHLITING_LAYER_ID = "org.netbeans.modules.merge.builtin.visualizer.MergePanel"; // NOI18N
+    
+    @Override
+    public HighlightsLayer[] createLayers(Context context) {
+        MergePane master = (MergePane) context.getComponent().getClientProperty(HIGHLITING_LAYER_ID);
+        if (master == null) return null;
+        
+        HighlightsLayer [] layers = new HighlightsLayer[1];
+        layers[0] = HighlightsLayer.create(HIGHLITING_LAYER_ID, ZOrder.DEFAULT_RACK, true, master);
+        return layers;
     }
-
 }

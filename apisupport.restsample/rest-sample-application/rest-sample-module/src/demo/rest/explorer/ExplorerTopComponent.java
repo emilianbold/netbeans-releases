@@ -40,7 +40,6 @@
  */
 package demo.rest.explorer;
 
-import com.sun.jersey.api.client.UniformInterfaceException;
 import demo.rest.client.MessageBoardClient;
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import demo.rest.Message;
-import java.net.ConnectException;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,14 +63,14 @@ import org.openide.NotifyDescriptor;
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(dtd = "-//demo.rest.explorer//Explorer//EN",
+@ConvertAsProperties(dtd = "-//demo.rest.explorer//Explorer//EN", //NOI18N
 autostore = false)
 public final class ExplorerTopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private static ExplorerTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-    private static final String PREFERRED_ID = "ExplorerTopComponent";
+    private static final String PREFERRED_ID = "ExplorerTopComponent"; //NOI18N
     private static ExplorerManager em = new ExplorerManager();
 
     public ExplorerTopComponent() {
@@ -80,7 +78,7 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
         setName(NbBundle.getMessage(ExplorerTopComponent.class, "CTL_ExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(ExplorerTopComponent.class, "HINT_ExplorerTopComponent"));
         ActionMap map = this.getActionMap();
-        map.put("delete", ExplorerUtils.actionDelete(em, true));
+        map.put("delete", ExplorerUtils.actionDelete(em, true)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(em, map));
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
@@ -145,15 +143,15 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(ExplorerTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof ExplorerTopComponent) {
             return (ExplorerTopComponent) win;
         }
         Logger.getLogger(ExplorerTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID
-                + "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID //NOI18N
+                + "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
     }
 
@@ -189,7 +187,7 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0"); //NOI18N
         // TODO store your settings
     }
 
@@ -202,7 +200,7 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version"); //NOI18N
         // TODO read your settings according to their version
     }
 

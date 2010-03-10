@@ -64,23 +64,25 @@ import org.openide.util.lookup.InstanceContent;
 import demo.rest.mvn.restsample.Message;
 import demo.rest.mvn.restsample.client.MessageBoardClient;
 import demo.rest.mvn.restsample.explorer.ExplorerTopComponent;
+import java.util.logging.Level;
 
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(dtd = "-//demo.rest.editor//MsgDetails//EN",
+@ConvertAsProperties(dtd = "-//demo.rest.editor//MsgDetails//EN", //NOI18N
 autostore = false)
 public final class MsgDetailsTopComponent extends TopComponent implements LookupListener {
 
     private static MsgDetailsTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-    private static final String PREFERRED_ID = "MsgDetailsTopComponent";
+    private static final String PREFERRED_ID = "MsgDetailsTopComponent"; //NOI18N
     private UndoRedo.Manager manager = new UndoRedo.Manager();
     private SaveCookie impl = new SaveCookieImpl();
     private Lookup.Result result = null;
     private final InstanceContent content;
     private Message message;
+    private static final Logger L = Logger.getLogger(MsgDetailsTopComponent.class.getName());
 
     public MsgDetailsTopComponent() {
         initComponents();
@@ -203,18 +205,10 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        Confirmation msg = new NotifyDescriptor.Confirmation("Do you want to save new message?",
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE);
-
-        Object r = DialogDisplayer.getDefault().notify(msg);
-
-        if (NotifyDescriptor.YES_OPTION.equals(r)) {
-            message.setCreated(new Date());
-            message.setMessage(jTextArea1.getText());
-            MessageBoardClient client = new MessageBoardClient();
-            client.addMessage(message);
-            ExplorerTopComponent.refresh();
+        try {
+            impl.save();
+        } catch (IOException ex) {
+            L.log(Level.WARNING, ex.getMessage(), ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -247,15 +241,15 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(MsgDetailsTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof MsgDetailsTopComponent) {
             return (MsgDetailsTopComponent) win;
         }
         Logger.getLogger(MsgDetailsTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID
-                + "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID //NOI18N
+                + "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
     }
 
@@ -267,7 +261,7 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     @Override
     public void componentOpened() {
         //result = Utilities.actionsGlobalContext().lookupResult(Customer.class);
-        TopComponent tc = WindowManager.getDefault().findTopComponent("ExplorerTopComponent");
+        TopComponent tc = WindowManager.getDefault().findTopComponent("ExplorerTopComponent"); //NOI18N
         result = tc.getLookup().lookupResult(Message.class);
         result.addLookupListener(this);
         resultChanged(new LookupEvent(result));
@@ -282,7 +276,7 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0"); //NOI18N
         // TODO store your settings
     }
 
@@ -295,7 +289,7 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version"); //NOI18N
         // TODO read your settings according to their version
     }
 
@@ -310,9 +304,9 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
         Collection<Message> coll = r.allInstances();
         for (Message msg : coll) {
             message = msg;
-            jTextArea1.setText(msg.getMessage() != null ? msg.getMessage() : "");
-            jLabel4.setText(msg.getCreated() != null ? msg.getCreated().toString() : "");
-            jLabel5.setText(msg.getUniqueId() < 0 ? "" : String.valueOf(msg.getUniqueId()));
+            jTextArea1.setText(msg.getMessage() != null ? msg.getMessage() : ""); //NOI18N
+            jLabel4.setText(msg.getCreated() != null ? msg.getCreated().toString() : ""); //NOI18N
+            jLabel5.setText(msg.getUniqueId() < 0 ? "" : String.valueOf(msg.getUniqueId())); //NOI18N
             fire(false);
         }
     }
@@ -334,22 +328,32 @@ public final class MsgDetailsTopComponent extends TopComponent implements Lookup
 
         @Override
         public void save() throws IOException {
+            Confirmation msg = null;
+            boolean doUpdate = false;
+            if (message.getUniqueId() < 0) {
+                msg = new NotifyDescriptor.Confirmation(NbBundle.getMessage(MsgDetailsTopComponent.class, "MSG_newMsg"),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE);
+            } else {
+                msg = new NotifyDescriptor.Confirmation(NbBundle.getMessage(MsgDetailsTopComponent.class, "MSG_updateMsg"),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE);
+                doUpdate = true;
+            }
 
-            Confirmation msg = new NotifyDescriptor.Confirmation("Do you want to update existing message?",
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object r = DialogDisplayer.getDefault().notify(msg);
 
-            Object result = DialogDisplayer.getDefault().notify(msg);
-
-            if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                fire(false);
+            if (NotifyDescriptor.YES_OPTION.equals(r)) {
                 message.setCreated(new Date());
                 message.setMessage(jTextArea1.getText());
                 MessageBoardClient client = new MessageBoardClient();
-                client.updateMessage(message);
+                if (doUpdate) {
+                    client.updateMessage(message);
+                } else {
+                    client.addMessage(message);
+                }
                 ExplorerTopComponent.refresh();
             }
-
         }
     }
 }
