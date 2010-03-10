@@ -492,16 +492,6 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
-    public WrapStyle wrapThrowsKeyword() {
-        String wrap = preferences.get(wrapThrowsKeyword, getDefaultAsString(wrapThrowsKeyword));
-        return WrapStyle.valueOf(wrap);
-    }
-
-    public WrapStyle wrapThrowsList() {
-        String wrap = preferences.get(wrapThrowsList, getDefaultAsString(wrapThrowsList));
-        return WrapStyle.valueOf(wrap);
-    }
-
     public WrapStyle wrapMethodCallArgs() {
         String wrap = preferences.get(wrapMethodCallArgs, getDefaultAsString(wrapMethodCallArgs));
         return WrapStyle.valueOf(wrap);
