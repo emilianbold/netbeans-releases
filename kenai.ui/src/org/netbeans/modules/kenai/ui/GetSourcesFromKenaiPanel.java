@@ -46,6 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -143,7 +144,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 }
             }
         };
-        kenai.addPropertyChangeListener(WeakListeners.propertyChange(listener, kenai));
+        if (kenai!=null)
+            kenai.addPropertyChangeListener(WeakListeners.propertyChange(listener, kenai));
     }
 
     public GetSourcesFromKenaiPanel() {
@@ -513,10 +515,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (!(kenaiCombo.getSelectedItem() instanceof Kenai)) {
+                if (kenaiCombo.getSelectedItem()!=null && !(kenaiCombo.getSelectedItem() instanceof Kenai)) {
                     new AddInstanceAction().actionPerformed(e);
                 }
-                kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+                kenai = (Kenai) kenaiCombo.getSelectedItem();
                 kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
                 refreshUsername();
             }
@@ -566,6 +568,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 }
 
                 private ProjectHandle[] getOpenProjects() {
+                    if (kenai==null) {
+                        return new ProjectHandle[0];
+                    }
                     String kenaiName = kenai.getUrl().getHost();
                     Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(DashboardImpl.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
                     int count = prefs.getInt(DashboardImpl.PREF_COUNT, 0); //NOI18N
@@ -683,7 +688,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void refreshUsername() {
-        PasswordAuthentication passwdAuth = kenai.getPasswordAuthentication();
+        setChildrenEnabled(this, kenai!=null);
+        PasswordAuthentication passwdAuth = kenai==null?null:kenai.getPasswordAuthentication();
+
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
             loginButton.setEnabled(false);
@@ -692,6 +699,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             loginButton.setEnabled(true);
         }
     }
+
+    private void setChildrenEnabled(Component root, boolean enabled) {
+        root.setEnabled(enabled);
+        if (root instanceof java.awt.Container) {
+            for (Component c : ((java.awt.Container) root).getComponents()) {
+                if (c != kenaiCombo) {
+                    setChildrenEnabled(c, enabled);
+                }
+            }
+        }
+    }
+
 
     private void setUsername(String uName) {
         if (uName != null) {

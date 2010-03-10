@@ -485,7 +485,6 @@ public abstract class BaseFileObj extends FileObject {
         final BaseFileObj parent = getExistingParent();
         Enumeration<FileChangeListener> pListeners = (parent != null) ? parent.getListeners() : null;
         
-        assert this.isValid() : this.toString();
         FileEventImpl parentFe = null;
         if (parent != null && pListeners != null) {
             parentFe = new FileEventImpl(parent, this, expected);

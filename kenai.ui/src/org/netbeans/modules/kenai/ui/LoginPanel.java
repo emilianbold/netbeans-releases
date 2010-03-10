@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -50,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
@@ -71,7 +71,11 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private URL getForgetPasswordUrl() {
         try {
+            if (kenai!=null) {
             return new URL(kenai.getUrl().toString() + "/people/forgot_password"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/forgot_password"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -80,7 +84,11 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private URL getRegisterUrl() {
         try {
+            if (kenai!=null) {
             return new URL(kenai.getUrl().toString() + "/people/signup"); // NOI18N
+            } else {
+                return new URL("https://netbeans.org/people/signup"); // NOI18N
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -94,7 +102,6 @@ public class LoginPanel extends javax.swing.JPanel {
         this.kenai = kenai;
         this.credentials = credentials;
         initComponents();
-        kenaiCombo.setSelectedItem(kenai);
 //        lblKenaiLogoCenter.setBorder(null);
 //        lblKenaiLogoLeft.setBorder(null);
 //        lblKenaiLogoRight.setBorder(null);
@@ -106,9 +113,14 @@ public class LoginPanel extends javax.swing.JPanel {
 //            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
 //            lblKenaiLogoLeft.setIcon(null);
 //        }
+        kenaiCombo.setSelectedItem(kenai);
+        if (kenai!=null) {
         setUsername(credentials.getUsername(kenai));
         setPassword(credentials.getPassword(kenai));
         setChkOnline();
+        } else {
+            setChildrenEnabled(false);
+        }
     }
 
     public boolean isStorePassword() {
@@ -144,6 +156,14 @@ public class LoginPanel extends javax.swing.JPanel {
         setLoginButtonEnabled(false);
     }
 
+    private void setChildrenEnabled(boolean enabled) {
+        for (Component c:getComponents()) {
+            if (c!=kenaiCombo && c!=kenaiLabel) {
+                c.setEnabled(enabled);
+            }
+        }
+    }
+
     public void clearStatus() {
         error.setVisible(false);
         progressBar.setVisible(false);
@@ -157,6 +177,8 @@ public class LoginPanel extends javax.swing.JPanel {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                if (kenai==null)
+                    return;
                 boolean is = Utilities.isChatSupported(kenai);
                 if (is) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -333,6 +355,7 @@ public class LoginPanel extends javax.swing.JPanel {
 
     private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
         NbPreferences.forModule(LoginPanel.class).put(UIUtils.getPrefName(kenai, UIUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+        System.out.println(chkIsOnline.isEnabled());
     }//GEN-LAST:event_chkIsOnlineActionPerformed
 
     private void kenaiComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
@@ -344,10 +367,11 @@ public class LoginPanel extends javax.swing.JPanel {
             forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
             signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
             
-            setChkOnline();
             setUsername(credentials.getUsername(kenai));
             setPassword(credentials.getPassword(kenai));
-        } else {
+            setChildrenEnabled(true);
+            setChkOnline();
+        } else if (kenaiCombo.getSelectedItem() instanceof String) {
             final ActionEvent e = evt;
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -355,16 +379,19 @@ public class LoginPanel extends javax.swing.JPanel {
                 public void run() {
                     new AddInstanceAction().actionPerformed(e);
                     LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    if (LoginPanel.this.kenai==null)
+                        return;
                     forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
                     signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
                     forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
                     signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
 
+                    setChildrenEnabled(true);
                     setChkOnline();
                 }
             });
-        }
+        } 
     }//GEN-LAST:event_kenaiComboActionPerformed
 
 

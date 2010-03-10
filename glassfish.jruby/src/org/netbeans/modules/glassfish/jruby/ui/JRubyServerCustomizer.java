@@ -81,7 +81,7 @@ public class JRubyServerCustomizer extends javax.swing.JPanel {
         RubyPlatform result = RubyPlatformManager.getPlatformByID(savedPlatformId);
         if(result == null || !result.isJRuby()) {
             result = RubyPlatformManager.getDefaultPlatform();
-            if(!result.isJRuby()) {
+            if(null == result || !result.isJRuby()) {
                 result = null;
                 Iterator<RubyPlatform> iter = RubyPlatformManager.platformIterator();
                 while(iter.hasNext()) {

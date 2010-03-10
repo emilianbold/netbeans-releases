@@ -589,7 +589,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
         case DEFSNODE: {
             AstMethodElement co = new AstMethodElement(result, node);
             methods.add(co);
-            co.setIn(in);
+            String clzFqn = AstUtilities.getFqnName(path);
+            co.setIn(clzFqn);
 
             // "initialize" methods are private
             if ((node instanceof DefnNode) && "initialize".equals(AstUtilities.getName(node))) {

@@ -84,10 +84,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         output = new StringConfiguration(null, ""); // NOI18N
         additionalLibs = new VectorConfiguration<String>(null);
         dynamicSearch = new VectorConfiguration<String>(null);
-        stripOption = new BooleanConfiguration(null, false); // NOI18N
-        picOption = new BooleanConfiguration(null, true); // NOI18N
-        norunpathOption = new BooleanConfiguration(null, true); // NOI18N
-        nameassignOption = new BooleanConfiguration(null, true);
+        stripOption = new BooleanConfiguration(false); // NOI18N
+        picOption = new BooleanConfiguration(true); // NOI18N
+        norunpathOption = new BooleanConfiguration(true); // NOI18N
+        nameassignOption = new BooleanConfiguration(true);
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());

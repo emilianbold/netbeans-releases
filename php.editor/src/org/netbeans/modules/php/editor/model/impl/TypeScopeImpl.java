@@ -41,7 +41,6 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,21 +48,17 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -82,33 +77,38 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     TypeScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, new PhpModifiers(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             ifaces.put(CodeUtils.extractUnqualifiedName(identifier), null);
         }
     }
 
-    protected TypeScopeImpl(Scope inScope, IndexedClass element) {
+    protected TypeScopeImpl(Scope inScope, ClassElement element) {
         //TODO: in idx is no info about ifaces
-        super(inScope, element, PhpKind.CLASS);
+        super(inScope, element, PhpElementKind.CLASS);
     }
 
-    protected TypeScopeImpl(Scope inScope, IndexedInterface element) {
+    protected TypeScopeImpl(Scope inScope, InterfaceElement element) {
         //TODO: in idx is no info about ifaces
-        super(inScope, element, PhpKind.IFACE);
+        super(inScope, element, PhpElementKind.IFACE);
     }
 
     public List<? extends String> getSuperInterfaceNames() {
-        if (indexedElement instanceof IndexedClass) {
-            return ((IndexedClass)indexedElement).getInterfaces();
+        if (indexedElement instanceof ClassElement) {
+            List<String> retval = new ArrayList<String>();
+            final Set<QualifiedName> superInterfaces = ((ClassElement) indexedElement).getSuperInterfaces();
+            for (QualifiedName qualifiedName : superInterfaces) {
+                retval.add(qualifiedName.toString());
+            }
+            return retval;
         }
         return new ArrayList<String>(ifaces.keySet());
     }
 
-    public List<? extends InterfaceScope> getSuperInterfaces() {
+    public List<? extends InterfaceScope> getSuperInterfaceScopes() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
-        Set<String> keySet = (indexedElement instanceof IndexedClass) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
+        Set<String> keySet = (indexedElement instanceof ClassElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
         for (String ifaceName : keySet) {
             List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {
@@ -148,20 +148,14 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     public Collection<? extends MethodScope> getDeclaredMethods() {
-        return getDeclaredMethodsImpl();
-    }
-
-    public Collection<? extends MethodScope> getDeclaredMethodsImpl(final int... modifiers) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findMethods(this,"", modifiers);
+            return indexScopeImpl.findMethods(this);
         }
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.METHOD) &&
-                        (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
+                return element.getPhpElementKind().equals(PhpElementKind.METHOD);
             }
         });
     }
@@ -178,112 +172,26 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.METHOD) &&
+                return element.getPhpElementKind().equals(PhpElementKind.METHOD) &&
                         ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName) &&
                         (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
+                        (element.getPhpModifiers().toFlags() & PhpModifiers.fromBitMask(modifiers).toFlags()) != 0);
             }
         });
     }
 
-    public Collection<? extends MethodScope> findDeclaredMethods(final QuerySupport.Kind nameKind, final String queryName,
-            final int... modifiers) {
-        if (ModelUtils.getFileScope(this) == null) {
-            IndexScope indexScopeImpl = ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findMethods(this, nameKind, queryName, modifiers);
-        }
-
-        //TODO: example how to improve perf. for regexp lookup
-        if (nameKind.equals(QuerySupport.Kind.REGEXP) || nameKind.equals(QuerySupport.Kind.CASE_INSENSITIVE_REGEXP)) {
-            final Pattern p = Pattern.compile(nameKind.equals(QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) ? queryName.toLowerCase() : queryName);
-            return filter(getElements(), new ElementFilter() {
-
-                public boolean isAccepted(ModelElement element) {
-                    return element.getPhpKind().equals(PhpKind.METHOD) &&
-                            ModelElementImpl.nameKindMatch(p, element.getName()) &&
-                            (modifiers.length == 0 ||
-                            (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
-                }
-            });
-
-        }
-        return filter(getElements(), new ElementFilter() {
-
-            public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.METHOD) &&
-                        ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName) &&
-                        (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toBitmask() & new PhpModifiers(modifiers).toBitmask()) != 0);
-            }
-        });
-    }
 
     public final Collection<? extends ClassConstantElement> getDeclaredConstants() {
-        return findDeclaredConstants();
-    }
-
-    public Collection<? extends ClassConstantElement> findDeclaredConstants(String... queryName) {
-        return findDeclaredConstants(QuerySupport.Kind.EXACT, queryName);
-    }
-
-    public Collection<? extends ClassConstantElement> findDeclaredConstants(final QuerySupport.Kind nameKind, final String... queryName) {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findClassConstants(this, (queryName == null) ? new String[]{""} : queryName);
+            return indexScopeImpl.findClassConstants(this);//NOI18N
         }
-
         return filter(getElements(), new ElementFilter() {
 
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.CLASS_CONSTANT) &&
-                        (queryName.length == 0 || ModelElementImpl.nameKindMatch(element.getName(), nameKind, queryName));
+                return element.getPhpElementKind().equals(PhpElementKind.TYPE_CONSTANT);
             }
         });
-    }
-
-    public final Collection<? extends ClassConstantElement> getInheritedConstants() {
-        return findInheritedConstants("");
-    }
-
-    public Collection<? extends ClassConstantElement> findInheritedConstants(String queryName) {
-        List<ClassConstantElement> allConstants = new ArrayList<ClassConstantElement>();
-        IndexScope indexScope = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScope.getIndex();
-        Collection<IndexedConstant> allClassConstants = PHPIndex.toMembers(index.getAllTypeConstants(null, getName(), queryName, QuerySupport.Kind.PREFIX));
-        for (IndexedConstant indexedConstant : allClassConstants) {
-            allConstants.add(new ClassConstantElementImpl(this, indexedConstant));
-        }
-        return allConstants;
-    }
-
-    public List<? extends MethodScope> findInheritedMethods(String queryName) {
-        List<MethodScope> retval = new ArrayList<MethodScope>();
-        IndexScope indexScope = ModelUtils.getIndexScope(this);
-        PHPIndex index = indexScope.getIndex();
-        QuerySupport.Kind kind = "".equals(queryName) ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.EXACT;
-        QualifiedName qn = getNamespaceName().append(getName());
-        NamespaceIndexFilter filter = new NamespaceIndexFilter(qn.toString());
-        Collection<IndexedClassMember<IndexedFunction>> allMethods = index.getAllMethods(null, getName(), queryName, kind, Modifier.PUBLIC | Modifier.PROTECTED);
-        allMethods = filter.filter(allMethods, true);
-        for (IndexedClassMember<IndexedFunction> indexedClassMember : allMethods) {
-            IndexedFunction indexedFunction = indexedClassMember.getMember();
-            String in = indexedFunction.getIn();
-            if (getName().equals(in)) {
-                FileObject fObject1 = indexedFunction.getFileObject();
-                FileObject fObject2 = getFileObject();
-                if (fObject1 == fObject2) {
-                    continue;
-                }
-            }
-            if (indexedClassMember.getType() instanceof IndexedClass) {
-                ClassScopeImpl csi = new ClassScopeImpl(indexScope, (IndexedClass)indexedClassMember.getType());
-                retval.add(new MethodScopeImpl(csi, indexedFunction));
-            } else if (indexedClassMember.getType() instanceof IndexedInterface) {
-                InterfaceScopeImpl isi = new InterfaceScopeImpl(indexScope, (IndexedInterface)indexedClassMember.getType());
-                retval.add(new MethodScopeImpl(isi, indexedFunction));
-            }
-        }
-        return retval;
     }
 
     @Override
@@ -296,4 +204,25 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
         return sb.toString()+super.getNormalizedName();
     }
+
+    @Override
+    public Set<QualifiedName> getSuperInterfaces() {
+        Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        List<? extends String> superInterfaceNames = getSuperInterfaceNames();
+        for (String name : superInterfaceNames) {
+            retval.add(QualifiedName.create(name));
+        }
+        return retval;
+    }
+
+    @Override
+    public final boolean isClass() {
+        return this.getPhpElementKind().equals(PhpElementKind.CLASS);
+    }
+
+    @Override
+    public final boolean isInterface() {
+        return this.getPhpElementKind().equals(PhpElementKind.IFACE);
+    }
+
 }

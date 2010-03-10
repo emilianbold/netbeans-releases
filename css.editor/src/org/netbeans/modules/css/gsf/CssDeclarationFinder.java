@@ -47,8 +47,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
@@ -70,7 +70,10 @@ public class CssDeclarationFinder implements DeclarationFinder {
      */
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(info.getSnapshot().getSource().getDocument(true), caretOffset);
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(
+                info.getSnapshot().getSource().getDocument(true),
+                caretOffset,
+                CssTokenId.language());
         Token<CssTokenId> valueToken = ts.token();
         String valueText = valueToken.text().toString();
 
@@ -109,7 +112,7 @@ public class CssDeclarationFinder implements DeclarationFinder {
      */
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(doc, caretOffset);
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(doc, caretOffset, CssTokenId.language());
         if(ts == null) {
             return OffsetRange.NONE;
         }

@@ -390,7 +390,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                             return;
                         }
-                        final DiffController view = DiffController.create(s1, s2);
+                        final DiffController view = DiffController.createEnhanced(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());

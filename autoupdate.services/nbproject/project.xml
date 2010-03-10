@@ -79,6 +79,14 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.core.netigso</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.felix</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>

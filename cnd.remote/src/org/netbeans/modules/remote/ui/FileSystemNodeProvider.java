@@ -45,12 +45,19 @@ import org.openide.nodes.Node;
 /**
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.remote.ui.HostNodesProvider.class)
-public class FileSystemNodeProvider implements HostNodesProvider {
+@org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=100)
+public class FileSystemNodeProvider extends HostNodesProvider {
+
+    private static final boolean ENABLE = Boolean.getBoolean("cnd.remote.show.fs"); //NOI18N
+
+    @Override
+    public boolean isApplicable(ExecutionEnvironment execEnv) {
+        return ENABLE && execEnv.isRemote();
+    }
 
     @Override
     public Node createNode(ExecutionEnvironment execEnv) {
-        return new ToolchainListRootNode(execEnv);
+        return new FileSystemRootNode(execEnv);
     }
 
 }

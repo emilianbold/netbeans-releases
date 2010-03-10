@@ -279,6 +279,31 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
             AST last = AstUtil.getLastChild(token);
             if( last != null) {
+                if (last.getType() == CPPTokenTypes.GREATERTHAN) {
+                    AST lastId = null;
+                    int level = 0;
+                    for (AST token2 = token.getFirstChild(); token2 != null; token2 = token2.getNextSibling()) {
+                        int type2 = token2.getType();
+                        switch (type2) {
+                            case CPPTokenTypes.ID:
+                                lastId = token2;
+                                break;
+                            case CPPTokenTypes.GREATERTHAN:
+                                level--;
+                                break;
+                            case CPPTokenTypes.LESSTHAN:
+                                level++;
+                                break;
+                            default:
+                                if (level == 0) {
+                                    lastId = null;
+                                }
+                        }
+                    }
+                    if (lastId != null) {
+                        last = lastId;
+                    }
+                }
                 if( last.getType() == CPPTokenTypes.ID ) {
                     return last.getText();
                 } else {

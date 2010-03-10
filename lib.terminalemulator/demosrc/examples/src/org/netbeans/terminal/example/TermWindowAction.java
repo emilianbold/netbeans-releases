@@ -42,8 +42,10 @@ package org.netbeans.terminal.example;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.terminal.ui.TermTopComponent;
+
 import org.openide.util.NbBundle;
+
+import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 
 /**
  * Action which shows Term component.
@@ -56,7 +58,7 @@ public class TermWindowAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TermTopComponent ttc = TermTopComponent.findInstance();
+        TerminalTopComponent ttc = TerminalTopComponent.findInstance();
         ttc.open();
         ttc.requestActive();
     }

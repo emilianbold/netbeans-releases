@@ -77,11 +77,24 @@ public class LibraryMetadata {
     }
 
     public static LibraryMetadata readFromXML(InputStream inputStream) throws Exception {
+        Collection<TagAttrMetadata> commonAttrs = new ArrayList<TagAttrMetadata>();
         Collection<TagMetadata> tags = new ArrayList<TagMetadata>();
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(inputStream);
         doc.getDocumentElement().normalize();
+
+        NodeList commonAttrLst = doc.getElementsByTagName("common_attributes");
+
+        for (int i = 0; i < commonAttrLst.getLength(); i++) {
+            Node tagNode = commonAttrLst.item(i);
+
+            if (tagNode.getNodeType() == Node.ELEMENT_NODE){
+                Element elem = (Element) tagNode;
+                readFromXML_parseTagAttributes(elem, commonAttrs);
+            }
+        }
+
         NodeList tagLst = doc.getElementsByTagName("tag"); //NOI18N
         String tagLibId = doc.getDocumentElement().getAttribute("id"); //NOI18N
 
@@ -91,7 +104,8 @@ public class LibraryMetadata {
             if (tagNode.getNodeType() == Node.ELEMENT_NODE){
                 Element elem = (Element) tagNode;
                 String tagName = elem.getAttribute("name"); //NOI18N
-                Collection<TagAttrMetadata> attrs = readFromXML_parseTagAttributes(elem);
+                Collection<TagAttrMetadata> attrs = new ArrayList<TagAttrMetadata>(commonAttrs);
+                readFromXML_parseTagAttributes(elem, attrs);
 
                 tags.add(new TagMetadata(tagName, attrs));
             }
@@ -100,8 +114,7 @@ public class LibraryMetadata {
         return new LibraryMetadata(tagLibId, tags);
     }
 
-    private static Collection<TagAttrMetadata> readFromXML_parseTagAttributes(Element tagNode){
-        Collection<TagAttrMetadata> result = new ArrayList<TagAttrMetadata>();
+    private static void readFromXML_parseTagAttributes(Element tagNode, Collection<TagAttrMetadata> result){
         NodeList attrLst = tagNode.getElementsByTagName("attr"); //NOI18N
 
         for (int i = 0; i < attrLst.getLength(); i++) {
@@ -115,8 +128,6 @@ public class LibraryMetadata {
                 result.add(new TagAttrMetadata(attrName, valueTypes));
             }
         }
-
-        return result;
     }
 
     private static Collection<AttrValueType> readFromXML_parseValueTypes(Element attrNode){
@@ -129,9 +140,17 @@ public class LibraryMetadata {
             if (typeNode.getNodeType() == Node.ELEMENT_NODE){
                 Element elem = (Element) typeNode;
                 String typeName = elem.getAttribute("name"); //NOI18N
-                String legalVals[] = readFromXML_parseAttrValues(elem);
 
-                result.add(new AttrValueType(typeName, legalVals));
+                AttrValueType valueType = null;
+
+                if ("boolean".equals(typeName)){
+                    valueType = AttrValueType.BOOL;
+                } else {
+                    String legalVals[] = readFromXML_parseAttrValues(elem);
+                    valueType = new AttrValueType(typeName, legalVals);
+                }
+
+                result.add(valueType);
             }
         }
 

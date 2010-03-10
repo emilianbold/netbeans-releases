@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -208,6 +208,8 @@ public final class CreateElementUtilities {
                 return null;
                         
             case ARRAY_TYPE:
+                return computeArrayType(types, info, currentPath, unresolved, offset);
+                
             case BLOCK:
             case BREAK:
             case CATCH:
@@ -778,6 +780,12 @@ public final class CreateElementUtilities {
         }
         
         return null;
+    }
+
+    private static List<? extends TypeMirror> computeArrayType(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        types.add(ElementKind.CLASS);
+
+        return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
     }
     
     private static final Set<Kind> STOP_LOOKING_FOR_METHOD = EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.COMPILATION_UNIT);

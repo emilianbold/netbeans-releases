@@ -39,8 +39,8 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -105,7 +105,7 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
     }
 
     @Override
-    public PhpKind getPhpKind() {
-        return PhpKind.NAMESPACE_DECLARATION;
+    public PhpElementKind getPhpElementKind() {
+        return PhpElementKind.NAMESPACE_DECLARATION;
     }
 }

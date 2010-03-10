@@ -41,16 +41,13 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.openide.util.Lookup;
 
@@ -158,25 +155,6 @@ public abstract class CsmUsingResolver {
      */
     public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace namespace);
 
-    /**
-     * converts collection of using declarations into ordered list of namespaces
-     * each namespace occurs only once according it's first using directive in 'decls' list
-     */
-    public static Collection<CsmDeclaration> extractDeclarations(Collection<CsmUsingDeclaration> decls) {
-        // TODO check the correctness of order
-        LinkedHashMap<CharSequence, CsmDeclaration> out = new LinkedHashMap<CharSequence, CsmDeclaration>(decls.size());
-        for (CsmUsingDeclaration decl : decls) {
-            CsmDeclaration ref = decl.getReferencedDeclaration();
-            if (ref != null) {
-                CharSequence name = decl.getName();
-                // remove previous inclusion
-                out.remove(name);
-                out.put(name, ref);
-            }
-        }
-        return new ArrayList<CsmDeclaration>(out.values());
-    }
-
     //
     // Implementation of the default resolver
     //
@@ -184,18 +162,22 @@ public abstract class CsmUsingResolver {
         Empty() {
         }
 
+        @Override
         public Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmDeclaration>emptyList();
         }
         
+        @Override
         public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
             return Collections.<CsmDeclaration>emptyList();
         }
 
+        @Override
         public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
             return Collections.<CsmUsingDirective>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespace>emptyList();
         }
@@ -204,14 +186,17 @@ public abstract class CsmUsingResolver {
 //            return Collections.<CsmNamespaceDefinition>emptyList();
 //        }
     
+        @Override
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace ns) {
             return Collections.<CsmNamespaceAlias>emptyList();
         }
 
+        @Override
         public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject prj) {
             return Collections.<CsmNamespace>emptyList();
         }

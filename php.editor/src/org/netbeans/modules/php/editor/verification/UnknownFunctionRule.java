@@ -41,14 +41,14 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
@@ -74,10 +74,7 @@ public class UnknownFunctionRule extends PHPRule{
             String fname = CodeUtils.extractFunctionName(functionInvocation);
             
             if (fname != null && !IGNORED.contains(fname.toLowerCase())) {
-                Collection<IndexedFunction> functions = context.getIndex().getFunctions(
-                        (PHPParseResult) context.parserResult,
-                        fname, QuerySupport.Kind.EXACT);
-                
+                Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(fname));                
                 if (functions.size() == 0) {
                     FunctionName funcName = functionInvocation.getFunctionName();
                     OffsetRange range = new OffsetRange(funcName.getStartOffset(), funcName.getEndOffset());

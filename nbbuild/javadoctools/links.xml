@@ -195,3 +195,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-keyring}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-keyring"/>
 <link href="${javadoc.docs.org-netbeans-modules-schema2beans}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-schema2beans"/>
 <link href="${javadoc.docs.org-openide-util-lookup}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-util-lookup"/>
+<link href="${javadoc.docs.org-netbeans-modules-terminal}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-terminal"/>

@@ -398,6 +398,15 @@ bool PlatformLauncher::shouldAutoUpdate(bool firstStart, const char *basePath) {
     if (hFindNbms != INVALID_HANDLE_VALUE) {
         logMsg("Some updates found at %s", path.c_str());
         FindClose(hFindNbms);
+    } else {
+        //also check for OSGi jars if *.nbm not found
+        path = basePath;
+        path += "\\update\\download\\*.jar";
+        hFindNbms = FindFirstFile(path.c_str(), &fd);
+        if (hFindNbms != INVALID_HANDLE_VALUE) {
+            logMsg("Some OSGi updates found at %s", path.c_str());
+            FindClose(hFindNbms);
+        }
     }
 
     path = basePath;

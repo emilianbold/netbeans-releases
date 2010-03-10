@@ -68,7 +68,7 @@
 
     <target name="compile" depends="model-gen,projectized-common.compile"/>
 
-    <target name="clean" depends="custom-init,projectized-common.clean">
+    <target name="real-clean" depends="custom-init,projectized-common.clean">
         <delete dir="${output}"/>
     </target>
 </project>

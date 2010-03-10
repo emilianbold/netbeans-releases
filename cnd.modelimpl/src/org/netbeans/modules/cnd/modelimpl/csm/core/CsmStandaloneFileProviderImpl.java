@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
@@ -454,6 +455,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         public void runOnCodeModelReadiness(Runnable task) {
             task.run();
+        }
+
+        @Override
+	public NativeExitStatus execute(String executable, String[] env, String... args) {
+	    return null;
+        }
+        
+        @Override
+        public String getPlatformName() {
+            return null;
         }
     }
 

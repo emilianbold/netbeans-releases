@@ -43,14 +43,16 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -87,6 +89,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -360,10 +363,15 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
-                        className, fname, QuerySupport.Kind.EXACT, Modifier.PUBLIC));
-                
-                assumeParamsPassedByRefInitialized(functions, node.getMethod());
+                final FileObject source = context.parserResult.getSnapshot().getSource().getFileObject();
+                List<ElementFilter> filters = new ArrayList<ElementFilter>();
+                filters.add(ElementFilter.forPublicModifiers(true));
+                if (source != null) {
+                    filters.add(ElementFilter.forFiles(source));
+                }
+                Set<MethodElement> allMethods = ElementFilter.allOf(filters).
+                        filter(context.getIndex().getAllMethods(NameKind.exact(className), NameKind.exact(fname)));
+                assumeParamsPassedByRefInitialized(allMethods, node.getMethod());
             }
         }
         
@@ -384,11 +392,16 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             String fname = CodeUtils.extractFunctionName(node.getMethod());
             
             if (fname != null && className != null) {
-                Collection<IndexedFunction> functions = PHPIndex.toMembers(context.getIndex().getAllMethods((PHPParseResult) context.parserResult,
-                        className, fname, QuerySupport.Kind.EXACT,
-                        Modifier.PUBLIC | Modifier.STATIC));
-                
-                assumeParamsPassedByRefInitialized(functions, node.getMethod());
+                final FileObject source = context.parserResult.getSnapshot().getSource().getFileObject();
+                List<ElementFilter> filters = new ArrayList<ElementFilter>();
+                filters.add(ElementFilter.forAllOfFlags(Modifier.PUBLIC | Modifier.STATIC));
+                if (source != null) {
+                    filters.add(ElementFilter.forFiles(source));
+                }
+                Set<MethodElement> methods = ElementFilter.allOf(filters).
+                        filter(context.getIndex().getAllMethods(NameKind.exact(className), NameKind.exact(fname)));
+
+                assumeParamsPassedByRefInitialized(methods, node.getMethod());
             }
         }
         
@@ -407,8 +420,12 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
         if (maintainVarStack) {
             String fname = CodeUtils.extractFunctionName(node);
             
-            if (fname != null) {                
-                Collection<IndexedFunction> functions = context.getIndex().getFunctions((PHPParseResult) context.parserResult, fname, QuerySupport.Kind.EXACT);
+            if (fname != null) {
+                final FileObject source = context.parserResult.getSnapshot().getSource().getFileObject();
+                Set<FunctionElement> functions = context.getIndex().getFunctions(NameKind.exact(fname));
+                if (source != null) {
+                    functions = ElementFilter.forFiles(source).filter(functions);
+                }
                 assumeParamsPassedByRefInitialized(functions, node);
             }
         }
@@ -537,12 +554,12 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
 
     
-    private void assumeParamsPassedByRefInitialized(Collection<IndexedFunction> functions, FunctionInvocation node) {
+    private void assumeParamsPassedByRefInitialized(Set<? extends BaseFunctionElement> functions, FunctionInvocation node) {
         boolean refParam[] = new boolean[node.getParameters().size()];
 
-        for (IndexedFunction func : functions) {
+        for (BaseFunctionElement func : functions) {
             for (int i = 0; i < func.getParameters().size() && i < refParam.length; i++) {
-                Parameter param = func.getParameters().get(i);
+                ParameterElement param = func.getParameters().get(i);
                 final String name = param.getName();
                 if (name.startsWith("&")) {
                     refParam[i] = true;

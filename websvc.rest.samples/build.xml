@@ -55,6 +55,8 @@ made subject to such option by the copyright holder.
                                 zip-rest-customer-db-client,
                                 zip-message-board-war,
                                 zip-lean-service-ecb-war,
+                                zip-fcb-maven-sample-nbm,
+                                zip-rest-crud-maven-sample-app,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -111,5 +113,21 @@ made subject to such option by the copyright holder.
         <zipfileset dir="LeanServiceECBComponentWithAjax"/>
         </zip>
     </target>
-    
+
+    <!-- Target for Facebook Module Maven sample -->
+    <target name="zip-fcb-maven-sample-nbm" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/FcbMavenModuleProject.zip"
+            update="true">
+        <zipfileset dir="../maven.samples/samples_src/facebook-module"/>
+        </zip>
+    </target>
+
+    <!-- Target for REST Maven Application sample -->
+    <target name="zip-rest-crud-maven-sample-app" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/RestRCPMvnAppSampleProject.zip"
+            update="true">
+        <zipfileset dir="../maven.samples/samples_src/rest-sample-application"/>
+        </zip>
+    </target>
+
 </project>

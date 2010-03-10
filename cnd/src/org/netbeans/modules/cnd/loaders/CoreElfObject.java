@@ -45,10 +45,8 @@ import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileLock;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
 /** Superclass for Elf objects in the Repository.
  *
@@ -64,12 +62,8 @@ public class CoreElfObject extends ExeObject {
     }
 
     @Override
-    protected void init() {
-        CookieSet cookies = getCookieSet();
-
-        // Actually, we don't want Execute, we only want Start!
-        // See below; we override getCookie to disable execution.
-        cookies.add(new BinaryExecSupport(getPrimaryEntry()));
+    protected boolean needBinarySupport() {
+        return true;
     }
 
     @Override

@@ -54,6 +54,7 @@ import java.io.Writer;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -516,6 +517,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
         putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
+        putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
         lineRootElement = new LineRootElement(this);
 
@@ -2315,6 +2317,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     protected static class LazyPropertyMap extends Hashtable {
 
+        private PropertyChangeSupport pcs = null;
+
         protected LazyPropertyMap(Dictionary dict) {
             super(5);
 
@@ -2335,14 +2339,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         public @Override Object put(Object key, Object value) {
-            if (key != null) {
-                Object val = super.get(key);
-                if (val instanceof PropertyHandler) {
-                    return ((PropertyHandler) val).setValue(value);
-                }
-            }
+             if (key == PropertyChangeSupport.class && value instanceof PropertyChangeSupport) {
+                 pcs = (PropertyChangeSupport) value;
+             }
 
-            return super.put(key, value);
+             Object old = null;
+             boolean usePlainPut = true;
+
+              if (key != null) {
+                  Object val = super.get(key);
+                  if (val instanceof PropertyHandler) {
+                     old = ((PropertyHandler) val).setValue(value);
+                     usePlainPut = false;
+                  }
+              }
+
+             if (usePlainPut) {
+                 old = super.put(key, value);
+             }
+
+             if (key instanceof String) {
+                 if (pcs != null) {
+                     pcs.firePropertyChange((String) key, old, value);
+                 }
+             }
+
+             return old;
         }
     } // End of LazyPropertyMap class
 

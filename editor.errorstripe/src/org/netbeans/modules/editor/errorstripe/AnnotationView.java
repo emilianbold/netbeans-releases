@@ -476,6 +476,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int result;
         
         if (ui instanceof BaseTextUI) {
+            // For some reason the offset may become -1; uncomment following line to see that
+            offset = Math.max(offset, 0);
             result = ((BaseTextUI) ui).getYFromPos(offset);
         } else {
             Rectangle r = pane.modelToView(offset);

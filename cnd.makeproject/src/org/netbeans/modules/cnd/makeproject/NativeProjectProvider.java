@@ -42,7 +42,12 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -54,6 +59,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -75,12 +81,17 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
-    private static final boolean TRACE = false;
 
+    private static final boolean TRACE = false;
     private Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
@@ -167,8 +178,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         return list;
     }
-
     private Reference<List<NativeProject>> cachedDependency = new SoftReference<List<NativeProject>>(null);
+
     @Override
     public List<NativeProject> getDependences() {
         List<NativeProject> cachedList = cachedDependency.get();
@@ -221,7 +232,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesAdded(List<NativeFileItem> nativeFileIetms) {
-        if (TRACE){
+        if (TRACE) {
             System.out.println("fireFileAdded "); // NOI18N
         }
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
@@ -231,13 +242,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             NativeFileItem nativeFileIetm = iter.next();
             PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
             if (tool == PredefinedToolKind.CustomTool
-                // check of mime type is better to support headers without extensions
-                && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
+                    // check of mime type is better to support headers without extensions
+                    && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
-            if (TRACE){
-                System.out.println("    " + ((Item)nativeFileIetm).getPath()); // NOI18N
+            if (TRACE) {
+                System.out.println("    " + ((Item) nativeFileIetm).getPath()); // NOI18N
             }
         }
         // Fire NativeProject change event
@@ -253,7 +264,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesRemoved(List<NativeFileItem> nativeFileIetms) {
-        if (TRACE){
+        if (TRACE) {
             System.out.println("fireFilesRemoved "); // NOI18N
         }
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
@@ -265,14 +276,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (itemConfiguration == null) {
                 continue;
             }
-            if ((!itemConfiguration.isCompilerToolConfiguration() 
-                // check of mime type is better to support headers without extensions
-                && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType()))) {
+            if ((!itemConfiguration.isCompilerToolConfiguration()
+                    // check of mime type is better to support headers without extensions
+                    && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType()))) {
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
-            if (TRACE){
-                System.out.println("    " + ((Item)nativeFileIetm).getPath()); // NOI18N
+            if (TRACE) {
+                System.out.println("    " + ((Item) nativeFileIetm).getPath()); // NOI18N
             }
         }
         // Fire NativeProject change event
@@ -308,7 +319,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesPropertiesChanged() {
-        if (TRACE){
+        if (TRACE) {
             new Exception().printStackTrace(System.err);
             System.out.println("fireFilesPropertiesChanged "); // NOI18N
         }
@@ -318,7 +329,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireProjectDeleted() {
-        if (TRACE){
+        if (TRACE) {
             System.out.println("fireProjectDeleted "); // NOI18N
         }
         for (NativeProjectItemsListener listener : getListenersCopy()) {
@@ -343,11 +354,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
-        if (TRACE){
+        if (TRACE) {
             new Exception().printStackTrace(System.err);
         }
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+
                 @Override
                 public void run() {
                     checkConfigurationChangedWorker(oldConf, newConf);
@@ -392,8 +404,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
 
         // Check compiler collection. Fire if different (IZ 131825)
-        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) ||
-                !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
+        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())
+                || !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedViewItemNodes(getMakeConfigurationDescriptor().getProject(), null, null);
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
@@ -415,10 +427,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 continue;
             }
 
-            if ((newItemConf.getExcluded().getValue() ^ oldItemConf.getExcluded().getValue()) &&
-                    (newItemConf.getTool() == PredefinedToolKind.CCompiler ||
-                    newItemConf.getTool() == PredefinedToolKind.CCCompiler ||
-                    items[i].hasHeaderOrSourceExtension(true, true))) {
+            if ((newItemConf.getExcluded().getValue() ^ oldItemConf.getExcluded().getValue())
+                    && (newItemConf.getTool() == PredefinedToolKind.CCompiler
+                    || newItemConf.getTool() == PredefinedToolKind.CCCompiler
+                    || items[i].hasHeaderOrSourceExtension(true, true))) {
                 if (newItemConf.getExcluded().getValue()) {
                     // excluded
                     deleted.add(items[i]);
@@ -482,6 +494,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     public void checkForChangedItems(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+
                 @Override
                 public void run() {
                     checkForChangedItemsWorker(folder, item);
@@ -566,8 +579,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
             items = new Item[]{item};
         } else {
-            libsChanged = makeConfiguration.getRequiredProjectsConfiguration().getDirty() ||
-                    makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
+            libsChanged = makeConfiguration.getRequiredProjectsConfiguration().getDirty()
+                    || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
@@ -582,18 +595,18 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 //            ccFiles = true;
         }
 
-        if (cIncludeDirectories != null &&
-            (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||
-             cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
+        if (cIncludeDirectories != null
+                && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
+                || cInheritIncludes.getDirty() || cInheritMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
             cPpreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
             cInheritMacros.setDirty(false);
         }
-        if (ccIncludeDirectories != null &&
-            (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty() ||
-             ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
+        if (ccIncludeDirectories != null
+                && (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty()
+                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty())) {
             ccFiles = true;
             ccIncludeDirectories.setDirty(false);
             ccPreprocessorOption.setDirty(false);
@@ -622,9 +635,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     deleted.add(items[i]);
                     continue;
                 }
-                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler) ||
-                        (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) ||
-                        items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
+                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler)
+                        || (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler)
+                        || items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
                     list.add(items[i]);
                 }
             }
@@ -647,7 +660,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (TRACE){
+        if (TRACE) {
             System.out.println("propertyChange " + evt.getPropertyName()); // NOI18N
         }
         if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION)) {
@@ -753,10 +766,60 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public String toString() {
-        return getProjectDisplayName()+" "+getProjectRoot(); // NOI18N
+        return getProjectDisplayName() + " " + getProjectRoot(); // NOI18N
     }
 
     private void clearCache() {
         cachedDependency.clear();
+    }
+
+    @Override
+    public NativeExitStatus execute(String executable, String[] env, String... args) throws IOException {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ExecutionEnvironment ev = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        if (ev.isLocal()) {
+            String exePath = Path.findCommand(executable);
+            if (exePath == null) {
+                throw new IOException(getString("NOT_FOUND", executable));
+            }
+            String arguments = "";
+            for (String s : args) {
+                arguments += " " + s; // NOI18N
+            }
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            StringBuffer output = new StringBuffer();
+
+            try {
+                Process p0 = Runtime.getRuntime().exec(exePath + " " + arguments, env); // NOI18N
+                InputStream is = p0.getInputStream();
+                InputStreamReader ist = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(ist);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    output.append(line + "\n"); // NOI18N
+                }
+                br.close();
+                ist.close();
+                is.close();
+                bos.close();
+                return new NativeExitStatus(0, output.toString(), "");
+            } catch (IOException ioe) {
+                throw ioe;
+            }
+        } else {
+            ExitStatus exitStatus = ProcessUtils.execute(ev, executable, args); // NOI18N
+            // FIXUP: need to handle env!
+            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+        }
+    }
+
+    public String getPlatformName() {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        String platformName = makeConfiguration.getDevelopmentHost().getBuildPlatformName();
+        return platformName;
+    }
+
+    private static String getString(String s, String s2) {
+        return NbBundle.getMessage(NativeProjectProvider.class, s, s2);
     }
 }

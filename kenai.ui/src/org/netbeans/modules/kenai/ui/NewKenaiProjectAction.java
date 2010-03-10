@@ -68,7 +68,6 @@ public final class NewKenaiProjectAction implements ActionListener {
     }
 
     public NewKenaiProjectAction() {
-        kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
     }
 
 

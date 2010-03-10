@@ -123,6 +123,7 @@ public class Utilities {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
+    public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
@@ -235,7 +236,7 @@ public class Utilities {
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
-                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), true).getName());
+                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution()).getName());
 
                 root.appendChild( module );
                 isEmpty = false;
@@ -951,7 +952,7 @@ public class Utilities {
             if (cluster.equals (c)) {
                 Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
                 module.setAttribute(ATTR_NBM_NAME,
-                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), true).getName ());
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution()).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
                 isEmpty = false;

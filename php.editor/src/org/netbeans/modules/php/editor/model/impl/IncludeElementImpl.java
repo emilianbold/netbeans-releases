@@ -40,8 +40,9 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.model.IncludeElement;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.openide.filesystems.FileObject;
@@ -55,7 +56,7 @@ class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
     private String fileName;
     private OffsetRange referenceSpanRange;
     IncludeElementImpl(Scope inScope, IncludeInfo info) {
-        super(inScope, "include", Union2.<String, FileObject>createSecond(inScope.getFileObject()),new OffsetRange(0, 0), info.getPhpKind(), PhpModifiers.EMPTY);
+        super(inScope, "include", Union2.<String, FileObject>createSecond(inScope.getFileObject()),new OffsetRange(0, 0), info.getPhpElementKind(), PhpModifiers.noModifiers());
         this.fileName = info.getFileName();
         this.referenceSpanRange = info.getRange();
     }

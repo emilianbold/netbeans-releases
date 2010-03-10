@@ -238,6 +238,35 @@ is divided into following sections:
                         <istrue value="${{splashscreen.available}}"/>
                     </and>
                 </condition>
+                <condition property="do.archive">
+                    <not>
+                        <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
+                    </not>
+                </condition>
+                <condition property="do.archive+manifest.available">
+                    <and>
+                        <isset property="manifest.available"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+manifest.available+main.class">
+                    <and>
+                        <istrue value="${{manifest.available+main.class}}"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+manifest.available+main.class+mkdist.available">
+                    <and>
+                        <istrue value="${{manifest.available+main.class+mkdist.available}}"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+manifest.available+main.class+mkdist.available+splashscreen.available">
+                    <and>
+                        <istrue value="${{manifest.available+main.class+mkdist.available+splashscreen.available}}"/>
+                        <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
@@ -432,6 +461,7 @@ is divided into following sections:
                             <compilerarg value="-processorpath" />
                             <compilerarg path="@{{processorpath}}" />
                             <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />
                             <compilerarg path="@{{apgeneratedsrcdir}}" />
                             <compilerarg line="${{ap.proc.none.internal}}" />
@@ -854,6 +884,7 @@ is divided into following sections:
             <target name="-init-ap-cmdline-properties">
                 <property name="annotation.processing.enabled" value="true" />
                 <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.processor.options" value="" />
                 <property name="annotation.processing.run.all.processors" value="true" />
                 <property name="javac.processorpath" value="${{javac.classpath}}" />
                 <property name="javac.test.processorpath" value="${{javac.test.classpath}}"/>
@@ -1086,20 +1117,21 @@ is divided into following sections:
             
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
                 <j2seproject1:jar/>
             </target>
             
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">manifest.available</xsl:attribute>
+                <xsl:attribute name="if">do.archive+manifest.available</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}"/>
             </target>
             
             <target name="-do-jar-with-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">manifest.available+main.class</xsl:attribute>
+                <xsl:attribute name="if">do.archive+manifest.available+main.class</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available+main.class+mkdist.available</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}">
                     <j2seproject1:manifest>
@@ -1121,7 +1153,7 @@ is divided into following sections:
 
             <target name="-do-jar-with-libraries-and-splashscreen">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
-                <xsl:attribute name="if">manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
+                <xsl:attribute name="if">do.archive+manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
 
                 <basename property="splashscreen.basename" file="${{application.splash}}"/>
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
@@ -1142,7 +1174,7 @@ is divided into following sections:
 
             <target name="-do-jar-with-libraries">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
-                <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
+                <xsl:attribute name="if">do.archive+manifest.available+main.class+mkdist.available</xsl:attribute>
                 <xsl:attribute name="unless">splashscreen.available</xsl:attribute>
                 <j2seproject3:copylibs>
                     <customize>

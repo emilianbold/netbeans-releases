@@ -53,7 +53,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -66,6 +68,7 @@ import org.netbeans.core.startup.RunLevel;
 import org.netbeans.core.startup.Splash;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.osgi.framework.Bundle;
@@ -104,6 +107,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             System.setProperty("netbeans.user", storage);
         }
         System.setProperty("TopSecurityManager.disable", "true");
+        NbBundle.setBranding(System.getProperty("branding.token"));
         OSGiMainLookup.initialize(context);
         queue = new DependencyQueue<String,Bundle>();
         this.context = context;
@@ -141,21 +145,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         load(toLoad);
     }
 
-    public @Override void stop(BundleContext context) throws Exception {
-        context.removeBundleListener(this);
-        context = null;
-        framework = null;
-    }
-
-    private void unloadAll(List<Bundle> toUnloadInitial) {
-        List<Bundle> toUnload = new ArrayList<Bundle>(toUnloadInitial);
-        for (Bundle b : context.getBundles()) {
-            if (b.getState() == Bundle.ACTIVE) {
-                toUnload.addAll(queue.retract(b));
-            }
-        }
-        unload(toUnload, true);
-    }
+    public @Override void stop(BundleContext context) throws Exception {}
 
     public @Override void bundleChanged(BundleEvent event) {
         Bundle bundle = event.getBundle();
@@ -167,14 +157,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
-            List<Bundle> toUnload = queue.retract(bundle);
-            if (framework != null && framework.getState() == Bundle.STOPPING) {
+            if (framework.getState() == Bundle.STOPPING) {
 //                System.err.println("fwork stopping during " + bundle.getSymbolicName());
 //                ActiveQueue.stop();
-                context.removeBundleListener(this);
-                unloadAll(toUnload);
             } else {
-                unload(toUnload, false);
+                unload(queue.retract(bundle));
             }
             break;
         }
@@ -184,7 +171,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         Set<String> deps = new TreeSet<String>(splitTokens((String) headers.get("OpenIDE-Module-Provides")));
         String name = (String) headers.get(Constants.BUNDLE_SYMBOLICNAME);
         if (name != null) {
+            name = name.replaceFirst(";.+", "");
             deps.add(name);
+            if (name.equals("org.openide.modules")) {
+                CoreBridge.defineOsTokens(deps);
+            }
         }
         return deps;
     }
@@ -200,12 +191,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
         }
         // XXX also check for BUNDLE_SYMBOLICNAME_ATTRIBUTE in IMPORT_PACKAGE (though not currently used by MakeOSGi)
-        for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
-            // XXX at least ModuleFormat1/2 should probably be filtered out by MakeOSGi
-            if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {
-                deps.add(tok);
-            }
-        }
+        deps.addAll(splitTokens((String) headers.get("OpenIDE-Module-Requires")));
         return deps;
     }
 
@@ -221,6 +207,8 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         split.remove("");
         return split;
     }
+
+    static final Map<Bundle,ModuleInstall> installers = new HashMap<Bundle,ModuleInstall>();
 
     private void load(List<Bundle> bundles) {
         if (bundles.isEmpty()) {
@@ -240,7 +228,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 showWindowSystem = true;
             }
         }
-        OSGiRepository.DEFAULT.addLayers(layersFor(bundles));
+        OSGiRepository.DEFAULT.addLayersFor(bundles);
         if (loadServicesFolder) {
             OSGiMainLookup.loadServicesFolder();
         }
@@ -251,6 +239,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         for (Bundle bundle : bundles) {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
+                installers.put(bundle, mi);
                 mi.restored();
             }
         }
@@ -267,49 +256,20 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
     }
 
-    private void unload(List<Bundle> bundles, boolean shutdown) {
+    private void unload(List<Bundle> bundles) {
         if (bundles.isEmpty()) {
-            return;
-        }
-        if (shutdown) {
-            LOG.log(Level.FINE, "shutdown on: {0}", bundles);
-            // XXX could call closing/close
             return;
         }
         LOG.log(Level.FINE, "unloading: {0}", bundles);
         for (Bundle bundle : bundles) {
-            ModuleInstall mi = installerFor(bundle);
+            ModuleInstall mi = installers.remove(bundle);
             if (mi != null) {
+                LOG.log(Level.FINE, "uninstalled: {0}", bundle.getSymbolicName());
                 mi.uninstalled();
             }
         }
-        OSGiRepository.DEFAULT.removeLayers(layersFor(bundles));
+        OSGiRepository.DEFAULT.removeLayersFor(bundles);
         OSGiMainLookup.bundlesRemoved(bundles);
-    }
-
-    private static URL[] layersFor(List<Bundle> bundles) {
-        List<URL> layers = new ArrayList<URL>(2);
-        for (Bundle b : bundles) {
-            if (b.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
-                // Won't work anyway, so don't even try.
-                continue;
-            }
-            String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
-            if (explicit != null) {
-                URL layer = b.getResource(explicit);
-                if (layer != null) {
-                    layers.add(layer);
-                    // XXX could also add localized/branded variants
-                } else {
-                    LOG.log(Level.WARNING, "no such layer {0} in {1} of state {2}", new Object[] {explicit, b.getSymbolicName(), b.getState()});
-                }
-            }
-            URL generated = b.getResource("META-INF/generated-layer.xml");
-            if (generated != null) {
-                layers.add(generated);
-            }
-        }
-        return layers.toArray(new URL[layers.size()]);
     }
 
     private static ModuleInstall installerFor(Bundle b) {

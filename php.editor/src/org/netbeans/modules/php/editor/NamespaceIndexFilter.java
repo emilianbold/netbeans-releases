@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.QualifiedName;
-import org.netbeans.modules.php.editor.model.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -126,16 +126,16 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
             namespaneNameLCaseSlashed += "\\";
         }
         for (T elem : originalElems) {
-            if (elem instanceof IndexedFullyQualified || elem instanceof IndexedClassMember) {
-                if (elem instanceof IndexedClassMember) {
-                    int idx = ((IndexedClassMember) elem).getType().getName().toLowerCase().indexOf(getName().toLowerCase());
+            if (elem instanceof FullyQualifiedElement || elem instanceof TypeMemberElement) {
+                if (elem instanceof TypeMemberElement) {
+                    int idx = ((TypeMemberElement) elem).getType().getName().toLowerCase().indexOf(getName().toLowerCase());
                     if (idx == -1) {
                         retval.add(elem);
                         continue;
                     }
                 }
-                String fqn = elem instanceof IndexedFullyQualified ? ((IndexedFullyQualified) elem).getFullyQualifiedName() :
-                    ((IndexedClassMember) elem).getType().getFullyQualifiedName();
+                String fqn = elem instanceof FullyQualifiedElement ? ((FullyQualifiedElement) elem).getFullyQualifiedName().toString() :
+                    ((TypeMemberElement) elem).getType().getFullyQualifiedName().toString();
                 final int indexOf = fqn.toLowerCase().indexOf(namespaneNameLCaseSlashed);
                 final boolean fullyQualified = getKind().isFullyQualified();
                 if (fullyQualified ? indexOf == 0 : indexOf != -1) {
@@ -151,7 +151,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
                     }
                     retval.add(elem);
                 }
-            } else if (namespaneNameLCase.equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
+            }else if (namespaneNameLCase.equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
                 retval.add(elem);
             }
         }

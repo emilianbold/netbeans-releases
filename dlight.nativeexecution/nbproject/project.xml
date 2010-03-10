@@ -212,6 +212,7 @@
                 <friend>org.netbeans.modules.dlight.procfs</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
+                <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>

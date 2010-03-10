@@ -140,11 +140,26 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
             APTStringManager manager = NameCache.getManager();
+            String id = null;
+            int level = 0;
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                if( token.getType() == CPPTokenTypes.ID ) {
-                    if( token.getNextSibling() != null ) {
-                        l.add(manager.getString(token.getText()));
-                    }
+                int type2 = token.getType();
+                switch (type2) {
+                    case CPPTokenTypes.ID:
+                        id = token.getText();
+                        break;
+                    case CPPTokenTypes.GREATERTHAN:
+                        level--;
+                        break;
+                    case CPPTokenTypes.LESSTHAN:
+                        level++;
+                        break;
+                    case CPPTokenTypes.SCOPE:
+                        if (id != null && level == 0) {
+                            l.add(manager.getString(id));
+                        }
+                        break;
+                    default:
                 }
             }
             return l.toArray(new CharSequence[l.size()]);
