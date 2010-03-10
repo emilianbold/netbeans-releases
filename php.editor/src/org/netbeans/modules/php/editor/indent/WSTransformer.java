@@ -587,6 +587,49 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    parameters.get(parameters.size() -1).getEndOffset(),
 		    CodeStyle.get(context.document()).spaceWithinMethodDeclParens());
 	}
+	
+	// wrapping method/function parameters
+	if (parameters != null && parameters.size() > 1) {
+	    CodeStyle.WrapStyle style = CodeStyle.get(context.document()).wrapMethodParams();
+	    for (int i = 1; i < parameters.size(); i++) {
+		FormalParameter param = parameters.get(i);
+		TokenSequence<PHPTokenId> ts = tokenSequence(param.getStartOffset());
+		ts.move(param.getStartOffset());
+		if (ts.moveNext() && ts.movePrevious()) {
+		    Token<PHPTokenId> token = ts.token();
+		    int tokenOffset = ts.offset();
+		    if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
+
+			if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+			    if (token.id() == PHPTokenId.WHITESPACE) {
+				replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
+			    }
+			}
+			else {
+			    if (token.id() == PHPTokenId.WHITESPACE) {
+				if (countOfNewLines(token.text()) != 1) {
+				    replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
+				}
+			    } else {
+				replacements.add(new Replacement(tokenOffset + token.length(), 0, "\n", 1));
+			    }
+			}
+		    }
+		    else if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+			if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+			    if (token.id() == PHPTokenId.WHITESPACE) {
+				replacements.add(new Replacement(tokenOffset + token.length(), token.length()," ", 1));
+			    }
+			}
+			else {
+			    if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) > 1) {
+				replacements.add(new Replacement(tokenOffset + token.length(), token.length(), "\n", 1));
+			    }
+			}
+		    }
+		}
+	    }
+	}
     }
 
     @Override
@@ -1320,13 +1363,21 @@ class WSTransformer extends DefaultTreePathVisitor {
     static class Replacement implements Comparable<Replacement>{
         private Integer offset;
         private int length;
+	//smaller number -> bigger priority
+	private int priority;
         private String newString;
+	private boolean soft;
 
-        public Replacement(int offset, int length, String newString) {
-            this.offset = offset;
+	public Replacement(int offset, int length, String newString) {
+	    this(offset, length, newString, 5);
+	}
+
+	public Replacement(int offset, int length, String newString, int priority) {
+	    this.offset = offset;
             this.length = length;
             this.newString = newString;
-        }
+	    this.priority = priority;
+	}
 
         public int length() {
             return length;
@@ -1340,11 +1391,21 @@ class WSTransformer extends DefaultTreePathVisitor {
             return offset;
         }
 
+	public int getPriority() {
+	    return priority;
+	}
+
+	public boolean isSoft() {
+	    return soft;
+	}
+
         @Override
         public int compareTo(Replacement r) {
             return offset.compareTo(r.offset);
         }
     }
+
+
 
     static class CodeRange implements Comparable<CodeRange>{
         private Integer start;
