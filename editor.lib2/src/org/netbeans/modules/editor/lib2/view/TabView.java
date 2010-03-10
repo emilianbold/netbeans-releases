@@ -173,27 +173,18 @@ public final class TabView extends EditorView implements TabableView {
         return (paragraphView != null) ? paragraphView.getDocumentView() : null;
     }
 
-    TextLayout getTextLayout() {
-        return null;
-    }
-
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
         int startOffset = getStartOffset();
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         int charIndex = offset - startOffset;
-        switch (charIndex) {
-            case 0:
-                break;
-            case 1:
-                mutableBounds.x += firstTabWidth;
-                break;
-            default:
-                int extraTabCount = getLength() - 1;
-                if (extraTabCount > 0) {
-                    mutableBounds.x += firstTabWidth + (charIndex - 1) * ((width - firstTabWidth) / extraTabCount);
-                }
-                break;
+        if (charIndex == 1) {
+            mutableBounds.x += firstTabWidth;
+        } else {
+            int extraTabCount = getLength() - 1;
+            if (extraTabCount > 0) {
+                mutableBounds.x += firstTabWidth + (charIndex - 1) * ((width - firstTabWidth) / extraTabCount);
+            }
         }
         mutableBounds.width = 1;
         return mutableBounds;
@@ -203,17 +194,17 @@ public final class TabView extends EditorView implements TabableView {
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
         int offset = getStartOffset();
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
+        // Compare to the middle of a tab width: to left it's a previous offset; to right it's a next offset
         double cmpX = mutableBounds.x + firstTabWidth / 2;
         if (x > cmpX) {
             int endOffset = offset + getLength();
             offset++;
             if (offset < endOffset) { // At least one extra '\t'
                 float tabWidth = (width - firstTabWidth) / (endOffset - offset);
-                if (tabWidth != 0f) {
-                    cmpX += firstTabWidth / 2 + tabWidth / 2;
-                    while (offset < endOffset && x < cmpX) {
-                        cmpX += tabWidth;
-                    }
+                cmpX += firstTabWidth / 2 + tabWidth / 2;
+                while (x > cmpX && offset < endOffset) {
+                    cmpX += tabWidth;
+                    offset++;
                 }
             }
         }
@@ -271,25 +262,26 @@ public final class TabView extends EditorView implements TabableView {
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         DocumentView docView = getDocumentView();
         if (docView != null) {
-            int len = getLength();
-            if (len > 0) { // Render first tab
-                TextLayout showTabLayout = (docView.isShowNonprintingCharacters())
-                        ? docView.getTabCharTextLayout(firstTabWidth)
-                        : null;
-                if (showTabLayout != null) {
-                    Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-                    HighlightsView.paintForeground(g, mutableBounds, docView, showTabLayout, getAttributes());
-                    mutableBounds.x += firstTabWidth;
-                    mutableBounds.width -= firstTabWidth;
-                    len--;
-                    if (len > 0) {
-                        float nextTabWidth = (width - firstTabWidth) / len;
-                        showTabLayout = docView.getTabCharTextLayout(nextTabWidth);
-                        while (--len >= 0) {
-                            HighlightsView.paintTextLayout(g, mutableBounds, docView, showTabLayout);
-                            mutableBounds.x += nextTabWidth;
-                            mutableBounds.width -= nextTabWidth;
-                        }
+            AttributeSet attrs = getAttributes();
+            Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
+            // Paint background
+            HighlightsView.paintBackground(g, mutableBounds, attrs, docView);
+            // Possibly render tab layout
+            TextLayout showTabLayout = (docView.isShowNonprintingCharacters())
+                    ? docView.getTabCharTextLayout(firstTabWidth)
+                    : null;
+            if (showTabLayout != null) {
+                HighlightsView.paintForeground(g, mutableBounds, docView, showTabLayout, attrs);
+                mutableBounds.x += firstTabWidth;
+                mutableBounds.width -= firstTabWidth;
+                int len = getLength() - 1;
+                if (len > 0) {
+                    float nextTabWidth = (width - firstTabWidth) / len;
+                    showTabLayout = docView.getTabCharTextLayout(nextTabWidth);
+                    while (--len >= 0) {
+                        HighlightsView.paintTextLayout(g, mutableBounds, docView, showTabLayout);
+                        mutableBounds.x += nextTabWidth;
+                        mutableBounds.width -= nextTabWidth;
                     }
                 }
             }
