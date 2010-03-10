@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-mercurial-ui-update-ConflictResolvedAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction"/>
             </file>
-            <file name="org-netbeans-modules-mercurial-ui-update-Action.ResolveConflictsinstance">
+            <file name="org-netbeans-modules-mercurial-ui-update-Action.ResolveConflicts.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction"/>
             </file>
             <file name="org-netbeans-modules-mercurial-ui-update-RevertModificationsAction.instance">
