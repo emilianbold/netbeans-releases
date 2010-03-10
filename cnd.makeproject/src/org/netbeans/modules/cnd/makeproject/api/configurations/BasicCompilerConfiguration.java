@@ -290,6 +290,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             ofilePath = CndPathUtilitities.replaceOddCharacters(ofilePath, '_');
             return dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + ofilePath; // UNIX path
         } else {
+            fileName = CndPathUtilitities.escapeOddCharacters(fileName);
             return dirName + '/' + fileName; // UNIX path
         }
     }
