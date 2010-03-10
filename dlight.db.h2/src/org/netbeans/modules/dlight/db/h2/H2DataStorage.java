@@ -159,14 +159,15 @@ public final class H2DataStorage extends SQLDataStorage {
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
-    H2DataStorage(boolean isPersistent) throws SQLException {
-        this(isPersistent ? persistentURL  + "/dlight"  + dbIndex.incrementAndGet() : url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
+    H2DataStorage(boolean isPersistent, String storageUniqueKey) throws SQLException {
+        this(isPersistent ? persistentURL  + "/dlight"  + storageUniqueKey : url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
+        this.isPersistent = isPersistent;
     }
 
 
 
     H2DataStorage() throws SQLException {
-        this(false);
+        this(false, null);
         
     }
 
