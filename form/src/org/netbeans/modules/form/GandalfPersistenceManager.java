@@ -3102,7 +3102,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
+        buf.append("<?xml version=\"1.1\" encoding=\""); // NOI18N
         buf.append(encoding);
         buf.append("\" ?>\n\n"); // NOI18N
 
