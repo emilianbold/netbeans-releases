@@ -107,7 +107,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
             repoMap.put(repository.getID(), repository);
         }
 
-        Map<String, KenaiProject> issueToKenaiProject = new HashMap<String, KenaiProject>();
+        Map<String, KenaiProjectImpl> issueToKenaiProject = new HashMap<String, KenaiProjectImpl>();
         List<RecentIssue> retIssues = new ArrayList<RecentIssue>(5);
         for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
             Repository repo = repoMap.get(entry.getKey());
@@ -115,7 +115,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 Support.LOG.fine("No repository available with ID " + entry.getKey()); // NOI18N
                 continue;
             }
-            KenaiProject kenaiProject = repo.getLookup().lookup(KenaiProject.class);
+            KenaiProjectImpl kenaiProject = (KenaiProjectImpl) repo.getLookup().lookup(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject.class);
             if(kenaiProject == null) {
                 continue;
             }
@@ -145,9 +145,9 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
         List<IssueHandle> ret = new ArrayList<IssueHandle>(retIssues.size());
         for (RecentIssue recentIssue : retIssues) {
-            KenaiProject kenaiProject = issueToKenaiProject.get(recentIssue.getIssue().getID());
+            KenaiProjectImpl kenaiProject = issueToKenaiProject.get(recentIssue.getIssue().getID());
             assert kenaiProject != null;
-            ret.add(new IssueHandleImpl(recentIssue.getIssue(), kenaiProject));
+            ret.add(new IssueHandleImpl(recentIssue.getIssue(), kenaiProject.getProject()));
         }
         return ret.toArray(new IssueHandle[ret.size()]);
     }
