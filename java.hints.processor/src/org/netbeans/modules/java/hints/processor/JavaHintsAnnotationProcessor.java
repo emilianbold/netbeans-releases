@@ -250,7 +250,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         try {
             bundle.getString(key);
         } catch (MissingResourceException ex) {
-            processingEnv.getMessager().printMessage(Kind.WARNING, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
+            processingEnv.getMessager().printMessage(Kind.ERROR, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
         }
     }
     

@@ -297,4 +297,15 @@ public class RubyUtilsTest extends TestCase {
         assertEquals("UsersHelper", RubyUtils.helperName("UsersController"));
         assertEquals("UsersHelper", RubyUtils.helperName("Users"));
     }
+
+    public void testAddToArray() {
+        String[] arr = {"a", "b", "c"};
+        assertEquals(arr, RubyUtils.addToArray(arr));
+        String[] result = RubyUtils.addToArray(arr, "d", "e");
+        assertEquals(5, result.length);
+        assertEquals("a", result[0]);
+        assertEquals("d", result[3]);
+        assertEquals("e", result[4]);
+
+    }
 }

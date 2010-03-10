@@ -248,7 +248,7 @@ public final class RubyIndex {
                 throw new UnsupportedOperationException(kind.toString());
         }
 
-        search(field, name, kind, result);
+        search(field, name, kind, result, CLASS_FIELDS);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         if (includeAll) {
@@ -705,7 +705,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, name, kind, result);
+        search(field, name, kind, result, FIELD_REQUIRE, FIELD_FQN_NAME);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Map<String, String> fqns = new HashMap<String, String>();
@@ -762,7 +762,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, require, QuerySupport.Kind.EXACT, result);
+        search(field, require, QuerySupport.Kind.EXACT, result, FIELD_REQUIRE, FIELD_FQN_NAME);
 
         final Set<String> fqns = new HashSet<String>();
         
@@ -800,7 +800,7 @@ public final class RubyIndex {
         QuerySupport.Kind kind = QuerySupport.Kind.EXACT;
         String field = FIELD_FQN_NAME;
 
-        search(field, fqn, kind, result, FIELD_FQN_NAME, FIELD_EXTENDS_NAME);
+        search(field, fqn, kind, result, CLASS_FIELDS);
 
         // XXX Uhm... there could be multiple... Shouldn't I return a set here?
         // (e.g. you can have your own class named File which has nothing to
@@ -815,7 +815,7 @@ public final class RubyIndex {
                 // Found the class name, now look it up in the index
                 result.clear();
 
-                if (!search(field, extendsClass, kind, result)) {
+                if (!search(field, extendsClass, kind, result, CLASS_FIELDS)) {
                     return null;
                 }
 
@@ -847,8 +847,7 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, 
-                FIELD_EXTENDS_NAME, FIELD_FQN_NAME, FIELD_CLASS_NAME, FIELD_CLASS_ATTRS, FIELD_REQUIRE);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, CLASS_FIELDS);
 
         boolean foundIt = result.size() > 0;
 
@@ -1317,7 +1316,7 @@ public final class RubyIndex {
         
         String searchField = FIELD_DB_TABLE;
         Set<IndexResult> result = new HashSet<IndexResult>();
-        search(searchField, prefix, kind, result);
+        search(searchField, prefix, kind, result, FIELD_DB_TABLE);
 
         Set<String> tables = new HashSet<String>();
         for (IndexResult map : result) {
@@ -1338,7 +1337,7 @@ public final class RubyIndex {
         String searchField = FIELD_GLOBAL_NAME;
         Set<IndexResult> result = new HashSet<IndexResult>();
         // Only include globals from the user's sources, not in the libraries!
-        search(searchField, prefix, kind, result);
+        search(searchField, prefix, kind, result, FIELD_GLOBAL_NAME);
 
         Set<IndexedVariable> globals = new HashSet<IndexedVariable>();
         for (IndexResult ir : result) {
@@ -1404,7 +1403,7 @@ public final class RubyIndex {
 
         String searchField = FIELD_FQN_NAME;
         Set<IndexResult> result = new HashSet<IndexResult>();
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, RubyUtils.addToArray(CLASS_FIELDS, FIELD_CONSTANT_NAME));
 
         // If this is a bogus class entry (no search rsults) don't continue
         if (result.size() <= 0) {
@@ -1480,7 +1479,7 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, RubyUtils.addToArray(CLASS_FIELDS, FIELD_FIELD_NAME));
 
         boolean foundIt = result.size() > 0;
 
@@ -1657,7 +1656,7 @@ public final class RubyIndex {
         final Set<IndexResult> result = new HashSet<IndexResult>();
         String field = FIELD_FQN_NAME;
 
-        search(field, fqn, QuerySupport.Kind.EXACT, result);
+        search(field, fqn, QuerySupport.Kind.EXACT, result, CLASS_FIELDS);
 
         Set<IndexedClass> matches = new HashSet<IndexedClass>();
 
@@ -1770,7 +1769,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, require, QuerySupport.Kind.EXACT, result);
+        search(field, require, QuerySupport.Kind.EXACT, result, FIELD_REQUIRE);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         for (IndexResult ir : result) {
