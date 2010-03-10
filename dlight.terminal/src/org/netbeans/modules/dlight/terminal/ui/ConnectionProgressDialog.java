@@ -4,11 +4,10 @@
  */
 package org.netbeans.modules.dlight.terminal.ui;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -42,22 +41,13 @@ public final class ConnectionProgressDialog extends JDialog implements TaskListe
         if (show && worker != null) {
             JComponent c = ProgressHandleFactory.createProgressComponent(progressHandle);
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-//            c.setPreferredSize(new Dimension(3 * c.getPreferredSize().width, 3 * c.getPreferredSize().height));
-//            c.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            c.setPreferredSize(new Dimension(2 * c.getPreferredSize().width, (12 * c.getPreferredSize().height) / 10));
+            c.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
             getContentPane().add(c);
             pack();
-            Container parent = getParent();
-            Rectangle bounds = (parent == null)
-                    ? new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()) : parent.getBounds();
-
-            int middleX = bounds.x + bounds.width / 2;
-            int middleY = bounds.y + bounds.height / 2;
-
-            Dimension size = getPreferredSize();
-
-            setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
-//            Dimension me = getSize();
-//            setLocation((screen.width - me.width) / 2, (screen.height - me.height) / 2);
+            Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            Dimension me = getSize();
+            setLocation((screen.width - me.width) / 2, (screen.height - me.height) / 2);
             progressHandle.start();
             RequestProcessor.getDefault().post(worker).addTaskListener(this);
             worker = null;
