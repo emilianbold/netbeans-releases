@@ -281,11 +281,11 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
                     assert component0 != null;
                     super.remove(component0);
                     add(tabbedPane);
-                    tabbedPane.addTab("", component0);
+                    tabbedPane.addTab(component0.name(), component0);
                     setTitle(component0, component0.getTitle());
                     component0 = null;
                 }
-                tabbedPane.addTab("", terminal);
+                tabbedPane.addTab(terminal.name(), terminal);
                 tabbedPane.setSelectedComponent(terminal);
             }
             setTitle(terminal, terminal.getTitle());
