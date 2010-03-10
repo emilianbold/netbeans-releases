@@ -62,6 +62,7 @@ import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
@@ -97,23 +98,37 @@ public final class CssPreviewTopComponent extends TopComponent {
     
 //    private CssPreviewable.Listener PREVIEWABLE_LISTENER = new CssPreviewable.Listener() {
         public void activate(final CssRuleContext content) {
+            assert SwingUtilities.isEventDispatchThread();
             LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);//NOI18N
-            SwingUtilities.invokeLater(new Runnable() {
+
+            //the CssPreviewGenerator.getPreviewCode() needs to run outside of AWT
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
                 public void run() {
-                    preview(content);
-                    LOGGER.log(Level.FINE, "Previewable activated - " + content);//NOI18N
+                    final File baseFile = content.base();
+                    final String title = getTitle(content);
+                    final CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            //and preview in AWT
+                            preview(baseFile, title, htmlCode);
+                        }
+
+                    });
                 }
+
             });
+
         }
         
         public void deactivate() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setNoSelectedRule();
-                    LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
-                }
-            });
-            
+            assert SwingUtilities.isEventDispatchThread();
+            LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
+
+            setNoSelectedRule();
         }
 //    };
     
@@ -300,12 +315,8 @@ public final class CssPreviewTopComponent extends TopComponent {
         return DEFAULT_TC_NAME;
     }
     
-    private void preview(CssRuleContext content) {
-
+    private void preview(File source, String title, CharSequence htmlCode) {
         assert SwingUtilities.isEventDispatchThread() : "Must be run in event dispatch thread!";
-
-        //get the generated sample XHTML code
-        CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
 
         //parse it first to find potential errors in the code
         if (parser != null) {
@@ -323,12 +334,11 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
 
         //set the UI to the previewing state
-        setPreviewing(getTitle(content));
+        setPreviewing(title);
 
         try {
             //resolve relative URL base for the preview component
             String relativeURL = null;
-            File source = content.base();
             if (source != null) {
                 relativeURL = source.toURL().toExternalForm();
             }
