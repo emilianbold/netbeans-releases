@@ -75,6 +75,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -91,9 +92,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             "org/netbeans/modules/apisupport/project/suite/resources/wait.png"; // NOI18N
     private RequestProcessor.Task refreshTask = null;
     private RequestProcessor RP = new RequestProcessor(ResourceBundleBrandingPanel.class.getName(), 1);
-    private EditRBAction editRBAction = new EditRBAction();
-    private OpenRBAction openRBAction = new OpenRBAction();
-    private ExpandAllAction expandAllAction = new ExpandAllAction();
+    private EditRBAction editRBAction = SystemAction.get (EditRBAction.class);
+    private OpenRBAction openRBAction = SystemAction.get (OpenRBAction.class);
+    private ExpandAllAction expandAllAction = SystemAction.get (ExpandAllAction.class);
 
     private BasicBrandingModel branding;
     private Project prj;
@@ -228,7 +229,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class ExpandAllAction extends OpenAction {
+    static final class ExpandAllAction extends OpenAction {
 
         @Override
         public String getName() {
@@ -237,6 +238,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     }
 
     private class BundleNode extends FilterNode implements OpenCookie, Comparable<BundleNode> {
+
+        private String bundlepath;
+        private String codenamebase;
 
         public BundleNode(Node orig, String bundlepath, String codenamebase) {
             this (orig, bundlepath, codenamebase, new InstanceContent());
@@ -252,6 +256,21 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
             setDisplayName(bundlepath);
             setShortDescription(codenamebase);
+
+            this.bundlepath = bundlepath;
+            this.codenamebase = codenamebase;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isBundleBranded(bundlepath, codenamebase))
+                return "<b>" + bundlepath + "</b>";
+            else
+                return bundlepath;
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -345,6 +364,19 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
 
         @Override
+        public String getHtmlDisplayName() {
+            String key = getDisplayName();
+            if (isKeyBranded(bundlepath, codenamebase, key))
+                return "<b>" + key + "</b>";
+            else
+                return key;
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
+        }
+
+        @Override
         public Action[] getActions(boolean context) {
             return new Action[] { editRBAction.createContextAwareInstance(getLookup()),
                 openRBAction.createContextAwareInstance(getLookup()) };
@@ -362,7 +394,13 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
         @Override
         public void edit() {
-            addKeyToBranding (bundlepath, codenamebase, getOriginal().getDisplayName());
+            if (addKeyToBranding(bundlepath, codenamebase, getOriginal().getDisplayName())) {
+                refresh();
+                Node parent = getParentNode();
+                if (parent instanceof BundleNode) {
+                    ((BundleNode) parent).refresh();
+                }
+            }
         }
 
         @Override
@@ -373,7 +411,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class EditRBAction extends EditAction {
+    static final class EditRBAction extends EditAction {
 
         @Override
         public String getName() {
@@ -381,7 +419,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class OpenRBAction extends OpenAction {
+    static final class OpenRBAction extends OpenAction {
 
         @Override
         public String getName() {
@@ -389,7 +427,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private void addKeyToBranding (String bundlepath, String codenamebase, String key) {
+    private boolean addKeyToBranding (String bundlepath, String codenamebase, String key) {
         BrandingSupport.BundleKey bundleKey = getBranding().getGeneralBundleKeyForModification(codenamebase, bundlepath, key);
         NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(key + " = ", bundlepath, // NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
@@ -401,8 +439,18 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                 bundleKey.setValue(newValue);
                 getBranding().addModifiedGeneralBundleKey(bundleKey);
                 setModified();
+                return true;
             }
         }
+        return false;
+    }
+
+    private boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
+        return getBranding().isKeyBranded(bundlepath, codenamebase, key);
+    }
+
+    private boolean isBundleBranded (String bundlepath, String codenamebase) {
+        return getBranding().isBundleBranded(bundlepath, codenamebase);
     }
 
     @Override

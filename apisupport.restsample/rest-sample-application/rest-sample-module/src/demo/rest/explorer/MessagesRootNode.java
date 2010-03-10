@@ -40,7 +40,6 @@
  */
 package demo.rest.explorer;
 
-import java.util.Date;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.lookup.Lookups;
@@ -54,9 +53,9 @@ public class MessagesRootNode extends AbstractNode {
 
     public MessagesRootNode(Children children) {
         super(children, Lookups.fixed(new Message(null, null, -1)));
-        setDisplayName("Messages");
-        setName("Messages");
-        setShortDescription("All Messages");
+        setDisplayName("Messages"); //NOI18N
+        setName("Messages"); //NOI18N
+        setShortDescription("All Messages"); //NOI18N
     }
 
 }

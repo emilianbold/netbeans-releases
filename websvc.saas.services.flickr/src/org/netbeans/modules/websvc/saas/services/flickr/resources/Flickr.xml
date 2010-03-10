@@ -130,10 +130,10 @@
                             <method-descriptor modifiers="private,static" name="dispatch" return-type="void" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrDispatch.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names="request, response"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FlickrSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
-                            <servlet-descriptor modifiers="static" class-name="FlickrJerseyClientLogin" servlet-mapping="/FlickrJerseyClientLogin">
+                            <servlet-descriptor modifiers="public, static" class-name="FlickrLoginServlet" servlet-mapping="/FlickrLoginServlet">
                                 <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FlickrLoginDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
                             </servlet-descriptor>
-                            <servlet-descriptor modifiers="static" class-name="FlickrJerseyClientCallback" servlet-mapping="/FlickrJerseyClientCallback">
+                            <servlet-descriptor modifiers="public, static" class-name="FlickrCallbackServlet" servlet-mapping="/FlickrCallbackServlet">
                                 <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FlickrCallbackDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
                             </servlet-descriptor>
                         </web>

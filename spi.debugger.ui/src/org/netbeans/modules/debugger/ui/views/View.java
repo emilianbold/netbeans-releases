@@ -173,13 +173,21 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
         if (contentComponent == null) return false;
-        return contentComponent.requestFocusInWindow ();
+        if (contentComponent.getComponentCount() > 0) {
+            return contentComponent.getComponent(0).requestFocusInWindow ();
+        } else {
+            return contentComponent.requestFocusInWindow ();
+        }
     }
 
     public void requestActive() {
         super.requestActive();
         if (contentComponent != null) {
-            contentComponent.requestFocusInWindow ();
+            if (contentComponent.getComponentCount() > 0) {
+                contentComponent.getComponent(0).requestFocusInWindow ();
+            } else {
+                contentComponent.requestFocusInWindow ();
+            }
         }
     }
     

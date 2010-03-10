@@ -144,6 +144,10 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
         String fqUserName;
         if(isKenai(url)){
             Kenai kenai = getKenai(url);
+            if (kenai == null) {
+                // probably offline, do not continue
+                return null;
+            }
             fqUserName = user + "@" + kenai.getUrl().getHost(); // NOI18N
         } else {
             fqUserName = user;
