@@ -41,6 +41,9 @@
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
+                <file name="org-netbeans-modules-php-smarty-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
@@ -50,7 +53,7 @@
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-php-smarty-resources-tpl-fonts-colors.xml" url="tpl-fonts-colors.xml">
+                            <file name="org-netbeans-modules-php-smarty-resources-fontsColors.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
                             </file>
                         </folder>
@@ -62,15 +65,6 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
-                <folder name="FontsColors">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="org-netbeans-modules-php-smarty-resources-tpl-fonts-colors.xml" url="tpl-fonts-colors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
-                </folder>
             </folder>
         </folder>
     </folder>
