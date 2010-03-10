@@ -75,6 +75,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -91,9 +92,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             "org/netbeans/modules/apisupport/project/suite/resources/wait.png"; // NOI18N
     private RequestProcessor.Task refreshTask = null;
     private RequestProcessor RP = new RequestProcessor(ResourceBundleBrandingPanel.class.getName(), 1);
-    private EditRBAction editRBAction = new EditRBAction();
-    private OpenRBAction openRBAction = new OpenRBAction();
-    private ExpandAllAction expandAllAction = new ExpandAllAction();
+    private EditRBAction editRBAction = SystemAction.get (EditRBAction.class);
+    private OpenRBAction openRBAction = SystemAction.get (OpenRBAction.class);
+    private ExpandAllAction expandAllAction = SystemAction.get (ExpandAllAction.class);
 
     private BasicBrandingModel branding;
     private Project prj;
@@ -228,7 +229,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class ExpandAllAction extends OpenAction {
+    static final class ExpandAllAction extends OpenAction {
 
         @Override
         public String getName() {
@@ -373,7 +374,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class EditRBAction extends EditAction {
+    static final class EditRBAction extends EditAction {
 
         @Override
         public String getName() {
@@ -381,7 +382,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class OpenRBAction extends OpenAction {
+    static final class OpenRBAction extends OpenAction {
 
         @Override
         public String getName() {
