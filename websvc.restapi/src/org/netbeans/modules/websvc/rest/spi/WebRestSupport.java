@@ -156,7 +156,7 @@ public abstract class WebRestSupport extends RestSupport {
         return null;
     }
 
-    protected FileObject getDeploymentDescriptor() {
+    public FileObject getDeploymentDescriptor() {
         WebModuleProvider wmp = project.getLookup().lookup(WebModuleProvider.class);
         if (wmp != null) {
             return wmp.findWebModule(project.getProjectDirectory()).getDeploymentDescriptor();
