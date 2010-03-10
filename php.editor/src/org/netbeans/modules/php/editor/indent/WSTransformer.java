@@ -73,7 +73,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -82,7 +81,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import sun.security.jca.GetInstance;
 
 /**
  * This class calculates all white-space tranformations other than
@@ -510,6 +508,13 @@ class WSTransformer extends DefaultTreePathVisitor {
              checkEmptyLinesBefore(node.getEndOffset() + 1,
                      CodeStyle.get(context.document()).getBlankLinesAfterClass(), false);
         }
+
+	// wraping interfaces
+	if (node.getInterfaes() != null && node.getInterfaes().size() > 1) {
+	    CodeStyle.WrapStyle style = CodeStyle.get(context.document()).wrapExtendsImplementsList();
+	    wrapNodes(node.getInterfaes(), false, style);
+	}
+
         super.visit(node);
     }
 
@@ -612,6 +617,12 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    parameters.get(0).getStartOffset(),
 		    parameters.get(parameters.size() -1).getEndOffset(),
 		    CodeStyle.get(context.document()).spaceWithinMethodCallParens());
+	}
+
+	// wrapping call arguments
+	if (parameters != null && parameters.size() > 1) {
+	    CodeStyle.WrapStyle style = CodeStyle.get(context.document()).wrapMethodCallArgs();
+	    wrapNodes(parameters, false, style);
 	}
 	super.visit(node);
     }
