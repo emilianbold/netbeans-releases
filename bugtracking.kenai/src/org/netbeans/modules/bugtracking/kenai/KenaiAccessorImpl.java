@@ -203,7 +203,10 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     @Override
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
-        assert kenai != null : "no kenai for url : [" + url + "]";
+        if (kenai == null) {
+            Support.LOG.log(Level.FINE, "no kenai for url : [{0}]", url);
+            return null;
+        }
         KenaiProject kp = kenai.getProject(projectName);
         return kp != null ? KenaiProjectImpl.getInstance(kp) : null;
     }

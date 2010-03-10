@@ -1004,7 +1004,9 @@ public class FormEditor {
                         Node[] nodes = ComponentInspector.getInstance()
                                  .getExplorerManager().getSelectedNodes();
                         for (int i=0; i < nodes.length; i++) {
-                            ((FormNode)nodes[i]).updateCookies();
+                            if (nodes[i] instanceof FormNode) { // Issue 181709
+                                ((FormNode)nodes[i]).updateCookies();
+                            }
                         }
                     }
                 }

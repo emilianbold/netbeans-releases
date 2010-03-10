@@ -847,7 +847,10 @@ class Wadl2JavaHelper {
 
             String body = m.getBody();
             if (body == null) {
-                body = getMethodBody(m.getBodyRef());
+                String bodyTemplate = m.getBodyRef();
+                if (bodyTemplate != null) {
+                    body = getMethodBody(bodyTemplate);
+                }
                 if (body == null) {
                     body = ("void".equals(m.getReturnType())? "{}" : "{return null;}"); //NOI18N
                 }
@@ -922,14 +925,14 @@ class Wadl2JavaHelper {
         return modifs;
     }
     
-    static ClassTree addSessionAuthServlets(WorkingCopy copy, ClassTree originalClass, SecurityParams securityParams) {
+    static ClassTree addSessionAuthServlets(WorkingCopy copy, ClassTree originalClass, SecurityParams securityParams, boolean annotateServlet) {
         ClassTree modifiedClass = originalClass;
         TreeMaker maker = copy.getTreeMaker();
         TypeElement servletAn = copy.getElements().getTypeElement("javax.servlet.annotation.WebServlet");
         for (ServletDescriptor classDescriptor : securityParams.getServletDescriptors()) {
             String className = classDescriptor.getClassName();
             ModifiersTree classModifiers = maker.Modifiers(getModifiers(classDescriptor.getModifiers()));
-            if (servletAn != null) {
+            if (annotateServlet && servletAn != null) {
                 List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                 attrs.add(
                         maker.Assignment(maker.Identifier("name"), maker.Literal(className))); //NOI18N

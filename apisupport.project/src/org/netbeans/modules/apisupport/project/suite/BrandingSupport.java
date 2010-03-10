@@ -583,6 +583,9 @@ public final class BrandingSupport {
             return brandingBundle;
         }
 
+        public String getBundleFilePath() {
+            return  brandingBundle.getPath();
+        }
     }
     
     public class BrandedFile {

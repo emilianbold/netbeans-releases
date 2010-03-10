@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -97,6 +98,7 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
@@ -518,6 +520,21 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
      */
     SaveCookie[] getSaveCookies() {
         return getModifiedFiles().values().toArray(new SaveCookie[0]);
+    }
+
+    /**
+     * Returns editor cookies available for modified and not open files in the commit table
+     * @return
+     */
+    EditorCookie[] getEditorCookies() {
+        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+            if (cookies.length > 0) {
+                allCookies.add(cookies[0]);
+            }
+        }
+        return allCookies.toArray(new EditorCookie[allCookies.size()]);
     }
 
     /**

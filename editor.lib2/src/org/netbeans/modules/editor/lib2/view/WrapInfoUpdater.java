@@ -106,7 +106,6 @@ final class WrapInfoUpdater {
     float initWrapInfo() {
         this.wrapLines = new ArrayList<WrapLine>(2);
         int childCount = children.size();
-        boolean loggable = LOG.isLoggable(Level.FINE);
         if (childCount > 0) {
             float visibleWidth = documentView.getVisibleWidth();
             TextLayout lineContinuationTextLayout = documentView.getLineContinuationCharTextLayout();
@@ -115,7 +114,12 @@ final class WrapInfoUpdater {
             availableWidth = Math.max(visibleWidth - lineContinuationTextLayout.getAdvance(),
                     documentView.getDefaultCharWidth() * 4);
             double nextVisualOffset = 0d;
-            logMsgBuilder = (loggable ? new StringBuilder(100) : null);
+            logMsgBuilder = LOG.isLoggable(Level.FINE) ? new StringBuilder(100) : null;
+            if (logMsgBuilder != null) {
+                logMsgBuilder.append("lineContCharW:").append(lineContinuationTextLayout.getAdvance());
+                logMsgBuilder.append(", availW:").append(availableWidth);
+                logMsgBuilder.append("\n");
+            }
 
             try {
                 for (; childIndex < childCount; childIndex++) {
@@ -123,7 +127,7 @@ final class WrapInfoUpdater {
                     double visualOffset = nextVisualOffset;
                     nextVisualOffset = paragraphView.getViewVisualOffset(childIndex + 1);
                     double childWidth = (nextVisualOffset - visualOffset);
-                    if (loggable) {
+                    if (logMsgBuilder != null) {
                         logMsgBuilder.append("child[").append(childIndex).append("]:").append(childView);
                         logMsgBuilder.append(",W=").append(childWidth); // NOI18N
                         logMsgBuilder.append(": "); // NOI18N
@@ -139,7 +143,7 @@ final class WrapInfoUpdater {
                             if (wrapLineNonEmpty) {
                                 finishWrapLine();
                                 // Retry On Empty Line -> retry adding
-                                if (loggable) {
+                                if (logMsgBuilder != null) {
                                     logMsgBuilder.append("ROEL;");
                                 }
                                 if (x + childWidth <= availableWidth) {
@@ -153,20 +157,20 @@ final class WrapInfoUpdater {
                                 }
                             }
                             if (forceAdd) { // Force adding on an empty line
-                                if (loggable) {
+                                if (logMsgBuilder != null) {
                                     logMsgBuilder.append("addFORCED;"); // NOI18N
                                 }
                                 addChild(childWidth);
                             }
                         }
                     }
-                    if (loggable) {
+                    if (logMsgBuilder != null) {
                         logMsgBuilder.append('\n');
                     }
                 }
                 finishWrapLine();
             } finally {
-                if (loggable) {
+                if (logMsgBuilder != null) {
                     logMsgBuilder.append('\n');
                     LOG.fine(logMsgBuilder.toString());
                 }
@@ -175,7 +179,7 @@ final class WrapInfoUpdater {
 
         wrapInfo.addAll(wrapLines);
         wrapInfo.checkIntegrity(paragraphView);
-        if (loggable) {
+        if (logMsgBuilder != null) {
             LOG.fine("Inited wrapInfo:\n" + wrapInfo.toString(paragraphView) + "\n");
         }
         return maxLineWidth;
