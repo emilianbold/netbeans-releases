@@ -73,6 +73,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
     private static ShareAction inst = null;
 
     private ShareAction() {
+        putValue(NAME, NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
     }
 
     public static synchronized ShareAction getDefault() {
