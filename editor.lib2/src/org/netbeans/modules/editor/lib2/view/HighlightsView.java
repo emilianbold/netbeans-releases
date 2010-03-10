@@ -338,92 +338,103 @@ public class HighlightsView extends EditorView implements TextLayoutView {
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        paint(g, alloc, clipBounds, this, getDocumentView(), getTextLayout());
+        paint(g, alloc, clipBounds, this, getTextLayout(), 0, getLength());
     }
 
     static void paint(Graphics2D g, Shape alloc, Rectangle clipBounds,
-            EditorView view, DocumentView docView, TextLayout textLayout)
+            HighlightsView view, TextLayout textLayout, int shift, int len)
     {
-        Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-        if (mutableBounds.intersects(clipBounds)) {
-            boolean loggable = LOG.isLoggable(Level.FINEST);
+        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
+        DocumentView docView = view.getDocumentView();
+        if (docView != null && allocBounds.intersects(clipBounds)) {
             if (docView != null) {
-                Color origColor = g.getColor();
-                Font origFont = g.getFont();
+                PaintState paintState = PaintState.save(g);
                 try {
-                    // Paint background
-                    JTextComponent textComponent = docView.getTextComponent();
-                    Color componentBackground = textComponent.getBackground();
                     AttributeSet attrs = view.getAttributes();
-                    float baselineOffset = docView.getDefaultBaselineOffset();
-                    ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
-                    if (!componentBackground.equals(g.getColor())) { // Not yet cleared by BasicTextUI.paintBackground()
-                        if (loggable) {
-                            LOG.finest(view.getDumpId() + ":paint-bkg: " + ViewUtils.toString(g.getColor()) + // NOI18N
-                                    ", bounds=" + ViewUtils.toString(mutableBounds) + '\n'); // NOI18N
-                        }
-                        // clearRect() uses g.getBackground() color
-                        g.fillRect(
-                                (int)mutableBounds.getX(),
-                                (int)mutableBounds.getY(),
-                                (int)mutableBounds.getWidth(),
-                                (int)mutableBounds.getHeight()
-                        );
+                    paintBackground(g, allocBounds, attrs, docView);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest(view.getDumpId() + ":paint-bkg: " + ViewUtils.toString(g.getColor()) + // NOI18N
+                                ", bounds=" + ViewUtils.toString(allocBounds) + '\n'); // NOI18N
                     }
-
-                    // Paint possible underlines
-                    if (attrs != null) {
-                        Color bottomBorderLineColor = null;
-                        Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                        if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
-                            g.setColor(waveUnderlineColor);
-                            float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
-                            int wavePixelCount = (int) mutableBounds.getWidth() + 1;
-                            if (wavePixelCount > 0) {
-                                int[] waveForm = {0, 0, -1, -1};
-                                int[] xArray = new int[wavePixelCount];
-                                int[] yArray = new int[wavePixelCount];
-
-                                int intX = (int) mutableBounds.x;
-                                int intY = (int) (mutableBounds.y + underlineOffset + 0.5);
-                                int waveFormIndex = intX % 4;
-                                for (int i = 0; i < wavePixelCount; i++) {
-                                    xArray[i] = intX + i;
-                                    yArray[i] = intY + waveForm[waveFormIndex];
-                                    waveFormIndex = (++waveFormIndex) & 3;
-                                }
-                                g.drawPolyline(xArray, yArray, wavePixelCount - 1);
-                            }
+                    if (textLayout != null) {
+                        paintForeground(g, allocBounds, docView, textLayout, attrs);
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            int startOffset = view.getStartOffset() + shift;
+                            Document doc = docView.getDocument();
+                            CharSequence text = DocumentUtilities.getText(doc).subSequence(startOffset, startOffset + len);
+                            // Here it's assumed that 'text' var contains the same content as (possibly cached)
+                            // textLayout but if textLayout caching would be broken then they could differ.
+                            LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
+                                    "\", XY["+ ViewUtils.toStringPrec1(allocBounds.getX()) + ";" +
+                                    ViewUtils.toStringPrec1(allocBounds.getY()) + "(B" + // NOI18N
+                                    ViewUtils.toStringPrec1(docView.getDefaultBaselineOffset()) + // NOI18N
+                                    ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                         }
                     }
-
-                    // Paint foreground
-                    ViewUtils.applyForegroundAttributes(attrs, textComponent.getFont(), textComponent.getForeground(), g);
-                    if (textLayout == null) {
-                        return;
-                    }
-                    float x = (float) mutableBounds.getX();
-                    float y = (float) mutableBounds.getY();
-                    if (loggable) {
-                        int startOffset = view.getStartOffset();
-                        int endOffset = view.getEndOffset();
-                        Document doc = docView.getDocument();
-                        CharSequence text = DocumentUtilities.getText(doc).subSequence(startOffset, endOffset);
-                        // Here it's assumed that 'text' var contains the same content as (possibly cached)
-                        // textLayout but if textLayout caching would be broken then they could differ.
-                        LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
-                                "\", XY["+ x + ";" + y + "(B" + // NOI18N
-                                ViewUtils.toStringPrec1(baselineOffset) + // NOI18N
-                                ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
-                    }
-                    // TextLayout is unable to do a partial render
-                    textLayout.draw(g, x, y + baselineOffset);
                 } finally {
-                    g.setFont(origFont);
-                    g.setColor(origColor);
+                    paintState.restore();
                 }
             }
         }
+    }
+
+    static void paintBackground(Graphics2D g, Rectangle2D.Double allocBounds, AttributeSet attrs, DocumentView docView) {
+        // Paint background
+        JTextComponent textComponent = docView.getTextComponent();
+        Color componentBackground = textComponent.getBackground();
+        float baselineOffset = docView.getDefaultBaselineOffset();
+        ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
+        if (!componentBackground.equals(g.getColor())) { // Not yet cleared by BasicTextUI.paintBackground()
+            // clearRect() uses g.getBackground() color
+            ViewUtils.fillRect(g, allocBounds);
+        }
+
+        // Paint possible underlines
+        if (attrs != null) {
+            Color bottomBorderLineColor = null;
+            Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+            if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
+                g.setColor(waveUnderlineColor);
+                float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
+                int wavePixelCount = (int) allocBounds.getWidth() + 1;
+                if (wavePixelCount > 0) {
+                    int[] waveForm = {0, 0, -1, -1};
+                    int[] xArray = new int[wavePixelCount];
+                    int[] yArray = new int[wavePixelCount];
+
+                    int intX = (int) allocBounds.x;
+                    int intY = (int) (allocBounds.y + underlineOffset + 0.5);
+                    int waveFormIndex = intX % 4;
+                    for (int i = 0; i < wavePixelCount; i++) {
+                        xArray[i] = intX + i;
+                        yArray[i] = intY + waveForm[waveFormIndex];
+                        waveFormIndex = (++waveFormIndex) & 3;
+                    }
+                    g.drawPolyline(xArray, yArray, wavePixelCount - 1);
+                }
+            }
+        }
+    }
+
+
+    static void paintForeground(Graphics2D g, Rectangle2D.Double allocBounds,
+            DocumentView docView, TextLayout textLayout, AttributeSet attrs)
+    {
+        JTextComponent textComponent = docView.getTextComponent();
+        ViewUtils.applyForegroundAttributes(attrs, textComponent.getFont(),
+                textComponent.getForeground(), g);
+        paintTextLayout(g, allocBounds, docView, textLayout);
+
+    }
+
+    static void paintTextLayout(Graphics2D g, Rectangle2D.Double bounds,
+            DocumentView docView, TextLayout textLayout)
+    {
+        float baselineOffset = docView.getDefaultBaselineOffset();
+        float x = (float) bounds.getX();
+        float y = (float) bounds.getY();
+        // TextLayout is unable to do a partial render
+        textLayout.draw(g, x, y + baselineOffset);
     }
 
     @Override
@@ -438,7 +449,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         if (axis == View.X_AXIS) {
             DocumentView docView = fullView.getDocumentView();
             // [TODO] Should check for RTL text
-            if (docView != null && textLayout != null) {
+            if (docView != null && textLayout != null && partLength > 1) {
                 // The logic
                 int partStartOffset = fullView.getStartOffset() + partShift;
                 int shift = offset - partStartOffset;
@@ -471,7 +482,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 if (breakFailed) {
                     return null;
                 }
-                return new HighlightsViewPart(fullView, shift, breakPartLength);
+                return new HighlightsViewPart(fullView, partShift + shift, breakPartLength);
             }
         }
         return null;
@@ -479,13 +490,13 @@ public class HighlightsView extends EditorView implements TextLayoutView {
 
     @Override
     public View createFragment(int p0, int p1) {
+        int startOffset = getStartOffset();
+        ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("HV.createFragment(" + p0 + "," + p1+ "): <" + getStartOffset() + "," + // NOI18N
                     getEndOffset() + ">\n"); // NOI18N
         }
-        int shift = p0 - getStartOffset();
-        int len = p1 - p0;
-        return new HighlightsViewPart(this, shift, len);
+        return new HighlightsViewPart(this, p0 - startOffset, p1 - p0);
     }
 
     @Override

@@ -89,10 +89,19 @@ final class ViewUtils {
         return r;
     }
 
-    public static Rectangle toRect(Rectangle2D.Double r2d) {
+    public static Rectangle toRect(Rectangle2D r2d) {
         Rectangle r = new Rectangle();
         r.setRect(r2d);
         return r;
+    }
+
+    public static void fillRect(Graphics2D g, Rectangle2D r) {
+        g.fillRect(
+                (int) r.getX(),
+                (int) r.getY(),
+                (int) r.getWidth(),
+                (int) r.getHeight()
+        );
     }
 
     public static void applyBackgroundAttributes(AttributeSet attributes,
@@ -271,6 +280,13 @@ final class ViewUtils {
             sb.append("<NULL>"); // NOI18N
         }
         return sb.toString();
+    }
+
+    public static void checkFragmentBounds(int p0, int p1, int startOffset, int length) {
+        if (p0 < startOffset || p0 > p1 || p1 > startOffset + length) {
+            throw new IllegalArgumentException("Illegal bounds: <" + p0 + "," + p1 + // NOI18N
+                    "> outside of <" + startOffset + "," + (startOffset+length) + ">"); // NOI18N
+        }
     }
 
 }
