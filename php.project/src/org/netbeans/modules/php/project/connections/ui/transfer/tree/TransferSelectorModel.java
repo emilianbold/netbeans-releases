@@ -63,7 +63,7 @@ final class TransferSelectorModel {
                 select = file.getTimestamp() > timestamp;
             }
             if (select && !file.isProjectRoot()) {
-                // intentionally not addFiles()!
+                // intentionally not addChildren()!
                 selected.add(file);
             }
         }
@@ -81,11 +81,26 @@ final class TransferSelectorModel {
         return selected.contains(getTransferFile(node));
     }
 
+    public boolean isNodePartiallySelected(Node node) {
+        TransferFile transferFile = getTransferFile(node);
+        if (transferFile.isFile()
+                || !selected.contains(transferFile)) {
+            return false;
+        }
+        return !hasAllChildrenSelected(transferFile);
+    }
+
     public void setNodeSelected(Node node, boolean select) {
+        TransferFile transferFile = getTransferFile(node);
+        if (transferFile == null) {
+            // dblclick on root node
+            return;
+        }
         if (select) {
-            addFiles(getTransferFile(node));
+            addChildren(transferFile);
+            addParents(transferFile);
         } else {
-            removeFiles(getTransferFile(node));
+            removeChildren(transferFile);
         }
         filesChangeSupport.fireSelectedFilesChange();
     }
@@ -106,29 +121,45 @@ final class TransferSelectorModel {
         return node.getLookup().lookup(TransferFile.class);
     }
 
-    private void addFiles(TransferFile file) {
-        if (file == null) {
-            // dblclick on root node
-            return;
-        }
+    private void addChildren(TransferFile file) {
         if (file.isProjectRoot()) {
             // ignored
             return;
         }
         selected.add(file);
         for (TransferFile child : file.getChildren()) {
-            addFiles(child);
+            addChildren(child);
         }
     }
 
-    private void removeFiles(TransferFile file) {
-        if (file == null) {
-            // dblclick on root node
-            return;
+    private void addParents(TransferFile fromFile) {
+        TransferFile parent = fromFile.getParent();
+        if (parent != null) {
+            if (parent.isProjectRoot()) {
+                // ignored
+                return;
+            }
+            selected.add(parent);
+            addParents(parent);
         }
+    }
+
+    private void removeChildren(TransferFile file) {
         selected.remove(file);
         for (TransferFile child : file.getChildren()) {
-            removeFiles(child);
+            removeChildren(child);
         }
+    }
+
+    private boolean hasAllChildrenSelected(TransferFile transferFile) {
+        if (!selected.contains(transferFile)) {
+            return false;
+        }
+        for (TransferFile child : transferFile.getChildren()) {
+            if (!hasAllChildrenSelected(child)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
