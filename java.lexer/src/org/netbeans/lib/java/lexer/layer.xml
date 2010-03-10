@@ -9,7 +9,6 @@
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.api.java.lexer.JavaTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
-                    <attr name="position" intvalue="3000"/>
                 </file>
             </folder>
         </folder>

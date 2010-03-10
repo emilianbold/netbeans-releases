@@ -252,19 +252,16 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <file name="Reformatter.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reformatter$Factory"/>
-                    <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="JavacParser.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.JavacParserFactory"/>
-                    <attr name="position" intvalue="1100"/>
                 </file>
                 <file name="JavaIndexer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory"/>
-                    <attr name="position" intvalue="1300"/>
+                    <!--attr name="position" intvalue="1000"/-->
                 </file>
                 <file name="SourcePathCheck.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.classpath.SourcePathCheck$Factory"/>
-                    <attr name="position" intvalue="1400"/>
                 </file>
             </folder>
         </folder>
