@@ -243,7 +243,6 @@ public class StartTask extends BasicTask<OperationState> {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {
-                                //Exceptions.printStackTrace(ex);
                             }
                         }
                         SwingUtilities.invokeLater(new Runnable() {
@@ -467,7 +466,7 @@ public class StartTask extends BasicTask<OperationState> {
                     if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                         debugPortString = Integer.toString(
                                 Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                support.getDomainsRoot() + // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
+                                support.getDomainsRoot() + 
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
                         int debugPort = 9009;
@@ -562,8 +561,7 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private File getDomainFolder() {
-        return new File(support.getDomainsRoot()+ // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
-                File.separatorChar + getDomainName());
+        return new File(support.getDomainsRoot()+ File.separatorChar + getDomainName());
     }
     
     private final String getDomainName() {

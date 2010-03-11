@@ -94,7 +94,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
@@ -204,9 +203,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
         this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                 ProjectProperties.BUILD_CLASSES_DIR, AppClientProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {ProjectProperties.JAVAC_PROCESSORPATH},
                 new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"debug.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
-                new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
+                new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {ProjectProperties.ENDORSED_CLASSPATH}); // NOI18N
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(new CarImpl2(appClient));
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
@@ -309,6 +310,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
+            QuerySupport.createAnnotationProcessingQuery(helper, eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
@@ -816,6 +818,15 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (!props.containsKey("build.generated.sources.dir")) { // NOI18N
                 props.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
             }
+            
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+            if (!props.containsKey(ProjectProperties.JAVAC_PROCESSORPATH))props.setProperty(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+            if (!props.containsKey("javac.test.processorpath"))props.setProperty("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
+
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

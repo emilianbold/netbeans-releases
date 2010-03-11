@@ -58,6 +58,9 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiNotification;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -74,7 +77,7 @@ class KenaiHandler {
     private final QueryAccessorImpl qaImpl;
     private final Kenai kenai;
 
-    final private Map<String, ProjectHandleListener> projectListeners = new HashMap<String, ProjectHandleListener>();
+    final private Map<String, ProjectListener> projectListeners = new HashMap<String, ProjectListener>();
     final private Map<String, KenaiRepositoryListener> kenaiRepoListeners = new HashMap<String, KenaiRepositoryListener>();
     final private Map<String, Map<String, QueryHandle>> queryHandles = new HashMap<String, Map<String, QueryHandle>>();
 
@@ -88,11 +91,11 @@ class KenaiHandler {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
                     if(evt.getNewValue() == null) { // means logged out
-                        ProjectHandleListener[] pls;
+                        ProjectListener[] pls;
                         synchronized(projectListeners) {
-                            pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+                            pls = projectListeners.values().toArray(new ProjectListener[projectListeners.values().size()]);
                         }
-                        for (ProjectHandleListener pl : pls) {
+                        for (ProjectListener pl : pls) {
                             pl.closeQueries();
                         }
                     } else {
@@ -217,16 +220,17 @@ class KenaiHandler {
     }
 
     void registerProject(ProjectHandle project, List<QueryHandle> queries) {
-        ProjectHandleListener pl;
-        String url = project.getKenaiProject().getKenai().getUrl().toString();
+        ProjectListener pl;
         synchronized (projectListeners) {
             pl = projectListeners.get(project.getId());
         }
         if (pl != null) {
             project.removePropertyChangeListener(pl);
+            project.getKenaiProject().removePropertyChangeListener(pl);
         }
-        pl = new ProjectHandleListener(project, queries);
+        pl = new ProjectListener(project, queries);
         project.addPropertyChangeListener(pl);
+        project.getKenaiProject().addPropertyChangeListener(pl);
         synchronized (projectListeners) {
             projectListeners.put(project.getId(), pl);
         }
@@ -298,7 +302,7 @@ class KenaiHandler {
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
-                    public void run() {                        
+                    public void run() {
                         BugtrackingUtil.createIssue(repo);
                     }
                 });
@@ -316,10 +320,10 @@ class KenaiHandler {
         return null;
     }
 
-    private class ProjectHandleListener implements PropertyChangeListener {
+    private class ProjectListener implements PropertyChangeListener {
         private List<QueryHandle> queries;
         private ProjectHandle ph;
-        public ProjectHandleListener(ProjectHandle ph, List<QueryHandle> queries) {
+        public ProjectListener(ProjectHandle ph, List<QueryHandle> queries) {
             this.queries = queries;
             this.ph = ph;
         }
@@ -327,6 +331,25 @@ class KenaiHandler {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)) {
                 closeQueries();
+            } else if(evt.getPropertyName().equals(KenaiProject.PROP_PROJECT_NOTIFICATION)) {
+                Object newValue = evt.getNewValue();
+                if (newValue instanceof KenaiNotification) {
+                    KenaiNotification kn = (KenaiNotification) newValue;
+                    if (kn.getType() != KenaiService.Type.ISSUES) {
+                        return;
+                    }
+                    for (QueryHandle qh : queries) {
+                        if(qh instanceof QueryHandleImpl) {
+                            Query query = ((QueryHandleImpl)qh).getQuery();
+                            KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
+                            assert ks != null;
+                            if(ks != null) {
+                                ks.refresh(query, false);
+                            }              
+                        }
+                    }
+                }
+
             }
         }
         public void closeQueries() {
@@ -337,6 +360,7 @@ class KenaiHandler {
             }
             synchronized (projectListeners) {
                 ph.removePropertyChangeListener(this);
+                ph.getKenaiProject().removePropertyChangeListener(this);
                 projectListeners.remove(ph.getId());
             }
         }

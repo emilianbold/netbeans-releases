@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.csl.api.OffsetRange;
 
 public class InlinedStyleInfo {
@@ -84,6 +87,15 @@ public class InlinedStyleInfo {
 
     public String getInlinedCssValue() {
         return inlinedCssValue;
+    }
+
+    public List<String> getParsedDeclarations() {
+        StringTokenizer st = new StringTokenizer(getInlinedCssValue(), ";"); //NOI18N
+        List<String> declarations = new LinkedList<String>();
+        while(st.hasMoreTokens()) {
+            declarations.add(st.nextToken().trim());
+        }
+        return declarations;
     }
 
 }

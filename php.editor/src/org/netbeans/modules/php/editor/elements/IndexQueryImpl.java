@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -274,26 +275,6 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(vars);
     }
 
-    /*@Override
-    public final Set<MethodElement> getConstructors(ClassElement classElement) {
-        Set<MethodElement> magicMethods = getMagicMethods(classElement);
-        for (MethodElement methodElement : magicMethods) {
-            if (methodElement.isConstructor()) {
-                return ElementFilter.forName(NameKind.exact(methodElement.getName())).filter(getAllMethods(classElement));
-            }
-        }
-        throw new IllegalStateException();
-    }
-
-    @Override
-    public final Set<MethodElement> getConstructors(NameKind typeQuery) {
-        Set<MethodElement> retval = new HashSet<MethodElement>();
-        Set<ClassElement> classes = getClasses(typeQuery);
-        for (ClassElement clz : classes) {
-            retval.addAll(getConstructors(clz));
-        }
-        return retval;
-    }*/
 
    @Override
     public final Set<MethodElement> getConstructors(final ClassElement classElement) {
@@ -374,10 +355,10 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public Set<PhpElement> getDeclaredTypeMembers(TypeElement typeElement) {
+    public Set<TypeMemberElement> getDeclaredTypeMembers(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final QualifiedName fullyQualifiedName = typeElement.getFullyQualifiedName();
-        final Set<PhpElement> members = new HashSet<PhpElement>();
+        final Set<TypeMemberElement> members = new HashSet<TypeMemberElement>();
         final NameKind.Exact typeQuery = NameKind.exact(fullyQualifiedName);
         final NameKind memberQuery = NameKind.empty();
         final FileObject typeFo = typeElement.getFileObject();
@@ -463,9 +444,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public final Set<PhpElement> getTypeMembers(final NameKind.Exact typeQuery, final NameKind memberQuery) {
+    public final Set<TypeMemberElement> getTypeMembers(final NameKind.Exact typeQuery, final NameKind memberQuery) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<PhpElement> members = new HashSet<PhpElement>();
+        final Set<TypeMemberElement> members = new HashSet<TypeMemberElement>();
         //two queries: once for classes, second for ifaces
         final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
                 new String[]{
@@ -677,33 +658,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return ElementFilter.forStaticModifiers(true).filter(getInheritedMethods(typeElement));
     }
 
-    @Override
-    public Set<MethodElement> getInheritedMethods(final TypeElement typeElement) {
-        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<MethodElement> retval = new HashSet<MethodElement>();
-        final LinkedHashSet<? extends TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<String> declaredMethodNames = toNames(getDeclaredMethods(typeElement));
-        for (TypeElement oneType : inheritedTypes) {
-            final Set<MethodElement> methods = 
-                    getNotPrivateMethods(oneType);
-            for (final MethodElement methodElement : methods) {
-                final String methName = methodElement.getName();
-                if (!declaredMethodNames.contains(methName)) {
-                    retval.add(methodElement);
-                    declaredMethodNames.add(methName);
-                }
-            }
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            logQueryTime("Set<MethodElement> getInheritedMethods", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
-        }
-        return Collections.unmodifiableSet(retval);
-    }
 
     /**
      * @param enclosingType null if not enclosed at all
      */
-    private static ElementFilter forAccessibleTypeMembers(final TypeElement enclosingType) {
+    private static ElementFilter forAccessibleTypeMembers(final TypeElement enclosingType, final Collection<TypeElement> inheritedTypes) {
         final ElementFilter publicOnly = ElementFilter.forPublicModifiers(true);
         final ElementFilter publicAndProtectedOnly = ElementFilter.forPrivateModifiers(false);
         final ElementFilter fromEnclosingType = ElementFilter.forMembersOfType(enclosingType);
@@ -728,11 +687,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 return fromEnclosingType.isAccepted(element);
             }
             private boolean isFromSubclassOfEnclosingType(final PhpElement element) {
+                for (TypeElement nextType : inheritedTypes) {
+                    if (ElementFilter.forMembersOfType(nextType).isAccepted(element)) {
+                        return true;
+                    }
+                }
                 if (subtypesFilters == null) {
                     subtypesFilters = createSubtypeFilters();
                 }
                 return subtypesFilters.length == 0 ? false :
-                    ElementFilter.allOf(subtypesFilters).isAccepted(element);
+                    ElementFilter.anyOf(subtypesFilters).isAccepted(element);
             }
 
             private ElementFilter[] createSubtypeFilters() {
@@ -750,49 +714,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         };
     }
 
-
-    @Override
-    public Set<PhpElement> getAccessibleTypeMembers(TypeElement typeElement, TypeElement calledFromEnclosingType) {
-        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<PhpElement> retval = new HashSet<PhpElement>();
-        final LinkedHashSet<TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<PhpElement> declaredMembers = getDeclaredTypeMembers(typeElement);
-        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType);
-        retval.addAll(filterForAccessible.filter(declaredMembers));
-        final Set<String> declaredKindNames = toKindNames(declaredMembers);
-        for (final TypeElement nextType : inheritedTypes) {
-            for (final PhpElement memberElement : filterForAccessible.filter(getDeclaredTypeMembers(nextType))) {
-                final String memberKindName = toKindName(memberElement);
-                if (!declaredKindNames.contains(memberKindName)) {
-                    retval.add(memberElement);
-                    declaredKindNames.add(memberKindName);
-                }
-            }
-        }
-        if (LOG.isLoggable(Level.FINE)) {
-            logQueryTime("Set<PhpElement> getAccessibleTypeMembers", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
-        }
-        return Collections.unmodifiableSet(retval);
-    }
-
     @Override
     public Set<MethodElement> getAccessibleMethods(final TypeElement typeElement, final TypeElement calledFromEnclosingType) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<MethodElement> retval = new HashSet<MethodElement>();
-        final LinkedHashSet<TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<MethodElement> declaredMethods = getDeclaredMethods(typeElement);
-        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType);
-        retval.addAll(filterForAccessible.filter(declaredMethods));
-        final Set<String> declaredMethodNames = toNames(declaredMethods);
-        for (final TypeElement nextType : inheritedTypes) {
-            for (final MethodElement methodElement : filterForAccessible.filter(getDeclaredMethods(nextType))) {
-                final String methodName = methodElement.getName();
-                if (!declaredMethodNames.contains(methodName)) {
-                    retval.add(methodElement);
-                    declaredMethodNames.add(methodName);
-                }
-            }
+        final Set<MethodElement> allMethods = getAllMethods(typeElement);
+        Collection<TypeElement> subTypes = Collections.emptySet();
+        if (calledFromEnclosingType != null && ElementFilter.forEqualTypes(typeElement).isAccepted(calledFromEnclosingType)) {
+            subTypes = toTypes(allMethods);
         }
+        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType, subTypes);
+        Set<MethodElement> retval  = filterForAccessible.filter(allMethods);
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<MethodElement> getAccessibleMethods", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
@@ -802,46 +733,80 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<FieldElement> getAccessibleFields(final TypeElement typeElement, final TypeElement calledFromEnclosingType) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<FieldElement> retval = new HashSet<FieldElement>();
-        final LinkedHashSet<ClassElement> inheritedClasses = getInheritedClasses(typeElement);
-        final Set<FieldElement> declaredFields = getDeclaredFields(typeElement);
-        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType);
-        retval.addAll(filterForAccessible.filter(declaredFields));
-        final Set<String> declaredFieldNames = toNames(declaredFields);
-        for (ClassElement nextClass : inheritedClasses) {
-            for (final FieldElement fieldElement : filterForAccessible.filter(getDeclaredFields(nextClass))) {
-                final String fieldName = fieldElement.getName();
-                if (!declaredFieldNames.contains(fieldName)) {
-                    retval.add(fieldElement);
-                    declaredFieldNames.add(fieldName);
-                }
-            }
+        final Set<FieldElement> allFields = getAlllFields(typeElement);
+        Collection<TypeElement> subTypes = Collections.emptySet();
+        if (calledFromEnclosingType != null && ElementFilter.forEqualTypes(typeElement).isAccepted(calledFromEnclosingType)) {
+            subTypes = toTypes(allFields);
         }
+        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType, subTypes);
+        Set<FieldElement> retval  = filterForAccessible.filter(allFields);
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<FieldElement> getAccessibleFields", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
         return Collections.unmodifiableSet(retval);
     }
 
-    @Override
-    public Set<PhpElement> getAllTypeMembers(TypeElement typeElement) {
-        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final Set<PhpElement> retval = new HashSet<PhpElement>();
-        final LinkedHashSet<TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<PhpElement> declaredMembers = getDeclaredTypeMembers(typeElement);
-        retval.addAll(declaredMembers);
-        final Set<String> declaredKindNames = toKindNames(declaredMembers);
-        for (final TypeElement nextType : inheritedTypes) {
-            for (final PhpElement memberElement : getDeclaredTypeMembers(nextType)) {
-                final String memberKindName = toKindName(memberElement);
-                if (!declaredKindNames.contains(memberKindName)) {
-                    retval.add(memberElement);
-                    declaredKindNames.add(memberKindName);
+    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypesWithMembers(final TypeElement typeElement,
+            EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
+        final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
+        if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
+            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
+            if (superClassName != null) {
+                if (memberKinds.size() != 1) {
+                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(superClassName), NameKind.empty())));
+                } else {
+                    switch(memberKinds.iterator().next()) {
+                        case METHOD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(superClassName), NameKind.empty())));
+                            break;
+                        case FIELD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(superClassName), NameKind.empty())));
+                            break;
+                        case TYPE_CONSTANT:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(superClassName), NameKind.empty())));
+                            break;
+                    }
                 }
             }
         }
+        if (typeKinds.contains(PhpElementKind.IFACE)) {
+            for (QualifiedName iface : typeElement.getSuperInterfaces()) {
+                if (memberKinds.size() != 1) {
+                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(iface), NameKind.empty())));
+                } else {
+                    switch(memberKinds.iterator().next()) {
+                        case METHOD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(iface), NameKind.empty())));
+                            break;
+                        case FIELD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(iface), NameKind.empty())));
+                            break;
+                        case TYPE_CONSTANT:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(iface), NameKind.empty())));
+                            break;
+                    }
+                }
+            }
+        }
+        return directTypes;
+    }
+
+    @Override
+    public Set<MethodElement> getInheritedMethods(final TypeElement typeElement) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeMemberElement> typeMembers =
+                getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(),
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.METHOD));
+        final Set<MethodElement> retval = new HashSet<MethodElement>();
+        for (TypeMemberElement member : typeMembers) {
+            if (member instanceof MethodElement) {
+                retval.add((MethodElement)member);
+            }
+        }
         if (LOG.isLoggable(Level.FINE)) {
-            logQueryTime("Set<PhpElement> getAllTypeMembers", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
+            logQueryTime("Set<MethodElement> getInheritedMethods", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
         return Collections.unmodifiableSet(retval);
     }
@@ -849,18 +814,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getAllMethods(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeMemberElement> typeMembers =
+                getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(getDeclaredMethods(typeElement)), 
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.METHOD));
         final Set<MethodElement> retval = new HashSet<MethodElement>();
-        final LinkedHashSet<TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<MethodElement> declaredMethods = getDeclaredMethods(typeElement);
-        retval.addAll(declaredMethods);
-        final Set<String> declaredMethodNames = toNames(declaredMethods);
-        for (final TypeElement nextType : inheritedTypes) {
-            for (final MethodElement methodElement : getDeclaredMethods(nextType)) {
-                final String methodName = methodElement.getName();
-                if (!declaredMethodNames.contains(methodName)) {
-                    retval.add(methodElement);
-                    declaredMethodNames.add(methodName);
-                }
+        for (TypeMemberElement member : typeMembers) {
+            if (member instanceof MethodElement) {
+                retval.add((MethodElement)member);
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -872,22 +834,19 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<FieldElement> getAlllFields(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeMemberElement> typeMembers =
+                getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(getDeclaredFields(typeElement)),
+                EnumSet.of(PhpElementKind.CLASS),
+                EnumSet.of(PhpElementKind.FIELD));
         final Set<FieldElement> retval = new HashSet<FieldElement>();
-        final LinkedHashSet<ClassElement> inheritedClasses = getInheritedClasses(typeElement);
-        final Set<FieldElement> declaredFields = getDeclaredFields(typeElement);
-        retval.addAll(declaredFields);
-        final Set<String> declaredFieldNames = toNames(declaredFields);
-        for (ClassElement nextClass : inheritedClasses) {
-            for (final FieldElement fieldElement : getDeclaredFields(nextClass)) {
-                final String fieldName = fieldElement.getName();
-                if (!declaredFieldNames.contains(fieldName)) {
-                    retval.add(fieldElement);
-                    declaredFieldNames.add(fieldName);
-                }
+        for (TypeMemberElement member : typeMembers) {
+            if (member instanceof FieldElement) {
+                retval.add((FieldElement)member);
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
-            logQueryTime("Set<FieldElement> getAccessibleFields", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
+            logQueryTime("Set<FieldElement> getAlllFields", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
         return Collections.unmodifiableSet(retval);
     }
@@ -895,24 +854,80 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<TypeConstantElement> getAllTypeConstants(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeMemberElement> typeMembers =
+                getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(getDeclaredTypeConstants(typeElement)),
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.TYPE_CONSTANT));
         final Set<TypeConstantElement> retval = new HashSet<TypeConstantElement>();
-        final LinkedHashSet<? extends TypeElement> inheritedTypes = getInheritedTypes(typeElement);
-        final Set<TypeConstantElement> declaredConstants = getDeclaredTypeConstants(typeElement);
-        retval.addAll(declaredConstants);
-        final Set<String> declaredConstantNames = toNames(declaredConstants);
-        for (final TypeElement nextType : inheritedTypes) {
-            for (final TypeConstantElement constantElement : getDeclaredTypeConstants(nextType)) {
-                final String constantName = constantElement.getName();
-                if (!declaredConstantNames.contains(constantName)) {
-                    retval.add(constantElement);
-                    declaredConstantNames.add(constantName);
-                }
+        for (TypeMemberElement member : typeMembers) {
+            if (member instanceof TypeConstantElement) {
+                retval.add((TypeConstantElement)member);
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<TypeConstantElement> getAllTypeConstants", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
         return Collections.unmodifiableSet(retval);
+    }
+
+    @Override
+    public Set<TypeMemberElement> getAllTypeMembers(TypeElement typeElement) {
+        final EnumSet<PhpElementKind> typeKinds = EnumSet.of(
+                PhpElementKind.CLASS,
+                PhpElementKind.IFACE
+                );
+        final EnumSet<PhpElementKind> memberKinds = EnumSet.of(
+                PhpElementKind.METHOD,
+                PhpElementKind.FIELD,
+                PhpElementKind.TYPE_CONSTANT
+                );
+        return getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(getDeclaredTypeMembers(typeElement)), typeKinds, memberKinds);
+    }
+
+    @Override
+    public Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement) {
+        final EnumSet<PhpElementKind> typeKinds = EnumSet.of(
+                PhpElementKind.CLASS,
+                PhpElementKind.IFACE
+                );
+        final EnumSet<PhpElementKind> memberKinds = EnumSet.of(
+                PhpElementKind.METHOD,
+                PhpElementKind.FIELD,
+                PhpElementKind.TYPE_CONSTANT
+                );
+        return getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
+                new LinkedHashSet<TypeMemberElement>(), typeKinds, memberKinds);
+    }
+
+    @Override
+    public Set<TypeMemberElement> getAccessibleTypeMembers(TypeElement typeElement, TypeElement calledFromEnclosingType) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final Set<TypeMemberElement> allTypeMembers = getAllTypeMembers(typeElement);
+        Collection<TypeElement> subTypes = Collections.emptySet();
+        if (calledFromEnclosingType != null && ElementFilter.forEqualTypes(typeElement).isAccepted(calledFromEnclosingType)) {
+            subTypes = toTypes(allTypeMembers);
+        }
+        final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType, subTypes);
+        Set<TypeMemberElement> retval  = filterForAccessible.filter(allTypeMembers);
+        if (LOG.isLoggable(Level.FINE)) {
+            logQueryTime("Set<PhpElement> getAccessibleTypeMembers", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
+        }
+        return Collections.unmodifiableSet(retval);
+    }
+
+    private LinkedHashSet<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement, final LinkedHashSet<TypeElement> recursionPrevention,
+            LinkedHashSet<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
+        if (recursionPrevention.add(typeElement)) {
+            final LinkedHashSet<TypeMemberElement> typeMembers =
+                    getDirectInheritedTypesWithMembers(typeElement, typeKinds, memberKinds);
+            retval.addAll(forComparingNameKinds(retval).reverseFilter(typeMembers));
+            for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
+                retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
+            }
+        }
+        return retval;
     }
 
     @Override
@@ -1073,6 +1088,31 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retvalIfaces;
     }
 
+    private static ElementFilter forComparingNameKinds(final Collection<? extends PhpElement> elements) {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                final ElementFilter forKind = ElementFilter.forKind(element.getPhpElementKind());
+                final ElementFilter forName = ElementFilter.forName(NameKind.exact(element.getName()));
+                for (PhpElement nextElement : elements) {
+                    if (forKind.isAccepted(nextElement) && forName.isAccepted(nextElement)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    private static LinkedHashSet<TypeElement> toTypes(final Collection<? extends TypeMemberElement> typeMembers) {
+        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+        for (final TypeMemberElement typeMemberElement : typeMembers) {
+            retval.add(typeMemberElement.getType());
+        }
+        return retval;
+    }
+
     private void getInheritedTypes(final TypeElement typeElement, final LinkedHashSet<TypeElement> retval,
             final boolean includeClasses, final boolean includeIfaces) {
         if (retval.add(typeElement)) {
@@ -1206,5 +1246,4 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 query.getQueryKind().toString(), query.getQuery().toString(),
                 System.currentTimeMillis() - start)); //NOI18N
     }
-
 }

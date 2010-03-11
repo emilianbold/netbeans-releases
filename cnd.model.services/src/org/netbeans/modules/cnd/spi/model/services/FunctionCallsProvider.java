@@ -41,23 +41,12 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.List;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
  *
  * @author Egor Ushakov
  */
 public interface FunctionCallsProvider {
-    List<FunctionCall> getFunctionCalls(final StyledDocument document, int line);
-
-    public static class FunctionCall {
-        public final String name;
-        public final int start;
-        public final int end;
-
-        public FunctionCall(String name, int start, int end) {
-            this.name = name;
-            this.start = start;
-            this.end = end;
-        }
-    }
+    List<CsmReference> getFunctionCalls(final StyledDocument document, int line);
 }

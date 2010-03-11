@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.xml.parsers.SAXParser;
@@ -57,7 +59,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -109,8 +113,12 @@ public final class ToolchainManagerImpl {
                     if (position == null || vendors.containsKey(position)) {
                         position = indefinedID++;
                     }
+                    String displayName = (String) file.getAttribute("displayName"); // NOI18N
                     CompilerVendor v = new CompilerVendor(file.getNameExt(), position.intValue());
                     if (read(file, files, v, new HashSet<FileObject>(), cache)) {
+                        if (displayName != null && !displayName.isEmpty()) {
+                            v.toolChainDisplay = displayName;
+                        }
                         vendors.put(position, v);
                     }
                 }
@@ -144,8 +152,24 @@ public final class ToolchainManagerImpl {
                     if (position == null || vendors.containsKey(position)) {
                         position = indefinedID++;
                     }
+                    String displayName = null;
+                    String bundleName = (String)file.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+                    if (bundleName != null) {
+                        try {
+                            bundleName = Utilities.translate(bundleName);
+                            ResourceBundle bundle = NbBundle.getBundle(bundleName);
+                            if (bundle != null) {
+                                    displayName = bundle.getString(file.getPath());
+                            }
+                        } catch (MissingResourceException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position.intValue()); // NOI18N
                     if (read2(file, files, v, cache)) {
+                        if (displayName != null && !displayName.isEmpty()) {
+                            v.toolChainDisplay = displayName;
+                        }
                         vendors.put(position, v);
                     }
                 }
@@ -182,13 +206,13 @@ public final class ToolchainManagerImpl {
 
     public ToolchainDescriptor getToolchain(String name, int platform) {
         for (ToolchainDescriptor d : descriptors) {
-            if (name.equals(d.getName()) && (isPlatforSupported(platform, d)
-                        || isPlatforSupported(PlatformTypes.PLATFORM_NONE, d))) {
+            if (name.equals(d.getName()) && (ToolUtils.isPlatforSupported(platform, d)
+                        || ToolUtils.isPlatforSupported(PlatformTypes.PLATFORM_NONE, d))) {
                 return d;
             }
         }
         for (ToolchainDescriptor d : descriptors) {
-            if (isPlatforSupported(PlatformTypes.PLATFORM_NONE, d)) {
+            if (ToolUtils.isPlatforSupported(PlatformTypes.PLATFORM_NONE, d)) {
                 return d;
             }
         }
@@ -202,66 +226,11 @@ public final class ToolchainManagerImpl {
     public List<ToolchainDescriptor> getToolchains(int platform) {
         List<ToolchainDescriptor> res = new ArrayList<ToolchainDescriptor>();
         for (ToolchainDescriptor d : descriptors) {
-            if (isPlatforSupported(platform, d)) {
+            if (ToolUtils.isPlatforSupported(platform, d)) {
                 res.add(d);
             }
         }
         return res;
-    }
-
-    public static boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
-        switch (platform) {
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-                for (String p : d.getPlatforms()) {
-                    if ("sun_sparc".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-                for (String p : d.getPlatforms()) {
-                    if ("sun_intel".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_LINUX:
-                for (String p : d.getPlatforms()) {
-                    if ("linux".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_WINDOWS:
-                for (String p : d.getPlatforms()) {
-                    if ("windows".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_MACOSX:
-                for (String p : d.getPlatforms()) {
-                    if ("mac".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_GENERIC:
-                for (String p : d.getPlatforms()) {
-                    if ("unix".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-            case PlatformTypes.PLATFORM_NONE:
-                for (String p : d.getPlatforms()) {
-                    if ("none".equals(p)) { // NOI18N
-                        return true;
-                    }
-                }
-                break;
-        }
-        return false;
     }
 
     private boolean read(FileObject file, FileObject[] files, CompilerVendor v, Set<FileObject> antiloop, Map<String, String> cache) {
@@ -351,6 +320,7 @@ public final class ToolchainManagerImpl {
                 ToolchainDescriptorImpl impl = (ToolchainDescriptorImpl) descriptor;
                 file.setAttribute("position", Integer.valueOf(impl.v.position)); // NOI18N
                 file.setAttribute("extends", ""); // NOI18N
+                file.setAttribute("displayName", impl.v.toolChainDisplay); // NOI18N
             }
         }
     }

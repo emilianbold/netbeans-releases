@@ -133,5 +133,16 @@ public class KenaiSupportImpl extends KenaiSupport {
     public boolean needsLogin(Query query) {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
     }
+
+    @Override
+    public void refresh(Query query, boolean synchronously) {
+        assert query instanceof JiraQuery;
+        JiraQuery jq = (JiraQuery) query;
+        if(synchronously) {
+            jq.refresh();
+        } else {
+            jq.getController().onRefresh();
+        }
+    }
 }
 

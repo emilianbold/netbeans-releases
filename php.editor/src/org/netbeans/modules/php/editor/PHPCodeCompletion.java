@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,7 +283,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case EXPRESSION:
                     autoCompleteNamespaces(proposals, request);
                     autoCompleteExpression(proposals, request);
-                    autoCompleteExternals(proposals, request);
+                    autoCompleteExternals(proposals, request, prefix);
                     break;
                 case HTML:
                     proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
@@ -606,8 +607,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
 
                 if (types.isEmpty()) {
-                    // XXX - refactor for 6.8+
-                    // ask frameworks
+                    // frameworks
                     VariableScope variableScope = model.getVariableScope(request.anchor);
                     if (variableScope != null) {
                         tokenSequence.move(request.anchor);
@@ -823,11 +823,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
 
-    private void autoCompleteExternals(List<CompletionProposal> proposals, CompletionRequest request) {
+    private void autoCompleteExternals(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
         FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+        // frameworks
+        // XXX add this to model! (so go to source etc. could work)
         EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
         for (PhpBaseElement element : editorExtender.getElementsForCodeCompletion(fileObject)) {
-            proposals.add(PhpElementCompletionItem.fromPhpElement(element, request));
+            if (prefix == null
+                    || element.getName().startsWith(prefix)) {
+                CompletionProposal variable = PhpElementCompletionItem.fromPhpElement(element, request);
+                String variableName = variable.getName();
+
+                Iterator<CompletionProposal> iter = proposals.iterator();
+                while (iter.hasNext()) {
+                    CompletionProposal proposal = iter.next();
+                    if (variableName.equals(proposal.getName())) {
+                        iter.remove();
+                        break;
+                    }
+                }
+                proposals.add(variable);
+            }
         }
     }
 
