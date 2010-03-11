@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,6 +59,7 @@ public final class Util {
     
     private static String INDICATOR = File.separatorChar == '/' ? "jrunscript" : "jrunscript.exe";
     private static FilenameFilter JDK6_DETECTION_FILTER = new FilenameFilter() {
+        @Override
             public boolean accept(File arg0, String arg1) {
                 if (arg1.equalsIgnoreCase(INDICATOR)) {
                     return true;
@@ -101,6 +102,7 @@ public final class Util {
      *   backslash character.
      * @deprecated use spi.Utils.escapePath(String)
      */
+    @Deprecated
     public static final String escapePath(String path) {
         return Utils.escapePath(path);
     }

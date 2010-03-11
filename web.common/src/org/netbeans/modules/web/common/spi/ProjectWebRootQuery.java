@@ -73,11 +73,6 @@ public final class ProjectWebRootQuery {
                     return null;
                 }
 
-                assert FileUtil.isParentOf(root, file) : "ProjectWebRootProvider "
-                        + provider.getClass().getName() + " returned an invalid web root "
-                        + root.getPath() + " which doesn't contain the searched file "
-                        + file.getPath(); //NOI18N
-
                 return root;
             }
         }

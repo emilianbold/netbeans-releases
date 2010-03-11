@@ -39,20 +39,50 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.TypeScope;
 
 /**
- *
- * @author lahvac
+ * @author Radek Matous
  */
 public class OverridingMethodsImpl implements OverridingMethods {
-
+    private String classSignature = "";//NOI18N
+    /** just very simple implementation for now*/
+    private Set<MethodElement> inheritedMethods = Collections.emptySet();
     @Override
     public Collection<? extends AlternativeLocation> overrides(ParserResult info, ElementHandle handle) {
+        assert handle instanceof ModelElement;
+        if (handle instanceof MethodScope) {
+            MethodScope method = (MethodScope) handle;
+            String signature  = method.getInScope().getIndexSignature();
+            if (!signature.equals(classSignature)) {
+                Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
+            } 
+            classSignature = signature;
+            final Set<MethodElement> overridenMethods = ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedMethods);
+            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            for (MethodElement methodElement : overridenMethods) {
+                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(methodElement));
+            }
+            return retval;
+        }
         return null;
     }
 

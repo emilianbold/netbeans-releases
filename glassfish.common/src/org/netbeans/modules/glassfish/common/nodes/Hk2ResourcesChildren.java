@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -57,6 +57,7 @@ import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -79,8 +80,9 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         this.type = type;
     }
 
+    @Override
     public void updateKeys(){
-        Vector keys = new Vector();
+        Vector<AbstractNode> keys = new Vector<AbstractNode>();
         String[] childTypes = NodeTypes.getChildTypes(type);
         if((childTypes != null) && (childTypes.length > 1)) {
             for(int i = 0; i < childTypes.length; i++) {
@@ -122,6 +124,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
     }
 
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof Hk2ItemNode){
             return new Node [] { (Hk2ItemNode) key };
@@ -147,6 +150,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             this.customizer = customizer;
         }
 
+        @Override
         public void updateKeys() {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -192,6 +196,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             setKeys((Set<? extends Object>) java.util.Collections.EMPTY_SET);
         }
 
+        @Override
         protected org.openide.nodes.Node[] createNodes(Object key) {
             if (key instanceof Hk2ItemNode) {
                 return new Node[]{(Hk2ItemNode) key};
