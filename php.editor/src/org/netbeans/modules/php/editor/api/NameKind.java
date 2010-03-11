@@ -189,7 +189,7 @@ public class NameKind {
             case CASE_INSENSITIVE_CAMEL_CASE:
                 return camelCaseQueryToPattern(query.toUpperCase(), true).matcher(text).matches();
             case CAMEL_CASE:
-                return camelCaseQueryToPattern(query, false).matcher(text).matches();
+                return camelCaseQueryToPattern(query, !isCaseSensitive(elementKind)).matcher(text).matches();
             case CASE_INSENSITIVE_REGEXP:
                 return Pattern.compile(query, Pattern.CASE_INSENSITIVE).matcher(text).matches();
             case REGEXP:

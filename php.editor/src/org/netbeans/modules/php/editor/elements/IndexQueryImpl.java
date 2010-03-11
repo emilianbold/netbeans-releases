@@ -1229,7 +1229,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     private Collection<? extends IndexResult> results(final String indexField,
             final NameKind query, final String[] fieldsToLoad) {
-        return search(indexField, query.getQueryName(), Kind.CASE_INSENSITIVE_PREFIX, fieldsToLoad);
+        return search(indexField, prepareIdxQuery(query.getQueryName(),query.getQueryKind()), Kind.CASE_INSENSITIVE_PREFIX, fieldsToLoad);
     }
 
     private void logQueryTime(final String queryDescription, final NameKind typeQuery,
@@ -1245,5 +1245,21 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         LOG.fine(String.format("%s for query: [%s:%s] took: %d [ms]", queryDescription,//NOI18N
                 query.getQueryKind().toString(), query.getQuery().toString(),
                 System.currentTimeMillis() - start)); //NOI18N
+    }
+
+    private static String prepareIdxQuery(String textForQuery, Kind kind) {
+        String query = textForQuery.toLowerCase();
+        if (kind.equals(QuerySupport.Kind.CAMEL_CASE)) {
+            final char charAt = textForQuery.charAt(0);
+            final int length = textForQuery.length();
+            if (Character.isLetter(charAt) && length > 0) {
+                query = query.substring(0, 1);//NOI18N
+            } else if (charAt == '$' && length > 1) {
+                query = query.substring(0, 1);//NOI18N
+            }else {
+                query = "";//NOI18N
+            }
+        }
+        return query;
     }
 }
