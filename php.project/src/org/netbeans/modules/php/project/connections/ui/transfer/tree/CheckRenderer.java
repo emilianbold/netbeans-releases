@@ -126,6 +126,9 @@ final class CheckRenderer extends JPanel implements TreeCellRenderer {
             node = Visualizer.findNode(value);
         }
         check.setSelected(node == null || model.isNodeSelected(node)); // node.isSelected());
+        boolean partiallySelected = node != null && model.isNodePartiallySelected(node);
+        check.getModel().setPressed(partiallySelected);
+        check.getModel().setArmed(partiallySelected);
         check.setEnabled(true); // !node.isDisabled());
         return this;
     }
