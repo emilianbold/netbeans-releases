@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -132,7 +133,11 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            query.refresh();
+            KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
+            assert ks != null;
+            if(ks != null) {
+                ks.refresh(query, true);
+            }
         }
     }
 
