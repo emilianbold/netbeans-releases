@@ -23,7 +23,14 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.PtyProcess;
-import org.netbeans.lib.richexecution.program.Shell;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
+import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
+import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
 
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOResizable;
@@ -43,14 +50,285 @@ import org.openide.windows.OutputWriter;
  */
 public final class TerminalIOProviderSupport {
 
-    private InputOutput io;
-    private PtyProcess termProcess;
-    private Program lastProgram;
-    private final Action stopAction = new StopAction();
-    private final Action rerunAction = new RerunAction();
+    private static abstract class ExecutionSupport {
+	private boolean restartable = false;
+	protected Action stopAction;
+	protected Action rerunAction;
+	protected InputOutput io;
+
+	protected static final class ResizeListener implements IOResizable.Listener {
+
+	    private final ExecutionSupport executionSupport;
+
+	    public ResizeListener(ExecutionSupport executionSupport) {
+		this.executionSupport = executionSupport;
+	    }
+
+	    public void sizeChanged(Dimension c, Dimension p) {
+		executionSupport.sizeChanged(c, p);
+	    }
+	}
+
+
+	public void setRestartable(Action stopAction, Action rerunAction) {
+	    this.restartable = true;
+	    this.stopAction = stopAction;
+	    this.rerunAction = rerunAction;
+	}
+
+	protected final boolean isRestartable() {
+	    return restartable;
+	}
+
+	public final void setupIO(IOProvider iop,
+			     IOContainer ioContainer,
+			     String title) {
+	    Action[] actions = null;
+	    if (isRestartable()) {
+		actions = new Action[] {rerunAction, stopAction};
+	    } else {
+		actions = new Action[0];
+	    }
+
+	    io = iop.getIO(title, actions, ioContainer);
+
+	    // comment out to verify fix for bug #181064
+	    io.select();
+	    try {
+		IOColorLines.println(io, "GREETINGS\r", Color.GREEN);
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	}
+
+	protected final void startShuttle(OutputStream pin, InputStream pout) {
+	    OutputWriter toIO = io.getOut();
+	    Reader fromIO = io.getIn();
+	    IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
+	    shuttle.run();
+	}
+
+	public abstract boolean isRunning();
+	public abstract void execute(String cmd);
+	public abstract void sizeChanged(Dimension c, Dimension p);
+	public abstract void reRun();
+	public abstract void stop();
+    }
+
+    private static final class RichExecutionSupport extends ExecutionSupport {
+	private PtyProcess richProcess;
+	private Pty pty;
+	private Program lastProgram;
+
+	public boolean isRunning() {
+	    return richProcess != null;
+	}
+
+	public void execute(String cmd) {
+	    Program program = new Command(cmd);
+	    startProgram(program);
+	}
+
+	public void sizeChanged(Dimension cells, Dimension pixels) {
+	    pty.masterTIOCSWINSZ(cells.height, cells.width,
+				 pixels.height, pixels.width);
+	}
+
+	private void startProgram(Program program) {
+	    //
+	    // Create a pty, handle window size changes
+	    //
+	    try {
+		pty = Pty.create(Pty.Mode.REGULAR);
+	    } catch (PtyException ex) {
+		Exceptions.printStackTrace(ex);
+		return;
+	    }
+
+	    if (IOResizable.isSupported(io))
+		IOResizable.addListener(io, new ResizeListener(this));
+
+	    Map<String, String> env = program.environment();
+	    if (IOEmulation.isSupported(io)) {
+		env.put("TERM", IOEmulation.getEmulation(io));
+	    } else {
+		env.put("TERM", "dumb");
+	    }
+
+	    if (isRestartable()) {
+		lastProgram = program;
+	    } else {
+		lastProgram = null;
+	    }
+
+	    PtyExecutor executor = new PtyExecutor();
+	    richProcess = executor.start(program, pty);
+
+	    if (isRestartable()) {
+		stopAction.setEnabled(true);
+		rerunAction.setEnabled(false);
+	    }
+
+	    Thread reaperThread = new Thread() {
+		@Override
+		public void run() {
+		    richProcess.waitFor();
+		    if (isRestartable() /* LATER && !closing */) {
+			stopAction.setEnabled(false);
+			rerunAction.setEnabled(true);
+		    } else {
+			/* LATER
+			closing = true;
+			closeWork();
+			*/
+		    }
+		    // This doesn't yield the desired result because we need to
+		    // wait for all the output to be processed:
+		    // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
+		    richProcess = null;
+		}
+	    };
+	    reaperThread.start();
+
+	    //
+	    // connect them up
+	    //
+
+	    // Hmm, what's the difference between the PtyProcess io streams
+	    // and the Pty's io streams?
+	    // Nothing.
+	    OutputStream pin = pty.getOutputStream();
+	    InputStream pout = pty.getInputStream();
+
+	    boolean implicit = true;
+	    if (implicit) {
+		if (IOTerm.isSupported(io)) {
+		    IOTerm.connect(io, pin, pout, null);
+		} else {
+		    startShuttle(pin, pout);
+		}
+	    } else {
+		startShuttle(pin, pout);
+	    }
+	}
+
+	public void reRun() {
+            if (richProcess != null)
+                return;     // still someone running
+            if (lastProgram == null)
+                return;
+            startProgram(lastProgram);
+	}
+
+	public void stop() {
+            if (richProcess == null)
+                return;
+            richProcess.terminate();
+	}
+    }
+
+    private static final class NativeExecutionSupport extends ExecutionSupport {
+	private NativeProcess nativeProcess;
+	private PtyImplementation impl;
+
+	public boolean isRunning() {
+	    return nativeProcess != null;
+	}
+
+	public void execute(String cmd) {
+	    ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+	    NativeProcessBuilder pb =
+		    NativeProcessBuilder.newProcessBuilder(ee);
+	    // pb = pb.setCommandLine(cmd);
+	    pb.setExecutable("/bin/sh");
+	    pb.setArguments(new String[] {
+		    "-c",
+		    cmd
+		});
+	    pb = pb.setUsePty(true);
+	    if (IOEmulation.isSupported(io))
+		pb.getEnvironment().put("TERM", IOEmulation.getEmulation(io));
+	    else
+		pb.getEnvironment().put("TERM", "dumb");
+
+	    //
+	    // Start the command
+	    //
+	    try {
+		nativeProcess = pb.call();
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+		return;
+	    }
+
+	    if (isRestartable()) {
+		stopAction.setEnabled(true);
+		rerunAction.setEnabled(false);
+	    }
+
+	    //
+	    // Connect the IO
+	    //
+	    org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty
+	    pty = PtySupport.getPty(nativeProcess);
+	    PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
+	    impl = (PtyImplementation) ptyImpl;
+	    IOTerm.connect(io,
+			   impl.getOutputStream(),
+			   impl.getInputStream(),
+			   null);
+
+	    if (IOResizable.isSupported(io))
+		IOResizable.addListener(io, new ResizeListener(this));
+
+	    //
+	    // Start a reaper and wait for processes completion
+	    //
+	    Thread reaperThread = new Thread() {
+		@Override
+		public void run() {
+		    try {
+			nativeProcess.waitFor();
+		    } catch (InterruptedException ex) {
+			Exceptions.printStackTrace(ex);
+		    }
+		    if (isRestartable() /* LATER && !closing */) {
+			stopAction.setEnabled(false);
+			rerunAction.setEnabled(true);
+		    } else {
+			/* LATER
+			closing = true;
+			closeWork();
+			*/
+		    }
+		    // This doesn't yield the desired result because we need to
+		    // wait for all the output to be processed:
+		    // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
+		    nativeProcess = null;
+		}
+	    };
+	    reaperThread.start();
+	}
+
+	public void sizeChanged(Dimension c, Dimension p) {
+	    impl.masterTIOCSWINSZ(c.width, c.height, p.width, p.height);
+	}
+
+	public void reRun() {
+	}
+
+	public void stop() {
+	}
+    }
+
+    private ExecutionSupport richExecutionSupport = new RichExecutionSupport();
+    private ExecutionSupport nativeExecutionSupport = new NativeExecutionSupport();
 
     private final class RerunAction extends AbstractAction {
-        public RerunAction() {
+	private final ExecutionSupport executionSupport;
+
+        public RerunAction(ExecutionSupport executionSupport) {
+	    this.executionSupport = executionSupport;
             setEnabled(false);
         }
 
@@ -69,16 +347,15 @@ public final class TerminalIOProviderSupport {
             System.out.printf("Re-run pressed!\n");
             if (!isEnabled())
                 return;
-            if (termProcess != null)
-                return;     // still someone running
-            if (lastProgram == null)
-                return;
-            startProgram(lastProgram, true);
+	    executionSupport.reRun();
         }
     }
 
     private final class StopAction extends AbstractAction {
-        public StopAction() {
+	private final ExecutionSupport executionSupport;
+
+        public StopAction(ExecutionSupport executionSupport) {
+	    this.executionSupport = executionSupport;
             setEnabled(false);
         }
 
@@ -97,9 +374,7 @@ public final class TerminalIOProviderSupport {
             System.out.printf("Stop pressed!\n");
             if (!isEnabled())
                 return;
-            if (termProcess == null)
-                return;
-            termProcess.terminate();
+	    executionSupport.stop();
         }
     }
 
@@ -131,157 +406,48 @@ public final class TerminalIOProviderSupport {
 	    IOEmulation.setDisciplined(io);
     }
 
-    private void startShuttle(InputOutput io, OutputStream pin, InputStream pout) {
-	OutputWriter toIO = io.getOut();
-	Reader fromIO = io.getIn();
-	IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
-	shuttle.run();
-    }
 
-    private void setupIO(IOProvider iop,
-	                 IOContainer ioContainer,
-			 String title,
-			 boolean restartable) {
-	Action[] actions = null;
-	if (restartable) {
-	    actions = new Action[] {rerunAction, stopAction};
-	} else {
-	    actions = new Action[0];
-	}
-
-	io = iop.getIO(title, actions, ioContainer);
-
-	// comment out to verify fix for bug #181064
-        io.select();
-        try {
-            IOColorLines.println(io, "GREETINGS\r", Color.GREEN);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-	/* OLD
-	//
-	// Create a pty, handle window size changes
-	//
-	try {
-	    pty = Pty.create(Pty.Mode.REGULAR);
-	} catch (PtyException ex) {
-	    Exceptions.printStackTrace(ex);
-	    return;
-	}
-
-	if (IOResizable.isSupported(io)) {
-	    IOResizable.addListener(io, new IOResizable.Listener() {
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		    pty.masterTIOCSWINSZ(cells.height, cells.width,
-					 pixels.height, pixels.width);
-		}
-	    });
-	}
-	 */
-    }
-
-    private void startProgram(Program program, final boolean restartable) {
-	//
-	// Create a pty, handle window size changes
-	//
-	final Pty pty;
-	try {
-	    pty = Pty.create(Pty.Mode.REGULAR);
-	} catch (PtyException ex) {
-	    Exceptions.printStackTrace(ex);
-	    return;
-	}
-
-	if (IOResizable.isSupported(io)) {
-	    IOResizable.addListener(io, new IOResizable.Listener() {
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		    pty.masterTIOCSWINSZ(cells.height, cells.width,
-					 pixels.height, pixels.width);
-		}
-	    });
-	}
-
-	Map<String, String> env = program.environment();
-	if (IOEmulation.isSupported(io)) {
-	    env.put("TERM", IOEmulation.getEmulation(io));
-	} else {
-	    env.put("TERM", "dumb");
-	}
-
-	if (restartable) {
-	    lastProgram = program;
-	} else {
-	    lastProgram = null;
-	}
-
-	PtyExecutor executor = new PtyExecutor();
-	termProcess = executor.start(program, pty);
-
-	if (restartable) {
-	    stopAction.setEnabled(true);
-	    rerunAction.setEnabled(false);
-	}
-
-        Thread reaperThread = new Thread() {
-            @Override
-            public void run() {
-                termProcess.waitFor();
-                if (restartable /* LATER && !closing */) {
-                    stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
-                } else {
-		    /* LATER
-                    closing = true;
-                    closeWork();
-		    */
-                }
-                // This doesn't yield the desired result because we need to
-                // wait for all the output to be processed:
-                // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
-                termProcess = null;
-            }
-        };
-        reaperThread.start();
-
-	//
-	// connect them up
-	//
-
-	// Hmm, what's the difference between the PtyProcess io streams
-	// and the Pty's io streams?
-	// Nothing.
-	OutputStream pin = pty.getOutputStream();
-	InputStream pout = pty.getInputStream();
-
-	boolean implicit = true;
-	if (implicit) {
-	    if (IOTerm.isSupported(io)) {
-		IOTerm.connect(io, pin, pout, null);
-	    } else {
-		startShuttle(io, pin, pout);
-	    }
-	} else {
-	    startShuttle(io, pin, pout);
-	}
-    }
-
-    public void executeCommand(IOProvider iop, IOContainer ioContainer, String cmd, boolean restartable) {
-        if (termProcess != null)
+    public void executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd, final boolean restartable) {
+	if (richExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
 	final String title = "Cmd: " + cmd;
-	setupIO(iop, ioContainer, title, restartable);
-	Program program = new Command(cmd);
-	startProgram(program, restartable);
+	Action stopAction = new StopAction(richExecutionSupport);
+	Action rerunAction = new RerunAction(richExecutionSupport);
+	if (restartable)
+	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
+
+	richExecutionSupport.setupIO(iop, ioContainer, title);
+
+	richExecutionSupport.execute(cmd);
     }
 
-
     public void executeShell(IOProvider iop, IOContainer ioContainer) {
+	executeRichCommand(iop, ioContainer, "/bin/bash", false);
+	/* OLD
 	final String title = "Shell";
 	setupIO(iop, ioContainer, title, false);
 	Program program = new Shell();
 	startProgram(program, false);
+	 */
     }
+
+    public void executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd, final boolean restartable) {
+	if (nativeExecutionSupport.isRunning())
+            throw new IllegalStateException("Process already running");
+
+	final String title = "Cmd: " + cmd;
+
+	Action stopAction = new StopAction(richExecutionSupport);
+	Action rerunAction = new RerunAction(richExecutionSupport);
+	if (restartable)
+	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
+
+	nativeExecutionSupport.setupIO(iop, ioContainer, title);
+
+	nativeExecutionSupport.execute(cmd);
+    }
+
+
 
 }

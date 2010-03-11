@@ -80,7 +80,14 @@ public final class CommandTerminalAction implements ActionListener {
 
 	final Runnable runnable = new Runnable() {
 	    public void run() {
-		support.executeCommand(iop, container, cmd, restartable);
+		switch (terminalPanel.getExecution()) {
+		    case RICH:
+			support.executeRichCommand(iop, container, cmd, restartable);
+			break;
+		    case NATIVE:
+			support.executeNativeCommand(iop, container, cmd, restartable);
+			break;
+		}
 	    }
 	};
 
