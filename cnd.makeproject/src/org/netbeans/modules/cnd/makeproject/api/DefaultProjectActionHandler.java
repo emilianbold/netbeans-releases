@@ -301,7 +301,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         .frontWindow(false)
                         .inputVisible(showInput)
                         .inputOutput(io)
-                        .outLineBased(true)
+                        .outLineBased(!unbuffer)
                         .showProgress(true)
                         .postExecution(processChangeListener)
                         .errConvertorFactory(new LineConvertorFactory() {
@@ -327,7 +327,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .frontWindow(true)
                     .inputVisible(showInput)
                     .inputOutput(io)
-                    .outLineBased(true)
+                    .outLineBased(!unbuffer)
                     .showProgress(true)
                     .postExecution(processChangeListener)
                     .errConvertorFactory(processChangeListener)
@@ -459,6 +459,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case INITIAL:
                     break;
                 case STARTING:
+                    break;
+                case RUNNING:
                     startTimeMillis = System.currentTimeMillis();
                     if (showHeader) {
                         assert false;
@@ -473,8 +475,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     if (listener != null) {
                         listener.executionStarted(event.pid);
                     }
-                    break;
-                case RUNNING:
                     break;
                 case CANCELLED: {
                     closeOutputListener();

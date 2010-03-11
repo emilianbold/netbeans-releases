@@ -62,6 +62,9 @@ import javax.swing.text.View;
 
 public final class NewlineView extends EditorView {
 
+    /** The default width should incorporate possible width of the wider caret once it blinks at line's end. */
+    private static final float DEFAULT_WIDTH = 2f;
+
     /** Offset of start offset of this view. */
     private int rawOffset; // 24-super + 4 = 28 bytes
 
@@ -115,9 +118,9 @@ public final class NewlineView extends EditorView {
         if (axis == View.X_AXIS) {
             return (documentView != null)
                     ? (documentView.isShowNonprintingCharacters()
-                        ? documentView.printingNewlineTextLayout().getAdvance()
-                        : documentView.getDefaultCharWidth())
-                    : 1;
+                        ? documentView.getNewlineCharTextLayout().getAdvance()
+                        : DEFAULT_WIDTH)
+                    : DEFAULT_WIDTH;
         } else {
             return (documentView != null) ? documentView.getDefaultLineHeight() : 1;
         }
@@ -149,34 +152,23 @@ public final class NewlineView extends EditorView {
             Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
             mutableBounds.width = docView.getWidth() - mutableBounds.x;
             if (mutableBounds.intersects(clipBounds)) {
-                Color origColor = g.getColor();
+                PaintState paintState = PaintState.save(g);
                 try {
                     // Paint background
                     JTextComponent textComponent = docView.getTextComponent();
                     Color componentBackground = textComponent.getBackground();
                     ViewUtils.applyBackgroundAttributes(attributes, componentBackground, g);
                     if (!componentBackground.equals(g.getColor())) {
-                        g.fillRect(
-                                (int)mutableBounds.getX(),
-                                (int)mutableBounds.getY(),
-                                (int)mutableBounds.getWidth(),
-                                (int)mutableBounds.getHeight()
-                        );
+                        ViewUtils.fillRect(g, mutableBounds);
                     }
 
                     // Possibly paint pilcrow sign
-                    if (docView.isShowNonprintingCharacters()) {
-                        // Paint foreground - printing newline char
-                        ViewUtils.applyForegroundAttributes(attributes, textComponent.getFont(), textComponent.getForeground(), g);
-                        TextLayout textLayout = docView.printingNewlineTextLayout();
-                        float x = (float) mutableBounds.getX();
-                        float y = (float) mutableBounds.getY();
-                        float baselineOffset = docView.getDefaultBaselineOffset();
-                        // TextLayout is unable to do a partial render
-                        textLayout.draw(g, x, y + baselineOffset);
+                    TextLayout textLayout;
+                    if (docView.isShowNonprintingCharacters() && (textLayout = docView.getNewlineCharTextLayout()) != null) {
+                        HighlightsView.paintForeground(g, mutableBounds, docView, textLayout, getAttributes());
                     }
                 } finally {
-                    g.setColor(origColor);
+                    paintState.restore();
                 }
             }
         }

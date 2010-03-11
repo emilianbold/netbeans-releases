@@ -19,7 +19,7 @@
             }
         } else {
             session.setAttribute("facebook_return_url", request.getRequestURI());
-            response.sendRedirect(request.getContextPath() + "/FacebookJerseyClientLogin");
+            response.sendRedirect(request.getContextPath() + "/FacebookLoginServlet");
         }
     }
 }

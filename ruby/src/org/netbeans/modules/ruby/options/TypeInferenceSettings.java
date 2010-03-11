@@ -52,8 +52,10 @@ public final class TypeInferenceSettings {
     private static final TypeInferenceSettings INSTANCE = new TypeInferenceSettings();
     private static final String METHODS = "ruby.type.inference.methods"; //NOI18N
     private static final String RDOC = "ruby.type.inference.rdoc"; //NOI18N
+    private final Preferences preferences;
 
     private TypeInferenceSettings() {
+        this.preferences = NbPreferences.forModule(TypeInferenceSettings.class);
     }
 
     public static TypeInferenceSettings getDefault() {
@@ -61,7 +63,7 @@ public final class TypeInferenceSettings {
     }
 
     private Preferences getPreferences() {
-        return NbPreferences.forModule(TypeInferenceSettings.class);
+        return preferences;
     }
 
     public void setMethodTypeInference(boolean enabled) {

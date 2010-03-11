@@ -60,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.util.Lookup;
 
@@ -152,6 +153,7 @@ public class InstallOSGiBundleTest extends NbTestCase {
         return f;
     }
 
+    @RandomlyFails // NB-Core-Build #4187: module was not enabled after installation from OSGi bundle
     public void testOSGi() throws Exception {
         String moduleCNB = "org.netbeans.modules.mymodule";
         String moduleFile = moduleCNB.replace(".", "-");

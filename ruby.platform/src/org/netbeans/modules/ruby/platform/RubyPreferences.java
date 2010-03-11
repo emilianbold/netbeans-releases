@@ -58,6 +58,8 @@ public final class RubyPreferences {
     private static final RubyPreferences INSTANCE = new RubyPreferences();
     private static final PropertyChangeSupport changeSupport = new PropertyChangeSupport(INSTANCE);
 
+    private static Preferences preferences;
+    
     private RubyPreferences() {
     }
 
@@ -66,8 +68,11 @@ public final class RubyPreferences {
     }
 
     /** Returns {@link NbPreferences preferences} for this module. */
-    public static Preferences getPreferences() {
-        return NbPreferences.forModule(RubyPreferences.class);
+    public static synchronized Preferences getPreferences() {
+        if (preferences == null) {
+           preferences = NbPreferences.forModule(RubyPreferences.class);
+        }
+        return preferences;
     }
 
     public static void setFirstPlatformTouch(boolean b) {

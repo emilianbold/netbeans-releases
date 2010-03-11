@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -75,6 +76,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -91,9 +93,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             "org/netbeans/modules/apisupport/project/suite/resources/wait.png"; // NOI18N
     private RequestProcessor.Task refreshTask = null;
     private RequestProcessor RP = new RequestProcessor(ResourceBundleBrandingPanel.class.getName(), 1);
-    private EditRBAction editRBAction = new EditRBAction();
-    private OpenRBAction openRBAction = new OpenRBAction();
-    private ExpandAllAction expandAllAction = new ExpandAllAction();
+    private EditRBAction editRBAction = SystemAction.get (EditRBAction.class);
+    private OpenRBAction openRBAction = SystemAction.get (OpenRBAction.class);
+    private ExpandAllAction expandAllAction = SystemAction.get (ExpandAllAction.class);
 
     private BasicBrandingModel branding;
     private Project prj;
@@ -228,7 +230,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class ExpandAllAction extends OpenAction {
+    static final class ExpandAllAction extends OpenAction {
 
         @Override
         public String getName() {
@@ -237,6 +239,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     }
 
     private class BundleNode extends FilterNode implements OpenCookie, Comparable<BundleNode> {
+
+        private String bundlepath;
+        private String codenamebase;
 
         public BundleNode(Node orig, String bundlepath, String codenamebase) {
             this (orig, bundlepath, codenamebase, new InstanceContent());
@@ -252,6 +257,21 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
             setDisplayName(bundlepath);
             setShortDescription(codenamebase);
+
+            this.bundlepath = bundlepath;
+            this.codenamebase = codenamebase;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isBundleBranded(bundlepath, codenamebase))
+                return "<b>" + bundlepath + "</b>"; // NOI18N
+            else
+                return bundlepath;
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -325,6 +345,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
     private class KeyNode extends FilterNode implements EditCookie, OpenCookie {
 
+        private String key;
         private String bundlepath;
         private String codenamebase;
 
@@ -340,8 +361,35 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                     | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_SET_SHORT_DESCRIPTION
                     | DELEGATE_GET_ACTIONS);
 
+            this.key = orig.getDisplayName();
             this.bundlepath = bundlepath;
             this.codenamebase = codenamebase;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return key + " = " + getKeyValue (bundlepath, codenamebase, key); // NOI18N
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isKeyBranded(bundlepath, codenamebase, key))
+                return "<b>" + key + "</b>" + // NOI18N
+                        " = <font color=\"#ce7b00\">" + // NOI18N
+                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
+                        "</font>"; // NOI18N
+            else
+                return key + " = <font color=\"#ce7b00\">" + // NOI18N
+                        escapeTagDefinitions(getKeyValue (bundlepath, codenamebase, key)) + // NOI18N
+                        "</font>"; // NOI18N
+        }
+
+        private String escapeTagDefinitions (String text) {
+            return text.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        }
+
+        public void refresh() {
+            fireDisplayNameChange(null, null);
         }
 
         @Override
@@ -362,7 +410,13 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
         @Override
         public void edit() {
-            addKeyToBranding (bundlepath, codenamebase, getOriginal().getDisplayName());
+            if (addKeyToBranding(bundlepath, codenamebase, getOriginal().getDisplayName())) {
+                refresh();
+                Node parent = getParentNode();
+                if (parent instanceof BundleNode) {
+                    ((BundleNode) parent).refresh();
+                }
+            }
         }
 
         @Override
@@ -373,7 +427,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class EditRBAction extends EditAction {
+    static final class EditRBAction extends EditAction {
 
         @Override
         public String getName() {
@@ -381,7 +435,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private class OpenRBAction extends OpenAction {
+    static final class OpenRBAction extends OpenAction {
 
         @Override
         public String getName() {
@@ -389,10 +443,9 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         }
     }
 
-    private void addKeyToBranding (String bundlepath, String codenamebase, String key) {
+    private boolean addKeyToBranding (String bundlepath, String codenamebase, String key) {
         BrandingSupport.BundleKey bundleKey = getBranding().getGeneralBundleKeyForModification(codenamebase, bundlepath, key);
-        NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(key + " = ", bundlepath, // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        KeyInput inputLine = new KeyInput(key + ":", bundlepath); // NOI18N
         String oldValue = bundleKey.getValue();
         inputLine.setInputText(oldValue);
         if (DialogDisplayer.getDefault().notify(inputLine)==NotifyDescriptor.OK_OPTION) {
@@ -401,8 +454,22 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                 bundleKey.setValue(newValue);
                 getBranding().addModifiedGeneralBundleKey(bundleKey);
                 setModified();
+                return true;
             }
         }
+        return false;
+    }
+
+    private String getKeyValue (String bundlepath, String codenamebase, String key) {
+        return getBranding().getKeyValue (bundlepath, codenamebase, key);
+    }
+
+    private boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
+        return getBranding().isKeyBranded(bundlepath, codenamebase, key);
+    }
+
+    private boolean isBundleBranded (String bundlepath, String codenamebase) {
+        return getBranding().isBundleBranded(bundlepath, codenamebase);
     }
 
     @Override
@@ -441,4 +508,29 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     private org.openide.explorer.view.BeanTreeView view;
     // End of variables declaration//GEN-END:variables
 
+    public static class KeyInput extends NotifyDescriptor {
+
+        protected ResourceBundleKeyPanel keyPanel;
+
+        public KeyInput(final String text, final String title) {
+            this(text, title, OK_CANCEL_OPTION, PLAIN_MESSAGE);
+        }
+
+        public KeyInput(final String text, final String title, final int optionType, final int messageType) {
+            super(null, title, optionType, messageType, null, null);
+            super.setMessage(createDesign(text));
+        }
+
+        public String getInputText() {
+            return keyPanel.getText();
+        }
+
+        public void setInputText(final String text) {
+            keyPanel.setText(text);
+        }
+
+        protected Component createDesign(final String text) {
+            return keyPanel = new ResourceBundleKeyPanel(text);
+        }
+    }
 }

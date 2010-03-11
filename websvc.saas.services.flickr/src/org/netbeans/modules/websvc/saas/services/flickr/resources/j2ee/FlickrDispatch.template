@@ -17,7 +17,7 @@
             }
         } else {
             session.setAttribute("flickr_return_url", request.getRequestURI());
-            response.sendRedirect(request.getContextPath() + "/FlickrJerseyClientLogin");
+            response.sendRedirect(request.getContextPath() + "/FlickrLoginServlet");
         }
     }
 }

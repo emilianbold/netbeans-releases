@@ -1076,7 +1076,7 @@ public class OutlineView extends JScrollPane {
                             if (a != null) {
                                 if (a.isEnabled ()) {
                                     a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                                    actionPerformed = true;
+                                    return false;
                                 } else {
                                     Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
                                 }
@@ -1085,17 +1085,14 @@ public class OutlineView extends JScrollPane {
                     }
                 }
             }
-            if (!actionPerformed) {
-                res = super.editCellAt(row, column, e);
-            }
-            if( !res && e instanceof MouseEvent ) {
-                //try invoking custom editor on disabled cell
-            
+            if(e instanceof MouseEvent ) {
+                //try invoking custom editor
+
                 final Rectangle r = getCellRect(row, column, true);
                 if( ((MouseEvent) e).getX() > ((r.x + r.width) - 24) && ((MouseEvent) e).getX() < (r.x + r.width) 
                     && o instanceof Node.Property
                     && !isTreeColumn ) {
-                    
+
                     Node.Property p = (Node.Property)o;
                     if( !Boolean.TRUE.equals(p.getValue("suppressCustomEditor") ) ) { //NOI18N
                         PropertyPanel panel = new PropertyPanel(p);
@@ -1123,7 +1120,7 @@ public class OutlineView extends JScrollPane {
                     }
                 }
             }
-            return res;
+            return super.editCellAt(row, column, e);
         }
         
         @Override

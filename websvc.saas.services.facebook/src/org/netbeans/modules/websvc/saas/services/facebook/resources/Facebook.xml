@@ -131,10 +131,10 @@
                             <method-descriptor modifiers="private,static" name="dispatch" return-type="void" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookDispatch.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names="request, response"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookWebSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
                             <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
-                            <servlet-descriptor modifiers="static" class-name="FacebookJerseyClientLogin" servlet-mapping="/FacebookJerseyClientLogin">
+                            <servlet-descriptor modifiers="public, static" class-name="FacebookLoginServlet" servlet-mapping="/FacebookLoginServlet">
                                 <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FacebookLoginDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
                             </servlet-descriptor>
-                            <servlet-descriptor modifiers="static" class-name="FacebookJerseyClientCallback" servlet-mapping="/FacebookJerseyClientCallback/">
+                            <servlet-descriptor modifiers="public, static" class-name="FacebookCallbackServlet" servlet-mapping="/FacebookCallbackServlet/">
                                 <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FacebookCallbackDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
                             </servlet-descriptor>
                         </web>

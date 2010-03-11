@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -205,7 +206,8 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         assertNotNull(m);
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.example.module2, bar"), m.getModuleDependencies());
     }
-    
+
+    @RandomlyFails // NB-Core-Build #4183: expected:<[ERR_excluded_dep, Module Three, suite, bar, somecluster]> but was:<null>
     public void testDependencyWarnings() throws Exception { // #65924
         final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
         final Category cat = Category.create("dummy", "dummy", null);
