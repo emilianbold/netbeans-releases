@@ -359,8 +359,11 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             String path = webRoot == null ? file.getPath() : FileUtil.getRelativePath(webRoot, file);
 
             b.append(path);
-            b.append(":"); //NOI18N
-            b.append(entryHandle.entry().getLineOffset() + 1); //line offsets are counted from zero, but in editor lines starts with one.
+            int lineOffset = entryHandle.entry().getLineOffset();
+            if(lineOffset != -1) {
+                b.append(":"); //NOI18N
+                b.append(lineOffset + 1); //line offsets are counted from zero, but in editor lines starts with one.
+            }
             if(!entryHandle.isRelatedEntry()) {
                 b.append(" <font color=ff0000>(");
                 b.append(NbBundle.getMessage(HtmlDeclarationFinder.class, "MSG_Unrelated"));

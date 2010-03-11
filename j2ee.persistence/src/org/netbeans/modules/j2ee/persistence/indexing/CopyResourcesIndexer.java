@@ -73,70 +73,56 @@ public class CopyResourcesIndexer extends CustomIndexer {
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
-        final FileObject root = context.getRoot();
-        if (root != null) {
-            final Project owner = FileOwnerQuery.getOwner(root);
-            if (owner != null) {
-                FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
-                if( persistenceXmlLocation!=null ) {
-                    final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
-                    if (persistenceXML != null) {
-                        final Date cts = persistenceXML.lastModified();
-                        synchronized (factory) {
-                            if (cts.equals(factory.timestamp)) {
-                                //Nothing changed.
-                                return;
-                            }
-                            factory.timestamp = cts;
-                        }
-                        try {
-                            final String path = getCachePath();
-                            if (path != null) {
-                                final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
-                                final FileObject cacheDir = FileUtil.createFolder(cacheRoot,path);
-                                if (cacheDir != null) {
-                                    final FileObject toDelete = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
-                                    if (toDelete != null) {
-                                        toDelete.delete();
-                                    }
-                                    FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            }
-        }
     }
 
-    private String getCachePath() {
-        String path = factory.cachedPath;
-        if (path != null) {
-            return path;
-        }
-        CustomIndexerFactory jif = null;
-        final Iterable<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(MIME_JAVA).lookupAll(CustomIndexerFactory.class);
-        for (CustomIndexerFactory fact : factories) {
-            if (JAVA_NAME.equals(fact.getIndexerName())) {
-                jif = fact;
-                break;
-            }
-        }
-        if (jif == null) {
-            return null;
-        }
-        synchronized (factory) {
-            factory.cachedPath = String.format(PATH_TEMPLATE, jif.getIndexerName(), jif.getIndexVersion()); //NOI18N
-            return factory.cachedPath;
-        }
-    }
 
     public static class Factory extends CustomIndexerFactory {
 
         private volatile String cachedPath;
         private Date timestamp;
+
+        @Override
+        public boolean scanStarted(Context context) {
+            //it's expected to have all business logic in protected void index(Iterable<? extends Indexable> files, Context context)
+            //but we need to be sure to copy persistence.xml before actual indexing starts
+            final FileObject root = context.getRoot();
+            if (root != null) {
+                final Project owner = FileOwnerQuery.getOwner(root);
+                if (owner != null) {
+                    FileObject persistenceXmlLocation = PersistenceLocation.getLocation(owner);
+                    if( persistenceXmlLocation!=null ) {
+                        final FileObject persistenceXML = persistenceXmlLocation.getFileObject("persistence.xml");//NOI18N
+                        if (persistenceXML != null) {
+                            final Date cts = persistenceXML.lastModified();
+                            synchronized (Factory.this) {
+                                if (cts.equals(timestamp)) {
+                                    //Nothing changed.
+                                    return super.scanStarted(context);
+                                }
+                                timestamp = cts;
+                            }
+                            try {
+                                final String path = getCachePath();
+                                if (path != null) {
+                                    final FileObject cacheRoot = context.getIndexFolder().getParent().getParent();
+                                    final FileObject cacheDir = FileUtil.createFolder(cacheRoot,path);
+                                    if (cacheDir != null) {
+                                        final FileObject toDelete = cacheDir.getFileObject(persistenceXML.getName(), persistenceXML.getExt());
+                                        if (toDelete != null) {
+                                            toDelete.delete();
+                                        }
+                                        FileUtil.copyFile(persistenceXML, cacheDir, persistenceXML.getName());
+                                    }
+                                }
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+            return super.scanStarted(context);
+        }
 
         @Override
         public CustomIndexer createIndexer() {
@@ -166,6 +152,27 @@ public class CopyResourcesIndexer extends CustomIndexer {
         @Override
         public int getIndexVersion() {
             return VERSION;
+        }
+        private  String getCachePath() {
+            String path = cachedPath;
+            if (path != null) {
+                return path;
+            }
+            CustomIndexerFactory jif = null;
+            final Iterable<? extends CustomIndexerFactory> factories = MimeLookup.getLookup(MIME_JAVA).lookupAll(CustomIndexerFactory.class);
+            for (CustomIndexerFactory fact : factories) {
+                if (JAVA_NAME.equals(fact.getIndexerName())) {
+                    jif = fact;
+                    break;
+                }
+            }
+            if (jif == null) {
+                return null;
+            }
+            synchronized (Factory.this) {
+                cachedPath = String.format(PATH_TEMPLATE, jif.getIndexerName(), jif.getIndexVersion()); //NOI18N
+                return cachedPath;
+            }
         }
     }
 }

@@ -70,6 +70,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="txtAddModule">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbAddModule">
       <Properties>

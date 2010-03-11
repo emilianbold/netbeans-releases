@@ -141,10 +141,11 @@ public class GeneralPHP extends JellyTestCase {
 
         String typeName = "";
 
-        if (type == "Jobeet")
+        if (type == "Jobeet") {
             opNewProjectWizard.selectProject(PROJECT_JOBEET);
-         else if (type == "AirAlliance")
-             opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        } else if (type == "AirAlliance") {
+            opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        }
 
         opNewProjectWizard.next();
 
@@ -154,7 +155,7 @@ public class GeneralPHP extends JellyTestCase {
         String sResult = jtName.getText();
 
         opNewProjectWizard.finish();
-        return sResult; 
+        return sResult;
 
     }
 

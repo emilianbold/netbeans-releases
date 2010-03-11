@@ -348,22 +348,27 @@ public class CssFileModel {
 
                 //try to compute line number of document start offset, this "needs" to run on document.
                 final Document doc = getSnapshot().getSource().getDocument(true);
-                final AtomicInteger ret = new AtomicInteger();
-                final int offset = documentFrom;
-                doc.render(new Runnable() {
+                if(doc == null) {
+                    //strange, this should not normally happen
+                    lineOffset = -1; //cannot determine the value
+                    
+                } else {
+                    final AtomicInteger ret = new AtomicInteger();
+                    final int offset = documentFrom;
+                    doc.render(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        try {
-                            ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                        @Override
+                        public void run() {
+                            try {
+                                ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }
 
-                });
-                lineOffset = ret.get();
-                
+                    });
+                    lineOffset = ret.get();
+                }
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);

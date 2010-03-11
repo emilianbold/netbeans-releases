@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -326,25 +327,49 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 int deleteFrom = si.getAttributeStartOffset();
                 int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
                 String idSelectorUsageText = "id=\""+ idSelectorName + "\""; //NOI18N
+                String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
 
-                Difference diff = new Difference(Difference.Kind.CHANGE,
+                Difference diff;
+                if(si.getRange().isEmpty()) {
+                    //empty value of the style attribute - just delete
+                    diff = new Difference(Difference.Kind.REMOVE,
                         currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
                         currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
-                        context.getDocument().getText(deleteFrom, deleteTo - deleteFrom),
+                        originalText,
+                        null,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveEmptyStyleAttribute")); //NOI18N
+                } else {
+                    diff = new Difference(Difference.Kind.CHANGE,
+                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                        originalText,
                         idSelectorUsageText,
                         NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
 
+                    List<String> lines = new ArrayList<String>();
+                    lines.add(""); //empty line = will add new line
+
+                    lines.add(new StringBuilder().append('#').append(idSelectorName).append('{').toString()); //NOI18N
+
+                    //parse the inlined code and put each declaration on separate line, possibly add semicolon if missing
+                    for (String declaration : si.getParsedDeclarations()) {
+                        StringBuilder b = new StringBuilder();
+                        b.append('\t'); //NOI18N
+                        b.append(declaration);
+                        if (!declaration.endsWith(";")) { //NOI18N
+                            b.append(';'); //NOI18N
+                        }
+                        lines.add(b.toString());
+                    }
+
+                    lines.add("}"); //NOI18N
+
+                    //if prefix is set indent the content by one level
+                    String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
+                    generatedIdSelectorsSection.append(idSelectorText);
+                }
+
                 diffs.add(diff);
-
-                String[] lines = new String[]{
-                    "", //empty line = will add new line
-                    "#" + idSelectorName + "{",
-                    "\t" + WebUtils.unquotedValue(si.getInlinedCssValue()) + ";",
-                    "}"}; //NOI18N
-
-                //if prefix is set indent the content by one level
-                String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines);
-                generatedIdSelectorsSection.append(idSelectorText);
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);

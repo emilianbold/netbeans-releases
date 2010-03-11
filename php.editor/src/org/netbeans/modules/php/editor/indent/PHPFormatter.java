@@ -116,7 +116,7 @@ public class PHPFormatter implements Formatter {
         IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
         PHPParseResult phpParseResult = ((PHPParseResult) info);
         phpParseResult.getProgram().accept(indentCalc);
-        
+
         prettyPrint(context, info);
         astReformat(context, indentLevels);
     }
@@ -278,7 +278,9 @@ public class PHPFormatter implements Formatter {
 			    replacementToApply = replacement;
 			}
 			else {
-			    if (replacementToApply.newString().length() < replacement.newString().length()) {
+			    if ((replacementToApply.newString().length() < replacement.newString().length())
+				    || (replacementToApply.newString().length() == replacement.newString().length()
+				    && replacementToApply.getPriority() > replacement.getPriority())) {
 				replacementToApply = replacement;
 			    }
 			}

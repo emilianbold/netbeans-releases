@@ -42,12 +42,16 @@ package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
 import java.io.InputStream;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
 /**
@@ -64,41 +68,71 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     
     private Handler FS_HANDLER = new FlyingSaucerLoggersHandler();
     
-    private XHTMLPanel xhtmlPanel = new XHTMLPanel() {
-        //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
-        @Override
-        public void paintComponent(Graphics g) {
-            try {
-                super.paintComponent(g);
-            } catch (Throwable e) {
-                if(LOG) {
-                    LOGGER.log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
-                }
-                CssPreviewTopComponent.getDefault().setError();
-            }
-        }
-    };
+    private XHTMLPanel xhtmlPanel;
+    private Runnable panelCreatedTask;
     
     /** Creates new form CssPreviewPanel2 */
     public CssPreviewPanel() {
         initComponents();
-        jScrollPane1.setViewportView(xhtmlPanel);
-        
+
+        //run the xhtml panel creation in a non-AWT thread
+        RequestProcessor.getDefault().execute(new FutureTask<XHTMLPanel>(new Runnable() {
+            @Override
+            public void run() {
+                //create outside of AWT
+                final XHTMLPanel panel = new XHTMLPanel();
+                //and set the panel to this component in AWT
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setXhtmlPanel(panel);
+                    }
+                });
+            }
+        }, null));
+
         configureFlyingSaucerLoggers();
     }
+
+    private synchronized void setXhtmlPanel(XHTMLPanel panel) {
+        assert SwingUtilities.isEventDispatchThread();
+        this.xhtmlPanel = panel;
+        jScrollPane1.setViewportView(panel);
+        //set the content if some was already requested
+        if(panelCreatedTask != null) {
+            panelCreatedTask.run();
+            //release the only once used runnable
+            panelCreatedTask = null;
+        }
+    }
     
-    public XHTMLPanel panel() {
-        return xhtmlPanel;
+    @Override
+    public synchronized void setDocument(final InputStream is, final String url) throws Exception {
+        if(xhtmlPanel == null) {
+            //early attempt to set a document content, the xhtml panel initialization
+            //is still running
+            panelCreatedTask = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        xhtmlPanel.setDocument(is, url);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+        } else {
+            //and set the document to he renderer
+            xhtmlPanel.setDocument(is, url);
+        }
     }
 
-    public void setDocument(InputStream is, String url) throws Exception {
-        xhtmlPanel.setDocument(is, url);
-    }
-
+    @Override
     public JComponent getComponent() {
         return this;
     }
 
+    @Override
     public void dispose() {
         // nothing to dispose here
     }
@@ -137,6 +171,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
     //delegating flying saucer handler
     private class FlyingSaucerLoggersHandler extends Handler {
 
+        @Override
         public void publish(LogRecord record) {
             if (LOG) {
                 //set log level to INFO to prevent the exceptions
@@ -150,10 +185,27 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             }
         }
 
+        @Override
         public void flush() {
         }
 
+        @Override
         public void close() throws SecurityException {
+        }
+    }
+
+    //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
+    private static class PatchedXHTMLPanel extends XHTMLPanel {
+        @Override
+        public void paintComponent(Graphics g) {
+            try {
+                super.paintComponent(g);
+            } catch (Throwable e) {
+                if(LOG) {
+                    LOGGER.log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                }
+                CssPreviewTopComponent.getDefault().setError();
+            }
         }
     }
     
