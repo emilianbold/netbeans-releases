@@ -47,54 +47,6 @@ import javax.swing.SwingUtilities;
 
 public class StreamTerm extends Term {
 
-    static class Fmt {
-
-        private Fmt() {
-        }
-
-        public static String pad(int what, int width) {
-            return pad("" + what, width);
-        }
-
-        public static String pad(byte what, int width) {
-            return pad("" + (char) what, width);
-        }
-
-        public static String pad0(String what, int width) {
-            return padwith(what, width, '0');
-        }
-
-        public static String pad(String what, int width) {
-            return padwith(what, width, ' ');
-        }
-
-        private static String padwith(String what, int width, char with) {
-            boolean left = false;
-            if (width < 0) {
-                left = true;
-                width = -width;
-            }
-            String sub;
-            if (what.length() > width) {
-                sub = what.substring(0, width);     // prevent overflow
-            } else {
-                sub = what;
-            }
-            int pad = width - sub.length();
-            StringBuffer buf = new StringBuffer(sub);
-            if (left) {
-                while (pad-- > 0) {
-                    buf.append(with);
-                }
-            } else {
-                while (pad-- > 0) {
-                    buf.insert(0, with);
-                }
-            }
-            return new String(buf);
-        }
-
-    }
     private Writer writer;      // processes writes from child process
     private Pipe pipe;          // buffers keystrokes to child process
 
@@ -116,6 +68,7 @@ public class StreamTerm extends Term {
 
         addInputListener(new TermInputListener() {
 
+	    @Override
             public void sendChars(char c[], int offset, int count) {
                 if (outputStreamWriter == null) {
                     return;
@@ -128,6 +81,7 @@ public class StreamTerm extends Term {
                 }
             }
 
+	    @Override
             public void sendChar(char c) {
                 if (outputStreamWriter == null) {
                     return;
@@ -177,10 +131,9 @@ public class StreamTerm extends Term {
             while (cx < count) {
                 // print numbers
                 int cx0 = cx;
-                System.out.print(Fmt.pad(cx, 4) + ": ");	// NOI18N
+		System.out.printf("%4d: ", cx);
                 for (int x = 0; x < width && cx < count; cx++, x++) {
-                    String hex = Integer.toHexString(buf[offset + cx]);
-                    System.out.print(Fmt.pad0(hex, 2) + " ");	// NOI18N
+		    System.out.printf("%02x ", (int) buf[offset+cx]);
                 }
                 System.out.println();
 
@@ -192,7 +145,7 @@ public class StreamTerm extends Term {
                     if (Character.isISOControl(c)) {
                         c = ' ';
                     }
-                    System.out.print(Fmt.pad((byte) c, 2) + " ");	// NOI18N
+		    System.out.printf("%2c ", c);
                 }
                 System.out.println();
             }
@@ -202,6 +155,7 @@ public class StreamTerm extends Term {
 
             public int nread;
 
+	    @Override
             public void run() {
                 term.putChars(buf, 0, nread);
             }
@@ -309,6 +263,7 @@ public class StreamTerm extends Term {
         private final PipedWriter pipedWriter;
 
         private class TermListener implements TermInputListener {
+	    @Override
             public void sendChars(char[] c, int offset, int count) {
                 try {
                     pipedWriter.write(c, offset, count);
@@ -318,6 +273,7 @@ public class StreamTerm extends Term {
                 }
             }
 
+	    @Override
             public void sendChar(char c) {
                 try {
                     pipedWriter.write(c);

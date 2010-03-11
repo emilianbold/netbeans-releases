@@ -23,6 +23,7 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.PtyProcess;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -94,6 +95,11 @@ public final class TerminalIOProviderSupport {
 
 	    // comment out to verify fix for bug #181064
 	    io.select();
+
+	    if (IOTerm.isSupported(io)) {
+		Term term = IOTerm.term(io);
+		// term.setDebugFlags(Term.DEBUG_INPUT);
+	    }
 	    try {
 		IOColorLines.println(io, "GREETINGS\r", Color.GREEN);
 	    } catch (IOException ex) {
