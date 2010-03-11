@@ -41,7 +41,12 @@ package org.netbeans.modules.cnd.testrunner.ui;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.lookup.Lookups;
 
 /**
  * An action for running/debugging a singe test method.
@@ -59,10 +64,35 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
     }
 
     protected void doActionPerformed(ActionEvent e) {
-//        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getClassName(), testcase.getName(), debug);
-//        }
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            Folder targetFolder = findTestFolder();
+            if(targetFolder != null) {
+                ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
+            }
+        }
+    }
+
+    private Folder findTestFolder() {
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        Folder root = mcd.getLogicalFolders();
+        Folder testRootFolder = null;
+        for (Folder folder : root.getFolders()) {
+            if (folder.isTestRootFolder()) {
+                testRootFolder = folder;
+                break;
+            }
+        }
+        if (testRootFolder != null) {
+            for (Folder folder : testRootFolder.getAllTests()) {
+                Item[] items = folder.getAllItemsAsArray();
+                for (int k = 0; k < items.length; k++) {
+                    if(items[k].getPath().replaceFirst("\\..*", "").equals(testcase.getClassName())) {
+                        return folder;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

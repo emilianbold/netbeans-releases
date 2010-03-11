@@ -842,11 +842,15 @@ public final class MakeActionProvider implements ActionProvider {
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
             }
-            Node node = context.lookup(Node.class);
-            if (node == null) {
-                return true;
+            
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node == null) {
+                    return true;
+                }
+                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
             }
-            Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
             if (targetFolder == null) {
                 return true;
             }
