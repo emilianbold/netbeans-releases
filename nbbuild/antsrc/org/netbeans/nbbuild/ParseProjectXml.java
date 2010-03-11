@@ -43,6 +43,7 @@ package org.netbeans.nbbuild;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -850,7 +851,10 @@ public final class ParseProjectXml extends Task {
             }
             classpath.add(new URL("jar:" + jar.toURI() + "!/"));
         }
+        Set<String> depsS = new HashSet<String>();
+        String result;
         ClassLoader loader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
+        try {
         Class<?> automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
         Method refineDependenciesSimple;
         try {
@@ -859,7 +863,6 @@ public final class ParseProjectXml extends Task {
             log("Cannot translate according to " + moduleAutoDeps + " because AutomaticDependencies is too old", Project.MSG_WARN);
             return;
         }
-        Set<String> depsS = new HashSet<String>();
         for (Dep d : deps) {
             if (d.run) {
                 depsS.add(d.toString());
@@ -867,13 +870,17 @@ public final class ParseProjectXml extends Task {
         }
         Object automaticDependencies = automaticDependenciesClazz.getMethod("parse", URL[].class).invoke(
                 null, (Object) moduleAutoDeps.toArray(new URL[moduleAutoDeps.size()]));
-        String result;
         try {
             result = (String) refineDependenciesSimple.invoke(automaticDependencies, myCNB, depsS);
         } catch (InvocationTargetException x) {
             // Can occur when core modules are being recompiled in the same Ant run.
             log("Cannot translate according to " + moduleAutoDeps + " due to " + x.getCause(), Project.MSG_WARN);
             return;
+        }
+        } finally {
+            if (loader instanceof Closeable) { // #180970
+                ((Closeable) loader).close();
+            }
         }
         if (result == null) {
             return;
