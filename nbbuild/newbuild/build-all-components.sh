@@ -306,7 +306,7 @@ ERROR_CODE=$?
 create_test_result "build.ide.catalog" "Build UC catalog for IDE modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build UC catalog for IDE module"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 
 Build catalog for Stable UC NBMs
@@ -316,7 +316,7 @@ ERROR_CODE=$?
 create_test_result "build.stableuc.catalog" "Build UC catalog for stable UC modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build UC catalog for stable UC modules"
-    exit $ERROR_CODE;
+#    exit $ERROR_CODE;
 fi
 cd ..
 
