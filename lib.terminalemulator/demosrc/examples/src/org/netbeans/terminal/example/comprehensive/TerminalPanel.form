@@ -14,6 +14,8 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="executionButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="ioShuttlingButtonGroup">
+    </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
@@ -41,11 +43,17 @@
                                   <Component id="commandLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="ioShuttlingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="excutionLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="ioShutlingRadioButton_INTERNAL" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="ioShuttlingRadioButton_EXTERNAL" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="commandTextField" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="containerProviderRadioButton_DEFAULT" min="-2" max="-2" attributes="0"/>
@@ -103,7 +111,13 @@
                   <Component id="ioProviderRadioButton_DEFAULT" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ioProviderRadioButton_TERM" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="7" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="ioShuttlingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ioShutlingRadioButton_INTERNAL" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="ioShuttlingRadioButton_EXTERNAL" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="11" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="excutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="executionRadioButton_RICH" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -229,6 +243,9 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.restartableLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.restartableLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="restartableCheckBox">
@@ -250,6 +267,7 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="executionButtonGroup"/>
         </Property>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.executionRadioButton_RICH.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -260,9 +278,36 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="executionButtonGroup"/>
         </Property>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.excutionRadioButton_NATIVE.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="ioShuttlingLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.ioShuttlingLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="ioShutlingRadioButton_INTERNAL">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="ioShuttlingButtonGroup"/>
+        </Property>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.ioShutlingRadioButton_INTERNAL.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="ioShuttlingRadioButton_EXTERNAL">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="ioShuttlingButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.ioShuttlingRadioButton_EXTERNAL.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

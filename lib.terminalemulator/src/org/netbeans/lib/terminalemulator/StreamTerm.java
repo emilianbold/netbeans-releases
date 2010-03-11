@@ -42,16 +42,35 @@
  */
 package org.netbeans.lib.terminalemulator;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PipedReader;
+import java.io.PipedWriter;
+import java.io.Reader;
+import java.io.Writer;
+
 import javax.swing.SwingUtilities;
 
 public class StreamTerm extends Term {
 
+    private enum IOState {
+	NONE,
+	INTERNAL,		// getIn()/getOut() were used for internal i/o or
+				// explicit i/o shuttling to external process
+	EXTERNAL,		// connect() was used to deal with external process
+    }
+
+    private IOState ioState = IOState.NONE;
+
+    // Objects used when ioState == INTERNAL
     private Writer writer;      // processes writes from child process
     private Pipe pipe;          // buffers keystrokes to child process
 
+    // Objects used when ioState == EXTERNAL
     private OutputStreamWriter outputStreamWriter;	// writes to child process
-    private InputStreamReader pout_reader;
 
     /*
      * Return the OutputStreamWriter used for writing to the child.
@@ -60,49 +79,64 @@ public class StreamTerm extends Term {
      * as if they were typed at the keyboard.
      */
     public OutputStreamWriter getOutputStreamWriter() {
+	switch (ioState) {
+	    case NONE:
+	    case INTERNAL:
+		throw new IllegalStateException("getOutputStreamWriter() can only be used after connect()"); //NOI18N
+	    case EXTERNAL:
+		break;
+	}
         return outputStreamWriter;
     }
 
+    /**
+     * Transfers typed keystrokes to an OutputStreamWriter which usually
+     * passes stuff on to an external process.
+     */
+    private static final class InputMonitor implements TermInputListener {
+	private final OutputStreamWriter outputStreamWriter;
+
+	public InputMonitor(OutputStreamWriter outputStreamWriter) {
+	    this.outputStreamWriter = outputStreamWriter;
+	}
+
+	@Override
+	public void sendChars(char c[], int offset, int count) {
+	    if (outputStreamWriter == null) {
+		return;
+	    }
+	    try {
+		outputStreamWriter.write(c, offset, count);
+		outputStreamWriter.flush();
+	    } catch (Exception x) {
+		x.printStackTrace();
+	    }
+	}
+
+	@Override
+	public void sendChar(char c) {
+	    if (outputStreamWriter == null) {
+		return;
+	    }
+	    try {
+		outputStreamWriter.write(c);
+		// writer is buffered, need to use flush!
+		// perhaps SHOULD use an unbuffered writer?
+		// Also fix send_chars()
+		outputStreamWriter.flush();
+	    } catch (Exception x) {
+		x.printStackTrace();
+	    }
+	}
+    }
+
     public StreamTerm() {
-        super();
-
-        addInputListener(new TermInputListener() {
-
-	    @Override
-            public void sendChars(char c[], int offset, int count) {
-                if (outputStreamWriter == null) {
-                    return;
-                }
-                try {
-                    outputStreamWriter.write(c, offset, count);
-                    outputStreamWriter.flush();
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
-            }
-
-	    @Override
-            public void sendChar(char c) {
-                if (outputStreamWriter == null) {
-                    return;
-                }
-                try {
-                    outputStreamWriter.write(c);
-                    // writer is buffered, need to use flush!
-                    // perhaps SHOULD use an unbuffered writer?
-                    // Also fix send_chars()
-                    outputStreamWriter.flush();
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
-            }
-        });
     }
 
     /*
      * Monitor output from process and forward to terminal
      */
-    private class OutputMonitor extends Thread {
+    private static final class OutputMonitor extends Thread {
 
         private static final int BUFSZ = 1024;
         private char[] buf = new char[BUFSZ];
@@ -151,7 +185,7 @@ public class StreamTerm extends Term {
             }
         }
 
-        final private class Trampoline implements Runnable {
+        private final class Trampoline implements Runnable {
 
             public int nread;
 
@@ -198,7 +232,7 @@ public class StreamTerm extends Term {
                          */
                         break;
                     }
-                    if (debugInput()) {
+                    if (term.debugInput()) {
                         db_echo_receipt(buf, 0, nread);
                     }
 
@@ -231,21 +265,28 @@ public class StreamTerm extends Term {
      */
     public void connect(OutputStream pin, InputStream pout, InputStream perr) {
 
-        if (pout_reader != null)
-            throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
-        if (pipe != null)
-            throw new IllegalStateException("Cannot call connect() after getIn()"); //NOI18N
+	switch (ioState) {
+	    case NONE:
+		break;
+	    case INTERNAL:
+		throw new IllegalStateException("Cannot call connect() after getIn()/getOut"); //NOI18N
+	    case EXTERNAL:
+		throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
+	}
 
         // Now that we have a stream force resize notifications to be sent out.
         updateTtySize();
 
         if (pin != null) {
             outputStreamWriter = new OutputStreamWriter(pin);
+	    addInputListener(new InputMonitor(outputStreamWriter));
         }
 
-        pout_reader = new InputStreamReader(pout);
-        OutputMonitor out_monitor = new OutputMonitor(pout_reader, this);
-        out_monitor.start();
+	if (pout != null) {
+	    InputStreamReader pout_reader = new InputStreamReader(pout);
+	    OutputMonitor out_monitor = new OutputMonitor(pout_reader, this);
+	    out_monitor.start();
+	}
 
         if (perr != null) {
             InputStreamReader err_reader = new InputStreamReader(perr);
@@ -257,12 +298,12 @@ public class StreamTerm extends Term {
     /**
      * Help pass keystrokes to process.
      */
-    private static class Pipe {
-        private final Term term;
+    private static final class Pipe {
+        // OLD private final Term term;
         private final PipedReader pipedReader;
         private final PipedWriter pipedWriter;
 
-        private class TermListener implements TermInputListener {
+        private final class TermListener implements TermInputListener {
 	    @Override
             public void sendChars(char[] c, int offset, int count) {
                 try {
@@ -285,7 +326,7 @@ public class StreamTerm extends Term {
         }
 
         Pipe(Term term) throws IOException {
-            this.term = term;
+            // OLD this.term = term;
             pipedReader = new PipedReader();
             pipedWriter = new PipedWriter(pipedReader);
 
@@ -300,7 +341,7 @@ public class StreamTerm extends Term {
     /**
      * Delegate writes to a Term.
      */
-    private class TermWriter extends Writer {
+    private final class TermWriter extends Writer {
 
         private boolean closed = false;
 
@@ -336,8 +377,14 @@ public class StreamTerm extends Term {
      * @return the reader.
      */
     public Reader getIn() {
-        if (pout_reader != null)
-            throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
+	switch (ioState) {
+	    case NONE:
+		break;
+	    case INTERNAL:
+		break;
+	    case EXTERNAL:
+		throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
+	}
         if (pipe == null) {
             try {
                 pipe = new Pipe(this);
@@ -353,6 +400,14 @@ public class StreamTerm extends Term {
      * @return the writer.
      */
     public Writer getOut() {
+	switch (ioState) {
+	    case NONE:
+		break;
+	    case INTERNAL:
+		break;
+	    case EXTERNAL:
+		throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
+	}
         if (writer == null)
             writer = new TermWriter();
         return writer;

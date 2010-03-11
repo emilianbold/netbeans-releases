@@ -57,6 +57,7 @@ public final class CommandTerminalAction implements ActionListener {
 	final boolean restartable = terminalPanel.isRestartable();
 	final IOContainer container;
 	final IOProvider iop;
+	final boolean useInternalIOShuttle;
 
 	switch (terminalPanel.getContainerProvider()) {
 	    case TERM:
@@ -78,14 +79,26 @@ public final class CommandTerminalAction implements ActionListener {
 		break;
 	}
 
+	switch (terminalPanel.getIOShuttling()) {
+	    case EXTERNAL:
+		useInternalIOShuttle = false;
+		break;
+	    case INTERNAL:
+	    default:
+		useInternalIOShuttle = true;
+		break;
+	}
+
 	final Runnable runnable = new Runnable() {
 	    public void run() {
 		switch (terminalPanel.getExecution()) {
 		    case RICH:
-			support.executeRichCommand(iop, container, cmd, restartable);
+			support.executeRichCommand(iop, container, cmd,
+				                   restartable, useInternalIOShuttle);
 			break;
 		    case NATIVE:
-			support.executeNativeCommand(iop, container, cmd, restartable);
+			support.executeNativeCommand(iop, container, cmd,
+				                     restartable, useInternalIOShuttle);
 			break;
 		}
 	    }

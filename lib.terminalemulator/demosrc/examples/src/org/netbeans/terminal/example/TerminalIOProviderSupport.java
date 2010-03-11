@@ -53,6 +53,7 @@ public final class TerminalIOProviderSupport {
 
     private static abstract class ExecutionSupport {
 	private boolean restartable = false;
+	private boolean interalIOShuttle = true;	// use Term.connect()
 	protected Action stopAction;
 	protected Action rerunAction;
 	protected InputOutput io;
@@ -79,6 +80,14 @@ public final class TerminalIOProviderSupport {
 
 	protected final boolean isRestartable() {
 	    return restartable;
+	}
+
+	public void setInternalIOShuttle(boolean internalIOShuttle) {
+	    this.interalIOShuttle = internalIOShuttle;
+	}
+
+	public boolean isInternalIOShuttle() {
+	    return interalIOShuttle;
 	}
 
 	public final void setupIO(IOProvider iop,
@@ -206,13 +215,8 @@ public final class TerminalIOProviderSupport {
 	    OutputStream pin = pty.getOutputStream();
 	    InputStream pout = pty.getInputStream();
 
-	    boolean implicit = true;
-	    if (implicit) {
-		if (IOTerm.isSupported(io)) {
-		    IOTerm.connect(io, pin, pout, null);
-		} else {
-		    startShuttle(pin, pout);
-		}
+	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
+		IOTerm.connect(io, pin, pout, null);
 	    } else {
 		startShuttle(pin, pout);
 	    }
@@ -279,10 +283,14 @@ public final class TerminalIOProviderSupport {
 	    pty = PtySupport.getPty(nativeProcess);
 	    PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
 	    impl = (PtyImplementation) ptyImpl;
-	    IOTerm.connect(io,
-			   impl.getOutputStream(),
-			   impl.getInputStream(),
-			   null);
+	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
+		IOTerm.connect(io,
+			       impl.getOutputStream(),
+			       impl.getInputStream(),
+			       null);
+	    } else {
+		startShuttle(impl.getOutputStream(), impl.getInputStream());
+	    }
 
 	    if (IOResizable.isSupported(io))
 		IOResizable.addListener(io, new ResizeListener(this));
@@ -413,7 +421,9 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public void executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd, final boolean restartable) {
+    public void executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd,
+	                           final boolean restartable,
+				   final boolean internalIOShuttle) {
 	if (richExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
@@ -423,13 +433,14 @@ public final class TerminalIOProviderSupport {
 	if (restartable)
 	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
 
+	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
 	richExecutionSupport.setupIO(iop, ioContainer, title);
 
 	richExecutionSupport.execute(cmd);
     }
 
     public void executeShell(IOProvider iop, IOContainer ioContainer) {
-	executeRichCommand(iop, ioContainer, "/bin/bash", false);
+	executeRichCommand(iop, ioContainer, "/bin/bash", false, true);
 	/* OLD
 	final String title = "Shell";
 	setupIO(iop, ioContainer, title, false);
@@ -438,7 +449,9 @@ public final class TerminalIOProviderSupport {
 	 */
     }
 
-    public void executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd, final boolean restartable) {
+    public void executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd,
+	                             final boolean restartable,
+				     final boolean internalIOShuttle) {
 	if (nativeExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
@@ -449,11 +462,9 @@ public final class TerminalIOProviderSupport {
 	if (restartable)
 	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
 
+	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
 	nativeExecutionSupport.setupIO(iop, ioContainer, title);
 
 	nativeExecutionSupport.execute(cmd);
     }
-
-
-
 }
