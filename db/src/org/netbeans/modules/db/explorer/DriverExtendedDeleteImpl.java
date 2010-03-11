@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.explorer;
 
@@ -33,7 +33,6 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.explorer.ExtendedDelete;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -42,13 +41,9 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
-public class DriverExtendedDeleteImpl implements ExtendedDelete {
+public class DriverExtendedDeleteImpl {
 
-    public DriverExtendedDeleteImpl() {
-    }
-
-    public boolean delete(Node[] nodes) throws IOException {
+    public static boolean delete(Node[] nodes) throws IOException {
         JDBCDriver[] jdbcDrivers = getJDBCDrivers(nodes);
         if (jdbcDrivers == null) {
             return false;

@@ -213,14 +213,6 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return null;
     }
 
-    float getSpan() {
-        TextLayout textLayout = getTextLayout();
-        if (textLayout == null) {
-            return 0f;
-        }
-        return textLayout.getAdvance();
-    }
-
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
         return modelToViewChecked(offset, alloc, bias, getTextLayout(), getStartOffset(), getLength());
@@ -443,24 +435,25 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return (part != null) ? part : this;
     }
 
-    static View breakView(int axis, int offset, float x, float len, HighlightsView fullView,
-            int partShift, int partLength, TextLayout textLayout)
+    static View breakView(int axis, int breakPartStartOffset, float x, float len,
+            HighlightsView fullView, int partShift, int partLength, TextLayout textLayout)
     {
         if (axis == View.X_AXIS) {
             DocumentView docView = fullView.getDocumentView();
             // [TODO] Should check for RTL text
             if (docView != null && textLayout != null && partLength > 1) {
                 // The logic
-                int partStartOffset = fullView.getStartOffset() + partShift;
-                int shift = offset - partStartOffset;
-                if (shift < 0 || shift > partLength) {
-                    throw new IllegalArgumentException("offset=" + offset + // NOI18N
+                int fullViewStartOffset = fullView.getStartOffset();
+                int partStartOffset = fullViewStartOffset + partShift;
+                if (breakPartStartOffset - partStartOffset < 0 || breakPartStartOffset - partStartOffset > partLength) {
+                    throw new IllegalArgumentException("offset=" + breakPartStartOffset + // NOI18N
                             "partStartOffset=" + partStartOffset + // NOI18N
-                            ", partLength=" + partLength + // NOI18N
-                            ", shift=" + shift
+                            ", partLength=" + partLength // NOI18N
                     );
                 }
-                int breakCharIndex = Math.max(offset - (partStartOffset + partShift), 0);
+                // Compute charIndex relative to given textLayout
+                int breakCharIndex = breakPartStartOffset - partStartOffset;
+                assert (breakCharIndex >= 0);
                 float breakCharIndexX;
                 if (breakCharIndex != 0) {
                     TextHitInfo hit = TextHitInfo.afterOffset(breakCharIndex);
@@ -470,19 +463,61 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                     breakCharIndexX = 0f;
                 }
                 TextHitInfo hitInfo = x2RelOffset(textLayout, breakCharIndexX + len);
-                int breakPartLength = hitInfo.getCharIndex() - shift;
+                int breakPartEndOffset = partStartOffset + hitInfo.getCharIndex();
+                // Now perform corrections if wrapping at word boundaries is required
+                // Currently a simple impl that checks adjacent char(s) in backward direction
+                // is used. Consider BreakIterator etc. if requested.
+                // If break is inside a word then check for word boundary in backward direction.
+                // If none is found then go forward to find a word break if possible.
+                if (docView.getLineWrapType() == DocumentView.LineWrapType.WORD_BOUND) {
+                    CharSequence docText = DocumentUtilities.getText(docView.getDocument());
+                    if (breakPartEndOffset > breakPartStartOffset) {
+                        boolean searchNonLetterForward = false;
+                        char ch = docText.charAt(breakPartEndOffset - 1);
+                        // [TODO] Check surrogates
+                        if (Character.isLetterOrDigit(ch)) {
+                            if (breakPartEndOffset < docText.length() &&
+                                    Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
+                            {
+                                // Inside word
+                                // Attempt to go back and search non-letter
+                                int offset = breakPartEndOffset - 1;
+                                while (offset >= breakPartStartOffset && Character.isLetterOrDigit(docText.charAt(offset))) {
+                                    offset--;
+                                }
+                                offset++;
+                                if (offset == breakPartStartOffset) {
+                                    searchNonLetterForward = true;
+                                } else { // move the break offset back
+                                    breakPartEndOffset = offset;
+                                }
+                            }
+                        }
+                        if (searchNonLetterForward) {
+                            breakPartEndOffset++; // char at breakPartEndOffset already checked
+                            while (breakPartEndOffset < partStartOffset + partLength &&
+                                    Character.isLetterOrDigit(docText.charAt(breakPartEndOffset)))
+                            {
+                                breakPartEndOffset++;
+                            }
+                        }
+                    }
+                }
+
                 // Length must be > 0; BTW TextLayout can't be constructed with empty string.
-                boolean breakFailed = (breakPartLength == 0 || breakPartLength == partLength);
+                boolean breakFailed = (breakPartEndOffset - breakPartStartOffset == 0) ||
+                        (breakPartEndOffset - breakPartStartOffset >= partLength);
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("HV.breakView(): <"  + partStartOffset + "," + (partStartOffset+partLength) + // NOI18N
-                        "> => <" + offset + "," + (partStartOffset+breakPartLength) + // NOI18N
+                        "> => <" + breakPartStartOffset + "," + (partStartOffset+breakPartEndOffset) + // NOI18N
                         ">, x=" + x + ", len=" + len + // NOI18N
                         ", charIndexX=" + breakCharIndexX + "\n"); // NOI18N
                 }
                 if (breakFailed) {
                     return null;
                 }
-                return new HighlightsViewPart(fullView, partShift + shift, breakPartLength);
+                return new HighlightsViewPart(fullView, breakPartStartOffset - fullViewStartOffset,
+                        breakPartEndOffset - breakPartStartOffset);
             }
         }
         return null;

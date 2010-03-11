@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,10 +78,10 @@ public final class HighlightsViewPart extends EditorView {
 
     public HighlightsViewPart(HighlightsView fullView, int shift, int length) {
         super(null);
-        int totalLength = fullView.getLength();
-        if (shift < 0 || length < 0 || shift + length > totalLength) {
+        int fullViewLength = fullView.getLength();
+        if (shift < 0 || length < 0 || shift + length > fullViewLength) {
             throw new IllegalArgumentException("shift=" + shift + ", length=" + length + // NOI18N
-                    ", totalLength=" + totalLength); // NOI18N
+                    ", fullViewLength=" + fullViewLength); // NOI18N
         }
         this.fullView = fullView;
         this.shift = shift;

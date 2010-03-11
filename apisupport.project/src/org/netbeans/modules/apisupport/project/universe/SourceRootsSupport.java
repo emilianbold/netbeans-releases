@@ -137,17 +137,19 @@ public final class SourceRootsSupport implements SourceRootsProvider {
             listsForSources = _listsForSources;
         }
         for (ModuleList l : listsForSources) {
-            for (ModuleEntry entry : l.getAllEntriesSoft()) {
-                // XXX should be more strict (e.g. compare also clusters)
-                if (!entry.getJarLocation().getName().equals(jar.getName())) {
-                    continue;
-                }
-                File src = entry.getSourceLocation();
-                if (src != null && src.isDirectory()) {
-                    return src;
+            String name = jar.getName();
+            if (name.endsWith(".jar")) { // direct guess
+                String cnb = name.substring(0, name.length() - ".jar".length()).replace('-', '.');
+                ModuleEntry entry = l.getEntry(cnb);
+                if (entry != null) {
+                    File src = entry.getSourceLocation();
+                    if (src != null && src.isDirectory()) {
+                        return src;
+                    }
                 }
             }
             for (ModuleEntry entry : l.getAllEntries()) {
+                // XXX should be more strict (e.g. compare also clusters)
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }
