@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
 import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -85,6 +86,7 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -94,11 +96,14 @@ import org.openide.windows.InputOutput;
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionListener {
+public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionListener, RerunHandler {
 
     private ProjectActionEvent pae;
     private volatile Future<Integer> executorTask;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private NativeExecutionService execution;
+    private TestRunnerLineConvertor convertor;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -188,7 +193,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
         NativeExecutionDescriptor descr = null;
 
-        final LineConvertor convertor = createTestRunnerConvertor(pae.getProject());
+        convertor = createTestRunnerConvertor(pae.getProject());
 
         descr = new NativeExecutionDescriptor()
                 .controllable(true)
@@ -213,37 +218,30 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                     }
                     });
 
-        NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
-        executorTask = es.run();
+        execution = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
+        runExecution();
     }
 
-    public LineConvertor createTestRunnerConvertor(Project project) {
+    private void runExecution() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    executorTask = execution.run();
+                }
+            });
+        } else {
+            executorTask = execution.run();
+        }
+    }
+
+    private TestRunnerLineConvertor createTestRunnerConvertor(Project project) {
         final TestSession session = new TestSession("Test", // NOI18N
                 project,
                 SessionType.TEST, new CndTestRunnerNodeFactory());
 
-//        session.setRerunHandler(new RerunHandler() {
-//
-//            @Override
-//            public void rerun() {
-//
-//            }
-//
-//            @Override
-//            public boolean enabled() {
-//                return true;
-//            }
-//
-//            @Override
-//            public void addChangeListener(ChangeListener listener) {
-//                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-//            }
-//
-//            @Override
-//            public void removeChangeListener(ChangeListener listener) {
-//                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-//            }
-//        });
+        session.setRerunHandler(this);
 
         final Manager manager = Manager.getInstance();
         final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
@@ -251,6 +249,15 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         return new TestRunnerLineConvertor(manager, session, handlerFactory);
     }
 
+    /**
+     * Refreshes the current session, i.e. clears all currently
+     * computed test statuses.
+     */
+    public synchronized void refresh() {
+        if (convertor != null) {
+            convertor.refreshSession();
+        }
+    }
     @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
@@ -336,6 +343,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }
+        changeSupport.fireChange();
     }
 
     @Override
@@ -343,11 +351,32 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
         for (ExecutionListener l : listeners) {
             l.executionFinished(rc);
         }
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void rerun() {
+        refresh();
+        runExecution();
+    }
+
+    @Override
+    public boolean enabled() {
+        return true;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
-        private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
         private final ExecutionListener listener;
         private Writer outputListener;
         private final LineConvertor lineConvertor;
@@ -381,16 +410,6 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                     break;
                 case RUNNING:
                     startTimeMillis = System.currentTimeMillis();
-                    if (showHeader) {
-                        assert false;
-                        // TODO: is it needed?
-                        //String runDirToShow = execEnv.isLocal() ?
-                        //    runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
-                        //String preText = MessageFormat.format(getString("PRETEXT"),
-                        //        exePlusArgsQuoted(executable, arguments), runDirToShow);
-                        //err.println(preText);
-                        //err.println();
-                    }
                     if (listener != null) {
                         listener.executionStarted(event.pid);
                     }
