@@ -92,6 +92,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
@@ -2251,18 +2252,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * {@link javax.swing.text.Document#getProperty(java.lang.String)}
      * is called.
      */
-    public interface PropertyEvaluator {
-
-        /** Get the real value of the property */
+    public static interface PropertyEvaluator {
         public Object getValue();
-
     }
 
-    private static interface PropertyHandler extends PropertyEvaluator {
-        public Object setValue(Object value);
-    }
-
-    private static final class MimeTypePropertyEvaluator implements PropertyHandler {
+    private static final class MimeTypePropertyEvaluator implements BaseDocument_PropertyHandler {
 
         private final BaseDocument doc;
         private String hackMimeType = null;
@@ -2348,8 +2342,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
               if (key != null) {
                   Object val = super.get(key);
-                  if (val instanceof PropertyHandler) {
-                     old = ((PropertyHandler) val).setValue(value);
+                  if (val instanceof BaseDocument_PropertyHandler) {
+                     old = ((BaseDocument_PropertyHandler) val).setValue(value);
                      usePlainPut = false;
                   }
               }

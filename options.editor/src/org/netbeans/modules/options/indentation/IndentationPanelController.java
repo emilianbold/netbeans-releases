@@ -139,10 +139,18 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
     }
 
     public void refreshPreview() {
-        if (delegate != null) {
-            ((PreviewProvider) delegate).refreshPreview();
-        } else {
-            getIndentationPanel().getPreviewProvider().refreshPreview();
+        // XXX: this is a workaround for the new view hierarchy, normally we
+        // should not catch any exception here and just call refreshPreview().
+        try {
+            if (delegate != null) {
+                ((PreviewProvider) delegate).refreshPreview();
+            } else {
+                getIndentationPanel().getPreviewProvider().refreshPreview();
+            }
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            // ignore
         }
     }
 

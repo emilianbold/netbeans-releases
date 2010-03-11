@@ -124,7 +124,8 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             boolean regular = true;
             switch (docView.getLineWrapType()) {
                 case NONE:
-
+                    break;
+                    
                 case CHARACTER_BOUND:
                 case WORD_BOUND:
                     double origWidth = boxView.getMajorAxisSpan();
