@@ -65,9 +65,11 @@ public enum TplTopTokenId implements TokenId {
     T_SMARTY (null, "smarty"),
     T_SMARTY_CLOSE_DELIMITER (null, "smarty_delimiter"),
     T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter"),
-    T_PHP(null, "php_embedding"),
     T_COMMENT(null, "comment"),
+    T_LITERAL_DEL(null, "literal"),
+    T_WS(null, "top_level_whitespace"),
     T_ERROR(null, "error"),
+    T_PHP(null, "php_embedding"),
     T_PHP_DEL(null, "php_del");
 
     private final String fixedText;

@@ -226,6 +226,7 @@ public class TplLexer implements Lexer<TplTokenId> {
         FUNCTIONS.add("html_table"); // NOI18N
         FUNCTIONS.add("mailto"); // NOI18N
         FUNCTIONS.add("math"); // NOI18N
+        FUNCTIONS.add("php"); // NOI18N
         FUNCTIONS.add("popup"); // NOI18N
         FUNCTIONS.add("popup_init"); // NOI18N
         FUNCTIONS.add("textformat"); // NOI18N

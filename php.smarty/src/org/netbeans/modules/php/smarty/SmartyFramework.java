@@ -47,11 +47,15 @@ public class SmartyFramework {
     /**
      * Open delimiter in SMARTY templates
      */
-    public static final char TPL_OPEN_DELIMITER = '{';
+    public static final String DELIMITER_DEFAULT_OPEN = "{";
     /**
      * Close delimiter in SMARTY templates
      */
-    public static final char TPL_CLOSE_DELIMITER = '}';
+    public static final String DELIMITER_DEFAULT_CLOSE = "}";
+
+    public static final String DELIMITER_CUSTOM_OPEN = "<<<";
+    public static final String DELIMITER_CUSTOM_CLOSE = ">>>";
+    public static boolean useCustomDelimiters = false;
 
     public SmartyFramework() {
     }
