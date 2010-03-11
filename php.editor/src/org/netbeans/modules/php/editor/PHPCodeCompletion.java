@@ -330,7 +330,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteInClassContext(info, caretOffset, completionResult, request);
                     break;
                 case METHOD_NAME:
-                    //autoCompleteMethodName(info, caretOffset, proposals, request);
+                    autoCompleteMethodName(info, caretOffset, completionResult, request);
                     break;
                 case IMPLEMENTS:
                     autoCompleteKeywords(completionResult, request, Collections.singletonList("implements"));//NOI18N
@@ -403,6 +403,40 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             superTypeIndices.add(ElementFilter.forSuperInterfaceNames(superIfaceNames));
         }
         return superTypeIndices;
+    }
+
+    private void autoCompleteMethodName(ParserResult info, int caretOffset, final PHPCompletionResult completionResult,
+            PHPCompletionItem.CompletionRequest request) {
+        ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
+        if (enclosingClass != null) {
+            List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
+            String clsName = enclosingClass.getName().getName();
+            if (clsName != null) {
+                final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+                final ElementFilter classFilter = ElementFilter.allOf(
+                        ElementFilter.forFiles(fileObject), ElementFilter.allOf(superTypeIndices));
+                Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(clsName)));
+                for (ClassElement classElement : classes) {
+                    ElementFilter methodFilter = ElementFilter.allOf(
+                            ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
+                            ElementFilter.forName(NameKind.prefix(QualifiedName.create(request.prefix))));
+                    Set<MethodElement> accessibleMethods = methodFilter.filter(request.index.getAccessibleMethods(classElement, classElement));
+                    for (MethodElement method : accessibleMethods) {
+                        if (!method.isFinal()) {
+                            completionResult.add(PHPCompletionItem.MethodDeclarationItem.forMethodName(method, request));
+                        }
+                    }
+                    Set<MethodElement> magicMethods = methodFilter.filter(request.index.getAccessibleMagicMethods(classElement));
+                    for (MethodElement magicMethod : magicMethods) {
+                        if (magicMethod != null) {
+                            completionResult.add(PHPCompletionItem.MethodDeclarationItem.forMethodName(magicMethod, request));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
     }
 
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {

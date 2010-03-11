@@ -623,6 +623,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
             };
         }
+        public static MethodDeclarationItem forMethodName(final MethodElement methodElement, CompletionRequest request) {
+            return new MethodDeclarationItem(new FunctionElementItem(methodElement, request, methodElement.getParameters())) {
+
+                @Override
+                public String getCustomInsertTemplate() {
+                    return super.getNameAndFunctionBodyForTemplate();
+                }
+            };
+        }
 
         private  MethodDeclarationItem(FunctionElementItem functionItem) {
             super(functionItem);
