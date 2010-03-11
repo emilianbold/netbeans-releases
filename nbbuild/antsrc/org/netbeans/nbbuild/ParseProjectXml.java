@@ -43,7 +43,6 @@ package org.netbeans.nbbuild;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -56,7 +55,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,6 +81,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -837,7 +836,10 @@ public final class ParseProjectXml extends Task {
         if (moduleAutoDeps.isEmpty()) {
             return;
         }
-        List<URL> classpath = new ArrayList<URL>();
+        Set<String> depsS = new HashSet<String>();
+        String result;
+        AntClassLoader loader = new AntClassLoader();
+        try {
         for (String coreModule : new String[] {"org.openide.util", "org.openide.modules", "org.netbeans.bootstrap", "org.netbeans.core.startup"}) {
             ModuleListParser.Entry entry = modules.findByCodeNameBase(coreModule);
             if (entry == null) {
@@ -849,12 +851,8 @@ public final class ParseProjectXml extends Task {
                 log("Cannot translate according to " + moduleAutoDeps + " because could not find " + jar, Project.MSG_WARN);
                 return;
             }
-            classpath.add(new URL("jar:" + jar.toURI() + "!/"));
+            loader.addPathComponent(jar);
         }
-        Set<String> depsS = new HashSet<String>();
-        String result;
-        ClassLoader loader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
-        try {
         Class<?> automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
         Method refineDependenciesSimple;
         try {
@@ -878,9 +876,7 @@ public final class ParseProjectXml extends Task {
             return;
         }
         } finally {
-            if (loader instanceof Closeable) { // #180970
-                ((Closeable) loader).close();
-            }
+            loader.cleanup(); // #180970
         }
         if (result == null) {
             return;
