@@ -105,6 +105,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.jLabel1.text")); // NOI18N
 
+        txtAddModule.setEnabled(false);
+
         cbAddModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbAddModule, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbAddModule.text")); // NOI18N
         cbAddModule.addActionListener(new java.awt.event.ActionListener() {
