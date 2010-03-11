@@ -140,10 +140,11 @@ public class ATTParser implements AsmParser {
                 tok =((AntlrToken) scanner.nextToken()).createAsmToken(resolver); 
                 lastOffset = tok.getEndOffset();                
              }   
-             catch(Exception ex) {               
-                Logger.getLogger(this.getClass().getName()).
-                    log(Level.SEVERE, "Antlr lexer faced error token on position " + lastOffset); // NOI18N
-                continue;
+             catch(Exception ex) {
+                 tokens.add(new AsmToken(ASM_EOF, null, 0, 0));
+                 Logger.getLogger(this.getClass().getName()).
+                     log(Level.SEVERE, "Antlr lexer faced error token on position " + lastOffset); // NOI18N
+                 break;
              }
            
              if (tok.getId() != ASM_EMPTY) {                 
