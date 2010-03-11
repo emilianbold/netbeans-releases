@@ -233,6 +233,8 @@ public class DocumentationScrollPane extends JScrollPane {
             view.setContent(text, null);
         } else if (url != null){
             try{
+                view.setContent("", null); //NOI18N
+                view.getDocument().putProperty("javax.swing.JEditorPane.postdata", ""); //NOI18N
                 view.setPage(url);
             }catch(IOException ioe){
                 StatusDisplayer.getDefault().setStatusText(ioe.toString());
