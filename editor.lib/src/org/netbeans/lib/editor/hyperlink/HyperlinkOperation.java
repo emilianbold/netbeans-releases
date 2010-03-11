@@ -56,6 +56,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -77,6 +78,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -394,9 +396,16 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     }
 
     public void mouseClicked(MouseEvent e) {
+        boolean activate = false;
         HyperlinkType type = getHyperlinkType(e);
+        if ( type != null ) {
+            activate = !e.isPopupTrigger() && e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e);
+        } else if ( Utilities.isWindows() && e.getClickCount() == 1 && SwingUtilities.isMiddleMouseButton(e) ) {
+            activate = true;
+            type = HyperlinkType.GO_TO_DECLARATION;
+        }
         
-        if (type != null && !e.isPopupTrigger() && e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+        if ( activate ) {
             int position = component.viewToModel(e.getPoint());
             
             if (position < 0) {
