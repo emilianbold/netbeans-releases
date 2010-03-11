@@ -113,7 +113,7 @@ public class HtmlIndex {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
             }
             return matchedFiles;
@@ -133,7 +133,7 @@ public class HtmlIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
-        Collection<? extends IndexResult> results = querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY);
+        Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY));
         Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
         Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
         for (IndexResult result : results) {
@@ -226,7 +226,21 @@ public class HtmlIndex {
         return list;
     }
 
-        public static class AllDependenciesMaps {
+     //if an indexed file is delete and IndexerFactory.filesDeleted() hasn't removed
+    //the entris from index yet, then we may receive IndexResult-s with null file.
+    //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
+    //won't become null after the query is run, but the file will simply become invalid.
+    private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
+        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        for(IndexResult result : queryResult) {
+            if(result.getFile() != null) {
+                filtered.add(result);
+            }
+        }
+        return filtered;
+    }
+
+    public static class AllDependenciesMaps {
 
         Map<FileObject, Collection<FileReference>> source2dest, dest2source;
 
