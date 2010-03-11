@@ -406,7 +406,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
     }
 
-    private final void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
+    private void addDataFilterImpl(final DataFilter filter, final boolean isAdjusting) {
         if (filter instanceof TimeIntervalDataFilter) {
             dataFiltersSupport.cleanAll(TimeIntervalDataFilter.class, false);
         }
@@ -482,7 +482,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         for (DLightTool tool : context.getTools()) {
             validTools.add(tool);
-            toolNames.append(tool.getName() + ServiceInfoDataStorage.DELIMITER);
+            toolNames.append(tool.getName()).append(ServiceInfoDataStorage.DELIMITER);
         }
 
         if (validTools.isEmpty()) {
@@ -546,7 +546,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                         for (IndicatorNotificationsListener l : indicatorNotificationListeners) {
                             IndicatorDataProviderAccessor.getDefault().addIndicatorDataProviderListener(idp, l);
                         }
-                        idpsNames.append(idp.getName() + ServiceInfoDataStorage.DELIMITER);
+                        idpsNames.append(idp.getName()).append(ServiceInfoDataStorage.DELIMITER);
                         List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
 
                         for (Indicator<?> i : indicators) {
@@ -559,7 +559,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                                 }
                                 target.addTargetListener(idp);
                                 if (log.isLoggable(Level.FINE)) {
-                                    log.fine("I have subscribed indicator " + i + " to indicatorDataProvider " + idp); // NOI18N
+                                    log.log(Level.FINE, "I have subscribed indicator {0} to indicatorDataProvider {1}", new Object[]{i, idp}); // NOI18N
                                 }
                             }
                             if (i instanceof DataFilterListener) {
@@ -590,7 +590,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector<?> toolCollector : collectors) {
-                collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
+                collectorNames.append(toolCollector.getName()).append(ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
@@ -608,22 +608,25 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                             storages.add(storage);
                         }
                     }
-                    toolCollector.init(currentStorages, target);
-                    addDataFilterListener(toolCollector);
-
                     if (toolCollector instanceof IndicatorDataProvider) {
                         IndicatorDataProvider<?> idp = (IndicatorDataProvider<?>) toolCollector;
                         idp.init(serviceInfoDataStorage);
                     }
 
+                    // do tool initialization _AFTER_ IndicatorDataProvider init
+                    // because tool may (DTraceDataCollector does) expect that
+                    // serviceInfoDataStorage is available for them if they
+                    // do implement IndicatorDataProvider interface
 
+                    toolCollector.init(currentStorages, target);
+                    addDataFilterListener(toolCollector);
 
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }
                 } else {
                     // Cannot find storage for this collector!
-                    log.severe("Cannot find storage for collector " + toolCollector); // NOI18N
+                    log.log(Level.SEVERE, "Cannot find storage for collector {0}", toolCollector); // NOI18N
                 }
 
                 target.addTargetListener(toolCollector);
@@ -696,7 +699,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         Collection<DataProviderFactory> providerFactories = DataProvidersManager.getInstance().getDataProviderFactories(dataModelScheme);
 
         // If not found - just return null
-        if (providerFactories.size() == 0) {
+        if (providerFactories.isEmpty()) {
             return null;
         }
 
