@@ -22,6 +22,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.libs.h2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -77,10 +85,6 @@
                 </test-type>
             </test-dependencies>
             <public-packages/>
-            <class-path-extension>
-                <runtime-relative-path>ext/h2-1.0.79.jar</runtime-relative-path>
-                <binary-origin>external/h2-1.0.79.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

@@ -56,6 +56,7 @@ public interface ServiceInfoDataStorage {
     static final String DELIMITER  = ":";//NOI18N
     static final String CONFIFURATION_NAME  = "service.storage.configuration.name";//NOI18N
     static final String START_TIME_NANOSECONDS  = "service.storage.session_start_time.nanoseconds";//NOI18N
+    static final String STORAGE_UNIQUE_KEY = "storage.unique.key";//NOI18N
     
     Map<String, String> getInfo();
     String getValue(String name);
