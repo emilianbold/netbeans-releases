@@ -43,6 +43,7 @@ package org.netbeans.modules.java.stackanalyzer;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -180,14 +181,17 @@ final class AnalyzeStackTopComponent extends TopComponent {
     private void insertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertButtonActionPerformed
         try {
             Clipboard clipBoard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
-            Reader stackTrace = DataFlavor.stringFlavor.getReaderForText(clipBoard.getContents(this));//GEN-LAST:event_insertButtonActionPerformed
+            Transferable transferable = clipBoard.getContents(this);
+            if (!transferable.isDataFlavorSupported (DataFlavor.stringFlavor))
+                return;
+            Reader stackTrace = DataFlavor.stringFlavor.getReaderForText (transferable);
             fillIn (stackTrace);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace (ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace (ex);
         }
-    }
+    }//GEN-LAST:event_insertButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton insertButton;
