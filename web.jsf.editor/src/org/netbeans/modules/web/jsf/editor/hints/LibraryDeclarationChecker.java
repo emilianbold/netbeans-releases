@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -111,6 +112,23 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, AstNode.Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         AstNode root = result.root();
+
+        final Document doc = snapshot.getSource().getDocument(true);
+        final AtomicReference<String> docTextRef = new AtomicReference<String>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    docTextRef.set(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        });
+        final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+
         AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
             @Override
@@ -143,7 +161,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                            JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
                             fixes, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -162,7 +180,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
+                            JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
                             Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -221,7 +239,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             Hint hint = new Hint(DEFAULT_WARNING_RULE,
                     NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                    JsfUtils.createOffsetRange(snapshot, from, to),
+                    JsfUtils.createOffsetRange(snapshot, docText, from, to),
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
             hints.add(hint);

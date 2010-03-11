@@ -42,6 +42,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -84,7 +85,7 @@ public class WebUtils {
      */
     public static FileReference resolveToReference(FileObject source, String importedFileName) {
         try {
-            URI u = URI.create(importedFileName);
+            URI u = new URI(importedFileName);
             File file = null;
 
             if (u.isAbsolute()) {
@@ -141,8 +142,8 @@ public class WebUtils {
                 }
             }
 
-        } catch (IllegalArgumentException e) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
+        } catch (URISyntaxException ex) {
+            //simply a bad link, return null, no need to report the exception
         } catch (IOException e) {
             Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
         }

@@ -203,8 +203,10 @@ final class ToolsConfiguration {
                 }
                 try {
                     @SuppressWarnings("unchecked")
-                    Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
-                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
+//                    Class<? extends DLightToolConfigurationProvider> clazz = (Class<? extends DLightToolConfigurationProvider>) ic.instanceClass();
+
+//                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
+                    DLightToolConfigurationProvider configurationProvider = (DLightToolConfigurationProvider)ic.instanceCreate();
                     DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
                     toolsProviders.put(tool.getID(), child);
                     boolean enabledByDefault = true;
@@ -227,16 +229,6 @@ final class ToolsConfiguration {
                     result.add(tool);
     //        Class<? extends DLightTool.Configuration> clazz = (Class<? extends DLightTool>) ic.instanceClass();
     //        result.add(clazz.getConstructor().newInstance());
-                } catch (InstantiationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalAccessException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (NoSuchMethodException ex) {
-                    Exceptions.printStackTrace(ex);
                 } catch (SecurityException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {

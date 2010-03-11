@@ -794,9 +794,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudioExpress"); // NOI18N
-            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("10")  < 0) { // NOI18N
-                bestCandidate = null;
-            }
         }
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12.1"); // NOI18N

@@ -232,6 +232,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
+        public AlternativeLocationImpl(PhpElement modelElement) {
+            this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+        }
 
         public ElementHandle getElement() {
             return modelElement;

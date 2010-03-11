@@ -752,11 +752,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
-        try {
-            addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
-        } catch (FileStateInvalidException fsiex) {
-            fsiex.printStackTrace();
-        }
         return (CloneableEditorSupport.Pane)mvtc;
     }
 
@@ -913,6 +908,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         opened.add(this);
         attachTopComponentsListener();
+        try {
+            addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
+        } catch (FileStateInvalidException fsiex) {
+            fsiex.printStackTrace();
+        }
     }
     
     public static FormEditorSupport getFormEditor(TopComponent tc) {

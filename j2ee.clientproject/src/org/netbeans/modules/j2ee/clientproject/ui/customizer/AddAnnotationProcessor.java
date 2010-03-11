@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,24 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints;
 
-import java.util.prefs.Preferences;
+/*
+ * AddAnnotationProcessor.java
+ *
+ * Created on Jan 26, 2010, 11:35:56 AM
+ */
+package org.netbeans.modules.j2ee.clientproject.ui.customizer;
+
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Dusan Balek
  */
-public class CollectionRemoveCustomizer extends javax.swing.JPanel {
+class AddAnnotationProcessor extends javax.swing.JPanel {
 
-    private final Preferences pref;
-    
-    public CollectionRemoveCustomizer(Preferences pref) {
-        this.pref = pref;
+    private ChangeListener changeListener;
+
+    /** Creates new form AddAnnotationProcessor */
+    AddAnnotationProcessor() {
         initComponents();
-        warnForCastable.setSelected(pref.getBoolean(CollectionRemove.WARN_FOR_CASTABLE_KEY, CollectionRemove.WARN_FOR_CASTABLE_DEFAULT));
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (changeListener != null)
+                    changeListener.stateChanged(null);
+            }
+        });
+    }
+
+    void addChangeListener(ChangeListener l) {
+        changeListener = l;
+    }
+
+    void removeChangeListener(ChangeListener l) {
+        changeListener = null;
+    }
+
+    String getProcessorFQN() {
+        return textField.getText().trim();
     }
 
     /** This method is called from within the constructor to
@@ -63,14 +100,11 @@ public class CollectionRemoveCustomizer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        warnForCastable = new javax.swing.JCheckBox();
+        label = new javax.swing.JLabel();
+        textField = new javax.swing.JTextField();
 
-        warnForCastable.setText(org.openide.util.NbBundle.getMessage(CollectionRemoveCustomizer.class, "CollectionRemoveCustomizer.warnForCastable.text")); // NOI18N
-        warnForCastable.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                warnForCastableActionPerformed(evt);
-            }
-        });
+        label.setLabelFor(textField);
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "LBL_AnnotationProcessorFQN")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -78,25 +112,24 @@ public class CollectionRemoveCustomizer extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(warnForCastable)
-                .addContainerGap(183, Short.MAX_VALUE))
+                .addComponent(label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textField, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(warnForCastable)
-                .addContainerGap(269, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(label)
+                    .addComponent(textField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void warnForCastableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_warnForCastableActionPerformed
-        pref.putBoolean(CollectionRemove.WARN_FOR_CASTABLE_KEY, warnForCastable.isSelected());
-    }//GEN-LAST:event_warnForCastableActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox warnForCastable;
+    private javax.swing.JLabel label;
+    private javax.swing.JTextField textField;
     // End of variables declaration//GEN-END:variables
-
 }

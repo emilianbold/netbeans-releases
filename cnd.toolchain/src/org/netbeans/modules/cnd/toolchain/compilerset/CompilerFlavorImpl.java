@@ -151,7 +151,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
             return getUnknown(platform);
         }
         for (CompilerFlavorImpl flavor : flavors) {
-            if (name.equals(flavor.sval) && ToolchainManagerImpl.isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
+            if (name.equals(flavor.sval) && ToolUtils.isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
                 return flavor;
             }
         }
@@ -188,7 +188,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
     private static boolean isPlatforSupported(CompilerFlavor flavor, int platform) {
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
         if (d != null) {
-            return ToolchainManagerImpl.isPlatforSupported(platform, d);
+            return ToolUtils.isPlatforSupported(platform, d);
         }
         return true;
     }

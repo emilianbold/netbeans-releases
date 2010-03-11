@@ -2,7 +2,6 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
-OpenIDE-Module-Install: org/netbeans/modules/j2ee/sun/ide/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv81/1
 OpenIDE-Module-Provides: org.netbeans.modules.serverplugins.javaee

@@ -44,17 +44,15 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
-import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -72,28 +70,22 @@ import org.openide.util.NbBundle;
 @Hint(category="code_maturity")
 public class PrintStackTrace {
 
-    @TriggerPattern (value="$t.printStackTrace ()")
+    @TriggerPattern(value="$t.printStackTrace ()",
+                    constraints=@Constraint(variable="$t", type="java.lang.Throwable"))
     public static ErrorDescription checkPrintStackTrace (HintContext ctx) {
         TreePath                treePath = ctx.getPath ();
         CompilationInfo         compilationInfo = ctx.getInfo ();
-        Map<String,TreePath>    variables = ctx.getVariables ();
-        Trees                   trees = compilationInfo.getTrees ();
-        TypeMirror              tType = trees.getTypeMirror (variables.get ("$t"));
-        TypeMirror              throwableType = compilationInfo.getElements ().getTypeElement ("java.lang.Throwable").asType ();
-        if (compilationInfo.getTypes ().isSubtype (tType, throwableType))
-            return ErrorDescriptionFactory.forName (
-                ctx,
-                treePath,
-                NbBundle.getMessage (PrintStackTrace.class, "MSG_PrintStackTrace"),
-                new FixImpl (
-                    NbBundle.getMessage (
-                        LoggerNotStaticFinal.class,
-                        "MSG_PrintStackTrace_fix"
-                    ),
-                    TreePathHandle.create (treePath, compilationInfo)
-                )
-            );
-        return null;
+        return ErrorDescriptionFactory.forName (
+            ctx,
+            treePath,
+            NbBundle.getMessage (PrintStackTrace.class, "MSG_PrintStackTrace"),
+            new FixImpl (
+                NbBundle.getMessage (
+                    LoggerNotStaticFinal.class,
+                    "MSG_PrintStackTrace_fix"
+                ),
+                TreePathHandle.create (treePath, compilationInfo)
+            ));
     }
 
     private static final class FixImpl implements Fix {
