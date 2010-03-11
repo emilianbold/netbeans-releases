@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -749,19 +750,14 @@ public final class UIUtil {
         return project;
     }
     
-    private static File getSuiteDirectory(Project suiteComp) {
-        File suiteDir = SuiteUtils.getSuiteDirectory(suiteComp);
-        assert suiteDir != null : "Invalid suite provider for: "
-                + suiteComp.getProjectDirectory();
-        return suiteDir;
-    }
-    
     private static String getSuiteProjectDirectory(Project suiteComp) {
-        return getSuiteDirectory(suiteComp).getAbsolutePath();
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        return d != null ? d.getAbsolutePath() : "???"; // NOI18N
     }
     
     private static String getSuiteProjectName(Project suiteComp) {
-        FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory(suiteComp));
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        FileObject suiteDir = d != null ? FileUtil.toFileObject(d) : null;
         if (suiteDir == null) {
             // #94915
             return "???"; // NOI18N
