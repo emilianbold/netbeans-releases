@@ -340,7 +340,12 @@ class KenaiHandler {
                     }
                     for (QueryHandle qh : queries) {
                         if(qh instanceof QueryHandleImpl) {
-                            ((QueryHandleImpl)qh).getQuery().refresh();
+                            Query query = ((QueryHandleImpl)qh).getQuery();
+                            KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
+                            assert ks != null;
+                            if(ks != null) {
+                                ks.refresh(query, false);
+                            }              
                         }
                     }
                 }
