@@ -305,9 +305,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
             stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
-            Map<String,String> clusterProperties = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.propertiesFilePropertyProvider(
-                    new File(nbroot, "nbbuild/cluster.properties"))).getProperties(); // NOI18N
-            if (clusterProperties != null) {
+            try {
+                Map<String,String> clusterProperties = ModuleList.getClusterProperties(nbroot);
                 StringBuilder allValsB = new StringBuilder();
                 for (PropertyProvider pp : new PropertyProvider[] {privateProperties, projectProperties}) {
                     for (String val : pp.getProperties().values()) {
@@ -332,6 +331,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         } // #172203: otherwise don't waste space on it
                     }
                 }
+            } catch (IOException x) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, x);
             }
         } else {
             nbroot = null;

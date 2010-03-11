@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEditorCookie;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -630,7 +631,8 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertNotNull(fs.findResource("f/x2"));
         assertNotNull(fs.findResource("z"));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #4187
     public void testExternalFileChangesRefired() throws Exception {
         Layer l = new Layer("");
         FileSystem fs = l.read();
