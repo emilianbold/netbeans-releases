@@ -114,7 +114,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -145,7 +145,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -191,7 +191,7 @@ public class ChildrenSupportTest extends NbTestCase {
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
         assertEquals(0,chCache.getChildren(true).size());
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
         assertEquals(0,childrenSupport.getCachedChildren().size());
         assertTrue(file.createNewFile());
         assertTrue(file2.createNewFile());
@@ -208,7 +208,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));
@@ -253,7 +253,7 @@ public class ChildrenSupportTest extends NbTestCase {
         assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
         ChildrenCache chCache = fo.getChildrenCache();
         assertNotNull(chCache);
-        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        ChildrenSupport childrenSupport = (ChildrenSupport)chCache;
 
         assertFalse(file.exists());
         assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));

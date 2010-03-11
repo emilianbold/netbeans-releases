@@ -144,7 +144,7 @@ public final class ToolchainManagerImpl {
                     if (position == null || vendors.containsKey(position)) {
                         position = indefinedID++;
                     }
-                    CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position.intValue());
+                    CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position.intValue()); // NOI18N
                     if (read2(file, files, v, cache)) {
                         vendors.put(position, v);
                     }

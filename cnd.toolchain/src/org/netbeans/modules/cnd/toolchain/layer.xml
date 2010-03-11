@@ -147,6 +147,8 @@
             <file name="SunStudio_8_fortran" url="resources/toolchaindefinition/SunStudio_8_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+            <file name="OracleSolarisStudio_flavor" url="resources/toolchaindefinition/OracleSolarisStudio_flavor.xml">
+            </file>
             <file name="SunStudio_flavor" url="resources/toolchaindefinition/SunStudio_flavor.xml">
             </file>
             <file name="SunStudio_c" url="resources/toolchaindefinition/SunStudio_c.xml">
@@ -744,6 +746,43 @@
                 </file>
                 <file name="fortran.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_8_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="OracleSolarisStudio">
+                <attr name="position" intvalue="1908"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OracleSolarisStudio_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_fortran"/>
                 </file>
                 <file name="assembler.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
