@@ -109,9 +109,25 @@ public final class DocumentView extends EditorBoxView
     static final char LINE_CONTINUATION = '\u21A9';
 
     static enum LineWrapType {
-        NONE,
-        CHARACTER_BOUND,
-        WORD_BOUND;
+        NONE("none"), //NOI18N
+        CHARACTER_BOUND("chars"), //NOI18N
+        WORD_BOUND("words"); //NOI18N
+
+        private final String settingValue;
+        private LineWrapType(String settingValue) {
+            this.settingValue = settingValue;
+        }
+
+        public static LineWrapType fromSettingValue(String settingValue) {
+            if (settingValue != null) {
+                for(LineWrapType lwt : LineWrapType.values()) {
+                    if (lwt.settingValue.equals(settingValue)) {
+                        return lwt;
+                    }
+                }
+            }
+            return null;
+        }
     };
 
     public static DocumentView get(JTextComponent component) {
@@ -128,7 +144,7 @@ public final class DocumentView extends EditorBoxView
         return null;
     }
 
-    private Object monitor = new String("DocumentView-Monitor");
+    private final Object monitor = new String("DocumentView-Monitor"); //NOI18N
 
     private JTextComponent textComponent;
 
@@ -180,7 +196,7 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
-    private LineWrapType lineWrapType = LineWrapType.WORD_BOUND;
+    private LineWrapType lineWrapType;
 
     private TextLayout newlineTextLayout;
 
@@ -369,6 +385,15 @@ public final class DocumentView extends EditorBoxView
                 }
             };
             prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
+        }
+
+        if (lineWrapType == null) {
+            Document doc = getDocument();
+            lineWrapType = LineWrapType.fromSettingValue((String) doc.getProperty(SimpleValueNames.TEXT_LINE_WRAP));
+            if (lineWrapType == null) {
+                lineWrapType = LineWrapType.NONE;
+            }
+            DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
         }
     }
 
@@ -588,20 +613,37 @@ public final class DocumentView extends EditorBoxView
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        if ("ancestor".equals(propName)) { // NOI18N
-            checkViewsInited();
-        } else if ("font".equals(propName)) {
-            if (!customFont && defaultFont != null) {
-                customFont = !defaultFont.equals(textComponent.getFont());
+        if (evt.getSource() instanceof Document) {
+            String propName = evt.getPropertyName();
+            if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
+                LineWrapType lwt = LineWrapType.fromSettingValue((String)getDocument().getProperty(SimpleValueNames.TEXT_LINE_WRAP));
+                if (lwt == null) {
+                    lwt = LineWrapType.NONE;
+                }
+                if (lwt != lineWrapType) {
+                    LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
+                    lineWrapType = lwt;
+                    synchronized (getMonitor()) {
+                        reinitViews();
+                    }
+                }
             }
-        } else if ("foreground".equals(propName)) {
-            if (!customForeground && defaultForeground != null) {
-                customForeground = !defaultForeground.equals(textComponent.getForeground());
-            }
-        } else if ("background".equals(propName)) {
-            if (!customBackground && defaultBackground != null) {
-                customBackground = !defaultBackground.equals(textComponent.getBackground());
+        } else { // an event from JTextComponent
+            String propName = evt.getPropertyName();
+            if ("ancestor".equals(propName)) { // NOI18N
+                checkViewsInited();
+            } else if ("font".equals(propName)) {
+                if (!customFont && defaultFont != null) {
+                    customFont = !defaultFont.equals(textComponent.getFont());
+                }
+            } else if ("foreground".equals(propName)) { //NOI18N
+                if (!customForeground && defaultForeground != null) {
+                    customForeground = !defaultForeground.equals(textComponent.getForeground());
+                }
+            } else if ("background".equals(propName)) { //NOI18N
+                if (!customBackground && defaultBackground != null) {
+                    customBackground = !defaultBackground.equals(textComponent.getBackground());
+                }
             }
         }
     }
