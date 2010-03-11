@@ -14,8 +14,8 @@
         <property name="glassfish.home" value="${org.glassfish.v3ee6.installRoot}"/>
     </target>
 
-    <target name="check-aas-root-property" if="com.sun.aas.installRoot">
-        <property name="glassfish.home" value="${com.sun.aas.installRoot}"/>
+    <target name="check-aas-root-property" if="test-qa-functional-sys-prop.com.sun.aas.installRoot">
+        <property name="glassfish.home" value="${test-qa-functional-sys-prop.com.sun.aas.installRoot}"/>
     </target>
 
     <target name="check-catalinahome-property" if="org.netbeans.modules.tomcat.autoregister.catalinaHome">

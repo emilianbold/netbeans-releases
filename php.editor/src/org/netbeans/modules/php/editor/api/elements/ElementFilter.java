@@ -165,7 +165,7 @@ public abstract class ElementFilter {
                 for (FileObject fileObject : files) {
                     String nameExt = fileObject.getNameExt();
                     String elementURL = element.getFilenameUrl();
-                    if (elementURL.indexOf(nameExt) < 0 || element.getFileObject() != fileObject) {
+                    if ((elementURL != null && elementURL.indexOf(nameExt) < 0) || element.getFileObject() != fileObject) {
                         retval = false;
                         break;
                     }
@@ -216,6 +216,14 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forEqualTypes(final TypeElement typeElement) {
+        return ElementFilter.allOf(
+                ElementFilter.forName(NameKind.exact(typeElement.getName())),
+                ElementFilter.forFiles(typeElement.getFileObject())/*,
+                ElementFilter.forOffset(typeElement.getOffset())*/);
+
+    }
+
     public static ElementFilter forMembersOfType(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;
@@ -223,9 +231,7 @@ public abstract class ElementFilter {
             public boolean isAccepted(PhpElement element) {
                 if (element instanceof TypeMemberElement) {
                     if (filterDelegate == null) {
-                        filterDelegate = ElementFilter.allOf(
-                                ElementFilter.forFiles(typeElement.getFileObject()),
-                                ElementFilter.forOffset(typeElement.getOffset()));
+                        filterDelegate = forEqualTypes(typeElement);
                     }
                     //return thisTypeElement.equals(typeElement);
                     return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
