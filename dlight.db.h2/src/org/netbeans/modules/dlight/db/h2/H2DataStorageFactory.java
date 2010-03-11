@@ -131,7 +131,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     @Override
     public H2DataStorage createStorage(String uniqueKey) {
         try {
-            H2DataStorage result = new H2DataStorage();
+            H2DataStorage result = new H2DataStorage(true);
             result.isPersistent = true;
             rcFile.put("h2.storages", uniqueKey, result.dbURL);//NOI18N
             rcFile.save();
