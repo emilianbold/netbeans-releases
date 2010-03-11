@@ -860,6 +860,9 @@ public final class NbModuleProject implements Project {
     }
     
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
+        if (customPlatform == null) { // #181798
+            return;
+        }
         String buildImplPath =
                     customPlatform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                     || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
