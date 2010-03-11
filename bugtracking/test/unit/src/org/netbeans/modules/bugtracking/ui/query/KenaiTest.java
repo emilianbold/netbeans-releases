@@ -307,10 +307,6 @@ public class KenaiTest extends NbTestCase {
             return repository;
         }
         @Override
-        public boolean refresh() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
         public Issue[] getIssues(int includeStatus) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
