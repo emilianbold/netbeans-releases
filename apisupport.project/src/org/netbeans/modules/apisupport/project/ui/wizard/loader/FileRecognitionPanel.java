@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ButtonGroup;
@@ -63,7 +64,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     private static final Pattern EXTENSION_PATTERN = Pattern.compile("([.]?[a-zA-Z0-9_]+){1}([ ,]+[.]?[a-zA-Z0-9_]+)*[ ]*"); // NOI18N
     private static final Pattern ELEMENT_PATTERN = Pattern.compile("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)"); // NOI18N
-    private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("[\\w.]+(?:[+-][\\w.]+)?/[\\w.]+(?:[+-][\\w.]+)?"); // NOI18N
+    private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("[\\w.]+(?:[+-][\\w.]+)?/[\\w.]+(?:[+-][\\w.]+)*"); // NOI18N
     
     private NewLoaderIterator.DataModel data;
     private ButtonGroup group;
@@ -99,35 +100,47 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
     }
-    
-    private void checkValidity() {
-        markValid();
-        String txt = txtMimeType.getText().trim();
-        
-        if (txt.length() == 0) {
-            setInfo(getMessage("MSG_EmptyMIMEType"), false);
-        } else if (! MIME_TYPE_PATTERN.matcher(txt).matches()) {
-            setError(getMessage("MSG_NotValidMimeType"));
+
+    static String checkValidity(AtomicBoolean error, String mimeType, String namespace, String extension, boolean byElement) {
+        if (mimeType.isEmpty()) {
+            return getMessage("MSG_EmptyMIMEType");
+        } else if (!MIME_TYPE_PATTERN.matcher(mimeType).matches()) {
+            error.set(true);
+            return getMessage("MSG_NotValidMimeType");
         } else {
-            if (rbByElement.isSelected()) {
-                if (txtNamespace.getText().trim().length() == 0) {
-                    setInfo(getMessage("MSG_NoNamespace"), false);
+            if (byElement) {
+                if (namespace.isEmpty()) {
+                    return getMessage("MSG_NoNamespace");
                 } else {
-                    Matcher match = ELEMENT_PATTERN.matcher(txt);
-                    if (! match.matches()) {
-                        setError(getMessage("MSG_BadMimeTypeForXML"));
+                    if (!ELEMENT_PATTERN.matcher(mimeType).matches()) {
+                        error.set(true);
+                        return getMessage("MSG_BadMimeTypeForXML");
                     }
                 }
             } else {
-                if (txtExtension.getText().trim().length() == 0) {
-                    setInfo(getMessage("MSG_NoExtension"), false);
+                if (extension.isEmpty()) {
+                    return getMessage("MSG_NoExtension");
                 } else {
-                    Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
-                    if (!match.matches()) {
-                        setError(getMessage("MSG_BadExtensionPattern"));
+                    if (!EXTENSION_PATTERN.matcher(extension).matches()) {
+                        error.set(true);
+                        return getMessage("MSG_BadExtensionPattern");
                     }
                 }
             }
+        }
+        return null;
+    }
+    
+    private void checkValidity() {
+        AtomicBoolean error = new AtomicBoolean();
+        String msg = checkValidity(error, txtMimeType.getText().trim(), txtNamespace.getText().trim(),
+                txtExtension.getText().trim(), rbByElement.isSelected());
+        if (msg == null) {
+            markValid();
+        } else if (error.get()) {
+            setError(msg);
+        } else {
+            setInfo(msg, false);
         }
     }
     
