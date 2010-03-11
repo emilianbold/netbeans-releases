@@ -43,6 +43,7 @@ import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,7 +59,8 @@ public final class RemoteTerminalAction extends TerminalAction {
 
     @Override
     protected ExecutionEnvironment getEnvironment() {
-        DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog", // NOI18N
+        String title = NbBundle.getMessage(RemoteTerminalAction.class, "RemoteConnectionTitle");
+        DialogDescriptor dd = new DialogDescriptor(cfgPanel, title, // NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION, null);
 
