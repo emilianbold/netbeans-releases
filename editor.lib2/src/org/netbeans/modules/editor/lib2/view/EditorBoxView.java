@@ -55,6 +55,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.TabExpander;
+import javax.swing.text.TabableView;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
@@ -164,6 +166,13 @@ public abstract class EditorBoxView extends EditorView {
      */
     void setMinorAxisSpan(float minorAxisSpan) {
         this.minorAxisSpan = minorAxisSpan;
+    }
+
+    protected TabExpander getTabExpander() {
+        View parent = getParent();
+        return (parent instanceof EditorBoxView)
+            ? ((EditorBoxView)parent).getTabExpander()
+            : null;
     }
 
     /**
@@ -299,7 +308,13 @@ public abstract class EditorBoxView extends EditorView {
         }
         if (majorSpanChange) {
             double origSpan = getViewMajorAxisSpan(childViewIndex);
-            float newSpan = childView.getPreferredSpan(majorAxis);
+            float newSpan;
+            if (children.handleTabableViews() && childView instanceof TabableView) {
+                float visualOffset = (float) getViewVisualOffset(childViewIndex);
+                newSpan = ((TabableView)childView).getTabbedSpan(visualOffset, getTabExpander());
+            } else {
+                newSpan = childView.getPreferredSpan(majorAxis);
+            }
             double delta = newSpan - origSpan;
             if (delta != 0d) { // TODO (diff < epsilon) instead ?
                 children.fixOffsetsAndSpan(this, childViewIndex + 1, 0, delta);

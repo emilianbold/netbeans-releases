@@ -107,19 +107,19 @@ public class Commit extends GeneralPHP
   {
     return NbModuleSuite.create(
       NbModuleSuite.createConfiguration( Commit.class ).addTest(
-//          "CreatePHPApplication",
-//          "ManipulateIndexPHP",
-//          "CreateEmptyPHP",
-//          "ManipulateEmptyPHP",
-//          "CreateTemplatePHP",
-          "ManipulateTemplatePHP"
+          "CreatePHPApplication",
+          "ManipulateIndexPHP",
+          "CreateEmptyPHP",
+          "ManipulateEmptyPHP",
+          "CreateTemplatePHP",
+          "ManipulateTemplatePHP",
 
-          //"OpenStandalonePHP",
-          //"ManipulateStandalonePHP",
-          //"CreateCustomPHPApplication",
+          "OpenStandalonePHP",
+//          "ManipulateStandalonePHP",
+          "CreateCustomPHPApplication",
 
-//          "CreatePHPWithExistingSources",
-//          "ManipulatePHPWithExistingSources"
+          "CreatePHPWithExistingSources",
+          "ManipulatePHPWithExistingSources"
         )
         .enableModules( ".*" )
         .clusters( ".*" )
@@ -387,8 +387,9 @@ public class Commit extends GeneralPHP
     */
 
     // Completion
-    if( bInclass )
+      if( bInclass )
     {
+          /** bug  181710 */
       // start constructor
 //      TypeCode( eoPHP, "__con" );
 //      Sleep( 1500 );

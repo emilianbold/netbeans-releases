@@ -47,6 +47,8 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.text.Position;
+import javax.swing.text.TabExpander;
+import javax.swing.text.TabableView;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
@@ -87,11 +89,11 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     /**
-     * @return true if the last child view's allocation along the major axis
-     *  should encompass rest of the view's allocation. It's useful for paragraph views
-     *  where the newline view renders rest of the line.
+     * Whether TabableView instances should be handled specially.
+     *
+     * @return true if TabableView children should be treated specially.
      */
-    protected boolean extendLastViewAllocation() {
+    protected boolean handleTabableViews() {
         return false;
     }
 
@@ -139,6 +141,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
             int minorAxis = ViewUtils.getOtherAxis(majorAxis);
             boolean supportsRawOffsetUpdate = rawOffsetUpdate();
             double viewVisualOffset = visualOffset;
+            TabExpander tabExpander = boxView.getTabExpander();
             for (int i = 0; i < addedViews.length; i++) {
                 EditorView view = addedViews[i];
                 if (supportsRawOffsetUpdate) {
@@ -149,7 +152,12 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 // First assign parent to the view and then ask for preferred span.
                 // This way the view may get necessary info from its parent regarding its preferred span.
                 view.setParent(boxView);
-                float majorSpan = view.getPreferredSpan(majorAxis);
+                float majorSpan;
+                if (handleTabableViews() && view instanceof TabableView) {
+                    majorSpan = ((TabableView)view).getTabbedSpan((float)viewVisualOffset, tabExpander);
+                } else {
+                    majorSpan = view.getPreferredSpan(majorAxis);
+                }
                 float minorSpan = view.getPreferredSpan(minorAxis);
                 // Below gap => do not use visualGapLength
                 view.setRawVisualOffset(viewVisualOffset);
@@ -295,7 +303,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
     final double getViewVisualOffset(EditorBoxView boxView, int index) {
         return (index == size())
-                ? boxView.getMajorAxisSpan()
+                ? getMajorAxisChildrenSpan(boxView)
                 : getViewVisualOffset(index);
     }
 
@@ -309,14 +317,14 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
     final double getViewMajorAxisSpan(EditorBoxView boxView, int index) {
         return (index == size() - 1)
-                ? boxView.getMajorAxisSpan() - getViewVisualOffset(index)
+                ? getMajorAxisChildrenSpan(boxView) - getViewVisualOffset(index)
                 : getViewVisualOffset(index + 1) - getViewVisualOffset(index);
     }
 
     Shape getChildAllocation(EditorBoxView boxView, int startIndex, int endIndex, Shape alloc) {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         double visualOffset = getViewVisualOffset(startIndex);
-        double endVisualOffset = (endIndex == size()) ? boxView.getMajorAxisSpan() : getViewVisualOffset(endIndex);
+        double endVisualOffset = (endIndex == size()) ? getMajorAxisChildrenSpan(boxView) : getViewVisualOffset(endIndex);
         if (boxView.getMajorAxis() == View.X_AXIS) {
             mutableBounds.x += visualOffset;
             mutableBounds.width = endVisualOffset - visualOffset;
@@ -410,14 +418,36 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     final void fixOffsetsAndSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
-        // Expects moveGap() was called already
+        // Expects moveGap(index) was called already before calling of this method
+        boolean visualUpdate = (visualDelta != 0d);
         if (gapStorage != null) {
             gapStorage.offsetGapLength -= offsetDelta;
             gapStorage.visualGapLength -= visualDelta;
+            if (handleTabableViews()) {
+                TabExpander tabExpander = boxView.getTabExpander();
+                // Go though the rest of views and check if their span has changed
+                int viewCount = size();
+                for (int i = index; i < viewCount; i++) {
+                    EditorView view = get(i);
+                    if (visualUpdate) {
+                        view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
+                    }
+                    if (view instanceof TabableView) {
+                        double origMajorSpan = boxView.getViewMajorAxisSpan(index);
+                        float visualOffset = (float) boxView.getViewVisualOffset(index);
+                        double majorSpan = ((TabableView)view).getTabbedSpan(visualOffset, tabExpander);
+                        if (majorSpan != origMajorSpan) {
+                            visualDelta += (majorSpan - origMajorSpan);
+                            visualUpdate = true;
+                        }
+                    }
+                }
+
+            }
         } else { // Move the items one by one
             boolean offsetUpdate = rawOffsetUpdate() && (offsetDelta != 0);
-            boolean visualUpdate = (visualDelta != 0d);
-            for (int i = size() - 1; i >= index; i--) {
+            int viewCount = size();
+            for (int i = index; i < viewCount; i++) {
                 EditorView view = get(i);
                 if (offsetUpdate) {
                     view.setRawOffset(view.getRawOffset() + offsetDelta);
@@ -426,9 +456,9 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                     view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
                 }
             }
-            if (visualUpdate) {
-                setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
-            }
+        }
+        if (visualUpdate) {
+            setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
         }
     }
 

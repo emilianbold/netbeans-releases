@@ -50,6 +50,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
@@ -81,6 +82,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
      */
     private int newlineOffset;
 
+    private CharSequence docText;
+
     private HighlightsContainer highlightsContainer;
 
     private HighlightsSequence highlightsSequence;
@@ -101,6 +104,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     public void restart(int startOffset) {
         this.offset = startOffset;
         Document doc = textComponent().getDocument();
+        docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
         lineIndex = lineElementRoot.getElementIndex(offset);
         fetchLineInfo();
@@ -127,16 +131,30 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                     (startOffset + 1 <= highlightEndOffset) ? highlightAttributes : null);
         } else if (startOffset < highlightStartOffset) { // Before highlight
             int endOffset = Math.min(Math.min(highlightStartOffset, limitOffset), newlineOffset);
-            return new HighlightsView(startOffset, endOffset - startOffset, null);
+            return createHighlightsView(startOffset, endOffset - startOffset, null);
         } else { // Inside highlight
             int endOffset = Math.min(Math.min(highlightEndOffset, limitOffset), newlineOffset);
-            if (endOffset <= startOffset) {
-                throw new IllegalStateException("startOffset=" + startOffset +
-                        ", endOffset=" + endOffset + "highlightEndOffset=" + highlightEndOffset +
-                        ", limitOffset=" + limitOffset + ", newlineOffset=" + newlineOffset);
-            }
-            return new HighlightsView(startOffset, endOffset - startOffset, highlightAttributes);
+            return createHighlightsView(startOffset, endOffset - startOffset, highlightAttributes);
         }
+    }
+
+    private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
+        if (length <= 0) {
+            throw new IllegalStateException("startOffset=" + startOffset // NOI18N
+                    + ", length=" + length + "highlight: <" + highlightStartOffset // NOI18N
+                    + "," + highlightEndOffset // NOI18N
+                    + ">, newlineOffset=" + newlineOffset); // NOI18N
+        }
+        boolean tabs = (docText.charAt(startOffset) == '\t');
+        for (int i = 1; i < length; i++) {
+            if (tabs != (docText.charAt(startOffset + i) == '\t')) {
+                length = i;
+                break;
+            }
+        }
+        return tabs
+                ? new TabView(startOffset, length, attrs)
+                : new HighlightsView(startOffset, length, attrs);
     }
 
     private void updateHighlight(int offset) {

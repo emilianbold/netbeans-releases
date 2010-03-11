@@ -39,34 +39,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.awt.UndoRedo;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import javax.swing.JPanel;
 
 /**
  * A tab in branding editor window.
  *
  * @author S. Aubrecht
  */
-abstract class AbstractBrandingPanel extends TopComponent implements MultiViewElement, MultiViewDescription {
+abstract class AbstractBrandingPanel extends JPanel {
 
-    private MultiViewElementCallback callback;
-    private Lookup lkp;
-    private final JToolBar toolbar;
     private final BasicBrandingModel model;
-    private BrandingEditor editor;
+    private BrandingEditorPanel editor;
     private final String displayName;
     private boolean brandingValid = true;
     private String errMessage = null;
@@ -79,80 +62,10 @@ abstract class AbstractBrandingPanel extends TopComponent implements MultiViewEl
     protected AbstractBrandingPanel( String displayName, BasicBrandingModel model ) {
         this.displayName = displayName;
         this.model = model;
-        toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        toolbar.setFocusable(false);
-        toolbar.addSeparator();
     }
 
-    final void init( BrandingEditor editor, Lookup lkp ) {
+    final void init( BrandingEditorPanel editor ) {
         this.editor = editor;
-        this.lkp = lkp;
-        toolbar.add(editor.getSaveAction());
-        toolbar.add(editor.createErrorLabel());
-    }
-
-    @Override
-    public final JComponent getVisualRepresentation() {
-        return this;
-    }
-
-    @Override
-    public final JComponent getToolbarRepresentation() {
-        return toolbar;
-    }
-
-    @Override
-    public Action[] getActions() {
-        if( null != callback )
-            return callback.createDefaultActions();
-        return new Action[0];
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lkp;
-    }
-
-    @Override
-    public void componentOpened() {
-    }
-
-    @Override
-    public void componentClosed() {
-    }
-
-    @Override
-    public void componentShowing() {
-    }
-
-    @Override
-    public void componentHidden() {
-    }
-
-    @Override
-    public void componentActivated() {
-    }
-
-    @Override
-    public void componentDeactivated() {
-    }
-
-    @Override
-    public UndoRedo getUndoRedo() {
-        return null;
-    }
-
-    @Override
-    public final void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
-    }
-
-    @Override
-    public CloseOperationState canCloseElement() {
-        if( null == editor || !editor.isModified() )
-            return CloseOperationState.STATE_OK;
-        return MultiViewFactory.createUnsafeCloseState(null, editor.getSaveAction(), null);
     }
 
     protected final BasicBrandingModel getBranding() {
@@ -183,34 +96,8 @@ abstract class AbstractBrandingPanel extends TopComponent implements MultiViewEl
         editor.setModified();
     }
 
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
-    }
-
-    @Override
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return displayName;
-    }
-
-    @Override
-    public Image getIcon() {
-        return null == editor ? null : editor.getIcon();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
-    }
-
-    @Override
-    public final String preferredID() {
-        return getClass().getName();
-    }
-
-    @Override
-    public final MultiViewElement createElement() {
-        return this;
     }
 
     private void notifyEditor() {

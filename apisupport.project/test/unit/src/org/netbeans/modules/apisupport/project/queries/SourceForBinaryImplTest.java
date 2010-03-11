@@ -87,7 +87,6 @@ public class SourceForBinaryImplTest extends TestBase {
      */
     
     public void testFindSourceRootForModuleJar() throws Exception {
-        ClassPath.getClassPath(FileUtil.toFileObject(file("o.apache.tools.ant.module/src")), ClassPath.COMPILE);
         check("java.project/src", TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar");
         check("openide.loaders/src", TestBase.CLUSTER_PLATFORM + "/modules/org-openide-loaders.jar");
         check("o.n.bootstrap/src", TestBase.CLUSTER_PLATFORM + "/lib/boot.jar");
@@ -146,6 +145,7 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     private void check(String srcS, String jarS) throws Exception {
+        ClassPath.getClassPath(FileUtil.toFileObject(file(srcS)), ClassPath.COMPILE);
         check(srcS, file("nbbuild/netbeans/" + jarS));
     }
     

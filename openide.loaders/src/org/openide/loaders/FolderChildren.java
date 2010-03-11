@@ -79,7 +79,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     /** change listener */
     private ChangeListener changeListener;
     /** logging, if needed */
-    private Logger err;
+    @SuppressWarnings("NonConstantLogger")
+    private final Logger err;
     /** last refresh task */
     private volatile Task refTask = Task.EMPTY;
 
@@ -95,19 +96,20 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     * @param f folder to display content of
     * @param filter filter of objects
     */
+    @SuppressWarnings("LeakingThisInConstructor")
     public FolderChildren(DataFolder f, DataFilter filter) {
         super(true);
-        this.folder = FolderList.find(f.getPrimaryFile(), true);
-        this.filter = filter;
-        this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
-        this.fcListener = org.openide.filesystems.FileUtil.weakFileChangeListener(this, folder.getPrimaryFile());
         String log;
         if (f.getPrimaryFile().isRoot()) {
             log = "org.openide.loaders.FolderChildren"; // NOI18N
         } else {
-            log = "org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/','.'); // NOI18N
+            log = "org.openide.loaders.FolderChildren." + f.getPrimaryFile().getPath().replace('/', '.'); // NOI18N
         }
         err = Logger.getLogger(log);
+        this.folder = FolderList.find(f.getPrimaryFile(), true);
+        this.filter = filter;
+        this.listener = org.openide.util.WeakListeners.propertyChange(this, folder);
+        this.fcListener = org.openide.filesystems.FileUtil.weakFileChangeListener(this, folder.getPrimaryFile());
     }
 
     /** used from DataFolder */
@@ -115,22 +117,29 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         return filter;
     }
 
+    static void waitRefresh() {
+        refRP.post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
+    }
+
     /** If the folder changed its children we change our nodes.
      */
+    @Override
     public void propertyChange(final PropertyChangeEvent ev) {
         err.log(Level.FINE, "Got a change {0}", ev.getPropertyName());
         refreshChildren(RefreshMode.SHALLOW);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
         refreshChildren(RefreshMode.DEEP);
     }
 
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
-    private final void refreshChildren(RefreshMode operation) {
+    private void refreshChildren(RefreshMode operation) {
         class R implements Runnable {
             RefreshMode op;
+            @Override
             public void run() {
                 if (op == RefreshMode.DEEP) {
                     op = RefreshMode.DEEP_LATER;
@@ -190,6 +199,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     /** Create a node for one data object.
     * @param key DataObject
     */
+    @Override
     protected Node[] createNodes(FolderChildrenPair pair) {
         DataObject obj;
         long time = System.currentTimeMillis();
@@ -213,8 +223,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         } finally {
             long took = System.currentTimeMillis() - time;
             if (err.isLoggable(Level.FINE)) {
-                err.fine("createNodes: " + pair + " took: " + took + " ms");
-                err.fine("  returning: " + ret);
+                err.log(Level.FINE, "createNodes: {0} took: {1} ms", new Object[]{pair, took});
+                err.log(Level.FINE, "  returning: {0}", ret);
             }
         }
         return ret == null ? null : new Node[] { ret };
@@ -313,6 +323,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         return (folder != null) ? folder.getPrimaryFile ().toString () : super.toString();
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         if (DataObject.EA_ASSIGNED_LOADER.equals(fe.getName())) {
             // make sure this event is processed by the data system
@@ -322,21 +333,26 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         }
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
          refreshChildren(RefreshMode.SHALLOW);
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         refreshChildren(RefreshMode.SHALLOW);
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         refreshChildren(RefreshMode.SHALLOW);
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         refreshChildren(RefreshMode.SHALLOW);
     }

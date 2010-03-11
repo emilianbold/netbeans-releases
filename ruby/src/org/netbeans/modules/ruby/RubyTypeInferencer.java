@@ -41,9 +41,7 @@ package org.netbeans.modules.ruby;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.jrubyparser.ast.Colon2ConstNode;
 import org.jrubyparser.ast.Colon2Node;
-import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IScopingNode;
 import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.MethodDefNode;
@@ -76,15 +74,10 @@ public final class RubyTypeInferencer {
     }
 
     private RubyTypeInferencer(final ContextKnowledge knowledge, boolean fast) {
+        assert knowledge != null : "need ContextKnowledge for RubyTypeAnalyzer";
         this.knowledge = knowledge;
         this.fast = fast;
-    }
-
-    private void initializeAnalyzer() {
-        if (analyzer == null) {
-            assert knowledge != null : "need ContextKnowledge for RubyTypeAnalyzer";
-            analyzer = new RubyTypeAnalyzer(knowledge);
-        }
+        this.analyzer = new RubyTypeAnalyzer(knowledge, this);
     }
 
     /**
@@ -96,7 +89,6 @@ public final class RubyTypeInferencer {
      * @return inferred {@link RubyType types}, never <code>null</code>;
      */
     public RubyType inferType(final String symbol) {
-        initializeAnalyzer();
         analyzer.analyze();
 
         RubyType type = knowledge.getType(symbol);
@@ -142,39 +134,62 @@ public final class RubyTypeInferencer {
      * of the method where it is defined (if any), e.g. <code>"my_method/my_local_var"</code> or
      * just <code>"my_local_var"</code> if it was defined at top-level.
      * 
-     * @param path the path
-     * @param localVar 
+     * @param root the root node.
+     * @param target the local var node.
+     * @param currentMethod the current method; may be {@code null} in which
+     *  case an {@code AstPath} is constructed to find out the current method.
+     * 
      * @return
      */
-    static String getLocalVarPath(AstPath path, String varName) {
-        Node method = AstUtilities.findMethod(path);
-        String prefix = "";
-        if (method != null) {
-            prefix = AstUtilities.getName(method) + "/";
+    static String getLocalVarPath(Node root, Node target, String currentMethod) {
+        String varName = AstUtilities.getName(target);
+        if (currentMethod != null) {
+            return  currentMethod + "/" + varName;
         }
-        return prefix + varName;
+        return getLocalVarPath(new AstPath(root, target), varName);
+    }
+    
+    private static String getLocalVarPath(AstPath path, String varName) {
+        Node methodNode = AstUtilities.findMethod(path);
+        String methodName = null;
+        if (methodNode != null) {
+            methodName = AstUtilities.getName(methodNode);
+        }
+        return methodName + "/" + varName;
     }
 
     /** Called on AsgnNodes to compute RHS. */
     RubyType inferTypesOfRHS(final Node node) {
+        return inferTypesOfRHS(node, null);
+    }
+
+    RubyType inferTypesOfRHS(final Node node, String currentMethod) {
         List<Node> children = node.childNodes();
         if (children.size() != 1) {
             return RubyType.unknown();
         }
-        return inferType(children.get(0));
+        return inferType(children.get(0), currentMethod);
     }
 
+
     RubyType inferType(final Node node) {
+        return inferType(node, null);
+    }
+
+    private RubyType inferType(final Node node, String currentMethod) {
         RubyType type = knowledge.getType(node);
         if (type != null) {
             return type;
         }
         if (!knowledge.wasAnalyzed()) {
-            new RubyTypeAnalyzer(knowledge).analyze();
+            analyzer.analyze();
         }
         switch (node.getNodeType()) {
             case LOCALVARNODE:
-                type = knowledge.getType(getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node)));
+                // uses currentMethod if passed; while it is not 100% accurate (currentMethod gets assigned
+                // only when a new method def is encountered), constructing an AstPath for every local variable
+                // is too time consuming
+                type = knowledge.getType(getLocalVarPath(knowledge.getRoot(), node, currentMethod));
                 break;
             case GLOBALVARNODE:
                 String name = AstUtilities.getName(node);
@@ -201,15 +216,16 @@ public final class RubyTypeInferencer {
                 break;
             case RETURNNODE:
                 ReturnNode retNode = (ReturnNode) node;
-                type = inferType(retNode.getValueNode());
+                type = inferType(retNode.getValueNode(), currentMethod);
                 break;
             case DEFNNODE:
             case DEFSNODE: 
                 MethodDefNode methodDefNode = (MethodDefNode) node;
+                currentMethod = methodDefNode.getName();
                 type = inferMethodNode(methodDefNode);
                 break;
             case ITERNODE:
-                type = inferIterNode((IterNode) node);
+                type = inferIterNode((IterNode) node, currentMethod);
                 break;
             case SELFNODE:
                 type = inferSelf(node);
@@ -263,14 +279,14 @@ public final class RubyTypeInferencer {
         return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
     }
 
-    private RubyType inferIterNode(IterNode iterNode) {
+    private RubyType inferIterNode(IterNode iterNode, String currentMethod) {
         Node body = iterNode.getBodyNode();
         RubyType result = new RubyType();
         if (body != null) {
             Set<Node> exits = new LinkedHashSet<Node>();
             AstUtilities.findExitPoints(body, exits);
             for (Node exit : exits) {
-                result.append(inferType(exit));
+                result.append(inferType(exit, currentMethod));
             }
         }
         return result;
@@ -300,7 +316,7 @@ public final class RubyTypeInferencer {
         Set<Node> exits = new LinkedHashSet<Node>();
         AstUtilities.findExitPoints(methodDefNode, exits);
         for (Node exit : exits) {
-            result.append(inferType(exit));
+            result.append(inferType(exit, name));
         }
         return result;
     }

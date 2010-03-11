@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: demo.rest
+OpenIDE-Module-Layer: demo/rest/layer.xml
+OpenIDE-Module-Localizing-Bundle: demo/rest/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0

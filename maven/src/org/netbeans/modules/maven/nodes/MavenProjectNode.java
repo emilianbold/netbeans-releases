@@ -166,18 +166,7 @@ public class MavenProjectNode extends AbstractNode {
         lst.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         lst.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(MavenProjectNode.class, "ACT_Test"), null));
 
-        List<? extends Action> acts = Utilities.actionsForPath("Projects/org-netbeans-modules-maven/ProjectActions"); //NOI18N
-        for (Action ac : acts) {
-            if (ac != null) {
-                if( ac instanceof ContextAwareAction ) {
-                    ac = ((ContextAwareAction)ac).createContextAwareInstance(getLookup());
-                    if( ac.isEnabled() )
-                        lst.add(ac);
-                } else if( ac.isEnabled() ) {
-                    lst.add(ac);
-                }
-            }
-        }
+        addActionsFromPath( lst, "Projects/org-netbeans-modules-maven/ProjectActions" ); //NOI18N
         lst.add(null);
 
         lst.add(provider.createCustomPopupAction());
@@ -213,6 +202,7 @@ public class MavenProjectNode extends AbstractNode {
             lst.add(new ShowProblemsAction());
         }
 
+        addActionsFromPath(lst, "Projects/org-netbeans-modules-maven/CustomizeProjectActions"); //NOI18N
         lst.add(CommonProjectActions.customizeProjectAction());
 
         return lst.toArray(new Action[lst.size()]);
@@ -263,6 +253,21 @@ public class MavenProjectNode extends AbstractNode {
         }
         return buf.toString();
 
+    }
+
+    private void addActionsFromPath(ArrayList<Action> lst, String path) {
+        List<? extends Action> acts = Utilities.actionsForPath(path);
+        for (Action ac : acts) {
+            if (ac != null) {
+                if( ac instanceof ContextAwareAction ) {
+                    ac = ((ContextAwareAction)ac).createContextAwareInstance(getLookup());
+                    if( ac.isEnabled() )
+                        lst.add(ac);
+                } else if( ac.isEnabled() ) {
+                    lst.add(ac);
+                }
+            }
+        }
     }
 
     private class CloseSuprojectsAction extends AbstractAction {

@@ -86,7 +86,7 @@ public final class EnvWriter {
                 // ask key as is
                 name = entry.getKey();
                 // check capitalized key by pattern
-                if (!pattern.matcher(name.toUpperCase()).matches()) {
+                if (!pattern.matcher(name.toUpperCase(java.util.Locale.ENGLISH)).matches()) {
                     continue;
                 }
 

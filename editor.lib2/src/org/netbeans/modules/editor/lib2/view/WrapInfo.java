@@ -91,7 +91,7 @@ final class WrapInfo extends GapList<WrapLine> {
         if (docView == null) { // Not paint unless connected to hierarchy
             return;
         }
-        TextLayout lineContinuationTextLayout = docView.lineContinuationTextLayout();
+        TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
         JTextComponent textComponent = docView.getTextComponent();
         float baselineOffset = docView.getDefaultBaselineOffset();
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
@@ -132,16 +132,12 @@ final class WrapInfo extends GapList<WrapLine> {
             }
             // Paint wrap mark
             if (i != lastWrapLineIndex) { // but not on last wrap line
-                Color origColor = g.getColor();
-                Font origFont = g.getFont();
+                PaintState paintState = PaintState.save(g);
                 try {
-                    g.setColor(textComponent.getForeground());
-                    g.setFont(textComponent.getFont());
-                    allocBounds.width = lineContinuationTextLayout.getAdvance();
-                    lineContinuationTextLayout.draw(g, (float) allocBounds.x, (float) (allocBounds.y + baselineOffset));
+                    HighlightsView.paintForeground(g, allocBounds, docView, lineContinuationTextLayout,
+                            paragraphView.getAttributes());
                 } finally {
-                    g.setFont(origFont);
-                    g.setColor(origColor);
+                    paintState.restore();
                 }
             }
             allocBounds.x = allocOrigX;
@@ -172,7 +168,9 @@ final class WrapInfo extends GapList<WrapLine> {
         for (int i = 0; i < size(); i++) {
             WrapLine wrapLine = get(i);
             EditorView startViewPart = wrapLine.startViewPart;
+            boolean nonEmptyLine = false;
             if (startViewPart != null) {
+                nonEmptyLine = true;
                 if (startViewPart.getStartOffset() != lastOffset) {
                     err = "startViewPart.getStartOffset()=" + startViewPart.getStartOffset() +
                             " != lastOffset=" + lastOffset;
@@ -182,6 +180,7 @@ final class WrapInfo extends GapList<WrapLine> {
             int startViewIndex = wrapLine.startViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
             if (startViewIndex != endViewIndex) {
+                nonEmptyLine = true;
                 boolean validIndices = true;
                 if (startViewIndex < 0) {
                     validIndices = false;
@@ -213,11 +212,15 @@ final class WrapInfo extends GapList<WrapLine> {
             }
             EditorView endViewPart = wrapLine.endViewPart;
             if (endViewPart != null) {
+                nonEmptyLine = true;
                 if (err == null && lastOffset != endViewPart.getStartOffset()) {
                     err = "endViewPart.getStartOffset()=" + endViewPart.getStartOffset() +
                             " != lastOffset=" + lastOffset;
                 }
                 lastOffset = endViewPart.getEndOffset();
+            }
+            if (!nonEmptyLine && err == null) {
+                err = "Empty";
             }
             if (err != null) {
                 err = "WrapLine[" + i + "]: " + err;

@@ -97,7 +97,7 @@ public final class ViewUpdates {
         }
     }
 
-    public void reinitViews() {
+    void reinitViews() {
         // Insert into document was performed -> update or rebuild views
         // First update factories since they may fire rebuilding
         Document doc = documentView.getDocument();

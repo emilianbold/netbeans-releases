@@ -1051,7 +1051,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             secondSourceUnsupportedTextUI = true;
         }
         jEditorPane2.initActions();
-        jSplitPane1.putClientProperty(UndoRedo.class, editorUndoRedo);
+        view.putClientProperty(UndoRedo.class, editorUndoRedo);
         jEditorPane2.getEditorPane().setDocument(doc);
         jEditorPane2.getEditorPane().setEditable(editableCookie != null);
         if (doc instanceof NbDocument.CustomEditor) {

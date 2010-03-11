@@ -19,8 +19,8 @@
             String sig = signParams(queryParamNames, queryParamValues);
             out.println("<a href=\"http://www.flickr.com/services/auth/?api_key="+api_key+"&perms="+perms+"&api_sig="+sig+"\">Flickr Login</a>");
             String loginURL = request.getRequestURL().toString();
-            String callbackUrl = loginURL.substring(0, loginURL.indexOf("/FlickrJerseyClientLogin"));
-            out.println("<br><br>Ensure you specified correctly the application Callback URL to: <b>" + callbackUrl + "/FlickrJerseyClientCallback</b><br>");
+            String callbackUrl = loginURL.substring(0, loginURL.lastIndexOf("/FlickrLoginServlet"));
+            out.println("<br><br>Ensure you specified correctly the application Callback URL to: <b>" + callbackUrl + "/FlickrCallbackServlet</b><br>");
             out.println("<br>Help: To set up Canvas Callback URL go to " + "<a href=\"http://www.flickr.com/services/api/\">http://www.flickr.com/services/api/</a> , select <i>API Keys</i>, click <i>your web application</i> and go to <i>Admin/Edit(authentication flow)</i> section");
         }
         out.println("</body>");

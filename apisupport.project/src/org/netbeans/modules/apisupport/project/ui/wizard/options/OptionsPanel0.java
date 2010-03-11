@@ -42,10 +42,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.options;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -55,6 +52,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -63,7 +61,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -173,9 +171,17 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
                     secondaryKwField.getText());
         } else {
             assert optionsCategoryButton.isSelected();
+            File icon = new File(iconField.getText());
+            FileObject iconFO = icon.isFile() ? FileUtil.toFileObject(FileUtil.normalizeFile(icon)) : null;
+            // XXX would be cleaner to use ret value from BasicDataModel.addCreateIconOperation for this:
+            String iconRel = iconFO != null ? FileUtil.getRelativePath(Util.getResourceDirectory(data.getProject()), iconFO) : null;
+            if (iconRel == null) {
+                iconRel = data.getPackageName().replace('.', '/') + "/" + icon.getName(); //NOI18N
+            }
             retCode = data.setDataForPrimaryPanel(
                     categoryNameField.getText(),
-                    iconField.getText(),
+                    iconRel,
+                    icon,
                     allowSecondaryPanelsCheckBox.isSelected(),
                     primaryKwField.getText());
         }
@@ -482,34 +488,10 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         JFileChooser chooser = UIUtil.getIconFileChooser(iconField.getText());
         int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File iconFile =  chooser.getSelectedFile();
-            String iconPath = iconFile.getAbsolutePath();
-            String srcFolder = this.data.getProject().getProjectDirectory() + "/src"; //NOI18N
-            if (!iconPath.contains(srcFolder)) { //seleced icon is not placed within project 'src' folder
-                //seleced icon is not placed within project 'src' folder
-                String iconFileName = iconFile.getName();
-                String packageName = data.getPackageName().replace('.', '/');
-                File target = new File(srcFolder + "/" + packageName, iconFileName);
-                try {
-                    copyFile(iconFile, target);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                iconField.setText(packageName + "/" + iconFileName); //NOI18N
-            } else {
-                iconField.setText(iconPath.substring(srcFolder.length() + 1));
-            }
-            //updateData();
+            iconField.setText(chooser.getSelectedFile().getAbsolutePath());
+            updateData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed
-
-    private void copyFile(File source, File target) throws IOException {
-        FileChannel ic = new FileInputStream(source).getChannel();
-        FileChannel oc = new FileOutputStream(target).getChannel();
-        ic.transferTo(0, ic.size(), oc);
-        ic.close();
-        oc.close();
-    }
 
 private void allowSecondaryPanelsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allowSecondaryPanelsCheckBoxActionPerformed
     updateData();

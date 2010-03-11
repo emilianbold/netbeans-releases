@@ -17,8 +17,8 @@
         } else {
             out.println("<a href=\"http://www.facebook.com/login.php?api_key="+api_key+"&v=1.0\">Facebook Login</a>");
             String loginURL = request.getRequestURL().toString();
-            String callbackUrl = loginURL.substring(0, loginURL.indexOf("/FacebookJerseyClientLogin"));
-            out.println("<br><br>Ensure you specified correctly the Canvas Callback URL to: <b>"+callbackUrl+"/FacebookJerseyClientCallback/</b><br>");
+            String callbackUrl = loginURL.substring(0, loginURL.lastIndexOf("/FacebookLoginServlet"));
+            out.println("<br><br>Ensure you specified correctly the Canvas Callback URL to: <b>"+callbackUrl+"/FacebookCallbackServlet/</b><br>");
             out.println("<br>Help: To set up Canvas Callback URL go to " +
                     "<a href=\"http://www.facebook.com/developers/\">http://www.facebook.com/developers/</a> , select <i>your application</i>, choose <i>Edit Settings</i> and go to <i>Canvas</i> section");
         }
