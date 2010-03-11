@@ -424,7 +424,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         CompilerSet bestCandidate = null;
         for (CompilerSet cs : sets) {
             if (cs.getCompilerFlavor().isSunStudioCompiler()) {
-                if ("SunStudio".equals(cs.getName())) { // NOI18N
+                if ("OracleSolarisStudio".equals(cs.getName())) { // NOI18N
                     setDefault(cs);
                     return;
                 }
@@ -785,16 +785,16 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         // find 'best' Sun set and copy it
-        CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
+        CompilerSet sun = getCompilerSet("OracleSolarisStudio"); // NOI18N
         if (sun != null) {
             return;
         }
         if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12.2"); // NOI18N
+            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
         }
         if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudioExpress"); // NOI18N
-            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("Aten") < 0) { // NOI18N
+            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudioExpress"); // NOI18N
+            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("10")  < 0) { // NOI18N
                 bestCandidate = null;
             }
         }
@@ -828,7 +828,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (bestCandidate.isUrlPointer()) {
             return;
         }
-        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
+        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
+        if (flavor != null) { // #158084 NPE
+            CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
+                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true); // NOI18N
+            addUnsafe(bestCandidateCopy);
+        }
+        flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
         if (flavor != null) { // #158084 NPE
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
                     flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N

@@ -155,8 +155,13 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             List<String> terminalArgs = new ArrayList<String>();
 
+            String shellScriptPath = dorunScript.getAbsolutePath();
+            if (osFamily == OSFamily.WINDOWS) {
+                shellScriptPath = WindowsSupport.getInstance().convertToShellPath(shellScriptPath);
+            }
+
             terminalArgs.addAll(Arrays.asList(
-                    dorunScript.getAbsolutePath(),
+                    shellScriptPath,
                     "-p", terminalInfo.getPrompt(terminal), // NOI18N
                     "-x", shFile)); // NOI18N
 

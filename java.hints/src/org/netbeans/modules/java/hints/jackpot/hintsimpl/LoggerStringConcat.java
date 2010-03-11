@@ -196,7 +196,13 @@ public class LoggerStringConcat {
                     }
 
                     for (TreePath tp : element) {
-                        newMessage.add(tp.getLeaf());
+                        String literalValue = (String) ((LiteralTree) tp.getLeaf()).getValue();
+
+                        if (literalValue.contains("'")) {
+                            newMessage.add(make.Literal(literalValue.replaceAll("'", "''")));
+                        } else {
+                            newMessage.add(tp.getLeaf());
+                        }
                     }
                 }
             }
