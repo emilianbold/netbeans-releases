@@ -148,32 +148,37 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleName (loc ("AN_Expand_Tabs")); //NOI18N
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleDescription (loc ("AD_Expand_Tabs")); //NOI18N
 
-        //listeners
-        cbOverrideGlobalOptions.addActionListener(this);
-        cbExpandTabsToSpaces.addActionListener(this);
+        // models & renderers
         sNumberOfSpacesPerIndent.setModel(new SpinnerNumberModel(4, 1, 50, 1));
-        sNumberOfSpacesPerIndent.addChangeListener(this);
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
-        sTabSize.addChangeListener(this);
         sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
-        sRightMargin.addChangeListener(this);
         cboLineWrap.setRenderer(new LineWrapRenderer(cboLineWrap.getRenderer()));
         if (lineWrapOn) {
             cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
-            cboLineWrap.addActionListener(this);
         } else {
             cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none" })); //NOI18N
-            cboLineWrap.setEnabled(false);
-            lLineWrap.setEnabled(false);
         }
-        
+
         // initialize controls
-        prefsChange(null);
-        if (showOverrideGlobalOptions && 
+        if (showOverrideGlobalOptions &&
             null == this.prefs.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null))
         {
             // FormattingCustomizerPanel and FormattingPanelController expect this to be set
             this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
+        }
+        prefsChange(null);
+
+        //listeners
+        cbOverrideGlobalOptions.addActionListener(this);
+        cbExpandTabsToSpaces.addActionListener(this);
+        sNumberOfSpacesPerIndent.addChangeListener(this);
+        sTabSize.addChangeListener(this);
+        sRightMargin.addChangeListener(this);
+        if (lineWrapOn) {
+            cboLineWrap.addActionListener(this);
+        } else {
+            cboLineWrap.setEnabled(false);
+            lLineWrap.setEnabled(false);
         }
     }
 
@@ -321,7 +326,15 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
         if (needsRefresh) {
-            preview.refreshPreview();
+            // XXX: this is a workaround for the new view hierarchy, normally we
+            // should not catch any exception here and just call refreshPreview().
+            try {
+                preview.refreshPreview();
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable e) {
+                // ignore
+            }
         }
     }
 
