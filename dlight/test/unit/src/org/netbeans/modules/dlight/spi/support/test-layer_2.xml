@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="DLight">
+        <folder name="Fops.Configuration">
+            <file name="DLightToolConfigurationProvider.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.spi.support.DLightToolConfigurationProviderFactory.create"/>
+                <attr name="provider" stringvalue="DLight/Fops.Configuration/XMLToolConfiguration.instance"/>
+            </file>
+            <file name="XMLToolConfiguration.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.spi.support.DLightToolConfigurationFactory.create"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Tool.Name"/>
+                <attr name="name" stringvalue="fops"/>
+                <attr name="id" stringvalue="dlight.tool.fops"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/spi/support/i_o_usage_16.png"/>
+                <attr name="datatable" stringvalue="DLight/Fops.Configuration/DtraceDatatableMetadata.instance"/>
+                <attr name="collector.config" stringvalue="DLight/Fops.Configuration/CollectorsList.instance"/>
+                <attr name="idp.config" stringvalue="DLight/Fops.Configuration/IDPSList.instance"/>
+            </file>
+            <file name="CollectorsList.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.spi.support.DLightToolConfigurationFactory.createCollectors"/>
+                <attr name="collectors" stringvalue="DLight/Fops.Configuration/Collectors"/>
+            </file>
+            <folder name="Collectors">
+                <file name="DTDCConfiguration.shadow">
+                    <attr name="originalFile" stringvalue="DLight/Fops.Configuration/DTDCConfiguration.instance"/>
+                </file>
+            </folder>
+            <file name="IDPSList.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.xml.DLightToolConfigurationFactory.createIdps"/>
+                <attr name="idps" stringvalue="DLight/Fops.Configuration/Idps"/>
+            </file>
+            <folder name="Idps">
+                <file name="DTDCConfiguration.shadow">
+                    <attr name="originalFile" stringvalue="DLight/Fops.Configuration/DTDCConfiguration.instance"/>
+                </file>
+            </folder>
+            <file name="DtraceDatatableMetadata.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.create"/>
+                <attr name="name" stringvalue="fops"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/FopsColumns.List"/>
+            </file>
+            <file name="FopsColumns.List">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumnsList"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/FopsColumns"/>
+            </file>
+            <folder name="FopsColumns">
+                <file name="Column1.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="operation"/>
+                    <attr name="class" stringvalue="string"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.OpType"/>
+                </file>
+                <file name="Column2.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="file"/>
+                    <attr name="class" stringvalue="string"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Filename"/>
+                </file>
+                <file name="Column3.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="size"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Size"/>
+                </file>
+                <file name="Column4.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="file_count"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.FileCount"/>
+                </file>
+                <file name="Column5.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="timestamp"/>
+                    <attr name="class" stringvalue="time"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Timestamp"/>
+                </file>
+                <file name="Column6.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="sid"/>
+                    <attr name="class" stringvalue="int"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.SID"/>
+                </file>
+                <file name="Column7.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="stack_id"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.StackId"/>
+                </file>
+            </folder>
+            <file name="DTDCConfiguration.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationFactory.create"/>
+                <attr name="script" stringvalue="org/netbeans/modules/dlight/spi/support/fops.d"/>
+                <attr name="datatable" stringvalie="DLight/Fops.Configuration/DtraceDatatableMetadata.instance"/>
+                <attr name="stack.support" boolvalue="true"/>
+                <attr name="indicator.firing.factor" intvalue="1"/>
+                <attr name="output.prefix" string="fops:"/>
+            </file>
+            <file name="DtraceDetailsDatatableMetadata.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.create"/>
+                <attr name="name" stringvalue="iosummary"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/DtraceDetailsColumns.List"/>
+                <attr name="view.statement" stringvalue="SELECT file, bytes_read, bytes_written, open_stack_id, close_stack_id, CASEWHEN(open_failed, 'err', CASEWHEN(open_seen AND NOT close_seen, 'warn', 'ok')) AS status FROM
+                    (SELECT file, SUM(CASEWHEN(operation='read', size, 0)) AS bytes_read,
+                    SUM(CASEWHEN(operation='write', size, 0)) AS bytes_written,
+                    SUM(CASEWHEN(operation='open', stack_id, 0)) AS open_stack_id,
+                    SUM(CASEWHEN(operation='close', stack_id, 0)) AS close_stack_id,
+                    SUM(CASEWHEN(operation='open', timestamp, 0)) AS open_timestamp,
+                    BOOL_OR(operation='open') AS open_seen,
+                    BOOL_OR(operation='open' AND sid=0) AS open_failed,
+                    BOOL_OR(operation='close') AS close_seen
+                    FROM fops GROUP BY sid, file) ORDER BY open_timestamp, file"/>
+                <attr name="source" stringvalue="DLight/Fops.Configuration/DtraceDatatableMetadata.instance"/>
+            </file>
+            <file name="DtraceDetailsColumns.List">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumnsList"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/DtraceDetailsColumns"/>
+            </file>
+            <folder name="DtraceDetailsColumns">
+                <file name="Column1.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="open_stack_id"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.OpenStack"/>
+                </file>
+                <file name="Column2.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="close_stack_id"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.CloseStack"/>
+                </file>
+                <file name="Column3.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="status"/>
+                    <attr name="class" stringvalue="string"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.Status"/>
+                </file>
+                <file name="Column4.shadow">
+                    <attr name="originalFile" stringvalue="DLight/Fops.Configuration/FopsColumns/Column2.instance"/>
+                </file>
+                <file name="Column5.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="bytes_read"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.BytesRead"/>
+                </file>
+                <file name="Column6.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.DataTableMetadataFactory.createColumn"/>
+                    <attr name="name" stringvalue="bytes_written"/>
+                    <attr name="class" stringvalue="long"/>
+                    <attr name="shortname" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Column.BytesWritten"/>
+                </file>
+            </folder>
+            <file name="IndicatorMetadata.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.api.impl.IndicatorMetadataFactory.create"/>
+                <attr name="columns" stringvalue="DLight/Fops.Configuration/FopsColumns.List"/>
+            </file>
+            <file name="TimeSeriesIndicatorConfiguration.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesIndicatorConfigurationFactory.create"/>
+                <attr name="title" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Title"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="metadata" stringvalue="DLight/Fops.Configuration/IndicatorMetadata.instance"/>
+                <attr name="aggregation" stringvalue="SUM"/>
+                <attr name="label.formatter" newvalue="org.netbeans.modules.dlight.util.BytesFormatter"/>
+                <attr name="graph.scale" intvalue="1024"/>
+                <attr name="LastNonNull" boolvalue="false"/>
+                <attr name="action.displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action"/>
+                <attr name="action.tooltip" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Action.Tooltip"/>
+                <attr name="details.descriptor" stringvalue="DLight/Fops.Configuration/DetailDescriptor.instance"/>
+                <attr name="timeSeriesDescriptors" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
+            </file>
+            <file name="DetailDescriptor.instance">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.DetailDescriptorFactory.create"/>
+                <attr name="name" stringvalue="file-count"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.FileCount"/>
+                <attr name="defaultValue" stringvalue="0"/>
+            </file>
+            <file name="TimeSeriesDescriptors.List">
+                <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.createList"/>
+                <attr name="items" stringvalue="DLight/Fops.Configuration/TimeSeriesDescriptors.List"/>
+            </file>
+<!--
+            <folder name="TimeSeriesDescriptors.List">
+                <file name="TimeSeriesDescriptor_1.instance">
+                    <attr name="instanceCreate" methodValue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesDescriptorFactory.create"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.spi.support.Bundle#Indicator.Write"/>
+                    <attr name="kind" stringvalue="LINE"/>
+                    <attr name="color" stringvalue="0xE7:0x6F:0x00"/>
+                </file>
+            </folder>
+-->
+        </folder>
+    </folder>
+</filesystem>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,34 +41,23 @@
 
 package org.netbeans.modules.j2ee.sun.ide;
 
-import java.io.File;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.windows.WindowManager;
 
-public class Installer extends ModuleInstall {
+public class DeploymentFactoryFactory {
     
     private static DeploymentFactory facadeDF = null;
     private static DeploymentFactory facadeDFGlassFishV1 = null;
     private static DeploymentFactory facadeDFGlassFishV2 = null;
     private static DeploymentFactory facadeDFJavaEEPlusSIP = null;
     
-    private static final String PROP_FIRST_RUN = "first_run";
+//    private static final String PROP_FIRST_RUN = "first_run";
     
     /** Factory method to create DeploymentFactory for s1as.
      */
     public static synchronized Object create() {
         if (facadeDF == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            //PluginProperties.configureDefaultServerInstance();
             facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
         }
         return facadeDF;
@@ -79,8 +68,7 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createGlassFishV1() {
         if (facadeDFGlassFishV1 == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            //PluginProperties.configureDefaultServerInstance();
-            facadeDFGlassFishV1 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"));
+            facadeDFGlassFishV1 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV1"));
         }
         return facadeDFGlassFishV1;
     }
@@ -90,8 +78,7 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createGlassFishV2() {
         if (facadeDFGlassFishV2 == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            //PluginProperties.configureDefaultServerInstance();
-            facadeDFGlassFishV2 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"));
+            facadeDFGlassFishV2 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_GlassFishV2"));
         }
         return facadeDFGlassFishV2;
     }    
@@ -101,40 +88,35 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createJavaEEPlusSIP() {
         if (facadeDFJavaEEPlusSIP == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            //PluginProperties.configureDefaultServerInstance();
-            facadeDFJavaEEPlusSIP =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"));
+            facadeDFJavaEEPlusSIP =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(DeploymentFactoryFactory.class, "LBL_JavaEEPlusSIP"));
         }
         return facadeDFJavaEEPlusSIP;
     }  
-    
-    @Override public void restored() {
-        //WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());
-    }
-        
-    private static class PrepareEnvironment implements Runnable {
-        public void run() {
-            // if the domain hasn't been created successfully previously
-            if (!NbPreferences.forModule(DomainCreator.class).getBoolean(PROP_FIRST_RUN, false)) {
-                String prop = System.getProperty(ServerLocationManager.INSTALL_ROOT_PROP_NAME);
-                
-                if (null != prop && prop.trim().length() > 0) {
-                    // There is a possible root directory for the AS
-                    File platformRoot = new File(prop);
-                    ClassLoader cl = ServerLocationManager.getNetBeansAndServerClassLoader(platformRoot);
-                    if (null != cl && !Utils.canWrite(platformRoot)) {
-                        createDomainAndRecord(platformRoot);
-                    } 
-                    RegisterDatabase.getDefault().setupDerby(prop);
-                }
-            }
-        }
-    }
+            
+//    private static class PrepareEnvironment implements Runnable {
+//        public void run() {
+//            // if the domain hasn't been created successfully previously
+//            if (!NbPreferences.forModule(DomainCreator.class).getBoolean(PROP_FIRST_RUN, false)) {
+//                String prop = System.getProperty(ServerLocationManager.INSTALL_ROOT_PROP_NAME);
+//
+//                if (null != prop && prop.trim().length() > 0) {
+//                    // There is a possible root directory for the AS
+//                    File platformRoot = new File(prop);
+//                    ClassLoader cl = ServerLocationManager.getNetBeansAndServerClassLoader(platformRoot);
+//                    if (null != cl && !Utils.canWrite(platformRoot)) {
+//                        createDomainAndRecord(platformRoot);
+//                    }
+//                    RegisterDatabase.getDefault().setupDerby(prop);
+//                }
+//            }
+//        }
+//    }
 
-    static private void createDomainAndRecord(final File propFile) {
-        // The root directory is valid
-        // Domain can be created
-        InstanceProperties ip = DomainCreator.createPersonalDefaultDomain(propFile.getAbsolutePath());
-            // Sets domain creation performed flag to true
-            NbPreferences.forModule(DomainCreator.class).putBoolean(PROP_FIRST_RUN, true);
-    }
+//    static private void createDomainAndRecord(final File propFile) {
+//        // The root directory is valid
+//        // Domain can be created
+//        InstanceProperties ip = DomainCreator.createPersonalDefaultDomain(propFile.getAbsolutePath());
+//            // Sets domain creation performed flag to true
+//            NbPreferences.forModule(DomainCreator.class).putBoolean(PROP_FIRST_RUN, true);
+//    }
 }

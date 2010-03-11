@@ -164,12 +164,15 @@ public class CssIndex {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for(String e : elements) {
                     if(e.startsWith(prefix)) {
-                        Collection<String> col = map.get(result.getFile());
-                        if(col == null) {
-                            col = new LinkedList<String>();
-                            map.put(result.getFile(), col);
-                        }
-                        col.add(e);
+                        FileObject file = result.getFile();
+                        if(file != null) {
+                            Collection<String> col = map.get(file);
+                            if(col == null) {
+                                col = new LinkedList<String>();
+                                map.put(file, col);
+                            }
+                            col.add(e);
+                        } // else file deleted and index not updated yet
                     }
                 }
 
@@ -187,7 +190,7 @@ public class CssIndex {
             Collection<? extends IndexResult> results =
                     querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
 
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for (String e : elements) {
                     Collection<String> col = map.get(result.getFile());
@@ -218,7 +221,7 @@ public class CssIndex {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
             }
             return matchedFiles;
@@ -233,7 +236,7 @@ public class CssIndex {
         try {
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);
             Collection<FileObject> stylesheets = new LinkedList<FileObject>();
-            for(IndexResult result : results) {
+            for(IndexResult result : filterDeletedFiles(results)) {
                 if(result.getFile().getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
                     stylesheets.add(result.getFile());
                 }
@@ -273,7 +276,7 @@ public class CssIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
-        Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
+        Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY));
         Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
         Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
         for (IndexResult result : results) {
@@ -343,6 +346,20 @@ public class CssIndex {
             list.add(st.nextToken());
         }
         return list;
+    }
+
+    //if an indexed file is delete and IndexerFactory.filesDeleted() hasn't removed
+    //the entris from index yet, then we may receive IndexResult-s with null file.
+    //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
+    //won't become null after the query is run, but the file will simply become invalid.
+    private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
+        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        for(IndexResult result : queryResult) {
+            if(result.getFile() != null) {
+                filtered.add(result);
+            }
+        }
+        return filtered;
     }
 
     public static class AllDependenciesMaps {
