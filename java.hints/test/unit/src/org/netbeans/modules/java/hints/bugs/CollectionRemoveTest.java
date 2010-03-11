@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,27 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints;
+package org.netbeans.modules.java.hints.bugs;
 
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class CollectionRemoveTest extends TreeRuleTestBase {
+public class CollectionRemoveTest extends TestBase {
 
     public CollectionRemoveTest(String name) {
-        super(name);
+        super(name, CollectionRemove.class);
     }
 
     public void testSimple1() throws Exception {
@@ -63,7 +58,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<String> l = null;" +
-                            "        l.rem|ove(new Object());" +
+                            "        l.remove(new Object());" +
                             "    }" +
                             "}",
                             "0:106-0:128:verifier:SC: java.util.Collection.remove, Object, String");
@@ -75,7 +70,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<String> l = null;" +
-                            "        l.con|tains(new Object());" +
+                            "        l.contains(new Object());" +
                             "    }" +
                             "}",
                             "0:106-0:130:verifier:SC: java.util.Collection.contains, Object, String");
@@ -87,7 +82,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<String> l = null;" +
-                            "        l.rem|ove(Integer.valueOf(1));" +
+                            "        l.remove(Integer.valueOf(1));" +
                             "    }" +
                             "}",
                             "0:106-0:134:verifier:SCIT: java.util.Collection.remove, Integer, String");
@@ -99,7 +94,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<String> l = null;" +
-                            "        l.con|tains(Integer.valueOf(1));" +
+                            "        l.contains(Integer.valueOf(1));" +
                             "    }" +
                             "}",
                             "0:106-0:136:verifier:SCIT: java.util.Collection.contains, Integer, String");
@@ -111,7 +106,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.Map<String, Number> l = null;" +
-                            "        l.con|tainsKey(Integer.valueOf(1));" +
+                            "        l.containsKey(Integer.valueOf(1));" +
                             "    }" +
                             "}",
                             "0:113-0:146:verifier:SCIT: java.util.Map.containsKey, Integer, String");
@@ -123,7 +118,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.Map<String, Number> l = null;" +
-                            "        l.con|tainsValue(\"\");" +
+                            "        l.containsValue(\"\");" +
                             "    }" +
                             "}",
                             "0:113-0:132:verifier:SCIT: java.util.Map.containsValue, String, Number");
@@ -134,7 +129,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "package test;" +
                             "public class Test extends java.util.LinkedList<String> {" +
                             "    private void test () {" +
-                            "        re|move(new Object());" +
+                            "        remove(new Object());" +
                             "    }" +
                             "}",
                             "0:103-0:123:verifier:SC: java.util.Collection.remove, Object, String");
@@ -147,7 +142,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "    private void test () {" +
                             "        new Runnable() {" +
                             "            public void run() {" +
-                            "                re|move(new Object());" +
+                            "                remove(new Object());" +
                             "            }" +
                             "        }" +
                             "    }" +
@@ -161,7 +156,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<Integer> l = null;" +
-                            "        l.con|tains(1);" +
+                            "        l.contains(1);" +
                             "    }" +
                             "}");
     }
@@ -172,7 +167,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<String> l = null;" +
-                            "        l.con|tains(1);" +
+                            "        l.contains(1);" +
                             "    }" +
                             "}",
                             "0:106-0:119:verifier:SCIT: java.util.Collection.contains, int, String");
@@ -184,7 +179,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<? extends String> l = null;" +
-                            "        l.con|tains(\"\");" +
+                            "        l.contains(\"\");" +
                             "    }" +
                             "}");
     }
@@ -194,7 +189,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "package test;" +
                             "public class Test {" +
                             "    private void test (boolean b) {" +
-                            "        test(get().cont|ains(\"\"));\n" +
+                            "        test(get().contains(\"\"));\n" +
                             "    }\n" +
                             "    private java.util.List<? extends String> get() {return null;}\n" +
                             "}");
@@ -206,7 +201,7 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<? super String> l = null;" +
-                            "        l.con|tains(\"\");" +
+                            "        l.contains(\"\");" +
                             "    }" +
                             "}");
     }
@@ -217,22 +212,9 @@ public class CollectionRemoveTest extends TreeRuleTestBase {
                             "public class Test {" +
                             "    private void test () {" +
                             "        java.util.List<?> l = null;" +
-                            "        l.con|tains(\"\");" +
+                            "        l.contains(\"\");" +
                             "    }" +
                             "}");
-    }
-
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath tp) {
-        while (tp != null) {
-            if (tp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
-                tp = tp.getParentPath();
-                continue;
-            }
-            return new CollectionRemove().run(info, tp);
-        }
-
-        return null;
     }
 
     static {
