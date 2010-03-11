@@ -306,7 +306,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         }
         else {
             renderer.setText( value.toString() );
-            if (value == extraNode) {
+            if (value == extraNode && logic != null) {
                 renderer.setSelected(logic.getCurrentDependencyTracking() != DepScanningSettings.DependencyTracking.DISABLED);
             }
         }
