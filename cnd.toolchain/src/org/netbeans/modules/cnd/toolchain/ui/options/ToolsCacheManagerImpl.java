@@ -113,7 +113,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     }
 
     @Override
-    public void addCompilerSetManager(CompilerSetManager newCsm) {
+    public synchronized void addCompilerSetManager(CompilerSetManager newCsm) {
         copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 
@@ -153,19 +153,19 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         return serverUpdateCache != null;
     }
 
-    public void clear() {
+    public synchronized void clear() {
         serverUpdateCache = null;
         copiedManagers.clear();
     }
 
-    private void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
+    private synchronized void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
         Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
         for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
                 allCSMs.add(copiedManagers.get(copiedServer));
             }
         }
-        CompilerSetManagerAccessorImpl.setManagers(allCSMs);
+        CompilerSetManagerAccessorImpl.setManagers(allCSMs, liveServers);
         copiedManagers.clear();
     }
 
