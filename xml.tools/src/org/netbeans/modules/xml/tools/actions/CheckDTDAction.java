@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.xml.tools.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
@@ -59,20 +57,6 @@ import org.openide.util.RequestProcessor;
 public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTDAction {
     /** serialVersionUID */
     private static final long serialVersionUID = -8772119268950444992L;
-
-/***********
-    public static synchronized CheckDTDAction getInstance() {
-        CheckDTDAction actionInstance = null;
-        String thisClassName = CheckDTDAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (CheckDTDAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-***********/
 
     /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {

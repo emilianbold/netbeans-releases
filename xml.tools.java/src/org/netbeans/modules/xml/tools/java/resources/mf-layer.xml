@@ -47,48 +47,46 @@ made subject to such option by the copyright holder.
     <!ENTITY dtd-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.DTDDataObject$DTDCookieFactoryCreator'/>">
 ]>
 <filesystem>
-
-    
     <folder name="Services">
         <folder name="Hidden">
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
-            </file>
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
-            </file>
             <file name="org-netbeans-modules-xml-tools-java-generator-DTDGenerateSupportFactory$Creator.instance">
                 &dtd-cookie-attributes;
             </file>
+        </folder>
     </folder>
 
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="dtd-xml">
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
+                        &dtd-action-attributes;
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 
     <!-- register actions to action pool -->
     <folder name="Actions">
         <folder name="XML">
-            
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance">
-<!--
-                <attr name="instanceCreate"
-                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="displayName"
-                      bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateSAXHandler"/>
-                <attr name="delegate"
-                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction.getInstance"/>
--->
-            </file>
-            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance">
-<!--
-                <attr name="instanceCreate"
-                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="displayName" 
-                      bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateDOMScanner"/>
-                <attr name="delegate"
-                      methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction.getInstance"/>
--->
-            </file>
-            
+            <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
         </folder>
     </folder>
 

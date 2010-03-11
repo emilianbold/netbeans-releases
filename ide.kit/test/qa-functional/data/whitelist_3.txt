@@ -232,16 +232,6 @@ org.netbeans.modules.websvc.wsstack.jaxws.jboss.JBossLookupProvider
 org.netbeans.modules.websvc.wsstack.jaxws.tomcat.TomcatLookupProvider
 org.netbeans.modules.websvc.wsstack.jaxws.weblogic.WebLogicLookupProvider
 
-#173031
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction
-org.netbeans.modules.xsl.actions.TransformAction
-org.netbeans.modules.xml.actions.CollectDTDAction$DTDAction
-org.netbeans.modules.xml.tools.actions.CheckDTDAction
-org.netbeans.modules.xml.tools.doclet.DocletAction
-org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction
-org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction
-
 com.sun.java.swing.plaf.windows.WindowsButtonUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxMenuItemUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxUI
