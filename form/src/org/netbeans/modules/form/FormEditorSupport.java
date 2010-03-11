@@ -270,7 +270,12 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
         }
     }
-    
+
+    @Override
+    protected boolean asynchronousOpen() {
+        return false;
+    }
+
     /** Overriden from JavaEditor - opens editor and ensures it is selected
      * in the multiview.
      */
