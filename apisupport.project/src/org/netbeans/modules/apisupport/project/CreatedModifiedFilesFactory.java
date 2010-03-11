@@ -680,16 +680,6 @@ public final class CreatedModifiedFilesFactory {
         }
         
         /**
-         * Adds requirement for modifying attribute for the main section. How attribute
-         * will be modified depends on implementation of method {@link performModification}.
-         * @param name the attribute name
-         * @param value the new attribute value
-         */
-        public final void setAttribute(final String name, final  String value) {
-            setAttribute(name, value, "null");//NOI18N
-        }
-        
-        /**
          * Adds requirement for modifying attribute. How attribute
          * will be modified depends on implementation of method {@link performModification}.
          * @param name the attribute name

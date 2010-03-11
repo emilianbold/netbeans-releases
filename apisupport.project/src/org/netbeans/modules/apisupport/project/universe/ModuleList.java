@@ -303,7 +303,7 @@ public final class ModuleList {
                     } else {
                         // #143236: have a customized dest dir, perhaps referenced from orphan modules.
                         Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
-                        doScanNetBeansOrgSources(entries, root, 1, root, nbdestdir, null);
+                        doScanNetBeansOrgSources(entries, root, 1, root, nbdestdir, null, Collections.<File>emptySet());
                         ModuleList sources = new ModuleList(entries, root);
                         ModuleList binaries = findOrCreateModuleListFromBinaries(nbdestdir);
                         list = merge(new ModuleList[] {sources, binaries}, root);
@@ -467,7 +467,7 @@ public final class ModuleList {
         EXCLUDED_DIR_NAMES.add("org"); // NOI18N
     }
     private static void doScanNetBeansOrgSources(Map<String,ModuleEntry> entries, File dir, int depth,
-            File root, File nbdestdir, String pathPrefix) {
+            File root, File nbdestdir, String pathPrefix, Set<File> knownProjects) {
         if (depth == 1) {
             LOG.log(Level.INFO, "exhaustive scan of {0}", dir);
         }
@@ -485,15 +485,17 @@ public final class ModuleList {
                 continue;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
-            try {
-                scanPossibleProject(kid, entries, NbModuleType.NETBEANS_ORG, root, nbdestdir, newPathPrefix);
-            } catch (IOException e) {
-                // #60295: make it nonfatal.
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kid + ", skipping...", null, null, null); // NOI18N
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            if (!knownProjects.contains(kid)) {
+                try {
+                    scanPossibleProject(kid, entries, NbModuleType.NETBEANS_ORG, root, nbdestdir, newPathPrefix);
+                } catch (IOException e) {
+                    // #60295: make it nonfatal.
+                    Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kid + ", skipping...", null, null, null); // NOI18N
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                }
             }
             if (depth > 1) {
-                doScanNetBeansOrgSources(entries, kid, depth - 1, root, nbdestdir, newPathPrefix);
+                doScanNetBeansOrgSources(entries, kid, depth - 1, root, nbdestdir, newPathPrefix, knownProjects);
             }
         }
     }
@@ -1294,14 +1296,18 @@ public final class ModuleList {
             lazyNetBeansOrgList = 2;
             File nbdestdir = findNetBeansOrgDestDir(home);
             Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries); // #68513: possible race condition
+            Set<File> knownProjects = new HashSet<File>();
+            for (ModuleEntry known : entries.values()) {
+                knownProjects.add(known.getSourceLocation());
+            }
             if (new File(home, "openide.util").isDirectory()) { // NOI18N
                 // Post-Hg layout.
                 for (String tree : FOREST) {
-                    doScanNetBeansOrgSources(_entries, tree == null ? home : new File(home, tree), 1, home, nbdestdir, tree);
+                    doScanNetBeansOrgSources(_entries, tree == null ? home : new File(home, tree), 1, home, nbdestdir, tree, knownProjects);
                 }
             } else {
                 // Pre-Hg layout.
-                doScanNetBeansOrgSources(_entries, home, 3, home, nbdestdir, null);
+                doScanNetBeansOrgSources(_entries, home, 3, home, nbdestdir, null, knownProjects);
             }
             entries = _entries;
         }
@@ -1343,13 +1349,18 @@ public final class ModuleList {
                     }
                 }
             }
+        LOG.log(Level.WARNING, "could not find entry for {0} by direct guess in {1}", new Object[] {codeNameBase, home});
          try {
              scanNetBeansOrgStableSources();
          } catch (IOException x) {
              LOG.log(Level.INFO, null, x);
          }
          if (!entries.containsKey(codeNameBase)) {
+             LOG.log(Level.WARNING, "could not find entry for {0} even among stable sources in {1}", new Object[] {codeNameBase, home});
              maybeRescanNetBeansOrgSources();
+             if (!entries.containsKey(codeNameBase)) {
+                 LOG.log(Level.WARNING, "failed to find entry for {0} at all in {1}", new Object[] {codeNameBase, home});
+             }
          }
         return entries.get(codeNameBase);
     }
