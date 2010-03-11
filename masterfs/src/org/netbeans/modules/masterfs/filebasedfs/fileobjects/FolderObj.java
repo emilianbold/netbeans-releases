@@ -530,24 +530,20 @@ public final class FolderObj extends BaseFileObj {
     }
 
 
-    public final class FolderChildrenCache implements ChildrenCache {
-        public final ChildrenSupport ch = new ChildrenSupport();
-
-
+    public final class FolderChildrenCache extends ChildrenSupport implements ChildrenCache {
+        @Override
         public final Set<FileNaming> getChildren(final boolean rescan) {
-            return ch.getChildren(getFileName(), rescan);
+            return getChildren(getFileName(), rescan);
         }
 
+        @Override
         public final FileNaming getChild(final String childName, final boolean rescan) {
-            return ch.getChild(childName, getFileName(), rescan);
+            return getChild(childName, getFileName(), rescan);
         }
 
+        @Override
         public final Map<FileNaming, Integer> refresh() {
-            return ch.refresh(getFileName());
-        }
-
-        public final Mutex.Privileged getMutexPrivileged() {
-            return ch.getMutexPrivileged();
+            return refresh(getFileName());
         }
 
         @Override
@@ -555,16 +551,9 @@ public final class FolderObj extends BaseFileObj {
             return getFileName().toString();
         }
 
+        @Override
         public void removeChild(FileNaming childName) {
-            ch.removeChild(getFileName(), childName);
-        }
-
-        public Set<FileNaming> getCachedChildren() {
-            return ch.getCachedChildren();
-        }
-
-        public boolean isCacheInitialized() {
-            return ch.isCacheInitialized();
+            removeChild(getFileName(), childName);
         }
     }
 
