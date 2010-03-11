@@ -98,15 +98,6 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     }
 
     /**
-     * @return true if the last child view's allocation along the major axis
-     *  should encompass rest of the view's allocation. It's useful for paragraph views
-     *  where the newline view renders rest of the line.
-     */
-    protected boolean extendLastViewAllocation() {
-        return false;
-    }
-
-    /**
      * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
      */
     public void replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
@@ -312,7 +303,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
     final double getViewVisualOffset(EditorBoxView boxView, int index) {
         return (index == size())
-                ? boxView.getMajorAxisSpan()
+                ? getMajorAxisChildrenSpan(boxView)
                 : getViewVisualOffset(index);
     }
 
@@ -326,14 +317,14 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
 
     final double getViewMajorAxisSpan(EditorBoxView boxView, int index) {
         return (index == size() - 1)
-                ? boxView.getMajorAxisSpan() - getViewVisualOffset(index)
+                ? getMajorAxisChildrenSpan(boxView) - getViewVisualOffset(index)
                 : getViewVisualOffset(index + 1) - getViewVisualOffset(index);
     }
 
     Shape getChildAllocation(EditorBoxView boxView, int startIndex, int endIndex, Shape alloc) {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         double visualOffset = getViewVisualOffset(startIndex);
-        double endVisualOffset = (endIndex == size()) ? boxView.getMajorAxisSpan() : getViewVisualOffset(endIndex);
+        double endVisualOffset = (endIndex == size()) ? getMajorAxisChildrenSpan(boxView) : getViewVisualOffset(endIndex);
         if (boxView.getMajorAxis() == View.X_AXIS) {
             mutableBounds.x += visualOffset;
             mutableBounds.width = endVisualOffset - visualOffset;

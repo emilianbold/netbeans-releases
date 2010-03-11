@@ -114,6 +114,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
      * so the commandline client wan't create a file holding the authentication credentials when
      * a svn command is called. The reason for this is that the Subverion module holds the credentials
      * in files with the same format as the commandline client but with a different name.
+     *
+     * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
     private class ConfigIniFilePatcher implements IniFilePatcher {
         public void patch(Ini file) {
@@ -123,6 +125,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
                 auth = file.add("auth");                                        // NOI18N
             }
             auth.put("store-auth-creds", "no");                                 // NOI18N
+            auth.put("password-stores", "");                                    // NOI18N
         }
     }
 

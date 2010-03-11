@@ -297,6 +297,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             TokenListChange<T> change;
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
+            if (activity != Activity.NOT_INITED) { // Increase modCount if not doing init
+                incTokenList.incrementModCount();
+            }
             if (active) { // Wishing to be active
                 if (incTokenList.updateLanguagePath()) {
                     incTokenList.reinit(); // Initialize lazy lexing
@@ -307,13 +310,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             } else { // Wishing to be inactive
                 change = TokenListChange.createRebuildChange(incTokenList);
                 incTokenList.replaceTokens(change, eventInfo, true);
-                incTokenList.setLanguagePath(null);
+                incTokenList.setLanguagePath(null); // Make incTokenList inactive by assigning null LP
                 incTokenList.reinit();
             }
 
-            if (activity != Activity.NOT_INITED) { // Increase modCount if not doing init
-                incTokenList.incrementModCount();
-            }
             activity = newActivity;
             if (doFire) { // Only if there are already listeners
                 if (LOG.isLoggable(Level.FINE)) {

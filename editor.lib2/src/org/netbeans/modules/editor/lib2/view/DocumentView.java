@@ -180,7 +180,7 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
-    private LineWrapType lineWrapType = LineWrapType.CHARACTER_BOUND;
+    private LineWrapType lineWrapType = LineWrapType.WORD_BOUND;
 
     private TextLayout newlineTextLayout;
 

@@ -89,11 +89,11 @@ public class MessageBoardClient {
 
         private WebResource webResource;
         private Client client;
-        private static final String BASE_URI = "http://localhost:8080/message-board/app";
+        private static final String BASE_URI = "http://localhost:8080/message-board/app"; //NOI18N
 
         MessageBoardResourceBean_JerseyClient() {
             client = new Client();
-            webResource = client.resource(BASE_URI).path("messages");
+            webResource = client.resource(BASE_URI).path("messages"); //NOI18N
         }
 
         public void deleteMessage(String msgNum) throws UniformInterfaceException {

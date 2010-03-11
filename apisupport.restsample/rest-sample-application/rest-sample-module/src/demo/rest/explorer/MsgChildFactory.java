@@ -40,7 +40,6 @@
  */
 package demo.rest.explorer;
 
-import demo.rest.explorer.ExplorerTopComponent;
 import demo.rest.client.MessageBoardClient;
 import java.io.IOException;
 import java.util.List;

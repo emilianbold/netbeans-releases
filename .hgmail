@@ -56,3 +56,4 @@ jstola@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*
 ovrabec@netbeans.org=bugtracking*/*,bugzilla/*,libs.bugtracking/*,libs.bugzilla/*,jira/*,libs.jira/*
 mkleint@netbeans.org=*maven*/*
 tboudreau@netbeans.org=javacard*/*,properties.based.dataobjects/*,simple.project.templates/*,swing.customizerlayout/*,swing.validation/*
+mentlicher@netbeans.org=openide.explorer/*,o.n.swing.outline/*
