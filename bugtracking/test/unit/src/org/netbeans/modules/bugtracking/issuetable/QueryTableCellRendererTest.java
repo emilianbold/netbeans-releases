@@ -256,12 +256,6 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public boolean refresh() {
-            fail("implement me!!!");
-            return false;
-        }
-
-        @Override
         public Issue[] getIssues(int includeStatus) {
             fail("implement me!!!");
             return null;
