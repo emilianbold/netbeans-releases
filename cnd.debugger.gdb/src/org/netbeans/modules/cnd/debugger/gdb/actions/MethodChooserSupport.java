@@ -47,18 +47,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.KeyStroke;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.spi.model.services.FunctionCallsProvider;
-import org.netbeans.modules.cnd.spi.model.services.FunctionCallsProvider.FunctionCall;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 import org.openide.util.NbBundle;
 import org.openide.text.Annotation;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 public class MethodChooserSupport implements PropertyChangeListener {
-    private GdbDebugger debugger;
+    private final GdbDebugger debugger;
 //    private JPDAThread currentThread;
-    private String url;
+    private final String url;
 //    private ReferenceType clazzRef;
     private MethodChooser chooser;
 
@@ -66,7 +70,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
 //    private int startLine;
 //    private int endLine;
     private int selectedIndex = -1;
-    private FunctionCall[] functionCalls;
+    private CsmReference[] refs;
 
     MethodChooserSupport(GdbDebugger debugger, String url) {
         this.debugger = debugger;
@@ -80,17 +84,17 @@ public class MethodChooserSupport implements PropertyChangeListener {
     }
 
     public MethodChooser.Segment[] getSegments() {
-        MethodChooser.Segment[] segments = new MethodChooser.Segment[functionCalls.length];
+        MethodChooser.Segment[] segments = new MethodChooser.Segment[refs.length];
         for (int x = 0; x < segments.length; x++) {
-            int start = functionCalls[x].start;
-            int end = functionCalls[x].end;
+            int start = refs[x].getStartOffset();
+            int end = refs[x].getEndOffset();
             segments[x] = new MethodChooser.Segment(start, end);
         }
         return segments;
     }
 
     public int getSegmentsCount() {
-        return functionCalls.length;
+        return refs.length;
     }
 
     public String getHint() {
@@ -136,9 +140,16 @@ public class MethodChooserSupport implements PropertyChangeListener {
     }
 
     public void doStepInto() {
-        final int index = chooser.getSelectedIndex();
-        final String name = functionCalls[index].name;
-        debugger.until(name);
+        final CsmReference ref = refs[chooser.getSelectedIndex()];
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final CsmObject referencedObject = ref.getReferencedObject();
+                if (CsmKindUtilities.isFunction(referencedObject)) {
+                    debugger.until((CsmFunction)referencedObject);
+                }
+            }
+        });
 //        debugger.getRequestProcessor().post(new Runnable() {
 //            public void run() {
 //                RunIntoMethodActionProvider.doAction(debugger, name, locations[index], true);
@@ -147,7 +158,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
     }
 
     public boolean init() {
-        functionCalls = new FunctionCall[0];
+        refs = new CsmReference[0];
         FunctionCallsProvider fcProvider = Lookup.getDefault().lookup(FunctionCallsProvider.class);
 
         if (fcProvider == null) {
@@ -155,17 +166,17 @@ public class MethodChooserSupport implements PropertyChangeListener {
             debugger.stepInto();
             return true;
         }
-        List<FunctionCall> functionCallsList = fcProvider.getFunctionCalls(
+        List<CsmReference> functionCallsList = fcProvider.getFunctionCalls(
                 debugger.getCurrentCallStackFrame().getDocument(),
                 debugger.getCurrentCallStackFrame().getLineNumber()-1);
 
-        functionCalls = functionCallsList.toArray(new FunctionCall[functionCallsList.size()]);
+        refs = functionCallsList.toArray(new CsmReference[functionCallsList.size()]);
         selectedIndex = 0;
 
-        if (functionCalls.length == 0) {
+        if (refs.length == 0) {
             debugger.stepInto();
             return true;
-        } else if (functionCalls.length == 1) {
+        } else if (refs.length == 1) {
             // do not show UI, continue directly using the selection
             //String name = functionCalls[selectedIndex].name;
 

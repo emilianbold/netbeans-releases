@@ -132,6 +132,9 @@ public final class DataStorageManager {
     }
 
     public synchronized Collection<DataStorage> getStorages(String uniqueKey) {
+        if (uniqueKey == null){
+            return null;
+        }
         //for each key we should keep several storages, including ServiceInfoDataStorage
         Collection<DataStorage> result = activeStorages.get(uniqueKey);
         if (result != null){
