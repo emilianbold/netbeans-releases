@@ -141,13 +141,6 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             refresh();
     }
     
-//<<<<<<< local
-//    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
-//        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
-//    }
-//
-//=======
-//>>>>>>> other
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {
@@ -272,18 +265,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 }
             }
         }
-//        if (null == retVal) {
-//            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
-//                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
-//        }
         return retVal;
     }
     
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
-//        if (null == retVal) {
-//            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
-//        }
         return retVal;
     }
     
@@ -416,7 +402,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     @Override
     public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot, Map properties) {
+            final File application, final String name, final String contextRoot, Map<String,String> properties) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         
         return mgr.deploy(application, name, contextRoot, properties);
@@ -618,76 +604,6 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         }
 
         return isReady;
-    }
-
-    /**
-     * !PW XXX Is there a more efficient way to implement a failed future object? 
-     * 
-     * @return Future object that represents an immediate failed operation
-     */
-    private static Future<OperationState> failedOperation() {
-        return new Future<OperationState>() {
-
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return false;
-            }
-
-            @Override
-            public boolean isDone() {
-                return true;
-            }
-
-            @Override
-            public OperationState get() throws InterruptedException, ExecutionException {
-                return OperationState.FAILED;
-            }
-
-            @Override
-            public OperationState get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return OperationState.FAILED;
-            }
-        };
-    }
-    
-    /**
-     * !PW XXX Is there a more efficient way to implement a successful future object?
-     * 
-     * @return Future object that represents an immediate successful operation
-     */
-    private static Future<OperationState> successfulOperation() {
-        return new Future<OperationState>() {
-
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return false;
-            }
-
-            @Override
-            public boolean isDone() {
-                return true;
-            }
-
-            @Override
-            public OperationState get() throws InterruptedException, ExecutionException {
-                return OperationState.COMPLETED;
-            }
-
-            @Override
-            public OperationState get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return OperationState.COMPLETED;
-            }
-        };
     }
 
     // ------------------------------------------------------------------------

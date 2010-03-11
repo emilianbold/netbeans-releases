@@ -52,7 +52,6 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -151,6 +150,7 @@ public class JsfUtils {
 
                 List<AstNode> chs = r.children(new AstNode.NodeFilter() {
 
+                    @Override
                     public boolean accepts(AstNode node) {
                         return (node.type() == AstNode.NodeType.OPEN_TAG ||
                                 node.type() == AstNode.NodeType.UNKNOWN_TAG) && !node.isEmpty();
@@ -211,6 +211,7 @@ public class JsfUtils {
             try {
                 bdoc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             boolean noAttributes = rootNode.getAttributeKeys().isEmpty();
@@ -264,12 +265,10 @@ public class JsfUtils {
     /**
      * Creates an OffsetRange of source document offsets for given embedded offsets.
      */
-    public static OffsetRange createOffsetRange(Snapshot snapshot, int embeddedOffsetFrom, int embeddedOffsetTo) {
-        Document doc = snapshot.getSource().getDocument(false);
-        assert doc != null;
+    public static OffsetRange createOffsetRange(Snapshot snapshot, String documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
 
         int originalFrom = 0;
-	int originalTo = doc.getLength();
+	int originalTo = documentText.length();
 
         //try to find nearest original offset if the embedded offsets cannot be directly recomputed
         //from - try backward
@@ -284,8 +283,7 @@ public class JsfUtils {
 	try {
 	    //some heuristic - use end of line where the originalFrom lies 
 	    //in case if we cannot match the end offset at all
-	    CharSequence sourceText = doc.getText(0, doc.getLength());
-	    originalTo = GsfUtilities.getRowEnd(sourceText, originalFrom);
+	    originalTo = GsfUtilities.getRowEnd(documentText, originalFrom);
 	} catch (BadLocationException ex) {
 	    //ignore, end of the document will be used as end offset
 	}

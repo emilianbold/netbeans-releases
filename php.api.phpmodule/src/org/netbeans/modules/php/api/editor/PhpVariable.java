@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.api.editor;
 
+import org.openide.filesystems.FileObject;
+
 /**
  * Class representing a PHP local variable.
  * @since 1.13
@@ -48,6 +50,13 @@ public final class PhpVariable extends PhpBaseElement {
 
     public PhpVariable(String name, String fullyQualifiedName, String description) {
         super(name, fullyQualifiedName, description);
+    }
+
+    /**
+     * @since 1.25
+     */
+    public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
+        super(name, fullyQualifiedName, file);
     }
 
     public PhpVariable(String name, String fullyQualifiedName) {

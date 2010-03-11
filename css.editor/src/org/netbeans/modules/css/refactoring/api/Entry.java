@@ -39,7 +39,8 @@ public class Entry {
 
     /**
      * 
-     * @return a line offset of the document start offset in the underlying document
+     * @return a line offset of the document start offset in the underlying document.
+     * The -1 value denotes that there has been a problem getting the line.
      */
     public int getLineOffset() {
         return lineOffset;

@@ -103,4 +103,5 @@ public abstract class KenaiSupport {
      */
     public abstract boolean needsLogin(Query query);
 
+    public abstract void refresh(Query query, boolean synchronously);
 }
