@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -95,6 +96,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -579,11 +581,11 @@ public final class UIUtil {
         Project project = chooseProject(parent);
         if (project != null) {
             NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
-            if (nmtp == null) { // not netbeans module
+            if (nmtp == null || !(project instanceof NbModuleProject)) { // not netbeans module
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
                         ProjectUtils.getInformation(project).getDisplayName())));
-            } else if (SuiteUtils.getSubProjects(suite).contains(project)) {
+            } else if (SuiteUtils.getSubProjects(suite).contains((NbModuleProject) project)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_SuiteAlreadyContainsProject",
                         ProjectUtils.getInformation(suite).getDisplayName(),
@@ -748,19 +750,14 @@ public final class UIUtil {
         return project;
     }
     
-    private static File getSuiteDirectory(Project suiteComp) {
-        File suiteDir = SuiteUtils.getSuiteDirectory(suiteComp);
-        assert suiteDir != null : "Invalid suite provider for: "
-                + suiteComp.getProjectDirectory();
-        return suiteDir;
-    }
-    
     private static String getSuiteProjectDirectory(Project suiteComp) {
-        return getSuiteDirectory(suiteComp).getAbsolutePath();
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        return d != null ? d.getAbsolutePath() : "???"; // NOI18N
     }
     
     private static String getSuiteProjectName(Project suiteComp) {
-        FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory(suiteComp));
+        File d = SuiteUtils.getSuiteDirectory(suiteComp);
+        FileObject suiteDir = d != null ? FileUtil.toFileObject(d) : null;
         if (suiteDir == null) {
             // #94915
             return "???"; // NOI18N

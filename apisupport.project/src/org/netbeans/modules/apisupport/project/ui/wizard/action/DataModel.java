@@ -270,7 +270,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 attrs.put("delegate", "methodvalue:org.openide.awt.Actions.inject"); // NOI18N
                 attrs.put("injectable", getPackageName() + '.' + className); // NOI18N
                 attrs.put("selectionType", multiSelection ? "ANY" : "EXACTLY_ONE"); // NOI18N
-                attrs.put("type", fullClassName(cName)); // NOI18N
+                attrs.put("type", fullClassName(cookieClasses[0])); // NOI18N
                 attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
                 if (relativeIconPath != null) {
                     attrs.put("iconBase", relativeIconPath); // NOI18N
@@ -599,7 +599,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 "javax.swing.JSeparator")); // NOI18N
     }
 
-    static String fullClassName(String type) {
+    private static String fullClassName(String type) {
         if (type.contains(".")) {
             return type;
         }
