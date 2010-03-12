@@ -225,6 +225,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.script</friend>
+                <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.api.toolchain</package>
                 <package>org.netbeans.modules.cnd.api.toolchain.ui</package>
