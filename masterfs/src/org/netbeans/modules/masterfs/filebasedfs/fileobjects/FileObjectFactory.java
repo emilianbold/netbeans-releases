@@ -467,8 +467,13 @@ public final class FileObjectFactory {
     }    
     
     private void refresh(final Set<BaseFileObj> all2Refresh, final boolean expected) {
+        if (all2Refresh == null) {
+            return;
+        }
         for (final BaseFileObj fo : all2Refresh) {
-            fo.refresh(expected);
+            if (fo != null) {
+                fo.refresh(expected);
+            }
         }
     }
 
