@@ -52,6 +52,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Executes commands against one bugzilla Repository and handles errors
- * 
+ *
  * @author Tomas Stupka
  */
 public class BugzillaExecutor {
@@ -98,6 +99,8 @@ public class BugzillaExecutor {
                 checkAutoupdate();
             }
 
+            ensureCredentials();
+
             cmd.execute();
 
             if(cmd instanceof PerformQueryCommand) {
@@ -106,7 +109,7 @@ public class BugzillaExecutor {
                     return;
                 }
             }
-            
+
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
 
@@ -128,7 +131,7 @@ public class BugzillaExecutor {
                 }
             }
             return;
-                
+
         } catch(MalformedURLException me) {
             cmd.setErrorMessage(me.getMessage());
             Bugzilla.LOG.log(Level.SEVERE, null, me);
@@ -229,7 +232,7 @@ public class BugzillaExecutor {
                                 new Object[] { repository.getDisplayName() }
                            );
             p.setHtml(repository.getUrl(), html, label);
-            DialogDescriptor dialogDescriptor = 
+            DialogDescriptor dialogDescriptor =
                     new DialogDescriptor(
                             p,
                             NbBundle.getMessage(BugzillaExecutor.class, "CTL_ServerResponse"), // NOI18N
@@ -277,8 +280,12 @@ public class BugzillaExecutor {
     }
 
     public boolean handleIOException(IOException io) {
-        Bugzilla.LOG.log(Level.SEVERE, null, io); 
+        Bugzilla.LOG.log(Level.SEVERE, null, io);
         return true;
+    }
+
+    private void ensureCredentials() {
+        BugzillaConfig.getInstance().setupCredentials(repository);
     }
 
     private static abstract class ExceptionHandler {
@@ -331,7 +338,7 @@ public class BugzillaExecutor {
                 {
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY");   // NOI18N
                 }
-            }            
+            }
             return null;
         }
 
