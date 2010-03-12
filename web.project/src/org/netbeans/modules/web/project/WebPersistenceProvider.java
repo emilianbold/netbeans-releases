@@ -42,7 +42,6 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -73,7 +72,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -139,9 +137,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     @Override
     public PersistenceScope findPersistenceScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            WebPersistenceProvider provider = (WebPersistenceProvider) proj.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -149,9 +147,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     @Override
     public EntityClassScope findEntityClassScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            WebPersistenceProvider provider = (WebPersistenceProvider) proj.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -177,10 +175,10 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
+                ClassPathProviderImpl cpProv = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{
-                            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),});
+                            cpProv.getProjectSourcesClassPath(ClassPath.SOURCE),
+                            cpProv.getProjectSourcesClassPath(ClassPath.COMPILE),});
             }
             return projectSourcesClassPath;
         }
@@ -260,7 +258,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
                             ap = "";
                         }
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
-                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
+                        if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
                             Sources sources = ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             SourceGroup firstGroup = groups[0];

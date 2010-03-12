@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
@@ -77,6 +78,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -700,6 +702,13 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     public static class Factory extends CustomIndexerFactory {
 
+        private static AtomicBoolean javaTaskFactoriesInitialized = new AtomicBoolean(false);
+
+        public Factory() {
+            if (!javaTaskFactoriesInitialized.getAndSet(true)) {
+                JavaSourceTaskFactoryManager.register();
+            }
+        }
 
         @Override
         public boolean scanStarted(final Context context) {

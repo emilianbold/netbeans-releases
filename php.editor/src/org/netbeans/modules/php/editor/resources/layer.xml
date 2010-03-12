@@ -86,6 +86,12 @@
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
@@ -123,9 +129,10 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
                     </folder>
-                    <file name="in-place-refactoring">
-                        <attr intvalue="680" name="position"/>
-                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="680"/>
+		    </file>
                     <file name="fast-import">
                         <attr name="position" intvalue="1181"/>
                     </file>
