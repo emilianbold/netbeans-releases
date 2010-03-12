@@ -489,17 +489,15 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     private void doUpdateCurrentVisibleSpan() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            updateCurrentVisibleSpan();
-            reschedule();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateCurrentVisibleSpan();
-                    reschedule();
-                }
-            });
-        }
+        //#156490: updateCurrentVisibleSpan invokes viewToModel, which may throw StateInvariantError
+        //if the starting position of view disappeared from the document in the current change (before the views are adjusted)
+        //reschedule to later, when the views are adjusted to the new state
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateCurrentVisibleSpan();
+                reschedule();
+            }
+        });
     }
 
     public void stateChanged(ChangeEvent e) {
