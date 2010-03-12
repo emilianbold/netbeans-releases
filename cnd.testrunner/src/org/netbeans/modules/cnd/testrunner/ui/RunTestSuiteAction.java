@@ -40,7 +40,12 @@ package org.netbeans.modules.cnd.testrunner.ui;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Action for running all tests in a file.
@@ -57,11 +62,39 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
     }
 
     protected void doActionPerformed(ActionEvent e) {
-//        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runTest(location.getFileObject(), debug);
-//        }
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            Folder targetFolder = findTestFolder();
+            if(targetFolder != null) {
+                if(debug) {
+                    ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, targetFolder}));
+                } else {
+                    ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
+                }
+            }
+        }
+    }
 
+    private Folder findTestFolder() {
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        Folder root = mcd.getLogicalFolders();
+        Folder testRootFolder = null;
+        for (Folder folder : root.getFolders()) {
+            if (folder.isTestRootFolder()) {
+                testRootFolder = folder;
+                break;
+            }
+        }
+        if (testRootFolder != null) {
+            for (Folder folder : testRootFolder.getAllTests()) {
+                Item[] items = folder.getAllItemsAsArray();
+                for (int k = 0; k < items.length; k++) {
+                    if(items[k].getPath().replaceFirst("\\..*", "").equals(testcase.getClassName())) { // NOI18N
+                        return folder;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

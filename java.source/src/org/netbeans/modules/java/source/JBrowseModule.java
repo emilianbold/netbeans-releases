@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
 public class JBrowseModule extends ModuleInstall {
     
     private static final boolean ENABLE_MBEANS = Boolean.getBoolean("org.netbeans.modules.java.source.enableMBeans");  //NOI18N
-    private static Logger log = Logger.getLogger(JBrowseModule.class.getName());
+    private static final Logger log = Logger.getLogger(JBrowseModule.class.getName());
     
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
@@ -76,7 +76,6 @@ public class JBrowseModule extends ModuleInstall {
 
     public @Override void restored() {
         super.restored();
-        JavaSourceTaskFactoryManager.register();
         if (ENABLE_MBEANS) {
             registerMBeans();
         }
@@ -86,14 +85,14 @@ public class JBrowseModule extends ModuleInstall {
         //when "internal" execution of javac is used
         //the property below disables the caches
         //java.project might be a better place (currently does not have a ModuleInstall)
-        System.setProperty("useJavaUtilZip", "true");
+        System.setProperty("useJavaUtilZip", "true"); //NOI18N
     }   
     
     public @Override void close () {
         super.close();
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                 public Void run() throws IOException {
+                 public @Override Void run() throws IOException {
                      ClassIndexManager.getDefault().close();
                      return null;
                  }
