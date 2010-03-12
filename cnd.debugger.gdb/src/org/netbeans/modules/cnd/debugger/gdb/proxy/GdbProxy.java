@@ -61,7 +61,6 @@ import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  * Class GdbProxy is a Controller component of gdb driver
@@ -446,20 +445,12 @@ public class GdbProxy {
     public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
-        if (GdbUtils.isMultiByte(name)) {
-            if (temporary) {
-                cmd.append("tbreak "); // NOI18N
-            } else {
-                cmd.append("break "); // NOI18N
-            }
-        } else {
-            cmd.append("-break-insert "); // NOI18N
-            if (temporary) {
-                cmd.append("-t "); // NOI18N
-            }
-            // This will make pending breakpoint if specified location can not be parsed now
-            cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        cmd.append("-break-insert "); // NOI18N
+        if (temporary) {
+            cmd.append("-t "); // NOI18N
         }
+        // This will make pending breakpoint if specified location can not be parsed now
+        cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
 
         // Temporary fix for Windows
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
@@ -472,7 +463,9 @@ public class GdbProxy {
             // FIXME - Does the Mac support -p?
             cmd.append("-p " + threadID + " "); // NOI18N
         }
+        cmd.append('\"'); // NOI18N
         cmd.append(name);
+        cmd.append('\"'); // NOI18N
         return engine.createMICommand(cmd.toString());
     }
 

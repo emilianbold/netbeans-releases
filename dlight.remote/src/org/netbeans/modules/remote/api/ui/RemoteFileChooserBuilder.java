@@ -74,7 +74,7 @@ final class RemoteFileChooserBuilder {
 
         RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
 
-        JFileChooserImpl chooser = new JFileChooserImpl("/", remoteFileSystemView);
+        JFileChooserImpl chooser = new JFileChooserImpl("/", remoteFileSystemView);//NOI18N
         remoteFileSystemView.addPropertyChangeListener(chooser);
 
         UIManager.put(openDialogTitleTextKey, currentOpenTitle);

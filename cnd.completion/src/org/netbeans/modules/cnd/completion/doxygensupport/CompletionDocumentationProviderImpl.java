@@ -118,9 +118,9 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
                 StringBuilder w = new StringBuilder();
 
                 w.append("<html><body>"); // NOI18N
-                w.append("<p>" + getString("NO_DOC_FOUND") + "</p>"); // NOI18N
+                w.append("<p>").append(getString("NO_DOC_FOUND")).append("</p>"); // NOI18N
                 if (errorText != null) {
-                    w.append("<p>" + errorText + "</p>");
+                    w.append("<p>").append(errorText).append("</p>"); // NOI18N
                 }
                 documentation = new EmptyCompletionDocumentationImpl(w.toString());
             }

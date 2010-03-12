@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -79,6 +80,15 @@ abstract class TerminalAction implements ActionListener {
                     @Override
                     public void run() {
                         try {
+                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                                ConnectionManager.getInstance().connectTo(env);
+                            }
+                            if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                                HostInfoUtils.getHostInfo(env);
+                            } else {
+                                return;
+                            }
+
                             final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);

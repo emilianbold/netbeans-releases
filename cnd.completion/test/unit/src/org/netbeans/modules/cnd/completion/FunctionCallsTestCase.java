@@ -47,10 +47,11 @@ import java.io.PrintWriter;
 import java.util.List;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.debugger.CsmFunctionCallsProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.spi.model.services.FunctionCallsProvider.FunctionCall;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,10 +103,11 @@ public class FunctionCallsTestCase extends ProjectBasedTestCase {
 
         final StyledDocument doc = (StyledDocument)CndCoreTestUtils.getBaseDocument(testFileDO);
 
-        List<FunctionCall> res = new CsmFunctionCallsProviderImpl().getFunctionCalls(doc, lineIndex-1);
+        List<CsmReference> res = new CsmFunctionCallsProviderImpl().getFunctionCalls(doc, lineIndex-1);
 
-        for (FunctionCall fc : res) {
-            streamOut.println(fc.name);
+        for (CsmReference fc : res) {
+            CsmFunction function = (CsmFunction)fc.getReferencedObject();
+            streamOut.println(function.getSignature());
         }
         streamOut.close();
 
