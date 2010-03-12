@@ -76,6 +76,7 @@ class FileChooser extends JFileChooser {
         setFileFilter(currentFilter);
     }
     
+    @Override
     public void approveSelection() {
         final File[] selectedFiles = getSelectedFiles();
 
@@ -153,6 +154,7 @@ class FileChooser extends JFileChooser {
          *          strings specified by the constructor or if the file
          *          is a directory, <code>false</code> otherwise
          */
+        @Override
         public boolean accept(File file) {
             if (file.isDirectory()) {
                 return true;
@@ -167,6 +169,7 @@ class FileChooser extends JFileChooser {
         }
         
         /** */
+        @Override
         public String getDescription() {
             return description;
         }
