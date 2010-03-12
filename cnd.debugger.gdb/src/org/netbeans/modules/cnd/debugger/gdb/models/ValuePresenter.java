@@ -97,7 +97,7 @@ public class ValuePresenter {
                 return false;
             }
             int end = value.lastIndexOf('}');
-            if (end == -1) {
+            if (end == -1 || end < start+1) {
                 return false;
             }
             value = value.substring(start+1, end);

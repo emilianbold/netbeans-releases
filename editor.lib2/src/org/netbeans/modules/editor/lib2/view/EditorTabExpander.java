@@ -62,16 +62,20 @@ public final class EditorTabExpander implements TabExpander {
 
     private final DocumentView documentView;
 
+    private int tabSize;
+
     public EditorTabExpander(DocumentView documentView) {
         this.documentView = documentView;
+        updateTabSize();
+    }
+
+    private void updateTabSize() {
+        Integer tabSizeInteger = (Integer) documentView.getDocument().getProperty(PlainDocument.tabSizeAttribute);
+        tabSize = (tabSizeInteger != null) ? tabSizeInteger : 8;
     }
 
     @Override
     public float nextTabStop(float x, int tabOffset) {
-        Integer tabSize = (Integer) documentView.getDocument().getProperty(PlainDocument.tabSizeAttribute);
-        if (tabSize == null) {
-            tabSize = 8;
-        }
         float defaultCharWidth = documentView.getDefaultCharWidth();
         int charIndex = (int) (x / defaultCharWidth);
         charIndex = (charIndex + tabSize) / tabSize * tabSize;

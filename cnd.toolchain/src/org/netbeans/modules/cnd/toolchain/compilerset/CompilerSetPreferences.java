@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -76,6 +78,7 @@ public final class CompilerSetPreferences {
     private static final String TOOL_KIND = ".toolKind."; // NOI18N
     private static final String TOOL_PATH = ".toolPath."; // NOI18N
     private static final String TOOL_FLAVOR = ".toolFlavor."; // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     private static CompilerProvider compilerProvider = null;
 
@@ -93,16 +96,52 @@ public final class CompilerSetPreferences {
         getPreferences().putInt(CSM + ExecutionEnvironmentFactory.toUniqueID(executionEnvironment) + SET_PLATFORM, platform);
     }
 
-    public static void clearPersistence() {
+    public static void storeExecutionEnvironmentList(List<ExecutionEnvironment> liveServers){
+        if (liveServers == null){
+            return;
+        }
         try {
-            getPreferences().clear();
+            List<String> keys = new ArrayList<String>();
+            for(ExecutionEnvironment env : liveServers){
+                String key = CSM + ExecutionEnvironmentFactory.toUniqueID(env) + "."; // NOI18N
+                keys.add(key);
+                log.log(Level.FINE, "CSM.storeExecutionEnvironmentList: host = {0}", env); // NOI18N
+            }
+            getPreferences().remove(CSM + VERSION);
+            loop:for(String key : getPreferences().keys()){
+                if (key.startsWith(CSM)) {
+                    for(String start : keys) {
+                        if (key.startsWith(start)) {
+                            continue loop;
+                        }
+                    }
+                    log.log(Level.FINE, "CSM.storeExecutionEnvironmentList: remove {0}={1}", new Object[]{key, getPreferences().get(key, "")}); // NOI18N
+                    getPreferences().remove(key);
+                }
+            }
+            getPreferences().putDouble(CSM + VERSION, csm_version);
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void clearPersistence(ExecutionEnvironment env) {
+        try {
+            String aKey = CSM + ExecutionEnvironmentFactory.toUniqueID(env) + "."; // NOI18N
+            for(String key : getPreferences().keys()){
+                if (key.startsWith(aKey)) {
+                    getPreferences().remove(key);
+                }
+            }
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
     public static void saveToDisk(CompilerSetManagerImpl manager) {
+        log.log(Level.FINE, "CSM.Save to disk {0} size={1}", new Object[]{manager.getExecutionEnvironment(), manager.getCompilerSets().size()}); // NOI18N
         if (!manager.getCompilerSets().isEmpty()) {
+            clearPersistence(manager.getExecutionEnvironment());
             getPreferences().putDouble(CSM + VERSION, csm_version);
             String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(manager.getExecutionEnvironment());
             getPreferences().putInt(CSM + executionEnvironmentKey + NO_SETS, manager.getCompilerSets().size());
@@ -137,6 +176,7 @@ public final class CompilerSetPreferences {
         }
         String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(env);
         int noSets = getPreferences().getInt(CSM + executionEnvironmentKey + NO_SETS, -1);
+        log.log(Level.FINE, "CSM.Restore from disk {0} size={1}", new Object[]{env, noSets}); // NOI18N
         if (noSets < 0) {
             return null;
         }

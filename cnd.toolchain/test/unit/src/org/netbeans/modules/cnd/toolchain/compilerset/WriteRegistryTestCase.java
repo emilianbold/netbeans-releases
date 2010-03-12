@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -80,7 +79,6 @@ public class WriteRegistryTestCase extends NbTestCase {
 
     public void testWrtiteDescriptor() throws Exception {
         List<ToolchainDescriptor> original = ToolchainManagerImpl.getImpl().getAllToolchains();
-        ToolchainManagerImpl.getImpl().writeToolchains();
         ToolchainManagerImpl.getImpl().reinitToolchainManager();
         List<ToolchainDescriptor> restored = ToolchainManagerImpl.getImpl().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {

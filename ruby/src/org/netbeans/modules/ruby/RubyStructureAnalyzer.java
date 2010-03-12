@@ -1615,51 +1615,62 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return null;
     }
 
-    private class RhtmlStructureItem implements StructureItem {
+    private static class RhtmlStructureItem implements StructureItem {
         
         private final String name;
         private final int start;
         private final int end;
+        private final ElementHandle handle;
 
         public RhtmlStructureItem(String name, int start, int end) {
             this.name = name;
             this.start = start;
             this.end = end;
+            this.handle = new RhtmlElementHandle(name);
         }
         
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
             return formatter.getText();
         }
 
+        @Override
         public ElementHandle getElementHandle() {
-            return null;
+            return handle;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.OTHER;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
             return true;
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             return Collections.emptyList();
         }
 
+        @Override
         public long getPosition() {
             return start;
         }
 
+        @Override
         public long getEndPosition() {
             return end;
         }
@@ -1711,8 +1722,60 @@ public class RubyStructureAnalyzer implements StructureScanner {
         public String getSortText() {
             return Integer.toHexString(10000+(int)getPosition());
         }
+
     }
-    
+    /** A dummy ElementHandle impl for RhtmlStructureItem that need to return a non-null
+     *  value for {@code StructureItem#getElementHandle}.
+     */
+    private static class RhtmlElementHandle implements ElementHandle {
+
+        private final String name;
+
+        public RhtmlElementHandle(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getIn() {
+            return null;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return this.name.equals(handle.getName());
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+    }
+
     /** Number of characters to display from the Ruby fragments in the navigator */
     private static final int MAX_RUBY_LABEL_LENGTH = 30;
     /** Default label to use on navigator items where we don't have more accurate

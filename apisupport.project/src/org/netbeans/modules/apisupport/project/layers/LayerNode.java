@@ -146,14 +146,15 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 @Override
                 public void run() {
                     FileObject layer = handle.getLayerFile();
-                    p = FileOwnerQuery.getOwner(layer);
+                    p = /* #180872 */layer == null ? null : FileOwnerQuery.getOwner(layer);
                     if (p == null) { // #175861: inside JAR etc.
                         setKeys(Collections.<LayerChildren.KeyType>emptySet());
                         return;
                     }
                     boolean showContextNode = true;
                     NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-                    if( null != moduleProvider && !moduleProvider.prepareContext() ) {
+                    if( null != moduleProvider 
+                            && !moduleProvider.prepareContext(NbBundle.getMessage(LayerNode.class, "LBL_XML_layer_in_context")) ) { //NOI18N
                         //don't show 'layer in context' if the context classpath didn't initialize properly
                         showContextNode = false;
                     }

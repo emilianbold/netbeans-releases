@@ -42,6 +42,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileLock;
@@ -58,6 +59,11 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
 
     public FileUtilAddRecursiveListenerTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     /** Tests FileObject.addRecursiveListener on folder as declared in

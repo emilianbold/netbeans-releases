@@ -54,6 +54,7 @@ import java.io.Writer;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,6 +92,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
@@ -516,6 +518,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
         putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
+        putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
         lineRootElement = new LineRootElement(this);
 
@@ -2249,18 +2252,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * {@link javax.swing.text.Document#getProperty(java.lang.String)}
      * is called.
      */
-    public interface PropertyEvaluator {
-
-        /** Get the real value of the property */
+    public static interface PropertyEvaluator {
         public Object getValue();
-
     }
 
-    private static interface PropertyHandler extends PropertyEvaluator {
-        public Object setValue(Object value);
-    }
-
-    private static final class MimeTypePropertyEvaluator implements PropertyHandler {
+    private static final class MimeTypePropertyEvaluator implements BaseDocument_PropertyHandler {
 
         private final BaseDocument doc;
         private String hackMimeType = null;
@@ -2315,6 +2311,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     protected static class LazyPropertyMap extends Hashtable {
 
+        private PropertyChangeSupport pcs = null;
+
         protected LazyPropertyMap(Dictionary dict) {
             super(5);
 
@@ -2335,14 +2333,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         public @Override Object put(Object key, Object value) {
-            if (key != null) {
-                Object val = super.get(key);
-                if (val instanceof PropertyHandler) {
-                    return ((PropertyHandler) val).setValue(value);
-                }
-            }
+             if (key == PropertyChangeSupport.class && value instanceof PropertyChangeSupport) {
+                 pcs = (PropertyChangeSupport) value;
+             }
 
-            return super.put(key, value);
+             Object old = null;
+             boolean usePlainPut = true;
+
+              if (key != null) {
+                  Object val = super.get(key);
+                  if (val instanceof BaseDocument_PropertyHandler) {
+                     old = ((BaseDocument_PropertyHandler) val).setValue(value);
+                     usePlainPut = false;
+                  }
+              }
+
+             if (usePlainPut) {
+                 old = super.put(key, value);
+             }
+
+             if (key instanceof String) {
+                 if (pcs != null) {
+                     pcs.firePropertyChange((String) key, old, value);
+                 }
+             }
+
+             return old;
         }
     } // End of LazyPropertyMap class
 

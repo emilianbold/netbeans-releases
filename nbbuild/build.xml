@@ -969,6 +969,29 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <env key="DISPLAY" value="${run.env.display}"/>
     </exec>
   </target>
+
+  <target name="move-ide-nbms" depends="init">
+    <property name="nbms.source.location" location="nbms"/>
+    <property name="nbms.target.location" location="ide_nbms"/>
+    <mkdir dir="${nbms.target.location}"/>
+
+    <resolvelist name="nb.clusters.names" list="${clusters.config.full.list}">
+        <mapper type="glob" from="*" to="*.dir"/>
+    </resolvelist>
+    <echo message="dirs: ${nb.clusters.names}"/>
+
+    <repeat target="-move-cluster-nbms" name="nb.cluster.name" values="${nb.clusters.names}"/>
+  </target>
+
+  <target name="-move-cluster-nbms">
+    <echo message="one cluster: ${nb.cluster.name}"/>
+    <echo message="source: ${nbms.target.location}"/>
+    <move todir="${nbms.target.location}">
+      <fileset dir="${nbms.source.location}">
+         <include name="${nb.cluster.name}/"/>
+      </fileset>
+    </move>
+  </target>
   
   <target name="all-l10n-kits" depends="l10n-kit">
   </target>

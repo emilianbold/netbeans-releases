@@ -138,6 +138,8 @@
                 <package>org.netbeans.jellytools.actions</package>
                 <package>org.netbeans.jellytools.modules.db</package>
                 <package>org.netbeans.jellytools.modules.db.actions</package>
+                <package>org.netbeans.jellytools.modules.db.derby</package>
+                <package>org.netbeans.jellytools.modules.db.derby.actions</package>
                 <package>org.netbeans.jellytools.modules.db.nodes</package>
                 <package>org.netbeans.jellytools.modules.debugger</package>
                 <package>org.netbeans.jellytools.modules.debugger.actions</package>

@@ -41,8 +41,6 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
@@ -57,7 +55,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
@@ -89,6 +86,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
     private static KenaiPopupMenu inst = null;
 
     private KenaiPopupMenu() {
+        putValue(NAME, NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP"));
     }
 
     public static synchronized KenaiPopupMenu getDefault() {

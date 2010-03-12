@@ -79,7 +79,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
     }
 
     @Override
-    protected boolean extendLastViewAllocation() {
+    protected boolean handleTabableViews() {
         return true;
     }
 
@@ -124,7 +124,8 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             boolean regular = true;
             switch (docView.getLineWrapType()) {
                 case NONE:
-
+                    break;
+                    
                 case CHARACTER_BOUND:
                 case WORD_BOUND:
                     double origWidth = boxView.getMajorAxisSpan();
@@ -241,8 +242,11 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
                 allocBounds.width = wrapLine.startViewX;
             } else if (wrapLine.endViewPart != null && offset >= wrapLine.endViewPart.getStartOffset()) {
                 assert (wrapLine.endViewPart != null) : "Invalid wrapLine: " + wrapLine; // NOI18N
-                allocBounds.x += wrapLine.startViewX + (boxView.getViewVisualOffset(wrapLine.endViewIndex) -
+                allocBounds.x += wrapLine.startViewX;
+                if (wrapLine.hasFullViews()) {
+                    allocBounds.x += (boxView.getViewVisualOffset(wrapLine.endViewIndex) -
                         boxView.getViewVisualOffset(wrapLine.startViewIndex));
+                }
                 allocBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
                 ret = wrapLine.endViewPart.modelToViewChecked(offset, allocBounds, bias);
             } else {

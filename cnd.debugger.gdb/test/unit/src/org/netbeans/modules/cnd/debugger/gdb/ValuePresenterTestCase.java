@@ -72,4 +72,10 @@ public class ValuePresenterTestCase extends TestCase {
         String value = "abc";
         assertEquals("\"" + value + "\"", ValuePresenter.getValue(null, VariableInfo.getStDStringValueMac(value)));
     }
+
+    @Test
+    public void testNonString() {
+        String value = "\"test}abc{xyz\"";
+        assertEquals(value, ValuePresenter.getValue(null, value));
+    }
 }

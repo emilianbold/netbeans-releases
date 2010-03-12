@@ -78,6 +78,7 @@ public final class H2DataStorage extends SQLDataStorage {
     private static final String storagesDir;
     private static final String tmpDir;
     private static final String url;
+    private static String persistentURL;
     final String dbURL;
     private final List<DataTableMetadata> tableMetadatas;
     boolean isPersistent = false;
@@ -108,6 +109,15 @@ public final class H2DataStorage extends SQLDataStorage {
 
         storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");// NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
+        try {
+            persistentURL = "jdbc:h2:tcp://" + HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname() + storagesDir;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            persistentURL = url;
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+            persistentURL = url;
+        }
         CommonTasksSupport.mkDir(ExecutionEnvironmentFactory.getLocal(), storagesDir, new StringWriter());
         tmpDir = tempDir;
 
@@ -149,8 +159,16 @@ public final class H2DataStorage extends SQLDataStorage {
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
+    H2DataStorage(boolean isPersistent, String storageUniqueKey) throws SQLException {
+        this(isPersistent ? persistentURL  + "/dlight"  + storageUniqueKey : url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
+        this.isPersistent = isPersistent;
+    }
+
+
+
     H2DataStorage() throws SQLException {
-        this(url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
+        this(false, null);
+        
     }
 
     H2DataStorage(String url) throws SQLException {

@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.toolchain.compilerset;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -87,9 +88,9 @@ public class CompilerSetManagerAccessorImpl {
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static void setManagers(Collection<CompilerSetManager> csms) {
+    public static void setManagers(Collection<CompilerSetManager> csms, List<ExecutionEnvironment> liveServers) {
         synchronized (MASTER_LOCK) {
-            CompilerSetPreferences.clearPersistence();
+            CompilerSetPreferences.storeExecutionEnvironmentList(liveServers);
             managers.clear();
             for (CompilerSetManager csm : csms) {
                 CompilerSetManagerImpl impl = (CompilerSetManagerImpl) csm;

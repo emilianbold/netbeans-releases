@@ -71,6 +71,7 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.TabExpander;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -108,9 +109,25 @@ public final class DocumentView extends EditorBoxView
     static final char LINE_CONTINUATION = '\u21A9';
 
     static enum LineWrapType {
-        NONE,
-        CHARACTER_BOUND,
-        WORD_BOUND;
+        NONE("none"), //NOI18N
+        CHARACTER_BOUND("chars"), //NOI18N
+        WORD_BOUND("words"); //NOI18N
+
+        private final String settingValue;
+        private LineWrapType(String settingValue) {
+            this.settingValue = settingValue;
+        }
+
+        public static LineWrapType fromSettingValue(String settingValue) {
+            if (settingValue != null) {
+                for(LineWrapType lwt : LineWrapType.values()) {
+                    if (lwt.settingValue.equals(settingValue)) {
+                        return lwt;
+                    }
+                }
+            }
+            return null;
+        }
     };
 
     public static DocumentView get(JTextComponent component) {
@@ -127,7 +144,7 @@ public final class DocumentView extends EditorBoxView
         return null;
     }
 
-    private Object monitor = new String("DocumentView-Monitor");
+    private final Object monitor = new String("DocumentView-Monitor"); //NOI18N
 
     private JTextComponent textComponent;
 
@@ -179,13 +196,17 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
-    private LineWrapType lineWrapType = LineWrapType.CHARACTER_BOUND;
+    private LineWrapType lineWrapType;
 
     private TextLayout newlineTextLayout;
 
     private TextLayout tabTextLayout;
 
+    private TextLayout singleCharTabTextLayout;
+
     private TextLayout lineContinuationTextLayout;
+
+    private TabExpander tabExpander;
 
     private LookupListener lookupListener;
 
@@ -201,6 +222,7 @@ public final class DocumentView extends EditorBoxView
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
         this.previewOnly = previewOnly;
+        this.tabExpander = new EditorTabExpander(this);
     }
 
     @Override
@@ -220,6 +242,11 @@ public final class DocumentView extends EditorBoxView
     @Override
     public int getMajorAxis() {
         return View.Y_AXIS;
+    }
+
+    @Override
+    protected TabExpander getTabExpander() {
+        return tabExpander;
     }
 
     @Override
@@ -286,15 +313,15 @@ public final class DocumentView extends EditorBoxView
                 checkSettingsInfo();
                 updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
                 Document doc = getDocument();
-                Element lineElementRoot = doc.getDefaultRootElement();
-                // Pre-init children views
                 reinitViews();
             }
         }
     }
 
     public void reinitViews() {
-        viewUpdates.reinitViews();
+        synchronized (getMonitor()) {
+            viewUpdates.reinitViews();
+        }
     }
 
     private void updateVisibleWidth() {
@@ -359,6 +386,15 @@ public final class DocumentView extends EditorBoxView
             };
             prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
         }
+
+        if (lineWrapType == null) {
+            Document doc = getDocument();
+            lineWrapType = LineWrapType.fromSettingValue((String) doc.getProperty(SimpleValueNames.TEXT_LINE_WRAP));
+            if (lineWrapType == null) {
+                lineWrapType = LineWrapType.NONE;
+            }
+            DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
+        }
     }
 
     /*private*/ void updateDefaultFontAndColors(Lookup.Result<FontColorSettings> result) {
@@ -397,9 +433,7 @@ public final class DocumentView extends EditorBoxView
 
         updateCharMetrics(); // Update metrics with just updated font
 
-        synchronized (getMonitor()) {
-            reinitViews();
-        }
+        reinitViews();
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
@@ -422,6 +456,7 @@ public final class DocumentView extends EditorBoxView
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
             defaultCharWidth = (float) textLayout.getBounds().getWidth();
             tabTextLayout = null;
+            singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
         }
     }
@@ -529,51 +564,86 @@ public final class DocumentView extends EditorBoxView
         return lineWrapType;
     }
 
-    TextLayout printingNewlineTextLayout() {
+    TextLayout getNewlineCharTextLayout() {
         if (newlineTextLayout == null) {
-            newlineTextLayout = createTextLayout(String.valueOf(PRINTING_NEWLINE));
+            newlineTextLayout = createTextLayout(String.valueOf(PRINTING_NEWLINE), defaultFont);
         }
         return newlineTextLayout;
     }
 
-    TextLayout printingTabTextLayout() {
+    TextLayout getTabCharTextLayout(double availableWidth) {
         if (tabTextLayout == null) {
-            tabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB));
+            tabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), defaultFont);
         }
-        return tabTextLayout;
+        TextLayout ret = tabTextLayout;
+        if (tabTextLayout != null && availableWidth > 0 && tabTextLayout.getAdvance() > availableWidth) {
+            if (singleCharTabTextLayout == null) {
+                for (int i = defaultFont.getSize() - 1; i >= 0; i--) {
+                    Font font = new Font(defaultFont.getName(), defaultFont.getStyle(), i);
+                    singleCharTabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), font);
+                    if (singleCharTabTextLayout != null) {
+                        if (singleCharTabTextLayout.getAdvance() <= getDefaultCharWidth()) {
+                            LOG.log(Level.FINE, "singleChar font size={0}\n", i);
+                            break;
+                        }
+                    } else { // layout creation failed
+                        break;
+                    }
+                }
+            }
+            ret = singleCharTabTextLayout;
+        }
+        return ret;
     }
 
-    TextLayout lineContinuationTextLayout() {
+    TextLayout getLineContinuationCharTextLayout() {
         if (lineContinuationTextLayout == null) {
-            lineContinuationTextLayout = createTextLayout(String.valueOf(LINE_CONTINUATION));
+            lineContinuationTextLayout = createTextLayout(String.valueOf(LINE_CONTINUATION), defaultFont);
         }
         return lineContinuationTextLayout;
     }
 
-    private TextLayout createTextLayout(String text) {
+    private TextLayout createTextLayout(String text, Font font) {
         checkSettingsInfo();
-        if (fontRenderContext != null && defaultFont != null) {
-            return new TextLayout(text, defaultFont, fontRenderContext);
+        if (fontRenderContext != null && font != null) {
+            return new TextLayout(text, font, fontRenderContext);
         }
         return null;
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        if ("ancestor".equals(propName)) { // NOI18N
-            checkViewsInited();
-        } else if ("font".equals(propName)) {
-            if (!customFont && defaultFont != null) {
-                customFont = !defaultFont.equals(textComponent.getFont());
+        if (evt.getSource() instanceof Document) {
+            String propName = evt.getPropertyName();
+            if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
+                LineWrapType lwt = LineWrapType.fromSettingValue((String)getDocument().getProperty(SimpleValueNames.TEXT_LINE_WRAP));
+                if (lwt == null) {
+                    lwt = LineWrapType.NONE;
+                }
+                if (lwt != lineWrapType) {
+                    LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
+                    lineWrapType = lwt;
+                    synchronized (getMonitor()) {
+                        reinitViews();
+                    }
+                }
             }
-        } else if ("foreground".equals(propName)) {
-            if (!customForeground && defaultForeground != null) {
-                customForeground = !defaultForeground.equals(textComponent.getForeground());
-            }
-        } else if ("background".equals(propName)) {
-            if (!customBackground && defaultBackground != null) {
-                customBackground = !defaultBackground.equals(textComponent.getBackground());
+        } else { // an event from JTextComponent
+            String propName = evt.getPropertyName();
+            if ("ancestor".equals(propName)) { // NOI18N
+                checkViewsInited();
+            } else if ("font".equals(propName)) {
+                if (!customFont && defaultFont != null) {
+                    customFont = !defaultFont.equals(textComponent.getFont());
+                }
+            } else if ("foreground".equals(propName)) { //NOI18N
+                if (!customForeground && defaultForeground != null) {
+                    customForeground = !defaultForeground.equals(textComponent.getForeground());
+                }
+            } else if ("background".equals(propName)) { //NOI18N
+                if (!customBackground && defaultBackground != null) {
+                    customBackground = !defaultBackground.equals(textComponent.getBackground());
+                }
             }
         }
     }

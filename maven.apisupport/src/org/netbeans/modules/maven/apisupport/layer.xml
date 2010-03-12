@@ -61,6 +61,8 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="1000"/>
                     <attr name="misplaced.action.allowed" boolvalue="true"/>
                 </file>
+            </folder>
+            <folder name="CustomizeProjectActions">
                 <file name="org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction.instance">
                     <attr name="position" intvalue="1100"/>
                     <attr name="misplaced.action.allowed" boolvalue="true"/>

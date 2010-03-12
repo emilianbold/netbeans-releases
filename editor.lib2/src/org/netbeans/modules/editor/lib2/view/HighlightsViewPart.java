@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,10 +78,10 @@ public final class HighlightsViewPart extends EditorView {
 
     public HighlightsViewPart(HighlightsView fullView, int shift, int length) {
         super(null);
-        int totalLength = fullView.getLength();
-        if (shift < 0 || length < 0 || shift + length > totalLength) {
+        int fullViewLength = fullView.getLength();
+        if (shift < 0 || length < 0 || shift + length > fullViewLength) {
             throw new IllegalArgumentException("shift=" + shift + ", length=" + length + // NOI18N
-                    ", totalLength=" + totalLength); // NOI18N
+                    ", fullViewLength=" + fullViewLength); // NOI18N
         }
         this.fullView = fullView;
         this.shift = shift;
@@ -181,7 +180,7 @@ public final class HighlightsViewPart extends EditorView {
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        HighlightsView.paint(g, alloc, clipBounds, this, getDocumentView(), getTextLayout());
+        HighlightsView.paint(g, alloc, clipBounds, fullView, getTextLayout(), shift, getLength());
     }
 
     @Override
@@ -192,13 +191,13 @@ public final class HighlightsViewPart extends EditorView {
 
     @Override
     public View createFragment(int p0, int p1) {
+        int startOffset = getStartOffset();
+        ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + getStartOffset() + "," + // NOI18N
+            LOG.fine("HVP.createFragment(" + p0 + "," + p1+ "): <" + startOffset + "," + // NOI18N
                     getEndOffset() + ">\n"); // NOI18N
         }
-        int partShift = p0 - getStartOffset();
-        int partLen = p1 - p0;
-        return new HighlightsViewPart(fullView, shift + partShift, partLen);
+        return new HighlightsViewPart(fullView, shift + p0 - startOffset, p1 - p0);
     }
 
     @Override

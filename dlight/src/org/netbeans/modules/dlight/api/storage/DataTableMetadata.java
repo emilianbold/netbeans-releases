@@ -74,11 +74,11 @@ public final class DataTableMetadata {
 
     /**
      * Creates new VIEW description with the name <code>name</code>,using <code>columns</code> as table column descriptions,
-     *  <code>statement</code> string is info about gettig data and <code>sourceTables</code> is the list of tables
+     *  <code>statement</code> string is info about getting data and <code>sourceTables</code> is the list of tables
      * this VIEW is built from
-     * @param name view name
+     * @param name view name, please be aware that name is case insensitive
      * @param columns columns description
-     * @param statement string which represents infor about getting data for this VIEW
+     * @param statement string which represents info about getting data for this VIEW
      * @param sourceTables tables this VIEW is built on the base of
      */
     public DataTableMetadata(String name, List<Column> columns, String statement, List<DataTableMetadata> sourceTables) {
@@ -185,7 +185,7 @@ public final class DataTableMetadata {
             for (DataTableMetadata tableWeSearch : sourceTables) {
                 boolean found = false;
                 for (DataTableMetadata tableWeHave : list) {
-                    if (tableWeSearch.getName().equals(tableWeHave.getName())) {
+                    if (tableWeSearch.getName().equalsIgnoreCase(tableWeHave.getName())) {
                         found = true;
                         break;
                     }
@@ -198,7 +198,7 @@ public final class DataTableMetadata {
         }
         // here sourceTables == null
         for (DataTableMetadata md : list) {
-            if (md.getName().equals(this.getName())) {
+            if (md.getName().equalsIgnoreCase(this.getName())) {
                 return true;
             }
         }

@@ -62,6 +62,7 @@ import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.xml.sax.SAXException;
@@ -85,39 +86,42 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private CssPreviewComponent previewPanel;
     
-    private CssPreviewable lastSelectedPreviewable;
-    
-//    private PropertyChangeListener WINDOW_REGISTRY_LISTENER = new PropertyChangeListener() {
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-//                checkPreview((TopComponent)evt.getNewValue());
-//            }
-//        }
-//    };
-    
-//    private CssPreviewable.Listener PREVIEWABLE_LISTENER = new CssPreviewable.Listener() {
         public void activate(final CssRuleContext content) {
+            assert SwingUtilities.isEventDispatchThread();
             LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);//NOI18N
-            SwingUtilities.invokeLater(new Runnable() {
+
+            //the CssPreviewGenerator.getPreviewCode() needs to run outside of AWT
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
                 public void run() {
-                    preview(content);
-                    LOGGER.log(Level.FINE, "Previewable activated - " + content);//NOI18N
+                    final File baseFile = content.base();
+                    final String title = getTitle(content);
+                    final CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            //and preview in AWT
+                            preview(baseFile, title, htmlCode);
+                        }
+
+                    });
                 }
+
             });
+
         }
         
         public void deactivate() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setNoSelectedRule();
-                    LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
-                }
-            });
-            
+            assert SwingUtilities.isEventDispatchThread();
+            LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
+
+            setNoSelectedRule();
         }
-//    };
     
-    private static final String DEFAULT_TC_NAME = NbBundle.getMessage(CssPreviewTopComponent.class, "CTL_CssPreviewTopComponent");
+    private static final String DEFAULT_TC_NAME = 
+            NbBundle.getMessage(CssPreviewTopComponent.class, "CTL_CssPreviewTopComponent"); //NOI18N
     
     private JPanel NO_PREVIEW_PANEL, PREVIEW_ERROR_PANEL;
     private boolean previewing, error;
@@ -136,6 +140,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
 
         EmbeddedBrowserFactory.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 previewPanel.dispose();
                 remove(previewPanel.getComponent());
@@ -150,12 +155,14 @@ public final class CssPreviewTopComponent extends TopComponent {
             }
         });
 
-        NO_PREVIEW_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
+        NO_PREVIEW_PANEL = makeMsgPanel(
+                NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview")); //NOI18N
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
         previewing = false;
         error = false;
 
-        PREVIEW_ERROR_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error"));
+        PREVIEW_ERROR_PANEL = makeMsgPanel(
+                NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error")); //NOI18N
 
         setName(DEFAULT_TC_NAME); //set default TC name
         
@@ -171,23 +178,6 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
         
     }
-    
-//    private void checkPreview(TopComponent tc) {
-//        if(tc != null) {
-//            Node[] activatedNodes = tc.getActivatedNodes();
-//            if(activatedNodes != null) {
-//                for(Node n : activatedNodes) {
-//                    CssPreviewable previewable = n.getCookie(CssPreviewable.class);
-//                    if(previewable != null) {
-//                        LOGGER.log(Level.FINE, "Previewable selected " + previewable);//NOI18N
-//                        previewableSelected(previewable);
-//                        break; //use the first selected previewable
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();
@@ -300,12 +290,8 @@ public final class CssPreviewTopComponent extends TopComponent {
         return DEFAULT_TC_NAME;
     }
     
-    private void preview(CssRuleContext content) {
-
-        assert SwingUtilities.isEventDispatchThread() : "Must be run in event dispatch thread!";
-
-        //get the generated sample XHTML code
-        CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+    private void preview(File source, String title, CharSequence htmlCode) {
+        assert SwingUtilities.isEventDispatchThread();
 
         //parse it first to find potential errors in the code
         if (parser != null) {
@@ -313,7 +299,7 @@ public final class CssPreviewTopComponent extends TopComponent {
                 DefaultHandler handler = new DefaultHandler();
                 parser.parse(new ByteArrayInputStream(htmlCode.toString().getBytes()), handler);
             } catch (SAXException ex) {
-                LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex);
+                LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex); //NOI18N
                 LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
                 setError();
                 return;
@@ -323,12 +309,11 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
 
         //set the UI to the previewing state
-        setPreviewing(getTitle(content));
+        setPreviewing(title);
 
         try {
             //resolve relative URL base for the preview component
             String relativeURL = null;
-            File source = content.base();
             if (source != null) {
                 relativeURL = source.toURL().toExternalForm();
             }
@@ -344,58 +329,18 @@ public final class CssPreviewTopComponent extends TopComponent {
         }
     }
     
-//    private void previewableSelected(final CssPreviewable previewable) {
-//        if(lastSelectedPreviewable != null) {
-//            if(lastSelectedPreviewable.equals(previewable)) {
-//                return ; //ignore
-//            } else {
-//                LOGGER.log(Level.FINE, "removed listener from " + lastSelectedPreviewable);//NOI18N
-//                lastSelectedPreviewable.removeListener(PREVIEWABLE_LISTENER);
-//            }
-//        }
-//        lastSelectedPreviewable = previewable;
-//        LOGGER.log(Level.FINE, "added listener to " + previewable);//NOI18N
-//        lastSelectedPreviewable.addListener(PREVIEWABLE_LISTENER);
-//        
-//        //preview the content is available
-//        final CssRuleContext context = previewable.content();
-//        if(context != null) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    preview(context);
-//                }
-//            });
-//        } else {
-//            //no content to preview
-//            setNoSelectedRule();
-//        }
-//        
-//    }
-    
-//    @Override
-//    public void componentOpened() {
-//        WindowManager.getDefault().getRegistry().addPropertyChangeListener(WINDOW_REGISTRY_LISTENER);
-//        checkPreview(org.openide.windows.WindowManager.getDefault().getRegistry().getActivated());
-//
-//    }
-//    
-//    @Override
-//    protected void componentActivated() {
-//        super.componentActivated();
-//    }
-//    
-
     @Override
     public void componentClosed() {
         previewPanel.dispose();
-//        WindowManager.getDefault().getRegistry().removePropertyChangeListener(WINDOW_REGISTRY_LISTENER);
     }
     
     /** replaces this in object stream */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
     
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }

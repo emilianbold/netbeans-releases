@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
 				<file name="Factory.instance">
                                         <attr name="urlPattern" stringvalue="^\[.+\].*$"/>
                                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.createGlassFishV2"/>
+					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.DeploymentFactoryFactory.createGlassFishV2"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
 					<attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
 	            		</file>
@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
                 <file name="Factory.instance">
                     <attr name="urlPattern" stringvalue="^\[.+\].*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.createJavaEEPlusSIP"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.DeploymentFactoryFactory.createJavaEEPlusSIP"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
 				<file name="Factory.instance">
                                         <attr name="urlPattern" stringvalue="^\[.+\].*$"/>
                                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.create"/>
+					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.DeploymentFactoryFactory.create"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
 					<attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
 	            		</file>
@@ -224,7 +224,7 @@ made subject to such option by the copyright holder.
 				<file name="Factory.instance">
                                         <attr name="urlPattern" stringvalue="^\[.+\].*$"/>
                                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.createGlassFishV1"/>
+					<attr name="delegate" methodvalue="org.netbeans.modules.j2ee.sun.ide.DeploymentFactoryFactory.createGlassFishV1"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
 					<attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
 	            		</file>
