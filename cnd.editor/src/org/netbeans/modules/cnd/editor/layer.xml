@@ -63,11 +63,13 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-cnd-sourcefile">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <file name="org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
             <folder name="x-cpp-preprocessor">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
@@ -75,6 +77,7 @@
                 </folder>
             </folder>
             <folder name="x-h">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
@@ -176,6 +179,7 @@
                 </file>
             </folder>
             <folder name="x-c++">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
@@ -278,6 +282,7 @@
             </folder>
 
             <folder name="x-c">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
@@ -381,6 +386,7 @@
             </folder>
 
             <folder name="x-fortran">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="fortran-preferences.xml" url="fortran-preferences.xml"/>
