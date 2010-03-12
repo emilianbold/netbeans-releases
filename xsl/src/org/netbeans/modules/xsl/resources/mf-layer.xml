@@ -63,12 +63,7 @@ made subject to such option by the copyright holder.
 
     <!-- register services with Lookup -->
     <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-modules-xsl-actions-TransformAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
-            </file>
-        </folder>
-
+        <folder name="Hidden"/>
         <folder name="MIMEResolver">
             <file name="xslt-mime-resolver.xml" url="xslt-mime-resolver.xml">
                 &localize-it;
@@ -82,16 +77,7 @@ made subject to such option by the copyright holder.
     <!-- register actions to action pool -->
     <folder name="Actions">
         <folder name="XML">
-            <file name="org-netbeans-modules-xsl-actions-TransformAction.instance">
-<!--
-                <attr name="instanceCreate"
-                      methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="displayName" 
-                      bundlevalue="org.netbeans.modules.xsl.actions.Bundle#NAME_transform_action"/>
-                <attr name="delegate"
-                      methodvalue="org.netbeans.modules.xsl.actions.TransformAction.getInstance"/>
--->
-            </file>
+            <file name="org-netbeans-modules-xsl-actions-TransformAction.instance"/>
         </folder>
     </folder>
 
@@ -102,7 +88,6 @@ made subject to such option by the copyright holder.
         </file>
         -->
     </folder> <!-- Shortcuts -->
-
     
     <folder name="Editors">
         <folder name="text">
@@ -133,8 +118,18 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
--->    
-        <folder name="Loaders">
+-->
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="xml">
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-xsl-actions-TransformAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xsl-actions-TransformAction.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <folder name="application">
             <folder name="xslt+xml">
                 <folder name="Factories">
@@ -208,9 +203,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
-
 </filesystem>
