@@ -46,12 +46,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamClass;
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -304,7 +299,7 @@ public final class ModuleList {
                 if (list == null) {
                     File nbdestdir = findNetBeansOrgDestDir(root);
                     if (nbdestdir.equals(new File(new File(root, "nbbuild"), "netbeans"))) { // NOI18N
-                        list = createModuleListFromNetBeansOrgSources(root, nbdestdir);
+                        list = createModuleListFromNetBeansOrgSources(root);
                     } else {
                         // #143236: have a customized dest dir, perhaps referenced from orphan modules.
                         Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
@@ -367,96 +362,10 @@ public final class ModuleList {
         return null;
     }
 
-    private static ModuleList createModuleListFromNetBeansOrgSources(File root, File nbdestdir) throws IOException {
+    private static ModuleList createModuleListFromNetBeansOrgSources(File root) throws IOException {
         LOG.log(Level.FINE, "ModuleList.createModuleListFromSources: " + root);
-        ModuleList ml = loadNetBeansOrgCachedModuleList(root, nbdestdir);
-        if (ml != null)
-            return ml;
         Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
         return new ModuleList(entries, root);
-    }
-
-    private static final String MSG_FAILURE = "Failed to load cached module list in ";    // NOI18N
-    private static final String MSG_IGNORED = "Ignoring nbbuild cache in ";    // NOI18N
-    private static void logCacheIgnored(String msg, File root, File failed) {
-        LOG.log(Level.FINE, msg + root + "; falling back to scan due to file: " + failed);    // NOI18N
-    }
-
-    // TODO test that cache is being used after clean build
-    private static ModuleList loadNetBeansOrgCachedModuleList(File root, File nbdestdir) {
-        try {
-            if (!PERMIT_CACHES) {
-                logCacheIgnored("Due to previous call of refresh(), not using nbbuild cache in ", root, null);
-                return null;
-            }
-            File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
-                    "private" + File.separatorChar + "scan-cache-full.ser");
-            if (!scanCache.isFile()) {
-                logCacheIgnored(MSG_FAILURE, root, scanCache);
-                return null;
-            }
-            File nbantextJar = new File(root, "nbbuild" + File.separatorChar + "nbantext.jar");
-            if (!nbantextJar.isFile()) {
-                logCacheIgnored(MSG_FAILURE, root, nbantextJar);
-                return null;
-            }
-            final ClassLoader loader = new URLClassLoader(new URL[] {nbantextJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
-            InputStream is = new FileInputStream(scanCache);
-            try {
-                ObjectInput oi = new ObjectInputStream(is) {
-                    protected @Override Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-                        return Class.forName(desc.getName(), true, loader); // was loader.loadClass(desc.getName());
-                    }
-                };
-                for (Map.Entry<File,Long[]> entry : NbCollections.checkedMapByFilter((Map) oi.readObject(), File.class, Long[].class, true).entrySet()) {
-                    File f = entry.getKey();
-                    if (f.lastModified() != entry.getValue()[0] || f.length() != entry.getValue()[1]) {
-                        logCacheIgnored(MSG_IGNORED, root, f);
-                        return null;
-                    }
-                }
-                Map cachedEntries = (Map) oi.readObject();
-                Class entryClazz = loader.loadClass("org.netbeans.nbbuild.ModuleListParser$Entry");
-                Map<String,Field> fields = new HashMap<String,Field>();
-                for (Field field : entryClazz.getDeclaredFields()) {
-                    field.setAccessible(true);
-                    fields.put(field.getName(), field);
-                }
-                Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
-                for (Object entry : cachedEntries.values()) {
-                    String cnb = (String) fields.get("cnb").get(entry);
-                    File jar = (File) fields.get("jar").get(entry);
-                    File[] classPathExtensions = (File[]) fields.get("classPathExtensions").get(entry);
-                    File sourceLocation = (File) fields.get("sourceLocation").get(entry);
-                    String netbeansOrgPath = (String) fields.get("netbeansOrgPath").get(entry);
-                    String[] buildPrerequisites = (String[]) fields.get("buildPrerequisites").get(entry);
-                    String clusterName = (String) fields.get("clusterName").get(entry);
-                    String[] runtimeDependencies = (String[]) fields.get("runtimeDependencies").get(entry);
-                    Map<String, String[]> testDependencies = NbCollections.checkedMapByFilter(
-                            (Map) fields.get("testDependencies").get(entry), String.class, String[].class, false);
-                    ModuleEntry me = new NetBeansOrgCachedEntry(
-                        root, nbdestdir, cnb, jar, classPathExtensions, sourceLocation, netbeansOrgPath, buildPrerequisites, clusterName,
-                        runtimeDependencies, testDependencies.get("unit"));
-                    entries.put(cnb, me);
-                    // Forget about registering anything else for now, too slow:
-                    registerEntry(me, Collections.singleton(jar));
-                }
-                LOG.log(Level.FINE, "Successfully loaded " + scanCache + " with " + entries.size() + " entries");
-                ModuleList ml = new ModuleList(entries, root);
-                ml.lazyNetBeansOrgList = 2; // already found everything
-                return ml;
-            } finally {
-                is.close();
-            }
-        } catch (Exception x) {
-            logCacheIgnored(MSG_FAILURE, root, null);
-            LOG.log(Level.FINE, "Caught exception: ", x);
-            return null;
-        } catch (LinkageError x) {
-            logCacheIgnored(MSG_FAILURE, root, null);
-            LOG.log(Level.FINE, "Caught exception: ", x);
-            return null;
-        }
     }
 
     private static void scanJars(

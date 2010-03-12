@@ -55,7 +55,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -82,6 +81,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -836,7 +836,10 @@ public final class ParseProjectXml extends Task {
         if (moduleAutoDeps.isEmpty()) {
             return;
         }
-        List<URL> classpath = new ArrayList<URL>();
+        Set<String> depsS = new HashSet<String>();
+        String result;
+        AntClassLoader loader = new AntClassLoader();
+        try {
         for (String coreModule : new String[] {"org.openide.util", "org.openide.modules", "org.netbeans.bootstrap", "org.netbeans.core.startup"}) {
             ModuleListParser.Entry entry = modules.findByCodeNameBase(coreModule);
             if (entry == null) {
@@ -848,9 +851,8 @@ public final class ParseProjectXml extends Task {
                 log("Cannot translate according to " + moduleAutoDeps + " because could not find " + jar, Project.MSG_WARN);
                 return;
             }
-            classpath.add(new URL("jar:" + jar.toURI() + "!/"));
+            loader.addPathComponent(jar);
         }
-        ClassLoader loader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
         Class<?> automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
         Method refineDependenciesSimple;
         try {
@@ -859,7 +861,6 @@ public final class ParseProjectXml extends Task {
             log("Cannot translate according to " + moduleAutoDeps + " because AutomaticDependencies is too old", Project.MSG_WARN);
             return;
         }
-        Set<String> depsS = new HashSet<String>();
         for (Dep d : deps) {
             if (d.run) {
                 depsS.add(d.toString());
@@ -867,13 +868,15 @@ public final class ParseProjectXml extends Task {
         }
         Object automaticDependencies = automaticDependenciesClazz.getMethod("parse", URL[].class).invoke(
                 null, (Object) moduleAutoDeps.toArray(new URL[moduleAutoDeps.size()]));
-        String result;
         try {
             result = (String) refineDependenciesSimple.invoke(automaticDependencies, myCNB, depsS);
         } catch (InvocationTargetException x) {
             // Can occur when core modules are being recompiled in the same Ant run.
             log("Cannot translate according to " + moduleAutoDeps + " due to " + x.getCause(), Project.MSG_WARN);
             return;
+        }
+        } finally {
+            loader.cleanup(); // #180970
         }
         if (result == null) {
             return;
