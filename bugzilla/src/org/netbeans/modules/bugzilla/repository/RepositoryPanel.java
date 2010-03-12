@@ -70,9 +70,14 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     @Override
     public void addNotify() {
         super.addNotify();
-        // XXX use controler.opened() instead
         controller.populate();
         connectionLabel.setVisible(false);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.cancel();
     }
 
     /** This method is called from within the constructor to
