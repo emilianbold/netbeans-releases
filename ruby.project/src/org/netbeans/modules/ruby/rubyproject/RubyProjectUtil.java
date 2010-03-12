@@ -252,7 +252,8 @@ public class RubyProjectUtil {
                 result.append(' ');
             }
             result.append("-I\""); // NOI18N
-            result.append(FileUtil.toFile(root).getAbsoluteFile());
+            // using FO#getPath as the load path must use forward slashes even on Win
+            result.append(root.getPath());
             result.append("\""); // NOI18N
         }
         for (FileObject root : testPath) {
@@ -260,7 +261,7 @@ public class RubyProjectUtil {
                 result.append(' ');
             }
             result.append("-I\""); // NOI18N
-            result.append(FileUtil.toFile(root).getAbsoluteFile());
+            result.append(root.getPath());
             result.append("\""); // NOI18N
         }
         return result.toString();
