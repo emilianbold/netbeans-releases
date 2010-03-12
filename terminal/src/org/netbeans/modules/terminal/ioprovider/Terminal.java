@@ -217,7 +217,7 @@ public final class Terminal extends JComponent {
 
         this.setLayout(new BorderLayout());
         add(term, BorderLayout.CENTER);
-
+	setFocusable(false);
 	// OLD setActions(actions);
     }
 
@@ -237,6 +237,18 @@ public final class Terminal extends JComponent {
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void requestFocus() {
+	// redirect focus into terminal's screen
+	term.getScreen().requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+	// redirect focus into terminal's screen
+	return term.getScreen().requestFocusInWindow();
     }
 
     private void applyTermOptions(boolean initial) {
