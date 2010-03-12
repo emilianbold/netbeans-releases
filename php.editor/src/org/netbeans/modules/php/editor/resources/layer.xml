@@ -123,9 +123,10 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
                     </folder>
-                    <file name="in-place-refactoring">
-                        <attr intvalue="680" name="position"/>
-                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="680"/>
+		    </file>
                     <file name="fast-import">
                         <attr name="position" intvalue="1181"/>
                     </file>
