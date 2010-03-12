@@ -44,13 +44,19 @@
 package org.netbeans.modules.spring.beans.wizards;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.spring.api.SpringUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -69,7 +75,7 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         col1.setMaxWidth(0);
         includesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         includesTable.revalidate();
-        springLibrary = SpringUtilities.findSpringLibrary();
+//        springLibrary = SpringUtilities.findSpringLibrary();
     }
 
     @Override
@@ -84,9 +90,13 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
     private void updateClassPathWarning() {
         boolean alreadyAdded = classPath != null && SpringUtilities.containsSpring(classPath);
-        boolean needToAdd = !(alreadyAdded || addSpringToClassPath || springLibrary == null);
+        boolean needToAdd = !(alreadyAdded || addSpringToClassPath);
         springNotOnClassPathLabel.setVisible(needToAdd);
         addSpringButton.setVisible(needToAdd);
+        cbSpringVersion.setVisible(needToAdd);
+        if (needToAdd) {
+            initLibraries();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -102,18 +112,19 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
         addSpringButton = new javax.swing.JButton();
         springNotOnClassPathLabel = new javax.swing.JLabel();
+        cbSpringVersion = new javax.swing.JComboBox();
 
         includesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, "aop - http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"},
-                {null, "context - http://www.springframework.org/schema/context/spring-context-2.5.xsd"},
-                {null, "flow - http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd"},
-                {null, "jms - http://www.springframework.org/schema/jms/spring-jms-2.5.xsd"},
-                {null, "jee - http://www.springframework.org/schema/jee/spring-jee-2.5.xsd"},
-                {null, "lang - http://www.springframework.org/schema/lang/spring-lang-2.5.xsd"},
-                {null, "osgi - http://www.springframework.org/schema/osgi/spring-osgi.xsd"},
-                {null, "tx - http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"},
-                {null, "util - http://www.springframework.org/schema/util/spring-util-2.5.xsd"},
+                {null, "aop - http://www.springframework.org/schema/aop"},
+                {null, "context - http://www.springframework.org/schema/context"},
+                {null, "flow - http://www.springframework.org/schema/webflow-config"},
+                {null, "jms - http://www.springframework.org/schema/jms"},
+                {null, "jee - http://www.springframework.org/schema/jee"},
+                {null, "lang - http://www.springframework.org/schema/lang"},
+                {null, "osgi - http://www.springframework.org/schema/osgi"},
+                {null, "tx - http://www.springframework.org/schema/tx"},
+                {null, "util - http://www.springframework.org/schema/util"},
                 {null, "p - http://www.springframework.org/schema/p"}
             },
             new String [] {
@@ -150,17 +161,26 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
             }
         });
 
-        springNotOnClassPathLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/warning.gif", false));
+        springNotOnClassPathLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spring/beans/resources/warning.gif"))   );
         org.openide.awt.Mnemonics.setLocalizedText(springNotOnClassPathLabel, org.openide.util.NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_SpringNotOnClassPath")); // NOI18N
+
+        cbSpringVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Library found" }));
+        cbSpringVersion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbSpringVersionActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+            .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(addSpringButton)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(159, 159, 159))
             .add(layout.createSequentialGroup()
                 .add(springNotOnClassPathLabel)
                 .addContainerGap())
@@ -172,17 +192,25 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
                 .add(springNotOnClassPathLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(addSpringButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(addSpringButton)
+                    .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void addSpringButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSpringButtonActionPerformed
-        addSpringToClassPath = true;
-        updateClassPathWarning();
+    addSpringToClassPath = true;
+    updateClassPathWarning();
 }//GEN-LAST:event_addSpringButtonActionPerformed
+
+private void cbSpringVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSpringVersionActionPerformed
+    springLibrary = springLibs.get(cbSpringVersion.getSelectedIndex());
+
+}//GEN-LAST:event_cbSpringVersionActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSpringButton;
+    private javax.swing.JComboBox cbSpringVersion;
     private javax.swing.JScrollPane includesScrollPane;
     private javax.swing.JTable includesTable;
     private javax.swing.JLabel springNotOnClassPathLabel;
@@ -208,5 +236,40 @@ private void addSpringButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     public Library getSpringLibrary() {
         return springLibrary;
+    }
+
+    private boolean libsInitialized = false;
+    private List<Library> springLibs = new ArrayList<Library>();
+
+    private Set<String> usedPrefixes = new HashSet<String>();
+
+    private String generatePrefix(String namespace) {
+        String prefix = namespace.substring(namespace.lastIndexOf("/")+1).toLowerCase();
+        int i = 1;
+        String newPrefix = prefix;
+        while (usedPrefixes.contains(newPrefix)) {
+            newPrefix = prefix + (i++);
+        }
+        usedPrefixes.add(newPrefix);
+        return newPrefix;
+    }
+
+
+    private void initLibraries() {
+        if (!libsInitialized) {
+            Vector<String> items = new Vector<String>();
+            springLibs.clear();
+
+            for (Library library : LibraryManager.getDefault().getLibraries()) {
+                if (SpringUtilities.isSpringLibrary(library)) {
+                    items.add(library.getDisplayName());
+                    springLibs.add(library);
+                }
+            }
+            cbSpringVersion.setModel(new DefaultComboBoxModel(items));
+            springLibrary = springLibs.get(cbSpringVersion.getSelectedIndex());
+            libsInitialized = true;
+            repaint();
+        }
     }
 }

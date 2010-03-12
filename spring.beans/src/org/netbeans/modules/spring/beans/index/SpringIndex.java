@@ -60,6 +60,10 @@ public class SpringIndex {
         this.binaryRoots = (ClassPath.getClassPath(fo, ClassPath.EXECUTE).getRoots());
     }
 
+    public SpringIndex(ClassPath cp) {
+        this.binaryRoots = cp.getRoots();
+    }
+    
     private QuerySupport createBinaryIndex() throws IOException {
         return QuerySupport.forRoots(SpringBinaryIndexer.INDEXER_NAME, SpringBinaryIndexer.INDEX_VERSION, binaryRoots);
     }
