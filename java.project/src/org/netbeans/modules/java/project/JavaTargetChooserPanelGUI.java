@@ -496,6 +496,10 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     ); 
     
     private void updatePackages() {
+        final Object item = rootComboBox.getSelectedItem();
+        if (! (item instanceof SourceGroup)) {
+            return;
+        }
         WAIT_MODEL.setSelectedItem( packageComboBox.getEditor().getItem() );
         packageComboBox.setModel( WAIT_MODEL );
         
@@ -504,15 +508,14 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         }
         
         updatePackagesTask = new RequestProcessor( "ComboUpdatePackages" ).post(new Runnable() {                               
+            @Override
             public void run() {
+                final ComboBoxModel model = PackageView.createListView((SourceGroup)item);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run () {
-                        Object  item = rootComboBox.getSelectedItem();
-                        if (item instanceof SourceGroup) {
-                            ComboBoxModel model = PackageView.createListView((SourceGroup)item);
-                            model.setSelectedItem(packageComboBox.getEditor().getItem());
-                            packageComboBox.setModel( model );
-                        }
+                        model.setSelectedItem(packageComboBox.getEditor().getItem());
+                        packageComboBox.setModel( model );
                     }
                 });
             }

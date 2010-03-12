@@ -37,16 +37,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.spi;
+package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.project.Project;
+import java.util.Comparator;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Tomas Stupka
  */
-public interface TestRunnerLineConvertorProvider {
+public class ConnectorComparator implements Comparator<BugtrackingConnector>{
 
-    public LineConvertor createConvertor(Project project);
+    @Override
+    public int compare(BugtrackingConnector c1, BugtrackingConnector c2) {
+        if(c1 == null && c2 == null) {
+            return 0;
+        }
+        if(c2 == null) {
+            return 1;
+        }
+        if(c1 == null) {
+            return -1;
+        }
+        return c1.getDisplayName().compareTo(c2.getDisplayName());
+    }
+
 }

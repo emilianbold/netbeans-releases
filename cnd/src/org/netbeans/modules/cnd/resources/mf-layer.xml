@@ -53,23 +53,6 @@ made subject to such option by the copyright holder.
 	</folder>
     </folder>
     -->
-
-    <folder name="Editors">
-
-        <folder name="text">
-            <folder name="x-h">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-            </folder>
-            <folder name="x-c++">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-            </folder>
-            
-            <folder name="x-c">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-             </folder>
-            
-        </folder>
-    </folder>
     
     <folder name="Services">
         
