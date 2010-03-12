@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
+import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -81,6 +82,8 @@ public final class JDBCDriverManager {
      */
     public static synchronized JDBCDriverManager getDefault() {
         if (DEFAULT == null) {
+            // init runtimes
+            DatabaseRuntimeManager.getDefault().getRuntimes();
             JDBCDriverConvertor.importOldDrivers();
             DEFAULT = new JDBCDriverManager();
         }
@@ -97,6 +100,7 @@ public final class JDBCDriverManager {
         result.allInstances(); 
 
         result.addLookupListener(new LookupListener() {
+            @Override
             public void resultChanged(LookupEvent e) {
                 fireListeners();
             }
@@ -177,6 +181,7 @@ public final class JDBCDriverManager {
     public void showAddDriverDialog() {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     AddDriverDialog.showDialog();
                 }

@@ -91,6 +91,7 @@ public class RegisterDerby implements DatabaseRuntime {
     
     /** Creates a new instance of RegisterDerby */
     private RegisterDerby() {
+        DerbyActivator.activate();
     }
     
     public static synchronized RegisterDerby getDefault(){
