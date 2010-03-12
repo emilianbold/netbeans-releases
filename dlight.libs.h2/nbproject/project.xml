@@ -7,38 +7,6 @@
             <module-dependencies/>
             <public-packages>
                 <package>org.h2</package>
-                <package>org.h2.api</package>
-                <package>org.h2.bnf</package>
-                <package>org.h2.command</package>
-                <package>org.h2.command.ddl</package>
-                <package>org.h2.command.dml</package>
-                <package>org.h2.compress</package>
-                <package>org.h2.constant</package>
-                <package>org.h2.constraint</package>
-                <package>org.h2.engine</package>
-                <package>org.h2.expression</package>
-                <package>org.h2.fulltext</package>
-                <package>org.h2.index</package>
-                <package>org.h2.jaqu</package>
-                <package>org.h2.jaqu.util</package>
-                <package>org.h2.jdbc</package>
-                <package>org.h2.jdbcx</package>
-                <package>org.h2.log</package>
-                <package>org.h2.message</package>
-                <package>org.h2.mode</package>
-                <package>org.h2.result</package>
-                <package>org.h2.schema</package>
-                <package>org.h2.security</package>
-                <package>org.h2.server</package>
-                <package>org.h2.server.ftp</package>
-                <package>org.h2.server.pg</package>
-                <package>org.h2.server.web</package>
-                <package>org.h2.store</package>
-                <package>org.h2.store.fs</package>
-                <package>org.h2.table</package>
-                <package>org.h2.tools</package>
-                <package>org.h2.util</package>
-                <package>org.h2.value</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/h2-1.0.79.jar</runtime-relative-path>
