@@ -39,34 +39,29 @@
 
 package org.netbeans.modules.cnd.testrunner;
 
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider;
-import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
-import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
-import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Factory for TestRunnerActionHandler.
  *
  * @author Nikolay Krasilnikov (http://nnnnnk.name)
- */@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider.class)
-public class TestRunnerLineConvertorProviderImpl implements TestRunnerLineConvertorProvider {
+ */
+@ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
+public class TestRunnerActionHandlerFactory implements ProjectActionHandlerFactory {
 
     @Override
-     public LineConvertor createConvertor(Project project) {
-            final TestSession session = new TestSession("Test", // NOI18N
-                    project,
-                    SessionType.TEST, new CndTestRunnerNodeFactory());
+    public boolean canHandle(Type type, Configuration configuration) {
+        return type == PredefinedType.TEST;
+    }
 
-            //session.setRerunHandler(this);
-
-            final Manager manager = Manager.getInstance();
-            final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
-
-            return new TestRunnerLineConvertor(manager, session, handlerFactory);
-     }
+    @Override
+    public ProjectActionHandler createHandler() {
+        return new TestRunnerActionHandler();
+    }
 
 }
