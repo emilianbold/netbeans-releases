@@ -108,7 +108,14 @@ public class Jira {
             instance = new Jira();
             REPOSITORIES_STORE = BugtrackingRuntime.getInstance().getCacheStore().getAbsolutePath() + "/jira/repositories";
             new File(REPOSITORIES_STORE).getParentFile().mkdirs();
-            JiraIssueProvider.getInstance();
+
+            // lazy ping tasklist issue provider to load issues ...
+            instance.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    JiraIssueProvider.getInstance();
+                }
+            });
         }
         return instance;
     }
