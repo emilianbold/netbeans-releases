@@ -246,21 +246,22 @@ public class RubyProjectUtil {
         // options field as well.
         FileObject[] srcPath = baseProject.getSourceRootFiles();
         FileObject[] testPath = baseProject.getTestSourceRootFiles();
+        return asLoadPath(srcPath) + asLoadPath(testPath);
+    }
+
+    private static String asLoadPath(FileObject[] paths) {
         StringBuilder result = new StringBuilder();
-        for (FileObject root : srcPath) {
+        for (FileObject root : paths) {
+            // there might be dirs configured as source roots that 
+            // have since been deleted
+            if (root == null || !root.isValid()) {
+                continue;
+            }
             if (result.length() > 0) {
                 result.append(' ');
             }
             result.append("-I\""); // NOI18N
             // using FO#getPath as the load path must use forward slashes even on Win
-            result.append(root.getPath());
-            result.append("\""); // NOI18N
-        }
-        for (FileObject root : testPath) {
-            if (result.length() > 0) {
-                result.append(' ');
-            }
-            result.append("-I\""); // NOI18N
             result.append(root.getPath());
             result.append("\""); // NOI18N
         }
