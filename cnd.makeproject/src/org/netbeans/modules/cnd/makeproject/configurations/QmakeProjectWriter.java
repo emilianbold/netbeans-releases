@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
@@ -239,7 +239,7 @@ public class QmakeProjectWriter {
             String actualMimeType = fo.getMIMEType();
             for (String mimeType : mimeTypes) {
                 if (mimeType.equals(actualMimeType)) {
-                    list.add(IpeUtils.quoteIfNecessary(item.getPath()));
+                    list.add(CndPathUtilitities.quoteIfNecessary(item.getPath()));
                     break;
                 }
             }
@@ -290,7 +290,7 @@ public class QmakeProjectWriter {
     }
 
     private String expandAndQuote(String s) {
-        return IpeUtils.quoteIfNecessary(configuration.expandMacros(s));
+        return CndPathUtilitities.quoteIfNecessary(configuration.expandMacros(s));
     }
 
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
@@ -331,10 +331,10 @@ public class QmakeProjectWriter {
                 }
 
                 buf.append(searchOption);
-                buf.append(IpeUtils.quoteIfNecessary(IpeUtils.getDirName(path)));
+                buf.append(CndPathUtilitities.quoteIfNecessary(CndPathUtilitities.getDirName(path)));
                 buf.append(' '); // NOI18N
             }
-            buf.append(IpeUtils.quoteIfNecessary(path));
+            buf.append(CndPathUtilitities.quoteIfNecessary(path));
             return buf.toString();
         }
 
@@ -358,7 +358,7 @@ public class QmakeProjectWriter {
                 if (compilerSet != null) {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                return IpeUtils.quoteIfNecessary(item);
+                return CndPathUtilitities.quoteIfNecessary(item);
             } else {
                 return ""; // NOI18N
             }

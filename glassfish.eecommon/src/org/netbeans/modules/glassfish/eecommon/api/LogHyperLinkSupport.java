@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -159,10 +159,12 @@ public class LogHyperLinkSupport {
             shortDesc = desc;
         }
 
+        @Override
         public String getAnnotationType() {
             return "org-netbeans-modules-j2ee-sunserver"; // NOI18N
         }
 
+        @Override
         public String getShortDescription() {
             return shortDesc;
         }
@@ -219,6 +221,7 @@ public class LogHyperLinkSupport {
          * If the link is clicked, required file is opened in the editor and an 
          * <code>ErrorAnnotation</code> is attached.
          */
+        @Override
         public void outputLineAction(OutputEvent ev) {
             FileObject sourceFile = GlobalPathRegistry.getDefault().findResource(path);
             if (sourceFile == null) {
@@ -262,6 +265,7 @@ public class LogHyperLinkSupport {
          * If a link is cleared, error annotation is detached and link cache is 
          * clared.
          */
+        @Override
         public void outputLineCleared(OutputEvent ev) {
             if (errAnnot != null) {
                 errAnnot.detach();
@@ -271,6 +275,7 @@ public class LogHyperLinkSupport {
             }
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
     }
@@ -312,7 +317,7 @@ public class LogHyperLinkSupport {
                     accessible = true;
                     if (lineLength > colonIdx) {
                         int nextColonIdx = logLine.indexOf(':', colonIdx + 1);
-                        if (nextColonIdx > -1) {
+                        if (nextColonIdx > -1 && nextColonIdx > colonIdx) {
                             String lineNum = logLine.substring(colonIdx + 1, nextColonIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
@@ -336,7 +341,7 @@ public class LogHyperLinkSupport {
                     accessible = true;
                     if (lineLength > secondColonIdx) {
                         int thirdColonIdx = logLine.indexOf(':', secondColonIdx + 1);
-                        if (thirdColonIdx > -1) {
+                        if (thirdColonIdx > -1 && thirdColonIdx > secondColonIdx) {
                             String lineNum = logLine.substring(secondColonIdx + 1, thirdColonIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
@@ -355,13 +360,13 @@ public class LogHyperLinkSupport {
             else if (logLine.startsWith("at ") && lineLength > 3) { // NOI18N
                 error = true;
                 int parenthIdx = logLine.indexOf('(');
-                if (parenthIdx > -1) {
+                if (parenthIdx > 2) {
                     String classWithMethod = logLine.substring(3, parenthIdx);
                     int lastDotIdx = classWithMethod.lastIndexOf('.');
                     if (lastDotIdx > -1) {
                         int lastParenthIdx = logLine.lastIndexOf(')');
                         int lastColonIdx = logLine.lastIndexOf(':');
-                        if (lastParenthIdx > -1 && lastColonIdx > -1) {
+                        if (lastParenthIdx > -1 && lastColonIdx > -1 &&  lastParenthIdx > lastColonIdx) {
                             String lineNum = logLine.substring(lastColonIdx + 1, lastParenthIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();

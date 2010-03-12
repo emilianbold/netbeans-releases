@@ -248,7 +248,7 @@ public class CsmUtilities {
     //====================
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
-        return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing);
+        return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
     }
 
     public static JEditorPane findRecentEditorPaneInEQ(final EditorCookie ec) {
@@ -260,6 +260,7 @@ public class CsmUtilities {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         panes[0] = NbDocument.findRecentEditorPane(ec);
                     }
@@ -281,6 +282,7 @@ public class CsmUtilities {
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         tc[0] = WindowManager.getDefault().findTopComponent(tcID);
                     }
@@ -306,17 +308,17 @@ public class CsmUtilities {
         return null;
     }
 
-    public static CsmFile getCsmFile(JTextComponent comp, boolean waitParsing) {
-        return comp == null ? null : getCsmFile(comp.getDocument(), waitParsing);
+    public static CsmFile getCsmFile(JTextComponent comp, boolean waitParsing, boolean snapShot) {
+        return comp == null ? null : getCsmFile(comp.getDocument(), waitParsing, snapShot);
     }
 
-    public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
+    public static CsmFile getCsmFile(Document bDoc, boolean waitParsing, boolean snapShot) {
         CsmFile csmFile = null;
         if (bDoc != null) {
             try {
                 csmFile = (CsmFile) bDoc.getProperty(CsmFile.class);
                 if (csmFile == null) {
-                    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+                    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing, snapShot);
                 }
                 if (csmFile == null) {
                     String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
@@ -326,10 +328,10 @@ public class CsmUtilities {
                         if (inputAttributes != null) {
                             LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                             FileObject fileObject = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
-                            csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing);
+                            csmFile = CsmUtilities.getCsmFile(fileObject, waitParsing, snapShot);
                             if (csmFile == null) {
                                 Document d = (Document) inputAttributes.getValue(path, "dialogBinding.document"); //NOI18N
-                                csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing);
+                                csmFile = d == null ? null : CsmUtilities.getCsmFile(d, waitParsing, snapShot);
                             }
                         }
                     }
@@ -344,7 +346,7 @@ public class CsmUtilities {
     public static CsmProject getCsmProject(Document bDoc) {
         CsmProject csmProject = null;
         try {
-            csmProject = getCsmFile(bDoc, false).getProject();
+            csmProject = getCsmFile(bDoc, false, false).getProject();
         } catch (NullPointerException exc) {
             exc.printStackTrace();
         }
@@ -388,7 +390,7 @@ public class CsmUtilities {
         return false;
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj) {
+    private static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
@@ -397,7 +399,7 @@ public class CsmUtilities {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item);
+                            CsmFile file = csmProject.findFile(item, snapShot);
                             if (file != null) {
                                 files.add(file);
                             }
@@ -411,7 +413,7 @@ public class CsmUtilities {
                         // the file can null, for example, when we edit templates
                         if (file != null) {
                             String normPath = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
-                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath);
+                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(normPath, snapShot);
                             if (csmFile != null) {
                                 files.add(csmFile);
                             }
@@ -430,16 +432,16 @@ public class CsmUtilities {
         return new CsmFile[0];
     }
 
-    public static CsmFile[] getCsmFiles(FileObject fo) {
+    public static CsmFile[] getCsmFiles(FileObject fo, boolean snapShot) {
         try {
-            return getCsmFiles(DataObject.find(fo));
+            return getCsmFiles(DataObject.find(fo), snapShot);
         } catch (DataObjectNotFoundException ex) {
             return new CsmFile[0];
         }
     }
 
-    public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing) {
-        CsmFile[] files = getCsmFiles(dobj);
+    public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing, boolean snapShot) {
+        CsmFile[] files = getCsmFiles(dobj, snapShot);
         if (files == null || files.length == 0) {
             return null;
         } else {
@@ -454,12 +456,12 @@ public class CsmUtilities {
         }
     }
 
-    public static CsmFile getCsmFile(FileObject fo, boolean waitParsing) {
+    public static CsmFile getCsmFile(FileObject fo, boolean waitParsing, boolean snapShot) {
         if (fo == null) {
             return null;
         } else {
             try {
-                return getCsmFile(DataObject.find(fo), waitParsing);
+                return getCsmFile(DataObject.find(fo), waitParsing, snapShot);
             } catch (DataObjectNotFoundException ex) {
                 return null;
             }
@@ -489,7 +491,7 @@ public class CsmUtilities {
     public static FileObject getFileObject(Document doc) {
         FileObject fo = (FileObject)doc.getProperty(FileObject.class);
         if(fo == null) {
-            CsmFile csmFile = getCsmFile(doc, false);
+            CsmFile csmFile = getCsmFile(doc, false, false);
             if(csmFile != null) {
                 fo = getFileObject(csmFile);
             }
@@ -596,6 +598,7 @@ public class CsmUtilities {
 
         public PointOrOffsetable(final CsmOffsetable offsetable) {
             content = new Offsetable() {
+                @Override
                 public int getOffset() {
                     return offsetable.getStartOffset();
                 }
@@ -604,6 +607,7 @@ public class CsmUtilities {
 
         public PointOrOffsetable(final int offset) {
             content = new Offsetable() {
+                @Override
                 public int getOffset() {
                     return offset;
                 }
@@ -687,6 +691,7 @@ public class CsmUtilities {
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         JumpList.checkAddEntry();
                         JEditorPane pane = findRecentEditorPaneInEQ(ec);
@@ -746,6 +751,7 @@ public class CsmUtilities {
                 public void focusGained(FocusEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             jumpToElement(pane, element);
                         }
@@ -757,6 +763,7 @@ public class CsmUtilities {
             // immediate processing
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     jumpToElement(pane, element);
                 }
@@ -874,7 +881,7 @@ public class CsmUtilities {
 
         } else {
             String simpleName = obj.getClass().getName();
-            simpleName = simpleName.substring(simpleName.lastIndexOf(".") + 1); // NOI18N
+            simpleName = simpleName.substring(simpleName.lastIndexOf('.') + 1); // NOI18N
 
             buf.append(" [class] ").append(simpleName); // NOI18N
 
@@ -953,42 +960,51 @@ public class CsmUtilities {
             this.file = file;
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return file;
         }
 
+        @Override
         public int getStartOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public int getEndOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public CsmOffsetable.Position getStartPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public CsmOffsetable.Position getEndPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public String getText() {
             return "";
         }
     }
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
 
+        @Override
         public int getOffset() {
             return -1;
         }
 
+        @Override
         public int getLine() {
             return -1;
         }
 
+        @Override
         public int getColumn() {
             return -1;
         }

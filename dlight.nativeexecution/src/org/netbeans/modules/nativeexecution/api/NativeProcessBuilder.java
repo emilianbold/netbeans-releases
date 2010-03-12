@@ -159,12 +159,12 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
         ExecutionEnvironment execEnv = info.getExecutionEnvironment();
 
-        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            throw new IllegalStateException("No connection to " + execEnv.getDisplayName()); // NOI18N
-        }
-
         if (info.getCommand() == null) {
             throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
+        }
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IOException("No connection to " + execEnv.getDisplayName()); // NOI18N
         }
 
         if (info.isPtyMode()) {
@@ -327,6 +327,18 @@ public final class NativeProcessBuilder implements Callable<Process> {
      */
     public NativeProcessBuilder setUsePty(boolean usePty) {
         info.setPtyMode(usePty);
+        return this;
+    }
+
+    /**
+     * Process builder try to expand, escape, quote command line according to subset of shell man.
+     * By default builder do this. This method allows to forbid  preprocessing of command line.
+     *
+     * @param expandMacros - if false, process builder do not preprocess command line
+     * @return this
+     */
+    public NativeProcessBuilder setMacroExpansion(boolean expandMacros) {
+        info.setExpandMacros(expandMacros);
         return this;
     }
 }

@@ -176,7 +176,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (Breakpoint.PROP_DISPOSED.equals(propertyName)) {
             remove();
         } else if (!Breakpoint.PROP_VALIDITY.equals(propertyName) &&
-                   !Breakpoint.PROP_GROUP_NAME.equals(propertyName)) {
+                   !Breakpoint.PROP_GROUP_NAME.equals(propertyName) &&
+                   !Breakpoint.PROP_GROUP_PROPERTIES.equals(propertyName)) {
             if (reader != null) {
                 reader.storeCachedClassName(breakpoint, null);
             }

@@ -39,7 +39,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -103,16 +103,16 @@ public class QmakeConfiguration implements Cloneable {
         target = new StringConfiguration(null, ""); // NOI18N
         version = new StringConfiguration(null, "1.0.0"); // NOI18N
         buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_MODE_OPTIONS);
-        coreEnabled = new BooleanConfiguration(null, true);
-        guiEnabled = new BooleanConfiguration(null, true);
-        networkEnabled = new BooleanConfiguration(null, false);
-        openglEnabled = new BooleanConfiguration(null, false);
-        phononEnabled = new BooleanConfiguration(null, false);
-        qt3SupportEnabled = new BooleanConfiguration(null, false);
-        sqlEnabled = new BooleanConfiguration(null, false);
-        svgEnabled = new BooleanConfiguration(null, false);
-        xmlEnabled = new BooleanConfiguration(null, false);
-        webkitEnabled = new BooleanConfiguration(null, false);
+        coreEnabled = new BooleanConfiguration(true);
+        guiEnabled = new BooleanConfiguration(true);
+        networkEnabled = new BooleanConfiguration(false);
+        openglEnabled = new BooleanConfiguration(false);
+        phononEnabled = new BooleanConfiguration(false);
+        qt3SupportEnabled = new BooleanConfiguration(false);
+        sqlEnabled = new BooleanConfiguration(false);
+        svgEnabled = new BooleanConfiguration(false);
+        xmlEnabled = new BooleanConfiguration(false);
+        webkitEnabled = new BooleanConfiguration(false);
         mocDir = new StringConfiguration(null, ""); // NOI18N
         rccDir = new StringConfiguration(null, ""); // NOI18N
         uiDir = new StringConfiguration(null, ""); // NOI18N
@@ -198,7 +198,7 @@ public class QmakeConfiguration implements Cloneable {
     }
 
     private String getTargetDefault() {
-        return ConfigurationSupport.makeNameLegal(IpeUtils.getBaseName(makeConfiguration.getBaseDir()));
+        return ConfigurationSupport.makeNameLegal(CndPathUtilitities.getBaseName(makeConfiguration.getBaseDir()));
     }
 
     public StringConfiguration getTarget() {

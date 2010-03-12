@@ -41,6 +41,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 typedef int bool;
 
@@ -59,7 +61,7 @@ static void init_trace_flag(const char* env_var) {
 void report_error(const char *format, ...);
 
 static void report_unresolved_path(const char* path) {
-    char pwd[PATH_MAX];
+    char pwd[PATH_MAX + 1];
     getcwd(pwd, sizeof pwd);
     report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
 }
@@ -77,7 +79,7 @@ void _trace_shutdown();
 #define trace_unresolved_path(path) if (trace_flag) { _trace_unresolved_path(path); }
 static void _trace_unresolved_path(const char* path) {
     if (trace_flag) {
-        char pwd[PATH_MAX];
+        char pwd[PATH_MAX + 1];
         getcwd(pwd, sizeof pwd);
         trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
     }
@@ -91,3 +93,64 @@ static void _dbg_sleep(int time) {
         trace("Awoke\n");
     }
 }
+
+/*
+static char *normalize_path(const char *path, char *buffer, int max_size) {
+    if (path == NULL || buffer == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+    const char *src = path; // points to the current char in the source path
+    char *dst = buffer; // points to the next char in the destination path
+    char* limit = buffer + max_size;
+    if (*path != '/') {
+        if (getcwd(buffer, max_size)) {
+            int len = strlen(buffer);
+            dst = buffer + len;
+            if (dst + 1 >= limit) {
+                errno = ENAMETOOLONG;
+                return NULL;
+            }
+            *(dst++) = '/';
+        } else {
+            return NULL;
+        }
+    }
+    while (*src) {
+        if (*src == '.' && (src == path || *(src-1) == '/')) {
+            if (*(src+1) == '.' && *(src+2) == '/') {
+                // it's "/../"
+                src += 3;
+                dst--; // point the last added one
+                if (*dst == '/' && dst > buffer) {
+                    dst--;
+                }
+                while (dst > buffer && *dst != '/') {
+                    dst--;
+                }
+                dst++;
+                continue;
+            } else if (*(src+1) == '/') {
+                // it's "/./" - skip '.' and '/'
+                src += 2;
+                continue;
+            }
+        }
+        if (dst + 1 >= limit) {
+            errno = ENAMETOOLONG;
+            return NULL;
+        }
+        *(dst++) = *(src++);
+    }
+    if (*dst == '/') {
+        dst--;
+    }
+    if (dst + 1 >= limit) {
+        errno = ENAMETOOLONG;
+        return NULL;
+    }
+    *dst = 0;
+    trace("normalize: %s -> %s\n", path, buffer);
+    return dst;
+}
+*/

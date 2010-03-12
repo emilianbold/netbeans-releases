@@ -49,16 +49,10 @@ import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -97,17 +91,17 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     public String addAction() {
         FileFilter[] filters;
         if (Utilities.isWindows()){
-            filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            PeDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getPeDynamicLibraryFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            MacOSXDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
         }  else {
-            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            ElfDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getElfDynamicLibraryFileFilter()};
         }
         FileChooser fileChooser = new FileChooser(
                 getString("LIBRARY_CHOOSER_TITLE_TXT"),
@@ -124,7 +118,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         StringBuilder buf = new StringBuilder();
         for (File item : fileChooser.getSelectedFiles()){
             String itemPath = item.getPath();
-            itemPath = IpeUtils.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             if (buf.length() > 0) {
                 buf.append(';');
             }

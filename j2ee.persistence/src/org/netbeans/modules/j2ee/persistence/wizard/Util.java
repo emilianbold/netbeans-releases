@@ -60,10 +60,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -492,8 +495,12 @@ public class Util {
         if(providerClass != null){
             Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
             Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
-            if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
-                Util.addLibraryToProject(project, lib);
+            if (lib != null) {
+                if(!Util.isDefaultProvider(project, selectedProvider)) {
+                    Util.addLibraryToProject(project, lib);
+                } else if (selectedProvider.getAnnotationProcessor() != null){
+                    Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                }
             }
        }
 
@@ -524,15 +531,33 @@ public class Util {
         return createPersistenceUnitUsingWizard(project, preselectedDB, TableGeneration.CREATE);
     }
 
+    /**
+     * Ad library to the project to compile classpath(default)
+     * @param project
+     * @param library
+     */
     public static void addLibraryToProject(Project project, Library library) {
-        ProjectClassPathExtender pcpe = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
-        if (pcpe != null) {
-            try {
-                pcpe.addLibrary(library);
+        addLibraryToProject(project, library, ClassPath.COMPILE);
+    }
+
+    /**
+     * add library to the project to specified classpath
+     * @param project
+     * @param library
+     * @param classpathType
+     */
+    public static void addLibraryToProject(Project project, Library library, String classpathType) {
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
+        try {
+                ProjectClassPathModifier.addLibraries(new Library[]{library}, fo, classpathType);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
+            } catch (UnsupportedOperationException ex) {
+                Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
             }
-        }
     }
 
     /**

@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -359,7 +359,7 @@ public class RunProfile implements ConfigurationAuxObject {
         this.argsFlat = argsFlat;
         argsFlatValid = true;
         argsArrayValid = false;
-        if (pcs != null && !IpeUtils.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
         needSave = true;
@@ -370,7 +370,7 @@ public class RunProfile implements ConfigurationAuxObject {
         this.argsArray = argsArray;
         argsFlatValid = false;
         argsArrayValid = true;
-        if (pcs != null && !IpeUtils.sameStringArray(oldArgsArray, argsArray)) {
+        if (pcs != null && !CndPathUtilitities.sameStringArray(oldArgsArray, argsArray)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsArray, argsArray);
         }
         needSave = true;
@@ -387,7 +387,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (!argsFlatValid) {
             argsFlat = ""; // NOI18N
             for (int i = 0; i < argsArray.length; i++) {
-                argsFlat += IpeUtils.quoteIfNecessary(argsArray[i]);
+                argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
                 if (i < (argsArray.length - 1)) {
                     argsFlat += " "; // NOI18N
                 }
@@ -428,7 +428,7 @@ public class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to if it is relative.
      */
     public void setBaseDir(String baseDir) {
-        assert baseDir != null && IpeUtils.isPathAbsolute(baseDir);
+        assert baseDir != null && CndPathUtilitities.isPathAbsolute(baseDir);
         this.baseDir = baseDir;
     }
 
@@ -471,7 +471,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
         }
-        if (IpeUtils.isPathAbsolute(runDir2)) {
+        if (CndPathUtilitities.isPathAbsolute(runDir2)) {
             runDirectory = runDir2;
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
@@ -500,7 +500,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (newRunDir == null || newRunDir.length() == 0) {
             newRunDir = "."; // NOI18N
         }
-        setRunDir(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
+        setRunDir(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
     }
 
     // Should Build ...
@@ -795,8 +795,8 @@ public class RunProfile implements ConfigurationAuxObject {
 
         @Override
         public void setValue(String v) {
-            String path = IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = IpeUtils.normalize(path);
+            String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
+            path = CndPathUtilitities.normalize(path);
             setRunDir(path);
         }
 
@@ -807,7 +807,7 @@ public class RunProfile implements ConfigurationAuxObject {
             if (runDir2.length() == 0) {
                 runDir2 = "."; // NOI18N
             }
-            if (IpeUtils.isPathAbsolute(runDir2)) {
+            if (CndPathUtilitities.isPathAbsolute(runDir2)) {
                 seed = runDir2;
             } else {
                 seed = getBaseDir() + File.separatorChar + runDir2;

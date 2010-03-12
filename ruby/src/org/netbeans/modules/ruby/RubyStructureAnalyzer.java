@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,6 +102,7 @@ import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.elements.AstNameElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.platform.gems.Gems;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -122,6 +122,8 @@ import org.openide.util.NbBundle;
 public class RubyStructureAnalyzer implements StructureScanner {
 
     private static final String ACTIVE_RECORD_NAMED_SCOPE = "ActiveRecord::NamedScope::Scope";//NOI18N
+    /** Name of 'ClassMethods' modules; need special  handling */
+    private static final String CLASSMETHODS = "ClassMethods"; //NOI18N
     
     private Set<AstClassElement> haveAccessModifiers;
     private List<AstElement> structure;
@@ -390,7 +392,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return analysisResult;
     }
 
-    private static final Map<File, AnalysisResult> cache = new HashMap<File, AnalysisResult>();
+    /**
+     * @return true if the file being analyzed appears to be
+     * within a rails 3.x gem.
+     */
+    private boolean isRails3File() {
+        FileObject file = RubyUtils.getFileObject(result);
+        for (String railsGem : Gems.getRailsGems()) {
+            if (file.getPath().indexOf(railsGem + "-3.") > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private AnalysisResult getCachedAnalysis(final RubyParseResult result) {
         // TODO: implement together with #cacheAnalysis
@@ -532,14 +546,20 @@ public class RubyStructureAnalyzer implements StructureScanner {
         case MODULENODE: {
             AstModuleElement co = new AstModuleElement(result, node);
             co.setIn(in);
-            co.setFqn(AstUtilities.getFqnName(path));
+            String moduleFqn = AstUtilities.getFqnName(path);
+            co.setFqn(moduleFqn);
             in = AstUtilities.getClassOrModuleName((ModuleNode)node);
+            // special case handling for ClassMethods in Rails 3 - the indexer can't handle
+            // the way append_features is used in ActiveSupport::Concern. This should be 
+            // quite safe as all 'ClassMethods' modules 
+            // in Rails 3 appear to get the same treatment.
+            if (CLASSMETHODS.equals(in) && parent instanceof AstModuleElement && isRails3File()) {
+                ((AstModuleElement) parent).setExtendWith(moduleFqn);
+            }
             addToParent(parent, co);
-
             parent = co;
-
-            // XXX Can I have includes on modules?
-            
+            includes = new HashSet<String>();
+            co.setIncludes(includes);
             break;
         }
         case SCLASSNODE: {
@@ -569,7 +589,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
         case DEFSNODE: {
             AstMethodElement co = new AstMethodElement(result, node);
             methods.add(co);
-            co.setIn(in);
+            String clzFqn = AstUtilities.getFqnName(path);
+            co.setIn(clzFqn);
 
             // "initialize" methods are private
             if ((node instanceof DefnNode) && "initialize".equals(AstUtilities.getName(node))) {
@@ -807,16 +828,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             } else if ((includes != null) && name.equals("include")) {
                 Node argsNode = ((FCallNode)node).getArgsNode();
-
                 if (argsNode instanceof ListNode) {
-                    ListNode args = (ListNode)argsNode;
-                    for (Node n : args.childNodes()) {
-                        if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node) n));
-                        } else if (n instanceof INameNode) {
-                            includes.add(AstUtilities.getName(n));
-                        }
-                    }
+                    includes.addAll(AstUtilities.getValuesAsFqn((ListNode)argsNode));
                 }
             } else if (("private".equals(name) || "protected".equals(name)) &&
                     parent instanceof AstClassElement) { // NOI18N
@@ -1602,51 +1615,62 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return null;
     }
 
-    private class RhtmlStructureItem implements StructureItem {
+    private static class RhtmlStructureItem implements StructureItem {
         
         private final String name;
         private final int start;
         private final int end;
+        private final ElementHandle handle;
 
         public RhtmlStructureItem(String name, int start, int end) {
             this.name = name;
             this.start = start;
             this.end = end;
+            this.handle = new RhtmlElementHandle(name);
         }
         
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
             return formatter.getText();
         }
 
+        @Override
         public ElementHandle getElementHandle() {
-            return null;
+            return handle;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.OTHER;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
             return true;
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             return Collections.emptyList();
         }
 
+        @Override
         public long getPosition() {
             return start;
         }
 
+        @Override
         public long getEndPosition() {
             return end;
         }
@@ -1698,8 +1722,60 @@ public class RubyStructureAnalyzer implements StructureScanner {
         public String getSortText() {
             return Integer.toHexString(10000+(int)getPosition());
         }
+
     }
-    
+    /** A dummy ElementHandle impl for RhtmlStructureItem that need to return a non-null
+     *  value for {@code StructureItem#getElementHandle}.
+     */
+    private static class RhtmlElementHandle implements ElementHandle {
+
+        private final String name;
+
+        public RhtmlElementHandle(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getIn() {
+            return null;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return this.name.equals(handle.getName());
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+    }
+
     /** Number of characters to display from the Ruby fragments in the navigator */
     private static final int MAX_RUBY_LABEL_LENGTH = 30;
     /** Default label to use on navigator items where we don't have more accurate

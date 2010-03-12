@@ -71,7 +71,7 @@ public class UnusedCodeBlocksTestCase extends TraceModelTestBase {
             assertTrue(o instanceof String);
             File file = getDataFile((String) o);
             assertTrue(file.exists());
-            CsmFile csmFile = getModel().findFile(file.getAbsolutePath());
+            CsmFile csmFile = getModel().findFile(file.getAbsolutePath(), false);
             assertTrue(csmFile != null);
             System.out.printf("Unused blocks for %s\n", csmFile.getName());
             List<CsmOffsetable> blocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(csmFile);

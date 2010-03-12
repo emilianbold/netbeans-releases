@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -81,6 +81,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         File domainsDir = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER); // NOI18N
         File candidates[] = domainsDir.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File dir) {
                 File logsDir = new File(dir, "logs");
                 return Utils.canWrite(logsDir);
@@ -96,12 +97,14 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
         KeyListener kl = new MyKeyListener();
         domainField.getEditor().getEditorComponent().addKeyListener(kl);
         domainField.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 domainField.getEditor().setItem(domainField.getSelectedItem());
                 fireChangeEvent();
             }
         });
         registerLocalRB.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hostNameField.setEnabled(!registerLocalRB.isSelected());
                 portValueField.setEnabled(!registerLocalRB.isSelected());
@@ -110,6 +113,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             }
         });
         registerRemoteRB.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 hostNameField.setEnabled(!registerLocalRB.isSelected());
                 portValueField.setEnabled(!registerLocalRB.isSelected());
@@ -126,11 +130,11 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     }
 
     String getHostName() {
-        return (String) hostNameField.getText();
+        return hostNameField.getText();
     }
 
     String getPortValue() {
-        return (String) portValueField.getText();
+        return portValueField.getText();
     }
 
     /**
@@ -307,14 +311,17 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     class MyKeyListener implements KeyListener {
+        @Override
             public void keyTyped(KeyEvent arg0) {
                 //throw new UnsupportedOperationException("Not supported yet.");
             }
 
+        @Override
             public void keyPressed(KeyEvent arg0) {
                 //throw new UnsupportedOperationException("Not supported yet.");
             }
 
+        @Override
             public void keyReleased(KeyEvent arg0) {
                 //throw new UnsupportedOperationException("Not supported yet.");
                 fireChangeEvent();

@@ -226,6 +226,14 @@ public final class TableSorter extends AbstractTableModel {
         return getDirective(column).direction;
     }
 
+    public LinkedHashMap<Integer, Integer> getSortingState () {
+        LinkedHashMap<Integer, Integer> sortingState = new LinkedHashMap<Integer, Integer>(sortingColumns.size());
+        for (Directive d : sortingColumns) {
+            sortingState.put(d.column, d.direction);
+        }
+        return sortingState;
+    }
+
     private void sortingStatusChanged() {
         clearSortingState();
         fireTableDataChanged();

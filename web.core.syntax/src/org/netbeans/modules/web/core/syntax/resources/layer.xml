@@ -215,6 +215,12 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
             </folder>
             <folder name="x-el">
                 <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance">
@@ -335,6 +341,12 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
             </folder>
         </folder>
     </folder>

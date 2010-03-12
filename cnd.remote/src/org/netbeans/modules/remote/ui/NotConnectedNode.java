@@ -40,24 +40,31 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
+import javax.swing.Action;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class NotConnectedNode extends AbstractNode {
+public class NotConnectedNode extends AbstractNode implements ConnectionListener {
 
     private final ExecutionEnvironment env;
 
     public NotConnectedNode(ExecutionEnvironment env) {
         super(Children.LEAF, Lookups.singleton(env));
-        this.env = env;        
+        this.env = env;
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
     }
 
     @Override
@@ -75,5 +82,28 @@ public class NotConnectedNode extends AbstractNode {
         return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected.png"); // NOI18N
     }
 
-    
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SharedClassObject.findObject(ConnectAction.class, true)
+        };
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return SharedClassObject.findObject(ConnectAction.class, true);
+    }
+
+    @Override
+    public void connected(ExecutionEnvironment env) {
+        Node parent = getParentNode();
+        if (parent instanceof FileSystemRootNode) {
+            FileSystemRootNode fsn = (FileSystemRootNode) parent;
+            fsn.refresh();
+        }
+    }
+
+    @Override
+    public void disconnected(ExecutionEnvironment env) {
+    }
 }

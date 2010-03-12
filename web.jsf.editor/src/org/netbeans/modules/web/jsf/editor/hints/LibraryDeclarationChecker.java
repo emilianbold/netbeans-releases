@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -93,12 +94,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
     //        - or search all the libraries for such component and offer the match/es
     //
     private void checkLibraryDeclarations(final List<Hint> hints, final RuleContext context) {
-        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        final HtmlParserResult result = (HtmlParserResult) context.parserResult;
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
+        final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
         JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
         Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
         if (jsfSupport != null) {
@@ -111,13 +112,32 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, AstNode.Attribute> namespace2Attribute = new HashMap<String, Attribute>();
         AstNode root = result.root();
+
+        final Document doc = snapshot.getSource().getDocument(true);
+        final AtomicReference<String> docTextRef = new AtomicReference<String>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    docTextRef.set(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        });
+        final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
+
         AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
 
+            @Override
             public void visit(AstNode node) {
                 if (node.type() == AstNode.NodeType.OPEN_TAG) {
                     //put all NS attributes to the namespace2Attribute map for #1.
                     Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
 
+                        @Override
                         public boolean accepts(Attribute attribute) {
                             return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
                         }
@@ -141,7 +161,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                            JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
                             fixes, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -160,7 +180,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
+                            JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
                             Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
@@ -168,37 +188,44 @@ public class LibraryDeclarationChecker extends HintsProvider {
         }
 
         //2. find for unused declarations
-        Collection<PositionRange> ranges = new ArrayList<PositionRange>();
-        for (FaceletsLibrary lib : declaredLibraries) {
-            AstNode rootNode = result.root(lib.getNamespace());
-            if (rootNode == null) {
-                continue; //no parse result for this namespace, the namespace is not declared
-            }
-            final int[] usages = new int[1];
-            AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
+        final Collection<PositionRange> ranges = new ArrayList<PositionRange>();
+        context.doc.render(new Runnable() { //isFunctionLibraryPrefixUsadInEL accesses the document's token hierarchy
+            @Override
+            public void run() {
+                for (FaceletsLibrary lib : declaredLibraries) {
+                    AstNode rootNode = result.root(lib.getNamespace());
+                    if (rootNode == null) {
+                        continue; //no parse result for this namespace, the namespace is not declared
+                    }
+                    final int[] usages = new int[1];
+                    AstNodeUtils.visitChildren(rootNode, new AstNodeVisitor() {
 
-                public void visit(AstNode node) {
-                    usages[0]++;
-                }
-            }, AstNode.NodeType.OPEN_TAG);
+                        @Override
+                        public void visit(AstNode node) {
+                            usages[0]++;
+                        }
+                    }, AstNode.NodeType.OPEN_TAG);
 
-            usages[0] += isFunctionLibraryPrefixUsadInEL(context, lib) ? 1 : 0;
+                    usages[0] += isFunctionLibraryPrefixUsedInEL(context, lib) ? 1 : 0;
 
-            if (usages[0] == 0) {
-                //unused declaration
-                Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
-                if (declAttr != null) {
-                    int from = declAttr.nameOffset();
-                    int to = declAttr.valueOffset() + declAttr.value().length();
-                    try {
-                        ranges.add(new PositionRange(context, from, to));
-                    } catch (BadLocationException ex) {
-                        //just ignore
+                    if (usages[0] == 0) {
+                        //unused declaration
+                        Attribute declAttr = namespace2Attribute.get(lib.getNamespace());
+                        if (declAttr != null) {
+                            int from = declAttr.nameOffset();
+                            int to = declAttr.valueOffset() + declAttr.value().length();
+                            try {
+                                ranges.add(new PositionRange(context, from, to));
+                            } catch (BadLocationException ex) {
+                                //just ignore
+                            }
+                        }
+
                     }
                 }
-
             }
-        }
+        });
+        
 
         //generate remove all unused declarations
         for (PositionRange range : ranges) {
@@ -212,7 +239,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             Hint hint = new Hint(DEFAULT_WARNING_RULE,
                     NbBundle.getMessage(HintsProvider.class, "MSG_UNUSED_LIBRARY_DECLARATION"), //NOI18N
                     context.parserResult.getSnapshot().getSource().getFileObject(),
-                    JsfUtils.createOffsetRange(snapshot, from, to),
+                    JsfUtils.createOffsetRange(snapshot, docText, from, to),
                     fixes, DEFAULT_ERROR_HINT_PRIORITY);
 
             hints.add(hint);
@@ -220,7 +247,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     }
 
-    private boolean isFunctionLibraryPrefixUsadInEL(RuleContext context, FaceletsLibrary lib) {
+    private boolean isFunctionLibraryPrefixUsedInEL(RuleContext context, FaceletsLibrary lib) {
         String libraryPrefix = ((HtmlParserResult)context.parserResult).getNamespaces().get(lib.getNamespace());
         Document doc = context.doc;
 
@@ -268,13 +295,16 @@ public class LibraryDeclarationChecker extends HintsProvider {
             this.ranges = ranges;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HintsProvider.class, "MSG_HINTFIX_REMOVE_ALL_UNUSED_LIBRARIES_DECLARATION");
         }
 
+        @Override
         public void implement() throws Exception {
             document.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         for (PositionRange range : ranges) {
@@ -297,10 +327,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
             });
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }

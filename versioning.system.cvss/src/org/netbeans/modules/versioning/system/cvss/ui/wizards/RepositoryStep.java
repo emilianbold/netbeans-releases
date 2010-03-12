@@ -312,12 +312,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         }
                     }
 
-                } catch (IOException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                    String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
-                    fail(msg);
                 } catch (AuthenticationException e) {
                     ErrorManager err = ErrorManager.getDefault();
                     err.annotate(e, "Connection authentification verification failed.");  // NOI18N
@@ -334,6 +328,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                             msg = NbBundle.getMessage(CheckoutWizard.class, "BK1002");
                         }
                     }
+                    fail(msg);
+                } catch (Exception e) {
+                    ErrorManager err = ErrorManager.getDefault();
+                    err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
+                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
                     fail(msg);
                 } finally {
                     if (sock != null) {

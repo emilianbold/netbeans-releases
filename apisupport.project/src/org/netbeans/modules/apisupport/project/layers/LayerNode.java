@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -141,45 +142,29 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             super.addNotify();
             handle.setAutosave(true);
             setKeys(Collections.singleton(KeyType.WAIT));
-            RequestProcessor.getDefault().post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    try {
-                        FileObject layer = handle.getLayerFile();
-                        p = FileOwnerQuery.getOwner(layer);
-                        if (p == null) { // #175861: inside JAR etc.
-                            setKeys(Collections.<LayerChildren.KeyType>emptySet());
-                            return;
-                        }
-                        try {
-                            cp = createClasspath(p);
-                        } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        }
-                        // just this project's source path, whole cp is too slow
-                        ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
-                        ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
-                        layerfs = handle.layer(false, srcPath);
-                        setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                        Project p = FileOwnerQuery.getOwner(handle.getLayerFile());
-                        boolean context = false;
-                        if (p != null) {
-                            LayerHandle h = LayerHandle.forProject(p);
-                            h.setAutosave(true); // #135376
-                            if (h != null && layer.equals(h.getLayerFile())) {
-                                FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
-                                if (cp != null) { // has not been removeNotify()d yet
-                                    sfs = _sfs;
-                                    setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
-                                    context = true;
-                                }
-                            }
-                        }
-                        if (!context) {
-                            setKeys(Collections.singleton(KeyType.RAW));
-                        }
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    FileObject layer = handle.getLayerFile();
+                    p = /* #180872 */layer == null ? null : FileOwnerQuery.getOwner(layer);
+                    if (p == null) { // #175861: inside JAR etc.
+                        setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                        return;
                     }
+                    boolean showContextNode = true;
+                    NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
+                    if( null != moduleProvider 
+                            && !moduleProvider.prepareContext(NbBundle.getMessage(LayerNode.class, "LBL_XML_layer_in_context")) ) { //NOI18N
+                        //don't show 'layer in context' if the context classpath didn't initialize properly
+                        showContextNode = false;
+                    }
+                    final boolean b = showContextNode;
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            initialize(b);
+                        }
+                    });
                 }
             });
         }
@@ -217,7 +202,50 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 return new Node[0];
             }
         }
-        
+
+        private void initialize(boolean showContextNode) {
+            try {
+                FileObject layer = handle.getLayerFile();
+                p = FileOwnerQuery.getOwner(layer);
+                if (p == null) { // #175861: inside JAR etc.
+                    setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                    return;
+                }
+                try {
+                    cp = createClasspath(p);
+                } catch (IOException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+                // just this project's source path, whole cp is too slow
+                ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
+                ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+                layerfs = handle.layer(false, srcPath);
+                if( !showContextNode ) {
+                    setKeys(Collections.singleton(KeyType.RAW));
+                } else {
+                    setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
+                    Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
+                    boolean context = false;
+                    if (project != null) {
+                        LayerHandle h = LayerHandle.forProject(project);
+                        h.setAutosave(true); // #135376
+                        if (h != null && layer.equals(h.getLayerFile())) {
+                            FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+                            if (cp != null) { // has not been removeNotify()d yet
+                                sfs = _sfs;
+                                setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                                context = true;
+                            }
+                        }
+                    }
+                    if (!context) {
+                        setKeys(Collections.singleton(KeyType.RAW));
+                    }
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
     }
     
     /**

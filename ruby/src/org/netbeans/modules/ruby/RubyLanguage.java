@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -179,6 +180,11 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public Set<String> getLibraryPathIds() {
         return Collections.singleton(BOOT);
+    }
+
+    @Override
+    public OverridingMethods getOverridingMethods() {
+        return new OverridingMethodsImpl();
     }
 
 }

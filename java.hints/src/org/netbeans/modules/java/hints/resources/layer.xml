@@ -86,6 +86,15 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
@@ -141,6 +150,9 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
                 <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance"/>
+                <folder name="AnnotationProcessors">
+                    <file name="org-netbeans-modules-java-hints-infrastructure-SuppressWarningsCompletion.instance" />
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -172,14 +184,11 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance"/>
                     <file name="org-netbeans-modules-java-hints-AssignmentToItself.instance"/>
                     <file name="org-netbeans-modules-java-hints-MissingHashCode.instance"/>                    
-                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance"/>
                     <file name="org-netbeans-modules-java-hints-WrongStringComparison.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideField.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideFieldByVar.instance"/>
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
-                    <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
-                    <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
                     <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
                     <file name="org-netbeans-modules-java-hints-SerialVersionUID.instance"/>
                     <file name="org-netbeans-modules-java-hints-ThisInAnonymous.instance"/>
@@ -369,6 +378,12 @@ made subject to such option by the copyright holder.
 
                 <folder name="bugs">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="thread">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance"/>
+                    <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
                 </folder>
             </folder>
 

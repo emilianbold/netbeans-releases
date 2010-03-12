@@ -46,6 +46,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -120,6 +121,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private PropertyChangeListener kenaiListener;
 
     public static final String getPreviewPrefix(Kenai kenai) {
+        if (kenai==null) {
+            return "";
+        }
         return kenai.getUrl().toString() +  "/projects/"; //NOI18N
     } // NOI18N
 
@@ -139,15 +143,20 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             public void actionPerformed(final ActionEvent e) {
                 if (kenaiCombo.getSelectedItem() instanceof Kenai) {
                     panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
-                } else {
+                    refreshUsername();
+                    updatePrjNamePreview();
+                } else if (kenaiCombo.getSelectedItem() instanceof String) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             new AddInstanceAction().actionPerformed(e);
                             panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                            refreshUsername();
+                            updatePrjNamePreview();
                         }
                     });
-                }
+                } 
+                setupLicensesListModel();
             }
         });
 
@@ -206,17 +215,32 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                 }
             }
         };
-        panel.getKenai().addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, panel.getKenai()));
+        if (panel.getKenai()!=null) {
+            panel.getKenai().addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, panel.getKenai()));
+        }
 
     }
 
+    private void setChildrenEnabled(Component root, boolean enabled) {
+        root.setEnabled(enabled);
+        if (root instanceof java.awt.Container) {
+            for (Component c : ((java.awt.Container) root).getComponents()) {
+                if (c != kenaiCombo) {
+                    setChildrenEnabled(c, enabled);
+                }
+            }
+        }
+    }
+
     private void setupLicensesListModel() {
+        if (panel.getKenai()==null)
+            return;
 
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 Collection<KenaiLicense> licenses = null;
                 try {
-                    licenses = panel.getKenai().getLicenses();
+                        licenses = panel.getKenai().getLicenses();
                 } catch (KenaiException ex) {
                     // OK, list of licenses will be null
                     // XXX or show message that "Cannot connect to Kenai.com server" ???
@@ -311,7 +335,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
-        kenaiCombo = new KenaiCombo(false);
+        kenaiCombo = new KenaiCombo(true);
 
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text"));
@@ -546,6 +570,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private void projectNameTextFieldFocusLost(FocusEvent evt) {//GEN-FIRST:event_projectNameTextFieldFocusLost
 
+        if (panel.getKenai()==null)
+            return;
         if (getProjectName().length()<2) {
             prjNameCheckMessage = NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.prjNameLengthErrMsg"); // NOI18N
@@ -668,7 +694,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     private String checkForInfos() {
-        if (panel.getKenai().getStatus() == Kenai.Status.OFFLINE) {
+        if (panel.getKenai()==null || panel.getKenai().getStatus() == Kenai.Status.OFFLINE) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin"); // NOI18N
         } else if (getProjectName().trim().equals("")) {
@@ -741,7 +767,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     // ----------
 
     private void refreshUsername() {
-        PasswordAuthentication passwdAuth = panel.getKenai().getPasswordAuthentication();
+        setChildrenEnabled(this,panel.getKenai()!=null);
+        PasswordAuthentication passwdAuth = panel.getKenai()==null?null:panel.getKenai().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
             loginButton.setEnabled(false);

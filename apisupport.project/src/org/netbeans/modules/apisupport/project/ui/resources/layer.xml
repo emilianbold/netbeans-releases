@@ -326,6 +326,9 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-apisupport-project-suite">
+            <folder name="Actions"/>
+        </folder>
     </folder>
     <folder name="xml">
         <folder name="lookups">

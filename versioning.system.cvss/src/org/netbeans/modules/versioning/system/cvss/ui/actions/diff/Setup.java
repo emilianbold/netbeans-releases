@@ -46,7 +46,6 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public final class Setup extends AbstractDiffSetup {
     private DiffStreamSource    secondSource;
 
     private DiffController view;
-    private Node           node;
+    private DiffNode           node;
 
     private String    title;
 
@@ -155,11 +154,11 @@ public final class Setup extends AbstractDiffSetup {
         return info;
     }
 
-    public Node getNode() {
+    DiffNode getNode() {
         return node;
     }
 
-    public void setNode(Node node) {
+    void setNode(DiffNode node) {
         this.node = node;
     }
 

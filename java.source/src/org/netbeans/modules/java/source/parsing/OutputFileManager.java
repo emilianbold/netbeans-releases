@@ -70,7 +70,6 @@ import org.openide.util.Exceptions;
 public class OutputFileManager extends CachingFileManager {
 
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
-    private static final String ORIGIN_FILE = "apt-origin";    //NOI18N
     private static final String OUTPUT_ROOT = "output-root";   //NOI18N
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
@@ -334,7 +333,7 @@ public class OutputFileManager extends CachingFileManager {
             if (outputRoot.length() <= 0)
                 outputRoot = null;
             return true;
-        } if (ORIGIN_FILE.equals(head)) {
+        } if (AptSourceFileManager.ORIGIN_FILE.equals(head)) {
             if (!tail.hasNext()) {
                 throw new IllegalArgumentException("The apt-origin requires folder.");    //NOI18N
             }

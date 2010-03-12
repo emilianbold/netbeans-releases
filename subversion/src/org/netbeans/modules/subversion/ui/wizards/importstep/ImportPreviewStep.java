@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import javax.swing.JComponent;
 
@@ -59,6 +60,7 @@ import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.versioning.util.TableSorter;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -72,6 +74,7 @@ public class ImportPreviewStep extends AbstractStep {
     private CommitTable table;
     private PanelProgressSupport support;
     private String importMessage;
+    private static final String PANEL_PREFIX = "import"; //NOI18N
     
     public ImportPreviewStep(Context context) {
         this.context = context;
@@ -85,12 +88,11 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            //TableSorter sorter = SvnModuleConfig.getDefault().getImportTableSorter();
-            //if(sorter==null) {
-                table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });    
-            //} else {
-            //    table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, sorter);
-            //}                                    
+            Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault().getSortingStatus(PANEL_PREFIX);
+            if (sortingStatus == null) {
+                sortingStatus = Collections.singletonMap(CommitTableModel.COLUMN_NAME_PATH, TableSorter.ASCENDING);
+            }
+            table = new CommitTable(previewPanel.tableLabel, CommitTable.IMPORT_COLUMNS, sortingStatus);
             
             JComponent component = table.getComponent();
             previewPanel.tablePanel.setLayout(new BorderLayout());
@@ -149,7 +151,7 @@ public class ImportPreviewStep extends AbstractStep {
                     SvnFileNode node = new SvnFileNode(file);
                     // initialize nodes
                     node.getCopy();
-                    node.getRelativePath();
+                    node.getLocation();
                     nodesList.add(node);
                     if (isCanceled()) {
                         return;
@@ -186,7 +188,7 @@ public class ImportPreviewStep extends AbstractStep {
     }
     
     public void storeTableSorter() {
-        //SvnModuleConfig.getDefault().setImportTableSorter(table.getSorter());        
+        SvnModuleConfig.getDefault().setSortingStatus(PANEL_PREFIX, table.getSortingState());
     }
 
     /**

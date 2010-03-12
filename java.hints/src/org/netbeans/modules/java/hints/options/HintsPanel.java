@@ -306,7 +306,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         }
         else {
             renderer.setText( value.toString() );
-            if (value == extraNode) {
+            if (value == extraNode && logic != null) {
                 renderer.setSelected(logic.getCurrentDependencyTracking() != DepScanningSettings.DependencyTracking.DISABLED);
             }
         }
@@ -349,6 +349,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
+    private final Map<HintMetadata, TreePath> hint2Path =  new HashMap<HintMetadata, TreePath>();
+
     private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
@@ -384,7 +386,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             DefaultMutableTreeNode catNode = new DefaultMutableTreeNode(e.getKey());
 
             for (HintMetadata hm : e.getValue()) {
-                catNode.add(new DefaultMutableTreeNode(hm));
+                DefaultMutableTreeNode hmNode = new DefaultMutableTreeNode(hm);
+
+                catNode.add(hmNode);
+                hint2Path.put(hm, new TreePath(new Object[] {root, catNode, hmNode}));
             }
 
             root.add(catNode);
@@ -393,6 +398,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         root.add(extraNode);
         
         return new DefaultTreeModel(root);
+    }
+
+    void select(HintMetadata hm) {
+        errorTree.setSelectionPath(hint2Path.get(hm));
     }
 
     private static int compare(String s1, String s2) {

@@ -29,18 +29,25 @@
  */
 package org.netbeans.feedreader;
 
-import java.io.IOException;
+import com.sun.syndication.feed.synd.SyndContent;
+import com.sun.syndication.feed.synd.SyndEntry;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
- * A top component with an embedded JEditorPane based HTML browser.
+ * A top component which can display a feed entry.
  */
 final class BrowserTopComponent extends TopComponent {
 
@@ -49,32 +56,53 @@ final class BrowserTopComponent extends TopComponent {
 
     private final JScrollPane scrollPane;
     private final JEditorPane editorPane;
-    private final String title;
-    private String url;
+    private final SyndEntry entry;
     
-    private BrowserTopComponent(String title) {
-        this.title = title;
-        setName(title);
+    private BrowserTopComponent(SyndEntry entry) {
+        this.entry = entry;
+        setName(entry.getTitle());
         setToolTipText(NbBundle.getMessage(BrowserTopComponent.class, "HINT_BrowserTopComponent"));
         
         scrollPane = new javax.swing.JScrollPane();
         editorPane = new javax.swing.JEditorPane();
         
-        editorPane.setContentType("text/html");
         editorPane.setEditable(false);
+        SyndContent description = entry.getDescription();
+        if (description != null) {
+            /* Not trustworthy, it seems:
+            String type = description.getType();
+            if (type == null) {
+                editorPane.setContentType(type);
+            }
+             */
+            editorPane.setContentType("text/html");
+            editorPane.setText(description.getValue());
+        }
         
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new BorderLayout());
         scrollPane.setViewportView(editorPane);
-        add(scrollPane, java.awt.BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         putClientProperty(/*PrintManager.PRINT_PRINTABLE*/"print.printable", true);
+
+        JButton browse = new JButton(NbBundle.getMessage(BrowserTopComponent.class, "CTL_view_in_browser"));
+        browse.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURLExternal(new URL(BrowserTopComponent.this.entry.getLink()));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        add(browse, BorderLayout.PAGE_END);
     }
     
     
-    public static synchronized BrowserTopComponent getBrowserComponent(String title) {
-        BrowserTopComponent win = browserComponents.get(title);
+    public static BrowserTopComponent getBrowserComponent(SyndEntry entry) {
+        BrowserTopComponent win = browserComponents.get(entry.getUri());
         if (win == null) {
-            win = new BrowserTopComponent(title);
-            browserComponents.put(title, win);
+            win = new BrowserTopComponent(entry);
+            browserComponents.put(entry.getUri(), win);
         }
         return win;
     }
@@ -86,16 +114,7 @@ final class BrowserTopComponent extends TopComponent {
     
     @Override
     public synchronized void componentClosed() {
-        browserComponents.remove(title);
-    }
-    
-    public void setPage(String url) {
-        this.url = url;
-        try {
-            editorPane.setPage(new URL(this.url));
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        browserComponents.remove(entry.getUri());
     }
     
 }

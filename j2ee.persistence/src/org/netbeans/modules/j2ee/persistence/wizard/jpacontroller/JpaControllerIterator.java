@@ -101,15 +101,11 @@ public class JpaControllerIterator implements TemplateWizard.Iterator {
         boolean createPersistenceUnit = (Boolean) wizard.getProperty(org.netbeans.modules.j2ee.persistence.wizard.WizardProperties.CREATE_PERSISTENCE_UNIT);
 
         if (createPersistenceUnit) {
-            try {
                 PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
                 ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
                 if (punit != null){
-                    ProviderUtil.addPersistenceUnit(punit, project);
+                    Util.addPersistenceUnitToProject( project, punit );
                 }
-            } catch (InvalidPersistenceXmlException e) {
-                throw new IOException(e.toString());
-            }
         }
 
         final String title = NbBundle.getMessage(JpaControllerIterator.class, "TITLE_Progress_Jpa_Controller"); //NOI18N

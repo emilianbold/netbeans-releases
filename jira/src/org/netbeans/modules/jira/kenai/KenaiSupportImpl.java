@@ -69,7 +69,7 @@ public class KenaiSupportImpl extends KenaiSupport {
             return null;
         }
 
-        String location = project.getWebLocation().toString();
+        String location = project.getFeatureLocation().toString();
         final URL loc;
         try {
             loc = new URL(project.getWebLocation().toString());
@@ -132,6 +132,17 @@ public class KenaiSupportImpl extends KenaiSupport {
     @Override
     public boolean needsLogin(Query query) {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
+    }
+
+    @Override
+    public void refresh(Query query, boolean synchronously) {
+        assert query instanceof JiraQuery;
+        JiraQuery jq = (JiraQuery) query;
+        if(synchronously) {
+            jq.refresh();
+        } else {
+            jq.getController().onRefresh();
+        }
     }
 }
 

@@ -67,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 
@@ -468,8 +469,8 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
-//        @Override
-        public Object /*GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new LineGroupProperties();
         }
 
@@ -565,26 +566,30 @@ public class LineBreakpoint extends JPDABreakpoint {
                 }
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
-                firePropertyChange("groupProperties", null, null);
+                firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
             } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
                 enginePropertyChange(evt);
             }
         }
 
-        private final class LineGroupProperties { //extends GroupProperties {
+        private final class LineGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
-                return "Line";
+                return NbBundle.getMessage(LineBreakpoint.class, "LineBrkp_Type");
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 return new FileObject[] { fo };
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject f = fo;
                 while (f != null) {
@@ -603,10 +608,12 @@ public class LineBreakpoint extends JPDABreakpoint {
                 return null;
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return LineBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return LineBreakpointImpl.this.isHidden();
             }

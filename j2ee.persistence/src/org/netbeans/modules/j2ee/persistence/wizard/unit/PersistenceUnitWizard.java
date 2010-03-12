@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -150,12 +151,19 @@ public class PersistenceUnitWizard implements WizardDescriptor.ProgressInstantia
         //first add libraries if necessary
         Library lib = null;
         if (descriptor.isContainerManaged()) {
+            Provider selectedProvider=descriptor.getSelectedProvider();
             if (descriptor.isNonDefaultProviderEnabled()) {
-                Provider selectedProvider=descriptor.getSelectedProvider();
                 lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
                 if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
                     handle.progress(NbBundle.getMessage(PersistenceUnitWizard.class, "MSG_LoadLibs"));
                     Util.addLibraryToProject(project, lib);
+                    selectedProvider = null;//to avoid one more library addition
+                }
+            }
+            if(selectedProvider != null && selectedProvider.getAnnotationProcessor() != null){
+                if(lib == null)lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+                if (lib != null){
+                    Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
                 }
             }
         } else {

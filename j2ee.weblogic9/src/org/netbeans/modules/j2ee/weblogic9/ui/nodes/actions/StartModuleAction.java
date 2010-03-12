@@ -53,10 +53,10 @@ public class StartModuleAction extends NodeAction {
 
     @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
-        StartModuleCookie cookie;
+        ControlModuleCookie cookie;
         for (int i = 0; i < nodes.length; i++) {
-            cookie = nodes[i].getCookie(StartModuleCookie.class);
-            if (cookie == null) {
+            cookie = nodes[i].getCookie(ControlModuleCookie.class);
+            if (cookie == null || cookie.isRunning()) {
                 return false;
             }
         }
@@ -72,7 +72,7 @@ public class StartModuleAction extends NodeAction {
     @Override
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            final StartModuleCookie cookie = nodes[i].getCookie(StartModuleCookie.class);
+            final ControlModuleCookie cookie = nodes[i].getCookie(ControlModuleCookie.class);
             if (cookie != null) {
                 final Node node = nodes[i].getParentNode();
                 WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {

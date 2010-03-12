@@ -50,6 +50,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -155,25 +156,29 @@ class SftpSupport {
         public Integer call() throws Exception {
             int rc = -1;
             try {
-                LOG.fine(getTraceName() + " started");
+                LOG.log(Level.FINE, "{0} started", getTraceName());
                 work();
                 rc = 0;
             } catch (JSchException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 1;
             } catch (SftpException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 2;
             } catch(IOException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 3;
             } catch (CancellationException ex) {
                 // no trace
                 rc = 4;
             }
-            LOG.fine(getTraceName() + (rc == 0 ? " OK" : " FAILED"));
+            LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
             return rc;
-        }        
+        }
+
+        protected void logException(Exception ex) {
+            LOG.log(Level.INFO, "Error " + getTraceName(), ex);
+        }
     }
 
     private class Uploader extends Worker implements Callable<Integer> {
@@ -225,7 +230,7 @@ class SftpSupport {
             Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error);
             FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
             requestProcessor.post(ftask);
-            LOG.fine(uploader.getTraceName() + " schedulled");
+            LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());
             return ftask;
     }
 
@@ -237,7 +242,7 @@ class SftpSupport {
             Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
             FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
             requestProcessor.post(ftask);
-            LOG.fine(downloader.getTraceName() + " schedulled");
+            LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
             return ftask;
     }
 

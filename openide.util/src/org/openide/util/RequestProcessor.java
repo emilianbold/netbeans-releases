@@ -41,15 +41,33 @@
 
 package org.openide.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,7 +95,7 @@ import java.util.logging.Logger;
  * you can specify higher
  * throughput via {@link #RequestProcessor(java.lang.String, int)}. Then
  * the <code>RP</code> works like a queue of requests passing through a
- * semafore with predefined number of <CODE>DOWN()</CODE>s.
+ * semaphore with predefined number of <CODE>DOWN()</CODE>s.
  * <p>
  * You can wait for your tasks to be processed by keeping a reference to the
  * last one and using {@link RequestProcessor.Task#waitFinished waitFinished()}:
@@ -130,7 +148,7 @@ import java.util.logging.Logger;
  *   }
  * }
  * </pre>
- * The above code coaleases all events that arrive in 1s and for all of them
+ * The above code coalesces all events that arrive in 1s and for all of them
  * does <code>doTheWork</code> just once.
  *
  *
@@ -143,7 +161,7 @@ import java.util.logging.Logger;
  * the thread running the task is interrupted and the Runnable can check for that
  * and terminate its execution sooner. In the runnable one shall check for 
  * thread interruption (done from {@link RequestProcessor.Task#cancel }) and 
- * if true, return immediatelly as in this example:
+ * if true, return immediately as in this example:
  * <pre>
  * private static final RequestProcessor RP = new {@link #RequestProcessor(String,int,boolean) RequestProcessor("Interruptible", 1, true)};
  * public void run () {
@@ -154,19 +172,26 @@ import java.util.logging.Logger;
  *     }
  * }
  * </pre>
- * 
- * @author Petr Nejedly, Jaroslav Tulach
+ * <p/>
+ * Since <code>org.openide.util</code>, implements
+ * {@link java.util.concurrent.ScheduledExecutorService}
+ * @author Petr Nejedly, Jaroslav Tulach, Tim Boudreau
  */
-public final class RequestProcessor implements Executor {
+public final class RequestProcessor implements ScheduledExecutorService {
+
+    static {
+        Processor.class.hashCode(); // ensure loaded; cf. FELIX-2128
+    }
+
     /** the static instance for users that do not want to have own processor */
-    private static RequestProcessor DEFAULT = new RequestProcessor();
+    private static final RequestProcessor DEFAULT = new RequestProcessor();
 
     // 50: a conservative value, just for case of misuse
 
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
-    /** A shared timer used to pass timeouted tasks to pending queue */
+    /** A shared timer used to pass timed-out tasks to pending queue */
     private static Timer starterThread = new Timer(true);
 
     /** logger */
@@ -186,7 +211,7 @@ public final class RequestProcessor implements Executor {
 
     /** If the RP was stopped, this variable will be set, every new post()
      * will throw an exception and no task will be processed any further */
-    boolean stopped = false;
+    volatile boolean stopped = false;
 
     /** The lock covering following four fields. They should be accessed
      * only while having this lock held. */
@@ -585,6 +610,695 @@ public final class RequestProcessor implements Executor {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws an IllegalStateException if called on the
+     * {@linkplain #getDefault default request processor}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public void shutdown() {
+        if (this == UNLIMITED) {
+            throw new IllegalStateException ("Cannot shut down the default " + //NOI18N
+                    "request processor"); //NOI18N
+        }
+        stop();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws an IllegalStateException if called on the
+     * {@linkplain #getDefault default request processor}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public List<Runnable> shutdownNow() {
+        if (this == UNLIMITED) {
+            throw new IllegalStateException ("Cannot shut down the default " + //NOI18N
+                    "request processor"); //NOI18N
+        }
+        //XXX more aggressive shutdown?
+        stop();
+        synchronized (processorLock) {
+            List<Runnable> result = new ArrayList<Runnable>(processors.size());
+            for (Processor p : processors) {
+                if (p != null && p.todo != null && p.todo.run != null) {
+                    Runnable r = p.todo.run;
+                    if (r instanceof RunnableWrapper) {
+                        Runnable other = ((RunnableWrapper) r).getRunnable();
+                        r = other == null ? r : other;
+                    }
+                    result.add(r);
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public boolean isShutdown() {
+        return stopped;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public boolean isTerminated() {
+        boolean result = true;
+        Set<Processor> set = collectProcessors(new HashSet<Processor>());
+        for (Processor p : set) {
+            if (p.isAlive() && p.belongsTo(this)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * {@inheritDoc} 
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        Parameters.notNull("unit", unit); //NOI18N
+        long timeoutMillis = unit.convert(timeout, TimeUnit.MILLISECONDS);
+        boolean result = stopped;
+        long doneTime = System.currentTimeMillis() + timeoutMillis;
+        Set<Processor> procs = new HashSet<Processor>();
+outer:  do {
+            procs = collectProcessors(procs);
+            if (procs.isEmpty()) {
+                return true;
+            }
+            for (Processor p : procs) {
+                long remaining = doneTime - System.currentTimeMillis();
+                if (remaining <= 0) {
+                    result = collectProcessors(procs).isEmpty();
+                    break outer;
+                }
+                if (p.belongsTo(this)) {
+                    p.join(remaining);
+                }
+                result = !p.isAlive() || !p.belongsTo(this);
+            }
+            procs.clear();
+        } while (!procs.isEmpty());
+        return result;
+    }
+
+    private Set<Processor> collectProcessors (Set<Processor> procs) {
+        procs.clear();
+        synchronized (processorLock) {
+            for (Processor p : processors) {
+                if (p.belongsTo(this)) {
+                    procs.add(p);
+                }
+            }
+        }
+        return procs;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <b>Note:</b> If the passed {@link java.util.concurrent.Callable} implements
+     * {@link org.openide.util.Cancellable}, then that object's {@link org.openide.util.Cancellable#cancel()}
+     * method will be called if {@link java.util.concurrent.Future#cancel(boolean)} is invoked.
+     * If <code>Cancellable.cancel()</code> returns false, then <i>the job will <u>not</u> be
+     * cancelled</i>.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        Parameters.notNull("task", task); //NOI18N
+        if (stopped) {
+            throw new RejectedExecutionException("Request Processor already " + //NOI18N
+                    "stopped"); //NOI18N
+        }
+        RPFutureTask<T> result = new RPFutureTask<T>(task);
+        Task t = create(result);
+        result.setTask(t);
+        t.schedule(0);
+        return result;
+    }
+    /**
+     * {@inheritDoc}
+     * <b>Note:</b> If the passed {@link java.lang.Runnable} implements
+     * {@link org.openide.util.Cancellable}, then that object's {@link org.openide.util.Cancellable#cancel()}
+     * method will be called if {@link java.util.concurrent.Future#cancel(boolean)} is invoked.
+     * If <code>Cancellable.cancel()</code> returns false, then <i>the job will <u>not</u> be
+     * cancelled</i>.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> Future<T> submit(Runnable task, T predefinedResult) {
+        Parameters.notNull("task", task); //NOI18N
+        if (stopped) {
+            throw new RejectedExecutionException("Request Processor already " + //NOI18N
+                    "stopped"); //NOI18N
+        }
+        RPFutureTask<T> result = new RPFutureTask<T>(task, predefinedResult);
+        Task t = create(result);
+        result.setTask(t);
+        t.schedule(0);
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <b>Note:</b> If the passed {@link java.lang.Runnable} implements
+     * {@link org.openide.util.Cancellable}, then that object's {@link org.openide.util.Cancellable#cancel()}
+     * method will be called if {@link java.util.concurrent.Future#cancel(boolean)} is invoked.
+     * If <code>Cancellable.cancel()</code> returns false, then <i>the job will <u>not</u> be
+     * cancelled</i>.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public Future<?> submit(Runnable task) {
+        return this.<Void>submit (task, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+        Parameters.notNull("tasks", tasks); //NOI18N
+        List<Future<T>> result = new ArrayList<Future<T>>(tasks.size());
+        CountDownLatch wait = new CountDownLatch(tasks.size());
+        for (Callable<T> c : tasks) {
+            if (c == null) {
+                    throw new NullPointerException ("Contains null tasks: " +  //NOI18N
+                            tasks);
+            }
+            Callable<T> delegate = new WaitableCallable<T>(c, wait);
+            result.add (submit(delegate));
+        }
+        wait.await();
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Executes the given tasks, returning a list of Futures holding their
+     * status and results when all complete or the timeout expires, whichever
+     * happens first.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+        Parameters.notNull("unit", unit); //NOI18N
+        Parameters.notNull("tasks", tasks); //NOI18N
+        CountDownLatch wait = new CountDownLatch(tasks.size());
+        List<Future<T>> result = new ArrayList<Future<T>>(tasks.size());
+        for (Callable<T> c : tasks) {
+            if (c == null) {
+                throw new NullPointerException ("Contains null tasks: " + tasks); //NOI18N
+            }
+            Callable<T> delegate = new WaitableCallable<T>(c, wait);
+            result.add (submit(delegate));
+        }
+        if (!wait.await(timeout, unit)) {
+            for (Future<T> f : result) {
+                RPFutureTask<?> ft = (RPFutureTask<?>) f;
+                ft.cancel(true);
+            }
+        }
+        return result;
+    }
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Executes the given tasks, returning the result of one which has
+     * completed and cancelling any incomplete tasks.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+        Parameters.notNull("tasks", tasks); //NOI18N
+        CountDownLatch wait = new CountDownLatch(1);
+        List<Future<T>> result = new ArrayList<Future<T>>(tasks.size());
+        AtomicReference<T> ref = new AtomicReference<T>();
+        try {
+            for (Callable<T> c : tasks) {
+                if (c == null) {
+                    throw new NullPointerException ("Contains null tasks: " +  //NOI18N
+                            tasks);
+                }
+                Callable<T> delegate = new WaitableCallable<T>(c, ref, wait);
+                result.add (submit(delegate));
+            }
+            wait.await();
+        } finally {
+            for (Future<T> f : result) {
+                RPFutureTask<?> ft = (RPFutureTask<?>) f;
+                ft.cancel(true);
+            }
+        }
+        return ref.get();
+    }
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Executes the given tasks, returning a list of Futures holding their
+     * status and results when all complete or the timeout expires, whichever
+     * happens first.
+     * @param <T> The result type
+     * @param tasks A collection of callables
+     * @param timeout The maximum time to wait for completion, in the specified time units
+     * @param unit The time unit
+     * @return A list of futures
+     * @throws InterruptedException if the timeout expires or execution is interrupted
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        Parameters.notNull("unit", unit); //NOI18N
+        Parameters.notNull("tasks", tasks); //NOI18N
+        CountDownLatch wait = new CountDownLatch(1);
+        List<Future<T>> result = new ArrayList<Future<T>>(tasks.size());
+        AtomicReference<T> ref = new AtomicReference<T>();
+        try {
+            for (Callable<T> c : tasks) {
+                if (c == null) {
+                    throw new NullPointerException ("Contains null tasks: " +  //NOI18N
+                            tasks);
+                }
+                Callable<T> delegate = new WaitableCallable(c, ref, wait);
+                result.add (submit(delegate));
+            }
+            wait.await(timeout, unit);
+        } finally {
+            for (Future<T> f : result) {
+                RPFutureTask ft = (RPFutureTask) f;
+                ft.cancel(true);
+            }
+        }
+        return ref.get();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+        Parameters.notNull("command", command); //NOI18N
+        Parameters.notNull("unit", unit); //NOI18N
+        if (delay < 0) {
+            throw new IllegalArgumentException ("Negative delay: " + delay);
+        }
+        if (stopped) {
+            throw new RejectedExecutionException("Request Processor already stopped"); //NOI18N
+        }
+        long delayMillis = unit.convert(delay, TimeUnit.MILLISECONDS);
+        ScheduledRPFutureTask<Void> result = new ScheduledRPFutureTask<Void>(command, null, delayMillis);
+        Task t = create(result);
+        result.setTask(t);
+        t.schedule(delayMillis);
+        return result;
+    }
+    /**
+     * {@inheritDoc}
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public <T> ScheduledFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
+        Parameters.notNull("unit", unit); //NOI18N
+        Parameters.notNull("callable", callable); //NOI18N
+        if (delay < 0) {
+            throw new IllegalArgumentException ("Negative delay: " + delay);
+        }
+        if (stopped) {
+            throw new RejectedExecutionException("Request Processor already " + //NOI18N
+                    "stopped"); //NOI18N
+        }
+        long delayMillis = unit.convert(delay, TimeUnit.MILLISECONDS);
+        ScheduledRPFutureTask<T> result = new ScheduledRPFutureTask<T>(callable, delayMillis);
+        Task t = create(result);
+        result.setTask(t);
+        t.schedule(delayMillis);
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Schedules a runnable which will run with a given frequency, regardless
+     * of how long execution takes, with the exception that if execution takes
+     * longer than the specified delay, execution will be delayed but will
+     * never be run on two threads concurrently.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+        return scheduleFixed(command, initialDelay, period, unit, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Schedules a runnable which will run repeatedly after the specified initial
+     * delay, with the specified delay between the completion of one run and
+     * the start of the next.
+     * @since org.openide.util 8.2
+     */
+    @Override
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+        return scheduleFixed(command, initialDelay, delay, unit, true);
+    }
+
+    private ScheduledFuture<?> scheduleFixed (Runnable command, long initialDelay, long period, TimeUnit unit, boolean fixedDelay) {
+        Parameters.notNull("unit", unit); //NOI18N
+        Parameters.notNull("command", command); //NOI18N
+        if (period < 0) {
+            throw new IllegalArgumentException ("Negative delay: " + period); //NOI18N
+        }
+        if (initialDelay < 0) {
+            throw new IllegalArgumentException ("Negative initialDelay: "  //NOI18N
+                    + initialDelay);
+        }
+        if (stopped) {
+            throw new RejectedExecutionException("Request Processor already " + //NOI18N
+                    "stopped"); //NOI18N
+        }
+        long initialDelayMillis = unit.convert(initialDelay, TimeUnit.MILLISECONDS);
+        long periodMillis = unit.convert(period, TimeUnit.MILLISECONDS);
+
+        TaskFutureWrapper wrap = fixedDelay ? 
+            new FixedDelayTask(command, initialDelayMillis, periodMillis) :
+            new FixedRateTask(command, initialDelay, periodMillis);
+        Task t = create(wrap);
+        wrap.t = t;
+        t.cancelled = wrap.cancelled;
+        t.schedule (initialDelayMillis);
+
+        return wrap;
+    }
+
+    private static abstract class TaskFutureWrapper implements ScheduledFuture<Void>, Runnable, RunnableWrapper {
+        volatile Task t;
+        protected final Runnable toRun;
+        protected final long initialDelay;
+        protected final long period;
+        final AtomicBoolean cancelled = new AtomicBoolean();
+        TaskFutureWrapper(Runnable run, long initialDelay, long period) {
+            this.toRun = run;
+            this.initialDelay = initialDelay;
+            this.period = period;
+        }
+
+        @Override
+        public final Runnable getRunnable() {
+            return toRun;
+        }
+
+        @Override
+        public int compareTo(Delayed o) {
+            long other = o.getDelay(TimeUnit.MILLISECONDS);
+            long ours = getDelay(TimeUnit.MILLISECONDS);
+            //Might overflow on, say, ms compared to Long.MAX_VALUE, TimeUnit.DAYS
+            return (int) (ours - other);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            boolean result = true;
+            if (toRun instanceof Cancellable) {
+                result = ((Cancellable) toRun).cancel();
+            }
+            if (result) {
+                //will invoke cancelled.set(true)
+                result = t.cancel(mayInterruptIfRunning);
+            }
+            return result;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancelled.get();
+        }
+
+        @Override
+        public boolean isDone() {
+            return cancelled.get() || t.isFinished();
+        }
+
+        @Override
+        public Void get() throws InterruptedException, ExecutionException {
+            if (cancelled.get()) {
+                throw new CancellationException();
+            }
+            t.waitFinished();
+            if (cancelled.get()) {
+                throw new CancellationException();
+            }
+            return null;
+        }
+
+        @Override
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            if (cancelled.get()) {
+                throw new CancellationException();
+            }
+            long millis = unit.convert(timeout, TimeUnit.MILLISECONDS);
+            t.waitFinished(millis);
+            if (cancelled.get()) {
+                throw new CancellationException();
+            }
+            return null;
+        }
+    }
+
+    private static final class FixedRateTask extends TaskFutureWrapper {
+        private final Object runLock = new Object();
+        private final Object timeLock = new Object();
+        //must be accessed holding timeLock
+        private int runCount;
+        private long nextRunTime;
+        private long start = Long.MIN_VALUE;
+        volatile boolean firstRun = true;
+        FixedRateTask (Runnable run, long initialDelay, long period) {
+            super (run, initialDelay, period);
+        }
+
+        @Override
+        public void run() {
+            if (firstRun) {
+                synchronized (timeLock) {
+                    start = System.currentTimeMillis();
+                    firstRun = false;
+                }
+            }
+            try {
+                synchronized(runLock) {
+                    toRun.run();
+                }
+            } catch (RuntimeException e) {
+                cancel(true);
+                throw e;
+            }
+            reschedule();
+        }
+
+        private void reschedule() {
+            //All access to nextRunTime & runCount under lock.
+            long interval;
+            synchronized (timeLock) {
+                nextRunTime = start + (initialDelay + period * runCount);
+                runCount++;
+                interval = Math.max(0,  nextRunTime - System.currentTimeMillis());
+            }
+            boolean canContinue = !cancelled.get() && !Thread.currentThread().isInterrupted();
+            if (canContinue) {
+                t.schedule(interval);
+            }
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            if (isCancelled()) {
+                return Long.MAX_VALUE;
+            }
+            long delay;
+            synchronized (timeLock) {
+                delay = Math.min(0, nextRunTime - System.currentTimeMillis());
+            }
+            return unit.convert(delay, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private static final class FixedDelayTask extends TaskFutureWrapper {
+        private volatile boolean firstRun = true;
+        private final AtomicLong nextRunTime = new AtomicLong();
+        FixedDelayTask(Runnable run, long initialDelay, long period)  {
+            super (run, initialDelay, period);
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            long next = nextRunTime.get();
+            return unit.convert (next - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public void run() {
+            if (!fini()) {
+                toRun.run();
+            }
+            if (!fini()) {
+                reschedule();
+            }
+        }
+
+        private boolean fini() {
+            boolean result = cancelled.get() || Thread.currentThread().isInterrupted();
+            return result;
+        }
+
+        private void reschedule() {
+            long delay;
+            if (firstRun) {
+                delay = initialDelay;
+            } else {
+                delay = period;
+            }
+            nextRunTime.set(System.currentTimeMillis() + delay);
+            firstRun = false;
+            if (!fini()) {
+                t.schedule((int) delay);
+            }
+        }
+    }
+
+    private interface RunnableWrapper {
+        Runnable getRunnable();
+    }
+
+    private static final class WaitableCallable<T> implements Callable<T>, Cancellable {
+        private final CountDownLatch countdown;
+        private final Callable<T> delegate;
+        private final AtomicReference<T> ref;
+        private volatile boolean failed;
+        WaitableCallable(Callable<T> delegate, CountDownLatch countdown) {
+            this (delegate, null, countdown);
+        }
+
+        WaitableCallable(Callable<T> delegate, AtomicReference<T> ref, CountDownLatch countdown) {
+            this.delegate = delegate;
+            this.countdown = countdown;
+            this.ref = ref;
+        }
+
+        boolean failed() {
+            return failed;
+        }
+
+        @Override
+        public T call() throws Exception {
+            try {
+                T result = delegate.call();
+                if (ref != null) {
+                    ref.set(result);
+                }
+                return result;
+            } catch (RuntimeException e) {
+                failed = true;
+                throw e;
+            } catch (Error e) {
+                failed = true;
+                throw e;
+            } finally {
+                if (!failed || ref == null) {
+                    countdown.countDown();
+                }
+            }
+        }
+
+        @Override
+        public boolean cancel() {
+            return delegate instanceof Cancellable ? ((Cancellable) delegate).cancel() : true;
+        }
+    }
+
+    private static class RPFutureTask<T> extends FutureTask<T> implements RunnableWrapper {
+        protected volatile Task task;
+        private final Runnable runnable;
+        private final Cancellable cancellable;
+        RPFutureTask(Callable<T> c) {
+            super (c);
+            this.runnable = null;
+            this.cancellable = c instanceof Cancellable ? (Cancellable) c : null;
+        }
+
+        RPFutureTask(Runnable r, T result) {
+            super (r, result);
+            this.runnable = r;
+            this.cancellable = r instanceof Cancellable ? (Cancellable) r : null;
+        }
+
+        void setTask(Task task) {
+            this.task = task;
+        }
+
+        RPFutureTask(Callable<T> c, T predefinedResult) {
+            this (c);
+            set(predefinedResult);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            boolean result = cancellable == null ? true : cancellable.cancel();
+            if (result) {
+                boolean taskCancelled = task.cancel();
+                boolean superCancel = super.cancel(mayInterruptIfRunning); //must call both!
+                result = taskCancelled && superCancel;
+            }
+            return result;
+        }
+
+        @Override
+        public Runnable getRunnable() {
+            return this.runnable;
+        }
+    }
+
+    private static final class ScheduledRPFutureTask<T> extends RPFutureTask<T> implements ScheduledFuture<T> {
+        protected final long delayMillis;
+        ScheduledRPFutureTask(Callable<T> c, long delayMillis) {
+            super (c);
+            this.delayMillis = delayMillis;
+        }
+
+        ScheduledRPFutureTask(Runnable r, T result, long delayMillis) {
+            super (r, result);
+            this.delayMillis = delayMillis;
+        }
+
+        
+        @Override
+        public long getDelay(TimeUnit unit) {
+            return TimeUnit.MILLISECONDS.convert(delayMillis, unit);
+        }
+
+        @Override
+        public int compareTo(Delayed o) {
+            //Can overflow, if one delay is, say, days, and the other, microseconds
+            long otherDelayMillis = o.getDelay(TimeUnit.MILLISECONDS);
+            return (int) (delayMillis - otherDelayMillis);
+        }
+    }
+
     private class EnqueueTask extends TimerTask {
         Item itm;
         
@@ -610,6 +1324,7 @@ public final class RequestProcessor implements Executor {
         private int priority = Thread.MIN_PRIORITY;
         private long time = 0;
         private Thread lastThread = null;
+        private AtomicBoolean cancelled;
 
         /** @param run runnable to start
         * @param delay amount of millis to wait
@@ -676,6 +1391,10 @@ public final class RequestProcessor implements Executor {
         * @param delay time in milliseconds to wait (starting from now)
         */
         public void schedule(int delay) {
+            schedule((long) delay);
+        }
+
+        void schedule(long delay) {
             if (stopped) {
                 throw new IllegalStateException("RequestProcessor already stopped!"); // NOI18N
             }
@@ -685,6 +1404,9 @@ public final class RequestProcessor implements Executor {
             final Item localItem;
 
             synchronized (processorLock) {
+                if (cancelled != null) {
+                    cancelled.set(false);
+                }
                 notifyRunning();
 
                 if (item != null) {
@@ -743,6 +1465,49 @@ public final class RequestProcessor implements Executor {
                     notifyFinished(); // mark it as finished
                 }
 
+                return success;
+            }
+        }
+
+        /**
+         * Implementation of cancel for use with Future objects, to guarantee
+         * that the thread will be interrupted, no matter what the setting
+         * on the owning RP.
+         * @param interrupt If true, the thread should be interrupted
+         * @return true if cancellation occurred
+         */
+        boolean cancel (boolean interrupt) {
+            synchronized (processorLock) {
+                if (cancelled != null) {
+                    boolean wasCancelled = !cancelled.getAndSet(true);
+                    if (wasCancelled) {
+                        return false;
+                    }
+                }
+                boolean success;
+
+                if (item == null) {
+                    success = false;
+                } else {
+                    Processor p = item.getProcessor();
+                    success = item.clear(null);
+
+                    if (p != null) {
+                        if (interrupt) {
+                            success = p.interrupt(this, RequestProcessor.this);
+                        } else {
+                            //despite its name, will not actually interrupt
+                            //unless the RP specifies that it should
+                            p.interruptTask(this, RequestProcessor.this);
+                        }
+                        if (success) {
+                            item = null;
+                        }
+                    }
+                }
+                if (success) {
+                    notifyFinished(); // mark it as finished
+                }
                 return success;
             }
         }
@@ -1062,6 +1827,12 @@ public final class RequestProcessor implements Executor {
             }
         }
 
+        boolean belongsTo(RequestProcessor r) {
+            synchronized (lock) {
+                return source == r;
+            }
+        }
+
         /**
          * The method that will repeatedly wait for a request and perform it.
          */
@@ -1188,6 +1959,14 @@ public final class RequestProcessor implements Executor {
                 // otherwise interrupt this thread
                 interrupt();
             }
+        }
+
+        boolean interrupt (Task t, RequestProcessor src) {
+            if (t != todo) {
+                return false;
+            }
+            interrupt();
+            return true;
         }
 
         /** @see "#20467" */

@@ -41,9 +41,8 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -55,15 +54,15 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
 
-    private Vector<FolderEntry> sourceData = new Vector<FolderEntry>();
-    private Vector<FolderEntry> testData = new Vector<FolderEntry>();
+    private List<FolderEntry> sourceData = new ArrayList<FolderEntry>();
+    private List<FolderEntry> testData = new ArrayList<FolderEntry>();
     private SourceFileTable sourceFileTable = null;
     private SourceFileTable testFileTable = null;
     private String baseDir;
@@ -116,8 +115,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         return ignoreFoldersTextField.getText();
     }
 
-    public void initFocus() {
-        IpeUtils.requestFocus(addButton);
+    public final void initFocus() {
+        CndUIUtilities.requestFocus(addButton);
     }
 
     public List<FolderEntry> getSourceListData() {
@@ -126,34 +125,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     public List<FolderEntry> getTestListData() {
         return testData;
-    }
-
-    private static class CustomFileFilter extends SourceFileFilter {
-
-        private String[] suffixes;
-
-        CustomFileFilter(String suffixesString) {
-            StringTokenizer st = new StringTokenizer(suffixesString);
-            Vector<String> vec = new Vector<String>();
-            while (st.hasMoreTokens()) {
-                String nextToken = st.nextToken();
-                if (nextToken.charAt(0) == '.') {
-                    nextToken = nextToken.substring(1);
-                }
-                vec.add(nextToken);
-            }
-            suffixes = vec.toArray(new String[vec.size()]);
-        }
-
-        @Override
-        public String getDescription() {
-            return ""; // NOI18N
-        }
-
-        @Override
-        public String[] getSuffixes() {
-            return suffixes;
-        }
     }
 
     private class TargetSelectionListener implements ListSelectionListener {
@@ -193,7 +164,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private final class SourceFileTable extends JTable {
 
-        public SourceFileTable(Vector<FolderEntry> data, String columnTitle) {
+        public SourceFileTable(List<FolderEntry> data, String columnTitle) {
             //setTableHeader(null); // Hides table headers
             setModel(new MyTableModel(data, columnTitle));
             // Left align table header
@@ -216,10 +187,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
 
     private final class MyTableModel extends DefaultTableModel {
-        Vector<FolderEntry> data;
-        String columnTitle;
+        private List<FolderEntry> data;
+        private String columnTitle;
 
-        public MyTableModel(Vector<FolderEntry> data, String columnTitle) {
+        public MyTableModel(List<FolderEntry> data, String columnTitle) {
             this.data = data;
             this.columnTitle = columnTitle;
         }
@@ -247,7 +218,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             if (data == null) {
                 return null;
             }
-            return data.elementAt(row).getFolderName();
+            return data.get(col).getFolderName();
         }
 
         @Override
@@ -448,7 +419,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         add(buttonPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void deleteFile(Vector<FolderEntry> data, SourceFileTable table) {
+    private void deleteFile(List<FolderEntry> data, SourceFileTable table) {
         int index = table.getSelectedRow();
         if (index < 0 || index >= data.size()) {
             return;
@@ -468,13 +439,13 @@ public class SourceFilesPanel extends javax.swing.JPanel {
        deleteFile(sourceData, sourceFileTable);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
-    private void addFile(Vector<FolderEntry> data) {
+    private void addFile(List<FolderEntry> data) {
         String seed = null;
         if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
         }
         if (seed == null) {
-            if (wd != null && wd.length() > 0 && !IpeUtils.isPathAbsolute(wd)) {
+            if (wd != null && wd.length() > 0 && !CndPathUtilitities.isPathAbsolute(wd)) {
                 seed = baseDir + File.separator + wd;
             } else if (wd != null) {
                 seed = wd;
@@ -491,7 +462,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             // FIXUP: error message
             return;
         }
-        data.add(new FolderEntry(fileChooser.getSelectedFile(), IpeUtils.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
+        data.add(new FolderEntry(fileChooser.getSelectedFile(), CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }
 

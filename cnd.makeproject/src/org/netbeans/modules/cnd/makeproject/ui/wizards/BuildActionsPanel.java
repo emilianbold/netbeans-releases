@@ -47,15 +47,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -136,7 +130,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {
-            buildCommandWorkingDirTextField.setText(IpeUtils.normalize(makefile.getParent()));
+            buildCommandWorkingDirTextField.setText(CndPathUtilitities.normalize(makefile.getParent()));
             String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             buildCommandTextField.setText(buildCommand);
@@ -184,14 +178,14 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
-            if (!IpeUtils.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
+            if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
                 buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
-            if (!IpeUtils.isPathAbsolute(outputTextField.getText())) {
+            if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
                 buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
                 return false;
@@ -380,17 +374,17 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
         FileFilter[] filters;
         if (Utilities.isWindows()){
-            filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            PeDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getPeDynamicLibraryFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            MacOSXDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
         } else {
-            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            ElfDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getElfDynamicLibraryFileFilter()};
         }
         JFileChooser fileChooser = new FileChooser(
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),
@@ -404,8 +398,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
-        //String path = IpeUtils.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = IpeUtils.normalize(fileChooser.getSelectedFile().getPath());
+        //String path = CndPathUtilitities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
+        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
     
@@ -434,7 +428,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = IpeUtils.normalize(path);
+        path = CndPathUtilitities.normalize(path);
         buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     

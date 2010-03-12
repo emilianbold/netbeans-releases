@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -105,7 +106,7 @@ public class SearchField extends JPanel implements ActionListener {
         panel.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         panel.setLayout(new java.awt.GridBagLayout());
 
-        leftIcon.setIcon(selected.getIcon());
+        leftIcon.setIcon(selected!=null?selected.getIcon():ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
         leftIcon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         leftIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -249,6 +250,9 @@ public class SearchField extends JPanel implements ActionListener {
     }
 
     private static String getKenaiDisplayName(Kenai kenai) {
+        if (kenai==null) {
+            return "";
+        }
         return "<html><b>" + kenai.getName() + "</b> ("
                 + kenai.getUrl().getProtocol() + "://"
                 + kenai.getUrl().getHost() + ")</html>";

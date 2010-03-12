@@ -39,25 +39,39 @@
 
 package org.netbeans.modules.cnd.toolchain.execution;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.StyledDocument;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
 public final class OutputListenerImpl implements OutputListener {
+    private static final String CC_compiler_errors = "C/C++ compiler errors"; // NOI18N
 
+    private final OutputListenerFactory manager;
     private final FileObject file;
     private final int line;
     private final boolean isError;
+    private final String description;
 
-    public OutputListenerImpl(FileObject file, int line, boolean isError) {
-        super();
+    public OutputListenerImpl(OutputListenerFactory manager, FileObject file, int line, boolean isError, String description) {
+        this.manager = manager;
         this.file = file;
         this.line = line;
 	this.isError = isError;
+        this.description = description;
     }
 
     @Override
@@ -72,7 +86,20 @@ public final class OutputListenerImpl implements OutputListener {
 
     @Override
     public void outputLineCleared(OutputEvent ev) {
-        ErrorAnnotation.getInstance().detach(null);
+        try {
+            DataObject dob = DataObject.find(file);
+            StyledDocument doc = null;
+            if (dob.isValid()) {
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    doc = ec.getDocument();
+                }
+            }
+            if (doc != null) {
+                HintsController.setErrors(doc, CC_compiler_errors, Collections.<ErrorDescription>emptyList());
+            }
+        } catch (DataObjectNotFoundException ex) {
+        }
     }
 
     public boolean isError(){
@@ -81,8 +108,8 @@ public final class OutputListenerImpl implements OutputListener {
 
     private void showLine(boolean openTab) {
         try {
-            DataObject od = DataObject.find(file);
-            LineCookie lc = od.getCookie(LineCookie.class);
+            DataObject dob = DataObject.find(file);
+            LineCookie lc = dob.getCookie(LineCookie.class);
             if (lc != null) {
                 try {
                     // TODO: IZ#119211
@@ -95,7 +122,31 @@ public final class OutputListenerImpl implements OutputListener {
                         } else {
                             l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
                         }
-                        ErrorAnnotation.getInstance().attach(l);
+                        StyledDocument doc = null;
+                        if (dob.isValid()) {
+                            EditorCookie ec = dob.getCookie(EditorCookie.class);
+                            if (ec != null) {
+                                doc = ec.getDocument();
+                            }
+                        }
+                        if (doc != null) {
+                            List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+                            for(OutputListenerImpl impl : manager.getFileListeners(file)){
+                                String aDescription = impl.description;
+                                if (impl.isError) {
+                                    if (aDescription == null) {
+                                        aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerError"); // NOI18N
+                                    }
+                                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, impl.description, doc, impl.line + 1));
+                                } else {
+                                    if (aDescription == null) {
+                                        aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerWarning"); // NOI18N
+                                    }
+                                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, impl.description, doc, impl.line + 1));
+                                }
+                            }
+                            HintsController.setErrors(doc, CC_compiler_errors, errors);
+                        }
                     }
                 } catch (IndexOutOfBoundsException ex) {
                 }

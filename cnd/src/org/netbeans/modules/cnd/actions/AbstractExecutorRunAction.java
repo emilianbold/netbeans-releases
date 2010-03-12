@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
@@ -459,7 +459,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         File buildDir;
         if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
             buildDir = startFile.getParentFile();
-        } else if (IpeUtils.isPathAbsolute(bdir)) {
+        } else if (CndPathUtilitities.isPathAbsolute(bdir)) {
             buildDir = new File(bdir);
         } else {
             buildDir = new File(startFile.getParentFile(), bdir);

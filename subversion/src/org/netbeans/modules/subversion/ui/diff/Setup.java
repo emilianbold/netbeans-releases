@@ -254,13 +254,19 @@ public final class Setup extends AbstractDiffSetup {
      * @param firstRevision first revision or <code>null</code> for inital.
      * @param secondRevision second revision
      */
-    public Setup(File baseFile, String firstRevision, String secondRevision) {
+    public Setup(File baseFile, String firstRevision, String secondRevision, final boolean forceNonEditable) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         firstSource = new DiffStreamSource(baseFile, propertyName, firstRevision, firstRevision);
-        secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondRevision);
+        // XXX delete when UndoAction works correctly
+        secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondRevision) {
+            @Override
+            public boolean isEditable() {
+                return !forceNonEditable && super.isEditable();
+            }
+        };
     }
 
     /**

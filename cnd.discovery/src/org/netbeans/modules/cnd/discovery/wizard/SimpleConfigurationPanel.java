@@ -269,7 +269,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             librariesTextField.setVisible(false);
         }
         if (librariesTextField.isVisible()) {
-            Vector<String> vector = new Vector<String>();
+            List<String> vector = new ArrayList<String>();
             vector.add(""); // NOI18N
             Preferences prefs = NbPreferences.forModule(SimpleConfigurationPanel.class);
             String old = prefs.get("libraries", ""); // NOI18N
@@ -285,7 +285,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector);
+            DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
             librariesTextField.setModel(rootModel);
             StringBuilder buf = new StringBuilder();
             for(int i = 0; i < 35; i++) {
@@ -314,7 +314,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         wizardDescriptor.setLevel(level.getID());
         wizardDescriptor.setAditionalLibraries(getLibraryText());
         {
-            Vector<String> vector = new Vector<String>();
+            List<String> vector = new ArrayList<String>();
             vector.add(getLibraryText());
             for(int i = 0; i < librariesTextField.getModel().getSize(); i++){
                 String s = librariesTextField.getModel().getElementAt(i).toString();

@@ -23,31 +23,38 @@ public class CommonToken extends TokenImpl {
         text = s;
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public String getText() {
         return text;
     }
 
+    @Override
     public void setLine(int l) {
         line = l;
     }
 
-    public void setText(String s) {
+    @Override
+    public final void setText(String s) {
         text = s;
     }
 
+    @Override
     public String toString() {
         return "[\"" + getText() + "\",<" + type + ">,line=" + line + ",col=" + col + "]";
     }
 
     /** Return token's start column */
+    @Override
     public int getColumn() {
         return col;
     }
 
+    @Override
     public void setColumn(int c) {
         col = c;
     }

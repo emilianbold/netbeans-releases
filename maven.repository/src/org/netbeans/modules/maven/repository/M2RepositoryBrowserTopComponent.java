@@ -391,7 +391,7 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         }
     }
 
-    private static class EditorToolbar extends Toolbar {
+    public static class EditorToolbar extends Toolbar {
         public EditorToolbar() {
             Border b = UIManager.getBorder("Nb.Editor.Toolbar.border"); //NOI18N
             setBorder(b);

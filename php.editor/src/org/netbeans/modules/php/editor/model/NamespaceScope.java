@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 /**
  * @author Radek Matous
  */
-public interface NamespaceScope extends VariableScope {
+public interface NamespaceScope extends VariableScope, FullyQualifiedElement {
     QualifiedName getQualifiedName();
     Collection<? extends UseElement> getDeclaredUses();
     Collection<? extends TypeScope> getDeclaredTypes();
@@ -51,7 +53,6 @@ public interface NamespaceScope extends VariableScope {
     Collection<? extends InterfaceScope> getDeclaredInterfaces();
     Collection<? extends ConstantElement> getDeclaredConstants();
     Collection<? extends FunctionScope> getDeclaredFunctions();
-    Collection<? extends VariableName> getDeclaredVariables();
     boolean isDefaultNamespace();
     FileScope getFileScope();
 }

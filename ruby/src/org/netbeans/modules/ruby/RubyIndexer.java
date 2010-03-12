@@ -218,7 +218,16 @@ public class RubyIndexer extends EmbeddingIndexer {
      * The name of the method that sets the table name for an AR model class.
      */
     private static final String SET_TABLE_NAME = "set_table_name"; //NOII8N
-    
+
+    /**
+     * The fields required to be loaded when constructing {@code IndexedClass}es.
+     * Excludes methods/fields etc.
+     */
+    static final String[] CLASS_FIELDS = {
+        FIELD_EXTENDS_NAME, FIELD_FQN_NAME, FIELD_IN, FIELD_CLASS_NAME, FIELD_CLASS_ATTRS,
+        FIELD_CASE_INSENSITIVE_CLASS_NAME, FIELD_REQUIRE, FIELD_INCLUDES,
+        FIELD_EXTEND_WITH
+    };
     // Method Document
     //static final String FIELD_PARAMS = "params"; //NOI18N
     //static final String FIELD_RDOC = "rdoc"; //NOI18N
@@ -663,11 +672,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                     }
 
-                    String includes = getIncludedString(classElement.getIncludes());
-
-                    if (includes != null) {
-                        document.addPair(FIELD_INCLUDES, includes, false, true);
-                    }
                 } else {
                     assert element.getKind() == ElementKind.MODULE;
 
@@ -681,6 +685,11 @@ public class RubyIndexer extends EmbeddingIndexer {
                     }
 
                     flags |= IndexedClass.MODULE;
+                }
+
+                String includes = getIncludedString(((ClassElement) element).getIncludes());
+                if (includes != null) {
+                    document.addPair(FIELD_INCLUDES, includes, false, true);
                 }
 
                 String name = element.getName();

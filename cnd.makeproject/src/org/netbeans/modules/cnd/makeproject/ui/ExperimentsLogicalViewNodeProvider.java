@@ -41,9 +41,10 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +63,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 
 public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvider {
 
+    @Override
     public AbstractNode getLogicalViewNode(Project project) {
         return new ExperimentsRootNode(project);
     }
@@ -92,7 +94,7 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
 
     private static class ExperimentsRootNodeChildren extends Children.Keys<ExperimentsGroupNode> implements ChangeListener {
 
-        Project project;
+        private Project project;
 
         public ExperimentsRootNodeChildren(Project project) {
             this.project = project;
@@ -110,17 +112,19 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(ExperimentsGroupNode key) {
             Node node = key;
             return new Node[]{node};
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             setKeys(getKeys());
         }
 
         private Collection<ExperimentsGroupNode> getKeys() {
-            Vector<ExperimentsGroupNode> v = new Vector<ExperimentsGroupNode>();
+            List<ExperimentsGroupNode> v = new ArrayList<ExperimentsGroupNode>();
             v.add(new ExperimentsGroupNode(project, "Heap Tracing")); // NOI18N
             v.add(new ExperimentsGroupNode(project, "Data Race Detection")); // NOI18N
             v.add(new ExperimentsGroupNode(project, "Runtime Checking")); // NOI18N
@@ -160,7 +164,7 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
 
     private static class ExperimentsGroupNodeChildren extends Children.Keys<Experiment> implements ChangeListener {
 
-        Project project;
+        private Project project;
 
         public ExperimentsGroupNodeChildren(Project project) {
             this.project = project;
@@ -178,17 +182,19 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(Experiment key) {
             return new Node[]{key};
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             setKeys(getKeys());
         }
 
         private Collection<Experiment> getKeys() {
             // FIXUP: add per project...
-            Vector<Experiment> v = new Vector<Experiment>();
+            List<Experiment> v = new ArrayList<Experiment>();
             v.add(new Experiment("Experiment-01212007-1422")); // NOI18N
             v.add(new Experiment("Experiment-01212007-1427")); // NOI18N
             v.add(new Experiment("Experiment-01212007-1532")); // NOI18N
@@ -252,17 +258,21 @@ public class ExperimentsLogicalViewNodeProvider implements LogicalViewNodeProvid
             this.name = name;
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void performAction(Node[] activatedNodes) {
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }

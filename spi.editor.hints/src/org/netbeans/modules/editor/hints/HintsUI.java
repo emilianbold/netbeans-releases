@@ -62,8 +62,10 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,7 +91,9 @@ import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -140,9 +144,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     
     private Reference<JTextComponent> compRef;
     private Popup listPopup;
+    private Popup sublistPopup;
     private Popup tooltipPopup;
     private JLabel hintIcon;
     private ScrollCompletionPane hintListComponent;
+    private ScrollCompletionPane subhintListComponent;
     private JTextArea errorTooltip;
     private AtomicBoolean cancel;
     
@@ -220,6 +226,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private void removePopup() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (listPopup != null) {
+            closeSubList();
             if( tooltipPopup != null )
                 tooltipPopup.hide();
             tooltipPopup = null;
@@ -237,6 +244,49 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             if (hintIcon != null)
                 hintIcon.setToolTipText(NbBundle.getMessage(HintsUI.class, "HINT_Bulb")); // NOI18N
         }
+    }
+
+    public void closeSubList() {
+        if (sublistPopup != null) {
+            sublistPopup.hide();
+            if (subhintListComponent != null) {
+                subhintListComponent.getView().removeMouseListener(this);
+                subhintListComponent.getView().removeMouseMotionListener(this);
+            }
+
+            subhintListComponent = null;
+            sublistPopup = null;
+        }
+    }
+
+    public void openSubList(Iterable<? extends Fix> fixes, Point p) {
+        JTextComponent comp = getComponent();
+
+        if (comp == null) return;
+        
+        List<Fix> ff = new LinkedList<Fix>();
+
+        for (Fix f : fixes) {
+            ff.add(f);
+        }
+
+//        SwingUtilities.convertPointToScreen(p, comp);
+
+        Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
+        maxSize.width -= p.x;
+        maxSize.height -= p.y;
+
+        subhintListComponent =
+                new ScrollCompletionPane(comp, new FixData(ErrorDescriptionFactory.lazyListForFixes(ff), ErrorDescriptionFactory.lazyListForFixes(Arrays.<Fix>asList())), null, null, maxSize);
+
+        subhintListComponent.getView().addMouseListener (this);
+        subhintListComponent.getView().addMouseMotionListener(this);
+        subhintListComponent.setName("sub" + POPUP_NAME);
+
+        assert sublistPopup == null;
+        sublistPopup = getPopupFactory().getPopup(
+                comp, subhintListComponent, p.x, p.y);
+        sublistPopup.show();
     }
     
     boolean isKnownComponent(Component c) {
@@ -599,7 +649,8 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             } else if ( e.getModifiersEx() == 0 ) {
                 if (popupShowing) {
                     Fix f = null;
-                    Object selected = hintListComponent.getView().getSelectedValue();
+                    ScrollCompletionPane listPane = subhintListComponent != null ? subhintListComponent : hintListComponent;
+                    Object selected = listPane.getView().getSelectedValue();
                     
                     if (selected instanceof Fix) {
                         f = (Fix) selected;
@@ -620,10 +671,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 cancel.set(true);
             }
         } else if ( popupShowing ) {
-            InputMap input = hintListComponent.getInputMap();
+            ScrollCompletionPane listPane = subhintListComponent != null ? subhintListComponent : hintListComponent;
+            InputMap input = listPane.getInputMap();
             Object actionTag = input.get(KeyStroke.getKeyStrokeForEvent(e));
             if (actionTag != null) {
-                Action a = hintListComponent.getActionMap().get(actionTag);
+                Action a = listPane.getActionMap().get(actionTag);
                 a.actionPerformed(null);
                 e.consume();
                 return ;
@@ -798,6 +850,14 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         for (PositionRefresher ref : refreshers) {
             Map<String, List<ErrorDescription>> layer2Errs = ref.getErrorDescriptionsAt(context, doc);
             getAnnotationHolder(doc).setErrorsForLine(pos, layer2Errs);
+        }
+    }
+
+    public void undoOnePopup() {
+        if (sublistPopup != null) {
+            closeSubList();
+        } else {
+            removePopups();
         }
     }
 

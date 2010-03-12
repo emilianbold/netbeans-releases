@@ -414,7 +414,139 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
     }
 
-    
+    // alignment
+    public boolean alignMultilineMethodParams() {
+        return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
+    }
+
+    public boolean alignMultilineCallArgs() {
+        return preferences.getBoolean(alignMultilineCallArgs, getDefaultAsBoolean(alignMultilineCallArgs));
+    }
+
+    public boolean alignMultilineAnnotationArgs() {
+        return preferences.getBoolean(alignMultilineAnnotationArgs, getDefaultAsBoolean(alignMultilineAnnotationArgs));
+    }
+
+    public boolean alignMultilineImplements() {
+        return preferences.getBoolean(alignMultilineImplements, getDefaultAsBoolean(alignMultilineImplements));
+    }
+
+    public boolean alignMultilineThrows() {
+        return preferences.getBoolean(alignMultilineThrows, getDefaultAsBoolean(alignMultilineThrows));
+    }
+
+    public boolean alignMultilineParenthesized() {
+        return preferences.getBoolean(alignMultilineParenthesized, getDefaultAsBoolean(alignMultilineParenthesized));
+    }
+
+    public boolean alignMultilineBinaryOp() {
+        return preferences.getBoolean(alignMultilineBinaryOp, getDefaultAsBoolean(alignMultilineBinaryOp));
+    }
+
+    public boolean alignMultilineTernaryOp() {
+        return preferences.getBoolean(alignMultilineTernaryOp, getDefaultAsBoolean(alignMultilineTernaryOp));
+    }
+
+    public boolean alignMultilineAssignment() {
+        return preferences.getBoolean(alignMultilineAssignment, getDefaultAsBoolean(alignMultilineAssignment));
+    }
+
+    public boolean alignMultilineFor() {
+        return preferences.getBoolean(alignMultilineFor, getDefaultAsBoolean(alignMultilineFor));
+    }
+
+    public boolean alignMultilineArrayInit() {
+        return preferences.getBoolean(alignMultilineArrayInit, getDefaultAsBoolean(alignMultilineArrayInit));
+    }
+
+    public boolean placeElseOnNewLine() {
+        return preferences.getBoolean(placeElseOnNewLine, getDefaultAsBoolean(placeElseOnNewLine));
+    }
+
+    public boolean placeWhileOnNewLine() {
+        return preferences.getBoolean(placeWhileOnNewLine, getDefaultAsBoolean(placeWhileOnNewLine));
+    }
+
+    public boolean placeCatchOnNewLine() {
+        return preferences.getBoolean(placeCatchOnNewLine, getDefaultAsBoolean(placeCatchOnNewLine));
+    }
+
+    public boolean placeNewLineAfterModifiers() {
+        return preferences.getBoolean(placeNewLineAfterModifiers, getDefaultAsBoolean(placeNewLineAfterModifiers));
+    }
+
+    // Wrapping ----------------------------------------------------------------
+
+    public WrapStyle wrapExtendsImplementsKeyword() {
+        String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapExtendsImplementsList() {
+        String wrap = preferences.get(wrapExtendsImplementsList, getDefaultAsString(wrapExtendsImplementsList));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapMethodParams() {
+        String wrap = preferences.get(wrapMethodParams, getDefaultAsString(wrapMethodParams));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapMethodCallArgs() {
+        String wrap = preferences.get(wrapMethodCallArgs, getDefaultAsString(wrapMethodCallArgs));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapChainedMethodCalls() {
+        String wrap = preferences.get(wrapChainedMethodCalls, getDefaultAsString(wrapChainedMethodCalls));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapArrayInit() {
+        String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapFor() {
+        String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapForStatement() {
+        String wrap = preferences.get(wrapForStatement, getDefaultAsString(wrapForStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapIfStatement() {
+        String wrap = preferences.get(wrapIfStatement, getDefaultAsString(wrapIfStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapWhileStatement() {
+        String wrap = preferences.get(wrapWhileStatement, getDefaultAsString(wrapWhileStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapDoWhileStatement() {
+        String wrap = preferences.get(wrapDoWhileStatement, getDefaultAsString(wrapDoWhileStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapBinaryOps() {
+        String wrap = preferences.get(wrapBinaryOps, getDefaultAsString(wrapBinaryOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapTernaryOps() {
+        String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapAssignOps() {
+        String wrap = preferences.get(wrapAssignOps, getDefaultAsString(wrapAssignOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         public CodeStyle create(Preferences preferences) {
@@ -427,5 +559,11 @@ public final class CodeStyle {
         NEW_LINE,
 	NEW_LINE_INDENTED,
         PRESERVE_EXISTING
+    }
+
+    public enum WrapStyle {
+        WRAP_ALWAYS,
+        //WRAP_IF_LONG,
+        WRAP_NEVER
     }
 }

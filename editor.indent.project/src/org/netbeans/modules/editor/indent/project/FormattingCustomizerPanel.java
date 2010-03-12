@@ -58,6 +58,9 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JSpinner;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -175,6 +178,23 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                 }
             }
         }
+
+        // XXX: just use whatever value, it's ignored anyway, this is here in order
+        // to fire property change events on documents, which are then intercepted by
+        // the new view hierarchy (DocumentView)
+        SwingUtilities.invokeLater(new Runnable() {
+            public @Override void run() {
+                JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
+                if (lastFocused != null) {
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                }
+                for(JTextComponent jtc : EditorRegistry.componentList()) {
+                    if (lastFocused == null || lastFocused != jtc) {
+                        jtc.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                    }
+                }
+            }
+        });
     }
 
     public HelpCtx getHelpCtx() {
@@ -321,6 +341,7 @@ private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.SPACES_PER_TAB);
             copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.TAB_SIZE);
             copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.TEXT_LIMIT_WIDTH);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.TEXT_LINE_WRAP);
 
             if (mimeType.length() > 0 && copied) {
                 projectPrefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, true);
@@ -611,6 +632,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                         pp.remove(SimpleValueNames.SPACES_PER_TAB);
                         pp.remove(SimpleValueNames.TAB_SIZE);
                         pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                        pp.remove(SimpleValueNames.TEXT_LINE_WRAP);
                     }
                     pp.remove(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
                 }

@@ -159,5 +159,16 @@ public class KenaiSupportImpl extends KenaiSupport {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
     }
 
+    @Override
+    public void refresh(Query query, boolean synchronously) {
+        assert query instanceof BugzillaQuery;
+        BugzillaQuery bq = (BugzillaQuery) query;
+        if(synchronously) {
+            bq.refresh();
+        } else {
+            bq.getController().onRefresh();
+        }
+    }
+
 }
 

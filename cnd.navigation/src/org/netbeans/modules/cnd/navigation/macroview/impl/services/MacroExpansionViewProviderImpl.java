@@ -88,7 +88,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         if (mainDoc == null) {
             return;
         }
-        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
             return;
         }

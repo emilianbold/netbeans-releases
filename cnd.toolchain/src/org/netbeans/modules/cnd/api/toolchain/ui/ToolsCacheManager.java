@@ -39,6 +39,7 @@
 package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -69,6 +70,14 @@ public abstract class ToolsCacheManager {
 
     public static ToolsCacheManager createInstance(boolean initialize){
         return new ToolsCacheManagerImpl(initialize);
+    }
+
+    public static void addChangeListener(ChangeListener l) {
+        ToolsCacheManagerImpl.addChangeListener(l);
+    }
+
+    public static void removeChangeListener(ChangeListener l) {
+        ToolsCacheManagerImpl.removeChangeListener(l);
     }
 
     protected ToolsCacheManager() {

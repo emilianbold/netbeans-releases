@@ -127,7 +127,6 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
     static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
     static final String LABEL_NAME_PRODUCT      = "bugzilla.issue.product";     // NOI18N
     static final String LABEL_NAME_COMPONENT    = "bugzilla.issue.component";   // NOI18N
@@ -239,7 +238,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
                                               BugtrackingUtil.getColumnWidthInPixels(6, t)));
-            ret.add(new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+            ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
             ret.add(BugzillaUtil.isNbRepository(repository)
@@ -576,7 +575,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
      * @param f
      * @return
      */
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
         return getFieldValue(f, data);
     }
 

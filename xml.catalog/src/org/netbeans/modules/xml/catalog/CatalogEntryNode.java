@@ -70,6 +70,7 @@ import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.TopComponent;
 
 /**
  * Node representing single catalog entry. It can be viewed.
@@ -247,18 +248,15 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
 
         //#20646 associate the entry node with editor top component
         protected CloneableEditor createCloneableEditor() {
-            CloneableEditor editor = super.createCloneableEditor();
+            CloneableEditor editor = new CloneableEditor(this) {
+                public @Override int getPersistenceType() {
+                    return TopComponent.PERSISTENCE_NEVER;
+                }
+            };
             editor.setActivatedNodes(new Node[] {CatalogEntryNode.this});
             return editor;
         }
 
-        /**
-         * Do not write it down, it is runtime view. #20007
-         */
-        private Object writeReplace() {
-            return null;
-        }
-                
     }    
     
     

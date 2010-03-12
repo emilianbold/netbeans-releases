@@ -249,10 +249,10 @@ public abstract class CsmFileTaskFactory {
         if (fo != null) {
             Document doc = CsmUtilities.getDocument(fo);
             if (doc != null) {
-                csmFile = CsmUtilities.getCsmFile(doc, false);
+                csmFile = CsmUtilities.getCsmFile(doc, false, false);
             }
             if (csmFile == null) {
-                csmFile = CsmUtilities.getCsmFile(fo, false);
+                csmFile = CsmUtilities.getCsmFile(fo, false, false);
             }
             if (allowStandalone && csmFile == null) {
                 csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
@@ -388,7 +388,7 @@ public abstract class CsmFileTaskFactory {
                                     if (doc != null) {
                                         synchronized (fileTaskFactoryLock) {
                                             runTask(fobj, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                                            fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false)));
+                                            fobj2task.put(fobj, new TaskData(lazyRunner(), CsmUtilities.getCsmFile(doc, false, false)));
                                         }
                                     }
                                 }

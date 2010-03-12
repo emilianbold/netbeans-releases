@@ -115,6 +115,16 @@ class StackEntry {
                         paren--;
                         break;
                     }
+                    case CASE:
+                    case DEFAULT:
+                    {
+                        if (paren == 0 && curly == 0 && triangle == 0) {
+                            likeToArrayInitialization = false;
+                            likeToFunction = false;
+                            return;
+                        }
+                        break;
+                    }
                     case RBRACE: //("}", "separator"),
                     case LBRACE: //("{", "separator"),
                     case SEMICOLON: //(";", "separator"),
@@ -278,7 +288,7 @@ class StackEntry {
     public String toString(){
         StringBuilder buf = new StringBuilder(kind.name());
         if (importantKind != null && kind != importantKind){
-            buf.append("("+importantKind.name()+")"); // NOI18N
+            buf.append("(").append(importantKind.name()).append(")"); // NOI18N
         } else if (likeToFunction) {
             buf.append("(FUNCTION)"); // NOI18N
         } else if (likeToArrayInitialization) {

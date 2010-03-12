@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
 
@@ -80,11 +80,11 @@ public class PlatformNone extends Platform {
                 libName = libName.substring(3);
             }
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
-                    +  IpeUtils.escapeOddCharacters(libDir)
+                    +  CndPathUtilitities.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + IpeUtils.escapeOddCharacters(libName);
+                    + CndPathUtilitities.escapeOddCharacters(libName);
         } else {
-            return IpeUtils.escapeOddCharacters(libPath);
+            return CndPathUtilitities.escapeOddCharacters(libPath);
         }
     }
 }

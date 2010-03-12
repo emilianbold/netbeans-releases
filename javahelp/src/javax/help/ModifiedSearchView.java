@@ -42,19 +42,14 @@
 package javax.help;
 
 import java.util.Hashtable;
-import java.awt.Component;
 import java.util.Locale;
-import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 
 /**
- * Navigational View information for a Search
- *
- * @author Eduardo Pelegri-Llopart
- * @version	1.5	01/29/99
+ * @deprecated only here for binary compatibility with old help sets.
+ *             Use javax.help.SearchView instead.
  */
 
+@Deprecated
 public class ModifiedSearchView extends SearchView {
 
     public ModifiedSearchView(HelpSet hs,
@@ -62,7 +57,6 @@ public class ModifiedSearchView extends SearchView {
             String label,
             Hashtable params) {
         super(hs, name, label, hs.getLocale(), params);
-        installUI();
     }
 
     public ModifiedSearchView(HelpSet hs,
@@ -71,17 +65,6 @@ public class ModifiedSearchView extends SearchView {
             Locale locale,
             Hashtable params) {
         super(hs, name, label, locale, params);
-        installUI();
     }
 
-    protected void installUI() {
-        LookAndFeel lnf = UIManager.getLookAndFeel();
-        UIDefaults table = UIManager.getLookAndFeelDefaults();
-        Object[] uiDefaults = {"ModifiedHelpSearchNavigatorUI", "javax.help.plaf.basic.ModifiedBasicSearchNavigatorUI"};
-        table.putDefaults(uiDefaults);
-    }
-
-    public Component createNavigator(HelpModel model) {
-        return new ModifiedJHelpSearchNavigator(this, model);
-    }
 }

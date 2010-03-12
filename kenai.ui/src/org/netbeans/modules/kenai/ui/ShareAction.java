@@ -41,22 +41,20 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.DialogDisplayer;
@@ -66,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.WindowManager;
 
@@ -74,6 +73,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
     private static ShareAction inst = null;
 
     private ShareAction() {
+        putValue(NAME, NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
     }
 
     public static synchronized ShareAction getDefault() {
@@ -126,7 +126,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
             }
             if (Subversion.isClientAvailable(true)) {
 
-                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e,KenaiManager.getDefault().getKenai("https://kenai.com")));
+                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e,Utilities.getPreferredKenai()));
                 // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
                 wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
                 wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
@@ -150,50 +150,39 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
 
         }
 
-        private boolean inDashboard(Project proj) {
-            assert proj != null;
-            ProjectHandle[] openProjects = DashboardImpl.getInstance().getOpenProjects();
-            for (int i = 0; i < openProjects.length; i++) {
-                ProjectHandle projectHandle = openProjects[i];
-                if (projectHandle == null) {
-                    continue;
-                }
-                List<SourceHandle> sources = SourceAccessorImpl.getDefault().getSources(projectHandle);
-                for (SourceHandle sourceHandle : sources) {
-                    if (sourceHandle == null) {
-                        continue;
-                    }
-                    for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
-                        if (nbProjectHandle == null) continue;
-                        Project p = ((NbProjectHandleImpl) nbProjectHandle).getProject();
-                        if (p != null && p.equals(proj)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
+        @Override
         public JMenuItem getPopupPresenter() {
+            final JMenuItem i = new JMenuItem(this);
+            i.setVisible(true);
+
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
             if (n.length > 0) {
                 if (n.length == 1) {
-                    Project prj  = n[0].getLookup().lookup(Project.class);
-                    if (prj==null) {
+                    final Project prj = n[0].getLookup().lookup(Project.class);
+                    if (prj == null) {
                         Logger.getLogger(ShareAction.class.getName()).fine("ShareAction: cannot find project for node " + n[0].getDisplayName());
-                    } else if (inDashboard(prj)) {
-                        JMenuItem dummy = new JMenuItem();
-                        dummy.setVisible(false);
-                        return dummy;
+                    } else {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                String remoteLocation = (String) prj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N)
+                                if (KenaiProject.getNameForRepository(remoteLocation) != null) {
+                                    SwingUtilities.invokeLater(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            i.setVisible(false);
+                                            ((JPopupMenu) i.getParent()).pack();
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     }
                 }
-                return new JMenuItem(this);
-            } else {
-                JMenuItem dummy = new JMenuItem();
-                dummy.setVisible(false);
-                return dummy;
             }
+            return i;
         }
     }
 }

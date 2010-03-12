@@ -56,13 +56,16 @@ import org.openide.util.WeakListeners;
  */
 public class KenaiComboModel extends AbstractListModel implements ComboBoxModel {
 
-    private Object selected = getElementAt(0);
+    private Object selected = (getElementAt(0) instanceof Kenai)?getElementAt(0):null;
     private List<Kenai.Status> statuses;
     private int addNew = 1;
 
     private PropertyChangeListener listener = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if (selected == evt.getOldValue()) {
+                selected = Utilities.getPreferredKenai();
+            }
             fireContentsChanged(evt.getSource(), 0, getSize());
         }
     };
@@ -72,6 +75,7 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
     }
 
     public KenaiComboModel(boolean addNew, Kenai.Status... statuses) {
+        this();
         this.statuses = Arrays.asList(statuses);
         this.addNew = addNew?1:0;
     }

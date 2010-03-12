@@ -77,6 +77,8 @@ import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
+import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.openide.util.ImageUtilities;
 
@@ -404,6 +406,7 @@ public class Annotator {
             actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
+            actions.add(SystemAction.get(UpdateToAction.class));
             actions.add(null);
             actions.add(SystemAction.get(StatusAction.class));
             actions.add(SystemAction.get(DiffAction.class));
@@ -416,6 +419,7 @@ public class Annotator {
             actions.add(SystemAction.get(CreateCopyAction.class));
             actions.add(SystemAction.get(SwitchToAction.class));
             actions.add(SystemAction.get(MergeAction.class));
+            actions.add(SystemAction.get(ExportAction.class));
             actions.add(null);
             actions.add(SystemAction.get(BlameAction.class));
             actions.add(SystemAction.get(SearchHistoryAction.class));
@@ -444,11 +448,13 @@ public class Annotator {
                 if (onlyProjects) {
                     actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
                 }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateToAction.class), loc.getString("CTL_PopupMenuItem_UpdateTo"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExportAction.class), loc.getString("CTL_PopupMenuItem_Export"), context));
                 actions.add(null);
                 if (!onlyFolders) {
                     actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
@@ -465,6 +471,10 @@ public class Annotator {
                                                                 ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ?
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") :
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
+                        ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
+                        ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
+                        : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(

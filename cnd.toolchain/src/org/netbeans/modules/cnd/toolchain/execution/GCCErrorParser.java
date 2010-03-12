@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 public final class GCCErrorParser extends ErrorParser {
 
@@ -72,6 +73,7 @@ public final class GCCErrorParser extends ErrorParser {
     private Stack<Integer> relativesLevel = new Stack<Integer>();
     private ArrayList<StackIncludeItem> errorInludes = new ArrayList<StackIncludeItem>();
     private boolean isEntered;
+    private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
 
     public GCCErrorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(execEnv, relativeTo);
@@ -257,13 +259,18 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, new OutputListenerImpl(item.fo, item.lineNumber, important));
+                                res.add(item.line, listenerFactory.register(item.fo, item.lineNumber, important,
+                                        NbBundle.getMessage(GCCErrorParser.class, "HINT_IncludedFrom"))); // NOI18N
                             } else {
                                 res.add(item.line, null);
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1, important));
+                        String description = null;
+                        if (m.groupCount()<= 4) {
+                            description = m.group(4);
+                        }
+                        res.add(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
                         return res;
                     }
                 }

@@ -205,12 +205,17 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
     public class PropertiesTableCellRenderer extends DefaultTableCellRenderer {
            
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int columnIndex) {
+            int newLinePos;
+            if (value instanceof String && (newLinePos = ((String) value).indexOf("\n")) > -1) { //NOI18N
+                value = ((String) value).substring(0, newLinePos) + "..."; //NOI18N
+            }
             Component renderer =  super.getTableCellRendererComponent(table, value, hasFocus, hasFocus, rowIndex, columnIndex);
             if ((rowIndex < tableModel.getRowCount()) && (renderer instanceof JComponent)) {
                 String strValue = tableModel.getNode(sorter.modelIndex(rowIndex)).getValue(); 
-                ((JComponent) renderer).setToolTipText(strValue);
+                ((JComponent) renderer).setToolTipText(strValue.replace("\n", " ")); //NOI18N
+            } else if (value != null) {
+                setToolTipText(value.toString());
             }
-            setToolTipText(value.toString());
             return renderer;
         }
     }

@@ -109,8 +109,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
             @Override
             public RailsVersion call() throws Exception {
-                String version = RailsProjectUtil.getRailsVersion(GeneratorPanel.this.project);
-                return version != null ? RailsProjectUtil.versionFor(version) : new RailsVersion(0);
+                return RailsProjectUtil.getRailsVersion(GeneratorPanel.this.project);
             }
         });
 
@@ -390,7 +389,6 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
-        String railsVersion = RailsProjectUtil.getRailsVersion(project);
 
         List<Generator> foundBuiltins = new ArrayList<Generator>();
 
@@ -399,34 +397,29 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             scan(generators, railsInstall, 
                 "lib/rails_generator/generators/components", null, added); // NOI18N
         } else if (gemManager != null) {
-            if (railsVersion == null) {
-                railsVersion = gemManager.getLatestVersion("rails"); // NOI18N
-            }
-            if (railsVersion != null) {
-                for (File repo : gemManager.getRepositories()) {
-                    File gemDir = new File(repo, "gems"); // NOI18N
-                    if (!gemDir.exists()) {
+            for (File repo : gemManager.getRepositories()) {
+                File gemDir = new File(repo, "gems"); // NOI18N
+                if (!gemDir.exists()) {
+                    continue;
+                }
+                // both rails and railties may contain generators
+                String[] gemsToTry = {"rails", "railties"};
+                for (String gemToTry : gemsToTry) {
+                    String path = gemToTry + "-" + getRailsVersion().asString();
+                    File railsDir = new File(gemDir, path); // NOI18N
+                    if (!railsDir.exists()) {
                         continue;
                     }
-                    // both rails and railties may contain generators
-                    String[] gemsToTry = {"rails", "railties"};
-                    for (String gemToTry : gemsToTry) {
-                        String path = gemToTry + "-" + railsVersion;
-                        File railsDir = new File(gemDir, path); // NOI18N
-                        if (!railsDir.exists()) {
-                            continue;
-                        }
-                        railsInstall = FileUtil.toFileObject(railsDir);
-                        scan(foundBuiltins, railsInstall,
-                                "lib/rails_generator/generators/components", null, added); // NOI18N
-                        scan(foundBuiltins, railsInstall,
-                                "lib//generators/rails", null, added); // NOI18N
-                    }
+                    railsInstall = FileUtil.toFileObject(railsDir);
+                    scan(foundBuiltins, railsInstall,
+                            "lib/rails_generator/generators/components", null, added); // NOI18N
+                    scan(foundBuiltins, railsInstall,
+                            "lib//generators/rails", null, added); // NOI18N
                 }
             }
         }
 
-        List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion, foundBuiltins);
+        List<Generator> builtins = Generator.getBuiltinGenerators(getRailsVersion().asString(), foundBuiltins);
         for (Generator builtin : builtins) {
             add(builtin, generators);
         }
@@ -465,8 +458,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     
     Script getScript() {
         String action = destroyButton.isSelected() ? "destroy" : "generate"; //NOI18N
-        boolean rails3 = getRailsVersion().compareTo(new RailsVersion(3)) >= 0;
-        if (!rails3) {
+        if (!getRailsVersion().isRails3OrHigher()) {
             return new Script(action);
         }
         // in rails 3 there is just the 'rails' script; usage is

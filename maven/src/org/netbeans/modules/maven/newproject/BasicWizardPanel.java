@@ -89,6 +89,7 @@ public class BasicWizardPanel implements WizardDescriptor.Panel,
         return validationGroup;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new BasicPanelVisual(this);

@@ -21,6 +21,7 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.lib.terminalemulator</package>
+                <package>org.netbeans.lib.terminalemulator.support</package>
             </public-packages>
         </data>
     </configuration>

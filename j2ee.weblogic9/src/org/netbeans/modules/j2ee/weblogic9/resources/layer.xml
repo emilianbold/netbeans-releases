@@ -103,8 +103,9 @@ made subject to such option by the copyright holder.
                     etc.
                 -->
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.weblogic9.Bundle#TXT_displayName"/>
                 </file>

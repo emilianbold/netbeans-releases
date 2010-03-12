@@ -134,7 +134,7 @@ public abstract class BuildSampleApplicationBase extends TestBase {
         return et.result();
     }
 
-    public void testAnInitAndClean() throws Exception {
+    public void testAntInitAndClean() throws Exception {
         int ret = runAntTargetsOnSample(new String[]{"clean"});
         assertEquals("build successful", 0, ret);
 
@@ -176,12 +176,12 @@ public abstract class BuildSampleApplicationBase extends TestBase {
         File buildFolder = new File(sampleFolder,"build");
         File updatesFolder = new File(buildFolder,"updates");
         assertTrue("build/update folder exists", updatesFolder.exists() && updatesFolder.isDirectory());
-        File showBundles = new File(updatesFolder, "org-netbeans-demo-osgi-showbundles.nbm");
+        File showBundles = new File(updatesFolder, "org-netbeans-demo-osgi-showbundles.jar");
         assertTrue("Our NBM is in build/updates folder", showBundles.exists());
         assertEquals("1 nbm is in build/updates folder", 1, updatesFolder.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.indexOf("nbm") != -1;
+                return name.matches(".+[.](nbm|jar)$");
             }
         }).length);
     }

@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.OSGiSourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
@@ -112,6 +113,7 @@ public final class SuiteProject implements Project {
     private final PropertyEvaluator eval;
     private final GeneratedFilesHelper genFilesHelper;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public SuiteProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -121,6 +123,7 @@ public final class SuiteProject implements Project {
             this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
+            helper.createAuxiliaryProperties(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
@@ -133,7 +136,8 @@ public final class SuiteProject implements Project {
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
             new TemplateAttributesProvider(null, helper, false),
-            new FileEncodingQueryImpl());
+            new FileEncodingQueryImpl(),
+            new OSGiSourceForBinaryImpl(this));
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     

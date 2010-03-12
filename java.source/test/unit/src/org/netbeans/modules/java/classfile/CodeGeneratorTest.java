@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.classfile;
@@ -78,28 +78,40 @@ public class CodeGeneratorTest extends NbTestCase {
     }
 
     public void testAnnotationDeclaration() throws Exception {
-        performTest("package test; import test.Test.E; import java.lang.annotation.Retention; import java.lang.annotation.RetentionPolicy; class Test {\n" +
+        performTest("package test; import test.Test.A; import test.Test.E; import java.lang.annotation.Retention; import java.lang.annotation.RetentionPolicy; class Test {\n" +
                     "@Retention(RetentionPolicy.CLASS)\n" +
                     "@interface TT {\n" +
                     "    public Class test1() default Object.class;\n" +
                     "    public Class test2();\n" +
                     "    public E     test3() default E.A;\n" +
                     "    public E     test4();\n" +
+                    "    public A     test5() default @A(attr1=\"a\");\n" +
+                    "    public A[]   test6() default {@A(attr1=\"a\", attr2=\"b\")};\n" +
                     "}\n" +
                     "enum E {\n" +
                     "    A, B;\n" +
                     "}\n" +
+                    "@interface A {\n" +
+                    "    public String attr1();\n" +
+                    "    public String attr2() default \"\";\n" +
+                    "}\n" +
                     "}\n",
-                    "package test; import java.lang.annotation.Retention; import java.lang.annotation.RetentionPolicy; import test.Test.E; class Test {\n" +
+                    "package test; import java.lang.annotation.Retention; import java.lang.annotation.RetentionPolicy; import test.Test.A; import test.Test.E; class Test {\n" +
                     "@Retention(value = RetentionPolicy.CLASS)\n" +
                     "@interface TT {\n" +
                     "    public Class test1() default Object.class;\n" +
                     "    public Class test2();\n" +
                     "    public E     test3() default E.A;\n" +
                     "    public E     test4();\n" +
+                    "    public A     test5() default @A(attr1 = \"a\");\n" +
+                    "    public A[]   test6() default {@A(attr1 = \"a\", attr2 = \"b\")};\n" +
                     "}\n" +
                     "enum E {\n" +
                     "    A, B\n" +
+                    "}\n" +
+                    "@interface A {\n" +
+                    "    public String attr1();\n" +
+                    "    public String attr2() default \"\";\n" +
                     "}\n" +
                     "}\n");
     }

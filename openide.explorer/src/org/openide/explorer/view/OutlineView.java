@@ -1061,12 +1061,13 @@ public class OutlineView extends JScrollPane {
                     return false;
                 }
             }
-
-            if (row != -1 && e instanceof MouseEvent &&
-                    SwingUtilities.isLeftMouseButton ((MouseEvent) e) &&
-                    ((MouseEvent) e).getClickCount() > 1) {
-                // Default action.
-                if (convertColumnIndexToModel(column) == 0) {
+            boolean res = false;
+            boolean actionPerformed = false;
+            boolean isTreeColumn = convertColumnIndexToModel(column) == 0;
+            if (isTreeColumn && row != -1 && e instanceof MouseEvent && SwingUtilities.isLeftMouseButton ((MouseEvent) e)) {
+                int clickCount = ((MouseEvent) e).getClickCount();
+                if (clickCount > 1) {
+                    // Default action.
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
                         if (node.isLeaf () && !node.canRename()) {
@@ -1075,6 +1076,7 @@ public class OutlineView extends JScrollPane {
                             if (a != null) {
                                 if (a.isEnabled ()) {
                                     a.actionPerformed (new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                                    return false;
                                 } else {
                                     Logger.getLogger (OutlineView.class.getName ()).info ("Action " + a + " on node " + node + " is disabled");
                                 }
@@ -1083,16 +1085,14 @@ public class OutlineView extends JScrollPane {
                     }
                 }
             }
-            boolean res = super.editCellAt(row, column, e);
-            if( !res && e instanceof MouseEvent ) {
-                //try invoking custom editor on disabled cell
-            
+            if(e instanceof MouseEvent ) {
+                //try invoking custom editor
+
                 final Rectangle r = getCellRect(row, column, true);
-                boolean isTreeColumn = convertColumnIndexToModel( column ) == 0;
                 if( ((MouseEvent) e).getX() > ((r.x + r.width) - 24) && ((MouseEvent) e).getX() < (r.x + r.width) 
                     && o instanceof Node.Property
                     && !isTreeColumn ) {
-                    
+
                     Node.Property p = (Node.Property)o;
                     if( !Boolean.TRUE.equals(p.getValue("suppressCustomEditor") ) ) { //NOI18N
                         PropertyPanel panel = new PropertyPanel(p);
@@ -1120,7 +1120,7 @@ public class OutlineView extends JScrollPane {
                     }
                 }
             }
-            return res;
+            return super.editCellAt(row, column, e);
         }
         
         @Override

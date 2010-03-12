@@ -44,7 +44,6 @@ import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.eclipse.mylyn.internal.jira.core.model.Resolution;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -182,26 +181,6 @@ public class JiraIssueNode extends IssueNode {
             String s1 = (resolution == null) ? "" : resolution.getName(); // NOI18N
             resolution = ((NbJiraIssue)p.getIssue()).getResolution();
             String s2 = (resolution == null) ? "" : resolution.getName(); // NOI18N
-            return s1.compareTo(s2);
-        }
-    }
-    
-    public class SummaryProperty extends IssueProperty<String> {
-        public SummaryProperty() {
-            super(NbJiraIssue.LABEL_NAME_SUMMARY,
-                  String.class,
-                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
-                  NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
-        }
-        @Override
-        public String getValue() {
-            return getNbJiraIssue().getSummary();
-        }
-        @Override
-        public int compareTo(IssueProperty p) {
-            if(p == null) return 1;
-            String s1 = getIssue().getSummary();
-            String s2 = p.getIssue().getSummary();
             return s1.compareTo(s2);
         }
     }

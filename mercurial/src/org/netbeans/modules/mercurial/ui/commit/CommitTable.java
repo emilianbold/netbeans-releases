@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import java.io.File;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.TableSorter;
@@ -89,6 +90,8 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private TableSorter         sorter;
     private String[]            columns;
     private String[]            sortByColumns;
+    private CommitPanel commitPanel;
+    private Set<File> modifiedFiles = Collections.<File>emptySet();
     
     
     public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
@@ -347,6 +350,19 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = table.getSelectedRows();
+                HgFileNode[] nodes = new HgFileNode[rows.length];
+                for (int i = 0; i < rows.length; ++i) {
+                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+                }
+                commitPanel.openDiff(nodes);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item.setEnabled(commitPanel != null);
         return menu;
     }
 
@@ -377,6 +393,14 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         // not interested
     }
 
+    void setCommitPanel(CommitPanel panel) {
+        this.commitPanel = panel;
+    }
+
+    void setModifiedFiles(Set<File> modifiedFiles) {
+        this.modifiedFiles = modifiedFiles;
+    }
+
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
@@ -390,12 +414,15 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 HgFileNode node = model.getNode(sorter.modelIndex(row));
                 CommitOptions options = model.getOptions(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = "<html>" + Mercurial.getInstance().getMercurialAnnotator().annotateNameHtml(  // NOI18N
-                           node.getFile().getName(), node.getInformation(), null);
+                    value = Mercurial.getInstance().getMercurialAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), null);
                 }
                 if (options == CommitOptions.EXCLUDE) {
-                    value = "<html><s>" + value + "</s></html>"; // NOI18N
+                    value = "<s>" + value + "</s>"; // NOI18N
                 }
+                if (modifiedFiles.contains(node.getFile())) {
+                    value = "<strong>" + value + "</strong>"; //NOI18N
+                }
+                value = "<html>" + value + "</html>"; //NOI18N
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (CommitTableModel.COLUMN_NAME_PATH.equals(columns[col])) {
                 return pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

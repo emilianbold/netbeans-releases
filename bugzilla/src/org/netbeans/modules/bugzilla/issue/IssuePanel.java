@@ -227,6 +227,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public void setIssue(BugzillaIssue issue) {
+        assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
@@ -298,16 +299,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
-        if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
-            Node[] selection = issue.getSelection();
-            if(selection == null) {
-                // XXX not sure why we need this - i'm going to keep it for now,
-                // doesn't seem to harm
-                selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (issue.isNew()) {
+            if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
+                Node[] selection = issue.getSelection();
+                if(selection == null) {
+                    // XXX not sure why we need this - i'm going to keep it for now,
+                    // doesn't seem to harm
+                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                }
+                ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+                addNetbeansInfo();
             }
-            ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+            selectProduct();
         }
-        selectProduct();
 
         // Hack to "link" the width of both columns
         Dimension dim = ccField.getPreferredSize();
@@ -327,9 +331,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 selectInCombo(componentCombo, component, true);
             }
         } else {
-            if(issue.getRepository() instanceof KenaiRepository) {
-                String productName = ((KenaiRepository)issue.getRepository()).getProductName();
+            BugzillaRepository repository = issue.getBugzillaRepository();
+            if (repository instanceof KenaiRepository) {
+                String productName = ((KenaiRepository)repository).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else if (BugzillaUtil.isNbRepository(repository)) {
+                // Issue 181224
+                String defaultProduct = "ide"; // NOI18N
+                String defaultComponent = "Code"; // NOI18N
+                productCombo.setSelectedItem(defaultProduct);
+                componentCombo.setSelectedItem(defaultComponent);
             } else {
                 productCombo.setSelectedIndex(0);
             }
@@ -523,7 +534,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
-        if (force) {
+        if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
         updateTasklistButton();
@@ -2536,6 +2547,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    private void addNetbeansInfo() {
+        String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.newIssue.netbeansInfo"); // NOI18N
+        Object[] info = new Object[] {
+            getProductVersionValue(),
+            System.getProperty("os.name", "unknown"), // NOI18N
+            System.getProperty("os.version", "unknown"), // NOI18N
+            System.getProperty("os.arch", "unknown"),  // NOI18N
+            System.getProperty("java.version", "unknown"), // NOI18N
+            System.getProperty("java.vm.name", "unknown"), // NOI18N
+            System.getProperty("java.vm.version", "") // NOI18N
+        };
+        String infoTxt = MessageFormat.format(format, info);
+        addCommentArea.setText(infoTxt);
+    }
+
+    public static String getProductVersionValue () {
+        return MessageFormat.format(
+            NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+            new Object[] {System.getProperty("netbeans.buildnumber")});                         // NOI18N
     }
 
     class CancelHighlightDocumentListener implements DocumentListener {

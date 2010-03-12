@@ -11,7 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class CopyTemplatePageTask extends Task {
             put (JNLP_FILE, new BaseNamePropertyValue("jnlp.file", "launch.jnlp")); //NOI18N
             put (JNLP_APPLET_WIDTH, new PropertyValue("jnlp.applet.width","300"));//NOI18N
             put (JNLP_APPLET_HEIGHT, new PropertyValue("jnlp.applet.height","300"));//NOI18N
-            put (JNLP_RESOURCES_MAIN_JAR, new BaseNamePropertyValue("dist.jar", ""));   //NOI18N
+            put (JNLP_RESOURCES_MAIN_JAR, new DistJarExecValue("dist.jar", "lib" ,", ", ""));   //NOI18N
             put (JNLP_APPLET_CLASS, new PropertyValue("jnlp.applet.class", ""));//NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
@@ -157,8 +157,48 @@ public class CopyTemplatePageTask extends Task {
             super(propName, defaultValue);
         }
 
+        @Override
         public String call() throws Exception {
             return stripFilename(super.call());
+        }
+    }
+
+    private class DistJarExecValue extends PropertyValue {
+
+        private final String libFolderName;
+        private final String separator;
+
+        public DistJarExecValue(final String mainJarPropName,
+                final String libFolderName,
+                final String separator,
+                final String defaultValue) {
+            super (mainJarPropName, defaultValue);
+            assert libFolderName != null;
+            assert separator != null;
+            this.libFolderName = libFolderName;
+            this.separator = separator;
+        }
+
+        @Override
+        public String call() throws Exception {
+            //Main jar
+            final StringBuilder sb = new StringBuilder();
+            sb.append(stripFilename(super.call()));
+            //Main jar classpath
+            final File libFolder = new File (destDir,libFolderName);
+            final File[] libs = libFolder.listFiles();
+            if (libs != null) {
+                final URI destDirURI = destDir.toURI();
+                for (File lib : libs) {
+                    final URI libURI = lib.toURI();
+                    final String relativePath = destDirURI.relativize(libURI).toString();
+                    if (sb.length() > 0) {
+                        sb.append(separator);
+                    }
+                    sb.append(relativePath);
+                }
+            }
+            return sb.toString();
         }
     }
 

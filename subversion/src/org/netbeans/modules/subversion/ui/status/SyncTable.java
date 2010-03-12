@@ -392,9 +392,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == exclude.INCLUDING) {
-            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
+            label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
         } else {
-            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
+            label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
         }
         item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());

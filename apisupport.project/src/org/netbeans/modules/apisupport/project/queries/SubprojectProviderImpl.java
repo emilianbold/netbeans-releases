@@ -52,7 +52,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -79,7 +78,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         this.project = project;
     }
     
-    public Set<? extends Project> getSubprojects() {
+    public @Override Set<? extends Project> getSubprojects() {
         // XXX could use a special set w/ lazy isEmpty() - cf. #58639 for freeform
         Set<Project> s = new HashSet<Project>();
         ModuleList ml;
@@ -154,15 +153,14 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         }
         String eval = project.evaluator().getProperty("cp.extra"); // NOI18N
         if (eval != null) {
-            String[] pieces = PropertyUtils.tokenizePath(eval);
-            for (int i = 0; i < pieces.length; i++) {
-                File jar = project.getHelper().resolveFile(pieces[i]);
+            for (String piece : PropertyUtils.tokenizePath(eval)) {
+                if (piece.contains("${")) {
+                    //Unresolved property, ignore.
+                    continue;
+                }
+                File jar = project.getHelper().resolveFile(piece);
                 Project owner = FileOwnerQuery.getOwner(jar.toURI());
                 if (owner != null) {
-                    if (ProjectUtils.getInformation(owner).getName().equals("org.netbeans.modules.apisupport.harness")) {
-                        // cp.extra=${nb_all}/apisupport.harness/external/openjdk-javac-6-b12.jar is not a real dep
-                        continue;
-                    }
                     s.add(owner);
                 }
             }
@@ -170,11 +168,11 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         return s;
     }
     
-    public void addChangeListener(ChangeListener listener) {
+    public @Override void addChangeListener(ChangeListener listener) {
         // XXX no impl yet
     }
     
-    public void removeChangeListener(ChangeListener listener) {
+    public @Override void removeChangeListener(ChangeListener listener) {
         // XXX
     }
     

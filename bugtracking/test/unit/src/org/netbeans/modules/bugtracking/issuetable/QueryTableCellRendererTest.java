@@ -71,13 +71,15 @@ public class QueryTableCellRendererTest {
         Color modifiedHighlightColor       = new Color(0x0000ff);
         Color obsoleteHighlightColor       = new Color(0x999999);
 
+        IssueTable issueTable = new IssueTable(query, new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")});
+
         // issue seen, not selected
         query.containsIssue = true;
         issue.wasSeen = true;
         issue.recentChanges = "";
         boolean selected = true;
-        TableCellStyle defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
-        TableCellStyle result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
+        TableCellStyle defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
+        TableCellStyle result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
@@ -88,8 +90,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = true;
         issue.recentChanges = "";
         selected = true;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
@@ -100,8 +102,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = false;
         issue.recentChanges = "";
         selected = false;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueObsoleteFormat, result.getFormat());
@@ -112,8 +114,8 @@ public class QueryTableCellRendererTest {
         selected = true;
         issue.wasSeen = false;
         issue.recentChanges = "";
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(obsoleteHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(defaultStyle.getFormat(), result.getFormat());
@@ -125,8 +127,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = false;
         issue.recentChanges = "changed";
         query.status = IssueCache.ISSUE_STATUS_MODIFIED;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueModifiedFormat, result.getFormat());
@@ -139,8 +141,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = false;
         issue.recentChanges = "changed";
         query.status = IssueCache.ISSUE_STATUS_MODIFIED;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(modifiedHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
@@ -152,8 +154,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = false;
         issue.recentChanges = "";
         query.status = IssueCache.ISSUE_STATUS_NEW;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueNewFormat, result.getFormat());
@@ -166,8 +168,8 @@ public class QueryTableCellRendererTest {
         issue.wasSeen = false;
         issue.recentChanges = "";
         query.status = IssueCache.ISSUE_STATUS_NEW;
-        result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
+        result = QueryTableCellRenderer.getCellStyle(table, query, issueTable, property, selected, 0);
+        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
         assertEquals(newHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
@@ -182,20 +184,25 @@ public class QueryTableCellRendererTest {
     @Test
     public void testGetDefaultCellStyle() {
         JTable table = new JTable();
+        RendererQuery query = new RendererQuery();
+        RendererIssue issue = new RendererIssue();
+        IssueProperty property = new RendererNode(issue, "some value").createProperty();
+
+        IssueTable issueTable = new IssueTable(query, new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")});
         
-        TableCellStyle result = QueryTableCellRenderer.getDefaultCellStyle(table, true, 0);
+        TableCellStyle result = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, true, 0);
         assertEquals(table.getSelectionBackground(), result.getBackground()); // keep table selection colors
         assertEquals(Color.WHITE, result.getForeground());
         assertNull(result.getFormat());
         assertNull(result.getTooltip());
 
-        result = QueryTableCellRenderer.getDefaultCellStyle(table, false, 0);
+        result = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, false, 0);
         assertEquals(table.getForeground(), result.getForeground()); // keep table selection colors
         assertNull(result.getFormat());
         assertNull(result.getTooltip());
         Color unevenBackground = result.getBackground();
 
-        result = QueryTableCellRenderer.getDefaultCellStyle(table, false, 1);
+        result = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, false, 1);
         assertEquals(table.getForeground(), result.getForeground()); // keep table selection colors
         assertNull(result.getFormat());
         assertNull(result.getTooltip());
@@ -214,13 +221,13 @@ public class QueryTableCellRendererTest {
     private class RendererQuery extends Query {
         private boolean containsIssue;
         private int status;
+        private RendererRepository repository;
 
         public RendererQuery() {
         }
 
         @Override
-        public boolean isSaved() {
-            fail("implement me!!!");
+        public boolean isSaved() {            
             return false;
         }
 
@@ -242,14 +249,10 @@ public class QueryTableCellRendererTest {
 
         @Override
         public Repository getRepository() {
-            fail("implement me!!!");
-            return null;
-        }
-
-        @Override
-        public boolean refresh() {
-            fail("implement me!!!");
-            return false;
+            if(repository == null) {
+                repository = new RendererRepository();
+            }
+            return repository;
         }
 
         @Override
@@ -387,7 +390,7 @@ public class QueryTableCellRendererTest {
         }
         @Override
         public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return "testrepo";
         }
         @Override
         public String getUrl() {
@@ -455,4 +458,5 @@ public class QueryTableCellRendererTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     };
+
 }

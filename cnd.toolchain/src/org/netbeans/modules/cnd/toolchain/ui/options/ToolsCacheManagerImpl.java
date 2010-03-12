@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -59,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
  */
 public final class ToolsCacheManagerImpl extends ToolsCacheManager {
 
+    private static final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
     private ServerUpdateCache serverUpdateCache;
     private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
@@ -93,6 +96,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     @Override
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
+        fireChange(this);
     }
     
     @Override
@@ -109,7 +113,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     }
 
     @Override
-    public void addCompilerSetManager(CompilerSetManager newCsm) {
+    public synchronized void addCompilerSetManager(CompilerSetManager newCsm) {
         copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 
@@ -127,6 +131,7 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         }
 
         saveCompileSetManagers(liveServers);
+        fireChange(this);
     }
 
     public Collection<? extends ServerRecord> getHosts() {
@@ -148,20 +153,43 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         return serverUpdateCache != null;
     }
 
-    public void clear() {
+    public synchronized void clear() {
         serverUpdateCache = null;
         copiedManagers.clear();
     }
 
-    private void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
+    private synchronized void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
         Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
         for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
                 allCSMs.add(copiedManagers.get(copiedServer));
             }
         }
-        CompilerSetManagerAccessorImpl.setManagers(allCSMs);
+        CompilerSetManagerAccessorImpl.setManagers(allCSMs, liveServers);
         copiedManagers.clear();
     }
 
+    public static void addChangeListener(ChangeListener l) {
+        synchronized (changeListeners) {
+            changeListeners.add(l);
+        }
+    }
+
+    public static void removeChangeListener(ChangeListener l) {
+        synchronized (changeListeners) {
+            changeListeners.remove(l);
+        }
+    }
+
+    private static void fireChange(ToolsCacheManagerImpl manager) {
+        ChangeListener[] listenersCopy;
+        synchronized (changeListeners) {
+            listenersCopy = new ChangeListener[changeListeners.size()];
+            changeListeners.toArray(listenersCopy);
+        }
+        ChangeEvent ev = new ChangeEvent(manager);
+        for (ChangeListener l : listenersCopy) {
+            l.stateChanged(ev);
+        }
+    }
 }

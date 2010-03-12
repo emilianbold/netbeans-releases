@@ -72,6 +72,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -546,12 +547,29 @@ public class LayerUtils {
         }
         return platform;
     }
-    // TODO C.P +cluster.path
+    
     public static Set<File> getPlatformJarsForSuiteComponentProject(SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
-        String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
+        String[] includedClusters;
+        Set<ClusterInfo> clusterPath = ClusterUtils.evaluateClusterPath(suite.getProjectDirectoryFile(), eval, platform.getDestDir());
+        // cluster.path or the old definition (with enabled.clusters, disabled.clusters)?
+        if (clusterPath!=null && clusterPath.size()>0) {
+            LinkedList<String> platformClusters = new LinkedList<String>();
+            for (ClusterInfo clusterInfo : clusterPath) {
+                // cluster.path -> get platform clusters from it
+                if (clusterInfo.isPlatformCluster()) {
+                    platformClusters.add(clusterInfo.getClusterDir().getName());
+                }
+            }
+            includedClusters = platformClusters.toArray(new String[0]);
+        } else {
+            // NOT cluster.path, still the old definition with enabled.clusters, disabled.clusters
+            includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
+        }
+        // disabled.clusters list is empty when cluster.path is used
         String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
+        // disabled.modules list works for both the old definition and the new definition with cluster.path
         String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
         return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
     }
@@ -560,7 +578,7 @@ public class LayerUtils {
         ModuleList list = project.getModuleList();
         Set<NbModuleProject> projects = new HashSet<NbModuleProject>();
         projects.add(project);
-        for (ModuleEntry other : list.getAllEntriesSoft()) {
+        for (ModuleEntry other : list.getAllEntries()) {
             if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N
                 continue;
             }

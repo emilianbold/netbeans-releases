@@ -52,8 +52,6 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
@@ -64,7 +62,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -105,6 +102,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Whether this runtime accepts this connection string.
      */
+    @Override
     public boolean acceptsDatabaseURL(String url){
         return url.trim().startsWith("jdbc:derby://localhost"); // NOI18N
     }
@@ -112,6 +110,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Is database server up and running.
      */
+    @Override
     public boolean isRunning(){
         if (process!=null){
             try{
@@ -126,6 +125,7 @@ public class RegisterDerby implements DatabaseRuntime {
         
     }
     
+    @Override
     public String getJDBCDriverClass() {
         return DerbyOptions.DRIVER_CLASS_NET;
     }
@@ -133,6 +133,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Can the database be started from inside the IDE?
      */
+    @Override
     public boolean canStart(){
         // issue 81619: should only try to start if the location is set
         return DerbyOptions.getDefault().getLocation().length() > 0;
@@ -141,6 +142,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Start the database server.
      */
+    @Override
     public void start(){
         start(START_TIMEOUT);
     }
@@ -171,6 +173,7 @@ public class RegisterDerby implements DatabaseRuntime {
      */
     void postCreateNewDatabase(final String databaseName, final String user, final String password) throws Exception {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run () {
                 try {
                     // DerbyDatabases.createDatabase would start the database too, but
@@ -248,11 +251,6 @@ public class RegisterDerby implements DatabaseRuntime {
         return new String[] { "DERBY_INSTALL=" + location }; // NOI18N
     }
     
-    private JavaPlatform getJavaPlatform() {
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        return jpm.getDefaultPlatform(); 
-    }
-    
     /**
      * Start the database server, and wait some time (in milliseconds) to make sure the server is active.
      *
@@ -273,7 +271,9 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             ExecSupport ee= new ExecSupport();
             ee.setStringToLookFor("" + getPort());
-            FileObject javaFO = getJavaPlatform().findTool("java");
+            File javaExe = new File(System.getProperty("java.home"), "/bin/java");
+            assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
+            FileObject javaFO = FileUtil.toFileObject(javaExe);
             if (javaFO == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
             String java = FileUtil.toFile(javaFO).getAbsolutePath();
@@ -325,6 +325,7 @@ public class RegisterDerby implements DatabaseRuntime {
         boolean started = false;
         String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
         ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage, new Cancellable() {
+            @Override
             public boolean cancel() {
                 return execSupport.interruptWaiting();
             }
@@ -354,6 +355,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /**
      * Stop the database server.
      */
+    @Override
     public void stop(){
         try {
             if (process==null){//nothing to stop...
@@ -362,7 +364,12 @@ public class RegisterDerby implements DatabaseRuntime {
             //BufferedWriter processIn = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             //processIn.write("q\ny\n");
             //processIn.flush();
-            String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
+            File javaExe = new File(System.getProperty("java.home"), "/bin/java");
+            assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
+            FileObject javaFO = FileUtil.toFileObject(javaExe);
+            if (javaFO == null)
+                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            String java = FileUtil.toFile(javaFO).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
             // java -Dderby.system.home="<userdir/derby>" -classpath  

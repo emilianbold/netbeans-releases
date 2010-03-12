@@ -133,6 +133,11 @@ implements FileChangeListener, DataObject.Container {
     transient private boolean folderCreated = false;
     
     transient private FileChangeListener weakFCL = FileUtil.weakFileChangeListener(this, null);
+
+    static {
+        // Ensure it is loaded so that WeakListenerImpl does not have to load it later:
+        FolderListListener.class.hashCode();
+    }
     
     /* -------------------------------------------------------------------- */
     /* -- Constructor (private) ------------------------------------------- */
@@ -556,7 +561,8 @@ implements FileChangeListener, DataObject.Container {
             if (DataFolder.EA_ORDER.equals(fe.getName()) || DataFolder.EA_SORT_MODE.equals(fe.getName())) {
                 changeComparator();
             }
-        } else if (FileUtil.affectsOrder(fe)) {
+        }
+        if (FileUtil.affectsOrder(fe)) {
             changeComparator();
         }
     }

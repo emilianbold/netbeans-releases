@@ -42,7 +42,7 @@ package org.netbeans.modules.spellchecker.spi.language;
 
 import javax.swing.event.ChangeListener;
 
-/**
+/** 
  *
  * @author Jan Lahoda
  */

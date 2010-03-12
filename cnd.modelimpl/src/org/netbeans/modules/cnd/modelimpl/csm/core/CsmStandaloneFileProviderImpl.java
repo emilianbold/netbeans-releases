@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
@@ -135,7 +136,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(name);
+            CsmFile csmFile = ModelImpl.instance().findFile(name, false);
             if (csmFile != null) {
                 if (TRACE) {trace("returns file %s", csmFile);} //NOI18N
                 return csmFile;
@@ -212,7 +213,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     synchronized public void notifyClosed(CsmFile csmFile) {
         if (TRACE) {trace("checking file %s", csmFile.toString());} //NOI18N
-        String closedFilePath = ((FileImpl) csmFile).getFile().getAbsolutePath();
+        String closedFilePath = csmFile.getAbsolutePath().toString();
         for (CsmProject csmProject : ModelImpl.instance().projects()) {
             Object platformProject = csmProject.getPlatformProject();
             if (platformProject instanceof NativeProjectImpl) {
@@ -454,6 +455,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         public void runOnCodeModelReadiness(Runnable task) {
             task.run();
+        }
+
+        @Override
+	public NativeExitStatus execute(String executable, String[] env, String... args) {
+	    return null;
+        }
+        
+        @Override
+        public String getPlatformName() {
+            return null;
         }
     }
 

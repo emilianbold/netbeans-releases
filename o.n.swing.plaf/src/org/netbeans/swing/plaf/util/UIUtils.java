@@ -158,8 +158,13 @@ public final class UIUtils {
     private static Image loadWithImageIO (String s) {
         Image result = null;
         try {
-            URL url = UIUtils.class.getResource ( s );
-            result = ImageIO.read ( url );
+            URL url = UIUtils.class.getClassLoader().getResource(s);
+            if (url != null) {
+                result = ImageIO.read(url);
+            } else {
+                System.err.println("Could not load " + s + " from " + UIUtils.class.getClassLoader() +
+                        " at " + UIUtils.class.getProtectionDomain().getCodeSource().getLocation());
+            }
         } catch (Exception e) {
             System.err.println ("Error loading image using ImageIO " + s); //NOI18N
             e.printStackTrace();
@@ -454,4 +459,17 @@ public final class UIUtils {
         System.arraycopy( inputMaps, 0, res, uiDefaults.length, inputMaps.length );
         return res;
     }
+
+    public static Class<?> classForName(String n) throws ClassNotFoundException {
+        try {
+            return Class.forName(n);
+        } catch (ClassNotFoundException x) {
+            try {
+                return ClassLoader.getSystemClassLoader().loadClass(n);
+            } catch (ClassNotFoundException x2) {
+                throw x;
+            }
+        }
+    }
+
 }

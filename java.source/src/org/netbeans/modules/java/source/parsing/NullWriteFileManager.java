@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.Iterator;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaFileManager;
@@ -55,6 +57,8 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public class NullWriteFileManager extends ForwardingJavaFileManager<JavaFileManager> {
 
+    private boolean aptRequest;
+
     public NullWriteFileManager (@NonNull final JavaFileManager delegate) {
         super (delegate);
     }
@@ -62,9 +66,9 @@ public class NullWriteFileManager extends ForwardingJavaFileManager<JavaFileMana
     @Override
     public javax.tools.FileObject getFileForOutput(Location l, String pkgName, String relativeName, javax.tools.FileObject sibling)
             throws IOException, UnsupportedOperationException, IllegalArgumentException {
-            final FileObject fo = super.getFileForOutput(l, pkgName, relativeName, sibling);
+        final FileObject fo = super.getFileForOutput(l, pkgName, relativeName, sibling);
         assert fo != null;
-        return new NullFileObject((InferableJavaFileObject) fo);
+        return aptRequest ? new NullFileObject((InferableJavaFileObject) fo) : fo;
     }
 
     @Override
@@ -72,7 +76,18 @@ public class NullWriteFileManager extends ForwardingJavaFileManager<JavaFileMana
             throws IOException, UnsupportedOperationException, IllegalArgumentException {
             final JavaFileObject fo = super.getJavaFileForOutput(l, className, kind, sibling);
         assert fo != null;
-        return new NullFileObject((InferableJavaFileObject) fo);    //todo: Covariant JavaFileManager returning InferableJavaFileObject
+        return aptRequest ? new NullFileObject((InferableJavaFileObject) fo) : fo;    //todo: Covariant JavaFileManager returning InferableJavaFileObject
+    }
+
+    @Override
+    public boolean handleOption (final String option, Iterator<String> remaining) {
+        if (AptSourceFileManager.ORIGIN_FILE.equals(option)) {
+            final String value = remaining.next();
+            aptRequest = value.length() > 0;
+            assert !remaining.hasNext();
+            remaining = Collections.singleton(value).iterator();
+        }
+        return super.handleOption(option, remaining);
     }
 
     private static final class NullFileObject extends ForwardingInferableJavaFileObject {

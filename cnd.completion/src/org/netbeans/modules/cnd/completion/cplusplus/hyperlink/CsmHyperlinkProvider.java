@@ -89,10 +89,12 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmHyperlinkProvider() {
     }
 
+    @Override
     protected void performAction(final Document doc, final JTextComponent target, final int offset, final HyperlinkType type) {
         goToDeclaration(doc, target, offset, type);
     }
 
+    @Override
     protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
@@ -126,11 +128,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
-        CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true), offset);
-        if (CsmKindUtilities.isMethod(item)) {
+        CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true, false), offset);
+        if ((type == HyperlinkType.ALT_HYPERLINK) && CsmKindUtilities.isMethod(item)) {
             // popup should only be shown on *usages*, not on declaraions (definitions);
             // for latter annotatations should be used instead
-            if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true), offset)) {
+            if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true, false), offset)) {
                 CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
                 if (showOverridesPopup(meth, target, offset)) {
                     return true;
@@ -157,6 +159,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 final Point point = new Point((int) rect.getX(), (int)(rect.getY() + rect.getHeight()));
                 SwingUtilities.convertPointToScreen(point, target);
                 Runnable runner = new Runnable() {
+                    @Override
                     public void run() {
                         PopupUtil.showPopup(popup, null, point.x, point.y, true, 0);
                     }
@@ -177,7 +180,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
         if (csmObject != null) {
             // convert to jump object
@@ -293,11 +296,17 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return item;
     }
 
+    @Override
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
-        if (msg != null && CsmKindUtilities.isMacro(item)) {
-            msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+        if (msg != null) {
+            if (CsmKindUtilities.isMacro(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+            } else if (CsmKindUtilities.isMethod(item) &&
+                    !isInDeclaration((CsmFunction) item, CsmUtilities.getCsmFile(doc, true, false), offset)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
+            }
         }
         return msg == null ? null : msg.toString();
     }

@@ -882,7 +882,6 @@ final class ModuleListParser {
     @SuppressWarnings("serial") // really want it to be incompatible if format changes
     public static final class Entry implements Serializable {
 
-        // Synch with org.netbeans.modules.apisupport.project.universe.ModuleList:
         private final String cnb;
         private final File jar;
         private final File[] classPathExtensions;

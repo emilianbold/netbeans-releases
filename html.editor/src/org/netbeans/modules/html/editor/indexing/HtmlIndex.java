@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
+import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -112,7 +113,7 @@ public class HtmlIndex {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
             }
             return matchedFiles;
@@ -123,6 +124,46 @@ public class HtmlIndex {
         return Collections.emptyList();
     }
 
+
+    /**
+     * Gets two maps wrapped in the AllDependenciesMaps class which contains
+     * all dependencies defined by imports in the current project.
+     *
+     * @return instance of AllDependenciesMaps
+     * @throws IOException
+     */
+    public AllDependenciesMaps getAllDependencies() throws IOException {
+        Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY));
+        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
+        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
+        for (IndexResult result : results) {
+            String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
+            FileObject file = result.getFile();
+            Collection<String> imports = decodeListValue(importsValue);
+            Collection<FileReference> imported = new HashSet<FileReference>();
+            for (String importedFileName : imports) {
+                //resolve the file
+                FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
+//                FileObject resolvedFileObject = ref.target();
+                if (resolvedReference != null) {
+                    imported.add(resolvedReference);
+                    //add reverse dependency
+                    Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
+                    if (sources == null) {
+                        sources = new HashSet<FileReference>();
+                        dest2sources.put(resolvedReference.target(), sources);
+                    }
+                    sources.add(resolvedReference);
+                }
+            }
+            source2dests.put(file, imported);
+        }
+
+        return new AllDependenciesMaps(source2dests, dest2sources);
+
+    }
+
+
     /**
      * Gets all 'related' files to the given html file object.
      *
@@ -130,41 +171,12 @@ public class HtmlIndex {
      * @return a collection of all files which either imports or are imported
      * by the given htmlFile both directly and indirectly (transitive relation)
      */
-    public DependenciesGraph getDependencies(FileObject htmlFile) {
+    public DependenciesGraph getDependencies(FileObject cssFile) {
         try {
-            DependenciesGraph deps = new DependenciesGraph(htmlFile);
-            Collection<? extends IndexResult> results = querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY);
-
-            //todo: performance - cache and incrementally update the maps?!?!
-            //create map of refering files to the peers and second map vice versa
-            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
-            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
-            for (IndexResult result : results) {
-                String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
-                FileObject file = result.getFile();
-                Collection<String> imports = decodeListValue(importsValue);
-                Collection<FileObject> imported = new HashSet<FileObject>();
-                for (String importedFileName : imports) {
-                    //resolve the file
-                    FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
-                    if (resolvedFileObject != null) {
-                        imported.add(resolvedFileObject);
-                        //add reverse dependency
-                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
-                        if(sources == null) {
-                            sources = new HashSet<FileObject>();
-                            dest2sources.put(resolvedFileObject, sources);
-                        }
-                        sources.add(file);
-                    }
-                }
-                source2dests.put(file, imported);
-            }
-
-            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
-
+            DependenciesGraph deps = new DependenciesGraph(cssFile);
+            AllDependenciesMaps alldeps = getAllDependencies();
+            resolveDependencies(deps.getSourceNode(), alldeps.getSource2dest(), alldeps.getDest2source());
             return deps;
-
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -173,12 +185,13 @@ public class HtmlIndex {
     }
 
 
-    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+      private void resolveDependencies(Node base, Map<FileObject, Collection<FileReference>> source2dests, Map<FileObject, Collection<FileReference>> dest2sources) {
         FileObject baseFile = base.getFile();
-        Collection<FileObject> destinations = source2dests.get(baseFile);
+        Collection<FileReference> destinations = source2dests.get(baseFile);
         if (destinations != null) {
             //process destinations (file this one refers to)
-            for(FileObject destination : destinations) {
+            for(FileReference destinationReference : destinations) {
+                FileObject destination = destinationReference.target();
                 Node node = base.getDependencyGraph().getNode(destination);
                 if(base.addReferedNode(node)) {
                     //recurse only if we haven't been there yet
@@ -186,10 +199,11 @@ public class HtmlIndex {
                 }
             }
         }
-        Collection<FileObject> sources = dest2sources.get(baseFile);
+        Collection<FileReference> sources = dest2sources.get(baseFile);
         if(sources != null) {
             //process sources (file this one is refered by)
-            for(FileObject source : sources) {
+            for(FileReference sourceReference : sources) {
+                FileObject source = sourceReference.source();
                 Node node = base.getDependencyGraph().getNode(source);
                 if(base.addReferingNode(node)) {
                     //recurse only if we haven't been there yet
@@ -210,6 +224,50 @@ public class HtmlIndex {
             list.add(st.nextToken());
         }
         return list;
+    }
+
+     //if an indexed file is delete and IndexerFactory.filesDeleted() hasn't removed
+    //the entris from index yet, then we may receive IndexResult-s with null file.
+    //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
+    //won't become null after the query is run, but the file will simply become invalid.
+    private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
+        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        for(IndexResult result : queryResult) {
+            if(result.getFile() != null) {
+                filtered.add(result);
+            }
+        }
+        return filtered;
+    }
+
+    public static class AllDependenciesMaps {
+
+        Map<FileObject, Collection<FileReference>> source2dest, dest2source;
+
+        public AllDependenciesMaps(Map<FileObject, Collection<FileReference>> source2dest, Map<FileObject, Collection<FileReference>> dest2source) {
+            this.source2dest = source2dest;
+            this.dest2source = dest2source;
+        }
+
+        /**
+         *
+         * @return reversed map of getSource2dest() (imported file -> collection of
+         * importing files)
+         */
+        public Map<FileObject, Collection<FileReference>> getDest2source() {
+            return dest2source;
+        }
+
+        /**
+         *
+         * @return map of fileobject -> collection of fileobject(s) describing
+         * relations between css file defined by import directive. The key represents
+         * a fileobject which imports the files from the value's collection.
+         */
+        public Map<FileObject, Collection<FileReference>> getSource2dest() {
+            return source2dest;
+        }
+
     }
 
 }

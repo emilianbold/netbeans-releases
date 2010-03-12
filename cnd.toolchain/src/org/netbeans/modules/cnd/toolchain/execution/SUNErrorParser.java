@@ -60,6 +60,8 @@ public final class SUNErrorParser extends ErrorParser {
     private final List<String> severity = new ArrayList<String>();
     private final List<Pattern> SunStudioOutputFilters = new ArrayList<Pattern>();
     private Pattern SUN_DIRECTORY_ENTER;
+    private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
+
 
     public SUNErrorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(execEnv, relativeTo);
@@ -127,7 +129,11 @@ public final class SUNErrorParser extends ErrorParser {
                 FileObject fo = resolveRelativePath(relativeTo, file);
                 boolean important = severity.get(i).equals("error"); // NOI18N
                 if (fo != null) {
-                    return new Results(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1, important));
+                    String description = null;
+                    if (m.groupCount()<= 3) {
+                        description = m.group(3);
+                    }
+                    return new Results(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
                 }
             } catch (NumberFormatException e) {
             }

@@ -27,6 +27,10 @@
  */
 package org.netbeans.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -58,7 +62,7 @@ public class BaseDocumentTest extends NbTestCase {
     public void testBreakAtomicLock() throws Exception {
         final BaseDocument doc = new BaseDocument(false, "text/plain");
         doc.runAtomic(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
                     doc.insertString(0, "test1", null);
                     doc.breakAtomicLock();
@@ -70,7 +74,7 @@ public class BaseDocumentTest extends NbTestCase {
         boolean failure = false;
         try {
             doc.runAtomic(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     throw new IllegalStateException("test");
                 }
             });
@@ -82,7 +86,7 @@ public class BaseDocumentTest extends NbTestCase {
             throw new IllegalStateException("Unexpected");
         }
         doc.runAtomic(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
                     doc.insertString(0, "test1", null);
                     doc.insertString(10, "test2", null);
@@ -93,4 +97,29 @@ public class BaseDocumentTest extends NbTestCase {
         });
     }
 
+    public void testPropertyChangeEvents() {
+        final List<PropertyChangeEvent> events = new LinkedList<PropertyChangeEvent>();
+        final BaseDocument doc = new BaseDocument(false, "text/plain");
+        final PropertyChangeListener l = new PropertyChangeListener() {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
+                events.add(evt);
+            }
+        };
+
+        DocumentUtilities.addPropertyChangeListener(doc, l);
+        assertEquals("No events expected", 0, events.size());
+
+        doc.putProperty("prop-A", "value-A");
+        assertEquals("No event fired", 1, events.size());
+        assertEquals("Wrong property name", "prop-A", events.get(0).getPropertyName());
+        assertNull("Wrong old property value", events.get(0).getOldValue());
+        assertEquals("Wrong new property value", "value-A", events.get(0).getNewValue());
+
+        events.clear();
+        DocumentUtilities.removePropertyChangeListener(doc, l);
+        assertEquals("No events expected", 0, events.size());
+
+        doc.putProperty("prop-B", "value-B");
+        assertEquals("Expecting no events on removed listener", 0, events.size());
+    }
 }

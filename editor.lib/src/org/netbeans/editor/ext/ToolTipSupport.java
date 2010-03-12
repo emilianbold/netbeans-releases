@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -84,6 +85,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.TextAction;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
+import org.openide.modules.PatchedPublic;
 
 /**
  * Support for editor tooltips. Once the user stops moving the mouse
@@ -98,14 +101,17 @@ import org.netbeans.editor.EditorUI;
  * the text could be propagated in the previously set
  * custom tooltip component. 
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author Miloslav Metelka, Vita Stejskal
+ * @since 2.4
  */
-
-public class ToolTipSupport extends MouseAdapter implements MouseMotionListener, ActionListener, PropertyChangeListener, FocusListener {
+public class ToolTipSupport {
 
     private static final Logger LOG = Logger.getLogger(ToolTipSupport.class.getName());
-    
+
+    static {
+        EditorExtPackageAccessor.register(new Accessor());
+    }
+
     /** Property for the tooltip component change */
     public static final String PROP_TOOL_TIP = "toolTip"; // NOI18N
 
@@ -161,7 +167,9 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
     private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
     private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
 
-    private static final String MOUSE_MOVE_IGNORED_AREA = "mouseMoveIgnoredArea"; //NOI18N
+    private static final String LAST_TOOLTIP_POSITION = "ToolTipSupport.lastToolTipPosition"; //NOI18N
+    private static final String MOUSE_MOVE_IGNORED_AREA = "ToolTipSupport.mouseMoveIgnoredArea"; //NOI18N
+    private static final String MOUSE_LISTENER = "ToolTipSupport.noOpMouseListener"; //NOI18N
 
     private static final Action NO_ACTION = new TextAction("tooltip-no-action") { //NOI18N
         public @Override void actionPerformed(ActionEvent e) {
@@ -175,15 +183,17 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         }
     };
 
-    private EditorUI extEditorUI;
+    private static final MouseListener NO_OP_MOUSE_LISTENER = new MouseAdapter() {};
+
+    private final EditorUI extEditorUI;
 
     private JComponent toolTip;
 
     private String toolTipText;
     
-    private Timer enterTimer;
+    private final Timer enterTimer;
 
-    private Timer exitTimer;
+    private final Timer exitTimer;
 
     private boolean enabled;
     
@@ -202,18 +212,21 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
     
     private boolean glyphListenerAdded = false;
 
+    private final Listener listener = new Listener();
+
     /** Construct new support for tooltips.
      */
-    @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
-    public ToolTipSupport(EditorUI extEditorUI) {
+//    @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"}) //NOI18N
+    @PatchedPublic
+    /* package */ ToolTipSupport(EditorUI extEditorUI) {
         this.extEditorUI = extEditorUI;
 
-        enterTimer = new Timer(INITIAL_DELAY, new WeakTimerListener(this));
+        enterTimer = new Timer(INITIAL_DELAY, new WeakTimerListener(listener));
         enterTimer.setRepeats(false);
-        exitTimer = new Timer(DISMISS_DELAY, new WeakTimerListener(this));
+        exitTimer = new Timer(DISMISS_DELAY, new WeakTimerListener(listener));
         exitTimer.setRepeats(false);
 
-        extEditorUI.addPropertyChangeListener(this);
+        extEditorUI.addPropertyChangeListener(listener);
 
         setEnabled(true);
     }
@@ -258,8 +271,17 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         this.horizontalAdjustment = horizontalAdjustment;
         this.verticalAdjustment = verticalAdjustment;
 
+        if (this.toolTip.getClientProperty(MOUSE_LISTENER) == null) {
+            this.toolTip.putClientProperty(MOUSE_LISTENER, NO_OP_MOUSE_LISTENER);
+            this.toolTip.addMouseListener(NO_OP_MOUSE_LISTENER);
+        }
+
         if (status >= STATUS_VISIBILITY_ENABLED) {
-            ensureVisibility();
+            if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
+                ensureVisibility((Point) this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION));
+            } else {
+                ensureVisibility(getLastMouseEventPoint());
+            }
         }
 
         firePropertyChange(PROP_TOOL_TIP, oldToolTip, this.toolTip);
@@ -417,58 +439,6 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         return tt;
     }
 
-    public @Override void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-
-        if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
-            JTextComponent component = (JTextComponent)evt.getNewValue();
-            if (component != null) { // just installed
-
-                component.addPropertyChangeListener(this);
-                
-                disableSwingToolTip(component);
-
-                component.addFocusListener(this);
-                if (component.hasFocus()) {
-                    focusGained(new FocusEvent(component, FocusEvent.FOCUS_GAINED));
-                }
-                component.addMouseListener(this);
-                component.addMouseMotionListener(this);
-
-                GlyphGutter gg = extEditorUI.getGlyphGutter();
-                if (gg != null && !glyphListenerAdded) {
-                    glyphListenerAdded = true;
-                    gg.addMouseListener(this);
-                    gg.addMouseMotionListener(this);
-                }
-                
-                
-            } else if (null != (component = (JTextComponent)evt.getOldValue())) { // just deinstalled
-                component.removeFocusListener(this);
-                component.removePropertyChangeListener(this);
-                
-                component.removeMouseListener(this);
-                component.removeMouseMotionListener(this);
-                
-                GlyphGutter gg = extEditorUI.getGlyphGutter();
-                if (gg != null) {
-                    gg.removeMouseListener(this);
-                    gg.removeMouseMotionListener(this);
-                }
-                setToolTipVisible(false);
-
-            }
-        }
-        
-        if (JComponent.TOOL_TIP_TEXT_KEY.equals(propName)) {
-            JComponent component = (JComponent)evt.getSource();
-            disableSwingToolTip(component);
-            
-            componentToolTipTextChanged(evt);
-        }
-                        
-    }
-
     private void disableSwingToolTip(final JComponent component) {
         javax.swing.SwingUtilities.invokeLater(
             new Runnable() {
@@ -543,6 +513,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
                 if (toolTip != null) {
                     if (toolTip.isVisible()){
                         toolTip.setVisible(false);
+                        toolTip.putClientProperty(LAST_TOOLTIP_POSITION, null);
                         toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, null);
                         PopupManager pm = extEditorUI.getPopupManager();
                         if (pm!=null){
@@ -552,7 +523,10 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
                 }
 
                 setStatus(STATUS_HIDDEN);
-                extEditorUI.getComponent().requestFocusInWindow();
+                JTextComponent jtc = extEditorUI.getComponent();
+                if (jtc != null) {
+                    jtc.requestFocusInWindow();
+                }
             }
         }
     }
@@ -666,12 +640,14 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         return (evt != null && evt.getSource() == extEditorUI.getGlyphGutter());
     }
 
-    private void ensureVisibility() {
+    private void ensureVisibility(Point toolTipPosition) {
+        LOG.log(Level.FINE, "toolTipPosition={0}", toolTipPosition); //NOI18N
+        
         // Find the visual position in the document
         JTextComponent component = extEditorUI.getComponent();
         if (component != null) {
             // Try to display the tooltip above (or below) the line it corresponds to
-            int pos = component.viewToModel(getLastMouseEventPoint());
+            int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
             Rectangle mouseMoveIgnoredArea = null;
             
@@ -692,7 +668,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
                 }
             }
             if (cursorBounds == null) { // get mose rect
-                cursorBounds = new Rectangle(getLastMouseEventPoint(), new Dimension(1, 1));
+                cursorBounds = new Rectangle(toolTipPosition, new Dimension(1, 1));
             }
 
             // updateToolTipBounds();
@@ -701,8 +677,10 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
             if (toolTip != null && toolTip.isVisible()) {
                 toolTip.setVisible(false);
             }
+            LOG.log(Level.FINE, "model-pos={0}, cursorBounds={1}", new Object [] { pos, cursorBounds });
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
+                toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
                 toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, mouseMoveIgnoredArea);
                 toolTip.setVisible(true);
             }
@@ -827,100 +805,6 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         }
     }
 
-    // -----------------------------------------------------------------------
-    // ActionListener implementation
-    // -----------------------------------------------------------------------
-
-    public @Override void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == enterTimer) {
-            setToolTipVisible(true);
-
-        } else if (evt.getSource() == exitTimer) {
-            setToolTipVisible(false);
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // MouseListener implementation
-    // -----------------------------------------------------------------------
-
-    public @Override void mouseClicked(MouseEvent evt) {
-        lastMouseEvent = evt;
-        setToolTipVisible(false);
-    }
-
-    public @Override void mousePressed(MouseEvent evt) {
-        lastMouseEvent = evt;
-        setToolTipVisible(false);
-    }
-
-    public @Override void mouseReleased(MouseEvent evt) {
-        lastMouseEvent = evt;
-        setToolTipVisible(false);
-        
-        // Check that if a selection becomes visible by dragging a mouse
-        // the tooltip evaluation should be posted.
-        EditorUI ui = extEditorUI;
-        if (ui != null) {
-            JTextComponent component = ui.getComponent();
-            if (enabled && component != null && Utilities.isSelectionShowing(component)) {
-                enterTimer.restart();
-            }
-        }
-    }
-
-    public @Override void mouseEntered(MouseEvent evt) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "mouseEntered: x=" + evt.getX() + "; y=" + evt.getY()); //NOI18N
-        }
-        lastMouseEvent = evt;
-    }
-
-    public @Override void mouseExited(MouseEvent evt) {
-        lastMouseEvent = evt;
-        if (toolTip != null && toolTip.isShowing()) {
-            Rectangle r = new Rectangle(toolTip.getLocationOnScreen(), toolTip.getSize());
-
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "mouseExited: screen-x=" + evt.getXOnScreen() + "; screen-y=" + evt.getYOnScreen() //NOI18N
-                    + "; tooltip=" + r); //NOI18N
-            }
-            if (r.contains(evt.getLocationOnScreen())) {
-                // inside the tooltip component -> do not hide
-                return;
-            }
-        }
-        setToolTipVisible(false);
-    }
-
-    // -----------------------------------------------------------------------
-    // MouseMotionListener implementation
-    // -----------------------------------------------------------------------
-
-    public @Override void mouseDragged(MouseEvent evt) {
-        lastMouseEvent = evt;
-        setToolTipVisible(false);
-    }
-
-    public @Override void mouseMoved(MouseEvent evt) {
-        if (toolTip != null) {
-            Rectangle r = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + r + "; mouse-x=" + evt.getX() + "; mouse-y=" + evt.getY() //NOI18N
-                    + "; is-inside=" + (r != null ? r.contains(evt.getX(), evt.getY()) : null)); //NOI18N
-            }
-            if (r != null && r.contains(evt.getX(), evt.getY())) {
-                return;
-            }
-        }
-
-        setToolTipVisible(false);
-        if (enabled) {
-            enterTimer.restart();
-        }
-        lastMouseEvent = evt;
-    }
-
     /** @return last mouse event captured by this support.
      * This method can be used by the action that evaluates
      * the tooltip.
@@ -995,32 +879,6 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         getPCS().firePropertyChange(propertyName, oldValue, newValue);
     }
     
-    public @Override void focusGained(FocusEvent e) {
-//        JComponent component = (JComponent)e.getSource();
-//        component.addMouseListener(this);
-//        component.addMouseMotionListener(this);
-        GlyphGutter gg = extEditorUI.getGlyphGutter();
-        if (gg != null && !glyphListenerAdded) {
-            glyphListenerAdded = true;
-            gg.addMouseListener(this);
-            gg.addMouseMotionListener(this);
-        }
-    }
-
-    public @Override void focusLost(FocusEvent e) {
-        /*
-        JComponent component = (JComponent)e.getSource();
-        component.removeMouseListener(this);
-        component.removeMouseMotionListener(this);
-        GlyphGutter gg = extEditorUI.getGlyphGutter();
-        if (gg != null) {
-            gg.removeMouseListener(this);
-            gg.removeMouseMotionListener(this);
-        }
-        setToolTipVisible(false);
-         */
-    }
-
     private static void filterBindings(ActionMap actionMap) {
         for(Object key : actionMap.allKeys()) {
             String actionName = key.toString().toLowerCase(Locale.ENGLISH);
@@ -1033,4 +891,245 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
             }
         }
     }
+
+    private final class Listener extends MouseAdapter implements MouseMotionListener, ActionListener, PropertyChangeListener, FocusListener {
+
+        // -------------------------------------------------------------------
+        // PropertyChangeListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+
+            if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
+                JTextComponent component = (JTextComponent)evt.getNewValue();
+                if (component != null) { // just installed
+
+                    component.addPropertyChangeListener(this);
+
+                    disableSwingToolTip(component);
+
+                    component.addFocusListener(this);
+                    if (component.hasFocus()) {
+                        focusGained(new FocusEvent(component, FocusEvent.FOCUS_GAINED));
+                    }
+                    component.addMouseListener(this);
+                    component.addMouseMotionListener(this);
+
+                    GlyphGutter gg = extEditorUI.getGlyphGutter();
+                    if (gg != null && !glyphListenerAdded) {
+                        glyphListenerAdded = true;
+                        gg.addMouseListener(this);
+                        gg.addMouseMotionListener(this);
+                    }
+
+
+                } else if (null != (component = (JTextComponent)evt.getOldValue())) { // just deinstalled
+                    component.removeFocusListener(this);
+                    component.removePropertyChangeListener(this);
+
+                    component.removeMouseListener(this);
+                    component.removeMouseMotionListener(this);
+
+                    GlyphGutter gg = extEditorUI.getGlyphGutter();
+                    if (gg != null) {
+                        gg.removeMouseListener(this);
+                        gg.removeMouseMotionListener(this);
+                    }
+                    setToolTipVisible(false);
+
+                }
+            }
+
+            if (JComponent.TOOL_TIP_TEXT_KEY.equals(propName)) {
+                JComponent component = (JComponent)evt.getSource();
+                disableSwingToolTip(component);
+
+                componentToolTipTextChanged(evt);
+            }
+
+        }
+
+        // -------------------------------------------------------------------
+        // ActionListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void actionPerformed(ActionEvent evt) {
+            if (evt.getSource() == enterTimer) {
+                setToolTipVisible(true);
+
+            } else if (evt.getSource() == exitTimer) {
+                setToolTipVisible(false);
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // MouseListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void mouseClicked(MouseEvent evt) {
+            lastMouseEvent = evt;
+            setToolTipVisible(false);
+        }
+
+        public @Override void mousePressed(MouseEvent evt) {
+            lastMouseEvent = evt;
+            setToolTipVisible(false);
+        }
+
+        public @Override void mouseReleased(MouseEvent evt) {
+            lastMouseEvent = evt;
+            setToolTipVisible(false);
+
+            // Check that if a selection becomes visible by dragging a mouse
+            // the tooltip evaluation should be posted.
+            EditorUI ui = extEditorUI;
+            if (ui != null) {
+                JTextComponent component = ui.getComponent();
+                if (enabled && component != null && Utilities.isSelectionShowing(component)) {
+                    enterTimer.restart();
+                }
+            }
+        }
+
+        public @Override void mouseEntered(MouseEvent evt) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "mouseEntered: x=" + evt.getX() + "; y=" + evt.getY()); //NOI18N
+            }
+            lastMouseEvent = evt;
+        }
+
+        public @Override void mouseExited(MouseEvent evt) {
+            lastMouseEvent = evt;
+            if (toolTip != null && toolTip.isShowing()) {
+                Rectangle r = new Rectangle(toolTip.getLocationOnScreen(), toolTip.getSize());
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "mouseExited: screen-x=" + evt.getXOnScreen() + "; screen-y=" + evt.getYOnScreen() //NOI18N
+                        + "; tooltip=" + r); //NOI18N
+                }
+                if (r.contains(evt.getLocationOnScreen())) {
+                    // inside the tooltip component -> do not hide
+                    return;
+                }
+            }
+            setToolTipVisible(false);
+        }
+
+        // -------------------------------------------------------------------
+        // MouseMotionListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void mouseDragged(MouseEvent evt) {
+            lastMouseEvent = evt;
+            setToolTipVisible(false);
+        }
+
+        public @Override void mouseMoved(MouseEvent evt) {
+            if (toolTip != null) {
+                Rectangle r = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + r + "; mouse-x=" + evt.getX() + "; mouse-y=" + evt.getY() //NOI18N
+                        + "; is-inside=" + (r != null ? r.contains(evt.getX(), evt.getY()) : null)); //NOI18N
+                }
+                if (r != null && r.contains(evt.getX(), evt.getY())) {
+                    return;
+                }
+            }
+
+            setToolTipVisible(false);
+            if (enabled) {
+                enterTimer.restart();
+            }
+            lastMouseEvent = evt;
+        }
+
+        // -------------------------------------------------------------------
+        // FocusListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void focusGained(FocusEvent e) {
+//            JComponent component = (JComponent)e.getSource();
+//            component.addMouseListener(this);
+//            component.addMouseMotionListener(this);
+            GlyphGutter gg = extEditorUI.getGlyphGutter();
+            if (gg != null && !glyphListenerAdded) {
+                glyphListenerAdded = true;
+                gg.addMouseListener(this);
+                gg.addMouseMotionListener(this);
+            }
+        }
+
+        public @Override void focusLost(FocusEvent e) {
+            /*
+            JComponent component = (JComponent)e.getSource();
+            component.removeMouseListener(this);
+            component.removeMouseMotionListener(this);
+            GlyphGutter gg = extEditorUI.getGlyphGutter();
+            if (gg != null) {
+                gg.removeMouseListener(this);
+                gg.removeMouseMotionListener(this);
+            }
+            setToolTipVisible(false);
+             */
+        }
+    } // End of Listener class
+
+    private static final class Accessor extends EditorExtPackageAccessor {
+
+        @Override
+        public ToolTipSupport createToolTipSupport(EditorUI eui) {
+            return new ToolTipSupport(eui);
+        }
+
+    } // End of Accessor class
+
+    // -----------------------------------------------------------------------
+    // Methods accidentally exposed in public API
+    // -----------------------------------------------------------------------
+
+    private @PatchedPublic void mouseDragged(MouseEvent evt) {
+        listener.mouseDragged(evt);
+    }
+
+    private @PatchedPublic void mouseMoved(MouseEvent evt) {
+        listener.mouseMoved(evt);
+    }
+
+    private @PatchedPublic void mouseClicked(MouseEvent evt) {
+        listener.mouseClicked(evt);
+    }
+
+    private @PatchedPublic void mousePressed(MouseEvent evt) {
+        listener.mousePressed(evt);
+    }
+
+    private @PatchedPublic void mouseReleased(MouseEvent evt) {
+        listener.mouseReleased(evt);
+    }
+
+    private @PatchedPublic void mouseEntered(MouseEvent evt) {
+        listener.mouseEntered(evt);
+    }
+
+    private @PatchedPublic void mouseExited(MouseEvent evt) {
+        listener.mouseExited(evt);
+    }
+
+    private @PatchedPublic void actionPerformed(ActionEvent e) {
+        listener.actionPerformed(e);
+    }
+
+    private @PatchedPublic void propertyChange(PropertyChangeEvent evt) {
+        listener.propertyChange(evt);
+    }
+
+    private @PatchedPublic void focusGained(FocusEvent e) {
+        listener.focusGained(e);
+    }
+
+    private @PatchedPublic void focusLost(FocusEvent e) {
+        listener.focusLost(e);
+    }
+
 }

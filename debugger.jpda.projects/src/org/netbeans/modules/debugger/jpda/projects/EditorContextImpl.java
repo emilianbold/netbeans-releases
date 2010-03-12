@@ -2197,9 +2197,8 @@ public class EditorContextImpl extends EditorContext {
                             }
                             if (tree instanceof MethodTree) {
                                 String name = ((MethodTree)tree).getName().toString();
-                                if (name.equals("<init>")) {
-                                    el = scope.getEnclosingClass();
-                                    name = el.getSimpleName().toString();
+                                if (name.equals("<init>") && scope.getEnclosingClass() != null) {
+                                    name = scope.getEnclosingClass().getSimpleName().toString();
                                 }
                                 currentElementPtr[0] = name;
                             }

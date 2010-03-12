@@ -301,7 +301,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                     token.setTokenList(null);
                     EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
                     if (ec != null) {
-                        assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
+                        // Assert that the modCount of root token list (which should already be updated)
+                        // is already updated while the children embeddings were not "touched" and they still hold
+                        // before-mod mod counts because otherwise their offsets would not reflect
+                        // proper original values.
+                        assert (ec.cachedModCount() != rootModCount) : "ModCount=" + rootModCount + // NOI18N
+                                " already updated in child embedding."; // NOI18N
                         ec.markRemoved(token.rawOffset());
                     }
                 }

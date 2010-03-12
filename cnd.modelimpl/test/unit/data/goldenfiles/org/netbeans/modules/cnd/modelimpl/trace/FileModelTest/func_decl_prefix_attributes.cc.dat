@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 2):
-<U>#define '["GLAPI",<205>,line=2,col=11],offset=86,file=null'='["__attribute__",<205>,line=2,col=17],offset=92,file=null ["(",<138>,line=2,col=30],offset=105,file=null ["(",<138>,line=2,col=31],offset=106,file=null ["visibility",<205>,line=2,col=32],offset=107,file=null ["(",<138>,line=2,col=42],offset=117,file=null [""default"",<193>,line=2,col=43],offset=118,file=null [")",<139>,line=2,col=52],offset=127,file=null [")",<139>,line=2,col=53],offset=128,file=null [")",<139>,line=2,col=54],offset=129,file=null'
-<U>#define '["GLAPIENTRY",<205>,line=3,col=11],offset=141,file=null'=''
+<U>#define '["GLAPI",<89>,line=2,col=11],offset=86,file=null'='["__attribute__",<89>,line=2,col=17],offset=92,file=null ["(",<12>,line=2,col=30],offset=105,file=null ["(",<12>,line=2,col=31],offset=106,file=null ["visibility",<89>,line=2,col=32],offset=107,file=null ["(",<12>,line=2,col=42],offset=117,file=null [""default"",<77>,line=2,col=43],offset=118,file=null [")",<13>,line=2,col=52],offset=127,file=null [")",<13>,line=2,col=53],offset=128,file=null [")",<13>,line=2,col=54],offset=129,file=null'
+<U>#define '["GLAPIENTRY",<89>,line=3,col=11],offset=141,file=null'=''
 System Map:
 MACROS (sorted 0):
 

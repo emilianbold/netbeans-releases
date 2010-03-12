@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,7 +157,12 @@ public class VerifyClassLinkage extends Task {
             // Map from class name (foo/Bar format) to true (found), false (not found), null (as yet unknown):
             Map<String,Boolean> loadable = new HashMap<String,Boolean>();
             Map<String,byte[]> classfiles = new TreeMap<String,byte[]>();
-            read(jar, classfiles, new HashSet<File>(), this, ignores);
+            JarFile jf = new JarFile(jar);
+            try {
+                read(jf, classfiles, new HashSet<File>(Collections.singleton(jar)), this, ignores);
+            } finally {
+                jf.close();
+            }
             for (String clazz: classfiles.keySet()) {
                 // All classes we define are obviously loadable:
                 loadable.put(clazz, Boolean.TRUE);
@@ -181,18 +187,13 @@ public class VerifyClassLinkage extends Task {
         }
     }
 
-    static void read(File jar, Map<String, byte[]> classfiles, Set<File> alreadyRead, Task task, String ignores) throws IOException {
-        if (!alreadyRead.add(jar)) {
-            task.log("Already read " + jar, Project.MSG_VERBOSE);
-            return;
-        }
+    static void read(JarFile jf, Map<String, byte[]> classfiles, Set<File> alreadyRead, Task task, String ignores) throws IOException {
+        File jar = new File(jf.getName());
         task.log("Reading " + jar, Project.MSG_VERBOSE);
-        JarFile jf = new JarFile(jar);
         Pattern p = (ignores != null)? Pattern.compile(ignores): null;
-        try {
-            Enumeration e = jf.entries();
+            Enumeration<JarEntry> e = jf.entries();
             while (e.hasMoreElements()) {
-                JarEntry entry = (JarEntry) e.nextElement();
+                JarEntry entry = e.nextElement();
                 String name = entry.getName();
                 if (!name.endsWith(".class")) {
                     continue;
@@ -221,15 +222,21 @@ public class VerifyClassLinkage extends Task {
                     String[] uris = cp.trim().split("[, ]+");
                     for (int i = 0; i < uris.length; i++) {
                         File otherJar = new File(jar.toURI().resolve(uris[i]));
-                        if (otherJar.isFile()) {
-                            read(otherJar, classfiles, alreadyRead, task, ignores);
+                        if (alreadyRead.add(otherJar)) {
+                            if (otherJar.isFile()) {
+                                JarFile otherJF = new JarFile(otherJar);
+                                try {
+                                    read(otherJF, classfiles, alreadyRead, task, ignores);
+                                } finally {
+                                    otherJF.close();
+                                }
+                            }
+                        } else {
+                            task.log("Already read " + jar, Project.MSG_VERBOSE);
                         }
                     }
                 }
             }
-        } finally {
-            jf.close();
-        }
     }
 
     private void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn)

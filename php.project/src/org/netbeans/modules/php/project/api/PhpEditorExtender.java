@@ -42,7 +42,7 @@ package org.netbeans.modules.php.project.api;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
@@ -69,7 +69,7 @@ public final class PhpEditorExtender {
 
     private static final class EmptyEditorExtender extends EditorExtender {
         @Override
-        public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+        public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
             return Collections.emptyList();
         }
 

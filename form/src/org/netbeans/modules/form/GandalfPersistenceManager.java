@@ -3102,7 +3102,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
+        buf.append("<?xml version=\"1.1\" encoding=\""); // NOI18N
         buf.append(encoding);
         buf.append("\" ?>\n\n"); // NOI18N
 
@@ -6167,8 +6167,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String getKey() {                
                 return getKey(beanName, property.getName());
             }                        
-            String getSourceKey() {                                    
-                return getKey(value.getRADComponent().getName(), getValueName());
+            String getSourceKey() {
+                RADComponent comp = value.getRADComponent();
+                String key = null;
+                if (comp!=null) { // Issue 180640
+                    key = getKey(comp.getName(), getValueName());
+                }
+                return key;
             }                
             private String getKey(String beanName, String propertyName) {
                 StringBuilder sb = new StringBuilder();

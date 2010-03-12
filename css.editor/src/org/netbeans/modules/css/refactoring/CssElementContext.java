@@ -167,12 +167,14 @@ public abstract class CssElementContext {
 
 	@Override
 	public String getElementName() {
-	    return getElement().image();
+	    return getElement().image().trim();
 	}
 
 	@Override
 	public boolean isRefactoringAllowed() {
-	    return null != getSimpleSelectorElement();
+            //class, id or element selector
+            //hex color
+	    return null != getSimpleSelectorElement() || getElement().kind() == CssParserTreeConstants.JJTHEXCOLOR;
 	}
     }
 }

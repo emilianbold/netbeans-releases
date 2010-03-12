@@ -110,6 +110,10 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <file name="CopyResourcesIndexer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory"/>
+                    <!--attr name="position" intvalue="10"/-->
+                </file>
                 <!-- TODO: RETOUCHE
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-j2ee-persistence-editor-completion-NNCompletionProvider.instance"/>

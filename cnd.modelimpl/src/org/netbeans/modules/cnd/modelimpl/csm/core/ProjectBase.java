@@ -1755,13 +1755,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     @Override
-    public final CsmFile findFile(Object absolutePathOrNativeFileItem) {
+    public final CsmFile findFile(Object absolutePathOrNativeFileItem, boolean snapShot) {
+        CsmFile res = null;
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
-            return findFileByPath((CharSequence) absolutePathOrNativeFileItem);
+            res = findFileByPath((CharSequence) absolutePathOrNativeFileItem);
         } else if (absolutePathOrNativeFileItem instanceof NativeFileItem) {
-            return findFileByItem((NativeFileItem) absolutePathOrNativeFileItem);
+            res = findFileByItem((NativeFileItem) absolutePathOrNativeFileItem);
         }
-        return null;
+        if (snapShot && (res instanceof FileImpl)) {
+            res = ((FileImpl)res).getSnapshot();
+        }
+        return res;
     }
 
     private CsmFile findFileByPath(CharSequence absolutePath) {

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.css.editor.lexer;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;

@@ -43,6 +43,8 @@ package org.netbeans.modules.options.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,6 +52,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
@@ -213,6 +217,44 @@ public final class FolderBasedController extends OptionsPanelController implemen
     @Override
     public Lookup getLookup() {
         return super.getLookup();
+    }
+
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        for (Entry<String, OptionsPanelController> e : getMimeType2delegates().entrySet()) {
+            if (subpath.startsWith(e.getKey())) {
+                panel.setCurrentMimeType(e.getKey());
+                subpath = subpath.substring(e.getKey().length());
+
+                if (subpath.length() > 0 && subpath.startsWith("/")) {
+                    setCurrentSubcategory(e.getValue(), subpath.substring(1));
+                }
+
+                return ;
+            }
+        }
+
+        Logger.getLogger(FolderBasedController.class.getName()).log(Level.WARNING, "setCurrentSubcategory: cannot open: {0}", subpath);
+    }
+
+    private static void setCurrentSubcategory(OptionsPanelController c, String subpath) {
+        //#180821: cannot directly call setCurrentSubcategory on c as that is protected
+        try {
+            Method m = OptionsPanelController.class.getDeclaredMethod("setCurrentSubcategory", String.class);
+
+            m.setAccessible(true);
+            m.invoke(c, subpath);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     Iterable<String> getMimeTypes() {

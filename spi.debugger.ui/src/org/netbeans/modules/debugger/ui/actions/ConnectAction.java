@@ -58,6 +58,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -69,7 +70,9 @@ import org.openide.util.NbBundle;
 * @author   Jan Jancura
 */
 public final class ConnectAction extends AbstractAction {
-    
+
+    private ConnectorPanel cp;
+    private DialogDescriptor descr;
     private Dialog dialog;
     private JButton bOk;
     private JButton bCancel;
@@ -103,8 +106,8 @@ public final class ConnectAction extends AbstractAction {
         bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")); // NOI18N
         bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
         bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
-        ConnectorPanel cp = new ConnectorPanel ();
-        DialogDescriptor descr = new DialogDescriptor (
+        cp = new ConnectorPanel ();
+        descr = new DialogDescriptor (
             cp,
             NbBundle.getMessage (ConnectAction.class, "CTL_Connect_to_running_process"),
             true, // modal
@@ -115,6 +118,7 @@ public final class ConnectAction extends AbstractAction {
         });
         notificationSupport = descr.createNotificationLineSupport();
         descr.setClosingOptions (new Object [0]);
+        descr.setHelpCtx(HelpCtx.findHelp(cp)); // This is mandatory so that the descriptor tracks the changes in help correctly.
         dialog = DialogDisplayer.getDefault ().createDialog (descr);
         dialog.setVisible(true);
     }
@@ -178,6 +182,7 @@ public final class ConnectAction extends AbstractAction {
             if (evt.getPropertyName () == ConnectorPanel.PROP_TYPE) {
                 stopListening ();
                 notificationSupport.clearMessages();
+                descr.setHelpCtx(HelpCtx.findHelp(cp));
                 setValid ();
                 startListening ();
             } else if (evt.getPropertyName () == Controller.PROP_VALID) {

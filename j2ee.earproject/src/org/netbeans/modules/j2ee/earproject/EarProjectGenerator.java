@@ -132,8 +132,9 @@ public final class EarProjectGenerator {
         this.j2eeProfile = j2eeProfile;
         this.serverInstanceID = serverInstanceID;
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";       
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel != null && (sourceLevel.equals("1.7")))
+            sourceLevel = "1.6";
         this.sourceLevel = sourceLevel;
         this.librariesDefinition = librariesDefinition;
         this.serverLibraryName = serverLibraryName;
@@ -640,8 +641,9 @@ public final class EarProjectGenerator {
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
             srcLevel = v.toString();
             // #89131: these levels are not actually distinct from 1.5.
-            if (srcLevel.equals("1.6") || srcLevel.equals("1.7"))
-                srcLevel = "1.5";       
+            // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+            if (srcLevel.equals("1.7"))
+                srcLevel = "1.6";
         }
         ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel); //NOI18N
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
@@ -701,8 +703,9 @@ public final class EarProjectGenerator {
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 // #89131: these levels are not actually distinct from 1.5.
                                 String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                                    srcLevel = "1.5";
+                                // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+                                if (sourceLevel.equals("1.7"))
+                                    srcLevel = "1.6";
                                 ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
                                 ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

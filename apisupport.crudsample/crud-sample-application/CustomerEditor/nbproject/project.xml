@@ -24,7 +24,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.toplinkessentialslibrary</code-name-base>
+                    <code-name-base>org.netbeans.modules.persistencelibrary</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

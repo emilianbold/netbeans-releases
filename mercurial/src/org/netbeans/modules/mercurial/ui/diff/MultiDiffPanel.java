@@ -71,6 +71,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -82,11 +86,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
@@ -94,7 +95,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffSetupSource, PropertyChangeListener {
+public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -176,7 +177,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2) {
+    public MultiDiffPanel(File file, String rev1, String rev2, boolean forceNonEditable) {
         context = null;
         contextName = file.getName();
         initComponents();
@@ -188,7 +189,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         initNextPrevActions();
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2));
+        setSetups(new Setup(file, rev1, rev2, forceNonEditable));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = RequestProcessor.getDefault().post(dpt);
@@ -239,13 +240,39 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             return true;
         }
 
-        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
-        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
-        DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
-        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        SaveCookie[] saveCookies = getSaveCookies(true);
 
         return (saveCookies.length == 0)
                || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
+    }
+
+    public SaveCookie[] getSaveCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        return saveCookies;
+    }
+
+    public EditorCookie[] getEditorCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        int count = 0, length = editorCookiesCopy.length;
+        EditorCookie[] editorCookiesShorten = new EditorCookie[length];
+        for (int i = 0; i < length; i++) {
+            EditorCookie editorCookie = editorCookiesCopy[i];
+            if (editorCookie == null) {
+                continue;
+            }
+            editorCookiesShorten[count++] = editorCookie;
+        }
+        return CollectionUtils.shortenArray(editorCookiesShorten, count);
+    }
+
+    private EditorCookie[] getEditorCookiesIntern (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        return editorCookiesCopy;
     }
 
     private static SaveCookie[] getSaveCookies(Setup[] setups,
@@ -312,6 +339,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             commitButton.setEnabled(false);     //until the diff is loaded
         } else {
             commitButton.setVisible(false);
+            refreshButton.setVisible(false);
         }
     }
 
@@ -361,6 +389,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         super.addNotify();
         if (refreshTask != null) {
             Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
+            HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -394,6 +423,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     @Override
     public void removeNotify() {
         Mercurial.getInstance().getFileStatusCache().removePropertyChangeListener(this);
+        if (refreshTask != null) {
+            HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        }
         super.removeNotify();
     }
     
@@ -427,11 +459,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
-                Node node = Node.EMPTY;
-                if (fileObj != null) {
-                    node = new AbstractNode(Children.LEAF, Lookups.singleton(fileObj));
-                }
-                tc.setActivatedNodes(new Node[] {node});
+                Node node = setups[currentModelIndex].getNode();
+                tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
             }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {
@@ -691,7 +720,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             File file = files[i];
             if (!file.isDirectory()) {
                 Setup setup = new Setup(file, null, currentType);
-                setup.setNode(new DiffNode(setup));
+                setup.setNode(new DiffNode(setup, new HgFileNode(file)));
                 newSetups.add(setup);
             }
         }
@@ -707,6 +736,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                 return;
             }
             refreshTask.schedule(200);
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
         }
     }
 
@@ -727,7 +763,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     final int fi = i;
                     StreamSource ss1 = prepareSetups[fi].getFirstSource();
                     StreamSource ss2 = prepareSetups[fi].getSecondSource();
-                    final DiffController view = DiffController.create(ss1, ss2);  // possibly executing slow external diff
+                    final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

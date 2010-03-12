@@ -314,6 +314,7 @@
                 <package>org.netbeans.modules.css.formatting.api.support</package>
                 <package>org.netbeans.modules.css.lexer.api</package>
                 <package>org.netbeans.modules.css.parser</package>
+                <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
         </data>
     </configuration>

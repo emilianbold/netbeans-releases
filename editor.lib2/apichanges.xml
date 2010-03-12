@@ -104,6 +104,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added-toggleNonPrintableCharacters">
+            <summary>EditorActionNames.toggleNonPrintableCharacters added.</summary>
+            <version major="1" minor="20"/>
+            <date day="4" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Added EditorActionNames.toggleNonPrintableCharacters action name.
+            </description>
+            <issue number="4619"/>
+        </change>
+
         <change id="added-component-removed-property">
             <summary>EditorRegistry.COMPONENT_REMOVED_PROPERTY added.</summary>
             <version major="1" minor="13"/>

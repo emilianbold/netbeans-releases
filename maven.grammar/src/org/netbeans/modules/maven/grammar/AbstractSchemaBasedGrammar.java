@@ -486,12 +486,12 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         
     }
 
-     protected static class MyTextElement extends AbstractResultNode implements Text {
+     public static class MyTextElement extends AbstractResultNode implements Text {
         
         private String name;
         private String prefix;
         
-        MyTextElement(String name, String prefix) {
+        public MyTextElement(String name, String prefix) {
             this.name = name;
             this.prefix = prefix;
             setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/value.png", false)); //NOI18N

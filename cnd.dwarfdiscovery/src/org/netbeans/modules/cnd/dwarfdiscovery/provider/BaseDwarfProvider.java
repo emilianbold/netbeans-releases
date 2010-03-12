@@ -342,8 +342,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsCpp = DiscoveryUtils.getSystemMacroDefinitions(project, true);
             systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
             compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
-            cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
             isWindows = Utilities.isWindows();
+            if (isWindows) {
+                cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
+            } else {
+                cygwinDriveDirectory = null;
+            }
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {

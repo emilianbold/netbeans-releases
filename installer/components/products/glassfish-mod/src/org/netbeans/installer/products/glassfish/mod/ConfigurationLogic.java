@@ -38,9 +38,7 @@ package org.netbeans.installer.products.glassfish.mod;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
@@ -48,22 +46,17 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
-import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
-import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
-import org.netbeans.installer.products.glassfish.mod.wizard.panels.GlassFishPanel;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
+import org.netbeans.installer.utils.StringUtils;
 
 /**
  *
@@ -463,12 +456,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         } else {
                             //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
                             try {
-                                String path = NetBeansUtils.getJvmOption(location, JVM_OPTION_NAME);
-                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
+                                if(!isGlassFishRegistred(location)) {
                                     LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
                                     productsToIntegrate.add(ide);
                                 } else {
-                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance");
                                 }
                             } catch (IOException e)  {
                                 LogManager.log(e);
@@ -481,12 +473,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             for (Product productToIntegrate : productsToIntegrate) {
                 final File location = productToIntegrate.getInstallationLocation();
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        location,
-                        JVM_OPTION_NAME,
-                        directory.getAbsolutePath(),
-                        true);
-
+                if(!registerGlassFish(location, directory)) {
+                    continue;
+                }
+                
                 // if the IDE was installed in the same session as the
                 // appserver, we should add its "product id" to the IDE
                 if (productToIntegrate.hasStatusChanged()) {
@@ -506,6 +496,47 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
 
+    private boolean isGlassFishRegistred(File nbLocation) throws IOException {
+        return new File (nbLocation, "nb/config/GlassFishEE6/Instances/glassfish_autoregistered_instance").exists();
+    }
+
+    private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "ide/modules/org-netbeans-modules-glassfish-common.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for GlassFish integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.glassfish.common.registration.AutomaticRegistration";
+        List <String> commands = new ArrayList <String> ();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(nbCluster.getAbsolutePath());
+        commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
+        
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
+    }
+    private void removeGlassFishIntegration(File nbLocation, File gfLocation) throws IOException {
+        LogManager.log("... ide location is " + nbLocation);
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/glassfish_autoregistered_instance"));
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/GlassFishEE6/Instances/.nbattrs"));
+    }
+
+
     public void uninstall(final Progress progress)
             throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
@@ -522,18 +553,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final File nbLocation = ide.getInstallationLocation();
 
                     if (nbLocation != null) {
-                        LogManager.log("... ide location is " + nbLocation);
-                        final String value = NetBeansUtils.getJvmOption(
-                                nbLocation,
-                                JVM_OPTION_NAME);
-                        LogManager.log("... ide integrated with: " + value);
-                        if ((value != null) &&
-                                (value.equals(directory.getAbsolutePath()))) {
-			    LogManager.log("... removing integration");
-                            NetBeansUtils.removeJvmOption(
-                                    nbLocation,
-                                    JVM_OPTION_NAME);
-                        }
+                        removeGlassFishIntegration(nbLocation, directory);
                     }
                 }
             }
@@ -985,9 +1005,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String IMQENV_CONF =
             "imq/etc/imqenv.conf"; // NOI18N
     */
-    public static final String JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3ee6.installRoot"; // NOI18N
-    
+
+
+
     public static final String PRODUCT_ID =
             "GFMOD"; // NOI18N
 }

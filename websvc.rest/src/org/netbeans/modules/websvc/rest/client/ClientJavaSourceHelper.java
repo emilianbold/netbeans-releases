@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.rest.client;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -64,9 +65,15 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -79,15 +86,25 @@ import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
+import org.netbeans.modules.websvc.saas.model.jaxb.Authenticator;
+import org.netbeans.modules.websvc.saas.model.jaxb.Params;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey;
+import org.netbeans.modules.websvc.saas.model.jaxb.ServletDescriptor;
+import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -96,6 +113,10 @@ import org.openide.util.NbBundle;
 public class ClientJavaSourceHelper {
 
     public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className) {
+        generateJerseyClient(resourceNode, targetFo, className, new Security(false, Security.Authentication.NONE));
+    }
+
+    public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className, Security security) {
 
         // add REST and Jersey dependencies
         ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
@@ -129,6 +150,17 @@ public class ClientJavaSourceHelper {
             }
         }
 
+        // set target project type
+        // PENDING: need to consider web project as well
+        String targetProjectType = null;
+        Project project = FileOwnerQuery.getOwner(targetFo);
+        if (project != null) {
+            targetProjectType = Wadl2JavaHelper.getProjectType(project); //NOI18N
+        } else {
+            targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
+        }
+        security.setProjectType(targetProjectType);
+
         RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
         if (restServiceDesc != null) {
             String uriTemplate = restServiceDesc.getUriTemplate();
@@ -158,11 +190,23 @@ public class ClientJavaSourceHelper {
                         baseURL,
                         restServiceDesc,
                         null,
-                        pf);
+                        pf,
+                        security);
             }
         } else {
             WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
             if (saasResource != null) {
+
+                addSecurityMetadata(security, saasResource);
+
+                if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+                    RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+
+                    if (restSupport != null && restSupport instanceof WebRestSupport) {
+                        security.setDeploymentDescriptor(((WebRestSupport)restSupport).getDeploymentDescriptor());
+                    }
+                }
+
                 String baseUrl = saasResource.getSaas().getBaseURL();
                 if (baseUrl.endsWith("/")) {
                     baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
@@ -176,7 +220,14 @@ public class ClientJavaSourceHelper {
                         resourceUri,
                         null,
                         saasResource,
-                        pf);
+                        pf,
+                        security);
+                
+                try {
+                    Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -187,7 +238,8 @@ public class ClientJavaSourceHelper {
             final String resourceUri,
             final RestServiceDescription restServiceDesc,
             final WadlSaasResource saasResource,
-            final PathFormat pf) {
+            final PathFormat pf,
+            final Security security) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -198,9 +250,9 @@ public class ClientJavaSourceHelper {
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree modifiedTree = null;
                     if (className == null) {
-                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf, security);
                     } else {
-                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf, security);
                     }
 
                     copy.rewrite(tree, modifiedTree);
@@ -219,9 +271,10 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
-        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf);
+        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf, security, null);
     }
 
     private static ClassTree addJerseyClientClass (
@@ -231,7 +284,8 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifs = maker.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC));
@@ -244,18 +298,20 @@ public class ClientJavaSourceHelper {
                 Collections.<Tree>emptyList());
 
         ClassTree modifiedInnerClass =
-                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf);
+                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf, security, classTree.getSimpleName().toString());
 
         return maker.addClassMember(classTree, modifiedInnerClass);
     }
 
-    private static ClassTree generateClassArtifacts(
+    private static ClassTree generateClassArtifacts (
             WorkingCopy copy,
             ClassTree classTree,
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security,
+            String outerClassName) {
 
         TreeMaker maker = copy.getTreeMaker();
         // add 3 fields
@@ -275,7 +331,12 @@ public class ClientJavaSourceHelper {
         modifiersSet.add(Modifier.FINAL);
         fieldModif =  maker.Modifiers(modifiersSet);
         typeTree = maker.Identifier("String"); //NOI18N
-        fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(resourceURI)); //NOI18N
+
+        String baseUri = resourceURI;
+        if (security.isSSL() && resourceURI.startsWith("http:")) { //NOI18N
+            baseUri = "https:"+resourceURI.substring(5); //NOI18N
+        }
+        fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(baseUri)); //NOI18N
         modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
 
         // add constructor
@@ -302,9 +363,17 @@ public class ClientJavaSourceHelper {
             resURI = getPathExpression(pf); //NOI18N
         }
 
+        String SSLExpr = security.isSSL() ?
+            "// SSL configuration\n" + //NOI18N
+            "config.getProperties().put(com.sun.jersey.client.urlconnection.HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, " + //NOI18N
+            "                           new com.sun.jersey.client.urlconnection.HTTPSProperties(getHostnameVerifier(), getSSLContext()));": //NOI18N
+            ""; //NOI18N
+
         String body =
                 "{"+ //NOI18N
-                "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
+                "   com.sun.jersey.api.client.config.ClientConfig config = new com.sun.jersey.api.client.config.DefaultClientConfig();"+ //NOI18N
+                SSLExpr+
+                "   client = "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client.create(config);"+ //NOI18N
                 subresourceExpr +
                 "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
@@ -347,7 +416,7 @@ public class ClientJavaSourceHelper {
                 }
             }
         } else if (saasResource != null) {
-            modifiedClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedClass, saasResource);
+            modifiedClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedClass, saasResource, security);
         }
 
         // add close()
@@ -364,6 +433,119 @@ public class ClientJavaSourceHelper {
                 null); //NOI18N
 
         modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        // add security stuff
+        if (Security.Authentication.BASIC == security.getAuthentication()) {
+            List<VariableTree> authParams = new ArrayList<VariableTree>();
+            Tree argTypeTree = maker.Identifier("String"); //NOI18N
+            ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+            VariableTree argFieldTree = maker.Variable(fieldModifier, "username", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+            argFieldTree = maker.Variable(fieldModifier, "password", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+
+            body =
+                "{"+ //NOI18N
+                "   client.addFilter(new com.sun.jersey.api.client.filter.HTTPBasicAuthFilter(username, password));"+ //NOI18N
+                "}"; //NOI18N
+            methodTree = maker.Method (
+                    methodModifier,
+                    "setUsernamePassword", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    authParams,
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null); //NOI18N
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        } else if (saasResource != null && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+            final SecurityParams securityParams = security.getSecurityParams();
+            if (securityParams != null) {
+                modifiedClass = Wadl2JavaHelper.addSessionAuthMethods(copy, modifiedClass, securityParams);
+                if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
+                    final FileObject ddFo = security.getDeploymentDescriptor();
+                    if (ddFo != null) {
+                        final String packageName = ((IdentifierTree)copy.getCompilationUnit().getPackageName()).getName().toString();
+                        final String className = (outerClassName==null ? "" : outerClassName+"$")+ //NOI18N
+                                classTree.getSimpleName().toString();
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    addWebXmlArtifacts(ddFo, securityParams, className, packageName);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add servlet/servlet mapping to web.xml", ex);
+                                } 
+                            }
+                            
+                        },1000);
+
+                    }
+                    modifiedClass = Wadl2JavaHelper.addSessionAuthServlets(copy, modifiedClass, securityParams, (ddFo == null));
+                }
+            }
+        }
+
+        if (security.isSSL()) {
+
+            ModifiersTree privateModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+            // adding getHostnameVerifier() method
+            body =
+            "{" + //NOI18N
+            "   return new HostnameVerifier() {" + //NOI18N
+            "       @Override" + //NOI18N
+            "       public boolean verify(String hostname, javax.net.ssl.SSLSession sslSession) {" + //NOI18N
+            "           return true;"+ //NOI18N
+            "       }"+ //NOI18N
+            "   }"+ //NOI18N
+            "}"; //NOI18N
+            methodTree = maker.Method (
+                    privateModifier,
+                    "getHostnameVerifier", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "javax.net.ssl.HostnameVerifier"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null);
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+            // adding getSSLContext() method
+            body =
+            "{"+ //NOI18N
+            "   javax.net.ssl.TrustManager x509 = new javax.net.ssl.X509TrustManager() {"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1) throws java.security.cert.CertificateException {"+ //NOI18N
+            "           return;"+ //NOI18N
+            "       }"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public void checkServerTrusted(java.security.cert.X509Certificate[] arg0, String arg1) throws java.security.cert.CertificateException {"+ //NOI18N
+            "           return;"+ //NOI18N
+            "       }"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public java.security.cert.X509Certificate[] getAcceptedIssuers() {"+ //NOI18N
+            "           return null;"+ //NOI18N
+            "       }"+ //NOI18N
+            "   };"+ //NOI18N
+            "   SSLContext ctx = null;"+ //NOI18N
+            "   try {"+ //NOI18N
+            "       ctx = SSLContext.getInstance(\"SSL\");"+ //NOI18N
+            "       ctx.init(null, new javax.net.ssl.TrustManager[] {x509}, null);"+ //NOI18N
+            "   } catch (java.security.GeneralSecurityException ex) {}"+ //NOI18N
+            "   return ctx;"+ //NOI18N
+            "}";
+            methodTree = maker.Method (
+                    privateModifier,
+                    "getSSLContext", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "javax.net.ssl.SSLContext"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null);
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        }
+
         return modifiedClass;
     }
 
@@ -801,6 +983,90 @@ public class ClientJavaSourceHelper {
 
         public void setPath(String path) {
             this.path = path;
+        }
+    }
+
+    private static void addSecurityMetadata(Security security, WadlSaasResource saasResource) {
+        // compute security params from METADATA
+        SaasMetadata saasMetadata = saasResource.getSaas().getSaasMetadata();
+        if (saasMetadata != null) {
+            SaasMetadata.Authentication auth = saasMetadata.getAuthentication();
+            if (auth != null) {
+                SecurityParams securityParams = new SecurityParams();
+                SessionKey sessionKey = auth.getSessionKey().get(0);
+                if (sessionKey != null) {
+                    securityParams.setSignature(sessionKey.getSigId());
+                    Sign sign = sessionKey.getSign();
+                    if (sign != null) {
+                        Params secParams = sign.getParams();
+                        if (secParams != null) {
+                            List<String> params = new ArrayList<String>();
+                            for (Params.Param secParam : secParams.getParam()) {
+                                params.add(secParam.getName());
+                            }
+                            securityParams.setParams(params);
+                        }
+                    }
+                    Authenticator authenticator = sessionKey.getAuthenticator();
+                    if (authenticator != null) {
+                        UseTemplates useTemplates = authenticator.getUseTemplates();
+                        if (useTemplates != null) {
+                            if (Wadl2JavaHelper.PROJEC_TYPE_NB_MODULE.equals(security.getProjectType())) { //NOI18N
+                                TemplateType tt = useTemplates.getNbModule();
+                                if (tt != null) {
+                                    securityParams.setFieldDescriptors(tt.getFieldDescriptor());
+                                    securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    securityParams.setServletDescriptors(tt.getServletDescriptor());
+                                }
+                            } else if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) { //NOI18N
+                                TemplateType tt = useTemplates.getWeb();
+                                if (tt != null) {
+                                    securityParams.setFieldDescriptors(tt.getFieldDescriptor());
+                                    securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    securityParams.setServletDescriptors(tt.getServletDescriptor());
+                                }
+                            } else {
+                                TemplateType tt = useTemplates.getDesktop();
+                                if (tt != null) {
+                                    securityParams.setFieldDescriptors(tt.getFieldDescriptor());
+                                    securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    securityParams.setServletDescriptors(tt.getServletDescriptor());
+                                }
+                            }
+                        }
+
+                    }
+                }
+                security.setSecurityParams(securityParams);
+            }
+        }
+    }
+
+    private static void addWebXmlArtifacts(FileObject ddFo, SecurityParams securityParams, String parentClassName, String packageName) throws IOException {
+        WebApp webApp = DDProvider.getDefault().getDDRoot(ddFo);
+        if (webApp != null) {
+            for (ServletDescriptor servletDesc : securityParams.getServletDescriptors()) {
+                String servletName = parentClassName+"$"+servletDesc.getClassName();
+                String className = packageName+"."+servletName;
+                String urlPattern = servletDesc.getServletMapping();
+                try {
+                    Servlet servlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
+                    servlet.setServletName(servletName);
+                    servlet.setServletClass(className);
+                    ServletMapping servletMapping = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+                    servletMapping.setServletName(servletName);
+                    if (servletMapping instanceof ServletMapping25) {
+                        ((ServletMapping25)servletMapping).addUrlPattern(urlPattern);
+                    } else {
+                        servletMapping.setUrlPattern(urlPattern);
+                    }
+                    webApp.addServlet(servlet);
+                    webApp.addServletMapping(servletMapping);
+
+                } catch (ClassNotFoundException ex) {
+                }
+            }
+            webApp.write(ddFo);
         }
     }
 

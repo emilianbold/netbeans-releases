@@ -262,7 +262,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         //
 
         final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getStorages(storageUniqueKey);
-
         for (DataProviderFactory providerFactory : providerFactories) {
             for (DataStorage storage : availableStorages) {
                 // Check that in case this dataProvider requires some Tables to be

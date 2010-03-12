@@ -390,6 +390,11 @@ public class DetectorTest extends TestBase {
         performTest("TwoPackagePrivateConstructors");
     }
 
+    public void testExoticIdentifiers() throws Exception {
+        setSourceLevel("1.7");
+        performTest("ExoticIdentifier");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
@@ -403,31 +408,31 @@ public class DetectorTest extends TestBase {
     public void testSimpleRemoveImport() throws Exception {
         performRemoveUnusedImportTest("SimpleRemoveImport");
     }
-    
+
     public void testRemoveImportNotLine1() throws Exception {
         performRemoveUnusedImportTest("RemoveImportNotLine1");
     }
-    
+
 //    public void testRemoveImportNotLine2() throws Exception {
 //        performRemoveUnusedImportTest("RemoveImportNotLine2");
 //    }
-    
+
     public void testRemoveImportDocStart() throws Exception {
         performRemoveUnusedImportTest("RemoveImportDocStart");
     }
-    
+
     public void testRemoveImportTrim() throws Exception {
         performRemoveUnusedImportTest("RemoveImportTrim");
     }
-    
+
     public void testRemoveImportDocStartTrim() throws Exception {
         performRemoveUnusedImportTest("RemoveImportDocStartTrim");
     }
-    
+
     public void testRemoveAllImports() throws Exception {
         performRemoveUnusedImportTest("RemoveAllImports", 2, 2, 0, 1);
     }
-    
+
     private FileObject testSourceFO;
     
     protected void performRemoveUnusedImportTest(String fileName) throws Exception {

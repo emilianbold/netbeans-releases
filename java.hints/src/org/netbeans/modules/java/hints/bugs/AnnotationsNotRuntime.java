@@ -96,7 +96,7 @@ public class AnnotationsNotRuntime {
         return hint(ctx, "DN_AnnotationsNotRuntime_getAnnotation");
     }
 
-    @TriggerPattern(value="$ann instanceof $annotation)",
+    @TriggerPattern(value="$ann instanceof $annotation",
                     constraints={
                         @Constraint(variable="$ann", type="java.lang.Annotation")
                     }

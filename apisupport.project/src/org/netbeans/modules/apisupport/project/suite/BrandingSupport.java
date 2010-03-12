@@ -59,7 +59,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -76,28 +78,44 @@ import org.openide.util.Utilities;
  */
 public final class BrandingSupport {
     
-    private final SuiteProject suiteProject;
-    private final SuiteProperties suiteProperties;    
+    private final Project project;
     private Set<ModuleEntry> brandedModules;
     private Set<BundleKey> brandedBundleKeys;
     private Set<BrandedFile> brandedFiles;
     
     private NbPlatform platform;
+    private final String brandingPath;
     private final File brandingDir;
     
     public static final String BRANDING_DIR_PROPERTY = "branding.dir"; // NOI18N
     private static final String BUNDLE_NAME = "Bundle.properties"; //NOI18N
 
     public static BrandingSupport getInstance(final SuiteProperties suiteProperties) throws IOException {
-        return new BrandingSupport(suiteProperties);
+        SuiteProject suiteProject = suiteProperties.getProject();
+        String brandingPath = suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
+        if (brandingPath == null) { // #125160
+            brandingPath = "branding"; // NOI18N
+        }
+        return new BrandingSupport(suiteProject, brandingPath);
+    }
+
+    /**
+     * Create branding support for non-suite projects, e.g. Maven branding module
+     * @param p Project to be branded.
+     * @param brandingPath Path relative to project's dir where branded resources are stored in.
+     * @return New instance
+     * @throws IOException
+     */
+    public static BrandingSupport getInstance( Project p, String brandingPath ) throws IOException {
+        return new BrandingSupport(p, brandingPath);
     }
         
-    private BrandingSupport(final SuiteProperties suiteProperties) throws IOException {
-        this.suiteProperties = suiteProperties;
-        this.suiteProject = suiteProperties.getProject();
-        File suiteDir = suiteProject.getProjectDirectoryFile();
+    private BrandingSupport(Project p, String brandingPath) throws IOException {
+        this.project = p;
+        this.brandingPath = brandingPath;
+        File suiteDir = FileUtil.toFile(project.getProjectDirectory());
         assert suiteDir != null && suiteDir.exists();
-        brandingDir = new File(suiteDir, getNameOfBrandingFolder());//NOI18N
+        brandingDir = new File(suiteDir, brandingPath);//NOI18N
         init();        
     }        
     
@@ -105,7 +123,7 @@ public final class BrandingSupport {
      * @return the project directory beneath which everything in the project lies
      */
     public File getProjectDirectory() {
-        return suiteProject.getProjectDirectoryFile();
+        return FileUtil.toFile(project.getProjectDirectory());
     }
     
     /**
@@ -255,7 +273,17 @@ public final class BrandingSupport {
     }
 
     private NbPlatform getActivePlatform() {
-        NbPlatform retval = suiteProperties.getActivePlatform();
+        NbPlatform retval = null;
+        if( project instanceof SuiteProject ) {
+            ((SuiteProject)project).getPlatform(true);
+        } else {
+            NbModuleProvider moduleProvider = project.getLookup().lookup(NbModuleProvider.class);
+            if( null != moduleProvider ) {
+                File platformDir = moduleProvider.getActivePlatformLocation();
+                if( null != platformDir )
+                    retval = NbPlatform.getPlatformByDestDir(platformDir);
+            }
+        }
         if (retval != null) {
             return retval;
         } else {
@@ -555,6 +583,9 @@ public final class BrandingSupport {
             return brandingBundle;
         }
 
+        public String getBundleFilePath() {
+            return  brandingBundle.getPath();
+        }
     }
     
     public class BrandedFile {
@@ -632,11 +663,6 @@ public final class BrandingSupport {
     }
 
     public String getNameOfBrandingFolder() {
-        String f = suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
-        if (f == null) { // #125160
-            f = "branding"; // NOI18N
-        }
-        return f;
+        return brandingPath;
     }
-    
 }

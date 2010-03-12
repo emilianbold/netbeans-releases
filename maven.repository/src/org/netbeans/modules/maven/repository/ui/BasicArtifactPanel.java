@@ -61,6 +61,7 @@ import javax.swing.JList;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -72,6 +73,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -129,6 +131,14 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             }
         });
         lstVersions.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            this.jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel2.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel3.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel4.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel5.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
     }
 
     private String computeSize(long size) {
@@ -433,7 +443,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new JToolBar();
+            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());

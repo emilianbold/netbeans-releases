@@ -231,6 +231,7 @@ public class HgCommand {
     private static final String HG_BACKOUT_COMMIT_MSG_CMD = "-m"; // NOI18N
     private static final String HG_REV_CMD = "-r"; // NOI18N
     private static final String HG_BASE_CMD = "--base"; // NOI18N
+    private static final String HG_OPTION_GIT = "--git"; //NOI18N
 
     private static final String HG_STRIP_CMD = "strip"; // NOI18N
     private static final String HG_STRIP_EXT_CMD = "extensions.mq="; // NOI18N
@@ -320,6 +321,8 @@ public class HgCommand {
     private static final String HG_AUTHORIZATION_REQUIRED_ERR = "authorization required"; // NOI18N
     private static final String HG_AUTHORIZATION_FAILED_ERR = "authorization failed"; // NOI18N
     public static final String COMMIT_AFTER_MERGE = "commitAfterMerge"; //NOI18N
+
+    private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -1145,7 +1148,7 @@ public class HgCommand {
             throw new HgException(ex.getMessage());
         } catch (HgException e) {
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
-            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         } finally {
             Utils.deleteRecursively(tempFolder);
@@ -1603,7 +1606,7 @@ public class HgCommand {
             command.add(file.getCanonicalPath());
         } catch (IOException e) {
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
-            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         }
         List<String> list = exec(command);
@@ -2363,6 +2366,7 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_EXPORT_CMD);
         command.add(HG_VERBOSE_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
@@ -2458,6 +2462,7 @@ public class HgCommand {
         command.add(revStr);
         command.add(HG_LOG_TEMPLATE_EXPORT_FILE_CMD);
         command.add(HG_LOG_PATCH_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(file.getAbsolutePath());
 
         List<String> list = exec(command);
@@ -2735,8 +2740,9 @@ public class HgCommand {
             }
             final List<String> commandLine = toCommandList(command, outputStyleFile);
             final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            Map<String, String> envOrig = pb.environment();
+            setGlobalEnvVariables(envOrig);
             if (env != null && env.size() > 0) {
-                Map<String, String> envOrig = pb.environment();
                 for (String s : env) {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
@@ -2764,6 +2770,10 @@ public class HgCommand {
                 }
             }
         }
+    }
+
+    private static void setGlobalEnvVariables (Map<String, String> environment) {
+        environment.put(ENV_HGPLAIN, "true"); //NOI18N
     }
 
     /**

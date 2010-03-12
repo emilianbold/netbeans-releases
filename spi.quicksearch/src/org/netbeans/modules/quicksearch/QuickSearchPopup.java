@@ -86,7 +86,6 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private int resultWidth;
     private Task evalTask;
 
-    /** Creates new form SilverPopup */
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
         initComponents();
@@ -99,6 +98,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
             jList1.setBackground(QuickSearchComboBar.getResultBackground());
 
         updateStatusPanel();
+        setVisible(false);
     }
 
     void invoke() {
@@ -115,12 +115,18 @@ public class QuickSearchPopup extends javax.swing.JPanel
         if (oldSel >= 0 && oldSel < jList1.getModel().getSize() - 1) {
             jList1.setSelectedIndex(oldSel + 1);
         }
+        if (jList1.getModel().getSize() > 0) {
+            setVisible(true);
+        }
     }
 
     void selectPrev() {
         int oldSel = jList1.getSelectedIndex();
         if (oldSel > 0) {
             jList1.setSelectedIndex(oldSel - 1);
+        }
+        if (jList1.getModel().getSize() > 0) {
+            setVisible(true);
         }
     }
 
@@ -329,13 +335,21 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             if (jList1.getSelectedIndex() >= modelSize) {
                 jList1.setSelectedIndex(modelSize - 1);
             }
-            setVisible(true);
+            if (explicitlyInvoked || !searchedText.isEmpty()) {
+                setVisible(true);
+            }
         } else {
             setVisible(false);
         }
+        explicitlyInvoked = false;
 
         // needed on JDK 1.5.x to repaint correctly
         revalidate();
+    }
+    private boolean explicitlyInvoked = false;
+    /** User actually pressed Ctrl-I; display popup even just for Recent Searches. */
+    void explicitlyInvoked() {
+        explicitlyInvoked = true;
     }
 
     public int getCategoryWidth () {

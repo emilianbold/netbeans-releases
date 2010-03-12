@@ -42,8 +42,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,15 +70,18 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
         return INSTANCE;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         acceptedFilesPattern = null; // This will reset filter
         cs.fireChange();
     }
 
+    @Override
     public boolean isVisible(FileObject file) {
         return isVisible(file.getNameExt());
     }
 
+    @Override
     public boolean isVisible(File file) {
         return isVisible(file.getName());
     }
@@ -102,6 +103,7 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
      * Add a listener to changes.
      * @param l a listener to add
      */
+    @Override
     public void addChangeListener(ChangeListener l) {
         cs.addChangeListener(l);
     }
@@ -110,16 +112,9 @@ public class CndFileVisibilityQuery implements VisibilityQueryImplementation2, C
      * Stop listening to changes.
      * @param l a listener to remove
      */
+    @Override
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
-    }
-
-    private static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
-            return new TreeSet<String>();
-        }
     }
 
     private List<Collection<String>> getAcceptedFilesExtensions() {

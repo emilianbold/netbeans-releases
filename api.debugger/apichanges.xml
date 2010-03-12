@@ -384,6 +384,43 @@ made subject to such option by the copyright holder.
         <issue number="177561"/>
     </change>
 
+    <change id="AddWatchActionProvider">
+        <api name="DebuggerCoreAPI"/>
+        <summary>It's possible to override New Watch action with a session-specific provider.</summary>
+        <version major="1" minor="24"/>
+        <date day="23" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             ActionsManager.ACTION_NEW_WATCH constant was added for use by session-specific
+             provider of New Watch action. That action invokes an implementation
+             of ActionsProvider that is registered for the active debugger session
+             and contains ActionsManager.ACTION_NEW_WATCH action.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="ActionsManager" />
+        <issue number="180558"/>
+    </change>
+    
+    <change id="BreakpointsGrouping">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Breakpoints group properties.</summary>
+        <version major="1" minor="25"/>
+        <date day="28" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Add Breakpoint.getGroupProperties() method, that returns an implementation
+             of GroupProperties class with the relevant grouping information
+             used by BreakpointsWindow to create hierarchy of breakpoint groups
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Breakpoint" />
+        <issue number="179759"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

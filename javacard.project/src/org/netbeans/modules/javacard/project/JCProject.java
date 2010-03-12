@@ -1066,6 +1066,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                         synchronized (JCProject.this) {
                             cachedBadProjectOrCard = null;
                         }
+                        platformProperties.fire();
+                        deviceProperties.fire();
                         supp.fireChange();
                     }
                 }

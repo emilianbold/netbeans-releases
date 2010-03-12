@@ -50,7 +50,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -61,9 +63,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -232,10 +237,17 @@ public class TableUISupport {
 
             if (value instanceof Table) {
                 table = (Table)value;
-                if(((Table)value).isTable())
-                    displayName = table.getName();
-                else
-                    displayName = table.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
+
+                DisabledReason disabledReason = table.getDisabledReason();
+                if (disabledReason!= null) {
+                    displayName = NbBundle.getMessage(TableUISupport.class, "LBL_TableNameWithDisabledReason", table.getName(), disabledReason.getDisplayName());
+                } else {
+                    if(((Table)value).isTable())
+                        displayName = table.getName();
+                    else
+                        displayName = table.getName() + NbBundle.getMessage(TableUISupport.class, "LBL_DB_VIEW");
+                }
+
 
                 if (list.getModel() instanceof SelectedTablesModel) {
                     SelectedTablesModel model = (SelectedTablesModel)list.getModel();
@@ -247,8 +259,13 @@ public class TableUISupport {
             }
 
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
-            component.setEnabled(!referenced);
-            component.setToolTipText(referenced ? getTableTooltip(table, tableClosure) : null); // NOI18N
+            component.setEnabled(!referenced && !table.isDisabled());
+            String tooltip = referenced ? getTableTooltip(table, tableClosure) : null;
+            if (table.isDisabled()){
+                String descr = table.getDisabledReason().getDescription();
+                tooltip = tooltip == null ? descr : tooltip.concat("<br>" + descr); //NOI18N
+            } 
+            component.setToolTipText(tooltip); 
 
             return component;
         }
@@ -310,6 +327,10 @@ public class TableUISupport {
             this.tables = selectedTables.getTables();
         }
 
+        SelectedTables getSelectedTables(){
+            return selectedTables;
+        }
+
         public Table getTableAt(int rowIndex) {
             return tables.get(rowIndex);
         }
@@ -327,7 +348,7 @@ public class TableUISupport {
         }
 
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -339,6 +360,9 @@ public class TableUISupport {
                     Table table = tables.get(rowIndex);
                     return selectedTables.getClassName(table);
 
+                case 2:
+                    return selectedTables.getUpdateType(tables.get(rowIndex)).getName();
+
                 default:
                     assert false;
             }
@@ -347,17 +371,23 @@ public class TableUISupport {
         }
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
-            if (columnIndex != 1) {
-                return;
-            }
-
             Table table = tables.get(rowIndex);
-            selectedTables.setClassName(table, (String)value);
+            switch(columnIndex){
+                case 1:{
+                    selectedTables.setClassName(table, (String)value);
+                    fireTableRowsUpdated(rowIndex, rowIndex);
+                    return;
+                }
+                case 2:{
+                    selectedTables.setUpdateType(table, (UpdateType)value);
+                    return;
+                }
+            }
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             Table table = tables.get(rowIndex);
-            return !table.isJoin() && columnIndex == 1;
+            return !table.isJoin() && (columnIndex == 1 || columnIndex == 2);
         }
 
         public String getColumnName(int column) {
@@ -368,6 +398,9 @@ public class TableUISupport {
                 case 1:
                     return NbBundle.getMessage(TableUISupport.class, "LBL_ClassName");
 
+                case 2:
+                    return NbBundle.getMessage(TableUISupport.class, "LBL_GenerationType");
+
                 default:
                     assert false;
             }
@@ -375,6 +408,27 @@ public class TableUISupport {
             return null;
         }
     }
+
+    static final class ClassNamesTable extends JTable{
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            if (column == 2){
+                if (getModel() instanceof TableClassNamesModel) {
+                    TableClassNamesModel model = (TableClassNamesModel)getModel();
+                    Table table = model.getTableAt(row);
+                    SelectedTables selectedTables = model.getSelectedTables();
+                    FileObject classFO = selectedTables.getTargetFolder() != null ? selectedTables.getTargetFolder().getFileObject(selectedTables.getClassName(table), "java") : null; //NOI18N
+                    if (classFO != null){
+                        return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.UPDATE, UpdateType.RECREATE}));
+                    } else {
+                        return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.NEW}));
+                    }
+                }
+            } 
+            return super.getCellEditor(row, column);
+        }
+    }
+
 
     private static final class TableClassNameRenderer extends DefaultTableCellRenderer {
         private static Color errorForeground;

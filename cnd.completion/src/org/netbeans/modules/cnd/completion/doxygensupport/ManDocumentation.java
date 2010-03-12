@@ -41,28 +41,26 @@
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -70,305 +68,173 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author thp
  */
 public class ManDocumentation {
 
-    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
-    private static String manPath = null;
-    private static String man2htmlPath = null;
+//    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
+//    private static String manPath = null;
+//
+//    private static String getPath(String cmd) {
+//        String path = null;
+//        path = Path.findCommand(cmd);
+//        if (path == null) {
+//            if (new File("/usr/bin/" + cmd).exists()) { // NOI18N
+//                path = "/usr/bin/" + cmd; // NOI18N
+//            }
+//        }
+//        if (path == null) {
+//            if (new File("/bin/" + cmd).exists()) { // NOI18N
+//                path = "/bin/" + cmd; // NOI18N
+//            }
+//        }
+//        return path;
+//    }
+//
+//    private static String getManPath() {
+//        if (manPath == null) {
+//            manPath = getPath("man"); // NOI18N
+//        }
+//        return manPath;
+//    }
 
-    private static String getPath(String cmd) {
-        String path = null;
-        path = Path.findCommand(cmd);
-        if (path == null) {
-            if (new File("/usr/bin/" + cmd).exists()) { // NOI18N
-                path = "/usr/bin/" + cmd; // NOI18N
-            }
-        }
-        if (path == null) {
-            if (new File("/bin/" + cmd).exists()) { // NOI18N
-                path = "/bin/" + cmd; // NOI18N
-            }
-        }
-        return path;
-    }
-
-    private static String getManPath() {
-        if (manPath == null) {
-            manPath = getPath("man"); // NOI18N
-        }
-        return manPath;
-    }
-
-    private static String getMan2HtmlPath() {
-        if (man2htmlPath == null) {
-            man2htmlPath = getPath("man2html"); // NOI18N
-        }
-        return man2htmlPath;
-    }
-
-    public static CompletionDocumentation getDocumentation(CsmObject obj) {
+    public static CompletionDocumentation getDocumentation(CsmObject obj, CsmFile file) throws IOException {
         if (obj instanceof CsmFunction) {
-            return getDocumentation(((CsmFunction) obj).getName().toString());
+            return getDocumentation(((CsmFunction) obj).getName().toString(), file);
         }
 
         return null;
     }
 
-    public static CompletionDocumentation getDocumentation(String name) {
-        return getDocumentation(name, 3/**Supposing all functions goes from chapter 3*/
-                );
+    public static CompletionDocumentation getDocumentation(String name, CsmFile file) throws IOException {
+        return getDocumentation(name, 3, file);
+        /**Supposing all functions goes from chapter 3*/
     }
 
-    public static CompletionDocumentation getDocumentation(String name, int chapter) {
-        String doc = getDocumentationForName(name, chapter);
+    public static CompletionDocumentation getDocumentation(String name, int chapter, CsmFile file) throws IOException {
+        String doc = getDocumentationForName(name, chapter, file);
 
         if (doc == null) {
             return null;
         }
 
-        return new CompletionDocumentationImpl(doc);
+        return new CompletionDocumentationImpl(doc, file);
     }
 
-    public static String getDocumentationForName(String name, int chapter) {
-        try {
-            File cache = getCacheFile(name, chapter);
+    public static String getDocumentationForName(String name, int chapter, CsmFile file) throws IOException {
+        NativeProject np = getNativeProject(file);
+        if (np == null) {
+            return "";
+        }
+        String platformName = np.getPlatformName();
+        File cache = getCacheFile(name, chapter, platformName);
 
-            if (cache.exists()) {
-                return readFile(cache);
-            }
+        if (cache.exists()) {
+            return readFile(cache);
+        }
 
-            String doc = createDocumentationForName(name, chapter);
+        String doc = createDocumentationForName(name, chapter, np);
 
-            if (doc != null) {
-                OutputStream out = null;
+        if (doc != null) {
+            OutputStream out = null;
 
-                try {
-                    out = new FileOutputStream(cache);
+            try {
+                out = new FileOutputStream(cache);
 
-                    out.write(doc.getBytes());
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                out.write(doc.getBytes());
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            } finally {
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-
-                return doc;
             }
-        } catch (IOException e) {
-            LOG.log(Level.FINE, null, e);
+
+            return doc;
         }
 
         return null;
     }
 
-    public static String constructWarning(CsmObject obj) {
-        if (obj instanceof CsmFunction) {
-            StringBuilder w = new StringBuilder();
-
-            if (getManPath() == null) { // NOI18N
-                w.append("<p>"); // NOI18N
-                w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
-                w.append("</p>\n"); // NOI18N
-            }
-
-            if (getMan2HtmlPath() == null) { // NOI18N
-                w.append("<p><tt>man2html</tt> "); // NOI18N
-                w.append(getString("IS_REQUIRED")); // NOI18N
-                w.append("</p>\n"); // NOI18N
-            }
-
-            return w.toString();
-        }
-
-        return "";
-    }
-
+//    public static String constructWarning(CsmObject obj) {
+//        if (obj instanceof CsmFunction) {
+//            StringBuilder w = new StringBuilder();
+//
+//            if (getManPath() == null) { // NOI18N
+//                w.append("<p>"); // NOI18N
+//                w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
+//                w.append("</p>\n"); // NOI18N
+//            }
+//
+//            return w.toString();
+//        }
+//
+//        return "";
+//    }
     private static File getCacheDir() {
         String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
-        File cache = new File(nbuser, "var/cache/cnd/doxygen"); // NOI18N
+        File cache = new File(nbuser, "var/cache/cnd/manpages"); // NOI18N
 
         cache.mkdirs();
 
         return cache;
     }
 
-    private static File getCacheFile(String name, int chapter) {
-        File res = new File(getCacheDir(), name + "." + chapter); // NOI18N
+    private static File getCacheFile(String name, int chapter, String platformName) {
+        File res = new File(getCacheDir(), name + "." + platformName + "." + chapter); // NOI18N
 
         return res;
     }
 
-    private static String createDocumentationForName(String name, int chapter) throws IOException {
-        if (getManPath() == null || getMan2HtmlPath() == null) {
-            return null;
-        }
-        
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name); // NOI18N
-        InputStream is = p0.getInputStream();
-        InputStreamReader ist = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(ist);
-        StringBuffer stringBuffer = new StringBuffer();
-        String buf = null;
-        while ((buf = br.readLine()) != null) {
-            stringBuffer.append(buf + "\n"); // NOI18N
-        }
-        String text = stringBuffer.toString();
-        br.close();
-        ist.close();
-        is.close();
-        bos.close();
-
-        if (text == null) {
-            return null;
-        }
-
-        text = soElim(text, 0);
-
-        InputStream in = new ByteArrayInputStream(text.getBytes());
-
-        try {
-            Process p = Runtime.getRuntime().exec(new String[]{
-                        getMan2HtmlPath(), // NOI18N
-                        "-compress", // NOI18N
-                        "-", // NOI18N
-                    });
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            StreamCopier inC = new StreamCopier("in", in, p.getOutputStream()); // NOI18N
-            StreamCopier outC = new StreamCopier("out", p.getInputStream(), out); // NOI18N
-            StreamCopier errC = new StreamCopier("err", p.getErrorStream(), out); // NOI18N
-
-            inC.start();
-            outC.start();
-            errC.start();
-
-            p.waitFor();
-
-            inC.join();
-            outC.join();
-            errC.join();
-
-            String result = out.toString();
-
-            for (Iterator e = TRANSLATE.entrySet().iterator(); e.hasNext();) {
-                Map.Entry entry = (Map.Entry) e.next();
-                String key = (String) entry.getKey();
-                String value = (String) entry.getValue();
-
-                result = result.replace(key, value); //1.5 API!!!!
-            }
-
-            int htmlStart = result.indexOf("<HTML>"); // NOI18N
-
-            if (htmlStart != (-1)) {
-                result = result.substring(htmlStart);
-            }
-
-            return result;
-        } catch (InterruptedException e) {
-            Exceptions.printStackTrace(e);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-
-        return null;
-    }
-
-    private static String manPageRelativePath(String name, int chapter) {
-        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
-    }
-
-    private static File resolvePath(String path) {
-        File f = new File("/usr/share/man/", path); // NOI18N
-
-        if (!f.exists()) {
-            f = new File("/usr/share/man/", path + ".gz"); // NOI18N
-        }
-
-        if (f.exists()) {
-            return f;
-        }
-
-        return null;
-    }
-
-    private static String readManPage(String relativePath) throws IOException {
-        File f = resolvePath(relativePath);
-
-        if (f == null) {
-            return null;
-        }
-
-        return readFile(f);
-    }
-    private static final int MAX_DEPTH = 10;
-
-    private static String soElim(String text, int depth) throws IOException {
-        if (depth > MAX_DEPTH) {
-            throw new IOException("Too deep includes."); // NOI18N
-        }
-
-        Pattern soPattern = Pattern.compile("^\\.so (.*)$", Pattern.MULTILINE); // NOI18N
-        Matcher m = soPattern.matcher(text);
-        StringBuffer result = new StringBuffer();
-        int lastOccurrenceEnd = 0;
-
-        while (m.find()) {
-            result.append(text.substring(lastOccurrenceEnd, m.start()));
-            lastOccurrenceEnd = m.end();
-
-            String path = m.group(1);
-            String included = readManPage(path);
-
-            if (included != null) {
-                result.append(soElim(included, depth + 1));
+    static NativeProject getNativeProject(CsmFile csmFile) {
+        NativeProject nativeProject = null;
+        if (csmFile != null) {
+            CsmProject csmProject = csmFile.getProject();
+            if (csmProject.getPlatformProject() instanceof NativeProject) {
+                nativeProject = (NativeProject) csmProject.getPlatformProject();
             } else {
-                LOG.log(Level.WARNING, "Cannot resolve man page: {0}", path); // NOI18N
+                loop:
+                for (CsmProject project : CsmModelAccessor.getModel().projects()) {
+                    for (CsmProject lib : project.getLibraries()) {
+                        if (lib.equals(csmProject)) {
+                            if (project.getPlatformProject() instanceof NativeProject) {
+                                nativeProject = (NativeProject) project.getPlatformProject();
+                                break loop;
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        result.append(text.substring(lastOccurrenceEnd));
-
-        return result.toString();
+        return nativeProject;
     }
 
-    private static final class StreamCopier extends Thread {
-
-        private InputStream ins;
-        private OutputStream out;
-
-        public StreamCopier(String name, InputStream ins, OutputStream out) {
-            this.ins = ins;
-            this.out = out;
-        }
-
-        public void run() {
-            try {
-                int read;
-
-                while ((read = ins.read()) != (-1)) {
-                    System.err.write(read);
-                    out.write(read);
-                }
-
-                out.close();
-            } catch (IOException e) {
-                LOG.log(Level.FINE, null, e);
+    private static String createDocumentationForName(String name, int chapter, NativeProject np) throws IOException {
+        //NativeFileItem nfi = CsmFileInfoQuery.getDefault().getNativeFileItem(file);
+//        NativeProject np = getNativeProject(file);
+//        if (np == null) {
+//            return "";
+//        }
+        NativeExitStatus exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
+        StringReader sr;
+        if (exitStatus != null) {
+            if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+                sr = new StringReader(exitStatus.output);
+            } else {
+                throw new IOException(exitStatus.error);
             }
+        } else {
+            return null;
         }
+        BufferedReader br = new BufferedReader(sr);
+        String text = new Man2HTML(br).getHTML();
+        br.close();
+        sr.close();
+        return text;
     }
     private static final Map<String, String> TRANSLATE;
 
@@ -423,19 +289,24 @@ public class ManDocumentation {
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
 
         private String doc;
+        private CsmFile file;
 
-        public CompletionDocumentationImpl(String doc) {
+        public CompletionDocumentationImpl(String doc, CsmFile file) {
             this.doc = doc;
+            this.file = file;
         }
 
+        @Override
         public String getText() {
             return doc;
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             String[] parts = link.split("\\?"); // NOI18N
 
@@ -452,9 +323,14 @@ public class ManDocumentation {
             int chapter = Integer.parseInt(chapterAndName[0]);
             String name = chapterAndName[1];
 
-            return ManDocumentation.getDocumentation(name, chapter);
+            try {
+                return ManDocumentation.getDocumentation(name, chapter, file);
+            } catch (IOException ioe) {
+                return new CompletionDocumentationImpl(ioe.getMessage(), file);
+            }
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }

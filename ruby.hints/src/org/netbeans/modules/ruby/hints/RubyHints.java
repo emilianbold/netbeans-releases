@@ -40,6 +40,9 @@
 package org.netbeans.modules.ruby.hints;
 
 import org.jrubyparser.ast.Node;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  * Utility methods for hints.
@@ -47,6 +50,8 @@ import org.jrubyparser.ast.Node;
  * @author Erno Mononen
  */
 public abstract class RubyHints {
+
+    private static final String RAILS_PROJECT = "RailsProject"; //NOI18N
 
     private RubyHints() {
     }
@@ -60,6 +65,28 @@ public abstract class RubyHints {
      */
     static boolean isNullOrInvisible(Node node) {
         return node == null || node.isInvisible();
+    }
+
+    static boolean isInRailsProject(FileObject file) {
+        return isRailsProject(FileOwnerQuery.getOwner(file));
+    }
+
+    static boolean isInRails3Project(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        // assumes that the presence of script/rails means it is a rails 3 project
+        if (!isRailsProject(project)){
+            return false;
+        }
+        FileObject railsScript = project.getProjectDirectory().getFileObject("script/rails");
+        return railsScript != null && railsScript.isValid();
+    }
+
+    private static boolean isRailsProject(Project project) {
+        // Ugly!!
+        if (project == null || project.getClass().getName().indexOf(RAILS_PROJECT) == -1) { // NOI18N
+            return false;
+        }
+        return true;
     }
 
 }

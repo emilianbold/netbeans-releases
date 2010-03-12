@@ -93,6 +93,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
     }
 
     @Override
+    public String getPath() {
+        return this.remotePath;
+    }
+
+    @Override
     public void addFileChangeListener(FileChangeListener fcl) {
         getEventSupport().add(FileChangeListener.class, fcl);
     }
@@ -122,7 +127,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Enumeration<String> getAttributes() {
-        return Collections.enumeration(Collections.singleton("java.io.File"));
+        return Collections.enumeration(Collections.singleton("java.io.File")); // NOI18N
     }
 
     @Override
@@ -230,4 +235,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         }
     }
 
+    @Override
+    public String toString() {
+        return execEnv.toString() + ":" + remotePath; //NOI18N
+    }
 }

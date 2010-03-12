@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.api.toolchain;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.util.Utilities;
@@ -65,7 +66,7 @@ public final class CompilerSetUtils {
             ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
-                String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                String cygwinBin = ToolUtils.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (cygwinBin != null) {
                     cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
                 }
@@ -124,8 +125,7 @@ public final class CompilerSetUtils {
         if (td != null) {
             String dir = commandsFolders.get(td);
             if (dir == null) {
-                ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
-                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                String msysBin = ToolUtils.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (msysBin != null) {
                     dir = msysBin.replace("\\", "/"); // NOI18N
                 } else {

@@ -45,6 +45,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
@@ -143,5 +144,14 @@ public class CssLanguage extends DefaultLanguageConfig {
         return new CssHintsProvider();
     }
 
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new CssOccurancesFinder();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
 
 }

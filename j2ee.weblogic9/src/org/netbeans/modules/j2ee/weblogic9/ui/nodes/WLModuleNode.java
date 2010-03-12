@@ -55,13 +55,12 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ControlModuleCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ModuleCookieSupport;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StartModuleAction;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StartModuleCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StopModuleAction;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StopModuleCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleCookie;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -110,20 +109,19 @@ public class WLModuleNode extends AbstractNode {
         if (url != null) {
             getCookieSet().add(new OpenModuleUrlCookieImpl(url));
         }
-        getCookieSet().add(new StartModuleCookieImpl(module, lookup));
-        getCookieSet().add(new StopModuleCookieImpl(module, lookup));
+        getCookieSet().add(new ControlModuleCookieImpl(module, lookup, !stopped));
         getCookieSet().add(new UndeployModuleCookieImpl(module, lookup));
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>(5);
+        List<Action> actions = new ArrayList<Action>(7);
         actions.add(SystemAction.get(StartModuleAction.class));
         actions.add(SystemAction.get(StopModuleAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(OpenModuleUrlAction.class));
+        actions.add(null);
         actions.add(SystemAction.get(UndeployModuleAction.class));
-        if (url != null && !stopped) {
-            actions.add(SystemAction.get(OpenModuleUrlAction.class));
-        }
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -183,12 +181,15 @@ public class WLModuleNode extends AbstractNode {
         }
     }
 
-    private static class StartModuleCookieImpl implements StartModuleCookie {
+    private static class ControlModuleCookieImpl implements ControlModuleCookie {
 
         private final ModuleCookieSupport support;
 
-        public StartModuleCookieImpl(TargetModuleID module, Lookup lookup) {
+        private final boolean running;
+
+        public ControlModuleCookieImpl(TargetModuleID module, Lookup lookup, boolean running) {
             this.support = new ModuleCookieSupport(module, lookup);
+            this.running = running;
         }
 
         @Override
@@ -201,15 +202,6 @@ public class WLModuleNode extends AbstractNode {
                 }
             });
         }
-    }
-
-    private static class StopModuleCookieImpl implements StopModuleCookie {
-
-        private final ModuleCookieSupport support;
-
-        public StopModuleCookieImpl(TargetModuleID module, Lookup lookup) {
-            this.support = new ModuleCookieSupport(module, lookup);
-        }
 
         @Override
         public void stop() {
@@ -220,6 +212,11 @@ public class WLModuleNode extends AbstractNode {
                     return manager.stop(new TargetModuleID[] {module});
                 }
             });
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running;
         }
     }
 

@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/0FB47E1F630A4074F493055291439BC18B025A95-lime6.zip"
+        <get src="http://hg.netbeans.org/binaries/FDCBE13B6CA7B154F6EE29BEF3B9404F7A7B1A57-lime6.zip"
             dest="${temp_dir}/lime6.zip"/>
     </target>
     
@@ -134,6 +134,7 @@ made subject to such option by the copyright holder.
 
     <target name="clean">
         <delete dir="${work_dir}"/>
+        <delete dir="${lime6_dest_dir}"/>
     </target>
 
     <!-- Don't use this task to run the test -->
@@ -181,7 +182,7 @@ made subject to such option by the copyright holder.
         </exec>
     </target>
 
-    <target name="test" depends="prepare,clean">
+    <target name="test" depends="clean, prepare">
         <antcall target="test1" inheritAll="true" inheritRefs="true"/>
         <antcall target="test2" inheritAll="true" inheritRefs="true"/>
         <antcall target="test3" inheritAll="true" inheritRefs="true"/>
@@ -202,6 +203,7 @@ made subject to such option by the copyright holder.
     
     <target name="unprepare">
         <delete dir="${lime6_dest_dir}"/>
+        <delete dir="${temp_dir}"/>
     </target>
         
 </project>

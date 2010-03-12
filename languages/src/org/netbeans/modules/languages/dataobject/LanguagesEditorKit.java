@@ -41,28 +41,16 @@
 
 package org.netbeans.modules.languages.dataobject;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.util.Map;
-import javax.swing.JLabel;
 import javax.swing.text.Document;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.UIManager;
 import javax.swing.text.TextAction;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ToolTipSupport;
-import org.netbeans.editor.PopupManager;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorUI;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -101,78 +89,6 @@ public class LanguagesEditorKit extends NbEditorKit {
         }
     }
     
-    private JLabel label;
-    
-    private JLabel createToolTipComponent () {
-        if (label == null) {
-            label = new JLabel () {
-                public @Override void setSize(int width, int height) {
-                    if (getText () == null) {
-                        super.setSize (width, height);
-                        return;
-                    }
-                    int docLen = getText ().length ();
-                    if (docLen > 0) { // nonzero length
-                        Dimension prefSize = getPreferredSize();
-                        if (width > prefSize.width) { // given width unnecessarily big
-                            width = prefSize.width; // shrink the width to preferred
-                            if (height >= prefSize.height) {
-                                height = prefSize.height;
-                            } else { // height not big enough
-                                height = -1;
-                            }
-
-                        } else { // available width not enough - wrap lines
-                            super.setSize(width, 100000);
-//                            try {
-                                //Rectangle r = modelToView(docLen - 1);
-                                int prefHeight = getPreferredSize ().height;//r.y + r.height;
-                                if (prefHeight < height) {
-                                    height = prefHeight;
-
-                                } else { // the given height is too small
-                                    height = -1;
-                                }
-//                            } catch (BadLocationException e) {
-//                            }
-                        }
-                    }
-
-                    if (height >= 0) { // only for valid height
-                        super.setSize(width, height);
-                    } else { // signal that the height is too small to display tooltip
-                        putClientProperty(PopupManager.Placement.class, null);
-                    }
-                }
-            };
-
-            // bugfix of #43174
-            label.setActionMap (new ActionMap ());
-            label.setInputMap (JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
-
-            Font font = UIManager.getFont ("ToolTip.font"); // NOI18N
-            Color backColor = UIManager.getColor("ToolTip.background"); // NOI18N
-            Color foreColor = UIManager.getColor("ToolTip.foreground"); // NOI18N
-
-            if (font != null) {
-                label.setFont(font);
-            }
-            if (foreColor != null) {
-                label.setForeground(foreColor);
-            }
-            if (backColor != null) {
-                label.setBackground(backColor);
-            }
-
-            label.setOpaque(true);
-            label.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(label.getForeground()),
-                BorderFactory.createEmptyBorder(0, 3, 0, 3)
-            ));
-        }
-        return label;
-    }
-
     protected @Override Action[] createActions() {
         Action[] myActions = new Action[] {
             new BraceCompletionInsertAction (),
@@ -202,25 +118,6 @@ public class LanguagesEditorKit extends NbEditorKit {
             return new CollapseFoldTypeAction (name);
         }
         return super.getActionByName (name);
-    }
-    
-    protected @Override EditorUI createEditorUI () {
-        return new NbEditorUI () {
-            private ToolTipSupport toolTipSupport;
-            public @Override ToolTipSupport getToolTipSupport() {
-                if (toolTipSupport == null) {
-                    toolTipSupport = new ToolTipSupport (this) {
-                        public @Override void setToolTipText (String text) {
-                            if (text == null) return;
-                            JLabel l = createToolTipComponent ();
-                            l.setText (text);
-                            setToolTip (l);
-                        }
-                    };
-                }
-                return toolTipSupport;
-            }
-        };
     }
     
     public @Override Document createDefaultDocument() {

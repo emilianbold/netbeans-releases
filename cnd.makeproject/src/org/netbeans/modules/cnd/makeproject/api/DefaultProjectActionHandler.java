@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -67,7 +66,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
@@ -139,12 +138,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     }
 
     private void _execute(final InputOutput io) {
-        final String rcfile = null; // For debugging only...
         final Type actionType = pae.getType();
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
-                && actionType != ProjectActionEvent.PredefinedType.CLEAN) {
+                && actionType != ProjectActionEvent.PredefinedType.CLEAN
+                && actionType != ProjectActionEvent.PredefinedType.BUILD_TESTS
+                && actionType != ProjectActionEvent.PredefinedType.TEST) {
             assert false;
         }
 
@@ -186,9 +186,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = IpeUtils.naturalize(exe);
+                    exe = CndPathUtilitities.naturalize(exe);
                 } else if (conf.getDevelopmentHost().isLocalhost()) {
-                    exe = IpeUtils.toAbsolutePath(runDirectory, exe);
+                    exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
                 }
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
@@ -235,7 +235,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (conf.isQmakeConfiguration()) {
                 String qmakePath = compilerSet.getTool(PredefinedToolKind.QMakeTool).getPath();
                 qmakePath = CppUtils.normalizeDriveLetter(compilerSet, qmakePath.replace('\\', '/')); // NOI18N
-                args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
+                args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
 
@@ -259,7 +259,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         ProcessChangeListener processChangeListener =
                 new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName(), rcfile, !runInInternalTerminal);
+                converter, io, pae.getActionName(), !runInInternalTerminal);
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                 .setWorkingDirectory(workingDirectory)
@@ -280,7 +280,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             String termPath = pae.getProfile().getTerminalPath();
             CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
             if (termPath != null) {
-                String termBaseName = IpeUtils.getBaseName(termPath);
+                String termBaseName = CndPathUtilitities.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
                     npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
@@ -292,12 +292,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 .frontWindow(true)
                 .inputVisible(showInput)
                 .inputOutput(io)
-                .outLineBased(true)
+                .outLineBased(!unbuffer)
                 .showProgress(true)
-                .noReset(true)
                 .postExecution(processChangeListener)
                 .errConvertorFactory(processChangeListener)
                 .outConvertorFactory(processChangeListener);
+
+        if (actionType == PredefinedType.BUILD) {
+            descr.noReset(true);
+        }
 
         NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
         executorTask = es.run();
@@ -396,17 +399,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final String actionName;
         private long startTimeMillis;
         private Runnable postRunnable;
-        private String rcfile;
         private final boolean outSummary;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, String rcfile, boolean outSummary) {
+                InputOutput tab, String actionName, boolean outSummary) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
-            this.rcfile = rcfile;
             this.outSummary = outSummary;
         }
 
@@ -421,6 +422,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case INITIAL:
                     break;
                 case STARTING:
+                    break;
+                case RUNNING:
                     startTimeMillis = System.currentTimeMillis();
                     if (showHeader) {
                         assert false;
@@ -435,8 +438,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     if (listener != null) {
                         listener.executionStarted(event.pid);
                     }
-                    break;
-                case RUNNING:
                     break;
                 case CANCELLED: {
                     closeOutputListener();
@@ -504,7 +505,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            int rc = readReturnCode(rcfile, process.exitValue());
+                            int rc = process.exitValue();
                             if (outSummary) {
                                 StringBuilder res = new StringBuilder();
                                 res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
@@ -542,50 +543,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
 
         private void closeIO() {
-            tab.getErr().close();
-            tab.getOut().close();
-            try {
-                tab.getIn().close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        private int readReturnCode(String rcfile, int rc) {
-            if (rcfile != null) {
-                File file = null;
-                FileReader fr = null;
-
+            if (false) {
+                tab.getErr().close();
+                tab.getOut().close();
                 try {
-                    file = new File(rcfile);
-
-                    if (file.exists()) {
-                        fr = new FileReader(file);
-
-                        if (fr.ready()) {
-                            char[] cbuf = new char[256];
-                            int i = fr.read(cbuf);
-                            if (i > 0) {
-                                rc = Integer.parseInt(String.valueOf(cbuf, 0, i - 1));
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    // do nothing
-                } finally {
-                    if (fr != null) {
-                        try {
-                            fr.close();
-                        } catch (IOException ex) {
-                            // do nothing
-                        }
-                    }
-                    if (file != null && file.exists()) {
-                        file.delete();
-                    }
+                    tab.getIn().close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             }
-            return rc;
         }
 
         @Override

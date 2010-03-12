@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -65,6 +66,11 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
     
     public DataFolderTimeOrderTest (String name) {
         super (name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override

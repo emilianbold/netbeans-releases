@@ -6,5 +6,5 @@ OpenIDE-Module-Requires:
   org.netbeans.api.javahelp.Help
 OpenIDE-Module-Layer: org/netbeans/modules/apisupport/project/ui/resources/layer.xml
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.38
+OpenIDE-Module-Specification-Version: 1.40
 

@@ -41,7 +41,7 @@ package org.netbeans.modules.php.editor.verification;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -80,8 +80,7 @@ public class ClassNotFoundRule extends PHPRule {
             String className = ((Identifier) expression).getName();
             
             if (!"self".equalsIgnoreCase(className) //NOI18N
-                && context.getIndex().getClasses(null, className, QuerySupport.Kind.EXACT).isEmpty()){
-                
+                && context.getIndex().getClasses(NameKind.exact(className)).isEmpty()) {                
                 addHint(expression);
             }
         }

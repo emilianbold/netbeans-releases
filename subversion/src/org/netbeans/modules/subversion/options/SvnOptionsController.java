@@ -102,6 +102,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         annotationSettings.update();
         repository.refreshUrlHistory();
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
+        panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
         
     }
     
@@ -114,6 +115,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
         SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
+        SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
 
         // {folder} variable setting
         annotationSettings.applyChanges();

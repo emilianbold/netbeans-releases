@@ -62,7 +62,7 @@ import org.w3c.dom.NodeList;
  */
 public class MavenProjectPropsImpl {
 
-    static String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
+    public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
     static String ROOT = "properties"; //NOI18N
 
     private boolean transaction = false;

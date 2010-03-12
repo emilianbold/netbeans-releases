@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+
 /**
  * @author Radek Matous
  */
-public interface InterfaceScope extends TypeScope {
+public interface InterfaceScope extends TypeScope, InterfaceElement {
 }
