@@ -1914,16 +1914,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            //Image original = Utilities.loadImage("org/openide/loaders/instanceObject.gif"); // NOI18N
-            //Image original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
             Image original;
             PredefinedToolKind tool = item.getDefaultTool();
             if (tool == PredefinedToolKind.CCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"); // NOI18N
             } else if (tool == PredefinedToolKind.CCCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"); // NOI18N
             } else if (tool == PredefinedToolKind.FortranCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"); // NOI18N
             } else {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
             }
