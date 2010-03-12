@@ -143,10 +143,6 @@ public class Jira {
                 getStoredRepositories().add(repository);
                 JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
-            BugtrackingRuntime
-                    .getInstance()
-                    .getTaskRepositoryManager()
-                    .addRepository(repository.getTaskRepository());
         }
         getConnector().fireRepositoriesChanged();
     }
