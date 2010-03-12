@@ -287,51 +287,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionDescriptor descr = null;
-
-        if (actionType == PredefinedType.TEST) {
-            TestRunnerLineConvertorProvider p = Lookup.getDefault().lookup(TestRunnerLineConvertorProvider.class);
-            if (p != null) {
-                final LineConvertor convertor = p.createConvertor(pae.getProject());
-
-                descr = new NativeExecutionDescriptor()
-                        .controllable(true)
-                        .frontWindow(false)
-                        .inputVisible(showInput)
-                        .inputOutput(io)
-                        .outLineBased(!unbuffer)
-                        .showProgress(true)
-                        .postExecution(processChangeListener)
-                        .errConvertorFactory(new LineConvertorFactory() {
-                            LineConvertor c = convertor;
-
-                            @Override
-                            public LineConvertor newLineConvertor() {
-                                return c;
-                            }})
-                        .outConvertorFactory(new LineConvertorFactory() {
-                            LineConvertor c = convertor;
-
-                            @Override
-                            public LineConvertor newLineConvertor() {
-                                return c;
-                            }});
-            }
-        }
-        
-        if(descr == null) {
-            descr = new NativeExecutionDescriptor()
-                    .controllable(true)
-                    .frontWindow(true)
-                    .inputVisible(showInput)
-                    .inputOutput(io)
-                    .outLineBased(!unbuffer)
-                    .showProgress(true)
-                    .postExecution(processChangeListener)
-                    .errConvertorFactory(processChangeListener)
-                    .outConvertorFactory(processChangeListener);
-
-        }
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor()
+                .controllable(true)
+                .frontWindow(true)
+                .inputVisible(showInput)
+                .inputOutput(io)
+                .outLineBased(!unbuffer)
+                .showProgress(true)
+                .postExecution(processChangeListener)
+                .errConvertorFactory(processChangeListener)
+                .outConvertorFactory(processChangeListener);
 
         if (actionType == PredefinedType.BUILD) {
             descr.noReset(true);
