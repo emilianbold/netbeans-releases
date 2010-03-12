@@ -41,30 +41,21 @@
 
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JSeparator;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
 public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
     private JMenu subMenu;
+    Action[] actions;
+
     /** Creates a new instance of BrowserAction */
-    public MoreBuildActionsAction() {
+    public MoreBuildActionsAction(Action[] actions) {
         super(NbBundle.getMessage( MoreBuildActionsAction.class, "LBL_MoreBuildActionsAction_Name"), null);   // NOI18N
+        this.actions = actions;
     }
         
     /** Perform the action. Tries the performer and then scans the ActionMap
@@ -94,8 +85,9 @@ public class MoreBuildActionsAction extends AbstractAction implements Presenter.
         }
         
         subMenu.removeAll();
-        subMenu.add(ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, getString("LBL_BuildPackagesAction_Name"), null)); // NOI18N
-        subMenu.add(ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, getString("LBL_BatchBuildAction_Name"), null)); // NOI18N
+        for (Action action : actions) {
+            subMenu.add(action);
+        }
     }
 
     private static String getString(String key) {
