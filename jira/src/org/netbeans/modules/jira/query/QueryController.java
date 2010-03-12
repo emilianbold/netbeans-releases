@@ -398,10 +398,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
 
                     populateList(panel.projectList, jc.getProjects());
-                    if (panel.projectList.getModel().getSize() > 0) {
-                        panel.projectList.setSelectedIndex(0);
-                        populateProjectDetails((Project)panel.projectList.getSelectedValue());
-                    }
                     if (jc.getProjects().length == 1) {
                         panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
                     } else if (filterDefinition != null) {

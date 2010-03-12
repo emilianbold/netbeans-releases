@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
+import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -72,7 +73,7 @@ import org.openide.util.Mutex;
  */
 public final class ConnectionManager {
 
-    private static Logger LOGGER = Logger.getLogger((ConnectionManager.class.getName()));
+    private static final Logger LOGGER = Logger.getLogger((ConnectionManager.class.getName()));
 
     /**
      * The ConnectionManager singleton instance.
@@ -84,6 +85,8 @@ public final class ConnectionManager {
      */
     public static synchronized ConnectionManager getDefault() {
         if (DEFAULT == null) {
+            // init runtimes
+            DatabaseRuntimeManager.getDefault().getRuntimes();
             DEFAULT = new ConnectionManager();
         }
         return DEFAULT;
@@ -251,6 +254,7 @@ public final class ConnectionManager {
      */
     public void showAddConnectionDialog(final JDBCDriver driver, final String databaseUrl, final String user, final String password) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driver, databaseUrl, user, password);
             }
