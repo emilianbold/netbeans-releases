@@ -37,13 +37,13 @@ ALLCONFS=<CNS>
 # build
 .build-impl: .build-pre .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
-	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf
+	${MAKE} -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf
 
 
 # clean
 .clean-impl: .clean-pre .validate-impl .depcheck-impl
 	@#echo "=> Running $@... Configuration=$(CONF)"
-	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .clean-conf
+	${MAKE} -f nbproject/Makefile-${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf
 
 
 # clobber 
@@ -51,7 +51,7 @@ ALLCONFS=<CNS>
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
-	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .clean-conf; \
+	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .clean-conf; \
 	done
 
 # all 
@@ -59,7 +59,7 @@ ALLCONFS=<CNS>
 	@#echo "=> Running $@..."
 	for CONF in ${ALLCONFS}; \
 	do \
-	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf; \
+	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk QMAKE=${QMAKE} SUBPROJECTS=${SUBPROJECTS} .build-conf; \
 	done
 
 # build tests

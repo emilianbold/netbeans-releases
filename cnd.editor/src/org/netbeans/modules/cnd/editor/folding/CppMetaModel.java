@@ -156,6 +156,10 @@ final class CppMetaModel implements PropertyChangeListener {
             log.log(Level.FINE, "CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
 		" [" + Thread.currentThread().getName() + "]"); // NOI18N
         }
+        if (title == null) {
+            log.log(Level.INFO, "CppMetaModel.scheduleParsing: No Title for document" + getShortName(doc)); // NOI18N
+            return;
+        }
 	final CppFile file = map.get(title);
         // try to cancel task
         if (task != null) {
@@ -211,6 +215,9 @@ final class CppMetaModel implements PropertyChangeListener {
 
     private String getShortName(Document doc) {
 	String longname = (String) doc.getProperty(Document.TitleProperty);
+        if (longname == null) {
+            return doc.toString();
+        }
 	int slash = longname.lastIndexOf(java.io.File.separatorChar);
 
 	if (slash != -1) {

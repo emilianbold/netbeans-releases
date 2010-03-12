@@ -61,6 +61,7 @@ import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 public class DiffControllerTest extends NbTestCase {
 
     private DiffController controller;
+    private DiffController enhancedController;
 
     public DiffControllerTest(String name) {
         super(name);
@@ -69,7 +70,7 @@ public class DiffControllerTest extends NbTestCase {
     protected void setUp() throws Exception {
         MockServices.setServices(BuiltInDiffProvider.class);
         controller = DiffController.create(new Impl("name1", "title1", "text/plain", "content1\nsame\ndifferent1"), new Impl("name2", "title2", "text/plain", "content2\nsame\ndifferent2"));
-        final boolean[] finished = new boolean[1];
+        final boolean[] finished = new boolean[2];
         controller.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -77,7 +78,16 @@ public class DiffControllerTest extends NbTestCase {
                 finished[0] = true;
             }
         });
-        for (int i = 0; i < 10 && !finished[0]; ++i) {
+
+        enhancedController = DiffController.createEnhanced(new Impl("name1", "title1", "text/plain", "content1\nsame\ndifferent1"), new Impl("name2", "title2", "text/plain", "content2\nsame\ndifferent2"));
+        enhancedController.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                enhancedController.removePropertyChangeListener(this);
+                finished[1] = true;
+            }
+        });
+        for (int i = 0; i < 10 && !(finished[0] && finished[1]); ++i) {
             Thread.sleep(1000);
         }
     }
@@ -85,16 +95,23 @@ public class DiffControllerTest extends NbTestCase {
     public void testCurrentDifference() throws Exception {
         int dc = controller.getDifferenceCount();
         assertEquals("Wrong number of differences", 2, dc);
+        dc = enhancedController.getDifferenceCount();
+        assertEquals("Wrong number of differences", 2, dc);
     }
 
     public void testDifferenceIndex() throws Exception {
         int dc = controller.getDifferenceCount();
         int di = controller.getDifferenceIndex();
         assertTrue("Wrong difference index", di == -1 || di >= 0 && di < dc);
+        dc = enhancedController.getDifferenceCount();
+        di = enhancedController.getDifferenceIndex();
+        assertTrue("Wrong difference index", di == -1 || di >= 0 && di < dc);
     }
 
     public void testComponent() throws Exception {
         JComponent c = controller.getJComponent();
+        assertNotNull("Not a JComponent", c);
+        c = enhancedController.getJComponent();
         assertNotNull("Not a JComponent", c);
     }
 

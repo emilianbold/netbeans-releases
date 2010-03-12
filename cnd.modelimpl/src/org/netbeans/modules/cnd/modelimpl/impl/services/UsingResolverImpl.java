@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,8 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
+import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 
 /**
  * implementation of using directives and using declarations resolver
@@ -78,11 +81,17 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         }
     }
     
+    @Override
     public Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject) {
         return getCollector(file, offset, onlyInProject).getUsedDeclarations();
     }
     
+    @Override
     public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace) {
+        return  findUsedDeclarations(namespace, null);
+    }
+
+    public Collection<CsmDeclaration> findUsedDeclarations(CsmNamespace namespace, Resolver resolver) {
         List<CsmUsingDeclaration> res = new ArrayList<CsmUsingDeclaration>();
         Iterator<CsmOffsetableDeclaration> udecls = CsmSelect.getDeclarations(
                     namespace, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
@@ -103,9 +112,10 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
                 }
             }
         }
-        return extractDeclarations(res);
+        return extractDeclarations(res, resolver);
     }
     
+    @Override
     public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
         Set<CsmNamespace> seen = new LinkedHashSet<CsmNamespace>();
         Queue<CsmNamespace> queue = new LinkedList<CsmNamespace>(
@@ -132,6 +142,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
 //        return getCollector(file, offset, onlyInProject).getDirectVisibleNamespaceDefinitions();
 //    }
     
+    @Override
     public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
         List<CsmUsingDirective> res = new ArrayList<CsmUsingDirective>();
         Iterator<CsmOffsetableDeclaration> udirs = CsmSelect.getDeclarations(
@@ -142,10 +153,12 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         return res;
     }
 
+    @Override
     public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
         return getCollector(file, offset, onlyInProject).getNamespaceAliases();
     }
 
+    @Override
     public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmNamespace namespace) {
         List<CsmNamespaceAlias> res = new ArrayList<CsmNamespaceAlias>();
         Iterator<CsmOffsetableDeclaration> udirs = CsmSelect.getDeclarations(
@@ -155,6 +168,32 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         }
         return res;
     }
+
+    /**
+     * converts collection of using declarations into ordered list of namespaces
+     * each namespace occurs only once according it's first using directive in 'decls' list
+     */
+    public static Collection<CsmDeclaration> extractDeclarations(Collection<CsmUsingDeclaration> decls, Resolver resolver) {
+        // TODO check the correctness of order
+        LinkedHashMap<CharSequence, CsmDeclaration> out = new LinkedHashMap<CharSequence, CsmDeclaration>(decls.size());
+        for (CsmUsingDeclaration decl : decls) {
+            CsmDeclaration ref = null;
+            if (decl instanceof UsingDeclarationImpl) {
+                ref = ((UsingDeclarationImpl)decl).getReferencedDeclaration(resolver);
+
+            } else {
+                ref = decl.getReferencedDeclaration();
+            }
+            if (ref != null) {
+                CharSequence name = decl.getName();
+                // remove previous inclusion
+                out.remove(name);
+                out.put(name, ref);
+            }
+        }
+        return new ArrayList<CsmDeclaration>(out.values());
+    }
+
 
     /**
      * converts collection of using declarations into ordered list of namespaces
@@ -194,6 +233,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
      * @param namespace  namespace of interest
      * @return unmodifiable collection of namespaces visible in given namespace though "using" directives
      */
+    @Override
     public Collection<CsmNamespace> findVisibleNamespaces(CsmNamespace namespace, CsmProject startPrj) {
         List<CsmNamespace> res = new ArrayList<CsmNamespace>();
         if (!namespace.isGlobal()) {
@@ -306,10 +346,10 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     }
     
     private static final class SearchInfo {
-        public final CsmFile file;
-        public int offset;
-        public final FileElementsCollector collector;
-        public final CsmProject onlyInProject;
+        private final CsmFile file;
+        private int offset;
+        private final FileElementsCollector collector;
+        private final CsmProject onlyInProject;
         public SearchInfo(CsmFile file, int offset, CsmProject onlyInProject, FileElementsCollector collector) {
             this.file = file;
             this.offset = offset;
@@ -322,35 +362,45 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
         }
     }
     
+    @Override
     public void projectParsingStarted(CsmProject project) {
     }
     
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
     }
     
+    @Override
     public void projectParsingFinished(CsmProject project) {
         cleanCache();
     }
     
+    @Override
     public void projectParsingCancelled(CsmProject project) {
     }
     
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
     }
 
+    @Override
     public void fileParsingStarted(CsmFile file) {
     }
     
+    @Override
     public void fileParsingFinished(CsmFile file) {
         cleanCache();
     }
     
+    @Override
     public void projectLoaded(CsmProject project) {
     }
     
+    @Override
     public void parserIdle() {
     }
     

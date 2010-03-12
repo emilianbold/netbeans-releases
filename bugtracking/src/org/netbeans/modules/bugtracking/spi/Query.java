@@ -126,13 +126,6 @@ public abstract class Query implements Comparable<Query> {
     /*********
      * DATA
      *********/
-
-    /**
-     * Refreshes this Query
-     * @return true if the query was refreshed, otherwise false
-     */
-    public abstract boolean refresh();
-
     /**
      * Sets te queries status as saved. The {@link IssueTable} assotiated with
      * this query will change its column layout

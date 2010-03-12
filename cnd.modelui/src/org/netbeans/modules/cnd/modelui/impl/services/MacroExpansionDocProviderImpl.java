@@ -253,7 +253,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             if (paramExpansions != null) {
                 paramExpansions.add(paramExpansionInterval);
             } else {
-                paramExpansions = new ArrayList<Interval>();
+                paramExpansions = new ArrayList<Interval>(1);
                 paramExpansions.add(paramExpansionInterval);
                 paramsToExpansion.put(paramInterval, paramExpansions);
             }

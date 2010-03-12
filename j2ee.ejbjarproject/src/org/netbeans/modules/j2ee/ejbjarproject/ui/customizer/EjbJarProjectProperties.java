@@ -50,6 +50,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -206,6 +209,7 @@ final public class EjbJarProjectProperties {
     // CustomizerLibraries
     ClassPathTableModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
+    DefaultListModel JAVAC_PROCESSORPATH_MODEL;
     
     //DefaultListModel RUN_CLASSPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
@@ -222,6 +226,9 @@ final public class EjbJarProjectProperties {
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     
     // CustomizerCompileTest
                 
@@ -264,6 +271,12 @@ final public class EjbJarProjectProperties {
     
     private String includes, excludes;
     
+    //Hotfix of the issue #70058 (copied from J2seProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
+    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
+    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+
     EjbJarProject getProject() {
         return project;
     }
@@ -311,6 +324,9 @@ final public class EjbJarProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
+        String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
+        processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
+        JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
@@ -336,6 +352,13 @@ final public class EjbJarProjectProperties {
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
         JAVAC_DEBUG_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVAC_DEBUG );
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null)
+            annotationProcessors = ""; //NOI18N
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
         // CustomizerJar
@@ -371,6 +394,7 @@ final public class EjbJarProjectProperties {
             saveLibrariesLocation();
             // Store properties 
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     storeProperties();
                     return null;
@@ -430,6 +454,7 @@ final public class EjbJarProjectProperties {
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ), null );
+        String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
                 
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -450,6 +475,7 @@ final public class EjbJarProjectProperties {
                 
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
@@ -508,6 +534,20 @@ final public class EjbJarProjectProperties {
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
 
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements())
+                sb.append(',');
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
+
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
@@ -540,12 +580,14 @@ final public class EjbJarProjectProperties {
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH), null  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH), null  ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH), null  ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
@@ -604,6 +646,7 @@ final public class EjbJarProjectProperties {
     
     public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -625,6 +668,21 @@ final public class EjbJarProjectProperties {
     void putAdditionalProperty(String propertyName, String propertyValue) {
         additionalProperties.put(propertyName, propertyValue);
     }
+    
+    //Hotfix of the issue #70058 (copied from J2SEProjectProperties)
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static String encodeBoolean (boolean value, Integer kind) {
+        if ( kind == BOOLEAN_KIND_ED ) {
+            return value ? "on" : "off"; // NOI18N
+        }
+        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+            return value ? "yes" : "no";
+        }
+        else {
+            return value ? "true" : "false"; // NOI18N
+        }
+    }
+
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
             EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {

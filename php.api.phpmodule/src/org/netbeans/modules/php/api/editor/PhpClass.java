@@ -48,7 +48,7 @@ import java.util.LinkedList;
  * @since 1.13
  * @author Tomas Mysik
  */
-public final class PhpClass extends PhpElement {
+public final class PhpClass extends PhpBaseElement {
 
     private final Collection<Field> fields = new LinkedList<Field>();
     private final Collection<Method> methods = new LinkedList<Method>();
@@ -116,7 +116,7 @@ public final class PhpClass extends PhpElement {
      * @since 1.13
      * @author Tomas Mysik
      */
-    public final class Field extends PhpElement {
+    public final class Field extends PhpBaseElement {
         Field(String name, String fullyQualifiedName, int offset, String description) {
             super(name, fullyQualifiedName, offset, description);
         }
@@ -132,7 +132,7 @@ public final class PhpClass extends PhpElement {
      * @since 1.13
      * @author Tomas Mysik
      */
-    public final class Method extends PhpElement {
+    public final class Method extends PhpBaseElement {
         Method(String name, String fullyQualifiedName, int offset, String description) {
             super(name, fullyQualifiedName, offset, description);
         }

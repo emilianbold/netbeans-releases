@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;

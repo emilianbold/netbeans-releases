@@ -457,13 +457,24 @@ public class MultiFileSystem extends FileSystem {
         return systems[WRITE_SYSTEM_INDEX];
     }
 
-    FileSystem writableLayer(String path) {
-        try {
-            return createWritableOn(path);
-        } catch (IOException x) {
-            // ignore
-            return systems.length > WRITE_SYSTEM_INDEX ? systems[WRITE_SYSTEM_INDEX] : null;
+    private final ThreadLocal<Boolean> insideWritableLayer = new ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
         }
+    };
+    FileSystem writableLayer(String path) {
+        if (!insideWritableLayer.get()) {
+            // #181460: avoid stack overflow when createWritableOn calls e.g. findResource
+            insideWritableLayer.set(true);
+            try {
+                return createWritableOn(path);
+            } catch (IOException x) {
+                // ignore
+            } finally {
+                insideWritableLayer.set(false);
+            }
+        }
+        return systems.length > WRITE_SYSTEM_INDEX ? systems[WRITE_SYSTEM_INDEX] : null;
     }
 
     /** Special case of createWritableOn (@see #createWritableOn).

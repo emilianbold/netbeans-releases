@@ -244,20 +244,21 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private boolean cnbIsAlreadyInSuite(String suiteDir, String cnb) {
-        boolean result = false;
         FileObject suiteDirFO = FileUtil.toFileObject(new File(suiteDir));
         try {
             Project suite = ProjectManager.getDefault().findProject(suiteDirFO);
+            if (suite == null) { // #180644
+                return false;
+            }
             for (Project p : SuiteUtils.getSubProjects(suite)) {
                 if (ProjectUtils.getInformation(p).getName().equals(cnb)) {
-                    result = true;
-                    break;
+                    return true;
                 }
             }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
-        return result;
+        return false;
     }
     
     public @Override void addNotify() {

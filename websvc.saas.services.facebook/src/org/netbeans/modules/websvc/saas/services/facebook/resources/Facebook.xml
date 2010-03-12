@@ -91,18 +91,52 @@
                     <use-templates>
                         <desktop>
                             <template type="auth" href="FacebookAuthenticatorDesktop"/>
-                            <method-descriptor name="login" return-type="void" throws = "java.io.IOException" body = "{this.api_key=api_key; this.application_secret=application_secret; getSessionKey();}" param-types = "String, String" param-names = "api_key, application_secret"/>
-                            <method-descriptor name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookLogout.method"/>
-                            <method-descriptor modifier="private" id = "api_key" name="getApiKey" return-type="String" throws = "java.io.IOException" body = "{return api_key;}"/>
-                            <method-descriptor modifier="private" id = "call_id" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
-                            <method-descriptor modifier="private" id = "session_key" name="getSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookGetSessionKey.method"/>
-                            <method-descriptor modifier="private" name="createToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookCreateToken.method"/>
-                            <method-descriptor modifier="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookSignParams.method" param-types = "String, String[], String[]" param-names = "secret, paramNames, paramValues"/>
+                            <field-descriptor modifiers="private" name="api_key" type="String"/>
+                            <field-descriptor modifiers="private" name="session_key" type="String"/>
+                            <field-descriptor modifiers="private" name="application_secret" type="String"/>
+                            <field-descriptor modifiers="private" name="session_secret" type="String"/>
+                            <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body = "{this.api_key=api_key; this.application_secret=application_secret; getSessionKey();}" param-types = "String, String" param-names = "api_key, application_secret"/>
+                            <method-descriptor modifiers="public" name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookLogout.method"/>
+                            <method-descriptor modifiers="private" id = "api_key" name="getApiKey" return-type="String" throws = "java.io.IOException" body = "{return api_key;}"/>
+                            <method-descriptor modifiers="private" id = "call_id" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
+                            <method-descriptor modifiers="private" id = "session_key" name="getSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookGetSessionKey.method"/>
+                            <method-descriptor modifiers="private" name="createToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookCreateToken.method"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
                         </desktop>
+                        <nb-module>
+                            <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookNbLogin.method" param-types = "String, String" param-names = "api_key, application_secret"/>
+                            <method-descriptor modifiers="public" name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookNbLogout.method"/>
+                            <method-descriptor modifiers="private" id = "api_key" name="getApiKey" return-type="String" body = "{return org.openide.util.NbPreferences.forModule(this.getClass()).get(&quot;facebook_api_key&quot;, null);}"/>
+                            <method-descriptor modifiers="private" id = "call_id" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
+                            <method-descriptor modifiers="private" id = "session_key" name="getSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbGetSessionKey.method"/>
+                            <method-descriptor modifiers="private" name="createToken" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbCreateToken.method"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookNbSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
+                            <method-descriptor modifiers="private" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
+                        </nb-module>
                         <web>
                             <template type="auth" href="FacebookAuthenticator"/>
                             <template type="login" href="FacebookAuthenticatorLogin"/>
                             <template type="callback" href="FacebookAuthenticatorCallback"/>
+                            <field-descriptor modifiers="private,static" name="api_key" type="String"/>
+                            <field-descriptor modifiers="private,static" name="application_secret" type="String"/>
+                            <field-descriptor modifiers="private" name="httpServletRequest" type="javax.servlet.http.HttpServletRequest"/>
+                            <method-descriptor modifiers="public" name="login" return-type="void" throws = "java.io.IOException" body = "{api_key=apiKey; application_secret=applicationSecret; httpServletRequest=request; dispatch(request, response);}" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, String, String" param-names = "request, response, apiKey, applicationSecret"/>
+                            <method-descriptor modifiers="public" name="setHttpServletRequest" return-type="void" body = "{this.httpServletRequest=request;}" param-types = "javax.servlet.http.HttpServletRequest" param-names="request"/>
+                            <method-descriptor modifiers="public" name="logout" return-type="void" throws = "java.io.IOException" body-ref  = "Templates/SaaSServices/FacebookWebLogout.method" param-types = "javax.servlet.http.HttpServletRequest" param-names="request"/>
+                            <method-descriptor id="api_key" modifiers="private" name="getApiKey" return-type="String" body = "{return api_key;}"/>
+                            <method-descriptor id="call_id" modifiers="private" name="getCallId" return-type="String" body = "{return String.valueOf(System.currentTimeMillis());}"/>
+                            <method-descriptor id="session_key" modifiers="private" name="getSessionKey" return-type="String" body-ref = "Templates/SaaSServices/FacebookWebGetSessionKey.method" />
+                            <method-descriptor modifiers="private,static" name="createSessionKey" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookCreateSessionKey.method" param-types = "String" param-names="auth_token"/>
+                            <method-descriptor modifiers="private,static" name="dispatch" return-type="void" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookDispatch.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names="request, response"/>
+                            <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body-ref = "Templates/SaaSServices/FacebookWebSignParams.method" param-types = "String[], String[], String[]" param-names = "paramNames, paramValues, optionalParams"/>
+                            <method-descriptor modifiers="private, static" name="signParams" return-type="String" throws = "java.io.IOException" body = "{return signParams(paramNames, paramValues, new String[]{})}" param-types = "String[], String[]" param-names = "paramNames, paramValues"/>
+                            <servlet-descriptor modifiers="public, static" class-name="FacebookLoginServlet" servlet-mapping="/FacebookLoginServlet">
+                                <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FacebookLoginDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
+                            </servlet-descriptor>
+                            <servlet-descriptor modifiers="public, static" class-name="FacebookCallbackServlet" servlet-mapping="/FacebookCallbackServlet/">
+                                <method-descriptor modifiers="protected" name="doGet" return-type="void" throws="javax.servlet.ServletException, java.io.IOException" body-ref="Templates/SaaSServices/FacebookCallbackDoGet.method" param-types = "javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse" param-names = "request, response"/>
+                            </servlet-descriptor>
                         </web>
                     </use-templates>
                 </authenticator>

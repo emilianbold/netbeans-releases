@@ -61,7 +61,6 @@ import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  * Class GdbProxy is a Controller component of gdb driver
@@ -270,13 +269,6 @@ public class GdbProxy {
     }
 
     /**
-     *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
-     */
-    public void data_evaluate_expression(String string) {
-        engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
-    }
-    
-    /**
      */
     public void data_list_register_names(String regIds) {
         engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
@@ -453,20 +445,12 @@ public class GdbProxy {
     public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
-        if (GdbUtils.isMultiByte(name)) {
-            if (temporary) {
-                cmd.append("tbreak "); // NOI18N
-            } else {
-                cmd.append("break "); // NOI18N
-            }
-        } else {
-            cmd.append("-break-insert "); // NOI18N
-            if (temporary) {
-                cmd.append("-t "); // NOI18N
-            }
-            // This will make pending breakpoint if specified location can not be parsed now
-            cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        cmd.append("-break-insert "); // NOI18N
+        if (temporary) {
+            cmd.append("-t "); // NOI18N
         }
+        // This will make pending breakpoint if specified location can not be parsed now
+        cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
 
         // Temporary fix for Windows
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
@@ -479,7 +463,9 @@ public class GdbProxy {
             // FIXME - Does the Mac support -p?
             cmd.append("-p " + threadID + " "); // NOI18N
         }
+        cmd.append('\"'); // NOI18N
         cmd.append(name);
+        cmd.append('\"'); // NOI18N
         return engine.createMICommand(cmd.toString());
     }
 
@@ -500,6 +486,10 @@ public class GdbProxy {
      */
     public void break_insert_temporary(String name) {
         break_insertCMD(0, true, name, null).send();
+    }
+
+    public CommandBuffer break_insert_temporaryEx(String name) {
+        return engine.sendCommandEx(break_insertCMD(0, true, name, null).getText());
     }
 
     /**

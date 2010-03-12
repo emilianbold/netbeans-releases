@@ -101,7 +101,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -3960,7 +3959,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             }
             if (toAdd != null) {
-                FileUtil.addRecursiveListener(toAdd.second, toAdd.first);
+                safeAddRecursiveListener(toAdd.second, toAdd.first);
             }
         }
 
@@ -3993,6 +3992,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             });
             task.waitFinished();
+        }
+
+        private void safeAddRecursiveListener(FileChangeListener listener, File path) {
+            try {
+                FileUtil.addRecursiveListener(listener, path);
+            } catch (Exception e) {
+                // ignore
+                LOGGER.log(Level.FINE, null, e);
+            }
         }
 
         private void safeRemoveRecursiveListener(FileChangeListener listener, File path) {

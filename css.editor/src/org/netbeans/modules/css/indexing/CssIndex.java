@@ -50,11 +50,13 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -162,12 +164,15 @@ public class CssIndex {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for(String e : elements) {
                     if(e.startsWith(prefix)) {
-                        Collection<String> col = map.get(result.getFile());
-                        if(col == null) {
-                            col = new LinkedList<String>();
-                            map.put(result.getFile(), col);
-                        }
-                        col.add(e);
+                        FileObject file = result.getFile();
+                        if(file != null) {
+                            Collection<String> col = map.get(file);
+                            if(col == null) {
+                                col = new LinkedList<String>();
+                                map.put(file, col);
+                            }
+                            col.add(e);
+                        } // else file deleted and index not updated yet
                     }
                 }
 
@@ -185,7 +190,7 @@ public class CssIndex {
             Collection<? extends IndexResult> results =
                     querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
 
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 Collection<String> elements = decodeListValue(result.getValue(keyName));
                 for (String e : elements) {
                     Collection<String> col = map.get(result.getFile());
@@ -216,7 +221,7 @@ public class CssIndex {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
-            for (IndexResult result : results) {
+            for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
             }
             return matchedFiles;
@@ -225,6 +230,22 @@ public class CssIndex {
         }
 
         return Collections.emptyList();
+    }
+
+    public Collection<FileObject> getAllIndexedFiles() {
+        try {
+            Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);
+            Collection<FileObject> stylesheets = new LinkedList<FileObject>();
+            for(IndexResult result : filterDeletedFiles(results)) {
+                if(result.getFile().getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
+                    stylesheets.add(result.getFile());
+                }
+            }
+            return stylesheets;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -255,26 +276,27 @@ public class CssIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
-        Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
-        Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
-        Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
+        Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY));
+        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
+        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
             FileObject file = result.getFile();
             Collection<String> imports = decodeListValue(importsValue);
-            Collection<FileObject> imported = new HashSet<FileObject>();
+            Collection<FileReference> imported = new HashSet<FileReference>();
             for (String importedFileName : imports) {
                 //resolve the file
-                FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
-                if (resolvedFileObject != null) {
-                    imported.add(resolvedFileObject);
+                FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
+//                FileObject resolvedFileObject = ref.target();
+                if (resolvedReference != null) {
+                    imported.add(resolvedReference);
                     //add reverse dependency
-                    Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                    Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
                     if (sources == null) {
-                        sources = new HashSet<FileObject>();
-                        dest2sources.put(resolvedFileObject, sources);
+                        sources = new HashSet<FileReference>();
+                        dest2sources.put(resolvedReference.target(), sources);
                     }
-                    sources.add(file);
+                    sources.add(resolvedReference);
                 }
             }
             source2dests.put(file, imported);
@@ -285,12 +307,13 @@ public class CssIndex {
     }
     
 
-    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+    private void resolveDependencies(Node base, Map<FileObject, Collection<FileReference>> source2dests, Map<FileObject, Collection<FileReference>> dest2sources) {
         FileObject baseFile = base.getFile();
-        Collection<FileObject> destinations = source2dests.get(baseFile);
+        Collection<FileReference> destinations = source2dests.get(baseFile);
         if (destinations != null) {
             //process destinations (file this one refers to)
-            for(FileObject destination : destinations) {
+            for(FileReference destinationReference : destinations) {
+                FileObject destination = destinationReference.target();
                 Node node = base.getDependencyGraph().getNode(destination);
                 if(base.addReferedNode(node)) {
                     //recurse only if we haven't been there yet
@@ -298,10 +321,11 @@ public class CssIndex {
                 }
             }
         }
-        Collection<FileObject> sources = dest2sources.get(baseFile);
+        Collection<FileReference> sources = dest2sources.get(baseFile);
         if(sources != null) {
             //process sources (file this one is refered by)
-            for(FileObject source : sources) {
+            for(FileReference sourceReference : sources) {
+                FileObject source = sourceReference.source();
                 Node node = base.getDependencyGraph().getNode(source);
                 if(base.addReferingNode(node)) {
                     //recurse only if we haven't been there yet
@@ -324,11 +348,25 @@ public class CssIndex {
         return list;
     }
 
+    //if an indexed file is delete and IndexerFactory.filesDeleted() hasn't removed
+    //the entris from index yet, then we may receive IndexResult-s with null file.
+    //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
+    //won't become null after the query is run, but the file will simply become invalid.
+    private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
+        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        for(IndexResult result : queryResult) {
+            if(result.getFile() != null) {
+                filtered.add(result);
+            }
+        }
+        return filtered;
+    }
+
     public static class AllDependenciesMaps {
 
-        Map<FileObject, Collection<FileObject>> source2dest, dest2source;
+        Map<FileObject, Collection<FileReference>> source2dest, dest2source;
 
-        public AllDependenciesMaps(Map<FileObject, Collection<FileObject>> source2dest, Map<FileObject, Collection<FileObject>> dest2source) {
+        public AllDependenciesMaps(Map<FileObject, Collection<FileReference>> source2dest, Map<FileObject, Collection<FileReference>> dest2source) {
             this.source2dest = source2dest;
             this.dest2source = dest2source;
         }
@@ -338,7 +376,7 @@ public class CssIndex {
          * @return reversed map of getSource2dest() (imported file -> collection of
          * importing files)
          */
-        public Map<FileObject, Collection<FileObject>> getDest2source() {
+        public Map<FileObject, Collection<FileReference>> getDest2source() {
             return dest2source;
         }
 
@@ -348,7 +386,7 @@ public class CssIndex {
          * relations between css file defined by import directive. The key represents
          * a fileobject which imports the files from the value's collection.
          */
-        public Map<FileObject, Collection<FileObject>> getSource2dest() {
+        public Map<FileObject, Collection<FileReference>> getSource2dest() {
             return source2dest;
         }
 

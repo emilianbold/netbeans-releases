@@ -272,7 +272,7 @@ public final class SourceUtils {
      * @return The caret offset or -1
      */
     public static int getCurrentOffsetInEditor() {
-        JTextComponent mostActiveEditor = EditorRegistry.focusedComponent();
+        JTextComponent mostActiveEditor = EditorRegistry.lastFocusedComponent();
 
         if ((mostActiveEditor != null) && (mostActiveEditor.getCaret() != null)) {
             return mostActiveEditor.getCaretPosition();

@@ -2,6 +2,5 @@ Code completion result for source line:
 TestOptionalArgsClass::test|($b, $d);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     test($a)                        [STATIC]   TestOptionalArgsClass
-METHOD     test($a, $b)                    [STATIC]   TestOptionalArgsClass
-METHOD     test($a, $b, $c)                [STATIC]   TestOptionalArgsClass
-METHOD     test($a, $b, $c, $d)            [STATIC]   TestOptionalArgsClass
+METHOD     test($a, $b = 1)                [STATIC]   TestOptionalArgsClass
+METHOD     test($a, $b = 1, $c = 1)        [STATIC]   TestOptionalArgsClass

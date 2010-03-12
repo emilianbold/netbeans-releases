@@ -126,10 +126,12 @@ public class DerbyOptions {
      * is not set. Never returns null.
      */
     public String getLocation() {
+        DerbyActivator.activate();
         String location = getProperty(PROP_DERBY_LOCATION);
         if (location == null) {
             location = ""; // NOI18N
         }
+        Logger.getLogger(DerbyOptions.class.getName()).finest("Derby location is " + location);
         return location;
     }
 
@@ -230,6 +232,7 @@ public class DerbyOptions {
         synchronized (this) {
             stopDerbyServer();
             putProperty(PROP_DERBY_SYSTEM_HOME, derbySystemHome, true);
+            DerbyDatabasesImpl.getDefault().notifyChange();
         }
     }
 
@@ -253,6 +256,7 @@ public class DerbyOptions {
             // registering the drivers in an atomic action so the Drivers node
             // is refreshed only once
             FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() {
                     registerDriver(DRIVER_NAME_NET, DRIVER_DISP_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
                     registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_DISP_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);

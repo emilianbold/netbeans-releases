@@ -97,6 +97,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
@@ -722,5 +723,25 @@ public class Utilities {
 
             throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
         }
+    }
+
+    public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+            from = from.getParentPath();
+        }
+
+        if (from != null && from.getLeaf().getKind() == Kind.METHOD) {
+            return from;
+        }
+
+        return null;
+    }
+
+    public static boolean isInConstructor(HintContext ctx) {
+        TreePath method = findEnclosingMethodOrConstructor(ctx, ctx.getPath());
+        if (method == null) return false;
+        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
+        return (enclosingMethodElement != null &&
+                enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }
 }

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
-import java.util.Collection;
-import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
@@ -55,7 +53,7 @@ import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -123,17 +121,19 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 File baseLocalDir = FileUtil.toFile(sources);
                 String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
                 for (FileObject fo : preselectedFiles) {
-                    TransferFile transferFile = TransferFile.fromFileObject(fo, baseLocalAbsolutePath);
-                    transferFile.touch();
-                    boolean result = forUpload.remove(transferFile);
-                    assert result : "Transfer file not in upload set: " + transferFile;
-                    result = forUpload.add(transferFile);
-                    assert result : "Transfer file not added to upload set: " + transferFile;
+                    // we need to touch the _original_ transfer file because of its parent!
+                    TransferFile transferFile = TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath);
+                    for (TransferFile file : forUpload) {
+                        if (transferFile.equals(file)) {
+                            file.touch();
+                            break;
+                        }
+                    }
                 }
             }
 
-            forUpload = TransferFilter.showUploadDialog(forUpload, ProjectSettings.getLastUpload(getProject()));
-            if (forUpload.size() == 0) {
+            forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+            if (forUpload.isEmpty()) {
                 return;
             }
 

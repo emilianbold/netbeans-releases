@@ -146,7 +146,7 @@ public class MakeConfiguration extends Configuration {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
+        dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -695,7 +695,7 @@ public class MakeConfiguration extends Configuration {
         private boolean notYetSet = true;
 
         LanguageBooleanConfiguration() {
-            super(null, false);
+            super(false);
         }
 
         @Override

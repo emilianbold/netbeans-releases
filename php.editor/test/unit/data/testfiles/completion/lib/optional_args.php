@@ -1,6 +1,6 @@
 <?php
   class TestOptionalArgsClass{
-      static function test($a, $b = 1, $c = 1, $d){}
+      static function test($a, $b = 1, $c = 1){}
   }
 
   function testOptionalArgsFunc($a, $b = 1){}

@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +56,8 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -69,8 +70,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
@@ -375,13 +375,13 @@ public class PhpStructureScanner implements StructureScanner {
             formatter.appendText("(");   //NOI18N
 
             //NOI18N
-            List<? extends Parameter> parameters = function.getParameters();
+            //NOI18N
+            List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
                 boolean first = true;
-                for (Parameter formalParameter : parameters) {
+                for (ParameterElement formalParameter : parameters) {
                     String name = formalParameter.getName();
-
-                    List<QualifiedName> types = formalParameter.getTypes();
+                    Set<TypeResolver> types = formalParameter.getTypes();
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
@@ -390,13 +390,20 @@ public class PhpStructureScanner implements StructureScanner {
 
                         if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            for (Iterator<QualifiedName> it = types.iterator(); it.hasNext();) {
-                                QualifiedName qualifiedName = it.next();
-                                formatter.appendText(qualifiedName.toName().toString());
-                                if (it.hasNext()) {
-                                    formatter.appendText("|");//NOI18N
+                            StringBuilder typeSb = new StringBuilder();
+                            for (TypeResolver typeResolver : types) {
+                                if (typeResolver.isResolved()) {
+                                    QualifiedName typeName = typeResolver.getTypeName(false);
+                                    if (typeName != null) {
+                                        if (typeSb.length() > 0) {
+                                            typeSb.append("|");//NOI18N
+                                        }
+                                        typeSb.append(typeName.toString());
+                                    }
                                 }
-                                
+                            }
+                            if (typeSb.length() > 0) {
+                                formatter.appendText(typeSb.toString());
                             }
                             formatter.appendText(" ");   //NOI18N
 

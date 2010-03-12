@@ -117,6 +117,10 @@
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
+    <!-- Java ME SDK 3.0 Properties-->
+    <property name="javame_sdk30_bits_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac.zip"/>
+    <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
+
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

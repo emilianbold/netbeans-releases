@@ -287,13 +287,32 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     public SaveCookie[] getSaveCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        return saveCookies;
+    }
+
+    public EditorCookie[] getEditorCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        int count = 0, length = editorCookiesCopy.length;
+        EditorCookie[] editorCookiesShorten = new EditorCookie[length];
+        for (int i = 0; i < length; i++) {
+            EditorCookie editorCookie = editorCookiesCopy[i];
+            if (editorCookie == null) {
+                continue;
+            }
+            editorCookiesShorten[count++] = editorCookie;
+        }
+        return CollectionUtils.shortenArray(editorCookiesShorten, count);
+    }
+
+    private EditorCookie[] getEditorCookiesIntern (boolean ommitOpened) {
         EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
         DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
         if (ommitOpened) {
             DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
         }
-        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
-        return saveCookies;
+        return editorCookiesCopy;
     }
 
     private static SaveCookie[] getSaveCookies(Setup[] setups,
@@ -373,6 +392,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             commitButton.setEnabled(false);
         } else {
             commitButton.setVisible(false);
+            updateButton.setVisible(false);
             localToggle.setVisible(false);
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
@@ -894,7 +914,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     final int fi = i;
                     StreamSource ss1 = prepareSetups[fi].getFirstSource();
                     StreamSource ss2 = prepareSetups[fi].getSecondSource();
-                    final DiffController view = DiffController.create(ss1, ss2);  // possibly executing slow external diff
+                    final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {

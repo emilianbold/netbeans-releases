@@ -424,7 +424,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         CompilerSet bestCandidate = null;
         for (CompilerSet cs : sets) {
             if (cs.getCompilerFlavor().isSunStudioCompiler()) {
-                if ("SunStudio".equals(cs.getName())) { // NOI18N
+                if ("OracleSolarisStudio".equals(cs.getName())) { // NOI18N
                     setDefault(cs);
                     return;
                 }
@@ -536,7 +536,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 cs.addPathCandidate(PredefinedToolKind.QMakeTool, p);
             }
             if (kind != PredefinedToolKind.UnknownTool) {
-                cs.addTool(executionEnvironment, name, p, kind);
+                cs.addTool(executionEnvironment, name, p, kind, null);
             }
         }
         return cs;
@@ -704,17 +704,17 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         for (String name : names) {
             File file = new File(dir, name);
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
             file = new File(dir, name + ".exe"); // NOI18N
             if (file.exists() && !file.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
             File file2 = new File(dir, name + ".exe.lnk"); // NOI18N
             if (file2.exists() && !file2.isDirectory()) {
-                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind);
+                cs.addTool(executionEnvironment, name, file.getAbsolutePath(), kind, null);
                 return;
             }
         }
@@ -785,18 +785,15 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         // find 'best' Sun set and copy it
-        CompilerSet sun = getCompilerSet("SunStudio"); // NOI18N
+        CompilerSet sun = getCompilerSet("OracleSolarisStudio"); // NOI18N
         if (sun != null) {
             return;
         }
         if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12.2"); // NOI18N
+            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
         }
         if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudioExpress"); // NOI18N
-            if (bestCandidate != null && bestCandidate.getCompilerFlavor().getToolchainDescriptor().getDisplayName().indexOf("Aten") < 0) { // NOI18N
-                bestCandidate = null;
-            }
+            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudioExpress"); // NOI18N
         }
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12.1"); // NOI18N
@@ -828,7 +825,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (bestCandidate.isUrlPointer()) {
             return;
         }
-        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
+        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
+        if (flavor != null) { // #158084 NPE
+            CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
+                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true); // NOI18N
+            addUnsafe(bestCandidateCopy);
+        }
+        flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
         if (flavor != null) { // #158084 NPE
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
                     flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N
@@ -853,7 +856,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             String path = ToolUtils.findCommand(name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
-                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                                 }
                                             }
                                         }
@@ -862,7 +865,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         if (path != null) {
                                             String name = ToolUtils.getBaseName(path);
                                             if (notSkipedName(cs, descriptor, path, name)) {
-                                                return cs.addNewTool(env, name, path, tool);
+                                                return cs.addNewTool(env, name, path, tool, null);
                                             }
                                         }
                                     }
@@ -874,7 +877,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                                 String path = ToolUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
                                                     if (notSkipedName(cs, descriptor, path, name)) {
-                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                                     }
                                                 }
                                             }
@@ -887,7 +890,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         for(String name : descriptor.getNames()){
                                             String path = ToolUtils.findCommand(name, method);
                                             if (path != null) {
-                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
+                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool, null);
                                             }
                                         }
                                     } else {
@@ -908,7 +911,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                             if (family.equals(method)){
                                                 Tool other = s.findTool(tool);
                                                 if (other != null){
-                                                    return cs.addNewTool(env, other.getName(), other.getPath(), tool);
+                                                    return cs.addNewTool(env, other.getName(), other.getPath(), tool, other.getFlavor());
                                                 }
                                             }
                                         }
@@ -928,7 +931,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                                         if (name.equals(method) || "*".equals(method)){ // NOI18N
                                             Tool other = s.findTool(tool);
                                             if (other != null){
-                                                return cs.addNewTool(env, other.getName(), other.getPath(), tool);
+                                                return cs.addNewTool(env, other.getName(), other.getPath(), tool, other.getFlavor());
                                             }
                                         }
                                     }
@@ -940,7 +943,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 }
             }
         }
-        return cs.addTool(env, "", "", tool); // NOI18N
+        return cs.addTool(env, "", "", tool, null); // NOI18N
     }
 
     private static boolean notSkipedName(CompilerSet cs, ToolDescriptor descriptor, String path, String name){

@@ -272,10 +272,14 @@ public class J2MEProjectGenerator {
         ProjectManager.getDefault().saveProject(prj);
         return h;
     }
-    
+  
     public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates) throws IOException {
+        return createNewProject(projectLocation, name, platform, createHelloMIDlet, cfgTemplates, false); 
+    }
+      
+    public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates, final boolean library) throws IOException {
         ClassPreloader.stop(); //#147403
-        return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates));
+        return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates, library));
     }
     
     public static AntProjectHelper createProjectFromTemplate(final FileObject template, final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform) throws IOException {
@@ -377,7 +381,8 @@ public class J2MEProjectGenerator {
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/doc");  //NOI18N
         ep.setProperty(CopyDeploymentPlugin.PROP_TARGET, "deploy"); //NOI18N
         ep.setProperty(DefaultPropertiesDescriptor.JAVAC_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
-        
+        ep.setProperty(DefaultPropertiesDescriptor.MANIFEST_IS_LIBLET, FALSE); //NOI18N
+
         final HashMap<String,String> manifestOthers = new HashMap<String,String>();
         manifestOthers.put("MIDlet-Name", name);  //NOI18N
         manifestOthers.put("MIDlet-Vendor", "Vendor");  //NOI18N
@@ -1123,10 +1128,12 @@ public class J2MEProjectGenerator {
         private FileObject projectLocation;
         private AntProjectHelper helper;
         private Project project;
+        private boolean library;
 
-        public NewProjectGeneratorCallback(Collection<DataObject> createHelloMIDlet, Set<ConfigurationTemplateDescriptor> cfgTemplates) {
+        public NewProjectGeneratorCallback(Collection<DataObject> createHelloMIDlet, Set<ConfigurationTemplateDescriptor> cfgTemplates, boolean library) {
             this.createHelloMIDlet = createHelloMIDlet;
             this.cfgTemplates = cfgTemplates;
+            this.library = library;
         }
 
         public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings(value = "unused")
@@ -1179,6 +1186,21 @@ public class J2MEProjectGenerator {
                         }
                     }
                 }
+
+                if (library) {
+                    final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    String pr = proj.getProperty("platform.profile"); //NOI18N
+                    if (pr != null && pr.startsWith("MIDP-3")) { //NOI18N
+                        HashMap<String,String> manifestOthers = new HashMap<String,String>();
+                        manifestOthers.put("LIBlet-Name", proj.getProperty(NAME));  //NOI18N
+                        manifestOthers.put("LIBlet-Vendor", "Vendor");  //NOI18N
+                        manifestOthers.put("LIBlet-Version", "1.0");  //NOI18N
+                        storeManifestProperties(proj, DefaultPropertiesDescriptor.MANIFEST_OTHERS, manifestOthers);
+                        proj.put(DefaultPropertiesDescriptor.MANIFEST_IS_LIBLET, TRUE);
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
+                    }
+                }
+
                 if (cfgTemplates != null) {
                     final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

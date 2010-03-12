@@ -93,6 +93,25 @@ public final class DiffController {
             return new DiffController(new DiffControllerViewBridge(view));
         }
     }
+
+    /**
+     * Creates a Diff Controller for supplied left and right sources capable of creating enhanced UI.
+     *
+     * @param base defines content of the Base Diff pane
+     * @param modified defines content of the Modified (possibly editable) Diff pane
+     * @return DiffController implementation of the DiffController class
+     * @throws java.io.IOException when the reading from input streams fails.
+     * @since 1.27
+     */
+    public static DiffController createEnhanced (StreamSource base, StreamSource modified) throws IOException {
+        DiffControllerProvider provider = Lookup.getDefault().lookup(DiffControllerProvider.class);
+        if (provider != null) {
+            return new DiffController(provider.createEnhancedDiffController(base, modified));
+        } else {
+            DiffView view = Diff.getDefault().createDiff(base, modified);
+            return new DiffController(new DiffControllerViewBridge(view));
+        }
+    }
         
     private DiffController(DiffControllerImpl impl) {
         this.impl = impl;

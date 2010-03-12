@@ -348,6 +348,11 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
             }
         }
         if (doDamageRange) {
+            // Patch since this used to be a fallback and the original views' impl cleared char area at p1 too
+            Document doc = t.getDocument();
+            if (doc != null && p1 < doc.getLength()) {
+                p1++;
+            }
             super.damageRange(t, p0, p1, p0Bias, p1Bias);
         }
     }

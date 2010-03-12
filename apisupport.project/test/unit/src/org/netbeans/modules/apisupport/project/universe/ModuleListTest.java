@@ -194,44 +194,6 @@ public class ModuleListTest extends TestBase {
 
     }
 
-    // XXX cannot be run in binary dist, requires sources; test against fake platform
-    public void testConcurrentScanningNBOrg() throws Exception {
-        ModuleList.refresh();   // disable cache
-        final ModuleList mlref[] = new ModuleList[1];
-        Logger logger = Logger.getLogger(ModuleList.class.getName());
-        Level origLevel = logger.getLevel();
-        ModuleListLogHandler handler = new ModuleListLogHandler();
-        try {
-            logger.setLevel(Level.ALL);
-            logger.addHandler(handler);
-
-            Thread t = new Thread() {
-
-                @Override
-                public void run() {
-                    try {
-                        mlref[0] = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            };
-            long start = System.currentTimeMillis();
-            t.start();
-            ModuleList ml = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbRootFile());
-            t.join();
-            System.out.println("Concurrent scans took " + (System.currentTimeMillis() - start) + "msec.");
-            assertNull(handler.error, handler.error);   // error is non-null when duplicate scan detected
-            assertNotNull("Module list for root " + nbRootFile() + " returned null", ml);
-            assertNotNull("Module list for root " + nbRootFile() + " returned null", mlref[0]);
-            assertTrue("No projects scanned.", handler.scannedDirs.size() > 0);
-            System.out.println("Total " + handler.scannedDirs.size() + " project folders scanned.");
-        } finally {
-            logger.removeHandler(handler);
-            logger.setLevel(origLevel);
-        }
-    }
-
     public void testConcurrentScanningBinary() throws Exception {
         // now testing scan of binary clusters
         ModuleList.refresh();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -132,6 +132,9 @@ public class BasicBrandingModel {
     
     /**all above splash BundleKeys in set*/
     private final Set<BrandingSupport.BundleKey> winsysKeys = new HashSet<BrandingSupport.BundleKey>();
+
+    /**all BundleKeys the user may have modified through Resource Bundle editor panel */
+    private final Set<BrandingSupport.BundleKey> generalResourceBundleKeys = new HashSet<BrandingSupport.BundleKey>();
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
@@ -281,6 +284,10 @@ public class BasicBrandingModel {
         return relativePath;
     }
 
+    public Project getProject() {
+        return null != suiteProps ? suiteProps.getProject() : project;
+    }
+
     private File getProjectDirectoryFile() {
         if( null == suiteProps ) {
             return FileUtil.toFile(project.getProjectDirectory());
@@ -313,6 +320,9 @@ public class BasicBrandingModel {
                 getBranding().brandFile(splash);
             }
             getBranding().brandBundleKeys(winsysKeys);
+
+            getBranding().brandBundleKeys(generalResourceBundleKeys);
+            
         } else {
             if (brandingChanged && null != suiteProps) {//#115737
                 suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
@@ -618,8 +628,76 @@ public class BasicBrandingModel {
             winsysKeys.add(wsEnableSliding);
         }
         winsysKeys.remove(null);
+
+        generalResourceBundleKeys.clear();
 }
-    
+
+    private String backslashesToSlashes (String text) {
+        return text.replace('\\', '/'); // NOI18N
+    }
+
+    private BrandingSupport.BundleKey findInModifiedGeneralBundleKeys (String codenamebase, String bundlepath, String key) {
+        for (BundleKey bundleKey : generalResourceBundleKeys) {
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return bundleKey;
+        }
+        return null;
+    }
+
+    public void addModifiedGeneralBundleKey (BrandingSupport.BundleKey key) {
+        generalResourceBundleKeys.add (key);
+    }
+
+    public BrandingSupport.BundleKey getGeneralBundleKeyForModification
+            (String codenamebase, String bundlepath, String key) {
+        BrandingSupport.BundleKey bKey = findInModifiedGeneralBundleKeys(codenamebase, bundlepath, key);
+        return null != bKey ? bKey : getBranding().getBundleKey(codenamebase, bundlepath, key);
+    }
+
+    public String getKeyValue (String bundlepath, String codenamebase, String key) {
+        BrandingSupport.BundleKey bKey = findInModifiedGeneralBundleKeys(codenamebase, bundlepath, key);
+        return null != bKey ? bKey.getValue()
+                : getBranding().getBundleKey(codenamebase, bundlepath, key).getValue();
+    }
+
+    public boolean isKeyBranded (String bundlepath, String codenamebase, String key) {
+        // in modified keys?
+        for (BundleKey bundleKey : generalResourceBundleKeys) {
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        // in branded but not modified keys?
+        Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
+        for (BundleKey bundleKey : bundleKeys) {
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isBundleBranded (String bundlepath, String codenamebase) {
+        // in modified keys?
+        for (BundleKey bundleKey : generalResourceBundleKeys) {
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        // in branded but not modified keys?
+        Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
+        for (BundleKey bundleKey : bundleKeys) {
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+
     public @CheckForNull BrandingSupport.BundleKey getSplashWidth() {
         return splashWidth;
     }

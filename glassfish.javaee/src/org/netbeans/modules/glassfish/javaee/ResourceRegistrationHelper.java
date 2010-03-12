@@ -302,8 +302,10 @@ public class ResourceRegistrationHelper {
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            String propName = qname + "." + attributes.getValue("name");
-            properties.put(propName, attributes.getValue("value"));  //NOI18N
+            if (null != properties && null != attributes) {
+                String propName = qname + "." + attributes.getValue("name"); // NO18N
+                properties.put(propName, attributes.getValue("value"));  //NOI18N
+            }
         }
 
         @Override

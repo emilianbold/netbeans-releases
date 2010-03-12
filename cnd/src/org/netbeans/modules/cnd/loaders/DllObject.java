@@ -59,9 +59,7 @@ public class DllObject extends ExeObject {
 	super(pf, loader);
     }
 
-    protected void init() {
-    }
-
+    @Override
     protected Node createNodeDelegate() {
 	return new DllNode(this);
     }

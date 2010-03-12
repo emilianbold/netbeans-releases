@@ -41,9 +41,12 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -51,6 +54,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -83,14 +87,20 @@ public class ToolchainListRootNode extends AbstractNode {
     }
 
 
-    private static class ToolchainListChildren extends ChildFactory<CompilerSet> {
+    private static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
 
         private final ExecutionEnvironment env;
 
         public ToolchainListChildren(ExecutionEnvironment env) {
             this.env = env;
+            ToolsCacheManager.addChangeListener(WeakListeners.change(this, null));
         }
-        
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            refresh(false);
+        }
+
         @Override
         protected boolean createKeys(List<CompilerSet> toPopulate) {
             toPopulate.addAll(CompilerSetManager.get(env).getCompilerSets());
@@ -115,7 +125,11 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         public String getHtmlDisplayName() {
-            return null;
+            String displayName = getDisplayName();
+            if (CompilerSetManager.get(env).isDefaultCompilerSet(compilerSet)) {
+                displayName = "<b>" + displayName + "</b>"; // NOI18N
+            }
+            return displayName;
         }
 
         @Override

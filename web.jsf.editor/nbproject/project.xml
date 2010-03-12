@@ -5,9 +5,9 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.jsf.editor</code-name-base>
             <module-dependencies>
-		<dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.beans</code-name-base>
-		    <build-prerequisite/>
+                    <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -22,7 +22,7 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.refactoring.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -30,14 +30,14 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
-		    <code-name-base>org.openide.dialogs</code-name-base>
-		    <build-prerequisite/>
-		    <compile-dependency/>
-		    <run-dependency>
-			<specification-version>7.8</specification-version>
-		    </run-dependency>
-		</dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.8</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
@@ -55,7 +55,7 @@
                         <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -406,6 +406,13 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -441,11 +448,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <code-name-base>org.netbeans.modules.html</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -453,14 +460,17 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.html</code-name-base>
+                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
+                        <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -473,6 +483,28 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.project</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.loaders</code-name-base>
@@ -500,40 +532,6 @@
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.project</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <!--                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.j2ee.sun.appsrv81</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
--->
                 </test-type>
             </test-dependencies>
             <public-packages/>

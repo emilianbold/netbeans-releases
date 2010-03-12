@@ -43,26 +43,9 @@ package org.netbeans.modules.derby.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Properties;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.derby.DbURLClassLoader;
-import org.netbeans.modules.derby.DerbyOptions;
-import org.netbeans.modules.derby.Util;
-import org.netbeans.modules.derby.RegisterDerby;
-import org.netbeans.modules.derby.spi.support.DerbySupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.derby.DerbyDatabasesImpl;
 
 /**
  *
@@ -71,9 +54,9 @@ import org.openide.modules.InstalledFileLocator;
  * @since 1.7
  */
 public final class DerbyDatabases {
+    private static final DerbyDatabasesImpl IMPL = DerbyDatabasesImpl.getDefault();
 
-    private DerbyDatabases() {
-    }
+    private DerbyDatabases() {}
 
     /**
      * Checks if the Derby database is registered and the Derby system
@@ -82,7 +65,7 @@ public final class DerbyDatabases {
      * @return true if Derby is registered, false otherwise.
      */
     public static boolean isDerbyRegistered() {
-        return DerbySupport.getLocation().length() > 0 && DerbySupport.getSystemHome().length() > 0; // NOI18N
+        return IMPL.isDerbyRegistered();
     }
     
     /**
@@ -91,11 +74,7 @@ public final class DerbyDatabases {
      * @return the Derby system home or null if it is not known.
      */
     public static File getSystemHome() {
-        String systemHome = DerbyOptions.getDefault().getSystemHome();
-        if (systemHome.length() >= 0) {
-            return new File(systemHome);
-        }
-        return null;
+        return IMPL.getSystemHome();
     }
 
     /**
@@ -106,20 +85,7 @@ public final class DerbyDatabases {
      * @throws NullPointerException if <code>databaseName</code> is null.
      */
     public static boolean databaseExists(String databaseName) {
-        if (databaseName == null) {
-            throw new NullPointerException("The databaseName parameter cannot be null"); // NOI18N
-        }
-        // just because it makes sense, not really needed anywhere probably
-        if ("".equals(databaseName)) { // NOI18N
-            return false;
-        }
-
-        String systemHome = DerbySupport.getSystemHome();
-        if (systemHome.length() <= 0) { // NOI18N
-            return false;
-        }
-        File databaseFile = new File(systemHome, databaseName);
-        return databaseFile.exists();
+        return IMPL.databaseExists(databaseName);
     }
 
     /**
@@ -134,29 +100,7 @@ public final class DerbyDatabases {
      *         could not be found.
      */
     public static String getFirstFreeDatabaseName(String baseDatabaseName) {
-        if (baseDatabaseName == null) {
-            throw new NullPointerException("The baseDatabaseName parameter cannot be null"); // NOI18N
-        }
-
-        String systemHome = DerbySupport.getSystemHome();
-        if (systemHome.length() <= 0) { // NOI18N
-            return baseDatabaseName;
-        }
-        File databaseFile = new File(systemHome, baseDatabaseName);
-        if (!databaseFile.exists()) {
-            return baseDatabaseName;
-        }
-
-        int i = 1;
-        while (i <= Integer.MAX_VALUE) {
-            String databaseName = baseDatabaseName + String.valueOf(i);
-            databaseFile = new File(systemHome, databaseName);
-            if (!databaseFile.exists()) {
-                return databaseName;
-            }
-            i++;
-        }
-        return null;
+        return IMPL.getFirstFreeDatabaseName(baseDatabaseName);
     }
 
     /**
@@ -169,21 +113,7 @@ public final class DerbyDatabases {
      * @throws NullPointerException if <code>databaseName</code> is null.
      */
     public static int getFirstIllegalCharacter(String databaseName) {
-        if (databaseName == null) {
-            throw new NullPointerException("The databaseName parameter cannot be null"); // NOI18N
-        }
-
-        for (int i = 0; i < databaseName.length(); i++) {
-            char ch = databaseName.charAt(i);
-            if (ch == '/') {
-                return (int)ch;
-            }
-            if (ch == File.separatorChar) {
-                return (int)ch;
-            }
-        }
-
-        return -1;
+        return IMPL.getFirstIllegalCharacter(databaseName);
     }
 
     /**
@@ -211,51 +141,7 @@ public final class DerbyDatabases {
      *         and it cannot be created.
      */
     public static DatabaseConnection createDatabase(String databaseName, String user, String password) throws DatabaseException, IOException, IllegalStateException {
-        if (databaseName == null) {
-            throw new NullPointerException("The databaseName parameter cannot be null"); // NOI18N
-        }
-
-        ensureSystemHome();
-        if (!RegisterDerby.getDefault().ensureStarted(true)) {
-            throw new DatabaseException("The Derby server did not start"); // NOI18N
-        }
-
-        Driver driver = loadDerbyNetDriver();
-        Properties props = new Properties();
-        boolean setupAuthentication = (user != null && user.length() >= 0);
-
-        try {
-            String url = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName; // NOI18N
-            String urlForCreation = url + ";create=true"; // NOI18N
-            Connection connection = driver.connect(urlForCreation, props);
-
-
-            try {
-                if (setupAuthentication) {
-                    setupDatabaseAuthentication(connection, user, password);
-                }
-            } finally {
-                connection.close();
-            }
-
-            if (setupAuthentication) {
-                // we have to reboot the database for the authentication properties
-                // to take effect
-                try {
-                    connection = driver.connect(url + ";shutdown=true", props); // NOI18N
-                } catch (SQLException e) {
-                    // OK, will always occur
-                }
-            }
-        } catch (SQLException sqle) {
-            DatabaseException dbe = new DatabaseException(sqle.getMessage());
-            dbe.initCause(sqle);
-            throw dbe;
-        }
-
-        return registerDatabase(databaseName, user,
-                setupAuthentication ? user.toUpperCase() : "APP", // NOI18N
-                setupAuthentication ? password : null, setupAuthentication);
+        return IMPL.createDatabase(databaseName, user, password);
     }
 
     /**
@@ -278,8 +164,7 @@ public final class DerbyDatabases {
      *         and it cannot be created.
      */
     public static DatabaseConnection createSampleDatabase() throws DatabaseException, IOException, IllegalStateException {
-        extractSampleDatabase("sample"); // NOI18N
-        return registerDatabase("sample", "app", "APP", "app", true); // NOI18N
+        return IMPL.createSampleDatabase();
     }
 
     /**
@@ -303,125 +188,7 @@ public final class DerbyDatabases {
      *         and it cannot be created.
      */
     public static DatabaseConnection createSampleDatabase(String databaseName) throws DatabaseException, IOException {
-        if (databaseName == null) {
-            throw new NullPointerException("The databaseName parameter cannot be null"); // NOI18N
-        }
-
-        extractSampleDatabase(databaseName);
-        return registerDatabase(databaseName, "app", "APP", "app", true); // NOI18N
+        return IMPL.createSampleDatabase(databaseName);
     }
 
-    /**
-     * Extracts the sample database under the given name in the Derby system home.
-     * Does not overwrite an existing database.
-     *
-     * <p>Not public because used in tests.</p>
-     */
-    static synchronized void extractSampleDatabase(String databaseName) throws IOException{
-        File systemHomeFile = ensureSystemHome();
-        File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
-        FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
-        FileObject sampleFO = systemHomeFO.getFileObject(databaseName);
-        if (sampleFO == null) {
-            sampleFO = systemHomeFO.createFolder(databaseName);
-            Util.extractZip(sourceFO, sampleFO);
-        }
-    }
-
-    /**
-     * Tries to ensure the Derby system home exists (attempts to create it if necessary).
-     */
-    private static File ensureSystemHome() throws IOException {
-        String systemHome = DerbySupport.getSystemHome();
-        boolean noSystemHome = false;
-        if (systemHome.length() <= 0) { // NOI18N
-            noSystemHome = true;
-            systemHome = DerbySupport.getDefaultSystemHome();
-        }
-        File systemHomeFile = new File(systemHome);
-        if (!systemHomeFile.exists()){
-            // issue 113747: if mkdirs() fails, it can be caused by another thread having succeeded,
-            // since there are a few places where sample databases are created at first startup
-            if (!systemHomeFile.mkdirs() && !systemHomeFile.exists()) {
-                throw new IOException("Could not create the derby.system.home directory " + systemHomeFile); // NOI18N
-            }
-        }
-        if (noSystemHome) {
-            DerbySupport.setSystemHome(systemHome);
-        }
-        return systemHomeFile;
-    }
-
-    /**
-     * Registers in the Database Explorer the specified database
-     * on the local Derby server.
-     */
-    private static synchronized DatabaseConnection registerDatabase(String databaseName, String user, String schema, String password, boolean rememberPassword) throws DatabaseException {
-        JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(DerbyOptions.DRIVER_CLASS_NET);
-        if (drivers.length == 0) {
-            throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
-        }
-        DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
-        if (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
-            ConnectionManager.getDefault().addConnection(dbconn);
-        }
-        return dbconn;
-    }
-
-    /**
-     * Sets up authentication for the database to which the given connection
-     * is connected.
-     */
-    private static void setupDatabaseAuthentication(Connection conn, String user, String password) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("{call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(?, ?)}"); // NOI18N
-        try {
-            stmt.setString(1, "derby.connection.requireAuthentication"); // NOI18N
-            stmt.setString(2, "true"); // NOI18N
-            stmt.execute();
-
-            stmt.clearParameters();
-            stmt.setString(1, "derby.authentication.provider"); // NOI18N
-            stmt.setString(2, "BUILTIN"); // NOI18N
-            stmt.execute();
-
-            stmt.clearParameters();
-            stmt.setString(1, "derby.user." + user); // NOI18N
-            stmt.setString(2, password); // NOI18N
-            stmt.execute();
-        } finally {
-            stmt.close();
-        }
-    }
-
-    /**
-     * Loads the Derby network driver.
-     */
-    private static Driver loadDerbyNetDriver() throws DatabaseException, IllegalStateException {
-        Exception exception = null;
-        try {
-            File derbyClient = Util.getDerbyFile("lib/derbyclient.jar"); // NOI18N
-            if (derbyClient == null || !derbyClient.exists()) {
-                throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
-            }
-            URL[] driverURLs = new URL[] { derbyClient.toURI().toURL() }; // NOI18N
-            DbURLClassLoader l = new DbURLClassLoader(driverURLs);
-            Class c = Class.forName(DerbyOptions.DRIVER_CLASS_NET, true, l);
-            return (Driver)c.newInstance();
-        } catch (MalformedURLException e) {
-            exception = e;
-        } catch (IllegalAccessException e) {
-            exception = e;
-        } catch (ClassNotFoundException e) {
-            exception = e;
-        } catch (InstantiationException e) {
-            exception = e;
-        }
-        if (exception != null) {
-            DatabaseException dbe = new DatabaseException(exception.getMessage());
-            dbe.initCause(exception);
-            throw dbe;
-        }
-        // should never get here
-        return null;
-    }
 }

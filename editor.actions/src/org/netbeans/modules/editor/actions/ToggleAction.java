@@ -68,6 +68,13 @@ import org.netbeans.api.editor.EditorActionNames;
         menuPosition = 850,
         menuText = "#" + EditorActionNames.toggleLineNumbers + "_menu_text",
         preferencesKey = SimpleValueNames.LINE_NUMBER_VISIBLE
+    ),
+    @EditorActionRegistration(
+        name = EditorActionNames.toggleNonPrintableCharacters,
+        menuPath = "View",
+        menuPosition = 870,
+        menuText = "#" + EditorActionNames.toggleNonPrintableCharacters + "_menu_text",
+        preferencesKey = SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE
     )
 })
 public final class ToggleAction extends AbstractEditorAction {

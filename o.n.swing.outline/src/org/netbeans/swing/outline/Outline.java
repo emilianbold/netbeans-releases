@@ -68,6 +68,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeModelEvent;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -548,9 +549,11 @@ public class Outline extends ETable {
                 int columnStart = getCellRect(row, column, false).x;
                 handleStart += columnStart;
                 handleEnd += columnStart;
-                
+
+                TableColumn tableColumn = getColumnModel().getColumn(column);
+                TableCellEditor columnCellEditor = tableColumn.getCellEditor();
                 if ((me.getX() > ins.left && me.getX() >= handleStart && me.getX() <= handleEnd) ||
-                     me.getClickCount() > 1) {
+                    (me.getClickCount() > 1 && columnCellEditor == null)) {
 
                     boolean expanded = getLayoutCache().isExpanded(path);
                     //me.consume();  - has no effect!
@@ -587,7 +590,10 @@ public class Outline extends ETable {
             }
         }
             
-        boolean res = super.editCellAt(row, column, e);
+        boolean res = false;
+        if (e instanceof MouseEvent && ((MouseEvent)e).getClickCount() > 1) {
+            res = super.editCellAt(row, column, e);
+        }
         if( res && isTreeColumnIndex(column) && null != getEditorComponent() ) {
             configureTreeCellEditor(getEditorComponent(), row, column);
         }

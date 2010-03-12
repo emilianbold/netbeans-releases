@@ -81,6 +81,7 @@ import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -296,8 +297,15 @@ public class CommitAction extends ContextAction {
                 dd.setClosingOptions(new Object[] {commitButton, cancelButton});
                 SaveCookie[] saveCookies = panel.getSaveCookies();
                 if (cancelButton == e.getSource()) {
-                    if (saveCookies.length > 0 && !SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
-                        dd.setClosingOptions(new Object[0]);
+                    if (saveCookies.length > 0) {
+                        if (SaveBeforeClosingDiffConfirmation.allSaved(saveCookies) || !panel.isShowing()) {
+                            EditorCookie[] editorCookies = panel.getEditorCookies();
+                            for (EditorCookie cookie : editorCookies) {
+                                cookie.open();
+                            }
+                        } else {
+                            dd.setClosingOptions(new Object[0]);
+                        }
                     }
                     dd.setValue(cancelButton);
                 } else if (commitButton == e.getSource()) {

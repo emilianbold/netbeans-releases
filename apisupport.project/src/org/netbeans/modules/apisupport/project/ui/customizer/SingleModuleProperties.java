@@ -89,7 +89,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -101,9 +100,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
@@ -815,8 +812,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet<String> provTokens = new TreeSet<String>();
                 provTokens.addAll(Arrays.asList(IDE_TOKENS));
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
-                    ModuleEntry me = (ModuleEntry) it.next();
+                for (ModuleEntry me : getModuleList().getAllEntries()) {
                     provTokens.addAll(Arrays.asList(me.getProvidedTokens()));
                 }
                 String[] result = new String[provTokens.size()];
@@ -1122,8 +1118,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 SortedSet<String> allCategories = new TreeSet<String>(Collator.getInstance());
                 Set<ModuleDependency> allDependencies = new HashSet<ModuleDependency>();
-                for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext();) {
-                    ModuleEntry me = (ModuleEntry) it.next();
+                for (ModuleEntry me : getModuleList().getAllEntries()) {
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
                         allDependencies.add(new ModuleDependency(me));
                     }

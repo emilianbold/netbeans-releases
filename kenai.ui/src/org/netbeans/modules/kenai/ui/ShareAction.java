@@ -73,6 +73,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
     private static ShareAction inst = null;
 
     private ShareAction() {
+        putValue(NAME, NbBundle.getMessage(ShareAction.class, "CTL_ShareAction"));
     }
 
     public static synchronized ShareAction getDefault() {
@@ -125,7 +126,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
             }
             if (Subversion.isClientAvailable(true)) {
 
-                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e,KenaiManager.getDefault().getKenai("https://kenai.com")));
+                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e,Utilities.getPreferredKenai()));
                 // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
                 wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
                 wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,

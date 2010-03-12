@@ -78,9 +78,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
-public final class RubyTypeAnalyzer {
+final class RubyTypeAnalyzer {
 
-    private ContextKnowledge knowledge;
+    private final ContextKnowledge knowledge;
     private boolean analyzed;
     private boolean targetReached;
 
@@ -104,12 +104,15 @@ public final class RubyTypeAnalyzer {
      * and <code>String</code>.
      */
     private final Set<String> analyzedMethods = new HashSet<String>();
+
+    private final RubyTypeInferencer typeInferencer;
     /**
      * Creates a new instance of RubyTypeAnalyzer for a given position. The
      * {@link #inferType} method will do the rest.
      */
-    RubyTypeAnalyzer(final ContextKnowledge knowledge) {
+    RubyTypeAnalyzer(final ContextKnowledge knowledge, RubyTypeInferencer typeInferencer) {
         this.knowledge = knowledge;
+        this.typeInferencer = typeInferencer;
     }
 
     void analyze() {
@@ -181,6 +184,19 @@ public final class RubyTypeAnalyzer {
         }
     }
 
+    private static String getCurrentMethod(Node node, String currentMethod) {
+
+        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
+            return AstUtilities.getName(node);
+        }
+
+        if (node.getNodeType() == NodeType.MODULENODE
+                || node.getNodeType() == NodeType.CLASSNODE
+                || node.getNodeType() == NodeType.SCLASSNODE) {
+            return  "";
+        }
+        return currentMethod;
+    }
     /**
      * Analyze the given code block down to the given offset. The {@link
      * #inferType} method can then be used to read out the symbol type if any at
@@ -193,9 +209,9 @@ public final class RubyTypeAnalyzer {
             final Map<String, RubyType> typesForSymbols,
             final boolean override, String currentMethod) {
 
-        if (node.getNodeType() == NodeType.DEFNNODE || node.getNodeType() == NodeType.DEFSNODE) {
-            currentMethod = AstUtilities.getName(node);
-        }
+        // the method in which we are currently; helps in optimizing performance
+        currentMethod = getCurrentMethod(node, currentMethod);
+
         // Avoid including definitions appearing later in the context than the
         // caret. (This only works for local variable analysis; for fields it
         // could be complicated by code earlier than the caret calling code
@@ -214,7 +230,7 @@ public final class RubyTypeAnalyzer {
             case MULTIPLEASGNNODE: {
                 MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) node;
                 Map<Node, RubyType> vars = new HashMap<Node, RubyType>();
-                collectMultipleAsgnVars(multipleAsgnNode, RubyTypeInferencer.create(knowledge), vars);
+                collectMultipleAsgnVars(multipleAsgnNode, typeInferencer, vars);
                 for (Node each : vars.keySet()) {
                     if (each instanceof INameNode) {
                         String name = AstUtilities.getName(each);
@@ -224,13 +240,13 @@ public final class RubyTypeAnalyzer {
                 return;
             }
             case LOCALASGNNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
-                String symbol = RubyTypeInferencer.getLocalVarPath(new AstPath(knowledge.getRoot(), node), AstUtilities.getName(node));
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
+                String symbol = RubyTypeInferencer.getLocalVarPath(knowledge.getRoot(), node, currentMethod);
                 maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
                 break;
             }
             case CONSTDECLNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
                 String fqn  = AstUtilities.getFqnName(knowledge.getRoot(), node);
                 maybePutTypeForSymbol(typesForSymbols, fqn, type, override, currentMethod);
                 break;
@@ -240,7 +256,7 @@ public final class RubyTypeAnalyzer {
             case CLASSVARASGNNODE:
             case CLASSVARDECLNODE:
             case DASGNNODE: {
-                RubyType type = RubyTypeInferencer.create(knowledge).inferTypesOfRHS(node);
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
 
                 // null element in types set means that we are not able to infer
                 // the expression

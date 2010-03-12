@@ -204,6 +204,7 @@ public class DbSchemaEjbGenerator {
                 genTables.getRootFolder(tableName),
                 genTables.getPackageName(tableName),
                 genTables.getClassName(tableName),
+                genTables.getUpdateType(tableName),
                 genTables.getUniqueConstraints(tableName) );
         beans.put(tableName, bean);
         

@@ -44,17 +44,17 @@ made subject to such option by the copyright holder.
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-        <title>Viewing Data in a Database Table</title>
+        <title>Viewing and Modifying Data in a Database Table</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
+</head>
 
 
 
     <body>
 
-        <h2>Viewing Data in a Database Table</h2>
+        <h2>Viewing and Modifying Data in a Database Table</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>When a database is connected, you can execute an SQL statement in the IDE to view the data contained in a table.</p>
+        <p>When a database is connected, you can view and modify the data contained in a table in the built-in SQL Editor. </p>
         <p><b>To view data in a table:</b></p>
         <ol>
             <li>In the Services window, expand the node for a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;).</li>
@@ -62,11 +62,17 @@ made subject to such option by the copyright holder.
             <li>Right-click the node of the table or view and choose View Data.</li>
         </ol>
             <p>When you choose View Data, an SQL query to select all the data from the table is automatically generated in the upper pane of the SQL Editor.
-            The results of the statement are displayed in the lower pane of the SQL Editor.
-            You can modify the statement in the SQL Editor and run the modified statement by clicking the Run SQL (&nbsp; <img src="images/runsql.png" alt="Run SQL">&nbsp;) button in the toolbar.</p>
+            A visual representation of the table and the data it contains is displayed in the lower pane of the SQL Editor. </p>
+            <p>You can use this GUI representation of the table to add, modify, and delete table data, for example:  </p>
+            <ul>
+              <li><strong>Insert new records</strong>. To add new records, click the Insert Records button (<img src="images/insert-record-btn.png" alt="Insert Record button" width="14" height="14">). This opens the the Insert Records dialog window, in which you enter new records. You can click the Show SQL button in the Insert Records dialog window                                  to view the SQL statement(s) that will be applied upon initiating the                                  action. Click OK to add the new records to the database table. </li>
+              <li><strong>Modify records:</strong> To edit existing records, double-click a record in a table cell and modify its content. Modified entries are shown in green. Click the Commit Record                                  button ( <img src="images/commit-record-btn.png" alt="Commit Record button"> ) to commit changes to the actual database. Similarly, click the Cancel Edits button                                   ( <img src="images/cancel-edits-btn.png" alt="Cancel Edits button"> ) to cancel any edits you have made.</li>
+              <li><strong>Delete selected records</strong>. Select a row in the table and choose the Delete Selected Record  button ( <img src="images/delete-selected-record-btn.png" alt="Delete Selected Record button"> ). You choose multiple rows simultaneously by holding Ctrl.</li>
+              <li><strong>Delete all records:</strong> To delete all records in a                                  table, click the                                  Truncate Table button ( <img src="images/truncate-table-btn.png" alt="Truncate Table button"> ).</li>
+            </ul>
+            <p>If the displayed data needs to be resynchronized with the actual database,                              you can click the Refresh Records ( <img src="images/refresh-records-btn.png" alt="Refresh Records button"> ) button. </p>
             <p>For more on using the SQL Editor, see <a href="dbmod.html">Executing SQL Statements and Scripts</a>.</p>
-
-        <ul class="note"><li>Each column node has the same View Data item in 
+            <ul class="note"><li>Each column node has the same View Data item in 
             its pop-up menu. This feature is similar to the feature for tables; 
             however, when you view tables, the SQL statement for viewing data fetches only 
             the one column rather than the entire set of columns that the IDE displays when 

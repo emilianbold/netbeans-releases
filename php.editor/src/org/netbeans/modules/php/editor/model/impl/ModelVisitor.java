@@ -50,10 +50,12 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -672,14 +674,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 parameterName = expression;
             }
         }
-        List<? extends Parameter> parameters = fncScope.getParameters();
+        List<? extends ParameterElement> parameters = fncScope.getParameters();
         if (parameterName instanceof Variable) {
-            for (Parameter parameter : parameters) {
-                List<QualifiedName> types = parameter.getTypes();
+            for (ParameterElement parameter : parameters) {
+                Set<TypeResolver> types = parameter.getTypes();
+                String typeName = null;
+                for (TypeResolver typeResolver : types) {
+                    if (typeResolver.isResolved()) {
+                        QualifiedName typeQualifiedName = typeResolver.getTypeName(false);
+                        if (typeQualifiedName != null) {
+                            typeName = typeQualifiedName.toString();
+                        }
+                    }
+                }
                 VariableNameImpl var = createParameter(fncScope, parameter);
                 if (!types.isEmpty() && var != null) {
                     var.addElement(new VarAssignmentImpl(var, fncScope, false, fncScope.getBlockRange(),
-                            parameter.getOffsetRange(), types.get(0).toString()));
+                            parameter.getOffsetRange(), typeName));
                 }
             }
         }
@@ -926,7 +937,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return varName != null ? findVariable(scope, varName) : null;
     }
 
-    private VariableNameImpl createParameter(FunctionScopeImpl fncScope, Parameter parameter) {
+    private VariableNameImpl createParameter(FunctionScopeImpl fncScope, ParameterElement parameter) {
         VariableNameFactory varContainer = (VariableNameFactory) fncScope;
         Map<String, VariableNameImpl> map = vars.get(varContainer);
         if (map == null) {
@@ -1065,7 +1076,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return new IndexScopeImpl(info);
     }
 
-    public static IndexScope getIndexScope(PHPIndex idx) {
+    public static IndexScope getIndexScope(ElementQuery.Index idx) {
         return new IndexScopeImpl(idx);
     }
 

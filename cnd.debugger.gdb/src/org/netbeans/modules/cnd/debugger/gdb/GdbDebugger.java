@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -83,7 +84,6 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
-import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.cnd.debugger.gdb.attach.AttachTarget;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
@@ -1550,20 +1550,44 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_step();
     }
 
-    private FunctionBreakpoint untilBreakpoint = null;
+    private String untilBptId = null;
 
-    public void until(String loc) {
-        if (untilBreakpoint != null) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(untilBreakpoint);
+    private String setUntilBpt(String loc) {
+        final CommandBuffer res = gdb.break_insert_temporaryEx(loc);
+        if (res.isOK()) {
+            String response = res.getResponse();
+            if (response.length() >= 6) { // cut bkpt={ prefix
+                Map<String, String> map = createMapFromString(response.substring(6));
+                String id = map.get("number"); //NOI18N
+                if (id != null) {
+                    return id;
+                }
+            }
         }
+        return null;
+    }
+
+    public void until(CsmFunction function) {
+        if (untilBptId != null) {
+            gdb.break_deleteCMD(untilBptId).send();
+        }
+
         //LATER: avoid const modifiers
         //loc = loc.replace("const", ""); //NOI18N
-        untilBreakpoint = FunctionBreakpoint.create(loc);
-        untilBreakpoint.setTemporary();
-        untilBreakpoint.setHidden(true);
-        DebuggerManager.getDebuggerManager().addBreakpoint(untilBreakpoint);
-        setState(State.RUNNING);
-        gdb.exec_next();
+
+        // C++ style first
+        String id = setUntilBpt(function.getSignature().toString());
+        if (id == null) {
+            // C style if failed
+            id = setUntilBpt(function.getName().toString());
+        }
+
+        if (id == null) {
+            stepInto();
+        } else {
+            untilBptId = id;
+            stepOver();
+        }
     }
 
     /**

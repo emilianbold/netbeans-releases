@@ -247,20 +247,8 @@ fi
 #    exit $ERROR_CODE;
 #fi
 
-#cd nbbuild
-#Build catalog for FU NBMs
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
-#ERROR_CODE=$?
-
-#create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build catalog FU for NBMs"
-#    exit $ERROR_CODE;
-#fi
-#cd ..
-
 #Build all NBMs for stable UC - IDE + UC-only
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 create_test_result "build.NBMs" "Build all NBMs" $ERROR_CODE
@@ -268,6 +256,17 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build all stable UC NBMs"
 #    exit $ERROR_CODE;
 fi
+
+# Separate IDE nbms from stableuc nbms.
+ant -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc
+ERROR_CODE=$?
+
+create_test_result "get.ide.NBMs" "Extract IDE NBMs from all the built NBMs" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't extract IDE NBMs"
+#    exit $ERROR_CODE;
+fi
+
 
 #Build 110n kit for HG files
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip
@@ -279,25 +278,45 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 
-#Build l10n kit for all modules
+#Build l10n kit for IDE modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
-create_test_result "build.modules.l10n" "Build l10n kit for all modules" $ERROR_CODE
+create_test_result "build.modules.l10n" "Build l10n kit for IDE modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build l10n kits for all modules"
+    echo "ERROR: $ERROR_CODE - Can't build l10n kits for IDE modules"
+#    exit $ERROR_CODE;
+fi
+
+#Build l10n kit for stable uc modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stableuc-l10n-$BUILDNUMBER.zip
+ERROR_CODE=$?
+
+create_test_result "build.modules.l10n" "Build l10n kit for stable uc modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build l10n kits for stable uc modules"
 #    exit $ERROR_CODE;
 fi
 
 cd nbbuild
-Build catalog for all NBMs
+Build catalog for IDE NBMs
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
-create_test_result "build.stableuc.catalog" "Build catalog stableUC modules" $ERROR_CODE
+create_test_result "build.ide.catalog" "Build UC catalog for IDE modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build stable UC catalog for NBMs"
-    exit $ERROR_CODE;
+    echo "ERROR: $ERROR_CODE - Can't build UC catalog for IDE module"
+#    exit $ERROR_CODE;
+fi
+
+Build catalog for Stable UC NBMs
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
+ERROR_CODE=$?
+
+create_test_result "build.stableuc.catalog" "Build UC catalog for stable UC modules" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build UC catalog for stable UC modules"
+#    exit $ERROR_CODE;
 fi
 cd ..
 

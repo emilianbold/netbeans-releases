@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.remote.test;
 
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
@@ -51,5 +52,7 @@ public class RemoteApiBaseTestSuite extends NativeExecutionBaseTestSuite {
         super(name);
     }
     
-
+    public RemoteApiBaseTestSuite(Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+        super(testClasses);
+    }
 }

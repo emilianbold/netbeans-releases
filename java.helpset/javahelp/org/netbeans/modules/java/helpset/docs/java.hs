@@ -30,7 +30,7 @@
   <view>
     <name>Search</name>
     <label>Search</label>
-    <type>javax.help.ModifiedSearchView</type> 
+    <type>javax.help.SearchView</type> 
     <data engine="com.sun.java.help.search.DefaultSearchEngine">      
       JavaHelpSearch
     </data>  

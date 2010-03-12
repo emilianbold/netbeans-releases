@@ -66,10 +66,13 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -127,6 +130,17 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             public Object getValue() {
                 MimePath mimePath = MimePath.parse((String) getProperty(MIME_TYPE_PROP));
                 return ComplexValueSettingsFactory.getIndentEngine(mimePath);
+            }
+        });
+
+        putProperty(SimpleValueNames.TEXT_LINE_WRAP, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().get(SimpleValueNames.TEXT_LINE_WRAP, "none"); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document to fire the property change event
+                return null;
             }
         });
     }

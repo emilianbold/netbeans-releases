@@ -71,7 +71,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     }
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpKind());
+        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind());
         this.container = container;
         this.typeName = Union2.<String, Collection<? extends TypeScope>>createFirst(typeName);
         this.scopeRange = scopeRange;

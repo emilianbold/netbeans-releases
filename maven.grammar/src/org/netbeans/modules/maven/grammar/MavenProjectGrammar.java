@@ -76,12 +76,14 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.modules.maven.grammar.spi.GrammarExtensionProvider;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -123,6 +125,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     @Override
     protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, org.jdom.Element parent) {
+        List<GrammarResult> result = null;
         if (path.endsWith("plugins/plugin/configuration") || //NOI18N
             path.endsWith("plugins/plugin/executions/execution/configuration")) { //NOI18N
             // assuming we have the configuration node as parent..
@@ -132,18 +135,27 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 : hintCtx.getParentNode().getPreviousSibling();
             MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
             ArtifactInfoHolder info = findPluginInfo(previous, embedder, true);
-            List<GrammarResult> res = collectPluginParams(info, hintCtx);
-            if (res == null) { //let the local processing geta changce 
+            result = collectPluginParams(info, hintCtx);
+            if (result == null) { //let the local processing geta changce
                                //once the index failed.
                 Document pluginDoc = loadDocument(info, embedder);
                 if (pluginDoc != null) {
-                    return collectPluginParams(pluginDoc, hintCtx);
+                    result = collectPluginParams(pluginDoc, hintCtx);
                 }
-            } else {
-                return res;
             }
         }
-        return Collections.<GrammarResult>emptyList();
+
+        GrammarExtensionProvider extProvider = Lookup.getDefault().lookup(GrammarExtensionProvider.class);
+        if (extProvider != null) {
+            List<GrammarResult> extResult = extProvider.getDynamicCompletion(path, hintCtx, parent);
+            if (result == null) {
+                result = extResult;
+            } else {
+                result.addAll(extResult);
+            }
+        }
+
+        return result;
     }
     
     private ArtifactInfoHolder findArtifactInfo(Node previous) {

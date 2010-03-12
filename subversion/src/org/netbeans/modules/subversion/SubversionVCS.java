@@ -60,6 +60,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -70,11 +71,14 @@ import org.openide.util.lookup.ServiceProviders;
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
+    private final static Integer priority = Utils.getPriority("subversion"); //NOI18N
     
     private SubversionVisibilityQuery visibilityQuery;
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
+        putProperty(PROP_PRIORITY, priority);
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 

@@ -48,6 +48,9 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -226,6 +229,7 @@ final public class AppClientProjectProperties {
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     TableCellRenderer CLASS_PATH_TABLE_ITEM_RENDERER;    
     Document SHARED_LIBRARIES_MODEL;
+    DefaultListModel JAVAC_PROCESSORPATH_MODEL;
     
     
     // CustomizerCompile
@@ -233,6 +237,9 @@ final public class AppClientProjectProperties {
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
+    ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     
     // CustomizerCompileTest
                 
@@ -282,6 +289,7 @@ final public class AppClientProjectProperties {
     private String includes, excludes;
 
     public static final String JAVA_SOURCE_BASED = "java.source.based";
+
     
     AppClientProject getProject() {
         return project;
@@ -330,6 +338,9 @@ final public class AppClientProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
         JAVAC_CLASSPATH_MODEL = ClassPathTableModel.createTableModel( cs.itemsIterator(projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES ) );
+        String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
+        processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
+        JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
@@ -362,8 +373,15 @@ final public class AppClientProjectProperties {
         javacDebugBooleanKind = kind[0];
         
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
+        ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
+        ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL = projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR);
+        String annotationProcessors = projectProperties.get(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        if (annotationProcessors == null)
+            annotationProcessors = ""; //NOI18N
+        ANNOTATION_PROCESSORS_MODEL = ClassPathUiSupport.createListModel(
+                (annotationProcessors.length() > 0 ? Arrays.asList(annotationProcessors.split(",")) : Collections.emptyList()).iterator()); //NOI18N
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
-        
+
         // CustomizerJar
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
@@ -402,6 +420,7 @@ final public class AppClientProjectProperties {
         try {                        
             // Store properties 
             Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         AppClientProject.class.getResource("resources/build-impl.xsl")) &
@@ -473,6 +492,7 @@ final public class AppClientProjectProperties {
         }
         
         String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
+        String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ), null );
@@ -507,6 +527,7 @@ final public class AppClientProjectProperties {
                 
         // Save all paths
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, run_cp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
@@ -552,6 +573,21 @@ final public class AppClientProjectProperties {
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
         
+        StringBuilder sb = new StringBuilder();
+        for (Enumeration elements = ANNOTATION_PROCESSORS_MODEL.elements(); elements.hasMoreElements();) {
+            sb.append(elements.nextElement());
+            if (elements.hasMoreElements())
+                sb.append(',');
+        }
+        if (sb.length() > 0) {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(false, BOOLEAN_KIND_TF));
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, sb.toString());
+        } else {
+            projectProperties.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, encodeBoolean(true, BOOLEAN_KIND_TF));
+            projectProperties.remove(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+        }
+
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
@@ -585,6 +621,7 @@ final public class AppClientProjectProperties {
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList(projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
@@ -592,6 +629,7 @@ final public class AppClientProjectProperties {
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
@@ -714,6 +752,7 @@ final public class AppClientProjectProperties {
     
     public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

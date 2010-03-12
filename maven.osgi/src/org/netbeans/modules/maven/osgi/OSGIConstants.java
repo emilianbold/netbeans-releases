@@ -53,5 +53,13 @@ public interface OSGIConstants {
     public static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; //NOI18N
     public static final String PRIVATE_PACKAGE = "Private-Package"; //NOI18N
     public static final String EXPORT_PACKAGE = "Export-Package"; //NOI18N
+    public static final String IMPORT_PACKAGE = "Import-Package"; //NOI18N
+    public static final String INCLUDE_RESOURCE = "Include-Resource"; //NOI18N
+    public static final String BUNDLE_SYMBOLIC_NAME = "Bundle-SymbolicName"; //NOI18N
 
+    public static final String EMBED_DEPENDENCY = "Embed-Dependency"; //NOI18N
+    public static final String EMBED_DIRECTORY = "Embed-Directory"; //NOI18N
+    public static final String EMBED_STRIP_GROUP = "Embed-StripGroup"; //NOI18N
+    public static final String EMBED_STRIP_VERSION = "Embed-StripVersion"; //NOI18N
+    public static final String EMBED_TRANSITIVE = "Embed-Transitive"; //NOI18N
 }

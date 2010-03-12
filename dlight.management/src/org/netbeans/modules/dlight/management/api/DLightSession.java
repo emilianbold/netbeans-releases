@@ -610,6 +610,12 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         serviceInfoDataStorage.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
+        if (useSharedStorage){
+            serviceInfoDataStorage.put(ServiceInfoDataStorage.STORAGE_UNIQUE_KEY, this.sharedStorageID);
+            targetInfo.getInfo().put(ServiceInfoDataStorage.STORAGE_UNIQUE_KEY, this.sharedStorageID);
+        }
+
+
 
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector<?> toolCollector : collectors) {
@@ -633,14 +639,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                     }
                     toolCollector.init(currentStorages, target);
                     addDataFilterListener(toolCollector);
-
-                    if (toolCollector instanceof IndicatorDataProvider<?>) {
-                        IndicatorDataProvider<?> idp = (IndicatorDataProvider<?>) toolCollector;
-                        idp.init(serviceInfoDataStorage);
-                    }
-
-
-
+                    toolCollector.init(serviceInfoDataStorage);
                     if (notAttachableDataCollector == null && !toolCollector.isAttachable()) {
                         notAttachableDataCollector = toolCollector;
                     }

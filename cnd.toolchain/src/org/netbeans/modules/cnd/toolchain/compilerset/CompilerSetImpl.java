@@ -201,11 +201,14 @@ public final class CompilerSetImpl extends CompilerSet {
         return displayName;
     }
 
-    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, ToolKind kind) {
+    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, ToolKind kind, CompilerFlavor aFlavor) {
         if (findTool(kind) != null) {
             return null;
         }
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, kind.getDisplayName(), path);
+        if (aFlavor == null) {
+            aFlavor = getCompilerFlavor();
+        }
+        Tool tool = compilerProvider.createCompiler(env, aFlavor, kind, name, kind.getDisplayName(), path);
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
@@ -218,8 +221,11 @@ public final class CompilerSetImpl extends CompilerSet {
         APIAccessor.get().setCompilerSet(tool, this);
     }
 
-    /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, ToolKind kind) {
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, kind.getDisplayName(), path);
+    /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, ToolKind kind, CompilerFlavor aFlavor) {
+        if (aFlavor == null) {
+            aFlavor = getCompilerFlavor();
+        }
+        Tool tool = compilerProvider.createCompiler(env, aFlavor, kind, name, kind.getDisplayName(), path);
         tools.add(tool);
         APIAccessor.get().setCompilerSet(tool, this);
         return tool;

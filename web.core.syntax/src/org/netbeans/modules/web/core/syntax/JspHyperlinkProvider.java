@@ -423,10 +423,18 @@ public class JspHyperlinkProvider implements HyperlinkProvider {
                         openInEditor(fObj);
                     else {
                         String path = token.text().toString();
-                        path = path.substring(path.indexOf('"') +1);
-                        path = path.substring(0, path.indexOf('"'));
+                        int openingQuotePos = path.indexOf('"');
 
-                        fObj = JspUtils.getFileObject(bdoc, path);
+                        if (openingQuotePos > -1){
+                            path = path.substring(openingQuotePos +1);
+
+                            int closingQuotePos = path.indexOf('"');
+
+                            if (closingQuotePos > -1){
+                                path = path.substring(0, closingQuotePos);
+                                fObj = JspUtils.getFileObject(bdoc, path);
+                            }
+                        }
                         if (fObj != null) {
                             openInEditor(fObj);
                         } else {

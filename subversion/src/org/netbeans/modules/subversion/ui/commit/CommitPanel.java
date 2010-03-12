@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -84,6 +85,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.ui.diff.MultiDiffPanel;
@@ -96,6 +98,7 @@ import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import static java.awt.Component.LEFT_ALIGNMENT;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -169,6 +172,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
                 if(ts.isAutofill()) {
@@ -318,9 +322,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
+                @Override
                 public void run() {
                     commitTable.dataChanged();
                     listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
@@ -335,6 +341,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
@@ -434,6 +441,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onTemplate();
             }
         });
+        Spellchecker.register (messageTextArea);
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -511,6 +519,21 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     SaveCookie[] getSaveCookies() {
         return getModifiedFiles().values().toArray(new SaveCookie[0]);
     }
+    
+    /**
+     * Returns editor cookies available for modified and not open files in the commit table
+     * @return
+     */
+    EditorCookie[] getEditorCookies() {
+        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+            if (cookies.length > 0) {
+                allCookies.add(cookies[0]);
+            }
+        }
+        return allCookies.toArray(new EditorCookie[allCookies.size()]);
+    }
 
     /**
      * Returns true if trying to commit from the commit tab or the user confirmed his action
@@ -521,7 +544,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
             NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
                     NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
         return result;

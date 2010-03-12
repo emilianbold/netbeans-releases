@@ -43,12 +43,15 @@ package org.netbeans.modules.cnd.makeproject.actions;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 
 public class RunTestAction extends NodeAction {
 
@@ -63,28 +66,34 @@ public class RunTestAction extends NodeAction {
             return;
         }
         Node n = activatedNodes[0];
-        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
-        assert folder != null;
-        Node thisNode = (Node) n.getValue("This"); // NOI18N
-        assert thisNode != null;
         Project project = (Project) n.getValue("Project"); // NOI18N
         assert project != null;
+//        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+//        assert folder != null;
+//        Node thisNode = (Node) n.getValue("This"); // NOI18N
+//        assert thisNode != null;
+//
+//        List<Folder> list = folder.getAllTests();
+//        if (folder.isTest()) {
+//            list.add(folder);
+//        }
+//        if (list.size() > 0) {
+//            StringBuffer message = new StringBuffer("Would run the following test(s):\n\n"); // NOI18N
+//            for (Folder f : list) {
+//                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
+//            }
+//            message.append("\nTest(s) would build and run with output directed to output window. Two posibilities (will have to decided):\n"); // NOI18N
+//            message.append("1): output is parsed similary to how build output is parsed and failed tests are hyperlinked for easy navigation back to the failed test.\n"); // NOI18N
+//            message.append("2): full-featured GUI frontend (similar to JUnit GUI frontend) with support for test progress, summary, and hyperlinks back to failed tests.\n"); // NOI18N
+//            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+//            DialogDisplayer.getDefault().notify(nd);
+//        }
 
-        List<Folder> list = folder.getAllTests();
-        if (folder.isTest()) {
-            list.add(folder);
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, n}));
         }
-        if (list.size() > 0) {
-            StringBuffer message = new StringBuffer("Would run the following test(s):\n\n"); // NOI18N
-            for (Folder f : list) {
-                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
-            }
-            message.append("\nTest(s) would build and run with output directed to output window. Two posibilities (will have to decided):\n"); // NOI18N
-            message.append("1): output is parsed similary to how build output is parsed and failed tests are hyperlinked for easy navigation back to the failed test.\n"); // NOI18N
-            message.append("2): full-featured GUI frontend (similar to JUnit GUI frontend) with support for test progress, summary, and hyperlinks back to failed tests.\n"); // NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
+
 
     }
 

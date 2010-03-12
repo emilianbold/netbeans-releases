@@ -51,6 +51,7 @@ import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.FetchType;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -143,6 +144,10 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
 
         public boolean isRegenSchemaAttrs() {
              return false;
+        }
+
+        public String getUpdateType(String tableName) {
+            return UpdateType.NEW.toString();
         }
 
         public Set<List<String>> getUniqueConstraints(String tableName) {

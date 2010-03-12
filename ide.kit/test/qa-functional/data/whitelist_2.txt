@@ -74,11 +74,6 @@ org.netbeans.modules.css.visual.ui.preview.CssTCController
 #177560
 org.netbeans.modules.csl.core.GsfModuleInstaller
 
-#173031
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction
-org.netbeans.modules.xsl.actions.TransformAction
-
 #177561
 org.netbeans.modules.cnd.debug.DebugUtils
 org.netbeans.modules.cnd.debugger.common.EditorContext
@@ -3044,9 +3039,6 @@ org.netbeans.modules.j2ee.ejbverification.EJBProblemFinderFactory
 org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinderFactory
 org.netbeans.modules.j2ee.persistence.unit.PUDataLoader
 org.netbeans.modules.j2ee.persistence.unit.PUDataObject
-org.netbeans.modules.j2ee.sun.ide.Installer
-org.netbeans.modules.j2ee.sun.ide.Installer$PrepareEnvironment
-org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator
 org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject
 org.netbeans.modules.j2ee.websphere6.dd.loaders.appbnd.WSAppBndDataLoader
 org.netbeans.modules.j2ee.websphere6.dd.loaders.appbnd.WSAppBndDataObject

@@ -47,7 +47,10 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,16 +77,18 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
     private final String annotationProcessorsProperty;
     private final Set<String> properties;
     private final String sourceOutputProperty;
+    private final String processorOptionsProperty;
 
-    public AnnotationProcessingQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty) {
+    public AnnotationProcessingQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty, String processorOptionsProperty) {
         this.helper = helper;
         this.evaluator = evaluator;
         this.annotationProcessingEnabledProperty = annotationProcessingEnabledProperty;
         this.annotationProcessingEnabledInEditorProperty = annotationProcessingEnabledInEditorProperty;
         this.runAllAnnotationProcessorsProperty = runAllAnnotationProcessorsProperty;
         this.annotationProcessorsProperty = annotationProcessorsProperty;
-        this.properties = new HashSet<String>(Arrays.asList(annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty));
+        this.properties = new HashSet<String>(Arrays.asList(annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty, processorOptionsProperty));
         this.sourceOutputProperty = sourceOutputProperty;
+        this.processorOptionsProperty = processorOptionsProperty;
     }
 
     private Reference<Result> cache;
@@ -144,6 +149,29 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
             }
 
             return null;
+        }
+
+        @Override
+        public Map<? extends String, ? extends String> processorOptions() {
+            Map<String, String> options = new LinkedHashMap<String, String>();
+            String prop = evaluator.getProperty(processorOptionsProperty);
+            if (prop != null) {
+                for (String option : prop.split("\\s")) { //NOI18N
+                    if (option.startsWith("-A") && option.length() > 2) { //NOI18N
+                        int sepIndex = option.indexOf('='); //NOI18N
+                        String key = null;
+                        String value = null;
+                        if (sepIndex == -1)
+                            key = option.substring(2);
+                        else if (sepIndex >= 3) {
+                            key = option.substring(2, sepIndex);
+                            value = (sepIndex < option.length() - 1) ? option.substring(sepIndex + 1) : null;
+                        }
+                        options.put(key, value);
+                    }
+                }
+            }
+            return options;
         }
 
         public void addChangeListener(ChangeListener l) {

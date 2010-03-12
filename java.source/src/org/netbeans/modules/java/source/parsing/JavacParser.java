@@ -672,7 +672,17 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
-        if (aptUtils == null || !aptUtils.aptEnabled()) {
+        boolean aptEnabled = aptUtils != null && aptUtils.aptEnabled() && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        if (aptEnabled) {
+            for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("-A").append(entry.getKey()); //NOI18N
+                if (entry.getValue() != null) {
+                    sb.append('=').append(entry.getValue()); //NOI18N
+                }
+                options.add(sb.toString())
+;            }
+        } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
         options.add("-XDfindDiamond"); //XXX: should be part of options
@@ -686,7 +696,7 @@ public class JavacParser extends Parser {
             JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
-            if (aptUtils != null && aptUtils.aptEnabled()) {
+            if (aptEnabled) {
                 task.setProcessors(aptUtils.resolveProcessors());
             }
             Context context = task.getContext();
