@@ -382,7 +382,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
                     if (panel.productList.getModel().getSize() > 0) {
-                        panel.productList.setSelectedIndex(0);
                         populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
                     }
                     if(isNetbeans) {
