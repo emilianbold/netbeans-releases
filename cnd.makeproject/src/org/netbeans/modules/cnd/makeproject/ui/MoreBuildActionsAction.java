@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
 public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
-    private JMenu subMenu;
+    private JMenu subMenu = null;
     Action[] actions;
 
     /** Creates a new instance of BrowserAction */
@@ -58,9 +58,6 @@ public class MoreBuildActionsAction extends AbstractAction implements Presenter.
         this.actions = actions;
     }
         
-    /** Perform the action. Tries the performer and then scans the ActionMap
-     * of selected topcomponent.
-     */
     @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         // no operation
@@ -79,14 +76,12 @@ public class MoreBuildActionsAction extends AbstractAction implements Presenter.
     }
         
     private void createSubMenu() {
-        if ( subMenu == null ) {
+        if (subMenu == null) {
             String label = getString("LBL_MoreBuildActionsAction_Name"); // NOI18N
-            subMenu = new JMenu( label );
-        }
-        
-        subMenu.removeAll();
-        for (Action action : actions) {
-            subMenu.add(action);
+            subMenu = new JMenu(label);
+            for (Action action : actions) {
+                subMenu.add(action);
+            }
         }
     }
 
