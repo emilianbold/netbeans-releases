@@ -86,6 +86,12 @@
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
+                <folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
