@@ -42,6 +42,8 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
@@ -51,9 +53,12 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -62,21 +67,20 @@ import org.netbeans.modules.php.editor.model.TypeScope;
  * @author Radek Matous
  */
 public class OverridingMethodsImpl implements OverridingMethods {
-    private String classSignature = "";//NOI18N
+    private String classSignatureForInheritedMethods = "";//NOI18N
+    private String classSignatureForInheritedByMethods = "";//NOI18N
+    private String classSignatureForInheritedByTypes = "";//NOI18N
     /** just very simple implementation for now*/
     private Set<MethodElement> inheritedMethods = Collections.emptySet();
+    private Set<MethodElement> inheritedByMethods = Collections.emptySet();
+    private LinkedHashSet<TypeElement> inheritedByTypes = new LinkedHashSet<TypeElement>();
     @Override
     public Collection<? extends AlternativeLocation> overrides(ParserResult info, ElementHandle handle) {
         assert handle instanceof ModelElement;
         if (handle instanceof MethodScope) {
             MethodScope method = (MethodScope) handle;
-            String signature  = method.getInScope().getIndexSignature();
-            if (!signature.equals(classSignature)) {
-                Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
-                inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
-            } 
-            classSignature = signature;
-            final Set<MethodElement> overridenMethods = ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedMethods);
+            final ElementFilter methodNameFilter = ElementFilter.forName(NameKind.exact(method.getName()));
+            final Set<MethodElement> overridenMethods = methodNameFilter.filter(getInheritedMethods(info, method));
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (MethodElement methodElement : overridenMethods) {
                 retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(methodElement));
@@ -88,12 +92,83 @@ public class OverridingMethodsImpl implements OverridingMethods {
 
     @Override
     public Collection<? extends AlternativeLocation> overriddenBy(ParserResult info, ElementHandle handle) {
+        assert handle instanceof ModelElement;
+        if (handle instanceof MethodScope) {
+            MethodScope method = (MethodScope) handle;
+            final ElementFilter methodNameFilter = ElementFilter.forName(NameKind.exact(method.getName()));
+            final Set<MethodElement> overridenByMethods = methodNameFilter.filter(getInheritedByMethods(info, method));
+            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            for (MethodElement methodElement : overridenByMethods) {
+                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(methodElement));
+            }
+            return retval;
+        } else if (handle instanceof TypeScope) {
+            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            for (TypeElement typeElement : getInheritedByTypes(info, (TypeScope) handle)) {
+                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(typeElement));
+            }
+            return retval;
+        }
+
         return null;
+    }
+
+    private static Set<String> toNames(Set<? extends PhpElement> elements) {
+        Set<String> names = new HashSet<String>();
+        for (PhpElement elem : elements) {
+            names.add(elem.getName());
+        }
+        return names;
     }
 
     @Override
     public boolean isOverriddenBySupported(ParserResult info, ElementHandle handle) {
-        return false;
+        return true;
+    }
+
+    /**
+     * @return the inheritedMethods
+     */
+    private Set<MethodElement> getInheritedMethods(final ParserResult info, final MethodScope method) {
+        final String signature = method.getInScope().getIndexSignature();
+        if (!signature.equals(classSignatureForInheritedMethods)) {
+            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            inheritedMethods = index.getInheritedMethods((TypeScope) method.getInScope());
+        }
+        classSignatureForInheritedMethods = signature;
+        return inheritedMethods;
+    }
+
+
+    /**
+     * @return the inheritedByTypes
+     */
+    private LinkedHashSet<TypeElement> getInheritedByTypes(final ParserResult info, final TypeScope type) {
+        final String signature = type.getIndexSignature();
+        if (!signature.equals(classSignatureForInheritedByTypes)) {
+            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            inheritedByTypes = index.getInheritedByTypes(type);
+        }
+        classSignatureForInheritedByTypes = signature;
+        return inheritedByTypes;
+    }
+
+    /**
+     * @return the inheritedByMethods
+     */
+    private Set<MethodElement> getInheritedByMethods(final ParserResult info, final MethodScope method) {
+        final String signature = method.getInScope().getIndexSignature();
+        if (!signature.equals(classSignatureForInheritedByMethods)) {
+            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            TypeScope type = (TypeScope) method.getInScope();
+            ElementFilter forDeclaredMethods = ElementFilter.forIncludedNames(toNames(index.getDeclaredMethods(type)), PhpElementKind.METHOD);
+            inheritedByMethods = new HashSet<MethodElement>();
+            for (TypeElement nextType : getInheritedByTypes(info,type)) {
+                inheritedByMethods.addAll(forDeclaredMethods.filter(index.getDeclaredMethods(nextType)));
+            }
+        }
+        classSignatureForInheritedByMethods = signature;
+        return inheritedByMethods;
     }
 
 }

@@ -1037,6 +1037,18 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+        getInheritedByTypes(typeElement, retval);
+        retval.remove(typeElement);
+        if (LOG.isLoggable(Level.FINE)) {
+            logQueryTime("LinkedHashSet<TypeElement> getInheritedByTypes", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
+        }
+        return retval;
+    }
+
+    @Override
     public LinkedHashSet<TypeElement> getInheritedTypes(final TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
@@ -1168,24 +1180,41 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return directTypes;
     }
 
+    private void getInheritedByTypes(final TypeElement typeElement, final LinkedHashSet<TypeElement> retval) {
+        if (retval.add(typeElement)) {
+            LinkedHashSet<TypeElement> directTypes = getDirectInheritedByTypes(typeElement);
+            for (TypeElement tp : directTypes) {
+                getInheritedByTypes(tp, retval);
+            }
+        }
+    }
+
+    private LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
+        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
+        final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());
+        if (typeElement.isClass()) {
+            final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_CLASS, query,
+                    new String[] {PHPIndexer.FIELD_SUPER_CLASS, ClassElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : result) {
+                directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+            }
+        } else if (typeElement.isInterface()) {
+            final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_IFACE, query,
+                    new String[] {PHPIndexer.FIELD_SUPER_CLASS, InterfaceElementImpl.IDX_FIELD, ClassElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : result) {
+                directTypes.addAll(InterfaceElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+            }
+        }
+        return directTypes;
+    }
+
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
         Set<String> names = new HashSet<String>();
         for (PhpElement elem : elements) {
             names.add(elem.getName());
         }
         return names;
-    }
-
-    private static Set<String> toKindNames(Set<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
-        for (PhpElement elem : elements) {
-            names.add(toKindName(elem));
-        }
-        return names;
-    }
-
-    private static String toKindName(PhpElement elem) {
-        return String.format("%s:%s", elem.getPhpElementKind().toString(), elem.getName());
     }
 
     private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
