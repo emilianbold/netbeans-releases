@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,75 +44,66 @@ package org.netbeans.modules.derby;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
+import org.openide.util.NbPreferences;
 
 /**
- * @author Andrei Badea
+ * @author Andrei Badea, Jiri Rechtacek
  */
-public class Installer extends ModuleInstall {
+public class DerbyActivator {
 
-    private static final Logger LOGGER = Logger.getLogger(Installer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DerbyActivator.class.getName());
+    private static final String FIRST_RUN = "first_run"; // NOI18N
 
-    @Override
-    public void restored() {
-        WindowManager.getDefault().invokeWhenUIReady(new RegisterJDKDerby());
+    public static synchronized void activate() {
+        // activate only for 1st time
+        boolean firstTime = NbPreferences.forModule(DerbyActivator.class).getBoolean(FIRST_RUN, Boolean.TRUE);
+        Logger.getLogger(DerbyActivator.class.getName()).finest("Is DerbyActivator.activate() called for the 1st time? " + firstTime);
+        if (firstTime) {
+            doActivate();
+            NbPreferences.forModule(DerbyActivator.class).putBoolean(FIRST_RUN, Boolean.FALSE);
+        }
     }
 
-    private static final class RegisterJDKDerby implements Runnable {
+    private static final JDKDerbyHelper helper = JDKDerbyHelper.forDefault();
 
-        private final JDKDerbyHelper helper = JDKDerbyHelper.forDefault();
-
-        @Override
-        public void run() {
-            if (SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(this);
-                return;
-            }
-
-            if (!helper.canBundleDerby()) {
-                LOGGER.fine("Default platform cannot bundle Derby"); // NOI18N
-                return;
-            }
-
-            ProgressHandle handle = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(Installer.class, "MSG_RegisterJavaDB"));
-            handle.start();
-            try {
-                if (registerJDKDerby()) {
-                    registerSampleDatabase();
-                }
-            } finally {
-                handle.finish();
-            }
+    private static void doActivate() {
+        if (!helper.canBundleDerby()) {
+            LOGGER.fine("Default platform cannot bundle Derby"); // NOI18N
+            return;
         }
 
-        private boolean registerJDKDerby() {
-            if (DerbyOptions.getDefault().getLocation().length() > 0) {
-                return false;
+        ProgressHandle handle = ProgressHandleFactory.createSystemHandle(NbBundle.getMessage(DerbyActivator.class, "MSG_RegisterJavaDB"));
+        handle.start();
+        try {
+            if (registerJDKDerby()) {
+                registerSampleDatabase();
             }
-            String derbyLocation = helper.findDerbyLocation();
-            if (derbyLocation != null) {
-                LOGGER.log(Level.FINE, "Registering JDK Derby at {0}", derbyLocation); // NOI18N
-                return DerbyOptions.getDefault().trySetLocation(derbyLocation);
-            }
-            return false;
+        } finally {
+            handle.finish();
         }
+    }
 
-        private void registerSampleDatabase() {
-            try {
-                DerbyDatabases.createSampleDatabase();
-            } catch (DatabaseException e) {
-                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, null, e);
-            } catch (IOException e) {
-                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, null, e);
-            }
+    private static boolean registerJDKDerby() {
+        String derbyLocation = helper.findDerbyLocation();
+        if (derbyLocation != null) {
+            LOGGER.log(Level.FINE, "Registering JDK Derby at {0}", derbyLocation); // NOI18N
+            return DerbyOptions.getDefault().trySetLocation(derbyLocation);
+        }
+        return false;
+    }
+
+    private static void registerSampleDatabase() {
+        try {
+            DerbyDatabases.createSampleDatabase();
+        } catch (DatabaseException e) {
+            Logger.getLogger(DerbyActivator.class.getName()).log(Level.WARNING, null, e);
+        } catch (IOException e) {
+            Logger.getLogger(DerbyActivator.class.getName()).log(Level.WARNING, null, e);
         }
     }
 }

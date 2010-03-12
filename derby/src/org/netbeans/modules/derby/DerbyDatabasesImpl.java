@@ -90,6 +90,7 @@ public final class DerbyDatabasesImpl {
     private DerbyDatabasesImpl() {}
 
     public static  DerbyDatabasesImpl getDefault() {
+        DerbyActivator.activate();
         return INSTANCE;
     }
 
