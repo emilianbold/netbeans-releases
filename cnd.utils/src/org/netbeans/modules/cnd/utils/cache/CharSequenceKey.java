@@ -199,6 +199,8 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
             return new Fixed7CharSequenceKey(b, n);
         } else if (n < 16) {
             return new Fixed15CharSequenceKey(b, n);
+        } else if (n < 24) {
+            return new Fixed23CharSequenceKey(b, n);
         }
         return new CharSequenceKey(b);
     }
@@ -211,6 +213,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         value = v;
     }
 
+    @Override
     public int length() {
         if (value instanceof byte[]) {
             return ((byte[]) value).length;
@@ -218,6 +221,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         return ((char[]) value).length;
     }
 
+    @Override
     public char charAt(int index) {
         if (value instanceof byte[]) {
             int r = ((byte[]) value)[index] & 0xFF;
@@ -269,6 +273,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         return h;
     }
 
+    @Override
     public CharSequence subSequence(int beginIndex, int endIndex) {
         return create(toString().substring(beginIndex, endIndex));
     }
@@ -290,6 +295,7 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
     }
     
     private static class CharSequenceComparator implements Comparator<CharSequence> {
+        @Override
         public int compare(CharSequence o1, CharSequence o2) {
             if ((o1 instanceof CharSequenceKey)){
                 if ((o2 instanceof CharSequenceKey)){
@@ -367,11 +373,13 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
         }
     }
 
+    @Override
     public int compareTo(CharSequence o) {
         return Comparator.compare(this, o);
     }
 
     private static class CharSequenceComparatorIgnoreCase implements Comparator<CharSequence> {
+        @Override
         public int compare(CharSequence o1, CharSequence o2) {
             int n1 = o1.length();
             int n2 = o2.length();
@@ -426,10 +434,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
             i2 = a2;
         }
 
+        @Override
         public int length() {
             return i1&0xFF;
         }
 
+        @Override
         public char charAt(int index) {
             int r = 0;
             switch(index) {
@@ -476,10 +486,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
 //            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
         }
 
+        @Override
         public CharSequence subSequence(int start, int end) {
             return CharSequenceKey.create(toString().substring(start, end));
         }
 
+        @Override
         public int compareTo(CharSequence o) {
             return Comparator.compare(this, o);
         }
@@ -539,10 +551,12 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
             i4 = a4;
         }
 
+        @Override
         public int length() {
             return i1&0xFF;
         }
 
+        @Override
         public char charAt(int index) {
             int r = 0;
             switch(index) {
@@ -592,10 +606,159 @@ public final class CharSequenceKey implements TinyCharSequence, Comparable<CharS
             return i1+31*(i2+ 31*(i3+31*i4));
         }
 
+        @Override
         public CharSequence subSequence(int start, int end) {
             return CharSequenceKey.create(toString().substring(start, end));
         }
 
+        @Override
+        public int compareTo(CharSequence o) {
+            return Comparator.compare(this, o);
+        }
+    }
+
+    private static final class Fixed23CharSequenceKey implements TinyCharSequence, Comparable<CharSequence> {
+        private final long i1;
+        private final long i2;
+        private final long i3;
+
+        @SuppressWarnings("fallthrough")
+        private Fixed23CharSequenceKey(byte[] b, int n){
+            long a1 = 0;
+            long a2 = 0;
+            long a3 = 0;
+            switch (n){
+                case 23:
+                    a3+=(b[22]&0xFF)<<24;
+                case 22:
+                    a3+=(b[21]&0xFF)<<16;
+                case 21:
+                    a3+=(b[20]&0xFF)<<8;
+                case 20:
+                    a3+=(b[19]&0xFF);
+                    a3<<=32;
+                case 19:
+                    a3+=(b[18]&0xFF)<<24;
+                case 18:
+                    a3+=(b[17]&0xFF)<<16;
+                case 17:
+                    a3+=(b[16]&0xFF)<<8;
+                case 16:
+                    a3+=b[15]&0xFF;
+                case 15:
+                    a2+=(b[14]&0xFF)<<24;
+                case 14:
+                    a2+=(b[13]&0xFF)<<16;
+                case 13:
+                    a2+=(b[12]&0xFF)<<8;
+                case 12:
+                    a2+=(b[11]&0xFF);
+                    a2<<=32;
+                case 11:
+                    a2+=(b[10]&0xFF)<<24;
+                case 10:
+                    a2+=(b[9]&0xFF)<<16;
+                case 9:
+                    a2+=(b[8]&0xFF)<<8;
+                case 8:
+                    a2+=b[7]&0xFF;
+                case 7:
+                    a1+=(b[6]&0xFF)<<24;
+                case 6:
+                    a1+=(b[5]&0xFF)<<16;
+                case 5:
+                    a1+=(b[4]&0xFF)<<8;
+                case 4:
+                    a1+=(b[3]&0xFF);
+                    a1<<=32;
+                case 3:
+                    a1+=(b[2]&0xFF)<<24;
+                case 2:
+                    a1+=(b[1]&0xFF)<<16;
+                case 1:
+                    a1+=(b[0]&0xFF)<<8;
+                case 0:
+                    a1+=n;
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+            }
+            i1 = a1;
+            i2 = a2;
+            i3 = a3;
+        }
+
+        @Override
+        public int length() {
+            return (int) (i1 & 0xFF);
+        }
+
+        @Override
+        public char charAt(int index) {
+            int r = 0;
+            switch(index) {
+                case 0: r = (int) ((i1 >> 8) & 0xFFL); break;
+                case 1: r = (int) ((i1 >> 16) & 0xFFL); break;
+                case 2: r = (int) ((i1 >> 24) & 0xFFL); break;
+                case 3: r = (int) ((i1 >> 32) & 0xFFL); break;
+                case 4: r = (int) ((i1 >> 40) & 0xFFL); break;
+                case 5: r = (int) ((i1 >> 48) & 0xFFL); break;
+                case 6: r = (int) ((i1 >> 56) & 0xFFL); break;
+                case 7: r = (int) (i2 & 0xFFL); break;
+                case 8: r = (int) ((i2 >> 8) & 0xFFL); break;
+                case 9: r = (int) ((i2 >> 16) & 0xFFL); break;
+                case 10: r = (int) ((i2 >> 24) & 0xFFL); break;
+                case 11: r = (int) ((i2 >> 32) & 0xFFL); break;
+                case 12: r = (int) ((i2 >> 40) & 0xFFL); break;
+                case 13: r = (int) ((i2 >> 48) & 0xFFL); break;
+                case 14: r = (int) ((i2 >> 56) & 0xFFL); break;
+                case 15: r = (int) (i3 & 0xFFL); break;
+                case 16: r = (int) ((i3 >> 8) & 0xFFL); break;
+                case 17: r = (int) ((i3 >> 16) & 0xFFL); break;
+                case 18: r = (int) ((i3 >> 24) & 0xFFL); break;
+                case 19: r = (int) ((i3 >> 32) & 0xFFL); break;
+                case 20: r = (int) ((i3 >> 40) & 0xFFL); break;
+                case 21: r = (int) ((i3 >> 48) & 0xFFL); break;
+                case 22: r = (int) ((i3 >> 56) & 0xFFL); break;
+            }
+            return (char)r;
+        }
+
+        @Override
+        public String toString() {
+            int n = length();
+            char[] r = new char[n];
+            for (int i = 0; i < n; i++) {
+                r[i] = charAt(i);
+            }
+            return new String(r);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) {
+                return true;
+            }
+            if (object instanceof Fixed23CharSequenceKey) {
+                Fixed23CharSequenceKey otherString = (Fixed23CharSequenceKey)object;
+                return i1 == otherString.i1 && i2 == otherString.i2 && i3 == otherString.i3;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            long res = i1+31*(i2+ 31*i3);
+            res = (res + (res >>32))& 0xFFFFFFFFL;
+            return (int) res;
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return CharSequenceKey.create(toString().substring(start, end));
+        }
+
+        @Override
         public int compareTo(CharSequence o) {
             return Comparator.compare(this, o);
         }

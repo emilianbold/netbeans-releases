@@ -138,9 +138,8 @@ public class BugzillaQuery extends Query {
         return columnDescriptors;
     }
 
-    @Override
-    public boolean refresh() { // XXX what if already running! - cancel task
-        return refreshIntern(false);
+    public void refresh() { // XXX what if already running! - cancel task
+        refreshIntern(false);
     }
 
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task

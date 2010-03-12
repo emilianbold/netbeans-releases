@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -46,6 +46,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -55,86 +56,121 @@ import org.openide.filesystems.FileObject;
  * @author Filip.Zamboj at SUN.com
  */
 public class PHPNewLineIndenterQATest extends PHPTestBase {
-    public PHPNewLineIndenterQATest(String testName) {
-        super(testName);
-    }
 
-    public void test172797_stableFixed() throws Exception{
+    public PHPNewLineIndenterQATest(String testName) {
+         super(testName);
+    }
+    public void test172797_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/172797.php");
     }
-
-    public void test17357_1_stableFixed() throws Exception{
+    public void test17357_1_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173357_1.php");
     }
-
-    public void test173357_2_stableFixed() throws Exception{
+    public void test173357_2_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173357_2.php");
     }
-
-    public void test176061_stableFixed() throws Exception{
+    public void test176061_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/176061.php");
     }
-
     public void testClassAfterFunction_stable() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/classAfterFunction.php");
     }
-    /**
-     * issue 146247 there are 4 cases to be tested 
-     * @throws Exception
-     */
-    public void test146247_1_stableFixed() throws Exception{
+    public void test146247_1_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_1.php");
     }
-    public void test146247_2_stableFixed() throws Exception{
+    public void test146247_2_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_2.php");
     }
-    public void test146247_3_stableFixed() throws Exception{
+    public void test146247_3_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_3.php");
     }
-    public void test146247_4_stableFixed() throws Exception{
+    public void test146247_4_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/146247_4.php");
     }
-
-    /**
-     * 173966 issue - a regression from 146247
-     * @throws Exception
-     */
-    public void test173966_stableFixed() throws Exception{
+    public void test173966_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173966.php");
     }
-
-    /**
-     * 167087 issue
-     * @throws Exceptioneviem
-     */
     public void test167087_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/167087.php");
     }
-
-    /**
-     * 173900 issue
-     * @throws Exception
-     */
     public void test173900_regression() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/regressions/173900.php");
     }
 
-    /**
-     * 173937 issue
-     * @throws
-     */
     public void test173937_1_stableFixed() throws Exception {
         testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/173937_1.php");
     }
+    public void test175437() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/175437.php");
+    }
 
-    /**
-     * 173937 issue
-     * @throws
-     */
-//    public void test175437() throws Exception {
-//        testIndentInFile("testfiles/indent/qa/issues/unstable_newIssues/175437.php");
-//    }
-    
+    public void test168337() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/168337.php");
+    }
+
+    public void test166543_1() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/166543_1.php");
+    }
+
+    public void test166543_2() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/166543_2.php");
+    }
+
+    /** settings preferences 2,2 initialIndent 5 **/
+
+    public void test172797_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/172797.php", new IndentPrefs(10,10), 5);
+    }
+    public void test17357_1_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/173357_1.php", new IndentPrefs(10,10), 5);
+    }
+    public void test173357_2_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/173357_2.php", new IndentPrefs(10,10), 5);
+    }
+    public void test176061_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/176061.php", new IndentPrefs(10,10), 5);
+    }
+    public void testClassAfterFunction_10_10_5_stable() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/classAfterFunction.php", new IndentPrefs(10,10), 5);
+    }
+    public void test146247_1_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/146247_1.php", new IndentPrefs(10,10), 5);
+    }
+    public void test146247_2_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/146247_2.php", new IndentPrefs(10,10), 5);
+    }
+    public void test146247_3_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/146247_3.php", new IndentPrefs(10,10), 5);
+    }
+    public void test146247_4_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/146247_4.php", new IndentPrefs(10,10), 5);
+    }
+    public void test173966_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/173966.php", new IndentPrefs(10,10), 5);
+    }
+    public void test167087_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/167087.php", new IndentPrefs(10,10), 5);
+    }
+    public void test173900_10_10_5_regression() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/regressions/173900.php", new IndentPrefs(10,10), 5);
+    }
+    public void test173937_1_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/173937_1.php", new IndentPrefs(10,10), 5);
+    }
+    public void test175437_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/175437.php", new IndentPrefs(10,10), 5);
+    }
+    public void test168337_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/168337.php", new IndentPrefs(10,10), 5);
+    }
+    public void test166543_1_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/166543_1.php", new IndentPrefs(10,10), 5);
+    }
+    public void test166543_2_10_10_5_stableFixed() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/10_10_5/stable_fixedIssues/166543_2.php", new IndentPrefs(10,10), 5);
+    }
+
+
     @Override
     protected boolean runInEQ() {
         return true;
@@ -157,20 +193,21 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
         }
     }
 
+
     protected void testIndentInFile(String file) throws Exception {
-        testIndentInFile(file, null);
+        testIndentInFile(file, null, 0);
     }
 
-    protected void testIndentInFile(String file, IndentPrefs preferences) throws Exception {
+    protected void testIndentInFile(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         String source = readFile(fo);
 
-        int sourcePos = source.indexOf('^');     
+        int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
-        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Formatter formatter = getFormatter(null);
-        
+        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos + 1);
+        Formatter formatter = getFormatter(preferences);
+
         JEditorPane ta = getPane(sourceWithoutMarker);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
@@ -181,12 +218,26 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
 
         setupDocumentIndentation(doc, preferences);
 
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        prefs.putInt(FmtOptions.initialIndent, initialIndent);
+
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 
         doc.getText(0, doc.getLength());
         doc.insertString(caret.getDot(), "^", null);
 
         String target = doc.getText(0, doc.getLength());
-        assertDescriptionMatches(file, target, false, ".indented");
+        if (preferences != null)
+            assertDescriptionMatches(file, target, false, 
+                    "."+
+                    preferences.getIndentation()+
+                    "_"
+                    +preferences.getHangingIndentation()+
+                    "_"+initialIndent+
+                    ".indented");
+        else
+            assertDescriptionMatches(file, target, false, ".indented");
     }
+
 }

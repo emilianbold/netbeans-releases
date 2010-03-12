@@ -127,7 +127,8 @@ public class SelectedTablesTest extends NbTestCase {
         selectedTables.setClassName(table,"Table3");
 
         assertEquals(2, selectedTables.getTables().size());
-        assertEquals(SelectedTables.Problem.ALREADY_EXISTS, selectedTables.getFirstProblem());
+//        assertEquals(SelectedTables.Problem.ALREADY_EXISTS, selectedTables.getFirstProblem());
+        assertNull(selectedTables.getFirstProblem());
         assertEquals(5, cl.changeCount);
 
         selectedTables.setTargetFolder(location, package2Name);

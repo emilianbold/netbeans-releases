@@ -93,15 +93,18 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         };
     }
     
+    @Override
     public Set/*<FileObject>*/ instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
         return null;
     }
     
+    @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         return ArchetypeWizardUtils.instantiate(handle, wiz);
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -110,6 +113,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         updateSteps();
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         wiz.putProperty("projdir",null); //NOI18N
         wiz.putProperty("name",null); //NOI18N
@@ -118,19 +122,23 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         listeners.clear();
     }
     
+    @Override
     public String name() {
         return MessageFormat.format(org.openide.util.NbBundle.getMessage(MavenWizardIterator.class, "NameFormat"),
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -138,6 +146,7 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -145,17 +154,20 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
     
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);

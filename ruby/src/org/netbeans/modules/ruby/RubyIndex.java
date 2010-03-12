@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,9 +180,9 @@ public final class RubyIndex {
         return Collections.<IndexResult>emptySet();
     }
 
-    private boolean search(String key, String name, QuerySupport.Kind kind, Set<IndexResult> result) {
+    private boolean search(String key, String name, QuerySupport.Kind kind, Collection<IndexResult> result, String... fieldsToLoad) {
         try {
-            result.addAll(querySupport.query(key, name, kind,  (String[]) null));
+            result.addAll(querySupport.query(key, name, kind,  fieldsToLoad));
             return true;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -247,7 +248,7 @@ public final class RubyIndex {
                 throw new UnsupportedOperationException(kind.toString());
         }
 
-        search(field, name, kind, result);
+        search(field, name, kind, result, CLASS_FIELDS);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         if (includeAll) {
@@ -704,7 +705,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, name, kind, result);
+        search(field, name, kind, result, FIELD_REQUIRE, FIELD_FQN_NAME);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Map<String, String> fqns = new HashMap<String, String>();
@@ -761,7 +762,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, require, QuerySupport.Kind.EXACT, result);
+        search(field, require, QuerySupport.Kind.EXACT, result, FIELD_REQUIRE, FIELD_FQN_NAME);
 
         final Set<String> fqns = new HashSet<String>();
         
@@ -799,7 +800,7 @@ public final class RubyIndex {
         QuerySupport.Kind kind = QuerySupport.Kind.EXACT;
         String field = FIELD_FQN_NAME;
 
-        search(field, fqn, kind, result);
+        search(field, fqn, kind, result, CLASS_FIELDS);
 
         // XXX Uhm... there could be multiple... Shouldn't I return a set here?
         // (e.g. you can have your own class named File which has nothing to
@@ -814,7 +815,7 @@ public final class RubyIndex {
                 // Found the class name, now look it up in the index
                 result.clear();
 
-                if (!search(field, extendsClass, kind, result)) {
+                if (!search(field, extendsClass, kind, result, CLASS_FIELDS)) {
                     return null;
                 }
 
@@ -846,7 +847,7 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, CLASS_FIELDS);
 
         boolean foundIt = result.size() > 0;
 
@@ -876,7 +877,7 @@ public final class RubyIndex {
      * context of the usage. */
     public Set<IndexedClass> getSubClasses(String fqn, String possibleFqn, String name, boolean directOnly) {
         //String field = FIELD_FQN_NAME;
-        Set<IndexedClass> classes = new HashSet<IndexedClass>();
+        Set<IndexedClass> classes = new LinkedHashSet<IndexedClass>();
         Set<String> scannedClasses = new HashSet<String>();
         Set<String> seenClasses = new HashSet<String>();
         
@@ -921,6 +922,21 @@ public final class RubyIndex {
      * @return method or <code>null</code> if the was no such method.
      */
     public IndexedMethod getSuperMethod(String className, String methodName, boolean closest) {
+        return getSuperMethod(className, methodName, closest, true);
+    }
+
+    /**
+     * Gets either the most distant or the closest method in the hierarchy that the given method overrides or
+     * the method itself if it doesn't override any super methods.
+     *
+     * @param className the name of class where the given <code>methodName</code> is.
+     * @param methodName the name of the method.
+     * @param closest if true, gets the closest super method, otherwise the most distant.
+     * @param includeSelf if true, returns the method itself if it had no super methods.
+     *
+     * @return method or <code>null</code> if the was no such method.
+     */
+    IndexedMethod getSuperMethod(String className, String methodName, boolean closest, boolean includeSelf) {
         Set<IndexedMethod> methods = getInheritedMethods(className, methodName, QuerySupport.Kind.EXACT);
 
         // todo: performance?
@@ -938,6 +954,9 @@ public final class RubyIndex {
                 }
             }
         }
+        if (!includeSelf) {
+            return null;
+        }
         return !methods.isEmpty() ? methods.iterator().next() : null;
     }
 
@@ -949,11 +968,27 @@ public final class RubyIndex {
      * @return a set containing the overriding methods.
      */
     public Set<IndexedMethod> getOverridingMethods(String methodName, String className) {
+        return getOverridingMethods(methodName, className, false);
+    }
+
+    /**
+     * Gets all the methods that override the given method.
+     *
+     * @param methodName the name of the method.
+     * @param className the (fqn) class name where the method is defined.
+     * @param excludeSelf if true, excludes the overridden method itself from the results.
+     * 
+     * @return a set containing the overriding methods.
+     */
+    Set<IndexedMethod> getOverridingMethods(String methodName, String className, boolean excludeSelf) {
         Set<IndexedMethod> result = new HashSet<IndexedMethod>();
         Set<IndexedMethod> methods = getMethods(methodName, className, QuerySupport.Kind.EXACT);
         for (IndexedMethod method : methods) {
             Set<IndexedClass> subClasses = getSubClasses(method.getIn(), null, null, false);
             for (IndexedClass subClass : subClasses) {
+                if (excludeSelf && className.equals(subClass.getIn())) {
+                    continue;
+                }
                 result.addAll(getMethods(method.getName(), subClass.getName(), QuerySupport.Kind.EXACT));
             }
         }
@@ -1020,6 +1055,28 @@ public final class RubyIndex {
         return methods;
     }
 
+    /**
+     * Like {@link #getInheritedMethods(java.lang.String, java.lang.String, org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind) }, 
+     * ut if {@code includeSelf} is false, excludes results from the class itself.
+     * @param classFqn
+     * @param prefix
+     * @param kind
+     * @param includeSelf specifies whether methods from {@code classFqn} should be included.
+     * @return
+     */
+    Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind, boolean includeSelf) {
+        Set<IndexedMethod> inherited = getInheritedMethods(classFqn, prefix, kind);
+        if (includeSelf) {
+            return inherited;
+        }
+        Set<IndexedMethod> result = new HashSet<IndexedMethod>(inherited.size());
+        for (IndexedMethod each : inherited) {
+            if (!classFqn.equals(each.getClz())) {
+                result.add(each);
+            }
+        }
+        return result;
+    }
 
     /** Return whether the specific class referenced (classFqn) was found or not. This is
      * not the same as returning whether any classes were added since it may add
@@ -1028,7 +1085,7 @@ public final class RubyIndex {
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
         boolean haveRedirected, boolean inheriting) {
-        
+
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
             return false;
@@ -1037,7 +1094,7 @@ public final class RubyIndex {
         scannedClasses.add(classFqn);
 
 
-        Set<IndexResult> result = new HashSet<IndexResult>();
+        Set<IndexResult> result = new LinkedHashSet<IndexResult>();
 
         search(FIELD_FQN_NAME, classFqn, QuerySupport.Kind.EXACT, result);
 
@@ -1259,7 +1316,7 @@ public final class RubyIndex {
         
         String searchField = FIELD_DB_TABLE;
         Set<IndexResult> result = new HashSet<IndexResult>();
-        search(searchField, prefix, kind, result);
+        search(searchField, prefix, kind, result, FIELD_DB_TABLE);
 
         Set<String> tables = new HashSet<String>();
         for (IndexResult map : result) {
@@ -1280,7 +1337,7 @@ public final class RubyIndex {
         String searchField = FIELD_GLOBAL_NAME;
         Set<IndexResult> result = new HashSet<IndexResult>();
         // Only include globals from the user's sources, not in the libraries!
-        search(searchField, prefix, kind, result);
+        search(searchField, prefix, kind, result, FIELD_GLOBAL_NAME);
 
         Set<IndexedVariable> globals = new HashSet<IndexedVariable>();
         for (IndexResult ir : result) {
@@ -1346,7 +1403,7 @@ public final class RubyIndex {
 
         String searchField = FIELD_FQN_NAME;
         Set<IndexResult> result = new HashSet<IndexResult>();
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, RubyUtils.addToArray(CLASS_FIELDS, FIELD_CONSTANT_NAME));
 
         // If this is a bogus class entry (no search rsults) don't continue
         if (result.size() <= 0) {
@@ -1422,7 +1479,7 @@ public final class RubyIndex {
 
         Set<IndexResult> result = new HashSet<IndexResult>();
 
-        search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
+        search(searchField, classFqn, QuerySupport.Kind.EXACT, result, RubyUtils.addToArray(CLASS_FIELDS, FIELD_FIELD_NAME));
 
         boolean foundIt = result.size() > 0;
 
@@ -1599,7 +1656,7 @@ public final class RubyIndex {
         final Set<IndexResult> result = new HashSet<IndexResult>();
         String field = FIELD_FQN_NAME;
 
-        search(field, fqn, QuerySupport.Kind.EXACT, result);
+        search(field, fqn, QuerySupport.Kind.EXACT, result, CLASS_FIELDS);
 
         Set<IndexedClass> matches = new HashSet<IndexedClass>();
 
@@ -1712,7 +1769,7 @@ public final class RubyIndex {
 
         String field = FIELD_REQUIRE;
 
-        search(field, require, QuerySupport.Kind.EXACT, result);
+        search(field, require, QuerySupport.Kind.EXACT, result, FIELD_REQUIRE);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         for (IndexResult ir : result) {

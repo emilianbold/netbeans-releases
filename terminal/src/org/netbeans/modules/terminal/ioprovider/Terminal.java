@@ -169,7 +169,7 @@ public final class Terminal extends JComponent {
 
     /* package */ Terminal(IOContainer ioContainer, Action[] actions, String name) {
 	if (ioContainer == null)
-	    throw new IllegalArgumentException("ioContainer cannot be null");
+	    throw new IllegalArgumentException("ioContainer cannot be null");	// NOI18N
 
         this.ioContainer = ioContainer;
         this.actions = (actions == null)? new Action[0]: actions;
@@ -185,7 +185,7 @@ public final class Terminal extends JComponent {
         findState = new DefaultFindState(term);
 
         term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");
+        term.setEmulation("ansi");	// NOI18N
         term .setBackground(Color.white);
         term.setHistorySize(4000);
 
@@ -290,7 +290,7 @@ public final class Terminal extends JComponent {
     }
 
     public String getTitle() {
-        return title;
+        return title == null ? name : title;
     }
 
     FindState getFindState() {
@@ -303,7 +303,7 @@ public final class Terminal extends JComponent {
 
     private final class ClearAction extends AbstractAction {
         public ClearAction() {
-            super("Clear");
+            super(Catalog.get("CTL_Clear"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
@@ -319,7 +319,7 @@ public final class Terminal extends JComponent {
 
     private final class CloseAction extends AbstractAction {
         public CloseAction() {
-            super("Close");
+            super(Catalog.get("CTL_Close"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F4,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
@@ -335,7 +335,7 @@ public final class Terminal extends JComponent {
 
     private final class CopyAction extends AbstractAction {
         public CopyAction() {
-            super("Copy");
+            super(Catalog.get("CTL_Copy"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
                                                            InputEvent.ALT_MASK);
             // System.out.printf("Accelerator for Copy: %s\n", accelerator);
@@ -352,7 +352,7 @@ public final class Terminal extends JComponent {
 
     private final class PasteAction extends AbstractAction {
         public PasteAction() {
-            super("Paste");
+            super(Catalog.get("CTL_Paste"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V,
                                                            InputEvent.ALT_MASK);
             // System.out.printf("Accelerator for Paste: %s\n", accelerator);
@@ -369,7 +369,7 @@ public final class Terminal extends JComponent {
 
     private final class FindAction extends AbstractAction {
         public FindAction() {
-            super("Find");
+            super(Catalog.get("CTL_Find"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
                                                            InputEvent.ALT_MASK);
             // System.out.printf("Accelerator for Find: %s\n", accelerator);
@@ -386,12 +386,12 @@ public final class Terminal extends JComponent {
         }
     }
 
-    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";
-    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";
+    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
+    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
 
     private final class WrapAction extends AbstractAction {
         public WrapAction() {
-            super("Wrap lines");
+            super(Catalog.get("CTL_Wrap"));	// NOI18N
             // LATER KeyStroke accelerator = Utilities.stringToKey("A-R");
             putValue(BOOLEAN_STATE_ACTION_KEY, true);
         }
@@ -451,7 +451,7 @@ public final class Terminal extends JComponent {
     }
 
     private boolean isBooleanStateAction(Action a) {
-        Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);
+        Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
         return isBooleanStateAction != null && isBooleanStateAction;
     }
 

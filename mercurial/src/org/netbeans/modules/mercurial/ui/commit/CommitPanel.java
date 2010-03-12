@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -91,11 +92,13 @@ import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
@@ -432,6 +435,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onTemplate();
             }
         });
+        Spellchecker.register (messageTextArea);
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -519,6 +523,21 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     /**
+     * Returns editor cookies available for modified and not open files in the commit table
+     * @return
+     */
+    EditorCookie[] getEditorCookies() {
+        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+            if (cookies.length > 0) {
+                allCookies.add(cookies[0]);
+            }
+        }
+        return allCookies.toArray(new EditorCookie[allCookies.size()]);
+    }
+
+    /**
      * Returns true if trying to commit from the commit tab or the user confirmed his action
      * @return
      */
@@ -527,7 +546,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
             NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
                     NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
-                    NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
         return result;

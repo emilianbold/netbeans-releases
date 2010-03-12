@@ -40,6 +40,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class MakeOSGiTest extends NbTestCase {
     }
 
     public void testTranslate() throws Exception {
-        assertTranslation("{Bundle-SymbolicName=m}",
+        assertTranslation("{Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
                 "OpenIDE-Module: m\n", set(), set());
         /* no longer testable:
         assertTranslation("{Bundle-SymbolicName=m}",
@@ -72,11 +73,26 @@ public class MakeOSGiTest extends NbTestCase {
                 "OpenIDE-Module: m\nOpenIDE-Module-Public-Packages: api.*\n" +
                 "OpenIDE-Module-Specification-Version: 1.0\nOpenIDE-Module-Implementation-Version: 3\n", set(), set("api", "impl"));
          */
-        assertTranslation("{Bundle-SymbolicName=m, Import-Package=javax.swing, javax.swing.text}",
+        assertTranslation("{Bundle-SymbolicName=m, Import-Package=javax.swing, javax.swing.text, Require-Bundle=org.netbeans.core.osgi}",
                 "OpenIDE-Module: m\n", set("javax.swing", "javax.swing.text"), set());
-        assertTranslation("{Bundle-SymbolicName=m, DynamicImport-Package=com.sun.source.tree, Import-Package=javax.swing}",
+        assertTranslation("{Bundle-SymbolicName=m, DynamicImport-Package=com.sun.source.tree, " +
+                "Import-Package=javax.swing, Require-Bundle=org.netbeans.core.osgi}",
                 "OpenIDE-Module: m\n", set("javax.swing", "com.sun.source.tree"), set());
+        assertTranslation("{Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi, some.lib;bundle-version='[101.0.0,200)'}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Module-Dependencies: some.lib/1 > 1.0\n", set(), set());
         // XXX test hiddenPackages, that deps are not imported, etc.
+        assertTranslation("{Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: org.openide.modules.ModuleFormat2\n", set(), set());
+        assertTranslation("{Bundle-SymbolicName=m, OpenIDE-Module-Requires=foo, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: foo, org.openide.modules.ModuleFormat1\n", set(), set());
+        assertTranslation("{Bundle-SymbolicName=m, OpenIDE-Module-Requires=foo, bar, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Requires: foo, org.openide.modules.ModuleFormat1, bar\n", set(), set());
+        assertTranslation("{Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Java-Dependencies: Java > 1.5\n", set(), set());
+        assertTranslation("{Bundle-RequiredExecutionEnvironment=JavaSE-1.6, Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Java-Dependencies: Java > 1.6\n", set(), set());
+        assertTranslation("{Bundle-RequiredExecutionEnvironment=JavaSE-1.7, Bundle-SymbolicName=m, Require-Bundle=org.netbeans.core.osgi}",
+                "OpenIDE-Module: m\nOpenIDE-Module-Java-Dependencies: Java > 1.7\n", set(), set());
     }
     private void assertTranslation(String expectedOsgi, String netbeans, Set<String> importedPackages, Set<String> exportedPackages) throws Exception {
         assertTrue(netbeans.endsWith("\n")); // JRE bug
@@ -107,12 +123,19 @@ public class MakeOSGiTest extends NbTestCase {
         assertTranslateDependency("what.ever;bundle-version=\"[0.0.0,100)\"", "what.ever");
         assertTranslateDependency("org.netbeans.modules.java.sourceui", "org.netbeans.modules.java.sourceui = 15");
         assertTranslateDependency("editor.indent.project;bundle-version=\"[1.0.0,200)\"", "editor.indent.project/0-1 > 1.0");
+        assertTranslateDependency("", "org.netbeans.libs.osgi > 1.0");
         // XXX 3 or more items in sequence
     }
     private void assertTranslateDependency(String expected, String dependency) throws Exception {
         StringBuilder b = new StringBuilder();
         MakeOSGi.translateDependency(b, dependency);
         assertEquals(expected, b.toString());
+    }
+
+    public void testFindFragmentHost() throws Exception {
+        assertEquals("org.netbeans.core.windows", MakeOSGi.findFragmentHost(new File(getWorkDir(), "modules/locale/org-netbeans-core-windows_nb.jar")));
+        assertEquals("org.netbeans.core.startup", MakeOSGi.findFragmentHost(new File(getWorkDir(), "core/locale/core_nb.jar")));
+        assertEquals("org.netbeans.bootstrap", MakeOSGi.findFragmentHost(new File(getWorkDir(), "lib/locale/boot_nb.jar")));
     }
 
 }

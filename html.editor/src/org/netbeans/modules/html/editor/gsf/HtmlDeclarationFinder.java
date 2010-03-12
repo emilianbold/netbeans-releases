@@ -60,8 +60,10 @@ import org.netbeans.modules.css.refactoring.api.EntryHandle;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
+import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
@@ -146,7 +148,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 @Override
                 public OffsetRange resolve() {
                     if (tagName != null && attrName != null) {
-                        AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
+                        ValueCompletion<HtmlCompletionItem> support = AttrValuesCompletion.getSupport(tagName, attrName);
                         if (AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
                             //some file to hyperlink to
                             return valueRange;
@@ -189,7 +191,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 @Override
                 public DeclarationLocation resolve() {
                     if (tagName != null && attrName != null) {
-                        AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
+                        ValueCompletion<HtmlCompletionItem> support = AttrValuesCompletion.getSupport(tagName, attrName);
                         if (AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
                             //some file to hyperlink to
                             FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), unquotedValue);
@@ -357,8 +359,11 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             String path = webRoot == null ? file.getPath() : FileUtil.getRelativePath(webRoot, file);
 
             b.append(path);
-            b.append(":"); //NOI18N
-            b.append(entryHandle.entry().getLineOffset() + 1); //line offsets are counted from zero, but in editor lines starts with one.
+            int lineOffset = entryHandle.entry().getLineOffset();
+            if(lineOffset != -1) {
+                b.append(":"); //NOI18N
+                b.append(lineOffset + 1); //line offsets are counted from zero, but in editor lines starts with one.
+            }
             if(!entryHandle.isRelatedEntry()) {
                 b.append(" <font color=ff0000>(");
                 b.append(NbBundle.getMessage(HtmlDeclarationFinder.class, "MSG_Unrelated"));

@@ -60,4 +60,19 @@ public abstract class DiffControllerProvider {
      * @throws java.io.IOException when initialization of the controlloer fails (invalid sources, etc)
      */
     public abstract DiffControllerImpl createDiffController(StreamSource base, StreamSource modified) throws IOException;
+
+    /**
+     * Creates a Diff Controller for supplied left and right sources.
+     * It is up to the implementor to override this method and return a Diff Controller which is capable of providing enhanced UI.
+     * Unless overriden, this will return the same Controller as {@link #createDiffController(org.netbeans.api.diff.StreamSource, org.netbeans.api.diff.StreamSource) } would do.
+     *
+     * @param base defines content of the Base Diff pane
+     * @param modified defines content of the Modified (possibly editable) Diff pane
+     * @return DiffControllerImpl implementation of the DiffControllerImpl class
+     * @throws java.io.IOException when initialization of the controller fails (invalid sources, etc)
+     * @since 1.27
+     */
+    public DiffControllerImpl createEnhancedDiffController(StreamSource base, StreamSource modified) throws IOException {
+        return createDiffController(base, modified);
+    }
 }

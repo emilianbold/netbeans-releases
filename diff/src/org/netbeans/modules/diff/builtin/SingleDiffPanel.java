@@ -124,7 +124,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         
         StreamSource ss1 = new DiffStreamSource(base, type, false);
         StreamSource ss2 = new DiffStreamSource(modified, type, true);
-        controller = DiffController.create(ss1, ss2);
+        controller = DiffController.createEnhanced(ss1, ss2);
         controller.addPropertyChangeListener(this);
         
         controllerPanel.removeAll();

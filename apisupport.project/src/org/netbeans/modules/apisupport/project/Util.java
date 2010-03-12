@@ -68,6 +68,8 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -666,7 +668,7 @@ public final class Util {
                     is.close();
                 }
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(Util.class.getName()).log(Level.INFO, "Could not parse: " + manifestFO, e);
             }
         }
         return null;

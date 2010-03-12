@@ -47,7 +47,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.ui.checkout.CheckoutCompleted;
+import org.netbeans.modules.subversion.util.CheckoutCompleted;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
@@ -135,7 +135,7 @@ public class ExportAction extends ContextAction {
                             if (isCanceled()) {
                                 return;
                             }
-                            cc.scanForProjects(this);
+                            cc.scanForProjects(this, CheckoutCompleted.Type.EXPORT);
                         }
                     }
                 };

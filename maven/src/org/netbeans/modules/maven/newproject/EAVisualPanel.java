@@ -88,6 +88,7 @@ public final class EAVisualPanel extends JPanel  {
     void readSettings(WizardDescriptor wizardDescriptor) {
         fillTextFields(wizardDescriptor);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.getValidationGroup().addValidationGroup(vg, true);
             }

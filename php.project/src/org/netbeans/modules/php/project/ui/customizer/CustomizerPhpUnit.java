@@ -96,7 +96,7 @@ public class CustomizerPhpUnit extends JPanel {
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
-        enableFile(suiteCheckBox.isSelected(), suiteLabel, suiteTextField, suiteBrowseButton);
+        enableFile(suiteCheckBox.isSelected(), suiteLabel, suiteTextField, suiteBrowseButton, suiteInfoLabel);
 
         addListeners();
         validateData();
@@ -174,7 +174,7 @@ public class CustomizerPhpUnit extends JPanel {
 
         suiteCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                enableFile(e.getStateChange() == ItemEvent.SELECTED, suiteLabel, suiteTextField, suiteBrowseButton);
+                enableFile(e.getStateChange() == ItemEvent.SELECTED, suiteLabel, suiteTextField, suiteBrowseButton, suiteInfoLabel);
                 validateData();
             }
         });
@@ -332,7 +332,7 @@ public class CustomizerPhpUnit extends JPanel {
                 .addGap(21, 21, 21)
                 .addComponent(configurationLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configurationTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                .addComponent(configurationTextField, GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(configurationBrowseButton)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -347,7 +347,7 @@ public class CustomizerPhpUnit extends JPanel {
                         .addComponent(suiteInfoLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(suiteTextField, GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                        .addComponent(suiteTextField, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(suiteBrowseButton))))
             .addGroup(layout.createSequentialGroup()
@@ -365,7 +365,7 @@ public class CustomizerPhpUnit extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bootstrapLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(bootstrapTextField, GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                        .addComponent(bootstrapTextField, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(bootstrapBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)

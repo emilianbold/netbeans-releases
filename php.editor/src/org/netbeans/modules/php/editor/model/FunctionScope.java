@@ -41,14 +41,16 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 
 /**
  * @author Radek Matous
  */
-public interface FunctionScope extends Scope, VariableScope {
+public interface FunctionScope extends Scope, VariableScope, FullyQualifiedElement {
     boolean isAnonymous();//lambda, closures
     List<? extends String> getParameterNames();
-    List<? extends Parameter> getParameters();
+    List<? extends ParameterElement> getParameters();
     Collection<? extends String> getReturnTypeNames();
     Collection<? extends TypeScope> getReturnTypes();
     Collection<? extends TypeScope> getReturnTypes(boolean resolve);

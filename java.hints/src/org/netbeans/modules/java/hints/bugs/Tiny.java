@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 public class Tiny {
 
     @Hint(category="bugs", suppressWarnings="ReplaceAllDot")
-    @TriggerPattern(value="$str.replaceAll(\".\", $to))",
+    @TriggerPattern(value="$str.replaceAll(\".\", $to)",
                     constraints=@Constraint(variable="$str", type="java.lang.String"))
     public static ErrorDescription stringReplaceAllDot(HintContext ctx) {
         Tree constant = ((MethodInvocationTree) ctx.getPath().getLeaf()).getArguments().get(0);

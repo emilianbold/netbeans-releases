@@ -550,6 +550,10 @@ public class ChatPanel extends javax.swing.JPanel {
         }
     }
 
+    private boolean isDiff(JTextComponent comp) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     private class NotificationsEnabledAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JCheckBoxMenuItem m = (JCheckBoxMenuItem) e.getSource();
@@ -957,14 +961,18 @@ public class ChatPanel extends javax.swing.JPanel {
         JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
         if (lastFocused!=null) {
             dropDownMenu.add(new InsertLinkAction(lastFocused, outbox, true, selectedEditorComponent()!=null));
-            dropDownMenu.add(new JSeparator());
+            dropDownMenu.addSeparator();
         }
         
+        HashSet<FileObject> fos = new HashSet();
         for (JTextComponent comp:EditorRegistry.componentList()) {
+            //ugly fix of #181134
+            if (getTopComponent(comp).getClass().getName().endsWith("DiffTopComponent")) //NOI18N
+                continue;
             dropDownMenu.add(new InsertLinkAction(comp, outbox, false, false));
         }
         if (lastFocused!=null) {
-            dropDownMenu.add(new JSeparator());
+            dropDownMenu.addSeparator();
         }
 
         IssueHandle[] issues;
@@ -980,14 +988,14 @@ public class ChatPanel extends javax.swing.JPanel {
             dropDownMenu.add(new InsertLinkAction(issues[i], outbox, isIssueRelated(tc)));
         }
         if (issues.length>0) {
-            dropDownMenu.add(new JSeparator());
+            dropDownMenu.addSeparator();
         }
 
         dropDownMenu.add(new LinkOtherFileAction(outbox));
         dropDownMenu.add(new LinkOtherIssue(outbox));
         
         if (menu.getInvoker()==outbox) {
-            dropDownMenu.add(new JSeparator());
+            dropDownMenu.addSeparator();
             addNotificationsMenuItem(dropDownMenu);
         }
     }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeVisible
@@ -1036,7 +1044,7 @@ public class ChatPanel extends javax.swing.JPanel {
             return b;
         }
         KenaiNotification n = ne.getNotification();
-        if (n.getType() != KenaiService.Type.SOURCE) {
+        if (!((n.getType() == KenaiService.Type.SOURCE) || (n.getType() == KenaiService.Type.ISSUES))) {
             return b;
         }
         int i = b.indexOf(']');
@@ -1046,6 +1054,10 @@ public class ChatPanel extends javax.swing.JPanel {
         } else {
             body = b;
         }
+        if (n.getType() == KenaiService.Type.ISSUES) {
+            return body;
+        }
+
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) { // NOI18N

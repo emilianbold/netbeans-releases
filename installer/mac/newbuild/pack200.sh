@@ -42,6 +42,10 @@ do
         echo "Packed file $f.pack(.gz) exists, skipping packing of the original file $f"
         continue
     fi
+    if [ -f `echo $f | sed 's/.jar/.jad/'` ] ; then
+        echo "Jar Descriptor (.jad) exists, skipping packing of the original file $f"
+        continue
+    fi
     echo Packing $f
     $packCommand -J-Xmx256m -g $f.pack $f
     if [ 0 -eq $? ] ; then

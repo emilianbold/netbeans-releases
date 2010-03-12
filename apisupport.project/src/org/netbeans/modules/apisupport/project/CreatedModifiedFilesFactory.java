@@ -73,7 +73,6 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
-import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -681,16 +680,6 @@ public final class CreatedModifiedFilesFactory {
         }
         
         /**
-         * Adds requirement for modifying attribute for the main section. How attribute
-         * will be modified depends on implementation of method {@link performModification}.
-         * @param name the attribute name
-         * @param value the new attribute value
-         */
-        public final void setAttribute(final String name, final  String value) {
-            setAttribute(name, value, "null");//NOI18N
-        }
-        
-        /**
          * Adds requirement for modifying attribute. How attribute
          * will be modified depends on implementation of method {@link performModification}.
          * @param name the attribute name
@@ -824,17 +813,19 @@ public final class CreatedModifiedFilesFactory {
             top.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     FileObject srcFile = top.getFileObject(srcFilePath);
+                    final Charset encoding = FileEncodingQuery.getEncoding(srcFile != null ? srcFile : top);
                     if (srcFile == null) {
                         srcFile = FileUtil.createData(top, srcFilePath);
                         OutputStream os = srcFile.getOutputStream();
                         try {
-                            Writer w = new OutputStreamWriter(os, FileEncodingQuery.getEncoding(srcFile));
+                            Writer w = new OutputStreamWriter(os, encoding);
                             w.write("package " + packageName + ";\n");
                             w.close();
                         } finally {
                             os.close();
                         }
                     }
+                    final FileObject _srcFile = srcFile;
                     if (!annotations.isEmpty()) {
                         JavaSource.forFileObject(srcFile).runModificationTask(new Task<WorkingCopy>() {
                             public void run(WorkingCopy wc) throws Exception {
@@ -853,10 +844,22 @@ public final class CreatedModifiedFilesFactory {
                                         arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
                                     }
                                     AnnotationTree annTree = make.Annotation(annotationTypeTree, arguments);
-                                    throw new UnsupportedOperationException("XXX #172324: do not know how to attach " + annTree + " to " + nue);
+                                    // XXX #157760 should give some way to attach annTree to nue; in the meantime:
+                                    String text = _srcFile.asText(encoding.name());
+                                    text = text.replaceFirst("(?m)^(package )", annTree + "\n$1");
+                                    OutputStream os = _srcFile.getOutputStream();
+                                    try {
+                                        Writer w = new OutputStreamWriter(os, encoding);
+                                        w.write(text);
+                                        w.close();
+                                    } finally {
+                                        os.close();
+                                    }
                                 }
+                                /* XXX #157760:
                                 nue = GeneratorUtilities.get(wc).importFQNs(nue);
                                 wc.rewrite(old, nue);
+                                 */
                             }
                         })/*.commit()*/;
                     }

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.makefile.editor;
 
+import java.io.IOException;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -45,11 +46,13 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
+import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.netbeans.modules.cnd.makefile.parser.MakefileParseResult;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -60,9 +63,13 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -73,18 +80,16 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
     @Override
     public boolean isHyperlinkPoint(Document doc, int offset) {
         TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
-        return tokenHierarchy != null && findBareTokenAtOffset(tokenHierarchy, offset) != null;
+        return tokenHierarchy != null && findHyperlinkToken(tokenHierarchy, offset) != null;
     }
 
     @Override
     public int[] getHyperlinkSpan(Document doc, int offset) {
         TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
         if (tokenHierarchy != null) {
-            Token<MakefileTokenId> token = findBareTokenAtOffset(tokenHierarchy, offset);
+            HyperlinkToken token = findHyperlinkToken(tokenHierarchy, offset);
             if (token != null) {
-                int tokenStart = token.offset(tokenHierarchy);
-                int tokenEnd = tokenStart + token.length();
-                return new int[] {tokenStart, tokenEnd};
+                return new int[] {token.offset, token.offset + token.text.length()};
             }
         }
         return null;
@@ -94,45 +99,130 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
     public void performClickAction(final Document doc, int offset) {
         TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
         if (tokenHierarchy != null) {
-            Token<MakefileTokenId> token = findBareTokenAtOffset(tokenHierarchy, offset);
+            final HyperlinkToken token = findHyperlinkToken(tokenHierarchy, offset);
             if (token != null) {
-                final String targetName = token.text().toString();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ParserManager.parse(
-                                    Collections.singleton(Source.create(doc)),
-                                    new HyperlinkTask(targetName));
-                        } catch (ParseException ex) {
-                            // tsss, don't tell anybody
+                switch (token.targetKind) {
+                    case RULE:
+                    case VARIABLE:
+                        findAndOpenElement(doc, token);
+                        break;
+
+                    case FILE:
+                        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+                        if (fileObject != null) {
+                            findAndOpenFile(fileObject.getParent(), token.text);
                         }
-                    }
-                });
+                        break;
+                }
             }
         }
     }
 
-    private static Token<MakefileTokenId> findBareTokenAtOffset(TokenHierarchy<?> tokenHierarchy, int offset) {
+    private static HyperlinkToken findHyperlinkToken(TokenHierarchy<?> tokenHierarchy, int offset) {
          TokenSequence<MakefileTokenId> tokenSequence = tokenHierarchy.tokenSequence(MakefileTokenId.language());
          if (tokenSequence != null) {
              tokenSequence.move(offset);
              if (tokenSequence.moveNext()) {
                 Token<MakefileTokenId> token = tokenSequence.token();
                 if (token != null && token.id() == MakefileTokenId.BARE) {
-                    return token;
+                    String text = token.text().toString();
+                    int tokenOffset = tokenSequence.offset();
+                    ElementKind targetKind = ElementKind.RULE;
+
+                    // check for "include" keyword behind current token
+                    PREV_LOOP: while (tokenSequence.movePrevious()) {
+                        Token<MakefileTokenId> prevToken = tokenSequence.token();
+                        switch (prevToken.id()) {
+                            case BARE:
+                            case WHITESPACE:
+                            case MACRO:
+                                // ok, just skip them
+                                break;
+
+                            case KEYWORD:
+                                if (TokenUtilities.equals(prevToken.text(), "include")) { // NOI18N
+                                    targetKind = ElementKind.FILE;
+                                }
+                                break PREV_LOOP;
+
+                            default:
+                                break PREV_LOOP;
+                        }
+                    }
+
+                    tokenSequence.move(offset);
+
+                    // check for some assignment token ahead of current token
+                    NEXT_LOOP: while (tokenSequence.moveNext()) {
+                        Token<MakefileTokenId> nextToken = tokenSequence.token();
+                        switch (nextToken.id()) {
+                            case BARE:
+                            case WHITESPACE:
+                            case MACRO:
+                                // ok, just skip them
+                                break;
+
+                            case EQUALS:
+                            case COLON_EQUALS:
+                            case PLUS_EQUALS:
+                                targetKind = ElementKind.VARIABLE;
+                                break NEXT_LOOP;
+
+                            default:
+                                break NEXT_LOOP;
+                        }
+                    }
+
+                    return new HyperlinkToken(text, tokenOffset, targetKind);
                 }
              }
          }
          return null;
     }
 
-    private static class HyperlinkTask extends UserTask {
+    private static void findAndOpenFile(final FileObject baseDir, final String targetPath) {
+        FileObject fileObject = baseDir.getFileObject(targetPath);
+        if (fileObject != null) {
+            asyncOpenInEditor(fileObject, 0);
+        }
+    }
 
-        private final String targetName;
+    private static void findAndOpenElement(final Document doc, final HyperlinkToken token) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ParserManager.parse(
+                            Collections.singleton(Source.create(doc)),
+                            new HyperlinkTask(token.text, token.targetKind));
+                } catch (ParseException ex) {
+                    // tsss, don't tell anybody
+                }
+            }
+        });
+    }
 
-        private HyperlinkTask(String targetName) {
-            this.targetName = targetName;
+    private static final class HyperlinkToken {
+
+        private final String text;
+        private final int offset;
+        private final ElementKind targetKind;
+
+        private HyperlinkToken(String text, int offset, ElementKind targetKind) {
+            this.text = text;
+            this.offset = offset;
+            this.targetKind = targetKind;
+        }
+    }
+
+    private static final class HyperlinkTask extends UserTask {
+
+        private final String elementName;
+        private final ElementKind elementKind;
+
+        private HyperlinkTask(String elementName, ElementKind elementKind) {
+            this.elementName = elementName;
+            this.elementKind = elementKind;
         }
 
         @Override
@@ -141,34 +231,68 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
             if (result instanceof MakefileParseResult) {
                 MakefileParseResult makefileResult = (MakefileParseResult) result;
                 for (AbstractMakefileElement element : makefileResult.getElements()) {
-                    if (element.getKind() == ElementKind.RULE) {
+                    if (element.getKind() == ElementKind.RULE && elementKind == ElementKind.RULE) {
                         MakefileRule rule = (MakefileRule) element;
-                        if (rule.getTargets().contains(targetName)) {
-                            openInEditor(result.getSnapshot().getSource().getDocument(true), rule.getOffsetRange(makefileResult).getStart());
+                        if (rule.getTargets().contains(elementName)) {
+                            asyncOpenInEditor(result.getSnapshot().getSource(), rule.getOffsetRange(makefileResult).getStart());
+                            break;
+                        }
+                    } else if (element.getKind() == ElementKind.VARIABLE && elementKind == ElementKind.VARIABLE) {
+                        MakefileAssignment assign = (MakefileAssignment) element;
+                        if (assign.getName().equals(elementName)) {
+                            asyncOpenInEditor(result.getSnapshot().getSource(), assign.getOffsetRange(makefileResult).getStart());
                             break;
                         }
                     }
                 }
             }
         }
+    }
 
-        private static void openInEditor(final Document doc, final int offset) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    DataObject dataObject = NbEditorUtilities.getDataObject(doc);
-                    if (dataObject != null) {
-                        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
-                        if (lineCookie != null) {
-                            try {
-                                int lineIdx = Utilities.getLineOffset((BaseDocument) doc, offset);
-                                Line line = lineCookie.getLineSet().getCurrent(lineIdx);
-                                line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                            } catch (BadLocationException ex) {
-                            }
-                        }
+    private static void asyncOpenInEditor(final Source source, final int offset) {
+        Document doc = source.getDocument(true);
+        if (doc != null) {
+            DataObject dataObject = NbEditorUtilities.getDataObject(doc);
+            if (dataObject != null) {
+                asyncOpenIdEditor(dataObject, doc, offset);
+            }
+        }
+    }
+
+    private static void asyncOpenInEditor(final FileObject fileObject, final int offset) {
+        try {
+            DataObject dataObject = DataObject.find(fileObject);
+            asyncOpenInEditor(dataObject, offset);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void asyncOpenInEditor(final DataObject dataObject, final int offset) {
+        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+        if (editorCookie != null) {
+            try {
+                Document doc = editorCookie.openDocument();
+                asyncOpenIdEditor(dataObject, doc, offset);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private static void asyncOpenIdEditor(final DataObject dataObject, final Document doc, final int offset) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
+                if (lineCookie != null) {
+                    try {
+                        int lineIdx = Utilities.getLineOffset((BaseDocument) doc, offset);
+                        Line line = lineCookie.getLineSet().getCurrent(lineIdx);
+                        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                    } catch (BadLocationException ex) {
                     }
                 }
-            });
-        }
+            }
+        });
     }
 }

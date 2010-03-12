@@ -76,7 +76,7 @@ public final class MacroMap implements Cloneable {
         }
     }
 
-    public final static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
+    public static MacroMap forExecEnv(final ExecutionEnvironment execEnv) {
         return new MacroMap(execEnv, MacroExpanderFactory.getExpander(execEnv));
     }
 
@@ -145,7 +145,7 @@ public final class MacroMap implements Cloneable {
 
     @Override
     public final String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("{"); // NOI18N
 
         for (Entry<String, String> entry : map.entrySet()) {
@@ -205,6 +205,7 @@ public final class MacroMap implements Cloneable {
         public CaseInsensitiveComparator() {
         }
 
+        @Override
         public int compare(String s1, String s2) {
             if (s1 == null && s2 == null) {
                 return 0;

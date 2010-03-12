@@ -1,0 +1,50 @@
+
+
+Document 0
+Searchable Keys:
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
+  identifier_used : my;
+  identifier_used : my;
+  identifier_used : name;
+  identifier_used : name;
+  identifier_used : name;
+  identifier_used : name;
+  identifier_used : our;
+  identifier_used : our;
+  identifier_used : surname;
+  identifier_used : surname;
+  identifier_used : surname;
+  identifier_used : surname;
+  identifier_used : their;
+  identifier_used : their;
+  identifier_used : your;
+  identifier_used : your;
+
+Not Searchable Keys:
+
+
+Document 2
+Searchable Keys:
+  ns : name;name;my;
+  ns : name;name;our;
+  ns : name;name;their;
+  ns : name;name;your;
+  ns : surname;surname;my;
+  ns : surname;surname;our;
+  ns : surname;surname;their;
+  ns : surname;surname;your;
+  top : my\name
+  top : my\surname
+  top : our\name
+  top : our\surname
+  top : their\name
+  top : their\surname
+  top : your\name
+  top : your\surname
+
+Not Searchable Keys:

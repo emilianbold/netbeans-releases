@@ -95,16 +95,4 @@ public final class LoginAction extends AbstractAction {
         ktc.requestActive();
         ktc.setSelectedKenai(k);
     }
-
-    @Override
-    public boolean isEnabled() {
-        for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (k.getStatus()==Kenai.Status.OFFLINE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 }

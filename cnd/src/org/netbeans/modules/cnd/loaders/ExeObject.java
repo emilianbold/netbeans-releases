@@ -45,8 +45,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Superclass for Elf objects in the Repository.
  *
@@ -55,19 +58,34 @@ public class ExeObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = 5848558112012002127L;
+    private InstanceContent ic;
+    private Lookup myLookup;
 
     public ExeObject(FileObject pf, ExeLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
-	init();
     }
 
-    protected void init() {
-    
-    }
-    
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    public synchronized Lookup getLookup() {
+        if (myLookup == null) {
+            ic = new InstanceContent();
+            ic.add(this);
+            ic.add(getPrimaryFile());
+            if (needBinarySupport()) {
+                ic.add(this, CndBinaryExecSupportProvider.staticFactory);
+            }
+            myLookup = new AbstractLookup(ic);
+        }
+        return myLookup;
+    }
+
+    @Override
+    public <T extends Cookie> T getCookie(Class<T> type) {
+        return getLookup().lookup(type);
+    }
+
+    protected boolean needBinarySupport() {
+        return false;
     }
     
     @Override

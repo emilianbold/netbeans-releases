@@ -93,6 +93,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 
@@ -184,8 +185,15 @@ public class CommitAction extends ContextAction {
                 dd.setClosingOptions(new Object[] {commitButton, cancelButton});
                 SaveCookie[] saveCookies = panel.getSaveCookies();
                 if (cancelButton == e.getSource()) {
-                    if (saveCookies.length > 0 && !SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
-                        dd.setClosingOptions(new Object[0]);
+                    if (saveCookies.length > 0) {
+                        if (SaveBeforeClosingDiffConfirmation.allSaved(saveCookies) || !panel.isShowing()) {
+                            EditorCookie[] editorCookies = panel.getEditorCookies();
+                            for (EditorCookie cookie : editorCookies) {
+                                cookie.open();
+                            }
+                        } else {
+                            dd.setClosingOptions(new Object[0]);
+                        }
                     }
                     dd.setValue(cancelButton);
                 } else if (commitButton == e.getSource()) {

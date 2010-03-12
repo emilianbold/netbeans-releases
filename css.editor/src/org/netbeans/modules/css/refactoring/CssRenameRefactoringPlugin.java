@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Position.Bias;
@@ -55,6 +56,7 @@ import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -66,10 +68,14 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.FileReference;
+import org.netbeans.modules.web.common.api.FileReferenceModification;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,9 +131,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
         if (context instanceof CssElementContext.Editor) {
             //editor elements refactoring
-
-           
-            
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
             int kind = econtext.getElement().kind();
@@ -162,6 +165,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             //refactor a folder in explorer
             CssElementContext.Folder folderContext = (CssElementContext.Folder) context;
             refactorFolder(modificationResult, folderContext, index);
+            //add folder rename element implementation, there doesn't seem to a default one
+            //like for file rename
+            refactoringElements.add(refactoring, new RenameFolder(folderContext.getFileObject()));
         }
 
         //commit the transaction and add the differences to the result
@@ -239,89 +245,61 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     private void refactorFolder(ModificationResult modificationResult, CssElementContext.Folder context, CssIndex index) {
         LOGGER.fine("refactor folder " + context.getFileObject().getPath()); //NOI18N
-//        String newName = refactoring.getNewName();
-//        try {
-//            CssIndex.AllDependenciesMaps alldeps = index.getAllDependencies();
-//            Map<FileObject, Collection<FileObject>> source2dest = alldeps.getSource2dest();
-//            FileObject renamedFolder = context.getFileObject();
-//
-//            //now I need to find out what links go through the given folder
-//            for(FileObject source : source2dest.keySet()) {
-//                Collection<FileObject> destinations = source2dest.get(source);
-//                for(FileObject dest : destinations) {
-//                    if(FileUtil.isParentOf(renamedFolder, dest)) {
-//                        if(!FileUtil.isParentOf(renamedFolder, source)) {
-//                            //target of the link is under the refactored folder,
-//                            //source is not a paret, so the renamedFolder is a member
-//                            //of the link
-//                            //
-//                            //    source
-//                            //      |
-//                            //      +-----renamedFolder
-//                            //               |
-//                            //               +-----destination
-//                            //
-//                            //
-//                        } else {
-//                            //both source and dest files are parents of the folder ->
-//                            //relative path are not affected, but absolute paths are!!!
-//                            //
-//                        }
-//
-//                    }
-//
-//
-//                }
-//
-//
-//            }
-//
-//
-//
-//
-//
-//            for (Node ref : refering) {
-//                FileObject file = ref.getFile();
-//                try {
-//                    Source source;
-//                    CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-//                    //prefer using editor
-//                    //XXX this approach doesn't match the dependencies graph
-//                    //which is made strictly upon the index data
-//                    if (editor != null && editor.isModified()) {
-//                        source = Source.create(editor.getDocument());
-//                    } else {
-//                        source = Source.create(file);
-//                    }
-//                    CssFileModel model = new CssFileModel(source);
-//                    List<Difference> diffs = new ArrayList<Difference>();
-//                    for (Entry entry : model.getImports()) {
-//                        String imp = entry.getName(); //unquoted
-//                        FileObject resolvedFileObject = WebUtils.resolve(file, imp);
-//                        if (resolvedFileObject != null && resolvedFileObject.equals(context.getFileObject())) {
-//                            //the import refers to me - lets refactor it
-//                            if (entry.isValidInSourceDocument()) {
-//                                //new relative path creation
-//                                String newImport;
-//                                String extension = context.getFileObject().getExt(); //use the same extension as source file (may not be .css)
-//                                int slashIndex = imp.lastIndexOf('/'); //NOI18N
-//                                if (slashIndex != -1) {
-//                                    newImport = imp.substring(0, slashIndex) + "/" + newName + "." + extension; //NOI18N
-//                                } else {
-//                                    newImport = newName + "." + extension; //NOI18N
-//                                }
-//                                diffs.add(new Difference(Difference.Kind.CHANGE, editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward), editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward), entry.getName(), newImport, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
-//                            }
-//                        }
-//                    }
-//                    modificationResult.addDifferences(file, diffs);
-//                } catch (ParseException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        String newName = refactoring.getNewName();
+        try {
+            CssIndex.AllDependenciesMaps alldeps = index.getAllDependencies();
+            Map<FileObject, Collection<FileReference>> source2dest = alldeps.getSource2dest();
+            FileObject renamedFolder = context.getFileObject();
+
+            Map<FileObject, CssFileModel> modelsCache = new WeakHashMap<FileObject, CssFileModel>();
+            //now I need to find out what links go through the given folder
+            for (FileObject source : source2dest.keySet()) {
+                List<Difference> diffs = new ArrayList<Difference>();
+                Collection<FileReference> destinations = source2dest.get(source);
+                for (FileReference dest : destinations) {
+                    FileReferenceModification modification = dest.createModification();
+                    if (modification.rename(renamedFolder, newName)) {
+                        //the link is affected, we need to update it
+                        //find the css model and the link position in the file
+                        CssFileModel model = modelsCache.get(source);
+                        if (model == null) {
+                            try {
+                                model = new CssFileModel(Source.create(source)); //use file to parse
+                                modelsCache.put(source, model);
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                        if (model != null) {
+                            //we have the model for source file
+                            Collection<Entry> imports = model.getImports();
+                            //XXX the model should contain string representation 2 entry map
+                            //linear search :-(
+                            for (Entry entry : imports) {
+                                if (entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
+                                    //a matching entry found, add the rename refactoring
+                                    CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(source);
+
+                                    diffs.add(new Difference(Difference.Kind.CHANGE,
+                                            editor.createPositionRef(entry.getDocumentRange().getStart(),
+                                            Bias.Forward),
+                                            editor.createPositionRef(entry.getDocumentRange().getEnd(),
+                                            Bias.Backward),
+                                            entry.getName(),
+                                            modification.getModifiedReferencePath(),
+                                            NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
+                                }
+                            }
+                        }
+                    }
+                }
+                modificationResult.addDifferences(source, diffs);
+            }
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void refactorElement(ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
@@ -417,5 +395,64 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             }
         }
     }
+
+     private class RenameFolder extends SimpleRefactoringElementImplementation {
+
+        private FileObject fo;
+        private String oldName;
+
+        public RenameFolder(FileObject fo) {
+            this.fo = fo;
+        }
+
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(CssRenameRefactoringPlugin.class, "TXT_RenameFolder", fo.getNameExt());
+        }
+
+        @Override
+        public String getDisplayText() {
+            return getText();
+        }
+
+        @Override
+        public void performChange() {
+            try {
+                oldName = fo.getName();
+                DataObject.find(fo).rename(refactoring.getNewName());
+            } catch (DataObjectNotFoundException ex) {
+                throw new IllegalStateException(ex);
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        @Override
+        public void undoChange(){
+            try {
+                DataObject.find(fo).rename(oldName);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public FileObject getParentFile() {
+            return fo;
+        }
+
+        @Override
+        public PositionBounds getPosition() {
+            return null;
+        }
+    }
+
 
 }

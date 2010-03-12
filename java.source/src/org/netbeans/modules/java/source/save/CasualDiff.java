@@ -2424,7 +2424,7 @@ public class CasualDiff {
             if (Kind.METHOD == tree.getKind()) {
                 // filter syntetic constructors, i.e. constructors which are in
                 // the tree, but not available in the source.
-                if ((((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
+                if (tree.pos == (-1) || (((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
                     continue;
             } else if (Kind.BLOCK == tree.getKind()) {
                 JCBlock block = (JCBlock) tree;

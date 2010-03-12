@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
 import javax.swing.event.ChangeEvent;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Element;
@@ -2282,7 +2283,6 @@ public class ActionFactory {
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            GapBoxView rootView = (GapBoxView)Utilities.getDocumentView(target);
             AbstractDocument adoc = (AbstractDocument)target.getDocument();
 
             // Dump fold hierarchy
@@ -2299,22 +2299,25 @@ public class ActionFactory {
                 adoc.readUnlock();
             }
 
-            /*DEBUG*/System.err.println("DOCUMENT VIEW: " + System.identityHashCode(rootView) // NOI18N
-                + ", " + rootView // NOI18N
-                + "\nLINE VIEWS:\n" + rootView.childrenToString() // NOI18N
-            );
-            
-            int caretOffset = target.getCaretPosition();
-            int caretViewIndex = rootView.getViewIndex(caretOffset, Position.Bias.Forward);
-            /*DEBUG*/System.err.println("caretOffset=" + caretOffset + ", caretViewIndex=" + caretViewIndex); // NOI18N
-            if (caretViewIndex >= 0 && caretViewIndex < rootView.getViewCount()) {
-                View caretView = rootView.getView(caretViewIndex);
-                /*DEBUG*/System.err.println("caretView: " + caretView); // NOI18N
+            View rootView = null;
+            TextUI textUI = target.getUI();
+            if (textUI != null) {
+                rootView = textUI.getRootView(target);
             }
-            /*DEBUG*/System.err.println(FixLineSyntaxState.lineInfosToString(adoc));
-            
-            // Check the hierarchy correctness
-            org.netbeans.editor.view.spi.ViewUtilities.checkViewHierarchy(rootView);
+            if (rootView != null) {
+                /*DEBUG*/System.err.println("DOCUMENT VIEW: " + System.identityHashCode(rootView) + // NOI18N
+                        "\n" + rootView); // NOI18N
+                int caretOffset = target.getCaretPosition();
+                int caretViewIndex = rootView.getViewIndex(caretOffset, Position.Bias.Forward);
+                /*DEBUG*/System.err.println("caretOffset=" + caretOffset + ", caretViewIndex=" + caretViewIndex); // NOI18N
+                if (caretViewIndex >= 0 && caretViewIndex < rootView.getViewCount()) {
+                    View caretView = rootView.getView(caretViewIndex);
+                    /*DEBUG*/System.err.println("caretView: " + caretView); // NOI18N
+                }
+                /*DEBUG*/System.err.println(FixLineSyntaxState.lineInfosToString(adoc));
+                // Check the hierarchy correctness
+                //org.netbeans.editor.view.spi.ViewUtilities.checkViewHierarchy(rootView);
+            }
             
             if (adoc instanceof BaseDocument) {
                 /*DEBUG*/System.err.println("DOCUMENT:\n" + ((BaseDocument)adoc).toStringDetail()); // NOI18N

@@ -57,6 +57,9 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -179,8 +182,25 @@ public final class FormattingPanelController extends OptionsPanelController {
         if (fire) {
             pcs.firePropertyChange(PROP_CHANGED, true, false);
         }
+
+        // XXX: just use whatever value, it's ignored anyway, this is here in order
+        // to fire property change events on documents, which are then intercepted by
+        // the new view hierarchy (DocumentView)
+        SwingUtilities.invokeLater(new Runnable() {
+            public @Override void run() {
+                JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
+                if (lastFocused != null) {
+                    lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                }
+                for(JTextComponent jtc : EditorRegistry.componentList()) {
+                    if (lastFocused == null || lastFocused != jtc) {
+                        jtc.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                    }
+                }
+            }
+        });
     }
-    
+
     public void cancel() {
         boolean fire;
         
@@ -252,6 +272,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         SimpleValueNames.SPACES_PER_TAB,
         SimpleValueNames.TAB_SIZE,
         SimpleValueNames.TEXT_LIMIT_WIDTH,
+        SimpleValueNames.TEXT_LINE_WRAP,
     };
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

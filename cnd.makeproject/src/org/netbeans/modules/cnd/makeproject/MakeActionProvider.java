@@ -108,7 +108,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -164,6 +163,7 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_CUSTOM_ACTION,
         
         COMMAND_TEST,
+        COMMAND_TEST_SINGLE,
     };
 
     // Project
@@ -191,6 +191,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String VALIDATE_TOOLCHAIN = "validate-toolchain"; // NOI18N
     private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
     private static final String TEST_STEP = "test"; // NOI18N
+    private static final String TEST_SINGLE_STEP = "test-single"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
         this.project = project;
@@ -451,17 +452,19 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
             return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.RUN);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(TEST_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.TEST);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.TEST);
+        } else if (targetName.equals(TEST_SINGLE_STEP)) {
+            return onTestSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.TEST);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
             return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
         } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -479,7 +482,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Lookup context, Type actionEvent) {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
 
@@ -648,6 +651,29 @@ public final class MakeActionProvider implements ActionProvider {
                 // Always absolute
                 path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
+
+            // Unit tests
+            Node node = context.lookup(Node.class);
+            if (node != null) {
+                Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+                if (targetFolder != null) {
+                    if (targetFolder.isTest()) {
+                        Item[] items = targetFolder.getAllItemsAsArray();
+                        for (int k = 0; k < items.length; k++) {
+                            path = items[k].getPath();
+                            path = path.replaceFirst("\\..*", ""); // NOI18N
+
+                            path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
+
+                            path = conf.expandMacros(path);
+
+                            path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
+
+                        }
+                    }
+                }
+            }
+
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
@@ -807,6 +833,54 @@ public final class MakeActionProvider implements ActionProvider {
             projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
         }
+        return true;
+    }
+
+    private boolean onTestSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
+
+        if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+            if (conf.isCompileConfiguration() && !validateProject(conf)) {
+                return true;
+            }
+            Node node = context.lookup(Node.class);
+            if (node == null) {
+                return true;
+            }
+            Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+            if (targetFolder == null) {
+                return true;
+            }
+
+            List<Folder> list = targetFolder.getAllTests();
+            if (targetFolder.isTest()) {
+                list.add(targetFolder);
+            }
+
+            loop: for (Folder folder : list) {
+                Item[] items = folder.getAllItemsAsArray();
+                for (int k = 0; k < items.length; k++) {
+                    String test = items[k].getName();
+                    test = test.replaceFirst("\\..*", ""); // NOI18N
+
+                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                    String buildCommand;
+                    buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + test, ""); // NOI18N
+                    String args = "";
+                    int index = buildCommand.indexOf(' ');
+                    if (index > 0) {
+                        args = buildCommand.substring(index + 1);
+                        buildCommand = buildCommand.substring(0, index);
+                    }
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                    profile.setArgs(args);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+                    actionEvents.add(projectActionEvent);
+
+                    break loop;
+                }
+            }
+        }
+
         return true;
     }
 

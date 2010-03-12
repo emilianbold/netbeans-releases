@@ -43,12 +43,14 @@ package org.netbeans.modules.cnd.makeproject.actions;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 
 public class DebugTestAction extends NodeAction {
 
@@ -63,26 +65,33 @@ public class DebugTestAction extends NodeAction {
             return;
         }
         Node n = activatedNodes[0];
-        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
-        assert folder != null;
-        Node thisNode = (Node) n.getValue("This"); // NOI18N
-        assert thisNode != null;
         Project project = (Project) n.getValue("Project"); // NOI18N
         assert project != null;
+//        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+//        assert folder != null;
+//        Node thisNode = (Node) n.getValue("This"); // NOI18N
+//        assert thisNode != null;
 
-        List<Folder> list = folder.getAllTests();
-        if (folder.isTest()) {
-            list.add(folder);
+//        List<Folder> list = folder.getAllTests();
+//        if (folder.isTest()) {
+//            list.add(folder);
+//        }
+//        if (list.size() > 0) {
+//            StringBuffer message = new StringBuffer("Would debug the following test:\n\n"); // NOI18N
+//            for (Folder f : list) {
+//                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
+//            }
+//            message.append("\nTest would build and debug session would start debugging the test binary."); // NOI18N
+//            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+//            DialogDisplayer.getDefault().notify(nd);
+//        }
+
+
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+        if (ap != null) {
+            ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, n}));
         }
-        if (list.size() > 0) {
-            StringBuffer message = new StringBuffer("Would debug the following test:\n\n"); // NOI18N
-            for (Folder f : list) {
-                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
-            }
-            message.append("\nTest would build and debug session would start debugging the test binary."); // NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
+
 
     }
 

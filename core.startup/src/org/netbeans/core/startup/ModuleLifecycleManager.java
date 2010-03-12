@@ -92,11 +92,8 @@ public class ModuleLifecycleManager extends LifecycleManager {
     }
 
     public @Override void markForRestart() throws UnsupportedOperationException {
-        try {
-            Class.forName("javax.jnlp.BasicService"); // NOI18N
-            throw new UnsupportedOperationException("cannot restart in JNLP mode"); // NOI18N
-        } catch (ClassNotFoundException x) {
-            // OK, running in normal mode
+        if (!TopSecurityManager.class.getClassLoader().getClass().getName().endsWith(".Launcher$AppClassLoader")) {
+            throw new UnsupportedOperationException("not running in regular module system, cannot restart"); // NOI18N
         }
         String userdir = System.getProperty("netbeans.user"); // NOI18N
         if (userdir == null) {

@@ -42,7 +42,7 @@ package org.netbeans.modules.php.project;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -61,8 +61,8 @@ public class PhpEditorExtender extends EditorExtender {
     }
 
     @Override
-    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
-        List<PhpElement> elements = new LinkedList<PhpElement>();
+    public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
+        List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>();
         PhpModule module = project.getPhpModule();
         for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
             EditorExtender editorExtender = frameworkProvider.getEditorExtender(module);

@@ -137,17 +137,24 @@ public final class SourceRootsSupport implements SourceRootsProvider {
             listsForSources = _listsForSources;
         }
         for (ModuleList l : listsForSources) {
-            for (ModuleEntry entry : l.getAllEntriesSoft()) {
-                // XXX should be more strict (e.g. compare also clusters)
-                if (!entry.getJarLocation().getName().equals(jar.getName())) {
-                    continue;
+            String name = jar.getName();
+            if (name.endsWith(".jar")) { // direct guess
+                String cnb = name.substring(0, name.length() - ".jar".length()).replace('-', '.');
+                if (cnb.equals("boot")) { // NOI18N
+                    cnb = "org.netbeans.bootstrap"; // NOI18N
+                } else if (cnb.equals("core")) { // NOI18N
+                    cnb = "org.netbeans.core.startup"; // NOI18N
                 }
-                File src = entry.getSourceLocation();
-                if (src != null && src.isDirectory()) {
-                    return src;
+                ModuleEntry entry = l.getEntry(cnb);
+                if (entry != null) {
+                    File src = entry.getSourceLocation();
+                    if (src != null && src.isDirectory()) {
+                        return src;
+                    }
                 }
             }
             for (ModuleEntry entry : l.getAllEntries()) {
+                // XXX should be more strict (e.g. compare also clusters)
                 if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }

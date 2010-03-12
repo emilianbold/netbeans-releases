@@ -860,6 +860,9 @@ public final class NbModuleProject implements Project {
     }
     
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
+        if (customPlatform == null) { // #181798
+            return;
+        }
         String buildImplPath =
                     customPlatform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                     || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
@@ -941,12 +944,9 @@ public final class NbModuleProject implements Project {
             return Util.addDependency(NbModuleProject.this, codeNameBase, releaseVersion, version, useInCompiler);
         }
         
-        public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
-            ModuleList moduleList = getModuleList();
-            ModuleEntry entry = moduleList.getEntry(codenamebase); // NOI18N
-            SpecificationVersion current = new SpecificationVersion(entry.getSpecificationVersion());
-            return current;
-            
+        public @Override SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
+            ModuleEntry entry = getModuleList().getEntry(codenamebase);
+            return entry != null ? new SpecificationVersion(entry.getSpecificationVersion()) : null;
         }
         
         public String getProjectFilePath() {
@@ -972,7 +972,7 @@ public final class NbModuleProject implements Project {
         }
 
         @Override
-        public boolean prepareContext() throws IllegalStateException {
+        public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
             return true;
         }
     }

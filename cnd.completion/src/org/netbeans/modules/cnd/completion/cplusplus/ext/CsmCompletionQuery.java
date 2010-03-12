@@ -104,6 +104,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateP
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.doxygensupport.CompletionDocumentationProviderImpl;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -180,6 +181,7 @@ abstract public class CsmCompletionQuery {
     public CsmCompletionResult query(JTextComponent component, int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         BaseDocument doc = (BaseDocument) component.getDocument();
+//        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
         return query(component, doc, offset, openingSource, sort, instantiateTypes);
     }
 

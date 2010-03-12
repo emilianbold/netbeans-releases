@@ -142,6 +142,7 @@ public class MakeOSGi extends Task {
             throw new BuildException("missing destdir");
         }
         List<File> jars = new ArrayList<File>();
+        List<File> fragments = new ArrayList<File>();
         Map<String,Info> infos = new HashMap<String,Info>();
         log("Prescanning JARs...");
         for (ResourceCollection rc : modules) {
@@ -149,6 +150,10 @@ public class MakeOSGi extends Task {
             while (it.hasNext()) {
                 File jar = ((FileResource) it.next()).getFile();
                 log("Prescanning " + jar, Project.MSG_VERBOSE);
+                if (jar.getParentFile().getName().equals("locale")) {
+                    fragments.add(jar);
+                    continue;
+                }
                 try {
                     JarFile jf = new JarFile(jar);
                     try {
@@ -156,18 +161,17 @@ public class MakeOSGi extends Task {
                         String cnb = prescan(jf, info);
                         if (cnb == null) {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
-                        } else if (cnb.matches("org[.]netbeans[.](core[.]netigso|libs[.](felix|osgi))")) {
+                        } else if (SKIPPED_PSEUDO_MODULES.contains(cnb)) {
                             log("Skipping " + jar);
-                            continue;
                         } else if (infos.containsKey(cnb)) {
                             log(jar + " appears to not be the only module named " + cnb, Project.MSG_WARN);
                         } else {
                             infos.put(cnb, info);
+                            jars.add(jar);
                         }
                     } finally {
                         jf.close();
                     }
-                    jars.add(jar);
                 } catch (Exception x) {
                     throw new BuildException("Could not prescan " + jar + ": " + x, x, getLocation());
                 }
@@ -179,11 +183,22 @@ public class MakeOSGi extends Task {
             } catch (Exception x) {
                 throw new BuildException("Could not process " + jar + ": " + x, x, getLocation());
             }
-       }
+        }
+        for (File jar : fragments) {
+            try {
+                processFragment(jar);
+            } catch (Exception x) {
+                throw new BuildException("Could not process " + jar + ": " + x, x, getLocation());
+            }
+        }
     }
 
     private String prescan(JarFile module, Info info) throws Exception {
-        Attributes attr = module.getManifest().getMainAttributes();
+        Manifest manifest = module.getManifest();
+        if (manifest == null) {
+            return null;
+        }
+        Attributes attr = manifest.getMainAttributes();
         String cnb = attr.getValue("OpenIDE-Module");
         if ("org.netbeans.libs.osgi".equals(cnb)) {
             // Otherwise get e.g. CCE: org.netbeans.core.osgi.Activator cannot be cast to org.osgi.framework.BundleActivator
@@ -205,7 +220,7 @@ public class MakeOSGi extends Task {
                 antlibJF.close();
             }
             for (String antlibImport : antlibPackages) {
-                if (!antlibImport.startsWith("org.apache.tools.")) {
+                if (!antlibImport.startsWith("org.apache.tools.") && !availablePackages.contains(antlibImport)) {
                     info.importedPackages.add(antlibImport);
                 }
             }
@@ -307,7 +322,7 @@ public class MakeOSGi extends Task {
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
             translate(netbeansAttr, osgiAttr, infos);
-            String cnb = osgiAttr.getValue("Bundle-SymbolicName");
+            String cnb = osgiAttr.getValue("Bundle-SymbolicName").replaceFirst(";.+", "");
             File bundleFile = findDestFile(cnb, osgiAttr.getValue("Bundle-Version"));
             if (bundleFile.lastModified() > module.lastModified()) {
                 log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
@@ -441,21 +456,19 @@ public class MakeOSGi extends Task {
             }
         }
         StringBuilder requireBundles = new StringBuilder();
-        /* XXX does not work for unknown reasons:
-        if (!cnb.matches("org[.](core[.]startup[.]|netbeans[.]bootstrap|openide[.](filesystems|modules|util|util[.]lookup))")) {
+        if (!STARTUP_PSEUDO_MODULES.contains(cnb)) {
             // do not need to import any API, just need it to be started:
             requireBundles.append("org.netbeans.core.osgi");
         }
-         */
         Set<String> imports = new TreeSet<String>(myInfo.importedPackages);
         hideImports(imports, myInfo);
         String dependencies = netbeans.getValue("OpenIDE-Module-Module-Dependencies");
         if (dependencies != null) {
             for (String dependency : dependencies.split(" *, *")) {
-                if (requireBundles.length() > 0) {
-                    requireBundles.append(", ");
-                }
                 String depCnb = translateDependency(requireBundles, dependency);
+                if (depCnb == null) {
+                    continue;
+                }
                 Info imported = infos.get(depCnb);
                 if (imported != null) {
                     imports.removeAll(imported.exportedPackages);
@@ -488,11 +501,33 @@ public class MakeOSGi extends Task {
             osgi.putValue("DynamicImport-Package", dynamicImports.toString());
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
-        // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+        String javaDeps = netbeans.getValue("OpenIDE-Module-Java-Dependencies");
+        if (javaDeps != null) {
+            Matcher m = Pattern.compile("Java > (1.[6-9])").matcher(javaDeps); // 1.5 is not supported anyway
+            if (m.matches()) {
+                osgi.putValue("Bundle-RequiredExecutionEnvironment", "JavaSE-" + m.group(1));
+            }
+        }
+        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
                 osgi.putValue(tokenAttr, v);
+            }
+        }
+        String v = netbeans.getValue("OpenIDE-Module-Requires");
+        if (v != null) {
+            StringBuilder b = null;
+            for (String tok : v.split("[, ]+")) {
+                if (!tok.matches("org.openide.modules.ModuleFormat\\d+")) {
+                    if (b == null) {
+                        b = new StringBuilder(tok);
+                    } else {
+                        b.append(", ").append(tok);
+                    }
+                }
+            }
+            if (b != null) {
+                osgi.putValue("OpenIDE-Module-Requires", b.toString());
             }
         }
         // autoload, eager status are ignored since OSGi has no apparent equivalent
@@ -573,10 +608,16 @@ public class MakeOSGi extends Task {
             throw new IllegalArgumentException("bad dep: " + dependency);
         }
         String depCnb = m.group(1);
+        if (SKIPPED_PSEUDO_MODULES.contains(depCnb)) {
+            return null;
+        }
         String depMajLo = m.group(2);
         String depMajHi = m.group(3);
         String comparison = m.group(4);
         String version = m.group(5);
+        if (b.length() > 0) {
+            b.append(", ");
+        }
         b.append(depCnb);
         if (!"=".equals(comparison)) {
             if (version == null) {
@@ -609,14 +650,13 @@ public class MakeOSGi extends Task {
                 NodeList nl = doc.getElementsByTagName("file");
                 for (int i = 0; i < nl.getLength(); i++) {
                     String path = ((Element) nl.item(i)).getAttribute("name");
-                    if (path.matches("config/(Modules|ModuleAutoDeps)/.+[.]xml")) {
+                    if (path.matches("config/(Modules|ModuleAutoDeps)/.+[.]xml|lib/nbexec.*")) {
                         continue;
                     }
                     File f = new File(cluster, path);
                     if (f.equals(module)) {
                         continue;
                     }
-                    // XXX exclude lib/nbexec{,.dll,.exe}, core/*felix*.jar
                     if (f.isFile()) {
                         result.put(path, f);
                     } else {
@@ -655,6 +695,62 @@ public class MakeOSGi extends Task {
                     importedPackages.add(clazz.substring(0, idx));
                 }
             }
+        }
+    }
+
+    private void processFragment(File fragment) throws Exception {
+        String cnb = findFragmentHost(fragment);
+        File bundleFile = new File(destdir, fragment.getName());
+        if (bundleFile.lastModified() > fragment.lastModified()) {
+            log("Skipping " + fragment + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
+            return;
+        }
+        log("Processing " + fragment + " into " + bundleFile);
+        Manifest mf = new Manifest();
+        Attributes attr = mf.getMainAttributes();
+        attr.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        attr.putValue("Bundle-ManifestVersion", "2");
+        attr.putValue("Bundle-SymbolicName", cnb + "-branding");
+        attr.putValue("Fragment-Host", cnb);
+        JarFile jar = new JarFile(fragment);
+        try {
+            OutputStream bundle = new FileOutputStream(bundleFile);
+            try {
+                ZipOutputStream zos = new JarOutputStream(bundle, mf);
+                Set<String> parents = new HashSet<String>();
+                Enumeration<? extends ZipEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String path = entry.getName();
+                    if (path.endsWith("/") || path.equals("META-INF/MANIFEST.MF")) {
+                        continue;
+                    }
+                    InputStream is = jar.getInputStream(entry);
+                    try {
+                        writeEntry(zos, path, is, parents);
+                    } finally {
+                        is.close();
+                    }
+                }
+                zos.finish();
+                zos.close();
+            } finally {
+                bundle.close();
+            }
+        } finally {
+            jar.close();
+        }
+    }
+
+    static String findFragmentHost(File jar) {
+        String cnb = jar.getName().replaceFirst("(_[a-z][a-z0-9]*)*[.]jar$", "").replace('-', '.');
+        // Historical naming patterns:
+        if (cnb.equals("core") && jar.getParentFile().getParentFile().getName().equals("core")) {
+            return "org.netbeans.core.startup";
+        } else if (cnb.equals("boot") && jar.getParentFile().getParentFile().getName().equals("lib")) {
+            return "org.netbeans.bootstrap";
+        } else {
+            return cnb;
         }
     }
 
@@ -816,6 +912,22 @@ public class MakeOSGi extends Task {
         "org.xml.sax",
         "org.xml.sax.ext",
         "org.xml.sax.helpers"
+    ));
+
+    private static final Set<String> SKIPPED_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.netbeans.core.netigso",
+            "org.netbeans.libs.osgi",
+            "org.netbeans.libs.felix"
+    ));
+
+    private static final Set<String> STARTUP_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
+            "org.openide.util.lookup",
+            "org.openide.util",
+            "org.openide.modules",
+            "org.netbeans.bootstrap",
+            "org.openide.filesystems",
+            "org.netbeans.core.startup",
+            "org.netbeans.core.osgi"
     ));
 
 }

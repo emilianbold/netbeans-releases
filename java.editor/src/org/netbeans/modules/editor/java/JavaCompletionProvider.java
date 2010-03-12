@@ -1595,6 +1595,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case NEW:
                         String prefix = env.getPrefix();
                         CompilationController controller = env.getController();
+                        controller.toPhase(Phase.RESOLVED);
                         DeclaredType base = path.getParentPath().getLeaf().getKind() == Tree.Kind.THROW ?
                             controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")) : null; //NOI18N
                         TypeElement toExclude = null;
@@ -1609,6 +1610,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         boolean insideNew = true;
+                        ExpressionTree encl = nc.getEnclosingExpression();
                         if (queryType == COMPLETION_QUERY_TYPE) {
                             Set<? extends TypeMirror> smarts = env.getSmartTypes();
                             if (smarts != null) {
@@ -1616,11 +1618,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 for (TypeMirror smart : smarts) {
                                     if (smart != null) {
                                         if (smart.getKind() == TypeKind.DECLARED) {
-                                            for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
-                                                TypeElement elem = (TypeElement)subtype.asElement();
-                                                if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                    results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true, true));
-                                                env.addToExcludes(elem);
+                                            if (encl == null) {
+                                                for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)smart)) {
+                                                    TypeElement elem = (TypeElement)subtype.asElement();
+                                                    if (toExclude != elem && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                        results.add(JavaCompletionItem.createTypeItem(elem, subtype, anchorOffset, true, elements.isDeprecated(elem), true, true, true));
+                                                    env.addToExcludes(elem);
+                                                }
                                             }
                                         } else if (smart.getKind() == TypeKind.ARRAY) {
                                             insideNew = false;
@@ -1636,7 +1640,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             env.addToExcludes(toExclude);
                         if (insideNew)
                             env.insideNew();
-                        addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base);
+                        if (encl == null) {
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base);
+                        } else {
+                            TypeMirror enclType = controller.getTrees().getTypeMirror(new TreePath(path, nc.getEnclosingExpression()));
+                            if (enclType != null && enclType.getKind() == TypeKind.DECLARED)
+                                addMembers(env, enclType, ((DeclaredType)enclType).asElement(), EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, false, insideNew);
+                        }
                         break;
                     case LPAREN:
                     case COMMA:
@@ -2655,6 +2665,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if ((isThisCall || isSuperCall) && tu.isStaticContext(scope))
                 return;
             final boolean[] ctorSeen = {false};
+            final boolean[] nestedClassSeen = {false};
             final TypeElement enclClass = scope.getEnclosingClass();
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -2699,6 +2710,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case ENUM:
                         case INTERFACE:
                         case ANNOTATION_TYPE:
+                            if (!e.getModifiers().contains(STATIC))
+                                nestedClassSeen[0] = true;
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
@@ -2741,12 +2754,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case INTERFACE:
                     case ANNOTATION_TYPE:
                         DeclaredType dt = (DeclaredType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
-                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), false));
+                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), isOfSmartType(env, dt, smartTypes)));
                         break;
                 }
             }
             if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
                 results.add(JavaCompletionItem.createDefaultConstructorItem((TypeElement)elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
+            }
+            if (!isStatic && nestedClassSeen[0]) {
+                results.add(JavaCompletionItem.createKeywordItem(NEW_KEYWORD, SPACE, anchorOffset, false));
             }
         }
         

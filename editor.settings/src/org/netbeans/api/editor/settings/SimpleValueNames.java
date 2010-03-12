@@ -82,7 +82,7 @@ public final class SimpleValueNames {
      * Values: java.lang.Integer instances
      */
     public static final String INDENT_SHIFT_WIDTH = "indent-shift-width"; // NOI18N
-    
+
     /**
      * The type of the editor caret in the insert mode.
      * <p>The available types are:
@@ -235,6 +235,18 @@ public final class SimpleValueNames {
      */
     public static final String TEXT_LIMIT_WIDTH = "text-limit-width"; // NOI18N
     
+    /**
+     * Determines if and what kind of line wrapping algorithm should be used in the editor.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>none
+     * <li>words
+     * <li>chars
+     * </ul>
+     * @since 1.29
+     */
+    public static final String TEXT_LINE_WRAP = "text-line-wrap"; //NOI18N
+
     /**
      * Enable/Disable code folding 
      * Values: java.lang.Boolean instances
@@ -403,6 +415,13 @@ public final class SimpleValueNames {
      */
     public static final String JAVADOC_POPUP_NEXT_TO_CC = "javadoc-popup-next-to-cc"; // NOI18N
 
+    /**
+     * Whether to display non-printable characters (eg. space, tab and new-line).
+     * Values: java.lang.Boolean instances
+     * @since 1.30
+     */
+    public static final String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"; //NOI18N
+    
     @PatchedPublic
     private SimpleValueNames() {
         // to prevent instantialization

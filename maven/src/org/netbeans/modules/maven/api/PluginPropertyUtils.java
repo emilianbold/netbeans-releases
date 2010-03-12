@@ -40,6 +40,7 @@
 package org.netbeans.modules.maven.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -75,6 +76,15 @@ public class PluginPropertyUtils {
     /** Creates a new instance of PluginPropertyUtils */
     private PluginPropertyUtils() {
     }
+
+    private static List<String> LIFECYCLE_PLUGINS = Arrays.asList(new String[]{
+                Constants.PLUGIN_COMPILER,
+                Constants.PLUGIN_SUREFIRE,
+                Constants.PLUGIN_EAR,
+                Constants.PLUGIN_JAR,
+                Constants.PLUGIN_WAR,
+                Constants.PLUGIN_RESOURCES
+            });
     
     
     /**
@@ -125,9 +135,7 @@ public class PluginPropertyUtils {
         if (toRet == null && 
                 //TODO - the plugin configuration probably applies to 
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {
                     Plugin plug = (Plugin)obj;
@@ -209,9 +217,7 @@ public class PluginPropertyUtils {
         if (toRet == null &&
                 //TODO - the plugin configuration probably applies to
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {
                     Plugin plug = (Plugin)obj;
@@ -295,12 +301,7 @@ public class PluginPropertyUtils {
         if (toRet == null &&
                 //TODO - the plugin configuration probably applies to
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_EAR.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_JAR.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_WAR.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {
                     Plugin plug = (Plugin)obj;
@@ -439,9 +440,7 @@ public class PluginPropertyUtils {
         if (toRet == null && 
                 //TODO - the plugin configuration probably applies to 
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
-                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
-                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+                LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
                 for (Object obj : prj.getPluginManagement().getPlugins()) {
                     Plugin plug = (Plugin)obj;

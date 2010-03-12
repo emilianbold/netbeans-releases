@@ -44,12 +44,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.PhpKind;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -82,21 +82,27 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, IndexedConstant indexedConstant) {
-        super(inScope, indexedConstant, PhpKind.FIELD);
+    FieldElementImpl(Scope inScope, org.netbeans.modules.php.editor.api.elements.FieldElement indexedConstant) {
+        super(inScope, indexedConstant, PhpElementKind.FIELD);
         String in = indexedConstant.getIn();
         if (in != null) {
             className = in;
         } else {
             className = inScope.getName();
         }
-        this.defaultType = indexedConstant.getTypeName();
+        Set<TypeResolver> instanceTypes = indexedConstant.getInstanceTypes();
+        for (TypeResolver typeResolver : instanceTypes) {
+            if (typeResolver.isResolved()) {
+                this.defaultType = typeResolver.getTypeName(false).getName();
+                break;
+            }
+        }
     }
 
     private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
             PhpModifiers modifiers, String defaultType) {
-        super(inScope, name, file, offsetRange, PhpKind.FIELD, modifiers);
+        super(inScope, name, file, offsetRange, PhpElementKind.FIELD, modifiers);
         this.defaultType = defaultType;
     }
 
@@ -115,7 +121,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     static PhpModifiers toAccessModifiers(FieldsDeclaration node) {
-        return new PhpModifiers(node.getModifier());
+        return PhpModifiers.fromBitMask(node.getModifier());
     }
 
     public Collection<? extends TypeScope> getDefaultTypes() {
@@ -227,7 +233,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         sb.append(noDollarName.toLowerCase()).append(";");//NOI18N
         sb.append(noDollarName).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getPhpModifiers().toBitmask()).append(";");
+        sb.append(getPhpModifiers().toFlags()).append(";");
         if (defaultType != null) {
             sb.append(defaultType);
         }

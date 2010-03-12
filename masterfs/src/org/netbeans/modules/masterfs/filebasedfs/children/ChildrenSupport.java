@@ -54,7 +54,7 @@ import org.openide.util.Mutex;
 /**
  * @author Radek Matous
  */
-public final class ChildrenSupport {
+public class ChildrenSupport {
 
     static final int NO_CHILDREN_CACHED = 0;
     static final int SOME_CHILDREN_CACHED = 1;

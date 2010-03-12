@@ -322,6 +322,8 @@ public class HgCommand {
     private static final String HG_AUTHORIZATION_FAILED_ERR = "authorization failed"; // NOI18N
     public static final String COMMIT_AFTER_MERGE = "commitAfterMerge"; //NOI18N
 
+    private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
+
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_CHANGESET_GENERAL_NAME = "changeset.tmpl"; //NOI18N
@@ -2738,8 +2740,9 @@ public class HgCommand {
             }
             final List<String> commandLine = toCommandList(command, outputStyleFile);
             final ProcessBuilder pb = new ProcessBuilder(commandLine);
+            Map<String, String> envOrig = pb.environment();
+            setGlobalEnvVariables(envOrig);
             if (env != null && env.size() > 0) {
-                Map<String, String> envOrig = pb.environment();
                 for (String s : env) {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
@@ -2767,6 +2770,10 @@ public class HgCommand {
                 }
             }
         }
+    }
+
+    private static void setGlobalEnvVariables (Map<String, String> environment) {
+        environment.put(ENV_HGPLAIN, "true"); //NOI18N
     }
 
     /**

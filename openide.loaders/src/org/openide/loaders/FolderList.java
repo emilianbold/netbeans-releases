@@ -561,7 +561,8 @@ implements FileChangeListener, DataObject.Container {
             if (DataFolder.EA_ORDER.equals(fe.getName()) || DataFolder.EA_SORT_MODE.equals(fe.getName())) {
                 changeComparator();
             }
-        } else if (FileUtil.affectsOrder(fe)) {
+        }
+        if (FileUtil.affectsOrder(fe)) {
             changeComparator();
         }
     }

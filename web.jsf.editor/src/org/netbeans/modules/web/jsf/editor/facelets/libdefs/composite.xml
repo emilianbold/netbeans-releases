@@ -1,0 +1,15 @@
+<library id="http://java.sun.com/jsf/composite">
+    <common_attributes>
+        <attr name="preferred">
+            <type name="bool"/>
+        </attr>
+        <attr name="expert">
+            <type name="bool"/>
+        </attr>
+    </common_attributes>
+    <tag name="interface">
+        <attr name="required">
+            <type name="bool"/>
+        </attr>
+    </tag>
+</library>

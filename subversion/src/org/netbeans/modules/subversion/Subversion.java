@@ -59,12 +59,15 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
+import org.openide.util.Utilities;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -236,6 +239,13 @@ public class Subversion {
             if(rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
+            } else if(!Utilities.isWindows()) {
+                PasswordFile pf = PasswordFile.findFileForUrl(repositoryUrl);
+                if(pf != null) {
+                    username = pf.getUsername();
+                    String psswdString = pf.getPassword();
+                    password = psswdString != null ? psswdString.toCharArray() : null;
+                }
             }
         }
         return getClient(repositoryUrl, username, password, progressSupport);

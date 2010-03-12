@@ -52,7 +52,7 @@ public class ModelTest extends ModelTestBase {
         super(testName);
     }
 
-    public void testOccurencesBasicFileScope() throws Exception {
+    /*public void testOccurencesBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         FileScope topScope = model.getFileScope();
         assertFalse(topScope.getElements().isEmpty());
@@ -313,5 +313,5 @@ public class ModelTest extends ModelTestBase {
         assertEquals("MyCls", otherComplexType.getName());
         TypeScope foreign2Type = ModelUtils.getFirst(foreign2.getTypes(last.getOffset()));
         assertNull(foreign2Type);
-    }
+    }*/
 }
