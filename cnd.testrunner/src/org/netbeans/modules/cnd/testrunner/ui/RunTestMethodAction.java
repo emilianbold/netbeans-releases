@@ -68,7 +68,11 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
         if (ap != null) {
             Folder targetFolder = findTestFolder();
             if(targetFolder != null) {
-                ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
+                if(debug) {
+                    ap.invokeAction(ActionProvider.COMMAND_DEBUG, Lookups.fixed(new Object[]{project, targetFolder}));
+                } else {
+                    ap.invokeAction(ActionProvider.COMMAND_TEST_SINGLE, Lookups.fixed(new Object[]{project, targetFolder}));
+                }
             }
         }
     }
@@ -87,7 +91,7 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
             for (Folder folder : testRootFolder.getAllTests()) {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
-                    if(items[k].getPath().replaceFirst("\\..*", "").equals(testcase.getClassName())) {
+                    if(items[k].getPath().replaceFirst("\\..*", "").equals(testcase.getClassName())) { // NOI18N
                         return folder;
                     }
                 }

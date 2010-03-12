@@ -653,23 +653,26 @@ public final class MakeActionProvider implements ActionProvider {
             }
 
             // Unit tests
-            Node node = context.lookup(Node.class);
-            if (node != null) {
-                Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
-                if (targetFolder != null) {
-                    if (targetFolder.isTest()) {
-                        Item[] items = targetFolder.getAllItemsAsArray();
-                        for (int k = 0; k < items.length; k++) {
-                            path = items[k].getPath();
-                            path = path.replaceFirst("\\..*", ""); // NOI18N
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node != null) {
+                    targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+                }
+            }
+            if (targetFolder != null) {
+                if (targetFolder.isTest()) {
+                    Item[] items = targetFolder.getAllItemsAsArray();
+                    for (int k = 0; k < items.length; k++) {
+                        path = items[k].getPath();
+                        path = path.replaceFirst("\\..*", ""); // NOI18N
 
-                            path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
+                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
 
-                            path = conf.expandMacros(path);
+                        path = conf.expandMacros(path);
 
-                            path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
+                        path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
 
-                        }
                     }
                 }
             }
