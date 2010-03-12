@@ -80,12 +80,12 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
+        file = new javax.swing.JLabel();
         tDictionary = new javax.swing.JTextField();
         bBrowse = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        encoding = new javax.swing.JLabel();
         cEncoding = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
+        locale = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         tLocale = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
@@ -93,13 +93,12 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(9, 9, 9, 9));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(getMessage ("MNE_DictionaryFile").charAt (0));
-        jLabel1.setLabelFor(tDictionary);
-        jLabel1.setText("Dictionary File:");
+        file.setLabelFor(tDictionary);
+        org.openide.awt.Mnemonics.setLocalizedText(file, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.file.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(jLabel1, gridBagConstraints);
+        add(file, gridBagConstraints);
 
         tDictionary.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -108,7 +107,7 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(tDictionary, gridBagConstraints);
 
-        bBrowse.setText("...");
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.bBrowse.text")); // NOI18N
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseActionPerformed(evt);
@@ -118,15 +117,14 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(bBrowse, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(getMessage ("MNE_DictionaryEncoding").charAt (0));
-        jLabel2.setLabelFor(cEncoding);
-        jLabel2.setText("Dictionary Encoding:");
+        encoding.setLabelFor(cEncoding);
+        org.openide.awt.Mnemonics.setLocalizedText(encoding, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.encoding.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(jLabel2, gridBagConstraints);
+        add(encoding, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -137,15 +135,14 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cEncoding, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(getMessage ("MNE_DictionaryLocale").charAt (0));
-        jLabel3.setLabelFor(tLocale);
-        jLabel3.setText("Dictionary Locale:");
+        locale.setLabelFor(tLocale);
+        org.openide.awt.Mnemonics.setLocalizedText(locale, org.openide.util.NbBundle.getMessage(DictionaryInstallerPanel.class, "DictionaryInstallerPanel.locale.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(jLabel3, gridBagConstraints);
+        add(locale, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -182,11 +179,11 @@ public class DictionaryInstallerPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton bBrowse;
     public javax.swing.JComboBox cEncoding;
-    public javax.swing.JLabel jLabel1;
-    public javax.swing.JLabel jLabel2;
-    public javax.swing.JLabel jLabel3;
+    public javax.swing.JLabel encoding;
+    public javax.swing.JLabel file;
     public javax.swing.JPanel jPanel1;
     public javax.swing.JPanel jPanel2;
+    public javax.swing.JLabel locale;
     public javax.swing.JTextField tDictionary;
     public javax.swing.JTextField tLocale;
     // End of variables declaration//GEN-END:variables
