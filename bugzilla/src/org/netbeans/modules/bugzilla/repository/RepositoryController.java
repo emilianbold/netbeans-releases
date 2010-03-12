@@ -73,7 +73,7 @@ public class RepositoryController extends BugtrackingController implements Docum
     private RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
-    private boolean populating;
+    private boolean populated = false;
     private TaskRunner taskRunner;
     private RequestProcessor rp;
 
@@ -130,6 +130,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private boolean validate() {
+        if(!populated) {
+            return true;
+        }
         if(validateError) {
             return false;
         }
@@ -233,7 +236,6 @@ public class RepositoryController extends BugtrackingController implements Docum
                 if(repository.getTaskRepository() != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            populating = true;
                             AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
                             panel.userField.setText(c.getUserName());
                             panel.psswdField.setText(c.getPassword());
@@ -252,10 +254,13 @@ public class RepositoryController extends BugtrackingController implements Docum
                             panel.urlField.setText(repository.getTaskRepository().getUrl());
                             panel.nameField.setText(repository.getDisplayName());
                             panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
-                            populating = false;
+                            populated = true;
                             fireDataChanged();
                         }
                     });
+                } else {
+                    populated = false;
+                    fireDataChanged();
                 }
             }
         };
@@ -263,19 +268,19 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     public void insertUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void removeUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void changedUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
