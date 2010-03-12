@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
@@ -384,11 +385,33 @@ public final class CreatedModifiedFiles {
     /**
      * Adds new attributes into manifest file.
      * @param section the name of the section or <code>null</code> for the main section.
-     * @param attributes &lt;String,String&gt; map mapping attributes names and values.
+     * @param attributes attribute names and values
      * @return see {@link Operation}
      */
     public Operation manifestModification(String section, Map<String,String> attributes) {
         return CreatedModifiedFilesFactory.manifestModification(project, section, attributes);
+    }
+
+    /**
+     * Adds a token to a list given by a manifest header (creating it if it does not already exist).
+     * @param header a header such as {@link ManifestManager#OPENIDE_MODULE_REQUIRES} (in the main section)
+     * @param token a token to add
+     * @return see {@link Operation}
+     */
+    public Operation addManifestToken(final String header, final String token) {
+        return new CreatedModifiedFilesFactory.ModifyManifest(project) {
+            {
+                setAttribute(header, token, null);
+            }
+            protected @Override void performModification(EditableManifest em, String name, String value, String section) throws IllegalArgumentException {
+                String originalValue = em.getAttribute(name, section);
+                if (originalValue != null) {
+                    em.setAttribute(name, originalValue + ", " + value, section);
+                } else {
+                    super.performModification(em, name, value, section);
+                }
+            }
+        };
     }
     
     /**

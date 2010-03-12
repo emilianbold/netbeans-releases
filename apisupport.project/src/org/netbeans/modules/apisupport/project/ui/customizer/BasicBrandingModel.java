@@ -632,10 +632,14 @@ public class BasicBrandingModel {
         generalResourceBundleKeys.clear();
 }
 
+    private String backslashesToSlashes (String text) {
+        return text.replace('\\', '/'); // NOI18N
+    }
+
     private BrandingSupport.BundleKey findInModifiedGeneralBundleKeys (String codenamebase, String bundlepath, String key) {
         for (BundleKey bundleKey : generalResourceBundleKeys) {
             if (key.equals(bundleKey.getKey()) &&
-                bundleKey.getBundleFilePath().endsWith(bundlepath) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return bundleKey;
         }
@@ -662,7 +666,7 @@ public class BasicBrandingModel {
         // in modified keys?
         for (BundleKey bundleKey : generalResourceBundleKeys) {
             if (key.equals(bundleKey.getKey()) &&
-                bundleKey.getBundleFilePath().endsWith(bundlepath) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }
@@ -670,7 +674,7 @@ public class BasicBrandingModel {
         Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
         for (BundleKey bundleKey : bundleKeys) {
             if (key.equals(bundleKey.getKey()) &&
-                bundleKey.getBundleFilePath().endsWith(bundlepath) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }
@@ -680,14 +684,14 @@ public class BasicBrandingModel {
     public boolean isBundleBranded (String bundlepath, String codenamebase) {
         // in modified keys?
         for (BundleKey bundleKey : generalResourceBundleKeys) {
-            if (bundleKey.getBundleFilePath().endsWith(bundlepath) &&
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }
         // in branded but not modified keys?
         Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
         for (BundleKey bundleKey : bundleKeys) {
-            if (bundleKey.getBundleFilePath().endsWith(bundlepath) &&
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }

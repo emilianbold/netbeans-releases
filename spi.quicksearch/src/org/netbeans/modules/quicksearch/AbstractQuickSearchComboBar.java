@@ -45,6 +45,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
@@ -146,6 +147,11 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
             @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 commandKeyPressed(evt);
+            }
+        });
+        command.addMouseListener(new MouseAdapter() {
+            public @Override void mouseClicked(MouseEvent e) {
+                displayer.explicitlyInvoked();
             }
         });
     }

@@ -110,7 +110,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.netigso") != null) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.osgi") != null) {
             actions.add(new OSGiSubMenuAction());
             actions.add(null);
         }

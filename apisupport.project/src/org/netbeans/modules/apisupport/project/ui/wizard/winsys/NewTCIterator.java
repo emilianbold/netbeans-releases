@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  * Wizard for creating new TopComponent.
@@ -278,6 +280,7 @@ final class NewTCIterator extends BasicWizardIterator {
         //TODO how to figure the currect specification version for module?
         replaceTokens.put("SPECVERSION", moduleInfo.getSpecVersion()); // NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
+        fileChanges.add(fileChanges.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, WindowManager.class.getName()));
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N

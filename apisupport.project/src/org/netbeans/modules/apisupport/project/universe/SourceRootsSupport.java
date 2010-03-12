@@ -140,6 +140,11 @@ public final class SourceRootsSupport implements SourceRootsProvider {
             String name = jar.getName();
             if (name.endsWith(".jar")) { // direct guess
                 String cnb = name.substring(0, name.length() - ".jar".length()).replace('-', '.');
+                if (cnb.equals("boot")) { // NOI18N
+                    cnb = "org.netbeans.bootstrap"; // NOI18N
+                } else if (cnb.equals("core")) { // NOI18N
+                    cnb = "org.netbeans.core.startup"; // NOI18N
+                }
                 ModuleEntry entry = l.getEntry(cnb);
                 if (entry != null) {
                     File src = entry.getSourceLocation();
