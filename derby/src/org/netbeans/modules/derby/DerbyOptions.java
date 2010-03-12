@@ -126,10 +126,12 @@ public class DerbyOptions {
      * is not set. Never returns null.
      */
     public String getLocation() {
+        DerbyActivator.activate();
         String location = getProperty(PROP_DERBY_LOCATION);
         if (location == null) {
             location = ""; // NOI18N
         }
+        Logger.getLogger(DerbyOptions.class.getName()).finest("Derby location is " + location);
         return location;
     }
 
