@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
 
+    private final Color defaultTextFieldFg;
     private List<FolderEntry> sourceData = new ArrayList<FolderEntry>();
     private List<FolderEntry> testData = new ArrayList<FolderEntry>();
     private SourceFileTable sourceFileTable = null;
@@ -74,6 +76,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     /** Creates new form SourceFilesPanel */
     public SourceFilesPanel(ChangeListener listener, boolean showTestFolders) {
         initComponents();
+
+        defaultTextFieldFg = excludePatternTextField.getForeground();
 
         if (!showTestFolders) {
             addButton1.setVisible(false);
@@ -107,7 +111,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         });
     }
 
-    private void update(){
+    private void update() {
+        String excludeStr = excludePatternTextField.getText();
+        try {
+            Pattern.compile(excludeStr);
+            excludePatternTextField.setForeground(defaultTextFieldFg);
+        } catch (PatternSyntaxException ex) {
+            excludePatternTextField.setForeground(Color.RED);
+        }
         if (listener != null) {
             listener.stateChanged(null);
         }
