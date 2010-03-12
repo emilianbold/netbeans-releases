@@ -455,7 +455,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         cancel.set(true);
     }
 
-    private synchronized void resume() {
+    private void resume() {
         cancel.set(false);
     }
 
