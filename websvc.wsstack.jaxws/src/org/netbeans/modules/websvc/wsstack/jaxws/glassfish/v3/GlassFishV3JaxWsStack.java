@@ -65,6 +65,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                           "webservices-api(|-osgi).jar", //NOI18N
                           "jaxb(|-osgi).jar", //NOI18N
                           "jaxb-api(|-osgi).jar", //NOI18N
+                          "javax.ejb.jar", //NOI18N
                           "javax.activation.jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
