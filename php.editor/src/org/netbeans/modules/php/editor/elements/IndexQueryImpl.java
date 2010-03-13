@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -1196,14 +1197,32 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_CLASS, query,
                     new String[] {PHPIndexer.FIELD_SUPER_CLASS, ClassElementImpl.IDX_FIELD});
             for (final IndexResult indexResult : result) {
-                directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_CLASS);
+                for (String value : values) {
+                    Signature signature = Signature.get(value);
+                    final String name = signature.string(1);
+                    //TODO: FQN should have been compared, but first into index must come super cls/iface
+                    //as FQN
+                    if (query.matchesName(PhpElementKind.CLASS, name)) {
+                        directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                    }
+                }
             }
         } else if (typeElement.isInterface()) {
             final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_IFACE, query,
                     new String[] {PHPIndexer.FIELD_SUPER_CLASS, InterfaceElementImpl.IDX_FIELD, ClassElementImpl.IDX_FIELD});
             for (final IndexResult indexResult : result) {
-                directTypes.addAll(InterfaceElementImpl.fromSignature(NameKind.empty(), this, indexResult));
-                directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_IFACE);
+                for (String value : values) {
+                    Signature signature = Signature.get(value);
+                    final String name = signature.string(1);
+                    //TODO: FQN should have been compared, but first into index must come super cls/iface
+                    //as FQN
+                    if (query.matchesName(PhpElementKind.IFACE, name)) {
+                        directTypes.addAll(InterfaceElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                        directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                    }
+                }
             }
         }
         return directTypes;

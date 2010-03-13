@@ -47,13 +47,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
@@ -83,7 +84,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
             final Set<MethodElement> overridenMethods = methodNameFilter.filter(getInheritedMethods(info, method));
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (MethodElement methodElement : overridenMethods) {
-                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(methodElement));
+                retval.add(new MethodLocation(methodElement));
             }
             return retval;
         }
@@ -99,13 +100,13 @@ public class OverridingMethodsImpl implements OverridingMethods {
             final Set<MethodElement> overridenByMethods = methodNameFilter.filter(getInheritedByMethods(info, method));
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (MethodElement methodElement : overridenByMethods) {
-                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(methodElement));
+                retval.add(new MethodLocation(methodElement));
             }
             return retval;
         } else if (handle instanceof TypeScope) {
             List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
             for (TypeElement typeElement : getInheritedByTypes(info, (TypeScope) handle)) {
-                retval.add(new DeclarationFinderImpl.AlternativeLocationImpl(typeElement));
+                retval.add(new TypeLocation(typeElement));
             }
             return retval;
         }
@@ -113,13 +114,6 @@ public class OverridingMethodsImpl implements OverridingMethods {
         return null;
     }
 
-    private static Set<String> toNames(Set<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
-        for (PhpElement elem : elements) {
-            names.add(elem.getName());
-        }
-        return names;
-    }
 
     @Override
     public boolean isOverriddenBySupported(ParserResult info, ElementHandle handle) {
@@ -161,14 +155,49 @@ public class OverridingMethodsImpl implements OverridingMethods {
         if (!signature.equals(classSignatureForInheritedByMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
             TypeScope type = (TypeScope) method.getInScope();
-            ElementFilter forDeclaredMethods = ElementFilter.forIncludedNames(toNames(index.getDeclaredMethods(type)), PhpElementKind.METHOD);
             inheritedByMethods = new HashSet<MethodElement>();
             for (TypeElement nextType : getInheritedByTypes(info,type)) {
-                inheritedByMethods.addAll(forDeclaredMethods.filter(index.getDeclaredMethods(nextType)));
+                inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }
         }
         classSignatureForInheritedByMethods = signature;
         return inheritedByMethods;
+    }
+
+    private static class MethodLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
+        public MethodLocation(PhpElement modelElement) {
+            super(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+        }
+
+        @Override
+        public String getDisplayHtml(HtmlFormatter formatter) {
+            StringBuilder sb = new StringBuilder();
+            MethodElement method = (MethodElement) getElement();
+            final TypeElement type = method.getType();
+            sb.append(method.getName());
+            sb.append(" : ");//NOI18N
+            sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
+            sb.append(" (");//NOI18N
+            sb.append(type.getFileObject().getNameExt());
+            sb.append(")");//NOI18N
+            return sb.toString();
+        }
+    }
+    private static class TypeLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
+        public TypeLocation(PhpElement modelElement) {
+            super(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+        }
+
+        @Override
+        public String getDisplayHtml(HtmlFormatter formatter) {
+            StringBuilder sb = new StringBuilder();
+            TypeElement type = (TypeElement) getElement();
+            sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
+            sb.append(" (");//NOI18N
+            sb.append(type.getFileObject().getNameExt());
+            sb.append(")");//NOI18N
+            return sb.toString();
+        }
     }
 
 }
