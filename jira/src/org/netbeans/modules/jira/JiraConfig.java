@@ -60,7 +60,7 @@ public class JiraConfig {
 
     private static JiraConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N // XXX
-    private static final String REPO_NAME           = "jira.repository_";           // NOI18N
+    private static final String REPO_ID           = "jira.repository_";           // NOI18N
     private static final String QUERY_NAME          = "jira.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
@@ -134,7 +134,7 @@ public class JiraConfig {
         String httpUser = repository.getHttpUsername();        
         String url = repository.getUrl();
         getPreferences().put(
-                REPO_NAME + repoID,
+                REPO_ID + repoID,
                 url + DELIMITER +
                 user + DELIMITER +
                 "" + DELIMITER +          // NOI18N - skip password, will be saved via keyring
@@ -149,16 +149,12 @@ public class JiraConfig {
 
     }
     public JiraRepository getRepository(String repoID) {
-        String repoString = getPreferences().get(REPO_NAME + repoID, "");     // NOI18N
+        String repoString = getPreferences().get(REPO_ID + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N
             return null;
         }
         String[] values = repoString.split(DELIMITER);
         String url = values[0];
-        String user = values[1];
-        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
-        String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
         String repoName;
         if(values.length > 5) {
             repoName = values[5];
@@ -166,7 +162,7 @@ public class JiraConfig {
             repoName = repoID;
         }
 
-        JiraRepository repo = new JiraRepository(repoID, repoName, url, user, password, httpUser, httpPassword);
+        JiraRepository repo = new JiraRepository(repoID, repoName, url, null, null, null, null);
 
         // make sure tha scrambled password is removed
         if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
@@ -176,12 +172,29 @@ public class JiraConfig {
         return repo;
     }
 
+    public void setupCredentials(JiraRepository repository) {
+        String repoID = repository.getID();
+        String[] values = getRepositoryValues(repoID);
+        if(values == null) {
+            return;
+        }
+
+        String url = repository.getUrl();
+        String user = values[1];
+        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
+
+        repository.setCredentials(user, password, httpUser, httpPassword);
+    }
+
+
     public String[] getRepositories() {
-        return getKeysWithPrefix(REPO_NAME);
+        return getKeysWithPrefix(REPO_ID);
     }
 
     public void removeRepository(String name) {
-        getPreferences().remove(REPO_NAME + name);
+        getPreferences().remove(REPO_ID + name);
     }
 
     private String[] getKeysWithPrefix(String prefix) {
@@ -227,4 +240,13 @@ public class JiraConfig {
         }
         return priorityIcons.get(priorityId);
     }
+
+    private String[] getRepositoryValues(String repoID) {
+        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
+            return null;
+        }
+        return repoString.split(DELIMITER);
+    }
+
 }

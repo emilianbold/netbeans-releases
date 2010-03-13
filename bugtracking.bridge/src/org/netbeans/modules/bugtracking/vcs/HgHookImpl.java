@@ -212,8 +212,8 @@ public class HgHookImpl extends HgHook {
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
-            PushOperation pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
-            if(pa == null) {
+            PushOperation operation = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
+            if(operation == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
             }
@@ -227,13 +227,13 @@ public class HgHookImpl extends HgHook {
                 }
             }
 
-            Issue issue = repo.getIssue(pa.getIssueID());
+            Issue issue = repo.getIssue(operation.getIssueID());
             if(issue == null) {
-                LOG.log(Level.FINE, " no issue found with id " + pa.getIssueID());  // NOI18N
+                LOG.log(Level.FINE, " no issue found with id " + operation.getIssueID());  // NOI18N
                 continue;
             }
 
-            issue.addComment(pa.getMsg(), isResolveSelected());
+            issue.addComment(operation.getMsg(), operation.isClose());
         }
         LOG.log(Level.FINE, "push hook end for " + file);                       // NOI18N
     }
