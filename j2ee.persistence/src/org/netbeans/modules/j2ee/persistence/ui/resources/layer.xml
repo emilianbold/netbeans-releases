@@ -149,6 +149,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-persistence-unit-PUDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.ui.resources.Bundle"/>
+                        <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
                 <folder name="Actions">

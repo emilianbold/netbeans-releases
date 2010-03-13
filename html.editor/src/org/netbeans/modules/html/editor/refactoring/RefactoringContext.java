@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.refactoring;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -151,6 +152,10 @@ public class RefactoringContext {
     static List<InlinedStyleInfo> findInlinedStyles(Document doc, int from, int to) {
         List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
         TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
+        if(ts == null) {
+            //XXX - try to search backward and forward to find some html code???
+            return Collections.emptyList();
+        }
         //the joined ts is moved to the from offset and a token already selected (moveNext/Previous() == true)
         //seek for all tag's attributes with css embedding representing an inlined style
         String tag = null;

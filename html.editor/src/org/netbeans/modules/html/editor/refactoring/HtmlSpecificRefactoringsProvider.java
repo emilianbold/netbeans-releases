@@ -124,6 +124,12 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
             @Override
             public void run() {
                 TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
+                if(ts == null) {
+                    //no html token sequence at the offset, try to 
+                    //TODO possibly try to travese the top level sequence backward
+                    //and try to find an html embedding.
+                    return ;
+                }
                 Token<HTMLTokenId> openTag = Utils.findTagOpenToken(ts);
                 if(openTag == null) {
                     return ;

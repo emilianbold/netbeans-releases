@@ -88,6 +88,7 @@ final class MIMESupport extends Object {
      * access pattern from DataSystems.
      */
     private static final Reference<FileObject> EMPTY = new WeakReference<FileObject>(null);
+    private static final Reference<FileObject> CLEARED= new WeakReference<FileObject>(null);
     private static Reference<FileObject> lastFo = EMPTY;
     private static Reference<FileObject> lastCfo = EMPTY;
     private static final Object lock = new Object();
@@ -96,6 +97,10 @@ final class MIMESupport extends Object {
     private static Logger ERR = Logger.getLogger(MIMESupport.class.getName());
 
     private MIMESupport() {
+    }
+
+    static void freeCaches() {
+        lastFo = CLEARED;
     }
 
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
@@ -124,8 +129,10 @@ final class MIMESupport extends Object {
             return cfo.getMIMEType(withinMIMETypes);
         } finally {
             synchronized (lock) {
-                lastFo = new WeakReference<FileObject>(fo);
-                lastCfo = new WeakReference<FileObject>(cfo);
+                if (lastFo != CLEARED) {
+                    lastFo = new WeakReference<FileObject>(fo);
+                    lastCfo = new WeakReference<FileObject>(cfo);
+                }
             }
         }
     }
