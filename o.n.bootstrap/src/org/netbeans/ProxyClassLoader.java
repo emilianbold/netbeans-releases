@@ -399,48 +399,28 @@ public class ProxyClassLoader extends ClassLoader {
         return super.findResource(name);
     }
     
-    /**
-     * Finds all the resource with the given name. The implementation of
-     * this method uses the {@link #simpleFindResources(String)} method to find
-     * all the resources available from this classloader and adds all the 
-     * resources from all the parents.
-     *
-     * @param  name the resource name
-     * @return an Enumeration of URLs for the resources
-     * @throws IOException if I/O errors occur
-     */    
     @Override
     public final synchronized Enumeration<URL> getResources(String name) throws IOException {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         final String path = name.substring(0, slashIdx + 1);
+        String pkg = name.startsWith("META-INF/") ? name.substring(8) : (slashIdx >= 0) ? name.substring(0, slashIdx).replace('/', '.') : "";
         List<Enumeration<URL>> sub = new ArrayList<Enumeration<URL>>();
 
         // always consult SCL first
         if (shouldDelegateResource(path, null)) sub.add(systemCL.getResources(name));
         
-        if(name.startsWith("META-INF/")) { // common but expensive resources
+        Set<ProxyClassLoader> del = packageCoverage.get(pkg);
 
-            String relName = name.substring(8);
-            Set<ProxyClassLoader> del = packageCoverage.get(relName);
-
-            if (del != null) { // unclaimed resource, go directly to SCL
-                for (ProxyClassLoader pcl : parents) { // all our accessible parents
-                    if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
-                        sub.add(pcl.findResources(name));
-                    }
-                }
-                if (del.contains(this)) {
-                    sub.add(findResources(name));
-                }
-            }
-        } else { // Don't bother optimizing this call by domains.
-            for (ProxyClassLoader pcl : parents) { 
-                if (shouldDelegateResource(path, pcl)) {
+        if (del != null) {
+            for (ProxyClassLoader pcl : parents) { // all our accessible parents
+                if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     sub.add(pcl.findResources(name));
                 }
             }
-            sub.add(findResources(name));
+            if (del.contains(this)) {
+                sub.add(findResources(name));
+            }
         }
         // Should not be duplicates, assuming the parent loaders are properly distinct
         // from one another and do not overlap in JAR usage, which they ought not.
