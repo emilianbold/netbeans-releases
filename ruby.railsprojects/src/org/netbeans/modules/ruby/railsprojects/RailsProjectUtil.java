@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -195,7 +196,7 @@ public class RailsProjectUtil {
             // in environment.rb
             br = new BufferedReader(new InputStreamReader(environment.getInputStream()));
 
-            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]((\\d+)\\.(\\d+)\\.(\\d+))['\"].*"); // NOI18N
+            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]" + GemFilesParser.VERSION_REGEX + "['\"].*"); // NOI18N
             for (int line = 0; line < 20; line++) {
                 String s = br.readLine();
                 if (s == null) {
