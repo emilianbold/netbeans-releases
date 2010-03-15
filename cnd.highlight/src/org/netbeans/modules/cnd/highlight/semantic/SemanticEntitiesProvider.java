@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Sergey Grinev
  */
-public class SemanticEntitiesProvider {
+public final class SemanticEntitiesProvider {
 
     private final List<SemanticEntity> list;
 
@@ -135,8 +135,7 @@ public class SemanticEntitiesProvider {
                 super.updateFontColors(provider);
                 funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
             }
-            protected AttributeSet funDeclColors;
-            protected AttributeSet funUsageColors;
+            private AttributeSet funUsageColors;
         };
     }
 
@@ -168,8 +167,8 @@ public class SemanticEntitiesProvider {
                         throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
                 }
             }
-            protected AttributeSet sysMacroColors;
-            protected AttributeSet userMacroColors;
+            private AttributeSet sysMacroColors;
+            private AttributeSet userMacroColors;
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
