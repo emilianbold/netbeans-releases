@@ -100,7 +100,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     /**
      * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
      */
-    public void replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
+    public EditorBoxView.ReplaceResult replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
             int index, int removeCount, EditorView[] addedViews,
             int offsetDelta, Shape alloc)
     {
@@ -175,7 +175,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         boolean majorAxisChildrenSpanChange = (addedSpan != removedSpan);
         if (majorAxisChildrenSpanChange || offsetDelta != 0) {
             // Fix both visual and textual offsets in one iteration through children
-            fixOffsetsAndSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
+            fixOffsetsAndMajorSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
         }
         if (minorAxisChildrenSpanChange) {
             setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
@@ -187,6 +187,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                     minorAxisChildrenSpanChange, alloc
             );
         } // Otherwise the repaint bounds and other vars in result stay unfilled
+        return result;
     }
 
     protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
@@ -417,7 +418,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
     }
 
-    final void fixOffsetsAndSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
+    final void fixOffsetsAndMajorSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
         // Expects moveGap(index) was called already before calling of this method
         boolean visualUpdate = (visualDelta != 0d);
         if (gapStorage != null) {
