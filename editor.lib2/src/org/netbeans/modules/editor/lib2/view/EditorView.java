@@ -381,8 +381,8 @@ public abstract class EditorView extends View {
         if (LOG.isLoggable(Level.FINER)) {
             String err = findTreeIntegrityError(); // Check integrity of the document view
             if (err != null) {
-                String msg = "View hierarchy INTEGRITY ERROR!";
-                LOG.finer(msg + "\n" + err + "Errorneous view hierarchy:\n");
+                String msg = "View hierarchy INTEGRITY ERROR! - " + err;
+                LOG.finer(msg + "\nErrorneous view hierarchy:\n");
                 StringBuilder sb = new StringBuilder(200);
                 appendViewInfo(sb, 0, -2); // -2 means detailed info
                 LOG.finer(sb.toString());
