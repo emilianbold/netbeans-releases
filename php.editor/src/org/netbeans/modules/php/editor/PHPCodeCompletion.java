@@ -800,7 +800,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         final boolean offerGlobalVariables = OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL);
-        final Prefix prefix = NameKind.prefix(QualifiedName.create(request.prefix));
+        final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
+        final NameKind prefix = NameKind.create(request.prefix,
+                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+
         final Set<VariableElement> globalVariables = new HashSet<VariableElement>();
        
         for (final PhpElement element : request.index.getTopLevelElements(prefix)) {
