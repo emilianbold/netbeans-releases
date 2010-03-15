@@ -247,19 +247,21 @@ public class AnnotateAction extends ContextAction {
         
         List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
         int i = 0;
-        Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
+        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
             i++;
             Matcher m = p.matcher(line);
+            AnnotateLine anLine;
             if (!m.matches()){
                 Mercurial.LOG.log(Level.WARNING, "AnnotateAction: toAnnotateLines(): Failed when matching: {0}", new Object[] {line}); //NOI18N
-                continue;
+                anLine = new FakeAnnotationLine();
+            } else {
+                anLine = new AnnotateLine();
+                anLine.setAuthor(m.group(GROUP_AUTHOR));
+                anLine.setRevision(m.group(GROUP_REVISION));
+                anLine.setFileName(m.group(GROUP_FILENAME));
+                anLine.setContent(m.group(GROUP_CONTENT));
             }
-            AnnotateLine anLine = new AnnotateLine();
-            anLine.setAuthor(m.group(GROUP_AUTHOR));
-            anLine.setRevision(m.group(GROUP_REVISION));
-            anLine.setFileName(m.group(GROUP_FILENAME));
-            anLine.setContent(m.group(GROUP_CONTENT));
             anLine.setLineNum(i);
             
             lines.add(anLine);
@@ -312,5 +314,15 @@ public class AnnotateAction extends ContextAction {
             }
         }
         return null;
+    }
+
+    private static class FakeAnnotationLine extends AnnotateLine {
+        public FakeAnnotationLine() {
+            String fakeItem = NbBundle.getMessage(AnnotateAction.class, "MSG_AnnotateAction.lineDetail.unknown");
+            setAuthor(fakeItem);
+            setContent(fakeItem);
+            setRevision(fakeItem);
+            setFileName(fakeItem);
+        }
     }
 }
