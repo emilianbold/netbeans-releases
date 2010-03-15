@@ -425,6 +425,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 char c = line.charAt(i);
                 if(c == '\t') { //NOI18N
                     b.append(indentString);
+                } else if(c == '\n') {
+                    //swallow the new lines if they were possibly present in the inlined css code
                 } else {
                     b.append(c);
                 }
