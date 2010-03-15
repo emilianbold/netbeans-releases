@@ -96,6 +96,7 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
         return project.getScm();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Iterator<? extends MavenProject> prj = result.allInstances().iterator();
         if (!prj.hasNext()) {
@@ -122,6 +123,7 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
             final File checkoutDir = checkoutUI.getCheckoutDirectory();
             ExecutorTask task = RunUtils.executeMaven(rc);
             task.addTaskListener(new TaskListener() {
+                @Override
                 public void taskFinished(Task task) {
                     FileObject fo = FileUtil.toFileObject(checkoutDir);
                     if (fo != null) {
@@ -141,8 +143,10 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setEnabled(getScm() != null);
             }
