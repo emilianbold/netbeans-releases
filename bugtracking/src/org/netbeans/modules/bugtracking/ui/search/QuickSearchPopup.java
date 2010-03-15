@@ -48,6 +48,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -272,31 +274,32 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
         List<PopupItem> modelList = new ArrayList<PopupItem>();
 
-        List<Issue> recentIssues = new ArrayList<Issue>(BugtrackingUtil.getRecentIssues(repository));
-        Map<Integer, PopupItem> items = new TreeMap<Integer, PopupItem>();
+//        Map<Integer, PopupItem> items = new TreeMap<Integer, PopupItem>();
+//
+//        int unsortedIdx = recentIssues.size();
+//        for (PopupItem popupItem : currentHitlist) {
+//            if(popupItem instanceof IssueItem) {
+//                IssueItem issueItem = (IssueItem) popupItem;
+//                Issue issue = issueItem.getIssue();
+//                int idx = -1;
+//                for (int i = 0; i < recentIssues.size(); i++) {
+//                    if(recentIssues.get(i).getID().equals(issue.getID())) {
+//                        idx = i;
+//                        break;
+//                    }
+//                }
+//                if(idx > -1) {
+//                    items.put(idx, issueItem);
+//                } else {
+//                    items.put(unsortedIdx++, issueItem);
+//                }
+//            } else {
+//                items.put(unsortedIdx++, popupItem);
+//            }
+//        }
 
-        int unsortedIdx = recentIssues.size();
-        for (PopupItem popupItem : currentHitlist) {
-            if(popupItem instanceof IssueItem) {
-                IssueItem issueItem = (IssueItem) popupItem;
-                Issue issue = issueItem.getIssue();
-                int idx = -1;
-                for (int i = 0; i < recentIssues.size(); i++) {
-                    if(recentIssues.get(i).getID().equals(issue.getID())) {
-                        idx = i;
-                        break;
-                    }
-                }
-                if(idx > -1) {
-                    items.put(idx, issueItem);
-                } else {
-                    items.put(unsortedIdx++, issueItem);
-                }
-            } else {
-                items.put(unsortedIdx++, popupItem);
-            }
-        }
-        currentHitlist = new LinkedList<PopupItem>(items.values());
+        List<Issue> recentIssues = new ArrayList<Issue>(BugtrackingUtil.getRecentIssues(repository));
+        Collections.sort(currentHitlist, new IssueComparator(recentIssues));
 
         for (PopupItem item : currentHitlist) {
             modelList.add(item);
@@ -318,6 +321,50 @@ public class QuickSearchPopup extends javax.swing.JPanel
             modelList.add(new SearchItem(criteria));
         }
         rModel.setContent(modelList);
+    }
+
+    private class IssueComparator implements Comparator<PopupItem> {
+        private final List<Issue> recentIssues;
+
+        public IssueComparator(List<Issue> recentIssues) {
+            this.recentIssues = recentIssues;
+        }
+
+        @Override
+        public int compare(PopupItem i1, PopupItem i2) {
+            if(!(i1 instanceof IssueItem)) {
+                return -1;
+            }
+            if(!(i2 instanceof IssueItem)) {
+                return 1;
+            }
+            
+            IssueItem ii1 = (IssueItem) i1;
+            IssueItem ii2 = (IssueItem) i2;
+            int idx1 = getRecentIssueIdx(ii1.getIssue());
+            int idx2 = getRecentIssueIdx(ii2.getIssue());
+
+            if(idx1 > -1 && idx2 > -1) {
+                return idx1 > idx2 ? 1 : (idx2 > idx1 ? -1 : 0);
+            }
+            if(idx1 > -1) {
+                return -1;
+            }
+            if(idx2 > -1) {
+                return 1;
+            }
+            return ii1.getIssue().getID().compareTo(ii2.getIssue().getID());
+        }
+
+        private int getRecentIssueIdx(Issue issue) {
+            for (int i = 0; i < recentIssues.size(); i++) {
+                Issue recentIssue = recentIssues.get(i);
+                if(recentIssue.getID().equals(issue.getID())) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 
 
