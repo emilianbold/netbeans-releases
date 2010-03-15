@@ -752,7 +752,9 @@ public class ConfigurationMakefileWriter {
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
-                        target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                        //Fix for #180918: Multiple make targets incompatible with GNU make
+                        //target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                        target = customToolConfiguration.getOutputs().getValue();
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
