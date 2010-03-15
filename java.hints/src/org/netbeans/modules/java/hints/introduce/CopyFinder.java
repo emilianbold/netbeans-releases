@@ -40,6 +40,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
@@ -54,6 +55,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -64,6 +66,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.Collection;
@@ -82,6 +85,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -119,13 +123,19 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return computeDuplicates(info, searchingFor, scope, true, cancel, designedTypeHack);
     }
 
-    public static Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, boolean fullElementVerify, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
+    public static Map<TreePath, VariableAssignments> computeDuplicates(final CompilationInfo info, TreePath searchingFor, TreePath scope, boolean fullElementVerify, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
         CopyFinder f =   fullElementVerify
                        ? new CopyFinder(searchingFor, info, cancel)
                        : new CopyFinder(searchingFor, info, cancel) {
             @Override
-            protected boolean verifyElements(TreePath node, TreePath p) {
-                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf()));
+            protected VerifyResult verifyElements(TreePath node, TreePath p) {
+                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf())) ? VerifyResult.MATCH : VerifyResult.NO_MATCH_CONTINUE;
+            }
+            @Override
+            protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
+                ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+
+                return Collections.singleton(new TreePath(tp, thisTree));
             }
         };
 
@@ -163,7 +173,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return isDuplicate(info, one, second, fullElementVerify, null, false, cancel);
     }
 
-    public static boolean isDuplicate(CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, AtomicBoolean cancel) {
+    public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, AtomicBoolean cancel) {
         if (one.getLeaf().getKind() != second.getLeaf().getKind()) {
             return false;
         }
@@ -172,8 +182,14 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                        ? new CopyFinder(one, info, cancel)
                        : new CopyFinder(one, info, cancel) {
             @Override
-            protected boolean verifyElements(TreePath node, TreePath p) {
-                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf()));
+            protected VerifyResult verifyElements(TreePath node, TreePath p) {
+                return getSimpleName(node.getLeaf()).contentEquals(getSimpleName(p.getLeaf())) ? VerifyResult.MATCH : VerifyResult.NO_MATCH_CONTINUE;
+            }
+            @Override
+            protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
+                ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+
+                return Collections.singleton(new TreePath(tp, thisTree));
             }
         };
 
@@ -853,7 +869,33 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (p == null)
             return super.visitIdentifier(node, p);
 
-        return verifyElements(getCurrentPath(), p);
+        switch (verifyElements(getCurrentPath(), p)) {
+            case MATCH_CHECK_DEEPER:
+                if (node.getKind() == p.getLeaf().getKind()) {
+                    return true;
+                }
+
+                for (TreePath thisPath : prepareThis(getCurrentPath())) {
+                    State origState = State.copyOf(bindState);
+                    try {
+                        MemberSelectTree t = (MemberSelectTree) p.getLeaf();
+
+                        if (scan(thisPath.getLeaf(), t.getExpression(), p) == Boolean.TRUE) {
+                            return true;
+                        }
+                    } finally {
+                        bindState = origState;
+                    }
+                }
+
+                return false;
+            case MATCH:
+                return true;
+            default:
+            case NO_MATCH:
+            case NO_MATCH_CONTINUE:
+                return false;
+        }
     }
 
     public Boolean visitIf(IfTree node, TreePath p) {
@@ -984,17 +1026,21 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return super.visitMemberSelect(node, p);
 
         if (Utilities.isPureMemberSelect(node, true) && Utilities.isPureMemberSelect(p.getLeaf(), true)) {
-            boolean ret = verifyElements(getCurrentPath(), p);
+            switch (verifyElements(getCurrentPath(), p)) {
+                case MATCH_CHECK_DEEPER:
+                    if (node.getKind() == p.getLeaf().getKind()) {
+                        //to bind any free variables inside:
+                        MemberSelectTree t = (MemberSelectTree) p.getLeaf();
 
-            if (ret) {
-                if (node.getKind() == p.getLeaf().getKind()) {
-                    //to bind any free variables inside:
-                    MemberSelectTree t = (MemberSelectTree) p.getLeaf();
-
-                    scan(node.getExpression(), t.getExpression(), p);
-                }
-
-                return ret;
+                        return scan(node.getExpression(), t.getExpression(), p) == Boolean.TRUE;
+                    } else {
+                        //TODO: what to do here?
+                        return true;
+                    }
+                case MATCH:
+                    return true;
+                case NO_MATCH:
+                    return false;
             }
         }
 
@@ -1213,32 +1259,89 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 //    }
 
 
-    protected boolean verifyElements(TreePath node, TreePath p) {
+    private enum VerifyResult {
+        MATCH_CHECK_DEEPER,
+        MATCH,
+        NO_MATCH_CONTINUE,
+        NO_MATCH;
+    }
+    
+    protected VerifyResult verifyElements(TreePath node, TreePath p) {
         Element nodeEl = info.getTrees().getElement(node);
         Element pEl    = info.getTrees().getElement(p);
 
-        if (nodeEl == pEl) { //covers null == null
-            return true;
+        if (nodeEl == null) {
+            return pEl == null ? VerifyResult.MATCH : null; //TODO: correct? shouldn't be MATCH_CHECK_DEEPER?
+        }
+
+        VerifyResult matchingResult;
+        
+        if (!nodeEl.getModifiers().contains(Modifier.STATIC)) {
+            if (nodeEl.getKind().isClass() && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
+                //top-level class:
+                matchingResult = VerifyResult.MATCH;
+            } else {
+                matchingResult = VerifyResult.MATCH_CHECK_DEEPER;
+            }
+        } else {
+            matchingResult = VerifyResult.MATCH;
+        }
+
+        if (nodeEl == pEl) {
+            return matchingResult;
         }
 
         if (nodeEl == null || pEl == null)
-            return false;
+            return VerifyResult.NO_MATCH;
 
         if (nodeEl.getKind() == pEl.getKind() && nodeEl.getKind() == ElementKind.METHOD) {
             if (info.getElements().overrides((ExecutableElement) nodeEl, (ExecutableElement) pEl, (TypeElement) nodeEl.getEnclosingElement())) {
-                return true;
+                return VerifyResult.MATCH_CHECK_DEEPER;
             }
         }
 
         if (nodeEl.equals(pEl)) {
-            return true;
+            return matchingResult;
         }
 
         if (allowVariablesRemap && nodeEl.equals(bindState.variablesRemapToElement.get(pEl))) {
-            return true;
+            return matchingResult;
         }
 
-        return false;
+        TypeMirror nodeTM = info.getTrees().getTypeMirror(node);
+
+        if (nodeTM == null || nodeTM.getKind() == TypeKind.ERROR) {
+            return VerifyResult.NO_MATCH_CONTINUE;
+        }
+
+        TypeMirror pTM = info.getTrees().getTypeMirror(p);
+
+        if (pTM == null || pTM.getKind() == TypeKind.ERROR) {
+            return VerifyResult.NO_MATCH_CONTINUE;
+        }
+
+        return VerifyResult.NO_MATCH;
+    }
+
+    protected Iterable<? extends TreePath> prepareThis(TreePath tp) {
+        //XXX: is there a faster way to do this?
+        Collection<TreePath> result = new LinkedList<TreePath>();
+        Scope scope = info.getTrees().getScope(tp);
+        TypeElement lastClass = null;
+
+        while (scope != null && scope.getEnclosingClass() != null) {
+            if (lastClass != scope.getEnclosingClass()) {
+                ExpressionTree thisTree = info.getTreeUtilities().parseExpression("this", new SourcePositions[1]);
+
+                info.getTreeUtilities().attributeTree(thisTree, scope);
+
+                result.add(new TreePath(tp, thisTree));
+            }
+            
+            scope = scope.getEnclosingScope();
+        }
+
+        return result;
     }
 
     private boolean isSameTypeForVariableRemap(TypeMirror nodeType, TypeMirror pType) {
