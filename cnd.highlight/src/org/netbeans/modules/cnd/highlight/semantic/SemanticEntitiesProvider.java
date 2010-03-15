@@ -66,9 +66,11 @@ public class SemanticEntitiesProvider {
     
     private SemanticEntity getInactiveCode(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
+            @Override
              public String getName() {
                 return "inactive"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.getInactiveCodeBlocks(csmFile);
             }
@@ -77,9 +79,11 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntity getFields(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
+            @Override
             public String getName() {
                 return "class-fields"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -92,9 +96,11 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntity getFunctions(){
         return new AbstractSemanticEntity() {
+            @Override
             public String getName() {
                 return "functions-names"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -111,9 +117,11 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntity getMacros(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.DEFINED_MACRO) {
+            @Override
             public String getName() {
                 return "macros"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.getMacroBlocks(csmFile);
             }
@@ -148,9 +156,11 @@ public class SemanticEntitiesProvider {
 
     private SemanticEntity getTypedefs(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.TYPEDEF) {
+            @Override
             public String getName() {
                 return "typedefs"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -166,9 +176,11 @@ public class SemanticEntitiesProvider {
             private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
                         EditorStyleConstants.Tooltip,
                         NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
+            @Override
             public String getName() {
                 return "unused-variables"; // NOI18N
             }
+            @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.collect(csmFile, getCollector());
             }
@@ -221,6 +233,7 @@ public class SemanticEntitiesProvider {
             this.entity = entity;
         }
 
+        @Override
         public void updateFontColors(FontColorProvider provider) {
             assert entity != null;
             color = getFontColor(provider, entity);
@@ -231,14 +244,17 @@ public class SemanticEntitiesProvider {
             return attributes;
         }
 
+        @Override
         public AttributeSet getAttributes(CsmOffsetable obj) {
             return color;
         }
 
+        @Override
         public ReferenceCollector getCollector() {
             return null;
         }
 
+        @Override
         public boolean isEnabledByDefault() {
             return true;
         }

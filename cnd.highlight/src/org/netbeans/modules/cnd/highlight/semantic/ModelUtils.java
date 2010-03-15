@@ -98,6 +98,7 @@ public class ModelUtils {
 
     /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+            @Override
                 public void visit(CsmReferenceContext context) {
                     collector.visit(context.getReference(), csmFile);
                 }
@@ -118,6 +119,7 @@ public class ModelUtils {
         public AbstractReferenceCollector() {
             list = new ArrayList<CsmReference>();
         }
+        @Override
         public List<CsmReference> getReferences() {
             return list;
         }
@@ -127,6 +129,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "class-fields"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (CsmKindUtilities.isField(obj)) {
@@ -139,6 +142,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "typedefs"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (CsmKindUtilities.isTypedef(obj)) {
@@ -151,6 +155,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "functions-names"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             if (isWanted(ref, file)) {
                 list.add(ref);
@@ -175,6 +180,7 @@ public class ModelUtils {
         public String getEntityName() {
             return "unused-variables"; // NOI18N
         }
+        @Override
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
             if (isWanted(obj, file)) {
@@ -188,6 +194,7 @@ public class ModelUtils {
                 }
             }
         }
+        @Override
         public List<CsmReference> getReferences() {
             List<CsmReference> result = new ArrayList<CsmReference>();
             for (ReferenceCounter counter : counters.values()) {
