@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
@@ -67,7 +69,8 @@ public class AutomaticRegistration {
     private static final Logger LOGGER = Logger.getLogger(AutomaticRegistration.class.getName());
 
     /**
-     * Performs registration.
+     * Performs registration/uregistration of server instance. May also list
+     * existing tomcat instances.
      *
      * Exit codes:<p>
      * <ul>
@@ -78,24 +81,54 @@ public class AutomaticRegistration {
      *   <li> 5: unsupported version of Tomcat
      *   <li> 6: could not write registration FileObject
      * </ul>
-     * @param args command line arguments - cluster path and catalina home expected
+     * @param args command line arguments
+     * <ul>
+     *  <li>--add cluster_path catalina_home
+     *  <li>--remove cluster_path catalina_home
+     *  <li>--list cluster_path
+     * </ul>
      */
     public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Parameters: <clusterDir> <catalinaHome>");
-            System.exit(-1);
+        if (args.length <= 0) {
+            printHelpAndExit();
         }
-        
-        int status = autoregisterTomcatInstance(args[0], args[1]);
-        System.exit(status);
+
+        if ("--add".equals(args[0])) {
+            if (args.length < 3) {
+                printHelpAndExit();
+            }
+            int status = registerTomcatInstance(args[1], args[2]);
+            System.exit(status);
+        } else if ("--remove".equals(args[0])) {
+            if (args.length < 3) {
+                printHelpAndExit();
+            }
+            int status = unregisterTomcatInstance(args[1], args[2]);
+            System.exit(status);
+        } else if ("--list".equals(args[0])) {
+            if (args.length < 2) {
+                printHelpAndExit();
+            }
+            list(args[1]);
+        } else {
+            printHelpAndExit();
+        }
     }
 
-    private static int autoregisterTomcatInstance(String clusterDirValue, String catalinaHomeValue) {
+    private static void printHelpAndExit() {
+        System.out.println("Available actions:");
+        System.out.println("\t--add <clusterDir> <catalinaHome>");
+        System.out.println("\t--remove <clusterDir> <catalinaHome>");
+        System.out.println("\t--list <clusterDir>");
+        System.exit(-1);
+    }
+
+    private static int registerTomcatInstance(String clusterDirValue, String catalinaHomeValue) {
         // tell the infrastructure that the userdir is cluster dir
         System.setProperty("netbeans.user", clusterDirValue); // NOI18N
 
         FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
-        
+
         if (serverInstanceDir == null) {
             LOGGER.log(Level.INFO, "Cannot register the default Tomcat server. The config/J2EE/InstalledServers folder cannot be created."); // NOI18N
             return 2;
@@ -154,6 +187,77 @@ public class AutomaticRegistration {
         } else {
             return 6;
         }
+    }
+
+    private static int unregisterTomcatInstance(String clusterDirValue, String catalinaHomeValue) {
+        // tell the infrastructure that the userdir is cluster dir
+        System.setProperty("netbeans.user", clusterDirValue); // NOI18N
+
+        // we could do this via registry, but the classspath would explode
+        FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
+
+        if (serverInstanceDir == null) {
+            LOGGER.log(Level.INFO, "The config/J2EE/InstalledServers folder does not exist."); // NOI18N
+            return 2;
+        }
+
+        Pattern pattern = Pattern.compile(
+                "^(" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_50)
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_55)
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_60)
+                + ")" + Pattern.quote(TomcatFactory.TOMCAT_URI_HOME_PREFIX)
+                + Pattern.quote(catalinaHomeValue)
+                + "(" + Pattern.quote(TomcatFactory.TOMCAT_URI_BASE_PREFIX) + ".+)?$");
+
+        try {
+            for (FileObject f : serverInstanceDir.getChildren()) {
+                String url = f.getAttribute(InstanceProperties.URL_ATTR).toString();
+                if (url != null) {
+                    if (pattern.matcher(url).matches()) {
+                        f.delete();
+                        return 0;
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot unregister the default Tomcat server."); // NOI18N
+            LOGGER.log(Level.INFO, null, ex);
+            return 6;
+        }
+        return 0;
+    }
+
+    private static int list(String clusterDirValue) {
+        // tell the infrastructure that the userdir is cluster dir
+        System.setProperty("netbeans.user", clusterDirValue); // NOI18N
+
+        // we could do this via registry, but the classspath would explode
+        FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
+
+        if (serverInstanceDir == null) {
+            LOGGER.log(Level.INFO, "The config/J2EE/InstalledServers folder does not exist."); // NOI18N
+            return 2;
+        }
+
+        Pattern pattern = Pattern.compile(
+                "^(" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_50) // NOI18N
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_55)  // NOI18N
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_60)  // NOI18N
+                + ")" + Pattern.quote(TomcatFactory.TOMCAT_URI_HOME_PREFIX)  // NOI18N
+                + "(.+)$"); // NOI18N
+
+        for (FileObject f : serverInstanceDir.getChildren()) {
+            String url = f.getAttribute(InstanceProperties.URL_ATTR).toString();
+            if (url != null) {
+                Matcher matcher = pattern.matcher(url);
+                if (matcher.matches()) {
+                    String loc = matcher.group(2);
+                    int base = loc.indexOf(TomcatFactory.TOMCAT_URI_BASE_PREFIX);
+                    System.out.println(loc.substring(0, base));
+                }
+            }
+        }
+        return 0;
     }
 
     /**
