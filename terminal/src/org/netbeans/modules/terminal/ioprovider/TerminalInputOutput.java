@@ -359,6 +359,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
 	    term.connect(pin, pout, perr);
 	}
+
+	@Override
+	protected void disconnect(Runnable continuation) {
+	    term.disconnect(continuation);
+	}
     }
 
 
