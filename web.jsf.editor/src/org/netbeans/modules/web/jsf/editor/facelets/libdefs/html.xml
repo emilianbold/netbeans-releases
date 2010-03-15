@@ -25,6 +25,34 @@
             <type name="boolean"/>
         </attr>
     </common_attributes>
+    <tag name="body"/>
+    <tag name="button"/>
+    <tag name="column"/>
+    <tag name="commandButton"/>
+    <tag name="commandLink"/>
+    <tag name="dataTable">
+        <attr name="frame">
+            <type name="enum">
+                <val>none</val>
+                <val>above</val>
+                <val>below</val>
+                <val>hsides</val>
+                <val>vsides</val>
+                <val>hsides</val>
+                <val>rhs</val>
+                <val>lhs</val>
+                <val>border</val>
+            </type>
+        </attr>
+    </tag>
+    <tag name="form"/>
+    <tag name="graphicImage"/>
+    <tag name="head"/>
+    <tag name="inputHidden"/>
+    <tag name="inputSecret"/>
+    <tag name="inputText"/>
+    <tag name="inputTextarea"/>
+    <tag name="link"/>
     <tag name="message">
         <attr name="showDetail">
             <type name="boolean"/>
@@ -47,6 +75,13 @@
             </type>
         </attr>
     </tag>
+    <tag name="outputFormat"/>
+    <tag name="outputLabel"/>
+    <tag name="outputLink"/>
+    <tag name="outputScript"/>
+    <tag name="outputStylesheet"/>
+    <tag name="outputText"/>
+    <tag name="panelGrid"/>
     <tag name="panelGroup">
         <attr name="layout">
             <type name="enum">
@@ -55,21 +90,7 @@
             </type>
         </attr>
     </tag>
-    <tag name="dataTable">
-        <attr name="frame">
-            <type name="enum">
-                <val>none</val>
-                <val>above</val>
-                <val>below</val>
-                <val>hsides</val>
-                <val>vsides</val>
-                <val>hsides</val>
-                <val>rhs</val>
-                <val>lhs</val>
-                <val>border</val>
-            </type>
-        </attr>
-    </tag>
+    <tag name="selectBooleanCheckbox"/>
     <tag name="selectManyCheckbox">
         <attr name="layout">
             <type name="enum">
@@ -78,4 +99,9 @@
             </type>
         </attr>
     </tag>
+    <tag name="selectManyListbox"/>
+    <tag name="selectManyMenu"/>
+    <tag name="selectOneListbox"/>
+    <tag name="selectOneMenu"/>
+    <tag name="selectOneRadio"/>
 </library>
