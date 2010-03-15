@@ -47,8 +47,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -61,7 +59,7 @@ import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -73,7 +71,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,7 +84,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -302,27 +298,12 @@ public class ProjectActionSupport {
         }
 
         private InputOutput getTermIO() {
-            InputOutput io;
-            // hide issues in Terminal IO Provider for now
-            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>();
-            try {
-                // init new term
-                // FIXUP: due to non lazy creation - we have to do it in EDT and wait
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        IOProvider iOProvider = TerminalIOProviderSupport.getIOProvider();
-                        InputOutput io = iOProvider.getIO(iOProvider.getName() + " - " + tabNameSeq, true); // NOI18N
-                        refIO.set(io);
-                    }
-                });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
+            final String TERM_PROVIDER = "Terminal"; // NOI18N
+            InputOutput io = null;
+            IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
+            if (termProvider != null) {
+                io = termProvider.getIO(TERM_PROVIDER + " - " + tabNameSeq, true); // NOI18N
             }
-            io = refIO.get();
             return io;
         }
 
@@ -382,8 +363,11 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL && !TerminalIOProviderSupport.isTerminalIO(io)) {
+            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                 io = getTermIO();
+                if (io == null) {
+                    io = ioTab;
+                }
             }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
@@ -514,9 +498,9 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = IpeUtils.naturalize(executable);
-                    executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = IpeUtils.normalize(executable);
+                    executable = CndPathUtilitities.naturalize(executable);
+                    executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = CndPathUtilitities.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -540,18 +524,18 @@ public class ProjectActionSupport {
                 }
             }
             // Check existence of executable
-            if (!IpeUtils.isPathAbsolute(executable)) { // NOI18N
+            if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir == null || runDir.length() == 0) {
-                    executable = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                    executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {
-                    runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
-                    executable = IpeUtils.toAbsolutePath(runDir, executable);
+                    runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
                 }
-                executable = IpeUtils.normalize(executable);
+                executable = CndPathUtilitities.normalize(executable);
             }
-            if (IpeUtils.isPathAbsolute(executable)) {
+            if (CndPathUtilitities.isPathAbsolute(executable)) {
                 Configuration conf = pae.getConfiguration();
                 boolean ok = true;
 

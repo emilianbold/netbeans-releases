@@ -60,8 +60,14 @@ import org.openide.util.NbBundle;
         if (baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
             return NbBundle.getMessage(getClass(), "LAB_IsOverriden");
         } else if (!baseUIDs.isEmpty() && descUIDs.isEmpty()) {
-            return NbBundle.getMessage(getClass(), "LAB_Overrides",
-                    (baseUIDs.size() == 1) ? baseUIDs.iterator().next().getObject().getQualifiedName().toString() : "..."); //NOI18N
+            CharSequence text = "..."; //NOI18N
+            if (baseUIDs.size() == 1) {
+                CsmOffsetableDeclaration obj = baseUIDs.iterator().next().getObject();
+                if (obj != null) {
+                    text = obj.getQualifiedName();
+                }
+            }
+            return NbBundle.getMessage(getClass(), "LAB_Overrides", text);
         } else if (!baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
             return NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
         } else { //both are empty

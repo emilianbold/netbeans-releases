@@ -42,7 +42,10 @@ package org.netbeans.modules.java.hints.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -85,7 +88,7 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
 	return new HelpCtx("netbeans.optionsDialog.java.hints");
     }
     
-    public synchronized JComponent getComponent(Lookup masterLookup) {
+    public synchronized HintsPanel getComponent(Lookup masterLookup) {
         if ( panel == null ) {
             panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class));
         }
@@ -99,7 +102,19 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
     public void removePropertyChangeListener(PropertyChangeListener l) {
 	pcs.removePropertyChangeListener(l);
     }
-        
+
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+            if (hm.id.equals(subpath)) {
+                getComponent(null).select(hm);
+                return;
+            }
+        }
+
+        Logger.getLogger(HintsOptionsPanelController.class.getName()).log(Level.WARNING, "setCurrentSubcategory: cannot find: {0}", subpath);
+    }
+
     void changed() {
 	if (!changed) {
 	    changed = true;

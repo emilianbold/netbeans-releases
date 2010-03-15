@@ -58,13 +58,17 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedClassMember;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -222,7 +226,7 @@ public class AttributedNodes extends DefaultVisitor {
 
                 if (className instanceof Identifier) {
                     Identifier identifier = (Identifier) className;
-                    ClassElement ce = (ClassElement) lookup(identifier.getName(), Kind.CLASS);
+                    ClassAttributedElement ce = (ClassAttributedElement) lookup(identifier.getName(), Kind.CLASS);
 
                     if (ce != null) {
                         at = new ClassType(ce);
@@ -251,7 +255,7 @@ public class AttributedNodes extends DefaultVisitor {
     @Override
     public void visit(FunctionDeclaration node) {
         String name = node.getFunctionName().getName();
-        FunctionElement fc = (FunctionElement) global.enterWrite(name, Kind.FUNC, node);
+        FunctionAttributedElement fc = (FunctionAttributedElement) global.enterWrite(name, Kind.FUNC, node);
 
         DefinitionScope top = scopes.peek();
 
@@ -396,7 +400,7 @@ public class AttributedNodes extends DefaultVisitor {
             nodes.push(n);
 
             if (par instanceof MethodInvocation) {
-                ClassElement ce = resolveTypeSimple((Dispatch) par);
+                ClassAttributedElement ce = resolveTypeSimple((Dispatch) par);
 
                 if (ce != null) {
                     thisEl = ce.lookup(name, Kind.FUNC);
@@ -413,7 +417,7 @@ public class AttributedNodes extends DefaultVisitor {
                             contextClassName = getContextClassName();
                         }
                         for (AttributedElement ell : nn) {
-                            ClassElement ce = (ClassElement) ell;
+                            ClassAttributedElement ce = (ClassAttributedElement) ell;
                             if (ce != null && (contextClassName == null || contextClassName.equals(ce.getName()))) {
                                 thisEl = ce.lookup(name, Kind.FUNC);
                                 if (thisEl != null) {
@@ -456,12 +460,12 @@ public class AttributedNodes extends DefaultVisitor {
     @Override
     public void visit(InterfaceDeclaration node) {
         String name = node.getName().getName();
-        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.IFACE, node);
+        ClassAttributedElement ce = (ClassAttributedElement) global.enterWrite(name, Kind.IFACE, node);
 
         node2Element.put(node, ce);
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassAttributedElement iface = (ClassAttributedElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -483,16 +487,16 @@ public class AttributedNodes extends DefaultVisitor {
     @Override
     public void visit(ClassDeclaration node) {
         String name = node.getName().getName();
-        ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
+        ClassAttributedElement ce = (ClassAttributedElement) global.enterWrite(name, Kind.CLASS, node);
 
         node2Element.put(node, ce);
 
         if (node.getSuperClass() != null) {
-            ce.superClass = (ClassElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
+            ce.superClass = (ClassAttributedElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
         }
         List<Expression> interfaes = node.getInterfaes();
         for (Expression identifier : interfaes) {
-            ClassElement iface = (ClassElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
+            ClassAttributedElement iface = (ClassAttributedElement) lookup(CodeUtils.extractTypeName(identifier), Kind.IFACE);
             ce.ifaces.add(iface);
             node2Element.put(identifier, iface);
         }
@@ -546,7 +550,7 @@ public class AttributedNodes extends DefaultVisitor {
     public void visit(FieldAccess node) {
         scan(node.getDispatcher());
 
-        ClassElement ce = resolveTypeSimple(node);
+        ClassAttributedElement ce = resolveTypeSimple(node);
         String name = extractVariableName(node.getField());
 
         if (ce != null && name != null) {
@@ -566,8 +570,8 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    private ClassElement getCurrentClassElement() {
-        ClassElement c = null;
+    private ClassAttributedElement getCurrentClassElement() {
+        ClassAttributedElement c = null;
         for (int i = scopes.size()-1; i >= 0; i--) {
             DefinitionScope scope = scopes.get(i);
             if (scope != null && scope.enclosingClass != null) {
@@ -582,12 +586,12 @@ public class AttributedNodes extends DefaultVisitor {
     public void visit(StaticConstantAccess node) {
         String clsName = CodeUtils.extractClassName(node);
         if (clsName.equals("self")) {//NOI18N
-            ClassElement c = getCurrentClassElement();
+            ClassAttributedElement c = getCurrentClassElement();
             if (c != null) {
                 clsName = c.getName();
             }
         } else if (clsName.equals("parent")) {//NOI18N
-            ClassElement c = getCurrentClassElement();
+            ClassAttributedElement c = getCurrentClassElement();
             if (c != null) {
                 c = c.getSuperClass();
                 if (c != null) {
@@ -599,7 +603,7 @@ public class AttributedNodes extends DefaultVisitor {
 
         if (!nn.isEmpty()) {
             for (AttributedElement ell : nn) {
-                ClassElement ce = (ClassElement)ell;
+                ClassAttributedElement ce = (ClassAttributedElement)ell;
                 if (ce != null && ce.getName().equals(clsName)) {
                     String name = node.getConstant().getName();
                     AttributedElement thisEl = ce.lookup(name, Kind.CONST);
@@ -626,7 +630,7 @@ public class AttributedNodes extends DefaultVisitor {
                 contextClassName = getContextClassName();
             }
             for (AttributedElement ell : nn) {
-                ClassElement ce = (ClassElement) ell;
+                ClassAttributedElement ce = (ClassAttributedElement) ell;
                 if (ce != null && (contextClassName == null || contextClassName.equals(ce.getName()))) {
                     String name = extractVariableName(node.getField());
 
@@ -762,9 +766,9 @@ public class AttributedNodes extends DefaultVisitor {
                 if (name2El != null) {
                     Collection<AttributedElement> values = name2El.values();
                     for (AttributedElement ael : values) {
-                        if (ael instanceof ClassElement) {
-                            ClassElement ce = (ClassElement) ael;
-                            ClassElement superClass = ce.getSuperClass();
+                        if (ael instanceof ClassAttributedElement) {
+                            ClassAttributedElement ce = (ClassAttributedElement) ael;
+                            ClassAttributedElement superClass = ce.getSuperClass();
                             if (superClass != null) {
                                 retval.add(superClass);
                             }
@@ -776,8 +780,8 @@ public class AttributedNodes extends DefaultVisitor {
                 if (el != null) {
                     retval.add(el);
                 } else {
-                    PHPIndex index = PHPIndex.get(info);
-                    for (IndexedClass m : index.getClasses(null, fName, QuerySupport.Kind.PREFIX)) {
+                    ElementQuery.Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                    for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
                         String idxName = m.getName();
                         el = global.enterWrite(idxName, Kind.CLASS, m);
                         retval.add(el);
@@ -791,17 +795,17 @@ public class AttributedNodes extends DefaultVisitor {
     public AttributedElement getElement(ASTNode n) {
         return node2Element.get(n);
     }
-    private Collection<IndexedElement> name2ElementCache;
+    private Collection<PhpElement> name2ElementCache;
 
     public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
-            PHPIndex index = PHPIndex.get(info);
-            name2ElementCache = new LinkedList<IndexedElement>();
-            name2ElementCache.addAll(index.getClasses(null, "", QuerySupport.Kind.PREFIX));
+            ElementQuery.Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            name2ElementCache = new LinkedList<PhpElement>();
+            name2ElementCache.addAll(index.getClasses(NameKind.empty()));
         }
 
-        for (IndexedElement f : name2ElementCache) {
-            if (f instanceof IndexedClass) {
+        for (PhpElement f : name2ElementCache) {
+            if (f instanceof ClassElement) {
                 global.enterWrite(f.getName(), Kind.CLASS, f);
             }
         }
@@ -836,10 +840,10 @@ public class AttributedNodes extends DefaultVisitor {
             if (n instanceof ClassDeclaration) {
                 ClassDeclaration node = (ClassDeclaration) n;
                 String name = node.getName().getName();
-                ClassElement ce = (ClassElement) global.enterWrite(name, Kind.CLASS, node);
+                ClassAttributedElement ce = (ClassAttributedElement) global.enterWrite(name, Kind.CLASS, node);
                 node2Element.put(node, ce);
                 if (node.getSuperClass() != null) {
-                    ce.superClass = (ClassElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
+                    ce.superClass = (ClassAttributedElement) lookup(CodeUtils.extractSuperClassName(node), Kind.CLASS);
                     node2Element.put(node.getSuperClass(), ce.superClass);
                 }
                 List<Expression> interfaes = node.getInterfaes();
@@ -915,8 +919,8 @@ public class AttributedNodes extends DefaultVisitor {
         return varName;
     }
 
-    private ClassElement resolveTypeSimple(Dispatch node) {
-        ClassElement ce = null;
+    private ClassAttributedElement resolveTypeSimple(Dispatch node) {
+        ClassAttributedElement ce = null;
         AttributedElement el = node2Element.get(node.getDispatcher());
 
         if (el != null) {
@@ -960,8 +964,8 @@ public class AttributedNodes extends DefaultVisitor {
         return retval;
     }
 
-    public Collection<ClassElement> getClasses() {
-        Collection<ClassElement> retval = null;
+    public Collection<ClassAttributedElement> getClasses() {
+        Collection<ClassAttributedElement> retval = null;
         if (global != null) {
             retval = global.getClasses();
         } else {
@@ -981,18 +985,18 @@ public class AttributedNodes extends DefaultVisitor {
 
     public static class AttributedElement {
 
-        private List<Union2<ASTNode, IndexedElement>> writes; //aka declarations
+        private List<Union2<ASTNode, PhpElement>> writes; //aka declarations
 
         private List<AttributedType> writesTypes;
         private String name;
         private Kind k;
 
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+        public AttributedElement(Union2<ASTNode, PhpElement> n, String name, Kind k) {
             this(n, name, k, null);
         }
 
-        public AttributedElement(Union2<ASTNode, IndexedElement> n, String name, Kind k, AttributedType type) {
-            this.writes = new LinkedList<Union2<ASTNode, IndexedElement>>();
+        public AttributedElement(Union2<ASTNode, PhpElement> n, String name, Kind k, AttributedType type) {
+            this.writes = new LinkedList<Union2<ASTNode, PhpElement>>();
             this.writesTypes = new LinkedList<AttributedType>();
             this.writes.add(n);
 
@@ -1005,7 +1009,7 @@ public class AttributedNodes extends DefaultVisitor {
             return false;
         }
 
-        public List<Union2<ASTNode, IndexedElement>> getWrites() {
+        public List<Union2<ASTNode, PhpElement>> getWrites() {
             return writes;
         }
 
@@ -1026,7 +1030,7 @@ public class AttributedNodes extends DefaultVisitor {
             return this.name.equals(element.name) && this.k.equals(element.k);
         }
 
-        void addWrite(Union2<ASTNode, IndexedElement> node, AttributedType type) {
+        void addWrite(Union2<ASTNode, PhpElement> node, AttributedType type) {
             writes.add(node);
             writesTypes.add(type);
         }
@@ -1073,10 +1077,10 @@ public class AttributedNodes extends DefaultVisitor {
 
     public static class ClassMemberElement extends AttributedElement {
 
-        private ClassElement classElement;
+        private ClassAttributedElement classElement;
         int modifier = -1;
 
-        public ClassMemberElement(Union2<ASTNode, IndexedElement> n, ClassElement classElement, String name, Kind k) {
+        public ClassMemberElement(Union2<ASTNode, PhpElement> n, ClassAttributedElement classElement, String name, Kind k) {
             super(n, name, k);
             this.classElement = classElement;
             setModifiers(n, name);
@@ -1112,7 +1116,7 @@ public class AttributedNodes extends DefaultVisitor {
             return BodyDeclaration.Modifier.isStatic(getModifier());
         }
 
-        public ClassElement getClassElement() {
+        public ClassAttributedElement getClassElement() {
             return classElement;
         }
 
@@ -1141,7 +1145,7 @@ public class AttributedNodes extends DefaultVisitor {
             return retval;
         }
 
-        private void setModifiers(Union2<ASTNode, IndexedElement> n, String name) {
+        private void setModifiers(Union2<ASTNode, PhpElement> n, String name) {
             if (n.hasFirst()) {
                 ASTNode node = n.first();
                 if (node instanceof BodyDeclaration) {
@@ -1155,7 +1159,7 @@ public class AttributedNodes extends DefaultVisitor {
                     assert false : name;
                 }
             } else if (n.hasSecond()) {
-                IndexedElement index = n.second();
+                PhpElement index = n.second();
                 if (index != null) {
                     Set<Modifier> modifiers = index.getModifiers();
                     for (Modifier mod : modifiers) {
@@ -1183,14 +1187,14 @@ public class AttributedNodes extends DefaultVisitor {
             FIELD, METHOD, CONST;
         }
     }
-    public  class ClassElement extends AttributedElement {
+    public  class ClassAttributedElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
-        private ClassElement superClass;
-        private Set<ClassElement> ifaces = new HashSet<ClassElement>();
+        private ClassAttributedElement superClass;
+        private Set<ClassAttributedElement> ifaces = new HashSet<ClassAttributedElement>();
         private boolean initialized;
 
-        public ClassElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+        public ClassAttributedElement(Union2<ASTNode, PhpElement> n, String name, Kind k) {
             super(n, name, k);
             enclosedElements = new DefinitionScope(this);
         }
@@ -1200,28 +1204,25 @@ public class AttributedNodes extends DefaultVisitor {
             if (el != null) {
                 return el;
             }
-            PHPIndex index = PHPIndex.get(info);
-            int attrs = PHPIndex.ANY_ATTR;
+            ElementQuery.Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            int attrs = PhpModifiers.ALL_FLAGS;
 
             switch(k) {
                 case CONST:
-                for (IndexedClassMember<IndexedConstant> classMember : index.getAllTypeConstants(null, getName(), name, QuerySupport.Kind.PREFIX)) {
-                    IndexedConstant m = classMember.getMember();
-                    String idxName = m.getName();
+                for (TypeConstantElement classMember : index.getAllTypeConstants(NameKind.exact(getName()), NameKind.prefix(name))) {
+                    String idxName = classMember.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
-                    enclosedElements.enterWrite(idxName, Kind.CONST, m);
+                    enclosedElements.enterWrite(idxName, Kind.CONST, classMember);
                 } break;
                 case FUNC:
-                for (IndexedClassMember<IndexedFunction> classMember : index.getAllMethods(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
-                    IndexedFunction m = classMember.getMember();
-                    enclosedElements.enterWrite(m.getName(), Kind.FUNC, m);
+                for (MethodElement classMember : index.getAllMethods(NameKind.exact(getName()), NameKind.prefix(name))) {
+                    enclosedElements.enterWrite(classMember.getName(), Kind.FUNC, classMember);
                 } break;
                 case VARIABLE:
-                for (IndexedClassMember<IndexedConstant> classMember : index.getAllFields(null, getName(), name, QuerySupport.Kind.PREFIX, attrs)) {
-                    IndexedConstant m = classMember.getMember();
-                    String idxName = m.getName();
+                for (FieldElement classMember : index.getAlllFields(NameKind.exact(getName()), NameKind.prefix(name))) {
+                    String idxName = classMember.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
-                    enclosedElements.enterWrite(idxName, Kind.VARIABLE, m);
+                    enclosedElements.enterWrite(idxName, Kind.VARIABLE, classMember);
                 } break;
 
             }
@@ -1264,7 +1265,7 @@ public class AttributedNodes extends DefaultVisitor {
             return retval;
         }
 
-        public ClassElement getSuperClass() {
+        public ClassAttributedElement getSuperClass() {
             return superClass;
         }
 
@@ -1285,12 +1286,12 @@ public class AttributedNodes extends DefaultVisitor {
         }
     }
 
-    public  class FunctionElement extends AttributedElement {
+    public  class FunctionAttributedElement extends AttributedElement {
 
         private final DefinitionScope enclosedElements;
         private boolean initialized;
 
-        public FunctionElement(Union2<ASTNode, IndexedElement> n, String name, Kind k) {
+        public FunctionAttributedElement(Union2<ASTNode, PhpElement> n, String name, Kind k) {
             super(n, name, k);
             enclosedElements = new DefinitionScope(this);
         }
@@ -1344,13 +1345,13 @@ public class AttributedNodes extends DefaultVisitor {
         private boolean classScope;
         private boolean functionScope;
         private AttributedElement thisVar;
-        private ClassElement enclosingClass;
-        private FunctionElement enclosingFunction;
+        private ClassAttributedElement enclosingClass;
+        private FunctionAttributedElement enclosingFunction;
 
         public DefinitionScope() {
         }
 
-        public DefinitionScope(ClassElement enclosingClass) {
+        public DefinitionScope(ClassAttributedElement enclosingClass) {
             this.enclosingClass = enclosingClass;
             this.classScope = enclosingClass != null;
 
@@ -1360,7 +1361,7 @@ public class AttributedNodes extends DefaultVisitor {
             }
         }
 
-        public DefinitionScope(FunctionElement enclosingFunction) {
+        public DefinitionScope(FunctionAttributedElement enclosingFunction) {
             this.enclosingFunction = enclosingFunction;
             this.functionScope = enclosingFunction != null;
         }
@@ -1370,14 +1371,14 @@ public class AttributedNodes extends DefaultVisitor {
         }
 
         public AttributedElement enterWrite(String name, Kind k, ASTNode node, AttributedType type) {
-            return enterWrite(name, k, Union2.<ASTNode, IndexedElement>createFirst(node), type);
+            return enterWrite(name, k, Union2.<ASTNode, PhpElement>createFirst(node), type);
         }
 
-        public AttributedElement enterWrite(String name, Kind k, IndexedElement el) {
-            return enterWrite(name, k, Union2.<ASTNode, IndexedElement>createSecond(el), null);
+        public AttributedElement enterWrite(String name, Kind k, PhpElement el) {
+            return enterWrite(name, k, Union2.<ASTNode, PhpElement>createSecond(el), null);
         }
 
-        private AttributedElement enterWrite(String name, Kind k, Union2<ASTNode, IndexedElement> node, AttributedType type) {
+        private AttributedElement enterWrite(String name, Kind k, Union2<ASTNode, PhpElement> node, AttributedType type) {
             if (k == Kind.VARIABLE && this != global) {
                 //TODO: review
                 if (SUPERGLOBALS.contains(name)) {
@@ -1395,7 +1396,7 @@ public class AttributedNodes extends DefaultVisitor {
 
             if (el == null) {
                 if (k == Kind.CLASS || k == Kind.IFACE) {
-                    el = new ClassElement(node, name, k);
+                    el = new ClassAttributedElement(node, name, k);
                 } else {
                     if (classScope && !Arrays.asList(new String[]{"this"}).contains(name)) {
                         switch (k) {
@@ -1409,7 +1410,7 @@ public class AttributedNodes extends DefaultVisitor {
                         }
                     } else {
                         if (k == Kind.FUNC) {
-                            el = new FunctionElement(node, name, k);
+                            el = new FunctionAttributedElement(node, name, k);
                         } else if (k == Kind.VARIABLE) {
                             if (type == null && functionScope && enclosingFunction != null) {
                                 type = new FunctionType(enclosingFunction);
@@ -1445,10 +1446,10 @@ public class AttributedNodes extends DefaultVisitor {
                 el = name2El.get(name);
             }
             if (el == null) {
-                PHPIndex index = PHPIndex.get(info);
+                ElementQuery.Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
                 switch(k) {
                     case CONST:
-                    for (IndexedConstant m : index.getConstants(null, name, QuerySupport.Kind.PREFIX)) {
+                    for (ConstantElement m : index.getConstants(NameKind.prefix(name))) {
                         String idxName = m.getName();
                         el = enterWrite(idxName, Kind.CONST, m);
                     }
@@ -1478,12 +1479,12 @@ public class AttributedNodes extends DefaultVisitor {
             return getElements(Kind.CONST);
         }
 
-        public Collection<ClassElement> getClasses() {
-            Collection<ClassElement> retval = new LinkedHashSet<ClassElement>();
+        public Collection<ClassAttributedElement> getClasses() {
+            Collection<ClassAttributedElement> retval = new LinkedHashSet<ClassAttributedElement>();
             Collection<AttributedElement> elements = getElements(Kind.CLASS);
             for (AttributedElement el : elements) {
-                assert el instanceof ClassElement;
-                retval.add((ClassElement) el);
+                assert el instanceof ClassAttributedElement;
+                retval.add((ClassAttributedElement) el);
             }
             return retval;
         }
@@ -1499,13 +1500,13 @@ public class AttributedNodes extends DefaultVisitor {
 
     public static class ClassType extends AttributedType {
 
-        private ClassElement element;
+        private ClassAttributedElement element;
 
-        public ClassType(ClassElement element) {
+        public ClassType(ClassAttributedElement element) {
             this.element = element;
         }
 
-        public ClassElement getElement() {
+        public ClassAttributedElement getElement() {
             return element;
         }
 
@@ -1517,13 +1518,13 @@ public class AttributedNodes extends DefaultVisitor {
 
     public static class FunctionType extends AttributedType {
 
-        private FunctionElement element;
+        private FunctionAttributedElement element;
 
-        public FunctionType(FunctionElement element) {
+        public FunctionType(FunctionAttributedElement element) {
             this.element = element;
         }
 
-        public FunctionElement getElement() {
+        public FunctionAttributedElement getElement() {
             return element;
         }
 

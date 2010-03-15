@@ -52,9 +52,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.css.indexing.CssFileModel;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -120,15 +119,14 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return parentFile;
     }
 
-    public static WhereUsedElement create(CssFileModel.Entry entry, ElementKind kind) {
-        return create(entry, kind, true);
+    public static WhereUsedElement create(FileObject fileObject, Entry entry, ElementKind kind) {
+        return create(fileObject, entry, kind, true);
     }
 
-    public static WhereUsedElement create(CssFileModel.Entry entry, ElementKind kind, boolean related) {
+    public static WhereUsedElement create(FileObject fileObject, Entry entry, ElementKind kind, boolean related) {
         Icon icon = UiUtils.getElementIcon(kind, Collections.<Modifier>emptyList());
         String name = entry.getName();
         OffsetRange range = entry.getDocumentRange();
-        FileObject fileObject = entry.getModel().getFileObject();
 
         int start = range.getStart();
         int end = range.getEnd();

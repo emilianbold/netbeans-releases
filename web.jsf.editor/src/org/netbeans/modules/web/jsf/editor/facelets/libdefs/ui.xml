@@ -1,0 +1,10 @@
+<library id="http://java.sun.com/jsf/ui">
+    <tag name="debug">
+        <attr name="rendered">
+            <type name="bool"/>
+        </attr>
+        <attr name="immediate">
+            <type name="bool"/>
+        </attr>
+    </tag>
+</library>

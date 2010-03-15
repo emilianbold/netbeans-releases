@@ -51,13 +51,14 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
@@ -191,25 +192,25 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
         DeclarationLocation retval = DeclarationLocation.NONE;
         if (underCaret != null && underCaret.gotoDeclarationEnabled()) {
-            ModelElement declaration = underCaret.gotoDeclaratin();
+            PhpElement declaration = underCaret.gotoDeclaratin();
             FileObject declarationFo = declaration.getFileObject();
             if (declarationFo == null) {
                 return DeclarationLocation.NONE;
             }
-            retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration.getPHPElement());
+            retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
-            Collection<? extends ModelElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            Collection<? extends PhpElement> alternativeDeclarations = underCaret.getAllDeclarations();
             if (alternativeDeclarations.size() > 1) {
                 retval = DeclarationLocation.NONE;
-                for (ModelElement elem : alternativeDeclarations) {
+                for (PhpElement elem : alternativeDeclarations) {
                     FileObject elemFo = elem.getFileObject();
                     if (elemFo == null) {
                         continue;
                     }
-                    DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem.getPHPElement());
+                    DeclarationLocation declLocation = new DeclarationLocation(elemFo, elem.getOffset(), elem);
                     AlternativeLocation al = new AlternativeLocationImpl(elem, declLocation);
                     if (retval == DeclarationLocation.NONE) {
                         retval = al.getLocation();
@@ -222,31 +223,34 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return retval;
     }
 
-    private static class AlternativeLocationImpl implements AlternativeLocation {
+    public static class AlternativeLocationImpl implements AlternativeLocation {
 
-        private ModelElement modelElement;
+        private PhpElement modelElement;
         private DeclarationLocation declaration;
 
-        AlternativeLocationImpl(ModelElement modelElement, DeclarationLocation declaration) {
+        public AlternativeLocationImpl(PhpElement modelElement, DeclarationLocation declaration) {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
+        public AlternativeLocationImpl(PhpElement modelElement) {
+            this(modelElement, new DeclarationLocation(modelElement.getFileObject(), modelElement.getOffset(), modelElement));
+        }
 
         public ElementHandle getElement() {
-            return modelElement.getPHPElement();
+            return modelElement;
         }
 
         public String getDisplayHtml(HtmlFormatter formatter) {
             formatter.reset();
-            ElementKind ek = modelElement.getPHPElement().getKind();
+            ElementKind ek = modelElement.getKind();
 
             if (ek != null) {
                 formatter.name(ek, true);
-                QualifiedName namespaceName = modelElement.getNamespaceName();
-                if (namespaceName.isDefaultNamespace()) {
-                    formatter.appendText(modelElement.getName());
-                } else {
+                if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
+                    QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
                     formatter.appendText(namespaceName.append(modelElement.getName()).toString());
+                } else {
+                    formatter.appendText(modelElement.getName());
                 }
                 formatter.name(ek, false);
             } else {

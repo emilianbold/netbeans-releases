@@ -320,11 +320,14 @@ made subject to such option by the copyright holder.
             <folder name="Customizer">
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
                     <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
+        </folder>
+        <folder name="org-netbeans-modules-apisupport-project-suite">
+            <folder name="Actions"/>
         </folder>
     </folder>
     <folder name="xml">

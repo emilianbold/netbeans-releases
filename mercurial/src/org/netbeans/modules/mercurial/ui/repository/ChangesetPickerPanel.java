@@ -112,7 +112,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
                 revStr = HG_TIP;
             } else {
                 revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
-                changesetStr = messages[revisionsComboBox.getSelectedIndex()].getCSetShortID();
+                changesetStr = messages == null ? "" : messages[revisionsComboBox.getSelectedIndex()].getCSetShortID(); //NOI18N
             }
         }
         return new String[] { revStr, changesetStr };

@@ -41,10 +41,18 @@
 
 package org.netbeans.modules.web.debug.breakpoints;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.debug.util.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -352,4 +360,84 @@ public class JspLineBreakpoint extends Breakpoint {
         super.setGroupName(newGroupName);
         javalb.setGroupName(newGroupName);
     }
+
+    @Override
+    public GroupProperties getGroupProperties() {
+        return new JspLineGroupProperties();
+    }
+
+    private final class JspLineGroupProperties extends GroupProperties {
+
+        @Override
+        public String getLanguage() {
+            return "JSP";
+        }
+
+        @Override
+        public String getType() {
+            return NbBundle.getMessage(JspLineBreakpoint.class, "LineBrkp_Type");
+        }
+
+        private FileObject getFile() {
+            FileObject fo;
+            try {
+                fo = URLMapper.findFileObject(new URL(url));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                fo = null;
+            }
+            return fo;
+        }
+
+        @Override
+        public FileObject[] getFiles() {
+            FileObject fo = getFile();
+            if (fo != null) {
+                return new FileObject[] { fo };
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public Project[] getProjects() {
+            FileObject f = getFile();
+            while (f != null) {
+                f = f.getParent();
+                if (f != null && ProjectManager.getDefault().isProject(f)) {
+                    break;
+                }
+            }
+            if (f != null) {
+                try {
+                    return new Project[] { ProjectManager.getDefault().findProject(f) };
+                } catch (IOException ex) {
+                } catch (IllegalArgumentException ex) {
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public DebuggerEngine[] getEngines() {
+            DebuggerEngine[] engines = javalb.getGroupProperties().getEngines();
+            if (engines == null) {
+                return null;
+            }
+            for (int i = 0; i < engines.length; i++) {
+                DebuggerEngine de = engines[i].lookupFirst(null, Session.class).getEngineForLanguage ("JSP");
+                if (de != null) {
+                    engines[i] = de;
+                }
+            }
+            return engines;
+        }
+
+        @Override
+        public boolean isHidden() {
+            return JspLineBreakpoint.this.isHidden();
+        }
+        
+    }
+
 }

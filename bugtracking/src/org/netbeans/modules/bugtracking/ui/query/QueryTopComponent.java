@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -111,6 +110,7 @@ public final class QueryTopComponent extends TopComponent
 
     /** Set of opened {@code QueryTopComponent}s. */
     private static Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
+    private final FindInQuerySupport findInQuerySupport;
 
     private final RepoPanel repoPanel;
     private final JPanel jPanel2;
@@ -166,8 +166,14 @@ public final class QueryTopComponent extends TopComponent
         panel    .setAlignmentX(0.0f);
 
         scrollPane = new QueryTopComponentScrollPane(jPanel2);
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(scrollPane);
+
+         /* find bar */
+        findInQuerySupport = FindInQuerySupport.create(this);
+        FindInQueryBar findBar = findInQuerySupport.getFindBar();
+        findBar.setVisible(false);       
+        add(findBar);
 
         /* texts */
         Mnemonics.setLocalizedText(
@@ -238,11 +244,18 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            setSaved();
+            if(query.isSaved()) {
+                setSaved();
+            } else {
+                if(!suggestedSelectionOnly) {
+                    rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+                }
+            }
             BugtrackingController c = query.getController();
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             this.query.addNotifyListener(this);
+            findInQuerySupport.setQuery(query);
         } else {
             newButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -489,7 +502,9 @@ public final class QueryTopComponent extends TopComponent
                     if (query == null) {
                         return;
                     }
-                    
+
+                    findInQuerySupport.setQuery(query);
+
                     QueryAccessor.getInstance().setSelection(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
                     query.addNotifyListener(QueryTopComponent.this);

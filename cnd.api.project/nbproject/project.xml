@@ -57,6 +57,7 @@
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
@@ -71,6 +72,7 @@
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
+                <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>

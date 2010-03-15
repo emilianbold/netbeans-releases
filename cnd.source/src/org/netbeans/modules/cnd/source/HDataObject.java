@@ -49,7 +49,7 @@ import org.openide.nodes.Node;
 
 
 /** Represents a .h header object in the Repository */
-public class HDataObject extends CndDataObject {
+public class HDataObject extends SourceDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = 1858704627782172800L;
@@ -58,6 +58,7 @@ public class HDataObject extends CndDataObject {
 	super(pf, loader);
     }
   
+    @Override
     protected Node createNodeDelegate() {
 	return new HDataNode(this);
     }

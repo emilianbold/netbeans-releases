@@ -54,11 +54,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -93,21 +95,7 @@ public final class BugtrackingManager implements LookupListener {
     private final Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
-
-    public class RecentIssue {
-        private Issue issue;
-        private long ts;
-        public RecentIssue(Issue issue, long ts) {
-            this.issue = issue;
-            this.ts = ts;
-        }
-        public Issue getIssue() {
-            return issue;
-        }
-        public long getTimestamp() {
-            return ts;
-        }
-    }
+    private KenaiAccessor kenaiAccessor;
 
     public static BugtrackingManager getInstance() {
         instance.init();
@@ -123,14 +111,11 @@ public final class BugtrackingManager implements LookupListener {
      *
      * Returns all known repositories incl. the Kenai ones
      *
+     * @param pingOpenProjects 
      * @return repositories
      */
-    public Repository[] getKnownRepositories() {
-        return getKnownRepositories(false);
-    }
-
     public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
         Repository[] otherRepos = getRepositories();
         Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
@@ -232,6 +217,13 @@ public final class BugtrackingManager implements LookupListener {
         return Collections.unmodifiableMap(getRecentIssues());
     }
 
+    public KenaiAccessor getKenaiAccessor() {
+        if (kenaiAccessor == null) {
+            kenaiAccessor = Lookup.getDefault().lookup(KenaiAccessor.class);
+        }
+        return kenaiAccessor;
+    }
+
     private Map<String, List<RecentIssue>> getRecentIssues() {
         if(recentIssues == null) {
             recentIssues = new HashMap<String, List<RecentIssue>>();
@@ -271,4 +263,5 @@ public final class BugtrackingManager implements LookupListener {
             } 
         }
     }
+
 }

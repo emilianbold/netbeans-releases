@@ -83,9 +83,10 @@ public final class EnvWriter {
             Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
             for (Entry<String, String> entry : env.entrySet()) {
-                name = entry.getKey().toUpperCase();
-
-                if (!pattern.matcher(name).matches()) {
+                // ask key as is
+                name = entry.getKey();
+                // check capitalized key by pattern
+                if (!pattern.matcher(name.toUpperCase(java.util.Locale.ENGLISH)).matches()) {
                     continue;
                 }
 

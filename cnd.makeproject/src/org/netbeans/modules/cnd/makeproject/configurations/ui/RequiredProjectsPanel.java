@@ -44,7 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -52,8 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -108,7 +106,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         myListEditorPanel.setListData(data);
     }
 
-    public Vector<LibraryItem> getListData() {
+    public List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -202,17 +200,17 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                     String location;
                     String workingdir;
                     if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                        location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
-                        workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
+                        location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
+                        workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {
                         location = artifacts[i].getProjectLocation();
                         workingdir = artifacts[i].getWorkingDirectory();
                     }
-                    location = IpeUtils.normalize(location);
-                    workingdir = IpeUtils.normalize(workingdir);
+                    location = CndPathUtilitities.normalize(location);
+                    workingdir = CndPathUtilitities.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

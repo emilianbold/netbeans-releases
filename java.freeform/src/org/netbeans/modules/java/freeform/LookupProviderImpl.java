@@ -87,6 +87,7 @@ public class LookupProviderImpl implements LookupProvider {
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
+            new AnnotationProcessingQueryImpl(),
             new OpenHook(project, cp), // ProjectOpenedHook
             new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation

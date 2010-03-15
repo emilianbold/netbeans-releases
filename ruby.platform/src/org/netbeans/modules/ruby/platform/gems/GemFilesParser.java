@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,15 +64,18 @@ public final class GemFilesParser {
      * #SPECIFICATIONS}.
      */
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
+    
+    /** The regex for capturing version */
+    public static final String VERSION_REGEX = "(\\d+(?:\\.\\d+)*(\\.beta)?)";  //NOI18N
     /**
      * The pattern for capturing the gem name and version from file names.
      */
-    private static final Pattern PATTERN = Pattern.compile("([\\w-]+)\\-([\\d.]+)"); //NOI18N
+    private static final Pattern VERSION_AND_NAME_PATTERN = Pattern.compile("([\\w-]+)\\-" + VERSION_REGEX); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(GemFilesParser.class.getName());
     /**
      * The files to check for gems.
      */
-    private final File[] specFiles;
+    private final Collection<File> specFiles;
     
     /**
      * Key => gem name, value => List of GemInfos representing installed versions.
@@ -81,7 +85,7 @@ public final class GemFilesParser {
     /**
      * Constructs a new GemFilesParser for the given <code>files</code>.
      */
-    public GemFilesParser(File... specFiles) {
+    private GemFilesParser(final Collection<File> specFiles) {
         Parameters.notNull("files", specFiles); //NOI18N
         this.specFiles = specFiles;
     }
@@ -137,7 +141,7 @@ public final class GemFilesParser {
     }
 
     // todo: javadoc + rename
-    public static Map<String, List<GemInfo>> getGemInfos(final File[] specFiles) {
+    public static Map<String, List<GemInfo>> getGemInfos(final Collection<File> specFiles) {
         GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
         gemFilesParser.parseGems();
         return gemFilesParser.getGemInfos();
@@ -179,7 +183,7 @@ public final class GemFilesParser {
      * or <code>null</code> if parsing was unsuccessful.
      */
     public static String[] parseNameAndVersion(String fileName) {
-        Matcher m = PATTERN.matcher(fileName);
+        Matcher m = VERSION_AND_NAME_PATTERN.matcher(fileName);
         if (!m.find() || m.groupCount() < 2) {
             //XXX: can there be gems without a version number?
             LOGGER.fine("Couldn't parse name and version for " + fileName);
@@ -187,10 +191,6 @@ public final class GemFilesParser {
         }
         String name = m.group(1);
         String version = m.group(2);
-        // strip out trailing "."
-        if (version.endsWith(".")) {
-            version = version.substring(0, version.length() - 1);
-        }
         return new String[]{name, version};
     }
 

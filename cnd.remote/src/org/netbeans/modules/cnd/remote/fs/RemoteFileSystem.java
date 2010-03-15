@@ -124,12 +124,17 @@ public class RemoteFileSystem extends FileSystem {
     private static class RootFileObject extends RemoteDirectory {
 
         public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, "", cache);
+            super(fileSystem, execEnv, null, "", cache);
         }
 
         @Override
         public boolean isRoot() {
             return false;
+        }
+
+        @Override
+        public boolean isValid() {
+            return true;
         }
     }
 }

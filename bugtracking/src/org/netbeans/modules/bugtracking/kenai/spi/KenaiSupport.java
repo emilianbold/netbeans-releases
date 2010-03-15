@@ -41,7 +41,6 @@ package org.netbeans.modules.bugtracking.kenai.spi;
 
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  * 
@@ -88,7 +87,7 @@ public abstract class KenaiSupport {
     public abstract Query getMyIssuesQuery(Repository repository);
     
     /**
-     * Determines the
+     * Determines the bugtracking type
      *
      * @return
      */
@@ -104,4 +103,11 @@ public abstract class KenaiSupport {
      */
     public abstract boolean needsLogin(Query query);
 
+    /**
+     * Refreshes the given query
+     * 
+     * @param query
+     * @param synchronously
+     */
+    public abstract void refresh(Query query, boolean synchronously);
 }

@@ -193,3 +193,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-keyring@" value="${javadoc.docs.org-netbeans-modules-keyring}"/>
 <replacefilter token="@org-netbeans-modules-schema2beans@" value="${javadoc.docs.org-netbeans-modules-schema2beans}"/>
 <replacefilter token="@org-openide-util-lookup@" value="${javadoc.docs.org-openide-util-lookup}"/>
+<replacefilter token="@org-netbeans-modules-terminal@" value="${javadoc.docs.org-netbeans-modules-terminal}"/>

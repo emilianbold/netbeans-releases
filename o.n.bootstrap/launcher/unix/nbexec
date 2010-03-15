@@ -284,7 +284,7 @@ look_for_pre_runs() {
         install_new_updater "$1"
     fi
     dir="${base}/update/download"
-    if [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" ] ; then
+    if [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
     else
         dir="${base}/update/deactivate"
@@ -301,7 +301,7 @@ look_for_post_runs() {
         install_new_updater "$1"
     fi
     dir="${base}/update/download"
-    if [ \! -f "${dir}/install_later.xml" -a "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" ] ; then
+    if [ \! -f "${dir}/install_later.xml" ] && [ "`echo "${dir}"/*.nbm`" != "${dir}/*.nbm" -o "`echo "${dir}"/*.jar`" != "${dir}/*.jar" ] ; then
         run_updater=yes
     else
         dir="${base}/update/deactivate"

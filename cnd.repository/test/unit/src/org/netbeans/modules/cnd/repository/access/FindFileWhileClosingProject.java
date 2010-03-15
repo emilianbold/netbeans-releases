@@ -103,7 +103,7 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
             }, "Closing Project " + i); //NOI18N
             for (String path : files) {
                 try {
-                    CsmFile csmFile = project.findFile(path);
+                    CsmFile csmFile = project.findFile(path, false);
                     if (verbose) {
                         System.err.printf("\tfind %s -> %s \n", path, csmFile);
                     }

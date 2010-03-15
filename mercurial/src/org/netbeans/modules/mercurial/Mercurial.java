@@ -62,10 +62,10 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Utilities;
@@ -133,7 +133,7 @@ public class Mercurial {
      */
     private boolean gotVersion;
 
-    private Result<? extends HyperlinkProvider> hpResult;
+    private Result<? extends VCSHyperlinkProvider> hpResult;
 
     private Mercurial() {
         mvcs = org.openide.util.Lookup.getDefault().lookup(MercurialVCS.class);
@@ -181,7 +181,7 @@ public class Mercurial {
         RequestProcessor rp = getRequestProcessor();
         Runnable init = new Runnable() {
             public void run() {
-                HgKenaiSupport.getInstance().registerVCSNoficationListener();
+                HgKenaiAccessor.getInstance().registerVCSNoficationListener();
                 synchronized(this) {
                     checkVersionIntern();
                 }
@@ -532,15 +532,15 @@ public class Mercurial {
      *
      * @return registered hyperlink providers
      */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
         if (hpResult == null) {
-            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }

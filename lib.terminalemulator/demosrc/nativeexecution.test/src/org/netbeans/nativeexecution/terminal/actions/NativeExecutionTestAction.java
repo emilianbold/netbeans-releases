@@ -13,10 +13,9 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.terminal.ioprovider.IOEmulation;
+import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.nativeexecution.terminal.ui.TargetSelector;
 import org.netbeans.nativeexecution.terminal.util.EnvSupport;
-import org.netbeans.terminal.example.TerminalIOProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -26,6 +25,15 @@ import org.openide.windows.InputOutput;
 public final class NativeExecutionTestAction implements ActionListener {
 
     private static TargetSelector cfgPanel = new TargetSelector();
+
+    private static IOProvider getIOProvider() {
+        IOProvider iop = IOProvider.get("Terminal");       // NOI18N
+        if (iop == null) {
+            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
+            iop = IOProvider.getDefault();
+        }
+        return iop;
+    }
 
     public void actionPerformed(ActionEvent e) {
         DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog", // NOI18N
@@ -68,7 +76,7 @@ public final class NativeExecutionTestAction implements ActionListener {
         // We cannot use ExecutionService in case of TerminalIO (?) ;(
 
         if (useTerminalIO) {
-            IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+            IOProvider iop = getIOProvider();
             InputOutput io = iop.getIO(cmd, true);
             io.select();
 

@@ -64,7 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -338,18 +338,18 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             } else if (col == 1) {
                 // FIXUP: should do a deep clone of the list
                 MakeArtifact oldMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact();
-                boolean abs = IpeUtils.isPathAbsolute(oldMakeArtifact.getProjectLocation());
+                boolean abs = CndPathUtilitities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
                 listData.removeElementAt(row);
                 MakeArtifact makeArtifact = ((MakeArtifactWrapper) value).getMakeArtifact();
                 String projectLocation = makeArtifact.getProjectLocation();
                 String workingDirectory = makeArtifact.getWorkingDirectory();
                 if (!abs) {
                     // retain abs/rel paths...
-                    projectLocation = IpeUtils.toRelativePath(baseDir, projectLocation);
-                    workingDirectory = IpeUtils.toRelativePath(baseDir, workingDirectory);
+                    projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
+                    workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
                 }
-                makeArtifact.setProjectLocation(IpeUtils.normalize(projectLocation));
-                makeArtifact.setWorkingDirectory(IpeUtils.normalize(workingDirectory));
+                makeArtifact.setProjectLocation(CndPathUtilitities.normalize(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalize(workingDirectory));
                 listData.add(row, new LibraryItem.ProjectItem(makeArtifact));
                 // FIXUP
                 fireTableCellUpdated(row, 0);

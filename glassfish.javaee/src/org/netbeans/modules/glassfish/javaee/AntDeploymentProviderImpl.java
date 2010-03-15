@@ -109,8 +109,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String domainDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         String user = commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR);
-        String pw = commonSupport.getPassword();
-        String name = "gfv3" + (url+domainDir+domain+user+pw).hashCode() + "";  // NOI18N
+        String name = "gfv3" + (url+domainDir+domain+user).hashCode() + "";  // NOI18N
         return new File(System.getProperty("netbeans.user"), name + ".properties"); // NOI18N
     }
 
@@ -121,6 +120,9 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) + 
                 ":" + commonSupport.getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR);
         retVal.setProperty("gfv3.url", webUrl);                // NOI18N
+        webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) +
+                ":" + commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR);
+        retVal.setProperty("gfv3.admin.url", webUrl);                // NOI18N
         retVal.setProperty("gfv3.username", commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR));
         retVal.setProperty("gfv3.host",commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR));
         retVal.setProperty("gfv3.port",commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR));

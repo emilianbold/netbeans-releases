@@ -165,6 +165,13 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         return wizardPanel.isLocal();
     }
 
+    public Project getRemoteInterfaceProject() {
+        if (hasRemote() && !wizardPanel.getRemoteInterfaceProject().equals(project)) {
+            return wizardPanel.getRemoteInterfaceProject();
+        }
+        return null;
+    }
+
     public String getSessionType() {
         return wizardPanel.getSessionType();
     }

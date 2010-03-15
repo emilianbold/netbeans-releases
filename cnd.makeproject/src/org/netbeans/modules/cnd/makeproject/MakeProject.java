@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -440,10 +441,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     public static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
+        if (CndFileUtils.isSystemCaseSensitive()) {
             return new TreeSet<String>();
+        } else {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         }
     }
 
@@ -706,7 +707,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
             String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
             for (String loc : subProjectLocations) {
-                String location = IpeUtils.toAbsolutePath(baseDir, loc);
+                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);

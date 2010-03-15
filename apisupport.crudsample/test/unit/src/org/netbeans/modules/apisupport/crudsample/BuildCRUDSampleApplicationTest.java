@@ -123,11 +123,13 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         assertNotNull(buildScript);
         assertTrue(buildScript.isValid());
         Properties props = new Properties();
-        File toplinkJar1 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials.jar");
-        assertTrue(toplinkJar1.getAbsolutePath(), toplinkJar1.isFile());
-        File toplinkJar2 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials-agent.jar");
-        assertTrue(toplinkJar2.getAbsolutePath(), toplinkJar2.isFile());
-        props.setProperty("libs.toplink.classpath", "" + toplinkJar1 + File.pathSeparator + toplinkJar2);
+        File externalDir = new File(destDirF, "java/modules/ext/toplink/");
+        assertTrue(externalDir.getAbsolutePath(), externalDir.isDirectory());
+        assert externalDir.exists() : "java/modules/ext/toplink/ exists";
+        props.setProperty("external_dir", externalDir.getAbsolutePath());
+        props.setProperty("libs.toplink.classpath",
+                externalDir + File.separator + "toplink-essentials.jar" +
+                File.pathSeparator + externalDir + File.separator + "toplink-essentials-agent.jar");
 
         System.out.println("------------- BUILD OUTPUT --------------");
         ExecutorTask et = ActionUtils.runTarget(buildScript, targets, props);
@@ -184,14 +186,15 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         File editorNbm = new File(updatesFolder, "org-netbeans-modules-customereditor.nbm");
         File customerDbNbm = new File(updatesFolder, "org-netbeans-modules-customerdb.nbm");
         File derbyNbm = new File(updatesFolder, "org-netbeans-modules-derbyclientlibrary.nbm");
-        File toplinkNbm = new File(updatesFolder, "org-netbeans-modules-toplinkessentialslibrary.nbm");
+        File persistenceLibNbm = new File(updatesFolder, "org-netbeans-modules-persistencelibrary.nbm");
         assertTrue("Viewer NBM is in build/updates folder", viewerNbm.exists());
         assertTrue("Editor NBM is in build/updates folder", editorNbm.exists());
         assertTrue("Customer DB NBM is in build/updates folder", customerDbNbm.exists());
         assertTrue("Derby NBM is in build/updates folder", derbyNbm.exists());
-        assertTrue("TopLink NBM is in build/updates folder", toplinkNbm.exists());
+        assertTrue("Persistence Library NBM is in build/updates folder", persistenceLibNbm.exists());
         assertEquals("5 nbms are in build/updates folder", 5, updatesFolder.list(new FilenameFilter() {
 
+            @Override
             public boolean accept(File dir, String name) {
                 return name.indexOf("nbm") != -1;
             }

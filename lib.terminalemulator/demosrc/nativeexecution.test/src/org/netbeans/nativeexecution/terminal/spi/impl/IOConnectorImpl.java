@@ -7,14 +7,15 @@ package org.netbeans.nativeexecution.terminal.spi.impl;
 import java.awt.Dimension;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.netbeans.modules.terminal.ioprovider.IOResizable;
-import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
+import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.nativeexecution.terminal.spi.impl.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.terminal.example.TerminalIOProviderSupport;
 import org.openide.util.Exceptions;
@@ -34,27 +35,29 @@ public class IOConnectorImpl implements IOConnector {
     }
 
     public boolean connect(final InputOutput io, final NativeProcess process) {
-        if (!(io instanceof TerminalInputOutput)) {
-            return false;
-        }
+	if (!IOTerm.isSupported(io))
+	    return false;
+
+	Term term = IOTerm.term(io);
+	if (term == null)
+	    return false;
 
         final Pty pty = PtySupport.getPty(process);
         final PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
 
         TerminalIOProviderSupport.setInternal(io, ptyImpl == null);
-        TerminalInputOutput tio = (TerminalInputOutput) io;
 
         if (ptyImpl == null || !(ptyImpl instanceof PtyImplementation)) {
-            tio.term().connect(process.getOutputStream(), process.getInputStream(), process.getErrorStream());
+            IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
         } else {
             PtyImplementation impl = (PtyImplementation) ptyImpl;
-            tio.term().connect(impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
+            IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
 
             if (IOResizable.isSupported(io)) {
                 IOResizable.addListener(io, new ResizeListener(impl));
             }
 
-            RequestProcessor.getDefault().post(new Reaper(tio, process, impl));
+            RequestProcessor.getDefault().post(new Reaper(io, process, impl));
         }
 
         return true;
@@ -65,9 +68,12 @@ public class IOConnectorImpl implements IOConnector {
             throw new NullPointerException();
         }
 
-        if (!(io instanceof TerminalInputOutput)) {
-            return false;
-        }
+	if (!IOTerm.isSupported(io))
+	    return false;
+
+	Term term = IOTerm.term(io);
+	if (term == null)
+	    return false;
 
         final PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
 
@@ -76,10 +82,9 @@ public class IOConnectorImpl implements IOConnector {
         }
 
         TerminalIOProviderSupport.setInternal(io, false);
-        TerminalInputOutput tio = (TerminalInputOutput) io;
 
         PtyImplementation impl = (PtyImplementation) ptyImpl;
-        tio.term().connect(impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
+        IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
 
         if (IOResizable.isSupported(io)) {
             IOResizable.addListener(io, new ResizeListener(impl));
@@ -130,12 +135,12 @@ public class IOConnectorImpl implements IOConnector {
 
         private final NativeProcess process;
         private final PtyImplementation pty;
-        private final TerminalInputOutput tio;
+        private final InputOutput io;
 
-        public Reaper(final TerminalInputOutput tio, final NativeProcess process, final PtyImplementation pty) {
+        public Reaper(final InputOutput io, final NativeProcess process, final PtyImplementation pty) {
             this.process = process;
             this.pty = pty;
-            this.tio = tio;
+            this.io = io;
         }
 
         @Override
@@ -152,7 +157,7 @@ public class IOConnectorImpl implements IOConnector {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        tio.closeInputOutput();
+                        io.closeInputOutput();
                     }
                 });
 

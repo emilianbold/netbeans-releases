@@ -37,6 +37,8 @@ package org.netbeans.installer.products.nb.base;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -48,7 +50,6 @@ import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
@@ -398,11 +399,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (productToIntegrate != null) {
                 final File location = productToIntegrate.getInstallationLocation();
                 LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        GLASSFISH_MOD_JVM_OPTION_NAME,
-                        location.getAbsolutePath(),
-                        true);
+                registerGlassFish(installLocation, location);
             }
         } catch (IOException e) {
             throw new InstallationException(
@@ -410,56 +407,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         } finally {
             progress.setDetail(StringUtils.EMPTY_STRING); // NOI18N
-        }
-        
-        /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.tomcat.integration")); // NOI18N
-
-            final List<Product> tomcats =
-                    Registry.getInstance().getProducts("tomcat");
-
-            Product productToIntegrate = null;
-            for (Product tomcat : tomcats) {
-                final Product bundledProduct = bundledRegistry.getProduct(
-                        tomcat.getUid(), tomcat.getVersion());
-                if (tomcat.getStatus() == Status.INSTALLED && bundledProduct != null) {
-                    final File location = tomcat.getInstallationLocation();
-                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                        productToIntegrate = tomcat;
-                        break;
-                    }
-                }
-            }
-            if (productToIntegrate == null) {
-                for (Product tomcat : tomcats) {
-                    if (tomcat.getStatus() == Status.INSTALLED) {
-                        final File location = tomcat.getInstallationLocation();
-                        if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                            productToIntegrate = tomcat;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (productToIntegrate != null) {
-                final File location = productToIntegrate.getInstallationLocation();
-                LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        TOMCAT_JVM_OPTION_NAME_HOME,
-                        location.getAbsolutePath(),
-                        true);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        TOMCAT_JVM_OPTION_NAME_TOKEN,
-                        "" + System.currentTimeMillis(),
-                        true);
-            }
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.tomcat.integration"), // NOI18N
-                    e);
         }
         
         /////////////////////////////////////////////////////////////////////////////
@@ -478,24 +425,67 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
 
         try {
+            //IDE Registartion files
             final File nbCluster = NetBeansUtils.getNbCluster(installLocation);
             filesList.add(new File(nbCluster,"servicetag/registration.xml"));
             filesList.add(new File(nbCluster,"servicetag/servicetag"));
             filesList.add(new File(nbCluster,"servicetag"));
+
+            //core.properties file is required for usage statistics settings
             File coreProp = new File(nbCluster,NetBeansUtils.CORE_PROPERTIES);
             filesList.add(coreProp);
             filesList.add(coreProp.getParentFile());
             filesList.add(coreProp.getParentFile().getParentFile());
             filesList.add(coreProp.getParentFile().getParentFile().getParentFile());
+            
+            //GlassFish v3/Tomcat integration files
+            filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances/.nbattrs"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances/glassfish_autoregistered_instance"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6/Instances"));
+            filesList.add(new File (nbCluster, "config/GlassFishEE6"));
+            filesList.add(new File (nbCluster, "config/J2EE/InstalledServers/.nbattrs"));
+            filesList.add(new File (nbCluster, "config/J2EE/InstalledServers/tomcat_autoregistered_instance"));
+            filesList.add(new File (nbCluster, "config/J2EE/InstalledServers"));
+            filesList.add(new File (nbCluster, "config/J2EE"));
         } catch (IOException e) {
             LogManager.log(e);
         }
 
-	product.setProperty("installation.timestamp", new Long(System.currentTimeMillis()).toString());
+        product.setProperty("installation.timestamp", new Long(System.currentTimeMillis()).toString());
         
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
+
+    private boolean registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "ide/modules/org-netbeans-modules-glassfish-common.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for GlassFish integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.glassfish.common.registration.AutomaticRegistration";
+        List <String> commands = new ArrayList <String> ();
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(new File(nbLocation, "nb").getAbsolutePath());
+        commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
+    }
+    
 
     public void uninstall(final Progress progress) throws UninstallationException {
         final Product product = getProduct();
@@ -769,14 +759,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "JDK";//NOI18N
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
-    public static final String GLASSFISH_MOD_JVM_OPTION_NAME =
-            "-Dorg.glassfish.v3ee6.installRoot"; //NOI18N
-    
-    public static final String TOMCAT_JVM_OPTION_NAME_TOKEN =
-            "-Dorg.netbeans.modules.tomcat.autoregister.token"; // NOI18N
-    
-    public static final String TOMCAT_JVM_OPTION_NAME_HOME =
-            "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
     
     public static final long REQUIRED_XMX_VALUE =
             192 * NetBeansUtils.M;

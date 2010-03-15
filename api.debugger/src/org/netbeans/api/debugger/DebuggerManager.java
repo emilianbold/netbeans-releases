@@ -187,6 +187,7 @@ public final class DebuggerManager implements ContextProvider {
     private boolean                           breakpointsInitialized = false;
     private final Vector                      watches = new Vector ();
     private boolean                           watchesInitialized = false;
+    private ThreadLocal<Boolean>              watchesInitializing = new ThreadLocal<Boolean>();
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listeners = new Vector ();
     private final HashMap                     listenersMap = new HashMap ();
@@ -617,10 +618,14 @@ public final class DebuggerManager implements ContextProvider {
      * @return the new watch
      */
     public Watch createWatch (String expr) {
-        initWatches ();
         Watch w = new Watch (expr);
-        watches.addElement (w);
-        fireWatchCreated (w);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.addElement (w);
+        } else {
+            initWatches ();
+            watches.addElement (w);
+            fireWatchCreated (w);
+        }
         return w;
     }
 
@@ -638,10 +643,14 @@ public final class DebuggerManager implements ContextProvider {
      * @since 1.22
      */
     public Watch createWatch (int index, String expr) {
-        initWatches ();
         Watch w = new Watch (expr);
-        watches.add (index, w);
-        fireWatchCreated (w);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.add (index, w);
+        } else {
+            initWatches ();
+            watches.add (index, w);
+            fireWatchCreated (w);
+        }
         return w;
     }
 
@@ -1197,43 +1206,48 @@ public final class DebuggerManager implements ContextProvider {
     }
 
     private void initWatches () {
+        initDebuggerManagerListeners();
         synchronized (watches) {
             if (watchesInitialized) return ;
             watchesInitialized = true;
-        }
-        initDebuggerManagerListeners();
-        // The rest must not be synchronized, since initWatches() does call createWatch()
-        PropertyChangeEvent ev = new PropertyChangeEvent (
-            this, PROP_WATCHES_INIT, null, null
-        );
-        
-        Vector l = (Vector) listeners.clone ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
             try {
-                ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
-                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+                watchesInitializing.set(Boolean.TRUE);
+                // All is synchronized, initWatches() implementations should call just createWatch()
+                PropertyChangeEvent ev = new PropertyChangeEvent (
+                    this, PROP_WATCHES_INIT, null, null
+                );
 
-        Vector l1;
-        synchronized (listenersMap) {
-            l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
-            if (l1 != null) {
-                l1 = (Vector) l1.clone ();
-            }
-        }
-        if (l1 != null) {
-            k = l1.size ();
-            for (i = 0; i < k; i++) {
-                try {
-                    ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
-                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                Vector l = (Vector) listeners.clone ();
+                int i, k = l.size ();
+                for (i = 0; i < k; i++) {
+                    try {
+                        ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
+                        ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+
+                Vector l1;
+                synchronized (listenersMap) {
+                    l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
+                    if (l1 != null) {
+                        l1 = (Vector) l1.clone ();
+                    }
+                }
+                if (l1 != null) {
+                    k = l1.size ();
+                    for (i = 0; i < k; i++) {
+                        try {
+                            ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
+                            ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            } finally {
+                watchesInitializing.set(Boolean.FALSE);
             }
         }
     }

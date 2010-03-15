@@ -171,31 +171,40 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        check1( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        check2( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic1");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        check3( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic2");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField4")){
-                        check4( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic3");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField5")){
-                        check5( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic1");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField6")){
-                        check6( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic4");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField7")){
-                        check7( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic5");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField8")){
-                        check8( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic4");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField9")){
-                        check9( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Generic4");
+                        assertFindVariableResultProductions(element, provider);
                     }
                 }
 
@@ -287,10 +296,12 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        checkProd1( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultAllProductions(element, provider, "foo.Generic", "foo.Generic1");
                     }
                     if ( element.getSimpleName().contentEquals("myField2")){
-                        checkProd2( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultAllProductions(element, provider, "foo.Generic", "foo.Generic1");
                     }
                 }
 
@@ -302,252 +313,5 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
             });
     }
     
-    private void check1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField1");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic", injactable.getQualifiedName().toString());
-    }
-    
-    private void check2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField2");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic1", injactable.getQualifiedName().toString());
-    }
-    
-    private void check3( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField3");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic2", injactable.getQualifiedName().toString());
-    }
-    
-    private void check4( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField4");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic3", injactable.getQualifiedName().toString());
-    }
-    
-    private void check5( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField5");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic1", injactable.getQualifiedName().toString());
-    }
-    
-    private void check6( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField6");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
-    }
-    
-    private void check7( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField7");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic5", injactable.getQualifiedName().toString());
-    }
-
-    private void check8( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField8");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
-    }
-    
-    private void check9( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myField9");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-
-        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
-    }
-    
-    private void checkProd1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test production element for field myField1");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        
-        assertEquals(0, typeElements.size());
-        
-        Collection<List<DeclaredType>> values = 
-            ((ResultImpl)result).getAllProductions().values();
-        List<DeclaredType> list = values.iterator().next();
-        boolean generic = false;
-        boolean generic1 = false;
-        for (DeclaredType declaredType : list) {
-            String name = ((TypeElement)declaredType.asElement()).
-                getQualifiedName().toString();
-            if ( name.equals("foo.Generic")) {
-                generic = true;
-            }
-            else if ( name.equals("foo.Generic1")) {
-                generic1 = true;
-            }
-        }
-        
-        assertEquals("Generic Element contains eligible for injction " +
-        		"production method but is not found", true, generic );
-        assertEquals("Generic1 Element contains eligible for injction " +
-                "production method but is not found", true, generic1);
-    }
-
-    private void checkProd2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test production element for field myField2");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        
-        assertEquals(0, typeElements.size());
-        
-        Collection<List<DeclaredType>> values = 
-            ((ResultImpl)result).getAllProductions().values();
-        List<DeclaredType> list = values.iterator().next();
-        boolean generic = false;
-        boolean generic1 = false;
-        for (DeclaredType declaredType : list) {
-            String name = ((TypeElement)declaredType.asElement()).
-                getQualifiedName().toString();
-            if ( name.equals("foo.Generic")) {
-                generic = true;
-            }
-            else if ( name.equals("foo.Generic1")) {
-                generic1 = true;
-            }
-        }
-        
-        assertEquals("Generic Element contains eligible for injction " +
-                "production field but is not found", true, generic );
-        assertEquals("Generic1 Element contains eligible for injction " +
-                "production field but is not found", true, generic1);
-    }
 }
 

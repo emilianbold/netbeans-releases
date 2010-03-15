@@ -77,7 +77,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -719,21 +719,24 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         SystemAction.get(AddExistingItemAction.class),
                         SystemAction.get(AddExistingFolderItemsAction.class),
                         SystemAction.get(NewFolderAction.class),
-                        new AddExternalItemAction(project),
+                        //new AddExternalItemAction(project),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                        //                        ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-                        new RemoteDevelopmentAction(project),
+                        new MoreBuildActionsAction(new Action[] {
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+                        }),
                         new SetConfigurationAction(project),
+                        new RemoteDevelopmentAction(project),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
                         //new DebugMenuAction(project, helper),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
-                        SystemAction.get(RunTestAction.class),
+                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null),
+                        //SystemAction.get(RunTestAction.class),
                         null,
                         CommonProjectActions.setAsMainProjectAction(),
                         CommonProjectActions.openSubprojectsAction(),
@@ -756,16 +759,18 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
             Action[] result = new Action[] {
                         CommonProjectActions.newFileAction(),
-                        null,
-                        new AddExternalItemAction(project),
+                        //null,
+                        //new AddExternalItemAction(project),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
-                        //                        ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-                        new RemoteDevelopmentAction(project),
+                        new MoreBuildActionsAction(new Action[] {
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
+                            ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
+                            //ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
+                        }),
                         new SetConfigurationAction(project),
+                        new RemoteDevelopmentAction(project),
                         null,
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null), // NOI18N
                         //new DebugMenuAction(project, helper),
@@ -916,7 +921,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (getFolder().isDiskFolder()) {
                 // Search disk folder for C/C++ files and add them to the view (not the project!).
                 ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
-                String absPath = IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+                String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
                 File folderFile = new File(absPath);
                 if (folderFile.isDirectory() && folderFile.exists()) {
                     File[] children = folderFile.listFiles();
@@ -1114,7 +1119,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             String oldName = folder.getDisplayName();
             if (folder.isDiskFolder()) {
                 String rootPath = folder.getRootPath();
-                String AbsRootPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
+                String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
                 File file = new File(AbsRootPath);
                 if (!file.isDirectory() || !file.exists()) {
                     return;
@@ -1164,7 +1169,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (!getFolder().isDiskFolder()) {
                 return;
             }
-            String absPath = IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+            String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
             File folderFile = new File(absPath);
             if (!folderFile.isDirectory() || !folderFile.exists()) {
                 return;
@@ -1336,15 +1341,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     // Move within same project
                     if (toFolder.isDiskFolder()) {
                         FileObject itemFO = item.getFileObject();
-                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
-                        String newName = IpeUtils.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
+                        String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
                         FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
 
                         File movedFileFile = FileUtil.toFile(movedFileFO);
                         String itemPath = movedFileFile.getPath();
-                        itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
-                        itemPath = IpeUtils.normalize(itemPath);
+                        itemPath = CndPathUtilitities.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                        itemPath = CndPathUtilitities.normalize(itemPath);
                         Item movedItem = toFolder.findItemByPath(itemPath);
                         if (movedItem != null) {
                             copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
@@ -1358,67 +1363,67 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 } else {
                     if (toFolder.isDiskFolder()) {
                         FileObject itemFO = item.getFileObject();
-                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
-                        String newName = IpeUtils.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
+                        String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
                         FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
-                    } else if (IpeUtils.isPathAbsolute(item.getPath())) {
+                    } else if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
                         if (viewItemNode.getFolder().removeItem(item)) {
                             toFolder.addItem(item);
                         }
                     } else if (item.getPath().startsWith("..")) { // NOI18N
                         String originalFilePath = FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath();
                         String newFilePath = FileUtil.toFile(toFolder.getProject().getProjectDirectory()).getPath();
-                        String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-                        fromNewToOriginal = IpeUtils.normalize(fromNewToOriginal);
+                        String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+                        fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
                         String newPath = fromNewToOriginal + item.getPath();
-                        newPath = IpeUtils.trimDotDot(newPath);
+                        newPath = CndPathUtilitities.trimDotDot(newPath);
                         if (viewItemNode.getFolder().removeItemAction(item)) {
-                            toFolder.addItemAction(new Item(IpeUtils.normalize(newPath)));
+                            toFolder.addItemAction(new Item(CndPathUtilitities.normalize(newPath)));
                         }
                     } else {
                         Project toProject = toFolder.getProject();
                         FileObject fo = item.getFileObject();
                         FileObject copy = fo.copy(toProject.getProjectDirectory(), fo.getName(), fo.getExt());
-                        String newPath = IpeUtils.toRelativePath(FileUtil.toFile(toProject.getProjectDirectory()).getPath(), FileUtil.toFile(copy).getPath());
+                        String newPath = CndPathUtilitities.toRelativePath(FileUtil.toFile(toProject.getProjectDirectory()).getPath(), FileUtil.toFile(copy).getPath());
                         if (viewItemNode.getFolder().removeItemAction(item)) {
                             fo.delete();
-                            toFolder.addItemAction(new Item(IpeUtils.normalize(newPath)));
+                            toFolder.addItemAction(new Item(CndPathUtilitities.normalize(newPath)));
                         }
                     }
                 }
             } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
                 // Copy&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
-                    if ((IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
+                    if ((CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
                         FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
                         String ext = fo.getExt();
                         if (toFolder.isDiskFolder()) {
-                            String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                            String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                             FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
-                            String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
+                            String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, fo.getName(), ext);
                             FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
 
                             File copiedFileFile = FileUtil.toFile(copiedFileObject);
                             String itemPath = copiedFileFile.getPath();
-                            itemPath = IpeUtils.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
-                            itemPath = IpeUtils.normalize(itemPath);
+                            itemPath = CndPathUtilitities.toRelativePath(toFolder.getConfigurationDescriptor().getBaseDir(), itemPath);
+                            itemPath = CndPathUtilitities.normalize(itemPath);
                             Item copiedItemItem = toFolder.findItemByPath(itemPath);
                             if (copiedItemItem != null) {
                                 copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
                             }
                         } else {
                             String parent = FileUtil.toFile(fo.getParent()).getPath();
-                            String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
+                            String newName = CndPathUtilitities.createUniqueFileName(parent, fo.getName(), ext);
                             fo.copy(fo.getParent(), newName, ext);
                             String newPath = parent + "/" + newName; // NOI18N
                             if (ext.length() > 0) {
                                 newPath = newPath + "." + ext; // NOI18N
                             }
-                            newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
-                            Item newItem = new Item(IpeUtils.normalize(newPath));
+                            newPath = CndPathUtilitities.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
+                            Item newItem = new Item(CndPathUtilitities.normalize(newPath));
                             toFolder.addItemAction(newItem);
                             copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
                         }
@@ -1427,32 +1432,32 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (toFolder.isDiskFolder()) {
                         FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
                         String ext = fo.getExt();
-                        String toFolderPath = IpeUtils.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
-                        String newName = IpeUtils.createUniqueFileName(toFolderPath, fo.getName(), ext);
+                        String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, fo.getName(), ext);
                         fo.copy(toFolderFO, newName, ext);
-                    } else if (IpeUtils.isPathAbsolute(item.getPath())) {
+                    } else if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
                         toFolder.addItem(new Item(item.getPath()));
                     } else if (item.getPath().startsWith("..")) { // NOI18N
                         String originalFilePath = FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath();
                         String newFilePath = FileUtil.toFile(toFolder.getProject().getProjectDirectory()).getPath();
-                        String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-                        fromNewToOriginal = IpeUtils.normalize(fromNewToOriginal);
+                        String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+                        fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
                         String newPath = fromNewToOriginal + item.getPath();
-                        newPath = IpeUtils.trimDotDot(newPath);
-                        toFolder.addItemAction(new Item(IpeUtils.normalize(newPath)));
+                        newPath = CndPathUtilitities.trimDotDot(newPath);
+                        toFolder.addItemAction(new Item(CndPathUtilitities.normalize(newPath)));
                     } else {
                         Project toProject = toFolder.getProject();
                         String parent = FileUtil.toFile(toProject.getProjectDirectory()).getPath();
                         FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
-                        String newName = IpeUtils.createUniqueFileName(parent, fo.getName(), ext);
+                        String newName = CndPathUtilitities.createUniqueFileName(parent, fo.getName(), ext);
                         fo.copy(toProject.getProjectDirectory(), newName, ext);
                         String newPath = newName;
                         if (ext.length() > 0) {
                             newPath = newPath + "." + ext; // NOI18N
                         }
-                        toFolder.addItemAction(new Item(IpeUtils.normalize(newPath))); // NOI18N
+                        toFolder.addItemAction(new Item(CndPathUtilitities.normalize(newPath))); // NOI18N
                     }
                 }
             }
@@ -1913,16 +1918,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            //Image original = Utilities.loadImage("org/openide/loaders/instanceObject.gif"); // NOI18N
-            //Image original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
             Image original;
             PredefinedToolKind tool = item.getDefaultTool();
             if (tool == PredefinedToolKind.CCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"); // NOI18N
             } else if (tool == PredefinedToolKind.CCCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"); // NOI18N
             } else if (tool == PredefinedToolKind.FortranCompiler) {
-                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
+                original = ImageUtilities.loadImage("org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"); // NOI18N
             } else {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
             }

@@ -41,6 +41,7 @@
 
 package org.netbeans.test.db.derby;
 
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -71,10 +72,23 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     
     @Override
     public void setUp() {
+        getDataDir().mkdirs();
         DerbyOptions.getDefault().setSystemHome(getDataDir().getAbsolutePath());
-        DerbyOptions.getDefault().setLocation(System.getProperty("derby.location"));
+        String derbyLoc = System.getProperty("derby.location");
+        if (derbyLoc == null || derbyLoc.length() == 0) {
+            derbyLoc = getLocationInJDK(System.getProperty("java.home")).getAbsolutePath();
+        }
+        DerbyOptions.getDefault().setLocation(derbyLoc);
     }
     
+    private static File getLocationInJDK(String javaHome) {
+        File dir = new File(javaHome);
+        assert dir != null && dir.exists() && dir.isDirectory() : "java.home is directory";
+        // path to JavaDB in JDK6
+        File loc = new File(dir.getParentFile(), "db"); // NOI18N
+        return loc != null && loc.exists() && loc.isDirectory() ? loc : null;
+    }
+
     public void testCreateDatabase(){        
         // <workaround for #112788> - FIXME
         SystemAction.get(StartAction.class).performAction();

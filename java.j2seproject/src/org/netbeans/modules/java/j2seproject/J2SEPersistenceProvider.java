@@ -42,6 +42,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -79,6 +80,7 @@ import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileAttributeEvent;
@@ -308,18 +310,28 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                             ap = "";
                         }
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
-                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
+                        if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             SourceGroup firstGroup = groups[0];
                             FileObject fo = firstGroup.getRootFolder();
                             ClassPath compile = ClassPath.getClassPath(fo, JavaClassPathConstants.PROCESSOR_PATH);
-                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
-                                ap = ap + (ap.length() > 1 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
+                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {//NOI18N
+                                ap = ap.trim();
+                                boolean turnOn = ap.length()==0;//we will switch generation on only if there was no processors even by default properties "save" have case on existence of ap
+                                ap = ap + (ap.length() > 0 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
                                 prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
-                                //also a workaround for eclipselink processor issue with  persistence.xml
-                                //
+                                if( turnOn ) {
+                                    prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "false");//NOI18N
+                                }
                                 project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                                try {
+                                    ProjectManager.getDefault().saveProject(project);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
                         }
                     }

@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -65,7 +66,9 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileObject;
 
 /**
  * Html completion results finder
@@ -82,12 +85,14 @@ public class HtmlCompletionQuery extends UserTask {
     private static boolean lowerCase;
     private static boolean isXHtml = false;
     private Document document;
+    private FileObject file;
     private int offset;
     private CompletionResult completionResult;
 
     public HtmlCompletionQuery(Document document, int offset) {
         this.document = document;
         this.offset = offset;
+        this.file = DataLoadersBridge.getDefault().getFileObject(document);
     }
 
     public CompletionResult query() throws ParseException {
@@ -394,10 +399,6 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
             if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                DTD.Element tag = node.getDTDElement();
-                if (tag == null) {
-                    return null; // unknown tag
-                    }
 
                 ts.move(item.offset(hi));
                 ts.moveNext();
@@ -414,7 +415,8 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                DTD.Attribute arg = tag.getAttribute(argName);
+                DTD.Element tag = node.getDTDElement();
+                DTD.Attribute arg = tag == null ? null : tag.getAttribute(argName);
 
                 result = new ArrayList<CompletionItem>();
 
@@ -422,9 +424,9 @@ public class HtmlCompletionQuery extends UserTask {
                     anchor = offset;
                     if (arg != null) {
                         result.addAll(translateValues(anchor, arg.getValueList("")));
-                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, ""));
+                            result.addAll(valuesCompletion.getItems(file, offset, ""));
                         }
                     }
 
@@ -449,9 +451,9 @@ public class HtmlCompletionQuery extends UserTask {
 
                     if (arg != null) {
                         result.addAll(translateValues(documentItemOffset, arg.getValueList(prefix), quotationChar));
-                        AttrValuesCompletion valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
+                        ValueCompletion<HtmlCompletionItem> valuesCompletion = AttrValuesCompletion.getSupport(node.name(), argName);
                         if (valuesCompletion != null) {
-                            result.addAll(valuesCompletion.getValueCompletionItems(document, offset, prefix));
+                            result.addAll(valuesCompletion.getItems(file, offset, prefix));
                         }
                     }
 

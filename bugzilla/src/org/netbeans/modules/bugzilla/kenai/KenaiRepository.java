@@ -48,10 +48,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
@@ -59,10 +62,6 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -91,7 +90,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        KenaiManager.getDefault().addPropertyChangeListener(this);
+        KenaiUtil.getKenaiAccessor().addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
@@ -147,7 +146,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             url = new StringBuffer();
             url.append(urlParam);
             url.append(MessageFormat.format(BugzillaConstants.ALL_ISSUES_PARAMETERS, product));
-            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true);
+            allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, url.toString(), product, true, true); // NOI18N
         }
         return allIssues;
     }
@@ -204,7 +203,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), true);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -236,7 +235,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     private static String getKenaiUser(KenaiProject kenaiProject) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getUserName();
         }
@@ -244,7 +243,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     private static String getKenaiPassword(KenaiProject kenaiProject) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return new String(pa.getPassword());
         }
@@ -284,19 +283,14 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-
-            Kenai notifiedKenai = (Kenai) evt.getSource();
-            if(!notifiedKenai.equals(kenaiProject.getKenai())) {
-                return;
-            }
+        if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
 
             // XXX move to spi?
             // get kenai credentials
             String user;
             String psswd;
             PasswordAuthentication pa = 
-                    KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false); // do not force login
+                    KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = new String(pa.getPassword());

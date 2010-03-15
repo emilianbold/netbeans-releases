@@ -255,6 +255,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         noContentPanel = new javax.swing.JPanel();
         noContentLabel = new javax.swing.JLabel();
 
@@ -1117,6 +1118,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel8.text")); // NOI18N
+        jLabel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        org.openide.awt.Mnemonics.setLocalizedText(cloneQueryButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cloneQueryButton.text")); // NOI18N
+        cloneQueryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cloneQueryButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout queryHeaderPanelLayout = new org.jdesktop.layout.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -1149,7 +1160,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jLabel7)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(6, 6, 6)
+                        .add(jLabel8)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cloneQueryButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         queryHeaderPanelLayout.setVerticalGroup(
@@ -1175,7 +1190,9 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(seenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel7)
-                    .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(findIssuesButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(cloneQueryButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -1262,6 +1279,10 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_findIssuesButtonActionPerformed
 
+    private void cloneQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cloneQueryButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cloneQueryButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox bugAssigneeCheckBox = new javax.swing.JCheckBox();
@@ -1287,6 +1308,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JList changedList = new javax.swing.JList();
     final javax.swing.JTextField changedToTextField = new javax.swing.JTextField();
     private javax.swing.JLabel changedWhereLabel;
+    public final org.netbeans.modules.bugtracking.util.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JComboBox commentComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel commentLabel = new javax.swing.JLabel();
     final javax.swing.JTextField commentTextField = new javax.swing.JTextField();
@@ -1310,6 +1332,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JScrollPane jScrollPane2 = new HackedScrollPane();
     final javax.swing.JScrollPane jScrollPane3 = new HackedScrollPane();

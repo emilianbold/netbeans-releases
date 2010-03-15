@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi.support;
@@ -43,16 +43,28 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -121,44 +133,101 @@ public class ErrorDescriptionFactory {
             case METHOD_INVOCATION:
                 return computeNameSpan(((MethodInvocationTree) tree).getMethodSelect(), context);
             default:
+                int start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
+                if (    StatementTree.class.isAssignableFrom(tree.getKind().asInterface())
+                    && tree.getKind() != Kind.EXPRESSION_STATEMENT
+                    && tree.getKind() != Kind.BLOCK) {
+                    TokenSequence<?> ts = context.getInfo().getTokenHierarchy().tokenSequence();
+                    ts.move(start);
+                    if (ts.moveNext()) {
+                        return new int[] {ts.offset(), ts.offset() + ts.token().length()};
+                    }
+                }
                 return new int[] {
-                    (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree),
+                    start,
                     (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
                 };
         }
     }
 
-    private static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
-        List<Fix> result = new LinkedList<Fix>();
-        boolean wasSuppressWarnings = false;
-        
-        for (Fix f : provided) {
-            if (f == null) continue;
-            if (FixFactory.isSuppressWarningsFix(f)) {
-                wasSuppressWarnings = true;
-            }
-            result.add(f);
+    //XXX: should not be public:
+    public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+        if (   ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION
+            || ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
+            //suggestions do not currently have customizers, and cannot be suppressed.
+            return Arrays.asList(provided);
         }
+        List<Fix> auxiliaryFixes = new LinkedList<Fix>();
 
-        if (wasSuppressWarnings) {
+        if (ctx.getHintMetadata() != null) {
+            Set<String> suppressWarningsKeys = new LinkedHashSet<String>();
+
+            for (String key : ctx.getHintMetadata().suppressWarnings) {
+                if (key == null || key.length() == 0) {
+                    break;
+                }
+
+                suppressWarningsKeys.add(key);
+            }
+
+
+            auxiliaryFixes.add(new DisableConfigure(ctx.getHintMetadata(), true));
+            auxiliaryFixes.add(new DisableConfigure(ctx.getHintMetadata(), false));
+
+            if (!suppressWarningsKeys.isEmpty()) {
+                auxiliaryFixes.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
+            }
+
+            List<Fix> result = new LinkedList<Fix>();
+
+            for (Fix f : provided != null ? provided : new Fix[0]) {
+                if (f == null) continue;
+                if (FixFactory.isSuppressWarningsFix(f)) {
+                    Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
+                    continue;
+                }
+
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
+            }
+
+            if (result.isEmpty()) {
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new DisableConfigure(ctx.getHintMetadata(), false), auxiliaryFixes));
+            }
+
             return result;
         }
 
-        Set<String> suppressWarningsKeys = new LinkedHashSet<String>();
+        return Arrays.asList(provided);
+    }
 
-        for (String key : ctx.getSuppressWarningsKeys()) {
-            if (key == null || key.length() == 0) {
-                break;
-            }
+    private static final class DisableConfigure implements Fix {
+        private final @NonNull HintMetadata metadata;
+        private final boolean disable;
+
+        public DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
+            this.metadata = metadata;
+            this.disable = disable;
+        }
+
+        @Override
+        public String getText() {
+            String displayName = metadata.displayName;
+            String pattern = disable ? "Disable \"{0}\" Hint" : "Configure \"{0}\" Hint";
             
-            suppressWarningsKeys.add(key);
+            return MessageFormat.format(pattern, displayName);
         }
 
-        if (!suppressWarningsKeys.isEmpty()) {
-            result.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
-        }
+        @Override
+        public ChangeInfo implement() throws Exception {
+            if (disable) {
+                HintsSettings.setEnabled(RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), false);
+                //XXX: re-run hints task
+            } else {
+                OptionsDisplayer.getDefault().open("Editor/Hints/text/x-java/" + metadata.id);
+            }
 
-        return result;
+            return null;
+        }
     }
 
 }

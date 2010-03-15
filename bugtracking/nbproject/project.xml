@@ -67,22 +67,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.kenai</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -244,7 +228,19 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.bugtracking.kenai</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.bugzilla</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.kenai</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -256,10 +252,13 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.bugtracking.util</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <package>org.netbeans.modules.bugtracking.issuetable</package>
+                <package>org.netbeans.modules.bugtracking.jira</package>
                 <package>org.netbeans.modules.bugtracking.kenai.spi</package>
                 <package>org.netbeans.modules.bugtracking.spi</package>
                 <package>org.netbeans.modules.bugtracking.ui.issue.cache</package>

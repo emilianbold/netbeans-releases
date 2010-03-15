@@ -43,7 +43,6 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,7 +100,15 @@ public class ResourceRegistrationHelper {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         SourceFileMap sourceFileMap = SourceFileMap.findSourceMap(fo);
         if (sourceFileMap != null) {
-            retVal.addAll(Arrays.asList(sourceFileMap.getEnterpriseResourceDirs()));
+            File[] erds = sourceFileMap.getEnterpriseResourceDirs();
+
+            if (null != erds) {
+                for (File f : erds) {
+                    if (null != f && f.getPath() != null) {
+                        retVal.add(f);
+                    }
+                }
+            }
         }
         return retVal;
     }
@@ -302,8 +309,10 @@ public class ResourceRegistrationHelper {
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            String propName = qname + "." + attributes.getValue("name");
-            properties.put(propName, attributes.getValue("value"));  //NOI18N
+            if (null != properties && null != attributes) {
+                String propName = qname + "." + attributes.getValue("name"); // NO18N
+                properties.put(propName, attributes.getValue("value"));  //NOI18N
+            }
         }
 
         @Override

@@ -70,7 +70,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -78,8 +78,8 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -134,14 +134,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         if(results.size() > 0) {
             SVNUrl url = results.get(0).getRepositoryRootUrl();
-            boolean isKenaiRepository = url != null && SvnKenaiSupport.getInstance().isKenai(url.toString());
+            boolean isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
             if(isKenaiRepository) {
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
                     if(author != null && !author.equals("")) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = SvnKenaiSupport.getInstance().forName(author, url.toString());
+                            KenaiUser kenaiUser = SvnKenaiAccessor.getInstance().forName(author, url.toString());
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }
@@ -674,8 +674,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             this.index = index;
 
             // XXX cache
-            Lookup.Result<HyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-            Collection<HyperlinkProvider> hpInstances = (Collection<HyperlinkProvider>) hpResult.allInstances();
+            Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+            Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
 
             try {
                 // clear document
@@ -720,7 +720,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 // compute issue hyperlinks
                 l = linkerSupport.getLinker(IssueLinker.class, index);
                 if(l == null) {
-                    for (HyperlinkProvider hp : hpInstances) {
+                    for (VCSHyperlinkProvider hp : hpInstances) {
                         l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
                         if(l != null) {
                             linkerSupport.add(l, index);

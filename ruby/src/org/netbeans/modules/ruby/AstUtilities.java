@@ -140,8 +140,9 @@ public class AstUtilities {
     /** ActiveSupport extensions */
     private static final String[] CATTR_ACCESSORS = {"cattr_reader", "cattr_accessor", "cattr_writer"};
 
-    private static final String[] NAMED_SCOPE = {"named_scope"};
-
+    /** The names of AR scope methods - named_scope in rails 2.x, rails 3.x deprecates it
+     in favor of 'scope' */
+    private static final String[] NAMED_SCOPE = {"named_scope", "scope"};
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
      * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
@@ -2237,6 +2238,27 @@ public class AstUtilities {
     static void findExitPoints(final Node body, final Collection<? super Node> exits) {
         findNonLastExitPoints(body, exits);
         findLastNodes(body, exits);
+    }
+
+    /**
+     * Gets the values of the given {@code args}, as fully qualified 
+     * names in case of {@link Colon2Node}s.
+     * @param args
+     * @return
+     */
+    static List<String> getValuesAsFqn(ListNode args) {
+        if (args.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<String>(args.size());
+        for (Node n : args.childNodes()) {
+            if (n instanceof Colon2Node) {
+                result.add(getFqn((Colon2Node) n));
+            } else if (n instanceof INameNode) {
+                result.add(getName(n));
+            }
+        }
+        return result;
     }
 
     private static void findLastNodes(final Node node, Collection<? super Node> result) {

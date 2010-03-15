@@ -111,7 +111,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     }
                 }
             }
-            // XXX $suite/build/osgi/$cnb-*.jar => $cnb in $suite
             NbPlatform supposedPlaf = null;
             for (NbPlatform plaf : NbPlatform.getPlatforms()) {
                 // XXX more robust condition?

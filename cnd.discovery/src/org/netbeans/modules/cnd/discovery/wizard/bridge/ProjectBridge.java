@@ -49,13 +49,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -103,8 +102,8 @@ public class ProjectBridge {
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
-        String workingDirRel = IpeUtils.toRelativePath(baseFolder, IpeUtils.naturalize(workingDir));
-        workingDirRel = IpeUtils.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
         resultSet.add(project);
@@ -133,8 +132,8 @@ public class ProjectBridge {
     public Item getProjectItem(String path){
         Item item = makeConfigurationDescriptor.findProjectItemByPath(path);
         if (item == null){
-            if (!IpeUtils.isPathAbsolute(path)) {
-                path = IpeUtils.toAbsolutePath(baseFolder, path);
+            if (!CndPathUtilitities.isPathAbsolute(path)) {
+                path = CndPathUtilitities.toAbsolutePath(baseFolder, path);
             }
             item = findByCanonicalName(path);
         }
@@ -218,9 +217,9 @@ public class ProjectBridge {
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        path = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
+        path = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
-        path = IpeUtils.normalize(path);
+        path = CndPathUtilitities.normalize(path);
         return path;
     }
     
@@ -281,7 +280,7 @@ public class ProjectBridge {
     
     public Folder getRoot(){
         Folder folder = makeConfigurationDescriptor.getLogicalFolders();
-        Vector<Folder> sources = folder.getFolders();
+        List<Folder> sources = folder.getFolders();
         for (Folder sub : sources){
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {

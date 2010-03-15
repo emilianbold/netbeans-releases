@@ -1755,13 +1755,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     @Override
-    public final CsmFile findFile(Object absolutePathOrNativeFileItem) {
+    public final CsmFile findFile(Object absolutePathOrNativeFileItem, boolean snapShot) {
+        CsmFile res = null;
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
-            return findFileByPath((CharSequence) absolutePathOrNativeFileItem);
+            res = findFileByPath((CharSequence) absolutePathOrNativeFileItem);
         } else if (absolutePathOrNativeFileItem instanceof NativeFileItem) {
-            return findFileByItem((NativeFileItem) absolutePathOrNativeFileItem);
+            res = findFileByItem((NativeFileItem) absolutePathOrNativeFileItem);
         }
-        return null;
+        if (snapShot && (res instanceof FileImpl)) {
+            res = ((FileImpl)res).getSnapshot();
+        }
+        return res;
     }
 
     private CsmFile findFileByPath(CharSequence absolutePath) {
@@ -1847,14 +1851,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             impl.setSourceFile();
         } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
             impl.setHeaderFile();
-        }
-        if (initial != null) {
-            synchronized (getFileContainer().getLock(file)) {
-                Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
-                if (states.isEmpty()) {
-                    putPreprocState(file, initial);
-                }
-            }
         }
         return impl;
     }

@@ -54,6 +54,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
@@ -321,7 +322,7 @@ public class Utilities {
     throws BadLocationException {
         int rowStart = getRowStart(c, offset);
         int endInit = c.getUI().getNextVisualPositionFrom(c,
-                              rowStart, null, javax.swing.SwingConstants.WEST, null);
+                              rowStart, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
 
         if (x == BaseKit.MAGIC_POSITION_MAX){
             return endInit;
@@ -349,7 +350,7 @@ public class Utilities {
         
         int start = c.viewToModel(new java.awt.Point(Math.max(eui.textLeftMarginWidth, x - 2*r.width ),r.y));
         tempRect = c.modelToView(start);
-        if (tempRect == null && tempRect.x > x){
+        if (tempRect == null || tempRect.x > x){
             start = getRowStart(c, end);
         }
         
@@ -494,7 +495,7 @@ public class Utilities {
         int nextVisualPosition = -1;
         if (nextWordOffset > 0){
             nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                    nextWordOffset - 1, null, javax.swing.SwingConstants.EAST, null);
+                    nextWordOffset - 1, Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
         }
         return (nextVisualPosition == -1) ? nextWordOffset : nextVisualPosition;
     }
@@ -513,7 +514,7 @@ public class Utilities {
     throws BadLocationException {
         int prevWordOffset = getPreviousWord((BaseDocument)c.getDocument(), offset);
         int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                              prevWordOffset, null, javax.swing.SwingConstants.WEST, null);
+                              prevWordOffset, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
         if (nextVisualPosition == 0 && prevWordOffset == 0){
             return 0;
         }
@@ -778,7 +779,7 @@ public class Utilities {
         if (Utilities.isSelectionShowing(caret)) {
             ret = new int[] { c.getSelectionStart(), c.getSelectionEnd() }; 
         } else if (doc instanceof BaseDocument){
-            ret = getIdentifierBlock((BaseDocument)doc, caret.getDot());
+            ret = getIdentifierBlock((BaseDocument)doc, offset);
         } else {
             ret = getIdentifierBlock(c, offset);
         }
@@ -825,7 +826,7 @@ public class Utilities {
 	    if (ret != null) return ret;
         } 
 	if (doc instanceof BaseDocument){
-	    ret = getIdentifier((BaseDocument) doc, caret.getDot());
+	    ret = getIdentifier((BaseDocument) doc, offset);
         } else {
 	    ret = getWord(c, offset);
 	}
@@ -886,7 +887,7 @@ public class Utilities {
             if (orig[i] != changed[i]) {
                 final BadLocationException[] badLocationExceptions = new BadLocationException [1];
                 doc.runAtomicAsUser (new Runnable () {
-                    public void run () {
+                    public @Override void run () {
                         try {
                             doc.remove(offset, orig.length);
                             doc.insertString(offset, new String(changed), null);
@@ -966,7 +967,7 @@ public class Utilities {
         try {
             final Object[] result = new Object [1];
             doc.runAtomicAsUser (new Runnable () {
-                public void run () {
+                public @Override void run () {
                     try {
                         result [0] = formatter.reformat (doc, startOffset, endOffset);
                     } catch (BadLocationException ex) {
@@ -1197,7 +1198,7 @@ public class Utilities {
                 return getFocusedComponent();
             }
             
-            public void actionPerformed(ActionEvent evt){}
+            public @Override void actionPerformed(ActionEvent evt){}
         }
         
         if (focusedComponentAction == null) {
@@ -1327,7 +1328,7 @@ public class Utilities {
      * @return String describing the KeyStroke sequence.
      */
     public static String keySequenceToString( KeyStroke[] seq ) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for( int i=0; i<seq.length; i++ ) {
             if( i>0 ) sb.append( ' ' );  // NOI18N
             sb.append( keyStrokeToString( seq[i] ) );

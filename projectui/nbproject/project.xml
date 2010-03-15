@@ -254,8 +254,6 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.projectui.buildmenu</friend>
-                <friend>org.netbeans.modules.startpage</friend>
                 <friend>org.netbeans.modules.welcome</friend>
                 <package>org.netbeans.modules.project.ui.api</package>
             </friend-packages>

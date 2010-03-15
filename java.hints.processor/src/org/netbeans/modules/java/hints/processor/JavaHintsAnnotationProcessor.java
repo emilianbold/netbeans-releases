@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("org.netbeans.modules.java.hints.jackpot.code.spi.*")
-//@ServiceProvider(service=Processor.class)
+@ServiceProvider(service=Processor.class, position=100)
 public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     
     private static final Logger LOG = Logger.getLogger(JavaHintsAnnotationProcessor.class.getName());
@@ -250,7 +250,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         try {
             bundle.getString(key);
         } catch (MissingResourceException ex) {
-            processingEnv.getMessager().printMessage(Kind.WARNING, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
+            processingEnv.getMessager().printMessage(Kind.ERROR, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
         }
     }
     

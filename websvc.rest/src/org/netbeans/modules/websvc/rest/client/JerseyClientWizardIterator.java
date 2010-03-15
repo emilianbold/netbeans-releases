@@ -117,7 +117,7 @@ public final class JerseyClientWizardIterator implements WizardDescriptor.Instan
 
             @Override
             public void run() {
-                ClientJavaSourceHelper.generateJerseyClient(bottomPanel.getResourceNode(), dobj.getPrimaryFile(), null);
+                ClientJavaSourceHelper.generateJerseyClient(bottomPanel.getResourceNode(), dobj.getPrimaryFile(), null, bottomPanel.getSecurity());
             }
         });
         return Collections.<DataObject>singleton(dobj);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -83,6 +83,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         this.dm = dm;
     }
 
+    @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
@@ -94,6 +95,7 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         return readMessageDestinations(domainXml, "/domain/", null);
     }
 
+    @Override
     public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
         // since a connection pool is not a Datasource, all resource deployment has to
         // happen in a different part of the deploy processing...  so this should remain
@@ -381,23 +383,27 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             properties = new HashMap<String, String>();
-            String poolName = attributes.getValue("name");
+            String poolName = attributes.getValue("name"); // NOI18N
             if(poolName != null && poolName.length() > 0) {
                 if(!pools.containsKey(poolName)) {
-                    properties.put("name", poolName);
-                    properties.put("raname", attributes.getValue("resource-adapter-name"));
-                    properties.put("conndefname", attributes.getValue("connection-definition-name"));
+                    properties.put("name", poolName); // NOI18N
+                    properties.put("raname", attributes.getValue("resource-adapter-name")); // NOI18N
+                    properties.put("conndefname", attributes.getValue("connection-definition-name")); // NOI18N
                 } else {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                            "Duplicate pool-names defined for JDBC Connection Pools.");
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, // NOI18N
+                            "Duplicate pool-names defined for Resource Adapter Pools: "+poolName); // NOI18N
                 }
             }
         }
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            properties.put(attributes.getValue("name").toLowerCase(Locale.ENGLISH),
-                    attributes.getValue("value"));
+            if (null != attributes && null != properties) {
+                String key = attributes.getValue("name"); // NOI18N
+                if(key != null && key.length() > 0) {
+                    properties.put(key.toLowerCase(Locale.ENGLISH), attributes.getValue("value")); // NOI18N
+                }
+            }
         }
 
         @Override

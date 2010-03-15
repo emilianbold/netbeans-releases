@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -111,6 +111,9 @@ public class CloneAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
+        if (!Mercurial.getInstance().isAvailable(true)) {
+            return;
+        }
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
@@ -324,7 +327,7 @@ public class CloneAction extends ContextAction {
 
             private String getKenaiUserName() {
                 PasswordAuthentication passwordAuthentication
-                        = HgKenaiSupport.getInstance().getPasswordAuthentication(
+                        = HgKenaiAccessor.getInstance().getPasswordAuthentication(
                                             source.toUrlStringWithoutUserInfo(),
                                             false);
                 return (passwordAuthentication != null)

@@ -40,6 +40,7 @@
 package org.netbeans.modules.schema2beansdev;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -192,6 +193,11 @@ public class Schema2BeansProcessor extends AbstractProcessor {
             abspath = new URI(null, pkg.replace('.', '/') + "/", null).resolve(new URI(null, path, null)).getPath();
         }
         FileObject f = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", abspath);
+        try { // #181355
+            f.openInputStream().close();
+        } catch (FileNotFoundException x) {
+            f = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", abspath);
+        }
         return f;
     }
 

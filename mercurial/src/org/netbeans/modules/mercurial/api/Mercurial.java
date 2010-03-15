@@ -56,11 +56,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgFileNode;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
@@ -71,6 +71,8 @@ import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -242,7 +244,10 @@ public class Mercurial {
             Logger.getLogger(Mercurial.class.getName()).log(Level.FINE, "Cannot store mercurial workdir preferences", e);
         }
 
-        HgKenaiSupport.getInstance().setFirmAssociations(new File[]{cloneFile}, repositoryUrl);
+        VCSBugtrackingAccessor bugtrackingSupport = Lookup.getDefault().lookup(VCSBugtrackingAccessor.class);
+        if(bugtrackingSupport != null) {
+            bugtrackingSupport.setFirmAssociations(new File[]{cloneFile}, repositoryUrl);
+        }
     }
 
     /**
@@ -357,46 +362,7 @@ public class Mercurial {
     private static void storeWorkingDir(URL remoteUrl, URL localFolder) {
         Preferences prf = NbPreferences.forModule(Mercurial.class);
         prf.put(WORKINGDIR_KEY_PREFIX + remoteUrl, localFolder.toString());
-    }
-
-    /**
-     * Opens search history panel with a specific DiffResultsView, which does not moves accross differences but initially fixes on the given line.
-     * Right panel shows current local changes if the file, left panel shows revisions in the file's repository.
-     * Do not run in AWT, IllegalStateException is thrown.
-     * Validity of the arguments is checked and result is returned as a return value
-     * @param path requested file absolute path. Must be a versioned file (not a folder), otherwise false is returned and the panel would not open
-     * @param lineNumber requested line number to fix on
-     * @return true if suplpied arguments are valid and the search panel is opened, otherwise false
-     */
-    public static boolean showFileHistory (final File file, final int lineNumber) {
-        assert !EventQueue.isDispatchThread();
-
-        if (!file.exists()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!file.isFile()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getAbsolutePath());
-            return false;
-        }
-        if (!org.netbeans.modules.mercurial.Mercurial.getInstance().isManaged(file)) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.INFO, "Trying to show history for an unmanaged file {0}", file.getAbsolutePath());
-            return false;
-        }
-        if(!isClientAvailable(true)) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
-            return false;
-        }
-        /**
-         * Open in AWT
-         */
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                LogAction.openSearch(file, lineNumber);
-            }
-        });
-        return true;
-    }
+    }    
 
     /**
      * Adds a remote url for the combos used in Clone wizard
@@ -468,7 +434,7 @@ public class Mercurial {
         return isClientAvailable(false);
     }
 
-    private static boolean isClientAvailable (boolean notifyUI) {
+    public static boolean isClientAvailable (boolean notifyUI) {
         return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, notifyUI);
     }
 }

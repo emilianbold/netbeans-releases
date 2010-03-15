@@ -57,11 +57,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -106,7 +110,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.netigso") != null) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.osgi") != null) {
             actions.add(new OSGiSubMenuAction());
             actions.add(null);
         }
@@ -118,6 +122,9 @@ public final class SuiteActions implements ActionProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
             actions.add(null);
         }
+        // XXX temporary measure for BuildInstallersAction to be added; better would be to load whole context menu declaratively
+        actions.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-apisupport-project-suite/Actions")); // NOI18N
+        actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
@@ -131,6 +138,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("branding", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_branding"), null));
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
@@ -149,6 +157,10 @@ public final class SuiteActions implements ActionProvider {
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null));
             m.add(ProjectSensitiveActions.projectCommandAction("run-osgi",
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("debug-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("profile-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_profile_osgi"), null));
             return m;
         }
     }
@@ -173,9 +185,12 @@ public final class SuiteActions implements ActionProvider {
             "build-osgi", // NOI18N
             "build-osgi-obr", // NOI18N
             "run-osgi", // NOI18N
+            "debug-osgi", // NOI18N
+            "profile-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
+            "branding", // NOI18N
             ActionProvider.COMMAND_RENAME,
             ActionProvider.COMMAND_MOVE,
             ActionProvider.COMMAND_DELETE
@@ -188,7 +203,15 @@ public final class SuiteActions implements ActionProvider {
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (ActionProvider.COMMAND_DELETE.equals(command) ||
+        if( "branding".equals(command) ) { //NOI18N
+            boolean enabled = false;
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            if( null != properties ) {
+                String brandingToken = properties.get(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
+                enabled = null != brandingToken;
+            }
+            return enabled;
+        } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
                 ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command)) {
             return true;
@@ -212,6 +235,8 @@ public final class SuiteActions implements ActionProvider {
             if (SuiteOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultMoveOperation(project);
             }
+        } else if ("branding".equals(command)) {//NOI18N
+            BrandingEditor.open( project );
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
@@ -282,10 +307,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.matches("build-osgi|build-osgi-obr|run-osgi|build-mac|nbms|profile")) { // NOI18N
-            targetNames = new String[] {command}; // NOI18N
         } else {
-            throw new IllegalArgumentException(command);
+            targetNames = new String[] {command};
         }
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);

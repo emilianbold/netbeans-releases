@@ -54,11 +54,12 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -365,6 +366,8 @@ class FilesystemHandler extends VCSInterceptor {
                     }
                 }
             };
+        } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new SvnSearchHistorySupport(file);
         } else {
             return super.getAttribute(file, attrName);
         }
@@ -514,6 +517,7 @@ class FilesystemHandler extends VCSInterceptor {
                         SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                         try {
                             srcChildren = SvnUtils.listRecursively(from);
+                            boolean moved = true;
                             if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) && 
                                     (!status.isCopied() || (url != null && url.equals(toUrl)))) {
                                 // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
@@ -524,13 +528,13 @@ class FilesystemHandler extends VCSInterceptor {
                                 revertDeleted(client, toStatus, to, false);
 
                                 client.revert(from, true);
-                                from.renameTo(to);
+                                moved = from.renameTo(to);
                             } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                     || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                                 // check if the file wasn't just deleted in this session
                                 revertDeleted(client, toStatus, to, false);
 
-                                from.renameTo(to);
+                                moved = from.renameTo(to);
                             } else {
                                 SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
                                 SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
@@ -550,6 +554,9 @@ class FilesystemHandler extends VCSInterceptor {
                                                 + ": cannot rename {0} to {1}", new Object[] {from, to});
                                     }
                                 }
+                            }
+                            if (!moved) {
+                                Subversion.LOG.log(Level.INFO, "Cannot rename file {0} to {1}", new Object[] {from, to});
                             }
                         } finally {
                             // we moved the files so schedule them a for a refresh

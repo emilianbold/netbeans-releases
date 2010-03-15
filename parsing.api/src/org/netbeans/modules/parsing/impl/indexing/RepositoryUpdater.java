@@ -2916,9 +2916,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 for (BinaryIndexerFactory binFactory : binFactories) {
                     binFactory.rootsRemoved(roots);
                 }
-                for(URL root : binaries) {
-                    RepositoryUpdater.getDefault().rootsListeners.remove(root, false);
-                }
+                RepositoryUpdater.getDefault().rootsListeners.remove(binaries, false);
             }
 
             if (!sources.isEmpty()) {
@@ -2932,9 +2930,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> embeddingIndexer : embeddingIndexers) {
                     embeddingIndexer.getIndexerFactory().rootsRemoved(roots);
                 }
-                for(URL root : sources) {
-                    RepositoryUpdater.getDefault().rootsListeners.remove(root, true);
-                }
+                RepositoryUpdater.getDefault().rootsListeners.remove(sources, true);
             }
         }
 
@@ -3863,14 +3859,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private FileChangeListener binariesListener = null;
         private final Map<URL, File> sourceRoots = new HashMap<URL, File>();
         private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<URL, Pair<File, Boolean>>();
-        
+
         public RootsListeners() {
         }
 
         public void setListener(FileChangeListener sourcesListener, FileChangeListener binariesListener) {
             assert (sourcesListener != null && binariesListener != null) || (sourcesListener == null && binariesListener == null) :
                 "Both sourcesListener and binariesListener must either be null or non-null"; //NOI18N
-            
+            //todo: remove removeRecursiveListener from synchronized block
             synchronized (this) {
                 if (sourcesListener != null) {
                     assert this.sourcesListener == null : "Already using " + this.sourcesListener + "and " + this.binariesListener //NOI18N
@@ -3923,13 +3919,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         private void interruptibleAddRecursiveListener(URL root, boolean sourceRoot) {
+            Pair<File,FileChangeListener> toAdd = null;
             synchronized (this) {
                 if (sourceRoot) {
                     if (sourcesListener != null) {
                         if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                             try {
                                 File f = new File(root.toURI());
-                                FileUtil.addRecursiveListener(sourcesListener, f);
+                                toAdd = Pair.of (f,sourcesListener);
                                 sourceRoots.put(root, f);
                             } catch (URISyntaxException use) {
                                 LOGGER.log(Level.INFO, null, use);
@@ -3953,7 +3950,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     FileUtil.addFileChangeListener(binariesListener, f);
                                 } else {
                                     // listening on a folder
-                                    FileUtil.addRecursiveListener(binariesListener, f);
+                                    toAdd = Pair.of(f,binariesListener);
                                 }
                                 binaryRoots.put(root, Pair.of(f, archiveUrl != null));
                             }
@@ -3961,29 +3958,48 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
+            if (toAdd != null) {
+                safeAddRecursiveListener(toAdd.second, toAdd.first);
+            }
         }
 
-        public void remove(URL root, boolean sourceRoot) {
-            synchronized (this) {
-                if (sourceRoot) {
-                    if (sourcesListener != null) {
-                        File f = sourceRoots.remove(root);
-                        if (f != null) {
-                            safeRemoveRecursiveListener(sourcesListener, f);
-                        }
-                    }
-                } else {
-                    if (binariesListener != null) {
-                        Pair<File, Boolean> pair = binaryRoots.remove(root);
-                        if (pair != null) {
-                            if (pair.second) {
-                                FileUtil.removeFileChangeListener(binariesListener, pair.first);
+        public void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
+            final RequestProcessor.Task task = RP.post(new Runnable() {     //Serialize requests into single thread
+                public @Override void run() {
+                    synchronized (this) {   //Synchronized to ensure visibility
+                        for (URL root : roots) {
+                            if (sourceRoot) {
+                                if (sourcesListener != null) {
+                                    File f = sourceRoots.remove(root);
+                                    if (f != null) {
+                                        safeRemoveRecursiveListener(sourcesListener, f);
+                                    }
+                                }
                             } else {
-                                safeRemoveRecursiveListener(binariesListener, pair.first);
+                                if (binariesListener != null) {
+                                    Pair<File, Boolean> pair = binaryRoots.remove(root);
+                                    if (pair != null) {
+                                        if (pair.second) {
+                                            FileUtil.removeFileChangeListener(binariesListener, pair.first);
+                                        } else {
+                                            safeRemoveRecursiveListener(binariesListener, pair.first);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            });
+            task.waitFinished();
+        }
+
+        private void safeAddRecursiveListener(FileChangeListener listener, File path) {
+            try {
+                FileUtil.addRecursiveListener(listener, path);
+            } catch (Exception e) {
+                // ignore
+                LOGGER.log(Level.FINE, null, e);
             }
         }
 

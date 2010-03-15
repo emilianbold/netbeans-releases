@@ -80,7 +80,7 @@ public abstract class RubyAstRule implements AstRule {
      * @param info
      * @return
      */
-    protected final RubyIndex getIndex(ParserResult info) {
+    public final RubyIndex getIndex(ParserResult info) {
         assert indexHolder.size() <= 1;
         FileObject fo = RubyUtils.getFileObject(info);
         RubyIndex result = indexHolder.get(fo);

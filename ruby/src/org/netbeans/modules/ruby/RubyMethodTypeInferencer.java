@@ -190,19 +190,24 @@ final class RubyMethodTypeInferencer {
             return receiverType;
         }
 
-        if (FindersHelper.isFinderMethod(name)) {
-            // -Possibly- ActiveRecord finders, very important
+        if (FindersHelper.isFinderMethod(name) || ActiveRecordQueryIndexer.isQueryMethod(name)) {
+            // -Possibly- ActiveRecord finders or query methods, very important
             if (receiverType.isSingleton() && getIndex() != null) {
                 IndexedClass superClass = getIndex().getSuperclass(receiverType.first());
                 if (superClass != null && RubyIndex.ACTIVE_RECORD_BASE.equals(superClass.getFqn())) { // NOI18N
-                    // Looks like a find method on active record The big
-                    // question is whether this is going to return the type
-                    // itself (receivedName) or an array of it; that depends on
-                    // the args (for find(:all) it's asn array, find(:first)
-                    // it's an item, and for find(1,2,3) it's an array etc.
-                    // There are other find signatures which define other
-                    // semantics
-                    return FindersHelper.pickFinderType(callNodeToInfer, name, receiverType);
+                    return FindersHelper.isFinderMethod(name) 
+                            // Looks like a find method on active record The big
+                            // question is whether this is going to return the type
+                            // itself (receivedName) or an array of it; that depends on
+                            // the args (for find(:all) it's asn array, find(:first)
+                            // it's an item, and for find(1,2,3) it's an array etc.
+                            // There are other find signatures which define other
+                            // semantics
+                            ? FindersHelper.pickFinderType(callNodeToInfer, name, receiverType)
+                            // looks like a query method
+                            : ActiveRecordQueryIndexer.getReturnType(name);
+                } else if (RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
+                    return ActiveRecordQueryIndexer.getReturnType(name);
                 }
             }
         }

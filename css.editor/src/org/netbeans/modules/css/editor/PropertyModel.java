@@ -378,6 +378,24 @@ public class PropertyModel {
             return null;
         }
         
+        public String getResolvedOrigin() {
+            String origin = origin();
+            if (origin == null) {
+                return null;
+            }
+            if (origin.startsWith("-")) { //NOI18N
+                //artificial origin, get real origin from the first ancestor element with an origin
+                Element parentElement = this;
+                while ((parentElement = parentElement.parent()) != null) {
+                    if (parentElement.origin() != null && !parentElement.origin().startsWith("-")) {
+                        origin = parentElement.origin();
+                        break;
+                    }
+                }
+            }
+            return origin;
+        }
+
         public String path() {
             StringBuffer sb = new StringBuffer();
             if (parent() != null) {

@@ -820,13 +820,12 @@ public class RubyUtils {
             return false;
         }
         String[] version = m.group(2).split("\\.");
-        if (Integer.parseInt(version[0]) < 2) {
-            return false;
+        int major = Integer.parseInt(version[0]);
+        int minor = Integer.parseInt(version[1]);
+        if (major == 2) {
+            return minor >= 3;
         }
-        if (Integer.parseInt(version[1]) < 3) {
-            return false;
-        }
-        return true;
+        return major > 2 ? true : false;
     }
 
     // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject
@@ -907,6 +906,27 @@ public class RubyUtils {
         }
         return controllerName;
 
+    }
+
+    /**
+     * Adds the given {@code toAdd} to the end of the given {@code array}.
+     * 
+     * @param array
+     * @param toAdd
+     * @return
+     */
+    static String[] addToArray(String[] array, String... toAdd) {
+        if (toAdd == null || toAdd.length == 0) {
+            return array;
+        }
+        String[] result = new String[array.length + toAdd.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i];
+        }
+        for (int i = array.length; i < array.length + toAdd.length; i++) {
+            result[i] = toAdd[i - array.length];
+        }
+        return result;
     }
 
 }

@@ -41,10 +41,31 @@ package org.netbeans.modules.php.symfony.editor;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.editor.PhpElement;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.symfony.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
@@ -53,15 +74,18 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Mysik
  */
 public class SymfonyEditorExtender extends EditorExtender {
-    private static final List<PhpElement> ELEMENTS = Arrays.<PhpElement>asList(
+    static final Logger LOGGER = Logger.getLogger(SymfonyEditorExtender.class.getName());
+    private static final List<PhpBaseElement> ELEMENTS = Arrays.<PhpBaseElement>asList(
             new PhpVariable("$sf_user", "sfUser"), // NOI18N
             new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
             new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
 
     @Override
-    public List<PhpElement> getElementsForCodeCompletion(FileObject fo) {
+    public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
         if (SymfonyUtils.isView(fo)) {
-            return ELEMENTS;
+            List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>(ELEMENTS);
+            elements.addAll(parseAction(fo));
+            return elements;
         }
         return Collections.emptyList();
     }
@@ -69,12 +93,116 @@ public class SymfonyEditorExtender extends EditorExtender {
     @Override
     public PhpClass getClass(FileObject fo, String variableName) {
         if (SymfonyUtils.isView(fo)) {
-            for (PhpElement element : ELEMENTS) {
+            List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>(ELEMENTS);
+            elements.addAll(parseAction(fo));
+
+            for (PhpBaseElement element : elements) {
                 if (element.getName().equals(variableName)) {
-                    return new PhpClass(element.getName(), element.getFullyQualifiedName());
+                    PhpClass phpClass = getPhpClass(element);
+                    if (phpClass != null) {
+                        return phpClass;
+                    }
                 }
             }
         }
         return null;
+    }
+
+    // XXX
+    private PhpClass getPhpClass(PhpBaseElement element) {
+        String fqn = element.getFullyQualifiedName();
+        if (fqn == null) {
+            return null;
+        }
+        // XXX
+        return new PhpClass(element.getName(), fqn);
+    }
+
+    private Set<PhpVariable> parseAction(final FileObject view) {
+        assert SymfonyUtils.isView(view) : "Not a view: " + view;
+
+        final FileObject action = SymfonyUtils.getAction(view);
+        if (action == null) {
+            return Collections.emptySet();
+        }
+        final Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
+        try {
+            ParserManager.parse(Collections.singleton(Source.create(action)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ParserResult parseResult = (ParserResult) resultIterator.getParserResult();
+                    final SymfonyControllerVisitor controllerVisitor = new SymfonyControllerVisitor(view, (PHPParseResult) parseResult);
+                    controllerVisitor.scan(Utils.getRoot(parseResult));
+                    phpVariables.addAll(controllerVisitor.getPhpVariables());
+                }
+            });
+        } catch (ParseException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return phpVariables;
+    }
+
+    private static final class SymfonyControllerVisitor extends DefaultVisitor {
+        private final String actionName;
+        private final FileObject action;
+        private final PHPParseResult actionParseResult;
+        private final Set<PhpVariable> fields = new HashSet<PhpVariable>();
+
+        private String className = null;
+        private String methodName = null;
+
+        public SymfonyControllerVisitor(FileObject view, PHPParseResult actionParseResult) {
+            assert view != null;
+            assert actionParseResult != null;
+
+            this.actionParseResult = actionParseResult;
+            actionName = SymfonyUtils.getActionName(view);
+            action = SymfonyUtils.getAction(view);
+        }
+
+        @Override
+        public void visit(ClassDeclaration node) {
+            className = CodeUtils.extractClassName(node).toLowerCase();
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(MethodDeclaration node) {
+            methodName = CodeUtils.extractMethodName(node).toLowerCase();
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(FieldAccess node) {
+            super.visit(node);
+
+            if (action != null
+                    && className != null
+                    && methodName != null
+                    && className.endsWith(SymfonyUtils.ACTION_CLASS_SUFFIX)
+                    && methodName.equals(actionName)) {
+                if (node.getDispatcher() instanceof Variable
+                        && "$this".equals(CodeUtils.extractVariableName((Variable) node.getDispatcher()))) { // NOI18N
+
+                    String fqn = null;
+                    for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), node)) {
+                        // XXX
+                        fqn = typeScope.getFullyQualifiedName().toString();
+                        break;
+                    }
+                    synchronized (fields) {
+                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                    }
+                }
+            }
+        }
+
+        public Set<PhpVariable> getPhpVariables() {
+            Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
+            synchronized (fields) {
+                phpVariables.addAll(fields);
+            }
+            return phpVariables;
+        }
     }
 }

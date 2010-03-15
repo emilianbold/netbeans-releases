@@ -235,19 +235,19 @@ public class IdentifierSignature {
 
     public static IdentifierSignature create(MethodScope method) {
         return new IdentifierSignature(method.getName(),
-                method.getPhpModifiers().toBitmask(), ElementKind.METHOD, method.getInScope().getName(),
+                method.getPhpModifiers().toFlags(), ElementKind.METHOD, method.getInScope().getName(),
                 true, method.getInScope() instanceof ClassScope);
     }
 
     public static IdentifierSignature create(FieldElement fieldElement) {
         return new IdentifierSignature(fieldElement.getName(),
-                fieldElement.getPhpModifiers().toBitmask(), ElementKind.FIELD,
+                fieldElement.getPhpModifiers().toFlags(), ElementKind.FIELD,
                 fieldElement.getInScope().getName(), true, fieldElement.getInScope() instanceof ClassScope);
     }
 
     public static IdentifierSignature create(ClassConstantElement constantElement) {
         return new IdentifierSignature(constantElement.getName(),
-                constantElement.getPhpModifiers().toBitmask(), ElementKind.CONSTANT,
+                constantElement.getPhpModifiers().toFlags(), ElementKind.CONSTANT,
                 constantElement.getInScope().getName(), true, constantElement.getInScope() instanceof ClassScope);
     }
 

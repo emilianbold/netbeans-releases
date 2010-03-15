@@ -40,6 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
+<!--Do NOT use Project/Properties to edit this file! Will remove <build-prerequisite/> from java.hints.processor below.
+    See bug #180717-->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -70,7 +72,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.24</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -180,7 +182,7 @@ made subject to such option by the copyright holder.
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.hints.processor</code-name-base>
-                    <build-prerequisite/>
+                    <build-prerequisite/> <!--this line is required!-->
                     <run-dependency>
                         <specification-version>1.1</specification-version>
                     </run-dependency>
@@ -243,7 +245,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -305,7 +307,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.7</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -313,7 +315,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.12</specification-version>
+                        <specification-version>6.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

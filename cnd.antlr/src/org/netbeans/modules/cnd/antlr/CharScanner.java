@@ -173,6 +173,14 @@ public abstract class CharScanner extends MatchExceptionState implements TokenSt
         return (Token)tokenObjectClass.newInstance();
     }
 
+    protected final int getTokenStartColumn() {
+        return inputState.tokenStartColumn;
+    }
+
+    protected final int getTokenStartLine() {
+        return inputState.tokenStartLine;
+    }
+
     protected Token makeToken(int t) {
         try {
             Token tok = createToken(t);

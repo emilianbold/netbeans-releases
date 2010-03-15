@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +61,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -100,7 +100,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * However we also hold classes which are definitely not loadable by
      * our loader.
      */
-    private final Map<Class,Object> classes = new WeakHashMap<Class,Object>();
+    private final Map<Class<?>,Object> classes = new WeakHashMap<Class<?>,Object>();
 
     /** class loader to use */
     private final ClassLoader loader;
@@ -109,6 +109,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
     /** Create a lookup reading from a specified classloader.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public MetaInfServicesLookup(ClassLoader loader, String prefix) {
         this.loader = loader;
         this.prefix = prefix;
@@ -124,8 +125,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
     /* Tries to load appropriate resources from manifest files.
      */
     @Override
-    protected final void beforeLookup(Lookup.Template t) {
-        Class c = t.getType();
+    protected final void beforeLookup(Lookup.Template<?> t) {
+        Class<?> c = t.getType();
 
         Collection<AbstractLookup.Pair<?>> toAdd = null;
         synchronized (this) {
@@ -156,7 +157,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      */
     private void search(Class<?> clazz, Collection<AbstractLookup.Pair<?>> result) {
         if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Searching for " + clazz.getName() + " in " + clazz.getClassLoader() + " from " + this);
+            LOGGER.log(Level.FINER, "Searching for {0} in {1} from {2}", new Object[] {clazz.getName(), clazz.getClassLoader(), this});
         }
 
         String res = prefix + clazz.getName(); // NOI18N
@@ -177,7 +178,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         // Probably would not happen, assuming JARs only list classes
         // they own, but just in case...
         List<Item> foundClasses = new ArrayList<Item>();
-        Collection<Class> removeClasses = new ArrayList<Class>();
+        Collection<Class<?>> removeClasses = new ArrayList<Class<?>>();
 
         boolean foundOne = false;
 
@@ -195,7 +196,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 // M1, and we can in fact make it. However it is not of the desired
                 // type to be looked up. Don't do this check, which could be expensive,
                 // unless we expect to be getting some results, however.
-                Class realMcCoy = null;
+                Class<?> realMcCoy = null;
 
                 try {
                     realMcCoy = loader.loadClass(clazz.getName());
@@ -206,15 +207,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 if (realMcCoy != clazz) {
                     // Either the interface class is not available at all in our loader,
                     // or it is not the same version as we expected. Don't provide results.
-                    if (LOGGER.isLoggable(Level.WARNING)) {
-                        if (realMcCoy != null) {
-                            LOGGER.log(Level.WARNING,
-                                clazz.getName() + " is not the real McCoy! Actually found it in " +
-                                realMcCoy.getClassLoader()
-                            ); // NOI18N
-                        } else {
-                            LOGGER.log(Level.WARNING, clazz.getName() + " could not be found in " + loader); // NOI18N
-                        }
+                    if (realMcCoy != null) {
+                        LOGGER.log(Level.WARNING, "{0} is not the real McCoy! Actually found it in {1}",
+                                new Object[] {clazz.getName(), realMcCoy.getClassLoader()}); // NOI18N
+                    } else {
+                        LOGGER.log(Level.WARNING, "{0} could not be found in {1}", new Object[] {clazz.getName(), loader}); // NOI18N
                     }
 
                     return;
@@ -230,6 +227,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 try {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
 
+                    // XXX consider using ServiceLoaderLine instead
                     while (true) {
                         String line = reader.readLine();
 
@@ -277,7 +275,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             line = line.substring(2);
                         }
 
-                        Class inst = null;
+                        Class<?> inst = null;
 
                         try {
                             // Most lines are fully-qualified class names.
@@ -329,7 +327,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         LOGGER.log(Level.FINER, "Found impls of {0}: {1} and removed: {2} from: {3}", new Object[] {clazz.getName(), foundClasses, removeClasses, this});
 
+        /* XXX makes no sense, wrong types:
         foundClasses.removeAll(removeClasses);
+         */
 
         for (Item item : foundClasses) {
             if (removeClasses.contains(item.clazz)) {
@@ -339,7 +339,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             result.add(new P(item.clazz));
         }
     }
-    private static String clazzToString(Class clazz) {
+    private static String clazzToString(Class<?> clazz) {
         return clazz.getName() + "@" + clazz.getClassLoader() + ":" + clazz.getProtectionDomain().getCodeSource().getLocation(); // NOI18N
     }
 
@@ -375,7 +375,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
     }
 
     private static class Item {
-        private Class clazz;
+        private Class<?> clazz;
         private int position = -1;
         @Override
         public String toString() {
@@ -402,7 +402,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         private Class<? extends Object> clazz() {
             Object o = object;
 
-            if (o instanceof Class) {
+            if (o instanceof Class<?>) {
                 return (Class<? extends Object>) o;
             } else if (o != null) {
                 return o.getClass();
@@ -426,24 +426,24 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return clazz().hashCode();
         }
 
-        protected boolean instanceOf(Class<?> c) {
+        protected @Override boolean instanceOf(Class<?> c) {
             return c.isAssignableFrom(clazz());
         }
 
-        public Class<?> getType() {
+        public @Override Class<?> getType() {
             return clazz();
         }
 
-        public Object getInstance() {
+        public @Override Object getInstance() {
             Object o = object; // keeping local copy to avoid another
 
             // thread to modify it under my hands
-            if (o instanceof Class) {
+            if (o instanceof Class<?>) {
                 synchronized (o) { // o is Class and we will not create 
                                    // 2 instances of the same class
 
                     try {
-                        Class<?> c = ((Class) o);
+                        Class<?> c = ((Class<?>) o);
                         o = null;
 
                         synchronized (knownInstances) { // guards only the static cache
@@ -466,7 +466,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (o == null) {
-                            o = createInstance(c);
+                            o = SharedClassObjectBridge.newInstance(c);
 
                             synchronized (knownInstances) { // guards only the static cache
                                 hashPut(o);
@@ -516,19 +516,19 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return object;
         }
 
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             return clazz().getName();
         }
 
-        public String getId() {
+        public @Override String getId() {
             return clazz().getName();
         }
 
-        protected boolean creatorOf(Object obj) {
+        protected @Override boolean creatorOf(Object obj) {
             return obj == object;
         }
         private static int hashForClass(Class<?> c, int size) {
-            return Math.abs(c.hashCode()) % size;
+            return Math.abs(c.hashCode() % size);
         }
 
         private static void hashPut(Object o) {
@@ -549,33 +549,5 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
-        private static boolean findSharedClassObjectSkip;
-        private static Method findSharedClassObject;
-        /** Basically does c.newInstance(), however the method is complicated
-         * with a special behaviour for old and almost obsoleted NetBeans
-         * class: SharedClassObject.
-         */
-        private static Object createInstance(Class<?> c) throws InstantiationException, IllegalAccessException {
-            if (!findSharedClassObjectSkip) {
-                try {
-                    if (findSharedClassObject == null) {
-                        Class<?> sco;
-                        try {
-                            sco = Class.forName("org.openide.util.SharedClassObject"); // NOI18N
-                        } catch (ClassNotFoundException ex) {
-                            findSharedClassObjectSkip = true;
-                            return c.newInstance();
-                        }
-                        findSharedClassObject = sco.getMethod("findObject", Class.class, boolean.class);
-                    }
-                    if (findSharedClassObject.getReturnType().isAssignableFrom(c)) {
-                        return findSharedClassObject.invoke(null, c, true);
-                    }
-                } catch (Exception problem) {
-                    throw (InstantiationException)new InstantiationException(problem.getMessage()).initCause(problem);
-                }
-            }
-            return c.newInstance();
-        }
     }
 }

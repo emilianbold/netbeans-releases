@@ -84,23 +84,15 @@ public final class LoginAction extends AbstractAction {
         return instance;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        if (!UIUtils.showLogin()) {
+        Kenai k = UIUtils.showKenaiLogin();
+        if (k==null) {
             return;
         }
-        KenaiTopComponent.findInstance().open();
-        KenaiTopComponent.findInstance().requestActive();
+        KenaiTopComponent ktc = KenaiTopComponent.findInstance();
+        ktc.open();
+        ktc.requestActive();
+        ktc.setSelectedKenai(k);
     }
-
-    @Override
-    public boolean isEnabled() {
-        for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (k.getStatus()==Kenai.Status.OFFLINE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 }

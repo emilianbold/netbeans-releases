@@ -45,6 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
@@ -57,7 +58,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -66,13 +66,18 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -87,6 +92,7 @@ import org.xml.sax.SAXException;
 public class MakeUpdateDesc extends MatchingTask {
 
     protected boolean usedMatchingTask = false;
+
     /** Set of NBMs presented as a folder in the Update Center. */
     public /*static*/ class Group {
         public List<FileSet> filesets = new ArrayList<FileSet>();
@@ -523,9 +529,19 @@ public class MakeUpdateDesc extends MatchingTask {
                 for (String file : ds.getIncludedFiles()) {
                     File n_file = new File(fs.getDir(getProject()), file);
                     try {
-                        ZipFile zip = new ZipFile(n_file);
+                        JarFile jar = new JarFile(n_file);
                         try {
-                            ZipEntry entry = zip.getEntry("Info/info.xml");
+                            Module m = new Module();
+                            m.nbm = n_file;
+                            m.relativePath = file.replace(File.separatorChar, '/');
+                            Manifest jarmani = jar.getManifest();
+                            if (jarmani != null && jarmani.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                                // #181025: treat OSGi bundles specially.
+                                m.xml = fakeOSGiInfoXml(jar);
+                                modules.add(m);
+                                continue;
+                            }
+                            ZipEntry entry = jar.getEntry("Info/info.xml");
                             if (entry == null) {
                                 throw new BuildException("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
                             }
@@ -534,15 +550,12 @@ public class MakeUpdateDesc extends MatchingTask {
                                     return new InputSource(new ByteArrayInputStream(new byte[0]));
                                 }
                             };
-                            Module m = new Module();
-                            InputStream is = zip.getInputStream(entry);
+                            InputStream is = jar.getInputStream(entry);
                             try {
                                 m.xml = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getDocumentElement();
                             } finally {
                                 is.close();
                             }
-                            m.nbm = n_file;
-                            m.relativePath = file.replace(File.separatorChar, '/');
                             Collection<Module> moduleCollection = modules;
                             Element manifest = ((Element) m.xml.getElementsByTagName("manifest").item(0));
                             if (automaticGrouping && g.name == null) {
@@ -568,9 +581,9 @@ public class MakeUpdateDesc extends MatchingTask {
                             }
                             if (!old) {
                                 String cnb = manifest.getAttribute("OpenIDE-Module").replaceFirst("/\\d+$", "");
-                                entry = zip.getEntry("netbeans/config/Modules/" + cnb.replace('.', '-') + ".xml");
+                                entry = jar.getEntry("netbeans/config/Modules/" + cnb.replace('.', '-') + ".xml");
                                 if (entry != null) {
-                                    is = zip.getInputStream(entry);
+                                    is = jar.getInputStream(entry);
                                     try {
                                         NodeList nl = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getElementsByTagName("param");
                                         for (int i = 0; i < nl.getLength(); i++) {
@@ -590,15 +603,104 @@ public class MakeUpdateDesc extends MatchingTask {
                             }
                             moduleCollection.add(m);
                         } finally {
-                            zip.close();
+                            jar.close();
                         }
+                    } catch (BuildException x) {
+                        throw x;
                     } catch (Exception e) {
-                        throw new BuildException("Cannot access nbm file: " + n_file, e, getLocation());
+                        throw new BuildException("Cannot process " + n_file + ": " + e, e, getLocation());
                     }
                 }
             }
         }
         return r;
     }
-        
+
+    /**
+     * Create the equivalent of {@code Info/info.xml} for an OSGi bundle.
+     * @param jar a bundle
+     * @return a {@code <module ...><manifest .../></module>} valid according to
+     *         <a href="http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd">DTD</a>
+     */
+    private Element fakeOSGiInfoXml(JarFile jar) throws IOException {
+        Attributes attr = jar.getManifest().getMainAttributes();
+        Properties localized = new Properties();
+        String bundleLocalization = attr.getValue("Bundle-Localization");
+        if (bundleLocalization != null) {
+            InputStream is = jar.getInputStream(jar.getEntry(bundleLocalization + ".properties"));
+            try {
+                localized.load(is);
+            } finally {
+                is.close();
+            }
+        }
+        return fakeOSGiInfoXml(attr, localized);
+    }
+    static Element fakeOSGiInfoXml(Attributes attr, Properties localized) {
+        Document doc = XMLUtil.createDocument("module");
+        Element module = doc.getDocumentElement();
+        String cnb = attr.getValue("Bundle-SymbolicName");
+        module.setAttribute("codenamebase", cnb);
+        module.setAttribute("distribution", ""); // seems to be ignored anyway
+        module.setAttribute("downloadsize", "0"); // recalculated anyway
+        Element manifest = doc.createElement("manifest");
+        module.appendChild(manifest);
+        manifest.setAttribute("OpenIDE-Module", cnb);
+        String bundleName = loc(localized, attr, "Bundle-Name");
+        manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);
+        String bundleVersion = attr.getValue("Bundle-Version");
+        manifest.setAttribute("OpenIDE-Module-Specification-Version",
+                bundleVersion != null ? bundleVersion.replaceFirst("^(\\d+([.]\\d+([.]\\d+)?)?)([.].+)?$", "$1") : "0");
+        String requireBundle = attr.getValue("Require-Bundle");
+        if (requireBundle != null) {
+            StringBuilder b = new StringBuilder();
+            for (String dep : requireBundle.split(", ")) {
+                Matcher m = Pattern.compile("([^;]+)(?:;bundle-version=\"\\[(\\d+)((?:[.][0-9]+)*),(\\d+)\\)\")?").matcher(dep);
+                if (!m.matches()) {
+                    throw new BuildException("Could not parse dependency: " + dep);
+                }
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(m.group(1)); // dep CNB
+                String majorS = m.group(2);
+                if (majorS != null) {
+                    int major = Integer.parseInt(majorS);
+                    String rest = m.group(3);
+                    int max = Integer.parseInt(m.group(4));
+                    if (major > 99) {
+                        b.append('/').append(major / 100);
+                        if (max > major + 100) {
+                            b.append('-').append(max / 100 - 1);
+                        }
+                    } else if (max > 100) {
+                        b.append("/0-").append(max / 100 - 1);
+                    }
+                    b.append(" > ").append(major % 100).append(rest);
+                }
+            }
+            manifest.setAttribute("OpenIDE-Module-Module-Dependencies", b.toString());
+        }
+        String bundleCategory = loc(localized, attr, "Bundle-Category");
+        if (bundleCategory != null) {
+            manifest.setAttribute("OpenIDE-Module-Display-Category", bundleCategory);
+        }
+        String bundleDescription = loc(localized, attr, "Bundle-Description");
+        if (bundleDescription != null) {
+            manifest.setAttribute("OpenIDE-Module-Short-Description", bundleDescription);
+        }
+        // XXX anything else need to be set?
+        return module;
+    }
+    private static String loc(Properties localized, Attributes attr, String key) {
+        String val = attr.getValue(key);
+        if (val == null) {
+            return null;
+        } else if (val.startsWith("%")) {
+            return localized.getProperty(val.substring(1));
+        } else {
+            return val;
+        }
+    }
+
 }

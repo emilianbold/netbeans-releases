@@ -41,13 +41,25 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Future;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.debugger.ActionsManager;
 
 
@@ -56,12 +68,24 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -119,12 +143,12 @@ implements PropertyChangeListener {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
-        int ln = EditorContextBridge.getContext().getCurrentLineNumber ();
+        int lineNumber = EditorContextBridge.getContext().getCurrentLineNumber ();
         String url = EditorContextBridge.getContext().getCurrentURL ();
         if ("".equals (url.trim ())) return;
-        
+
         // 2) find and remove existing line breakpoint
-        LineBreakpoint lb = findBreakpoint(url, ln);
+        LineBreakpoint lb = findBreakpoint(url, lineNumber);
         if (lb != null) {
             d.removeBreakpoint (lb);
             return;
@@ -139,11 +163,34 @@ implements PropertyChangeListener {
 //            d.removeBreakpoint (lb);
 //            return;
 //        }
-        
-        // 3) create a new line breakpoint
+
+        // 3) check if a line breakpoint could be addded at the selected location
+        //    if not, try to adjust position or cancel the action
+        JEditorPane[] editorPane = new JEditorPane[1];
+        int adjustedLineNumber = checkLineBreakability(url, lineNumber, editorPane);
+        if (adjustedLineNumber != lineNumber) {
+            if (adjustedLineNumber == -1 || findBreakpoint(url, adjustedLineNumber) != null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
+                if (editorPane[0] != null) {
+                    Utilities.setStatusText(editorPane[0], ""); // workaroud, no status text is displayed when the same text has been already set before
+                    String msg = NbBundle.getMessage(ToggleBreakpointActionProvider.class, "CTL_Cannot_Toggle_Breakpoint");
+                    Utilities.setStatusText(editorPane[0], msg);
+                }
+                return;
+            } else {
+                if (editorPane[0] != null) {
+                    Utilities.setStatusText(editorPane[0], ""); // workaroud, no status text is displayed when the same text has been already set before
+                    String msg = NbBundle.getMessage(ToggleBreakpointActionProvider.class, "CTL_Breakpoint_Position_Adjusted");
+                    Utilities.setStatusText(editorPane[0], msg);
+                }
+                lineNumber = adjustedLineNumber;                
+            }
+        }
+
+        // 4) create a new line breakpoint
         lb = LineBreakpoint.create (
             url,
-            ln
+            lineNumber
         );
         lb.setPrintText (
             NbBundle.getBundle (ToggleBreakpointActionProvider.class).getString 
@@ -160,6 +207,185 @@ implements PropertyChangeListener {
                 actionPerformedNotifier.run();
             }
         });
+    }
+
+    private int checkLineBreakability(String url, final int lineNumber, final JEditorPane[] editorPane) {
+        FileObject fileObj = null;
+        try {
+            fileObj = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+        }
+        if (fileObj == null) return lineNumber;
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(fileObj);
+        } catch (DataObjectNotFoundException ex) {
+        }
+        if (dobj == null) return lineNumber;
+        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        if (ec == null) return lineNumber;
+        final BaseDocument doc = (BaseDocument)ec.getDocument();
+        final int rowStartOffset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
+        final int rowEndOffset;
+        try {
+            rowEndOffset = Utilities.getRowEnd(doc, rowStartOffset);
+        } catch (BadLocationException ex) {
+            return lineNumber;
+        }
+        JavaSource js = JavaSource.forFileObject(fileObj);
+        if (js == null) return lineNumber;
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes != null && openedPanes.length > 0) {
+                editorPane[0] = openedPanes[0];
+            }
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        JEditorPane[] openedPanes = ec.getOpenedPanes();
+                        if (openedPanes != null && openedPanes.length > 0) {
+                            editorPane[0] = openedPanes[0];
+                        }
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        final int[] result = new int[] {lineNumber};
+        final Future<Void> scanFinished;
+        try {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    SourcePositions positions = ci.getTrees().getSourcePositions();
+                    CompilationUnitTree compUnit = ci.getCompilationUnit();
+                    TreeUtilities treeUtils = ci.getTreeUtilities();
+
+                    Tree outerTree = null;
+                    Tree execTree = null;
+                    TreePath outerTreePath = null;
+                    TreePath execTreePath = null;
+                    Tree lastTree = null;
+                    long execTreeStartOffs = 0, execTreeEndOffs = 0;
+                    for (int index = rowStartOffset; index <= rowEndOffset; index++) {
+                        TreePath path = treeUtils.pathFor(index);
+                        Tree tree = path.getLeaf();
+                        if (tree.equals(lastTree)) continue;
+
+                        long startOffs = positions.getStartPosition(compUnit, tree);
+                        long endOffs = positions.getEndPosition(compUnit, tree);
+                        if (outerTree == null && startOffs < rowStartOffset) {
+                            outerTree = tree;
+                            outerTreePath = path;
+                            lastTree = tree;
+                            continue;
+                        }
+
+                        if (startOffs >= rowStartOffset) {
+                            if (execTree == null ||
+                                    (execTreeStartOffs >= startOffs && execTreeEndOffs <= endOffs)) {
+                                execTree = tree;
+                                execTreePath = path;
+                                execTreeStartOffs = startOffs;
+                                execTreeEndOffs = endOffs;
+                                    if (execTree instanceof VariableTree && isBreakable(execTreePath)) {
+                                    break;
+                                }
+                            } else if (startOffs > execTreeEndOffs) {
+                                if (isBreakable(execTreePath)) {
+                                    break;
+                                } else {
+                                    execTree = tree;
+                                    execTreePath = path;
+                                    execTreeStartOffs = startOffs;
+                                    execTreeEndOffs = endOffs;
+                                    if (execTree instanceof VariableTree && isBreakable(execTreePath)) {
+                                        break;
+                                    }
+                                }
+                            }
+                        } // if
+                        lastTree = tree;
+                    }
+
+                    if (execTree == null || !isBreakable(execTreePath)) {
+                        if (outerTree != null && isBreakable(outerTreePath)) {
+                            long offs = positions.getStartPosition(compUnit, outerTree);
+                            result[0] = Utilities.getLineOffset(doc, (int)offs) + 1;
+                        } else {
+                            if (outerTree != null && outerTree instanceof BlockTree) {
+                                Tree pTree = outerTreePath.getParentPath().getLeaf();
+                                if (pTree instanceof MethodTree) {
+                                    long endOffs = positions.getEndPosition(compUnit, pTree);
+                                    if (endOffs <= rowEndOffset) {
+                                        return; // i.e. result[0] is original lineNumber - allow toggle breakpoint at method end
+                                    }
+                                }
+                            }
+                            result[0] = -1; // do not allow to add a breakpoint
+                        }
+                    }
+                }
+            }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    return lineNumber;
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return lineNumber;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return lineNumber;
+                    }
+                }
+            }
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return lineNumber;
+        }
+        return result[0];
+    }
+
+    private static boolean isBreakable(TreePath path) {
+        Tree tree = path.getLeaf();
+        switch (tree.getKind()) {
+            case BLOCK:
+            case CLASS:
+            case COMPILATION_UNIT:
+            case IMPORT:
+            case MODIFIERS:
+            case EMPTY_STATEMENT:
+                return false;
+        }
+        while (path != null) {
+            tree = path.getLeaf();
+            Tree.Kind kind = tree.getKind();
+            if (kind == Tree.Kind.IMPORT) return false;
+            if (kind == Tree.Kind.VARIABLE) {
+                VariableTree varTree = (VariableTree)tree;
+                if (varTree.getInitializer() == null) {
+                    return false;
+                }
+            }
+            path = path.getParentPath();
+        }
+        return true;
     }
 
     static LineBreakpoint findBreakpoint (String url, int lineNumber) {

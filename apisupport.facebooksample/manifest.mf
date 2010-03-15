@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module: org.netbeans.modules.apisupport.facebooksample
+OpenIDE-Module-Layer: org/netbeans/modules/apisupport/facebooksample/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/facebooksample/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

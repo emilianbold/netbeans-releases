@@ -45,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.Parameter;
-import org.netbeans.modules.php.editor.model.PhpModifiers;
-import org.netbeans.modules.php.editor.model.QualifiedName;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -75,7 +76,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
 
     @Override
     public Kind getKind() {
-        PhpModifiers modifiers = new PhpModifiers(getOriginalNode().getModifier());
+        PhpModifiers modifiers = PhpModifiers.fromBitMask(getOriginalNode().getModifier());
         return modifiers.isStatic() ? Kind.STATIC_METHOD: Kind.METHOD;
     }
 
@@ -97,8 +98,8 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends Parameter> getParameters() {
-        List<Parameter> retval = new ArrayList<Parameter>();
+    public List<? extends ParameterElement> getParameters() {
+        List<ParameterElement> retval = new ArrayList<ParameterElement>();
         List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
             FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);
@@ -108,7 +109,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     }
     
     public PhpModifiers getAccessModifiers() {
-        return new PhpModifiers(getOriginalNode().getModifier());
+        return PhpModifiers.fromBitMask(getOriginalNode().getModifier());
     }
 
 }

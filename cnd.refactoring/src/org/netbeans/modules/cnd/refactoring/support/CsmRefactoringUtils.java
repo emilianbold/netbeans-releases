@@ -127,7 +127,7 @@ public final class CsmRefactoringUtils {
                 // try another projects which could share the same file
                 FileObject fileObject = CsmUtilities.getFileObject(contextFile);
                 if (fileObject != null) {
-                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject);
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(fileObject, false);
                     for (CsmFile csmFile : csmFiles) {
                         prjs.add(csmFile.getProject());
                     }

@@ -41,9 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <filesystem>
-
     <folder name="Services">
         <folder name="MIMEResolver">
             <!-- #172148 - do not process .instance files through all resolvers. -->
@@ -52,5 +50,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder> 
-
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_Module_Status_1_0" url="module-status-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
+                </file>
+                <file name="DTD_Module_Automatic_Dependencies_1_0" url="module-auto-deps-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Automatic Dependencies 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

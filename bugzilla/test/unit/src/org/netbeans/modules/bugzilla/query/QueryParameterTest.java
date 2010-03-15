@@ -125,7 +125,7 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         ParameterValue[] v = lp.getValues();
         assertEquals(2, v.length);
         s.clear();
-        for (ParameterValue pv : v) s.add((ParameterValue)pv);
+        for (ParameterValue pv : v) s.add(pv);
         if(!s.contains(PV2)) fail("mising parameter [" + PV2 + "]");
         if(!s.contains(PV3)) fail("mising parameter [" + PV3 + "]");
 

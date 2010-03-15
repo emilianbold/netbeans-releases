@@ -51,22 +51,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.AllFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private JList exeList;
-    private FileFilter elfExecutableFileFilter = ElfExecutableFileFilter.getInstance();
-    private FileFilter exeExecutableFileFilter = PeExecutableFileFilter.getInstance();
-    private FileFilter machOExecutableFileFilter = MacOSXExecutableFileFilter.getInstance();
+    private FileFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private FileFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private FileFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -186,7 +183,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 }
                 addExecutables(files[i], filesAdded);
             } else {
-                if (AllFileFilter.getInstance().accept(files[i])) {
+                if (FileFilterFactory.getAllFileFilter().accept(files[i])) {
                     continue;
                 }
                 if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
@@ -319,11 +316,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
         FileFilter[] filters;
         if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            filters = new FileFilter[]{PeExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{FileFilterFactory.getPeExecutableFileFilter()};
         } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-            filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{FileFilterFactory.getMacOSXExecutableFileFilter()};
         } else {
-            filters = new FileFilter[]{ElfExecutableFileFilter.getInstance()};
+            filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter()};
         }
         JFileChooser fileChooser = new FileChooser(
                 getString("CHOOSER_TITLE_TXT"),
@@ -337,7 +334,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             return;
         }
 
-        String path = IpeUtils.normalize(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilitities.normalize(fileChooser.getSelectedFile().getPath());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

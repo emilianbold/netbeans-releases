@@ -87,7 +87,7 @@ public abstract class CsmVirtualInfoQuery {
     //
     // Implementation of the default query
     //
-    private static final class Empty extends CsmVirtualInfoQuery {
+        private static final class Empty extends CsmVirtualInfoQuery {
         private Empty() {
         }
 
@@ -137,9 +137,12 @@ public abstract class CsmVirtualInfoQuery {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
             CharSequence sig = method.getSignature();
             Set<CsmMethod> result = new HashSet<CsmMethod>();
-            for(CsmInheritance inh : method.getContainingClass().getBaseClasses()) {
-                processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, 
-                            null, null, result, first);
+            CsmClass cls = method.getContainingClass();
+            if (cls != null) {
+                for(CsmInheritance inh : cls.getBaseClasses()) {
+                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                                null, null, result, first);
+                }
             }
             return result;
         }
@@ -211,12 +214,14 @@ public abstract class CsmVirtualInfoQuery {
                 CharSequence sig = method.getSignature();
                 for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
                     CsmClass c = (CsmClass) ref.getOwner();
-                    for(CsmMember m : c.getMembers()){
-                        if (CsmKindUtilities.isMethod(m)) {
-                            CsmMethod met = (CsmMethod) m;
-                            if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
-                                res.add(met);
-                                break;
+                    if (c != null) {
+                        for(CsmMember m : c.getMembers()){
+                            if (CsmKindUtilities.isMethod(m)) {
+                                CsmMethod met = (CsmMethod) m;
+                                if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                                    res.add(met);
+                                    break;
+                                }
                             }
                         }
                     }

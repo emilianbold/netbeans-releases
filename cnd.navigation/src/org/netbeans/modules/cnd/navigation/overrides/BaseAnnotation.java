@@ -113,11 +113,11 @@ import org.openide.text.NbDocument;
     public String getAnnotationType() {
         switch(getType()) {
             case IS_OVERRIDDEN:
-                return "org-netbeans-modules-cnd-is_overridden"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-is_overridden"; //NOI18N
             case OVERRIDES:
-                return "org-netbeans-modules-cnd-overrides"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-overrides"; //NOI18N
             case COMBINED:
-                return "org-netbeans-modules-cnd-override-is-overridden-combined"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
             default:
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
@@ -201,7 +201,10 @@ import org.openide.text.NbDocument;
         if (baseUIDs.size() + descUIDs.size() == 1) {
             CsmUID<? extends CsmOffsetableDeclaration> uid =
                     baseUIDs.isEmpty() ? descUIDs.iterator().next() : baseUIDs.iterator().next();
-            CsmUtilities.openSource(uid.getObject());
+            CsmOffsetableDeclaration decl = uid.getObject();
+            if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
+                CsmUtilities.openSource(decl);
+            }
         } else if (baseUIDs.size() + descUIDs.size() > 1) {
             String caption = getShortDescription();
             OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs));

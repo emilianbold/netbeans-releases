@@ -41,7 +41,7 @@
 package org.netbeans.modules.cnd.source;
 
 /** A node to represent a header file */
-public class HDataNode extends CndDataNode {
+public class HDataNode extends SourceDataNode {
 
     private static final String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
 

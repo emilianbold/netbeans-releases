@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Vector;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -126,9 +125,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
         boolean wasChanges = settingsReseted;
         settingsReseted = false;
         if (includesPanel != null && definitionsPanel != null) {
-            Vector<String> tmpIncludes = includesPanel.getListData();
+            List<String> tmpIncludes = includesPanel.getListData();
             wasChanges |= compiler.setSystemIncludeDirectories(tmpIncludes);
-            Vector<String> definitions = definitionsPanel.getListData();
+            List<String> definitions = definitionsPanel.getListData();
             wasChanges |= compiler.setSystemPreprocessorSymbols(definitions);
         }
         return wasChanges;
@@ -299,8 +298,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);
@@ -402,8 +401,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

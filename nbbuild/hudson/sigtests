@@ -2,7 +2,7 @@
 
 sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtest/snapshot
 echo SigTest: Checking All Changes
-ANT_OPTS='-J-XX:+HeapDumpOnOutOfMemoryError -J-XX:HeapDumpPath=/tmp/ant-check-sigtests.hprof' ant -Dsigtest.basedir=$sigtest_prev check-sigtests
+ANT_OPTS='-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/ant-check-sigtests.hprof' ant -Dsigtest.basedir=$sigtest_prev check-sigtests
 for report in `pwd`/nbbuild/build/sigtest/check-snapshot/*; do
   if ! expr "$report" : ".*/TESTS-.*" && grep 'failures="1"' $report >/dev/null; then
     sigtest_email=`cat $report | grep "^email:" | grep -v nbm.domain | cut -c 8-`

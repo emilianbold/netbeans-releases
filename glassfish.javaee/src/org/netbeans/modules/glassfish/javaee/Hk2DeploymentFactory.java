@@ -109,6 +109,7 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
      * @param uri 
      * @return 
      */
+    // also check the urlPattern in layer.xml when changing this
     public boolean handlesURI(String uri) {
         if (uri == null) {
             return false;

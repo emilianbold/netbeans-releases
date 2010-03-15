@@ -52,7 +52,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.dummies.DummyKenaiRepositories;
+import org.netbeans.modules.bugtracking.kenai.spi.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
 import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;

@@ -39,17 +39,23 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.LambdaFunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -62,17 +68,17 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
-    private List<? extends Parameter> paremeters;
+    private List<? extends ParameterElement> paremeters;
     volatile String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
-        super(inScope, info, new PhpModifiers(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
         this.paremeters = info.getParameters();
     }
     protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType) {
@@ -87,14 +93,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         this.returnType = info.getReturnType();
     }
 
-    FunctionScopeImpl(Scope inScope, IndexedFunction indexedFunction) {
-        this(inScope, indexedFunction, PhpKind.FUNCTION);
+    FunctionScopeImpl(Scope inScope, BaseFunctionElement indexedFunction) {
+        this(inScope, indexedFunction, PhpElementKind.FUNCTION);
     }
 
-    protected FunctionScopeImpl(Scope inScope, final IndexedFunction element, PhpKind kind) {
+    protected FunctionScopeImpl(Scope inScope, final BaseFunctionElement element, PhpElementKind kind) {
         super(inScope, element, kind);
         this.paremeters = element.getParameters();
-        this.returnType =  element.getReturnType();
+        this.returnType =  element.asString(PrintAs.ReturnTypes);
     }
 
     public static FunctionScopeImpl createElement(Scope scope, LambdaFunctionDeclaration node) {
@@ -175,14 +181,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     public List<? extends String> getParameterNames() {
         assert paremeters != null;
         List<String> parameterNames = new ArrayList<String>();
-        for (Parameter parameter : paremeters) {
+        for (ParameterElement parameter : paremeters) {
             parameterNames.add(parameter.getName());
         }
         return parameterNames;
     }
 
     @NonNull
-    public List<? extends Parameter> getParameters() {
+    public List<? extends ParameterElement> getParameters() {
         return paremeters;
     }
 
@@ -213,7 +219,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     public Collection<? extends VariableName> getDeclaredVariables() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpKind().equals(PhpKind.VARIABLE);
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
             }
         });
     }
@@ -230,13 +236,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        List<? extends Parameter> parameters = getParameters();
+        List<? extends ParameterElement> parameters = getParameters();
         for (int idx = 0; idx < parameters.size(); idx++) {
-            Parameter parameter = parameters.get(idx);
+            ParameterElementImpl parameter = (ParameterElementImpl) parameters.get(idx);
             if (idx > 0) {
                 sb.append(',');//NOI18N
             }
-            sb.append(parameter.getIndexSignature());
+            sb.append(parameter.getSignature());
             
         }
         sb.append(";");//NOI18N
@@ -252,9 +258,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     @Override
     public QualifiedName getNamespaceName() {
-        if (indexedElement instanceof IndexedFunction) {
-            IndexedFunction indexedFunction = (IndexedFunction)indexedElement;
-            return QualifiedName.create(indexedFunction.getNamespaceName());
+        if (indexedElement instanceof FunctionElement) {
+            FunctionElement indexedFunction = (FunctionElement)indexedElement;
+            return indexedFunction.getNamespaceName();
         }
         return super.getNamespaceName();
     }

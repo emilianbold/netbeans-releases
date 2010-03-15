@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -71,6 +72,8 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -80,6 +83,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -409,8 +413,7 @@ public final class WLCommandDeployer {
         String host = parts[0];
         String port = parts.length > 1 ? parts[1] : "";
 
-        // FIXME java binary
-        ExternalProcessBuilder builder = new ExternalProcessBuilder("java") // NOI18N
+        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
                 .addArgument("-cp") // NOI18N
                 .addArgument(getClassPath())
                 .addArgument("weblogic.Deployer") // NOI18N
@@ -450,6 +453,22 @@ public final class WLCommandDeployer {
             }
         }
         return "";
+    }
+
+    private String getJavaBinary() {
+        // TODO configurable ? or use the jdk server is running on ?
+        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection<FileObject> folders = platform.getInstallFolders();
+        String javaBinary = "java"; // NOI18N
+        if (folders.size() > 0) {
+            FileObject folder = folders.iterator().next();
+            File file = FileUtil.toFile(folder);
+            if (file != null) {
+                javaBinary = file.getAbsolutePath() + File.separator
+                        + "bin" + File.separator + "java"; // NOI18N
+            }
+        }
+        return javaBinary;
     }
 
     private static void waitForUrlReady(WLDeploymentFactory factory,

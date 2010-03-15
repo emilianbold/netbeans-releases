@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects.server;
 import org.netbeans.modules.ruby.railsprojects.server.nodes.RubyServerNode;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -48,6 +49,8 @@ import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -96,16 +99,23 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         return null;
     }
     
-    public String getStartupParam() {
-        return "webrick"; //NOI18N
+    @Override
+    public List<String> getStartupParams(RailsVersion version) {
+        if (version.isRails3OrHigher()) {
+            return Arrays.asList("server", "webrick");
+        }
+        return Arrays.asList("webrick");
     }
 
     public String getScriptPrefix() {
         return null;
     }
 
-    public String getServerPath() {
-        return "script" + File.separator + "server"; //NOI18N
+    public String getServerPath(RailsVersion version) {
+        if (version.isRails3OrHigher()) {
+            return "script" + File.separator + "rails";
+        }
+        return "script" + File.separator + "server";
     }
 
     public boolean isStartupMsg(String outputLine) {

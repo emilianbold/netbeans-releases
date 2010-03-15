@@ -46,13 +46,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -147,7 +146,7 @@ public class MakeConfiguration extends Configuration {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
+        dependencyChecking = new BooleanConfiguration(isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -443,7 +442,7 @@ public class MakeConfiguration extends Configuration {
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        Vector<ConfigurationAuxObject> copiedAuxs = new Vector<ConfigurationAuxObject>();
+        List<ConfigurationAuxObject> copiedAuxs = new ArrayList<ConfigurationAuxObject>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
@@ -696,7 +695,7 @@ public class MakeConfiguration extends Configuration {
         private boolean notYetSet = true;
 
         LanguageBooleanConfiguration() {
-            super(null, false);
+            super(false);
         }
 
         @Override
@@ -795,8 +794,8 @@ public class MakeConfiguration extends Configuration {
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {
                 LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
-                String outputLocation = IpeUtils.getDirName(projectItem.getMakeArtifact().getOutput());
-                if (IpeUtils.isPathAbsolute(outputLocation)) {
+                String outputLocation = CndPathUtilitities.getDirName(projectItem.getMakeArtifact().getOutput());
+                if (CndPathUtilitities.isPathAbsolute(outputLocation)) {
                     subProjectOutputLocations.add(outputLocation);
                 } else {
                     subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
@@ -828,9 +827,9 @@ public class MakeConfiguration extends Configuration {
         if (output == null) {
             return output;
         }
-        if (!IpeUtils.isPathAbsolute(output)) {
+        if (!CndPathUtilitities.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = IpeUtils.normalize(output);
+            output = CndPathUtilitities.normalize(output);
         }
         return expandMacros(output);
     }
@@ -841,12 +840,12 @@ public class MakeConfiguration extends Configuration {
 
     public String expandMacros(String val) {
         // Substitute macros
-        val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
-        val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
-        val = IpeUtils.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_PLATFORM}", getVariant()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_CONF}", getName()); // NOI18N
+        val = CndPathUtilitities.expandMacro(val, "${CND_DISTDIR}", MakeConfiguration.DIST_FOLDER); // NOI18N
         return val;
     }
 

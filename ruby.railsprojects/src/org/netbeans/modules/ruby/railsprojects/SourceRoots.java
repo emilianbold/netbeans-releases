@@ -185,6 +185,9 @@ public final class SourceRoots {
 
         // show app/metal for Rack applications, but only if the folder already exists
         boolean metal = fo.getFileObject("app/metal") != null;//NOI18N
+        boolean mails = fo.getFileObject("app/mails") != null;//NOI18N
+        boolean middleware = fo.getFileObject("app/middleware") != null;//NOI18N
+        boolean reports = fo.getFileObject("app/reports") != null;//NOI18N
 
         sourceRootNames = new ArrayList<String>(20);
         sourceRootProperties = new ArrayList<String>(20);
@@ -194,12 +197,30 @@ public final class SourceRoots {
         if (metal) {
             sourceRootNames.add(getNodeDescription("app_metal")); // NOI18N
         }
+        if (mails) {
+            sourceRootNames.add(getNodeDescription("app_mails")); // NOI18N
+        }
+        if (middleware) {
+            sourceRootNames.add(getNodeDescription("app_middleware")); // NOI18N
+        }
+        if (reports) {
+            sourceRootNames.add(getNodeDescription("app_reports")); // NOI18N
+        }
         sourceRootNames.add(getNodeDescription("app_models")); // NOI18N
         sourceRootNames.add(getNodeDescription("app_views")); // NOI18N
         sourceRootProperties.add("app/controllers"); // NOI18N
         sourceRootProperties.add("app/helpers"); // NOI18N
         if (metal) {
             sourceRootProperties.add("app/metal"); // NOI18N
+        }
+        if (mails) {
+            sourceRootProperties.add("app/mails"); // NOI18N
+        }
+        if (middleware) {
+            sourceRootProperties.add("app/middleware"); // NOI18N
+        }
+        if (reports) {
+            sourceRootProperties.add("app/reports"); // NOI18N
         }
         sourceRootProperties.add("app/models"); // NOI18N
         sourceRootProperties.add("app/views"); // NOI18N
@@ -212,6 +233,9 @@ public final class SourceRoots {
             knownAppDirs.add("helpers"); // NOI18N
             knownAppDirs.add("models"); // NOI18N
             knownAppDirs.add("views"); // NOI18N
+            knownAppDirs.add("reports"); // NOI18N
+            knownAppDirs.add("metal"); // NOI18N
+            knownAppDirs.add("mails"); // NOI18N
             List<String> missing = findUnknownFolders(app, knownAppDirs);
             if (missing != null) {
                 for (String name : missing) {

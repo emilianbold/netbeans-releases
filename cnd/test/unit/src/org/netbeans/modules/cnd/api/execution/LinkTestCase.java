@@ -112,4 +112,22 @@ public class LinkTestCase extends CndBaseTestCase {
         }
         assertEquals(expected, resolved);
     }
+
+    public void testCygwinLink4() throws Exception {
+        File file = getDataFile("cygwin1.7/bin/gcc.exe.data");// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
+        String expected = getDataFile("cygwin1.7/etc/alternatives/gcc").getAbsolutePath();// NOI18N
+        expected = expected.replace('\\', '/');
+        resolved = resolved.replace('\\', '/');
+        assertEquals(expected, resolved);
+    }
+
+    public void testCygwinLink5() throws Exception {
+        File file = getDataFile("cygwin1.7/etc/alternatives/gcc.data");// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
+        String expected = getDataFile("cygwin1.7/bin/gcc-4.exe").getAbsolutePath();// NOI18N
+        expected = expected.replace('\\', '/');
+        resolved = resolved.replace('\\', '/');
+        assertEquals(expected, resolved);
+    }
 }

@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["__cdecl",<205>,line=1,col=9],offset=8,file=null'='["__attribute__",<205>,line=1,col=17],offset=16,file=null ["(",<138>,line=1,col=30],offset=29,file=null ["(",<138>,line=1,col=31],offset=30,file=null ["__cdecl__",<205>,line=1,col=32],offset=31,file=null [")",<139>,line=1,col=41],offset=40,file=null [")",<139>,line=1,col=42],offset=41,file=null'
+<U>#define '["__cdecl",<89>,line=1,col=9],offset=8,file=null'='["__attribute__",<89>,line=1,col=17],offset=16,file=null ["(",<12>,line=1,col=30],offset=29,file=null ["(",<12>,line=1,col=31],offset=30,file=null ["__cdecl__",<89>,line=1,col=32],offset=31,file=null [")",<13>,line=1,col=41],offset=40,file=null [")",<13>,line=1,col=42],offset=41,file=null'
 System Map:
 MACROS (sorted 0):
 

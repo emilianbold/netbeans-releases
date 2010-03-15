@@ -117,6 +117,7 @@ public final class UIUtils {
         if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
             return true;
         }
+        boolean chatSupported = Utilities.isChatSupported(kenai);
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
 
         if (!force) {
@@ -138,7 +139,7 @@ public final class UIUtils {
                 return false;
             }
             kenai.login(uname, password,
-                    force ? true : Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported(kenai)))));
+                    force ? true : Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), String.valueOf(chatSupported))));
         } catch (KenaiException ex) {
             return false;
         }
@@ -146,16 +147,23 @@ public final class UIUtils {
     }
 
     /**
-     *
      * @return
      */
     public static boolean showLogin() {
+        return showKenaiLogin()!=null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static Kenai showKenaiLogin() {
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
             if (k.getStatus()==Kenai.Status.OFFLINE) {
-                return showLogin(k);
+                return showKenaiLogin(k);
             }
         }
-        return showLogin(KenaiManager.getDefault().getKenai("https://kenai.com"));
+        return showKenaiLogin(null);
     }
     /**
      * Loads password from the keyring. For settings compatibility,
@@ -181,6 +189,16 @@ public final class UIUtils {
      * @return true, if user was succesfully logged in
      */
     public static boolean showLogin(final Kenai kenai) {
+        return showKenaiLogin(kenai) != null;
+    }
+
+    /**
+     * Invokes login dialog
+     * @param kenai
+     * @return kenai instance, where user requested login, or null if login was
+     * cancelled
+     */
+    public static Kenai showKenaiLogin(final Kenai kenai) {
         PresenceIndicator.getDefault().init();
         final LoginPanel loginPanel = new LoginPanel(kenai, new CredentialsImpl());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
@@ -253,7 +271,10 @@ public final class UIUtils {
         loginPanel.clearStatus();
         d.setVisible(true);
 
-        return loginPanel.getClientProperty("cancel")==null; // NOI18N
+        if (loginPanel.getClientProperty("cancel")==null) {  // NOI18N
+            return loginPanel.getKenai();
+        }
+        return null;
     }
 
     private static class CredentialsImpl implements LoginPanel.Credentials {

@@ -96,7 +96,7 @@ public final class CsmContext {
     }
 
     public static CsmContext create(final Document doc, int start, int end, int offset) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         if (csmFile != null) {
             final CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, offset);
             return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, start, end, offset);
@@ -145,7 +145,7 @@ public final class CsmContext {
             component = (ec == null) ? null : CsmUtilities.findRecentEditorPaneInEQ(ec);
         }
         if (component != null) {
-            CsmFile csmFile = CsmUtilities.getCsmFile(component, false);
+            CsmFile csmFile = CsmUtilities.getCsmFile(component, false, false);
             if (csmFile != null) {
                 final int start = component.getSelectionStart();
                 final int end = component.getSelectionEnd();

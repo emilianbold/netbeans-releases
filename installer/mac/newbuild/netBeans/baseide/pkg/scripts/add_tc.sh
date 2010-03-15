@@ -11,21 +11,24 @@ then
 fi
 if [ -d "$nb_dir" ] && [ -d "$tc_dir" ]
 then
-  cd "$nb_dir" 
-  cd Contents/Resources/NetBeans*/etc
-  if [ -f netbeans.conf ]
-  then
-    token=`date "+%Y%m%d%H%M%S"`
-    echo netbeans.conf found: `pwd`/netbeans.conf
-    if  grep -q "J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=$tc_dir" netbeans.conf
-    then
-       echo Tomcat "$tc_dir" has been already added
-    else
-        cp netbeans.conf netbeans.conf_orig_tc
-        cat netbeans.conf_orig_tc  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome='$tc_dir' -J-Dorg.netbeans.modules.tomcat.autoregister.token='$token' |' > netbeans.conf
-    fi
+  cd "$nb_dir"
+  cd Contents/Resources/NetBeans*/
+  curdir=`pwd` 
+  dirname=`dirname "$0"`
+  jdk_home=`"$dirname"/get_current_jdk.sh`
+  "$jdk_home"/bin/java -cp \
+                           platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-tomcat5.jar \
+                           \
+                           org.netbeans.modules.tomcat5.registration.AutomaticRegistration \
+                           --add \
+                           "$curdir/nb" \
+                           "$tc_dir"
+  val=$?
+
+  if [ $val -eq 0 ] ; then
+     echo "Tomcat installed at $tc_dir integrated with NetBeans installed at $nb_dir"
   else
-    echo No netbeans.conf in: `pwd`
+     echo "Tomcat installed at $tc_dir was not integrated with NetBeans installed at $nb_dir, error code is $val"
   fi
 fi
 

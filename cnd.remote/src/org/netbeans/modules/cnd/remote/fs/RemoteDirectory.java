@@ -41,11 +41,13 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NotImplementedException;
 
 /**
@@ -54,8 +56,9 @@ import org.openide.util.NotImplementedException;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
-    public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, String remotePath, File cache) {
-        super(fileSystem, execEnv, remotePath, cache);
+    public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+            FileObject parent, String remotePath, File cache) {
+        super(fileSystem, execEnv, parent, remotePath, cache);
     }
 
     @Override
@@ -97,9 +100,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (! file.exists()) {
                 return null;
             } else if (file.isDirectory()) {
-                return new RemoteDirectory(fileSystem, execEnv, remoteAbsPath, file);
+                return new RemoteDirectory(fileSystem, execEnv, this, remoteAbsPath, file);
             } else {
-                return new RemotePlainFile(fileSystem, execEnv, remoteAbsPath, file);
+                return new RemotePlainFile(fileSystem, execEnv, this, remoteAbsPath, file);
             }
         } catch (CancellationException ex) {
             // TODO: clear CndUtils cache
@@ -112,7 +115,31 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public FileObject[] getChildren() {
-        throw new NotImplementedException();
+        try {
+            getRemoteFileSupport().ensureDirSync(cache, remotePath);
+            File[] childrenFiles = cache.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return ! RemoteFileSupport.FLAG_FILE_NAME.equals(name);
+                }
+            });
+            FileObject[] childrenFO = new FileObject[childrenFiles.length];
+            for (int i = 0; i < childrenFiles.length; i++) {
+                String childPath = remotePath + '/' + childrenFiles[i].getName(); //NOI18N
+                if (childrenFiles[i].isDirectory()) {
+                    childrenFO[i] = new RemoteDirectory(fileSystem, execEnv, this, childPath, childrenFiles[i]);
+                } else {
+                    childrenFO[i] = new RemotePlainFile(fileSystem, execEnv, this, childPath, childrenFiles[i]);
+                }
+            }
+            return childrenFO;
+        } catch (IOException ex) {
+            // TODO: error processing
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            // never report CancellationException
+        }
+        return new FileObject[0];
     }
 
     

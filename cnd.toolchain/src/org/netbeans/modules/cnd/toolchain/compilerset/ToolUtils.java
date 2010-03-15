@@ -40,13 +40,25 @@
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Utilities;
 
 /**
@@ -55,7 +67,8 @@ import org.openide.util.Utilities;
  */
 public final class ToolUtils {
     private static String cygwinBase;
-    private static Map<ToolchainDescriptor, String> commandsFolders = new HashMap<ToolchainDescriptor, String>(8);
+    private static final Map<ToolchainDescriptor, String> commandsFolders = new HashMap<ToolchainDescriptor, String>(8);
+    private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
 
     private ToolUtils() {
     }
@@ -65,10 +78,9 @@ public final class ToolUtils {
      */
     public static String getCygwinBase() {
         if (cygwinBase == null) {
-            ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
-            ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
+            ToolchainDescriptor td = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
-                String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                String cygwinBin = getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (cygwinBin != null) {
                     cygwinBase = cygwinBin.substring(0, cygwinBin.length() - 4).replace("\\", "/"); // NOI18N
                 }
@@ -127,8 +139,7 @@ public final class ToolUtils {
         if (td != null) {
             String dir = commandsFolders.get(td);
             if (dir == null) {
-                ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
-                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                String msysBin = getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (msysBin != null) {
                     dir = msysBin.replace("\\", "/"); // NOI18N
                 } else {
@@ -158,6 +169,60 @@ public final class ToolUtils {
             default:
                 return "none"; // NOI18N
         }
+    }
+    public static boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+        switch (platform) {
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+                for (String p : d.getPlatforms()) {
+                    if ("sun_sparc".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+                for (String p : d.getPlatforms()) {
+                    if ("sun_intel".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_LINUX:
+                for (String p : d.getPlatforms()) {
+                    if ("linux".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_WINDOWS:
+                for (String p : d.getPlatforms()) {
+                    if ("windows".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_MACOSX:
+                for (String p : d.getPlatforms()) {
+                    if ("mac".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_GENERIC:
+                for (String p : d.getPlatforms()) {
+                    if ("unix".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_NONE:
+                for (String p : d.getPlatforms()) {
+                    if ("none".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+        }
+        return false;
     }
 
     public static int computeLocalPlatform() {
@@ -298,4 +363,225 @@ public final class ToolUtils {
         }
         return "PATH"; // NOI18N
     }
+
+    public static boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
+        boolean res = isMyFolderImpl(path, d, platform, known);
+        if (ToolchainManagerImpl.TRACE && res) {
+            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName()); // NOI18N
+        }
+        return res;
+    }
+
+    /**
+     *
+     * @param path
+     * @param d
+     * @param platform
+     * @param known if path known the methdod does not check path pattern
+     * @return
+     */
+    private static boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known) {
+        CompilerDescriptor c = d.getC();
+        if (c == null || c.getNames().length == 0) {
+            return false;
+        }
+        Pattern pattern = null;
+        if (!known) {
+            if (c.getPathPattern() != null) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                    pattern = Pattern.compile(c.getPathPattern(), Pattern.CASE_INSENSITIVE);
+                } else {
+                    pattern = Pattern.compile(c.getPathPattern());
+                }
+            }
+            if (pattern != null) {
+                if (!pattern.matcher(path).find()) {
+                    String f = c.getExistFolder();
+                    if (f == null) {
+                        return false;
+                    }
+                    File folder = new File(path + "/" + f); // NOI18N
+                    if (!folder.exists() || !folder.isDirectory()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        File file = new File(path + "/" + c.getNames()[0]); // NOI18N
+        if (!file.exists()) {
+            file = new File(path + "/" + c.getNames()[0] + ".exe"); // NOI18N
+            if (!file.exists()) {
+                file = new File(path + "/" + c.getNames()[0] + ".exe.lnk"); // NOI18N
+                if (!file.exists()) {
+                    return false;
+                }
+            }
+        }
+        String flag = c.getVersionFlags();
+        if (flag == null) {
+            return true;
+        }
+        if (c.getVersionPattern() == null) {
+            return true;
+        }
+        pattern = Pattern.compile(c.getVersionPattern());
+        String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
+        String s = getCommandOutput(path, command, flag);
+        boolean res = pattern.matcher(s).find();
+        if (ToolchainManagerImpl.TRACE && !res) {
+            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
+            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
+        }
+        return res;
+    }
+
+    public static String getBaseFolder(ToolchainDescriptor d, int platform) {
+        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+            return null;
+        }
+        List<BaseFolder> list = d.getBaseFolders();
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        for (BaseFolder folder : list) {
+            String pattern = folder.getFolderPattern();
+            String key = folder.getFolderKey();
+            if (key == null || pattern == null) {
+                continue;
+            }
+            String base = readRegistry(key, pattern);
+            if (base == null) {
+                continue;
+            }
+            if (folder.getFolderSuffix() != null) {
+                base += "/" + folder.getFolderSuffix(); // NOI18N
+            }
+            return base;
+        }
+        return null;
+    }
+
+    public static String getCommandFolder(ToolchainDescriptor d, int platform) {
+        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
+            return null;
+        }
+        List<BaseFolder> list = d.getCommandFolders();
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        String base = null;
+        for (BaseFolder folder : list) {
+            String pattern = folder.getFolderPattern();
+            String key = folder.getFolderKey();
+            if (key == null || pattern == null) {
+                continue;
+            }
+            base = readRegistry(key, pattern);
+            if (base != null && folder.getFolderSuffix() != null) {
+                base += "\\" + folder.getFolderSuffix(); // NOI18N
+            }
+            if (base != null) {
+                return base;
+            }
+        }
+        for (BaseFolder folder : list) {
+            // search for unregistered msys
+            String pattern = folder.getFolderPathPattern();
+            if (pattern != null && pattern.length() > 0) {
+                Pattern p = Pattern.compile(pattern);
+                for (String dir : Path.getPath()) {
+                    if (p.matcher(dir).find()) {
+                        return dir;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String readRegistry(String key, String pattern) {
+        if (ToolchainManagerImpl.TRACE) {
+            System.err.println("Read registry " + key); // NOI18N
+        }
+        String base = null;
+        String res = getRegistry(key);
+        if (res != null){
+            Pattern p = Pattern.compile(pattern);
+            StringTokenizer st = new StringTokenizer(res, "\n"); // NOI18N
+            while(st.hasMoreTokens()) {
+                String line = st.nextToken().trim();
+                if (ToolchainManagerImpl.TRACE) {
+                    System.err.println("\t" + line); // NOI18N
+                }
+                Matcher m = p.matcher(line);
+                if (m.find() && m.groupCount() == 1) {
+                    base = m.group(1).trim();
+                    if (ToolchainManagerImpl.TRACE) {
+                        System.err.println("\tFound " + base); // NOI18N
+                    }
+                }
+            }
+        }
+        if (base == null && key.toLowerCase().startsWith("hklm\\")) { // NOI18N
+            // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
+            base = readRegistry("hkcu\\" + key.substring(5), pattern); // NOI18N
+        }
+        return base;
+    }
+
+    private static String getCommandOutput(String path, String command, String flags) {
+        String res = commandCache.get(command+" "+flags); // NOI18N
+        if (res != null) {
+            //System.err.println("Get command output from cache #"+command); // NOI18N
+            return res;
+        }
+        ArrayList<String> args = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(flags," "); // NOI18N
+        while(st.hasMoreTokens()) {
+            args.add(st.nextToken());
+        }
+        if (path == null) {
+            path = ""; // NOI18N
+        }
+        ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
+        StringBuilder buf = new StringBuilder();
+        if (status.isOK()){
+            buf.append(status.output);
+            buf.append('\n');
+            buf.append(status.error);
+        }
+        commandCache.put(command+" "+flags, buf.toString()); // NOI18N
+        return buf.toString();
+    }
+
+    private static String getRegistry(String key) {
+        String res = commandCache.get("reg "+key); // NOI18N
+        if (res != null) {
+            //System.err.println("Get command output from cache #reg "+key); // NOI18N
+            return res;
+        }
+        String reg_exe = "reg.exe"; // NOI18N
+        try {
+            String windir = System.getenv("WINDIR"); // NOI18N
+            if (windir != null) {
+                File sys32 = new File(windir, "System32"); // NOI18N
+                reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
+            }
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+
+        ExitStatus status = ProcessUtils.executeWithoutMacroExpansion(null, ExecutionEnvironmentFactory.getLocal(), reg_exe, "query", key, "/s"); // NOI18N
+
+        if (status.isOK()){
+            res = status.output.toString();
+        } else {
+            res = ""; // NOI18N
+        }
+        commandCache.put("reg "+key, res); // NOI18N
+        //System.err.println("Put command output from cache #reg "+key); // NOI18N
+        return res;
+
+    }
+
 }

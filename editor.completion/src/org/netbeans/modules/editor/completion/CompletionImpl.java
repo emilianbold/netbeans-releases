@@ -249,6 +249,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         });
         docAutoPopupTimer.setRepeats(false);
+        final long when = System.currentTimeMillis();
 
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -273,7 +274,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         null, -1, CompletionImpl.this, null, null, 0);
                 pleaseWaitDisplayed = true;
                 if (!politeWaitText) {
-                    initializeProfiling();
+                    initializeProfiling(when);
                 }
             }
         });
@@ -1734,11 +1735,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         UI_LOG.log(rec);
     }
 
-    private void initializeProfiling() {
+    private void initializeProfiling(long when) {
         if (profile != null) {
             return;
         }
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
         if (fo == null) {
             return;
         }
@@ -1750,7 +1751,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (profiler == null) {
             return;
         }
-        profile = new Profile(profiler);
+        profile = new Profile(profiler, when);
     }
 
     private class Profile implements Runnable {
@@ -1758,8 +1759,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         boolean profiling;
         private final long time;
 
-        public Profile(Object profiler) {
-            time = System.currentTimeMillis();
+        public Profile(Object profiler, long when) {
+            time = when;
             this.profiler = profiler;
             run();
         }

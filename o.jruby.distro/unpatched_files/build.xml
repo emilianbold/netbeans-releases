@@ -402,14 +402,10 @@
     <taskdef resource="aQute/bnd/ant/taskdef.properties"
       classpath="${build.lib.dir}/bnd-0.0.396.jar"/>
     <bndwrap definitions="${build.dir}" output="${dest.lib.dir}">
-      <fileset file="${jar.wrap}" />
+      <fileset file="${lib.dir}/jruby.jar" />
     </bndwrap>
-     <!-- Modified for NB: commented out since bnd 0.0.396 doesn't produce
-      a ${jar.wrap}$ artifact (note the trailing '$' -->
-    <!--
-    <move file="${jar.wrap}$" tofile="${jar.wrap}"
-      overwrite="true" />
-     -->
+    <!-- bnd 0.0.396 produces a .bar file -->
+    <move file="${lib.dir}/jruby.bar" tofile="${lib.dir}/jruby.jar" overwrite="true"/>
   </target>
 
     <target name="jar-complete" depends="generate-method-classes, generate-unsafe" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">

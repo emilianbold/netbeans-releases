@@ -46,11 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDescriptor;
@@ -347,13 +346,13 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Macro Definitions"); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
+            List newList = panel.getListData();
             StringBuilder macros = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     macros.append(";"); // NOI18N
                 }
-                macros.append(newList.elementAt(i));
+                macros.append(newList.get(i));
             }
             macroTextField.setText(macros.toString());
         }
@@ -369,13 +368,13 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector newList = panel.getListData();
+            List newList = panel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     includes.append(";"); // NOI18N
                 }
-                includes.append(newList.elementAt(i));
+                includes.append(newList.get(i));
             }
             includeTextField.setText(includes.toString());
         }
@@ -417,7 +416,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = IpeUtils.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             return itemPath;
         }
 
@@ -467,8 +466,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);
@@ -543,8 +542,8 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = getListData();
-            Object[] arr = getListData().toArray();
+            List<String> vector = getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

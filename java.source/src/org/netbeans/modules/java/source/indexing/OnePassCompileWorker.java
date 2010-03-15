@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
@@ -184,7 +185,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 Iterable<? extends TypeElement> types;
-                fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
+                fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
                 try {
                     types = jt.enterTrees(Collections.singletonList(unit.first));
                     if (jfo2units.remove(active.jfo) != null) {
@@ -219,16 +220,16 @@ final class OnePassCompileWorker extends CompileWorker {
                             continue;
                         }
                     }
-                } finally {
-                    fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
-                }
-                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
+                } finally {
+                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
+                }
+                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();

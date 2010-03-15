@@ -1,6 +1,7 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
+import java.util.regex.Matcher;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.awt.Color;
 import java.awt.Component;
@@ -8,6 +9,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -28,8 +30,11 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class QueryTableCellRenderer extends DefaultTableCellRenderer {
+    public static final String PROPERTY_FORMAT = "format";                      // NOI18N
+    public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
     private Query query;
+    private IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
     private static Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
@@ -51,8 +56,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor       = new Color(0x999999);
 
-    public QueryTableCellRenderer(Query query) {
+    public QueryTableCellRenderer(Query query, IssueTable issueTable) {
         this.query = query;
+        this.issueTable = issueTable;
     }
 
     private static MessageFormat getFormat(String key) {
@@ -66,8 +72,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         JLabel renderer = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         renderer.setIcon(null);
         if(!query.isSaved()) {
-            TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
-            setRowColors(style, renderer);
+            TableCellStyle style = getDefaultCellStyle(table, issueTable, (IssueProperty) value, isSelected, row);
+            setStyleProperties(renderer, style);
             return renderer;
         }
         
@@ -79,35 +85,44 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         } 
 
         if(value instanceof IssueNode.IssueProperty) {
-            style = getCellStyle(table, query, (IssueProperty)value, isSelected, row);
+            style = getCellStyle(table, query, issueTable, (IssueProperty)value, isSelected, row);
         }
-
-        if(renderer instanceof JComponent && style != null) {
-            JComponent l = (JComponent) renderer;
-            l.putClientProperty("format", style.format);                        // NOI18N
-            ((JComponent) renderer).setToolTipText(style.tooltip);
-            setRowColors(style, l);
-        }
+        setStyleProperties(renderer, style);
         return renderer;
+    }
+
+    public void setStyleProperties(JLabel renderer, TableCellStyle style) {
+        if (style != null) {
+            renderer.putClientProperty(PROPERTY_FORMAT, style.format); // NOI18N
+            renderer.putClientProperty(PROPERTY_HIGHLIGHT_PATTERN, style.highlightPattern); // NOI18N
+            ((JComponent) renderer).setToolTipText(style.tooltip);
+            setRowColors(style, renderer);
+        }
     }
 
     @Override
     protected void paintComponent(Graphics g) {        
-        fitText(this);
+        processText(this);
         super.paintComponent(g);
     }
 
-    public static void fitText(JLabel label) {
-        MessageFormat format = (MessageFormat) label.getClientProperty("format");     // NOI18N
+    public static void processText(JLabel label) {
+        MessageFormat format = (MessageFormat) label.getClientProperty(PROPERTY_FORMAT);     // NOI18N
+        Pattern pattern = (Pattern) label.getClientProperty(PROPERTY_HIGHLIGHT_PATTERN);     // NOI18N
         String s = computeFitText(label);
-        if(format != null) {
+        if(format != null || pattern != null) {
             StringBuffer sb = new StringBuffer();
             sb.append("<html>");                                                // NOI18N
             s = TextUtils.escapeForHTMLLabel(s);
-            format.format(new Object[] {s}, sb, null);
+            if(format != null) {
+                format.format(new Object[] {s}, sb, null);
+            }
+            if(pattern != null) {
+                sb.append(highLight(s, pattern));
+            }
             sb.append("</html>");                                               // NOI18N
             s = sb.toString();
-        }
+        } 
         label.setText(s);
     }
 
@@ -136,17 +151,42 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return text;
     }
 
+    private static String highLight(String s, Pattern pattern) {
+        Matcher matcher = pattern.matcher(s);
+        int idx = 0;
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find(idx)) {
+            int start = matcher.start();
+            int end = matcher.end();
+            if (start == end) {
+                break;
+            }
+            sb.append(s.substring(idx, start));
+            sb.append("<font bgcolor=\"FFB442\" color=\"black\">");
+            sb.append(s.substring(start, end));
+            sb.append("</font>");
+            idx = matcher.end();
+        }
+        if(sb.length() > 0) {
+            sb.append(idx < s.length() ? s.substring(idx, s.length()) : "");
+            s = sb.toString();
+        }
+        return s;
+    }
+
     public static class TableCellStyle {
         private MessageFormat format;
         private Color background;
         private Color foreground;
         private String tooltip;
+        private Pattern highlightPattern;
 
-        public TableCellStyle(MessageFormat format, Color background, Color foreground, String tooltip) {
+        private TableCellStyle(MessageFormat format, Color background, Color foreground, String tooltip, Pattern highlightPattern) {
             this.background = background;
             this.foreground = foreground;
             this.tooltip = tooltip;
             this.format = format;
+            this.highlightPattern = highlightPattern;
         }
         public Color getBackground() {
             return background;
@@ -157,12 +197,15 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         public MessageFormat getFormat() {
             return format;
         }
+        public Pattern getHighlightPattern() {
+            return highlightPattern;
+        }
         public String getTooltip() {
             return tooltip;
         }
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("[");                                                     // NOI18N
             sb.append("background=");                                           // NOI18N
             sb.append(background);
@@ -205,8 +248,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    public static TableCellStyle getCellStyle(JTable table, Query query, IssueProperty p, boolean isSelected, int row) {
-        TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
+    public static TableCellStyle getCellStyle(JTable table, Query query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
+        TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
             int status = -2;
@@ -230,11 +273,12 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                     }
                 }
             }
+
             Object o = p.getValue();
             if(o instanceof String) {
                 String s = (String) o;
                 s = TextUtils.escapeForHTMLLabel(s);
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append("<html>");                                                // NOI18N
                 sb.append(s);
                 if(!query.contains(issue)) {
@@ -265,14 +309,25 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         return style;
     }
 
-    public static TableCellStyle getDefaultCellStyle(JTable table, boolean isSelected, int row) {
+    public static TableCellStyle getDefaultCellStyle(JTable table, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
         // set default values
         return new TableCellStyle(
             null,                                                                       // format
             isSelected ? table.getSelectionBackground() : getUnselectedBackground(row), // background
             isSelected ? Color.WHITE : table.getForeground(),                           // foreground
-            null                                                                        // tooltip
+            null,                                                                       // tooltip
+            getHightlightPattern(issueTable, p)
         );
+    }
+
+    private static Pattern getHightlightPattern(IssueTable issueTable, IssueProperty p) {
+        if(p instanceof IssueNode.SummaryProperty) {            
+            SummaryTextFilter f = issueTable.getSummaryFilter();
+            if(f != null && f.isHighLightingOn()) {
+                return f.getPattern();
+            }
+        }
+        return null;
     }
 
     private static Color getUnselectedBackground(int row) {

@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import javax.swing.event.EventListenerList;
@@ -65,13 +66,15 @@ public abstract class RemoteFileObjectBase extends FileObject {
     protected final File cache;
     private volatile EventListenerList eventSupport;
     protected final String nameExt;
+    protected final FileObject parent;
 
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
-            String remotePath, File cache) {
+            FileObject parent, String remotePath, File cache) {
         CndUtils.assertTrue(execEnv.isRemote());
         CndUtils.assertTrue(cache.exists());
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
+        this.parent = parent;
         this.remotePath = RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;        
         int slashPos = this.remotePath.lastIndexOf('/');
@@ -87,6 +90,11 @@ public abstract class RemoteFileObjectBase extends FileObject {
             eventSupport = new EventListenerList();
         }
         return eventSupport;
+    }
+
+    @Override
+    public String getPath() {
+        return this.remotePath;
     }
 
     @Override
@@ -117,10 +125,9 @@ public abstract class RemoteFileObjectBase extends FileObject {
         return null;
     }
 
-
     @Override
     public Enumeration<String> getAttributes() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return Collections.enumeration(Collections.singleton("java.io.File")); // NOI18N
     }
 
     @Override
@@ -154,12 +161,14 @@ public abstract class RemoteFileObjectBase extends FileObject {
     
     @Override
     public FileObject getParent() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // TODO: should we just ask fileSystem to find it?
+        return parent;
     }
 
     @Override
     public long getSize() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // FIXUP
+        return 1024;
     }
 
     @Override
@@ -180,7 +189,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isValid() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return cache.exists();
     }
 
     @Override
@@ -190,7 +199,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Date lastModified() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        // FIXUP
+        return new Date(cache.lastModified());
     }
 
     @Override
@@ -225,4 +235,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         }
     }
 
+    @Override
+    public String toString() {
+        return execEnv.toString() + ":" + remotePath; //NOI18N
+    }
 }

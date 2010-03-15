@@ -114,9 +114,9 @@ public class Commit extends GeneralPHP
           "CreateTemplatePHP",
           "ManipulateTemplatePHP",
 
-          //"OpenStandalonePHP",
-          //"ManipulateStandalonePHP",
-          //"CreateCustomPHPApplication",
+          "OpenStandalonePHP",
+//          "ManipulateStandalonePHP",
+          "CreateCustomPHPApplication",
 
           "CreatePHPWithExistingSources",
           "ManipulatePHPWithExistingSources"
@@ -387,15 +387,15 @@ public class Commit extends GeneralPHP
     */
 
     // Completion
-    if( bInclass )
+      if( bInclass )
     {
+          /** bug  181710 */
       // start constructor
-      TypeCode( eoPHP, "function __con" );
-      Sleep( 1500 );
-      eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-      Sleep( 1500 );
-
-      CheckFlex( eoPHP, "function __construct(){;}", true );
+//      TypeCode( eoPHP, "__con" );
+//      Sleep( 1500 );
+//      eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
+//      Sleep( 1500 );
+//      CheckFlex( eoPHP, "__construct(){\n;\n}", true );
     }
     else
     {

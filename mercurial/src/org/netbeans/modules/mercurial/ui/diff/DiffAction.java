@@ -111,7 +111,7 @@ public class DiffAction extends ContextAction {
     }
 
     public static void diff(File file, String rev1, String rev2) {
-        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns background DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();

@@ -88,7 +88,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class FrameworkCommandChooser extends JPanel {
-    private static final long serialVersionUID = 24055317521316402L;
+    private static final long serialVersionUID = 24058452121416402L;
 
     private static final Object NO_TASK_ITEM = getMessage("FrameworkCommandChooser.no.task"); // NOI18N
     private static final Object NO_MATCHING_TASK_ITEM = getMessage("FrameworkCommandChooser.no.matching.task"); // NOI18N
@@ -490,57 +490,7 @@ public final class FrameworkCommandChooser extends JPanel {
         debugCheckbox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleName")); // NOI18N
         debugCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.debugCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return matchingTaskList;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return matchingTaskList;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return keepOpenedCheckBox;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  matchingTaskList){
-                    return helpTextArea;
-                }
-                if(aComponent ==  helpTextArea){
-                    return previewTextField;
-                }
-                if(aComponent ==  taskField){
-                    return taskParametersComboBox;
-                }
-                if(aComponent ==  previewTextField){
-                    return keepOpenedCheckBox;
-                }
-                if(aComponent ==  taskParametersComboBox){
-                    return matchingTaskList;
-                }
-                return matchingTaskList;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  helpTextArea){
-                    return matchingTaskList;
-                }
-                if(aComponent ==  previewTextField){
-                    return helpTextArea;
-                }
-                if(aComponent ==  taskParametersComboBox){
-                    return taskField;
-                }
-                if(aComponent ==  keepOpenedCheckBox){
-                    return previewTextField;
-                }
-                if(aComponent ==  matchingTaskList){
-                    return taskParametersComboBox;
-                }
-                return keepOpenedCheckBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         taskLabel.setLabelFor(taskField);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.text")); // NOI18N
@@ -610,51 +560,51 @@ public final class FrameworkCommandChooser extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(keepOpenedCheckBox, org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.keepOpenedCheckBox.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(keepOpenedCheckBox)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskLabel)
-                            .add(taskParamLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
-                            .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(previewLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(keepOpenedCheckBox)
+                    .addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(taskLabel)
+                            .addComponent(taskParamLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(taskParametersComboBox, 0, 575, Short.MAX_VALUE)
+                            .addComponent(taskFieldPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)))
+                    .addComponent(matchingTaskLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(previewLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(previewTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(taskLabel)
-                    .add(taskFieldPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(taskParamLabel)
-                    .add(taskParametersComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(matchingTaskLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(previewTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(previewLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(keepOpenedCheckBox))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(taskLabel)
+                    .addComponent(taskFieldPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(taskParamLabel)
+                    .addComponent(taskParametersComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(matchingTaskLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(previewTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(previewLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keepOpenedCheckBox))
         );
 
         taskLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FrameworkCommandChooser.class, "FrameworkCommandChooser.taskLabel.AccessibleContext.accessibleName")); // NOI18N

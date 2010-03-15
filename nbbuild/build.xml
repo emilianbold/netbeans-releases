@@ -118,6 +118,7 @@ made subject to such option by the copyright holder.
       </fileset>
     </jar>
   </target>
+
   <target name="download-all-extbins" unless="ext.binaries.downloaded" depends="bootstrap">
     <echo>Downloading external binaries (*/external/ directories)...</echo>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
@@ -127,6 +128,20 @@ made subject to such option by the copyright holder.
         </manifest>
     </downloadbinaries>
     <property name="ext.binaries.downloaded" value="true"/>
+  </target>
+
+  <target name="download-selected-extbins" unless="ext.binaries.downloaded" depends="init-module-list">
+    <echo>Downloading external binaries (*/external/ directories) for cluster.config=${cluster.config}...</echo>
+    <pathconvert property="modules.binaries-list" pathsep=",">
+        <path>
+            <dirset dir="${nb_all}" includes="nbbuild,${allmodules}"/>
+        </path>
+        <map from="${nb_all}/" to=""/>
+        <globmapper from="*" to="*/external/binaries-list"/>
+    </pathconvert>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}" includes="${modules.binaries-list}"/>
+    </downloadbinaries>
   </target>
 
   <target name="init-module-list" depends="bootstrap,init-tasks">
@@ -270,7 +285,7 @@ made subject to such option by the copyright holder.
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="init,download-all-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
+  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
         
@@ -954,6 +969,29 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <env key="DISPLAY" value="${run.env.display}"/>
     </exec>
   </target>
+
+  <target name="move-ide-nbms" depends="init">
+    <property name="nbms.source.location" location="nbms"/>
+    <property name="nbms.target.location" location="ide_nbms"/>
+    <mkdir dir="${nbms.target.location}"/>
+
+    <resolvelist name="nb.clusters.names" list="${clusters.config.full.list}">
+        <mapper type="glob" from="*" to="*.dir"/>
+    </resolvelist>
+    <echo message="dirs: ${nb.clusters.names}"/>
+
+    <repeat target="-move-cluster-nbms" name="nb.cluster.name" values="${nb.clusters.names}"/>
+  </target>
+
+  <target name="-move-cluster-nbms">
+    <echo message="one cluster: ${nb.cluster.name}"/>
+    <echo message="source: ${nbms.target.location}"/>
+    <move todir="${nbms.target.location}">
+      <fileset dir="${nbms.source.location}">
+         <include name="${nb.cluster.name}/"/>
+      </fileset>
+    </move>
+  </target>
   
   <target name="all-l10n-kits" depends="l10n-kit">
   </target>
@@ -1355,7 +1393,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <verifylibsandlicenses report="build/verifylibsandlicenses.xml" nball=".."/>
     </target>
 
-    <target name="create-license-summary" depends="bootstrap,download-all-extbins" description="Create a summary of the licenses used by libraries in the build.">
+    <target name="create-license-summary" depends="bootstrap,download-selected-extbins" description="Create a summary of the licenses used by libraries in the build.">
         <taskdef name="createlicensesummary" classname="org.netbeans.nbbuild.extlibs.CreateLicenseSummary" classpath="nbantext.jar"/>
         <mkdir dir="build"/>
         <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>

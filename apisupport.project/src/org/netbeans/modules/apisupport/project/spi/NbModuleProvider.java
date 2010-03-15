@@ -130,7 +130,7 @@ public interface NbModuleProvider {
     /**
      * checks the declared version of the given dependency
      * @param codenamebase 
-     * @return
+     * @return a known version, or null if unknown
      * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
@@ -155,4 +155,17 @@ public interface NbModuleProvider {
      * @return location of built module JAR
      */
     File getModuleJarLocation();
+
+    /**
+     * May get invoked before accessing some other methods from this interface to
+     * initialize module's context. The method must be invoked from EDT so it's safe
+     * to e.g. show modal dialogs and ask for user's input.
+     * @param featureDisplayName Display name of the feature that requires platform
+     * application context.
+     * @return True if module's context is ready, false if there was any problem
+     * setting up module's context.
+     * @throws IllegalStateException If not invoked from EDT
+     * @since 1.38
+     */
+    boolean prepareContext( String featureDisplayName ) throws IllegalStateException;
 }

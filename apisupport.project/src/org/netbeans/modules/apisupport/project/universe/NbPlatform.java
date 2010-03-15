@@ -569,12 +569,15 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Get any sources which should by default be associated with the default platform.
      */
-    public URL[] getDefaultSourceRoots() {
-        if (! isDefault())
+    public @Override URL[] getDefaultSourceRoots() {
+        if (! isDefault()) {
             return null;
+        }
         // location of platform won't change, safe to cache
-        if (defaultSourceRoots != null)
+        if (defaultSourceRoots != null) {
             return defaultSourceRoots;
+        }
+        defaultSourceRoots = new URL[0];
         File loc = getDestDir();
         if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
             try {
@@ -583,7 +586,6 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 assert false : e;
             }
         }
-        defaultSourceRoots = new URL[0];
         return defaultSourceRoots;
     }
 
@@ -688,7 +690,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      */
     public Set<ModuleEntry> getModules() {
         try {
-            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntriesSoft();
+            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntries();
         } catch (IOException e) {
             Util.err.notify(e);
             return Collections.emptySet();

@@ -50,8 +50,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
@@ -307,10 +305,6 @@ public class KenaiTest extends NbTestCase {
         @Override
         public Repository getRepository() {
             return repository;
-        }
-        @Override
-        public boolean refresh() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
         public Issue[] getIssues(int includeStatus) {

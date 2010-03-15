@@ -86,7 +86,7 @@ public class NewTestAction extends NodeAction {
             return;
         }
 
-	Folder newFolder = folder.addNewFolder(false, Folder.Kind.TEST);
+	Folder newFolder = folder.addNewFolder(true, Folder.Kind.TEST);
         newFolder.setDisplayName(newname);
 	MakeLogicalViewProvider.setVisible(project, newFolder);
     }

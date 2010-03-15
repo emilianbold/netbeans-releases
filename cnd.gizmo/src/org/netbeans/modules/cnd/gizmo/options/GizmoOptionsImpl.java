@@ -82,7 +82,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public GizmoOptionsImpl(String baseDir, PropertyChangeSupport pcs) {
         this.baseDir = baseDir;
         this.pcs = pcs;
-        profileOnRun = new BooleanConfiguration(null, MakeProjectOptions.getShowIndicatorsOnRun(), null, null);
+        profileOnRun = new BooleanConfiguration(MakeProjectOptions.getShowIndicatorsOnRun());
         dlightConfigurationName = new GizmoStringConfiguration(this);
     }
 

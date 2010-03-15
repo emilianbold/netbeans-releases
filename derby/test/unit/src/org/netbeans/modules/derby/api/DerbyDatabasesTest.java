@@ -46,6 +46,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.derby.DerbyDatabasesImpl;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.test.TestBase;
 import org.openide.modules.InstalledFileLocator;
@@ -100,7 +101,7 @@ public class DerbyDatabasesTest extends TestBase {
     public void testExtractSampleDatabase() throws Exception {
         setLookup(new Object[] { new SampleDatabaseLocator() });
 
-        DerbyDatabases.extractSampleDatabase("newdb");
+        DerbyDatabasesImpl.getDefault().extractSampleDatabase("newdb");
         File newDBDir = new File(systemHome, "newdb");
         Set sampleDBFiles = new HashSet(Arrays.asList(newDBDir.list()));
 
@@ -118,7 +119,7 @@ public class DerbyDatabasesTest extends TestBase {
 
         assertEquals("There should be no files in the sample directory", 0, sampleDir.listFiles().length);
 
-        DerbyDatabases.extractSampleDatabase("sample");
+        DerbyDatabasesImpl.getDefault().extractSampleDatabase("sample");
 
         assertEquals("Should not have extracted the sample database to an existing directory", 0, sampleDir.listFiles().length);
     }

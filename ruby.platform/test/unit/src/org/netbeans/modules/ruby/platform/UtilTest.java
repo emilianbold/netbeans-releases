@@ -66,6 +66,9 @@ public class UtilTest extends NbTestCase {
         assertTrue(Util.compareVersions("0.9.0", "0.10.0-ruby") < 0);
         assertTrue(Util.compareVersions("0.9", "0.10.1") < 0);
         assertTrue(Util.compareVersions("0.10.1", "0.9") > 0);
+        assertTrue(Util.compareVersions("3.0.0.beta", "2.3.4") > 0);
+        assertTrue(Util.compareVersions("3.0.0.beta", "3.0.0") < 0);
+        assertTrue(Util.compareVersions("1.2.3.beta", "1.2.3.alpha") > 0);
     }
 
 }

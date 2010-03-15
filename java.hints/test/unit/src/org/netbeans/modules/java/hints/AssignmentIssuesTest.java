@@ -220,7 +220,7 @@ public class AssignmentIssuesTest extends TestBase {
                 + "    @SuppressWarnings(\"AssignmentReplaceableWithOperatorAssignment\")\n"
                 + "    public static void main(String... args) {\n"
                 + "        int i = 0;\n"
-                + "        i = i - 10\n"
+                + "        i = i - 10;\n"
                 + "    }\n"
                 + "}");
     }

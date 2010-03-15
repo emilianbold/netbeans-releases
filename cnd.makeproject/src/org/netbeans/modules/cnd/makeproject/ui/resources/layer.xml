@@ -487,6 +487,28 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="100"/>
                 </file>
             </folder>
+            <folder name="test">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="build-tests">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="test">
+                    <attr name="position" intvalue="600"/>
+                </file>
+            </folder>
+            <folder name="test.single">
+                <file name="test-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
         </folder>        <!-- BuildAction -->
         <folder name="NoBuildAction">
             <folder name="build">
@@ -559,6 +581,16 @@ made subject to such option by the copyright holder.
             <folder name="run">
                 <file name="run">
                     <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="test">
+                <file name="test">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="test.single">
+                <file name="test-single">
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>        <!-- NoBuildAction -->

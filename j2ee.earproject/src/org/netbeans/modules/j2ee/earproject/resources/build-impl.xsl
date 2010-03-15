@@ -593,7 +593,7 @@ exists or setup the property manually. For example like this:
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
-                <fileset dir="${{build.dir}}/lib" includes="*.jar"/>
+                <fileset dir="${{build.dir}}" includes="lib/*.jar"/>
             </classpath>
             <sourcepath>
                 <path path="${{ear.docbase.dirs}}"/>

@@ -1,0 +1,31 @@
+{
+    response.setContentType("text/html;charset=UTF-8");
+    java.io.PrintWriter out = response.getWriter();
+    try {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Facebook Authorization Page</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("<p>Please click on the following link to log into your Facebook account and authorize this application to access your account:</p>");
+        javax.servlet.http.HttpSession session = request.getSession(false);
+
+        String sessionKey = (String) session.getAttribute("facebook_session_key");
+
+        if (sessionKey != null) {
+            out.println("<p>Already logged in.</b>");
+        } else {
+            out.println("<a href=\"http://www.facebook.com/login.php?api_key="+api_key+"&v=1.0\">Facebook Login</a>");
+            String loginURL = request.getRequestURL().toString();
+            String callbackUrl = loginURL.substring(0, loginURL.lastIndexOf("/FacebookLoginServlet"));
+            out.println("<br><br>Ensure you specified correctly the Canvas Callback URL to: <b>"+callbackUrl+"/FacebookCallbackServlet/</b><br>");
+            out.println("<br>Help: To set up Canvas Callback URL go to " +
+                    "<a href=\"http://www.facebook.com/developers/\">http://www.facebook.com/developers/</a> , select <i>your application</i>, choose <i>Edit Settings</i> and go to <i>Canvas</i> section");
+        }
+        out.println("</body>");
+        out.println("</html>");
+        //
+    } finally {
+        out.close();
+    }
+}

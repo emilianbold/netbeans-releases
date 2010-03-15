@@ -47,19 +47,19 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -103,16 +103,39 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
 
             SimpleNode element = econtext.getElement();
             if (element.kind() == CssParserTreeConstants.JJT_CLASS
-                    || element.kind() == CssParserTreeConstants.JJTHASH) {
-                //class or id refactoring
-                String elementImage = element.image().substring(1); //cut off the dot or hash
-                Collection<FileObject> files = element.kind() == CssParserTreeConstants.JJT_CLASS
-                        ? index.findClasses(elementImage)
-                        : index.findIds(elementImage);
-
-                ElementKind kind = element.kind() == CssParserTreeConstants.JJT_CLASS
-                        ? ElementKind.CLASS
-                        : ElementKind.ATTRIBUTE;
+                    || element.kind() == CssParserTreeConstants.JJTHASH
+                    || element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+                //find usages of: 
+                //1.class or id selector
+                //2.hash color
+                Collection<FileObject> files;
+                ElementKind kind;
+                String elementImage = econtext.getElementName();
+                RefactoringElementType type;
+                switch(element.kind()) {
+                    case CssParserTreeConstants.JJT_CLASS:
+                        elementImage = elementImage.substring(1); //cut off the dot
+                        files = index.findClasses(elementImage);
+                        kind = ElementKind.CLASS;
+                        type = RefactoringElementType.CLASS;
+                        break;
+                    case CssParserTreeConstants.JJTHASH:
+                        elementImage = elementImage.substring(1); //cut off the hash
+                        files = index.findIds(elementImage);
+                        kind = ElementKind.ATTRIBUTE;
+                        type = RefactoringElementType.ID;
+                        break;
+                    case CssParserTreeConstants.JJTHEXCOLOR:
+                        files = index.findColor(elementImage);
+                        kind = ElementKind.FIELD;
+                        type = RefactoringElementType.COLOR;
+                        break;
+                    default:
+                        //cannot happen
+                        files = null;
+                        kind = null;
+                        type = null;
+                }
 
                 List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
                 DependenciesGraph deps = index.getDependencies(context.getFileObject());
@@ -147,13 +170,12 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                         }
 
                         CssFileModel model = new CssFileModel(source);
-                        Collection<Entry> entries = element.kind() == CssParserTreeConstants.JJT_CLASS
-                                ? model.getClasses() : model.getIds();
+                        Collection<Entry> entries = model.get(type);
 
                         boolean related = relatedFiles.contains(file);
                         for (Entry entry : entries) {
                             if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
-                                WhereUsedElement elem = WhereUsedElement.create(entry, kind, related);
+                                WhereUsedElement elem = WhereUsedElement.create(file, entry, kind, related);
                                 elements.add(refactoring, elem);
                             }
                         }
@@ -179,13 +201,14 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
             String baseFileName = base.getNameExt();
             for (Node referingNode : deps.getSourceNode().getReferingNodes()) {
                 try {
-                    CssFileModel model = new CssFileModel(Source.create(referingNode.getFile()));
+                    FileObject file = referingNode.getFile();
+                    CssFileModel model = new CssFileModel(Source.create(file));
                     Collection<Entry> imports = model.getImports();
                     //find the import of the base file
                     for(Entry e : imports) {
-                        if(e.getName().indexOf(baseFileName) != -1) {
+                        if(e.isValidInSourceDocument() && e.getName().indexOf(baseFileName) != -1) {
                             //found
-                            WhereUsedElement elem = WhereUsedElement.create(e, ElementKind.FILE);
+                            WhereUsedElement elem = WhereUsedElement.create(file, e, ElementKind.FILE);
                             elements.add(refactoring, elem);
                         }
                     }

@@ -45,10 +45,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-import java.util.Vector;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -93,7 +92,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private FileObject projectDirectory;
     private int descriptorVersion = -1;
     private MakeConfigurationDescriptor projectDescriptor;
-    private Vector<Configuration> confs = new Vector<Configuration>();
+    private List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
     private FolderConfiguration currentFolderConfiguration = null;
@@ -115,7 +114,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
-    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
+    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag,
             FileObject projectDirectory,
@@ -182,13 +181,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
-                XMLDecoder decoder = decoders.elementAt(dx);
+                XMLDecoder decoder = decoders.get(dx);
                 deregisterXMLDecoder(decoder);
             }
 
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
-            decoders = new Vector<XMLDecoder>();
+            decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
@@ -485,7 +484,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
-            currentFolderStack.pop();
+            Folder processedFolder = currentFolderStack.pop();
+            processedFolder.pack();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
             } else {
@@ -838,7 +838,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) // NOI18N
         {
-            path = IpeUtils.trimDotDot(relativeOffset + path);
+            path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
         return path;
     }

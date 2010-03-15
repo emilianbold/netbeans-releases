@@ -56,7 +56,7 @@ public class CssParserTest extends TestBase {
         super(testName);
     }
 
-       public static Test suite(){
+       public static Test xsuite(){
 	TestSuite suite = new TestSuite();
         suite.addTest(new CssParserTest("testPropertyValueWithComment"));
         return suite;
@@ -64,9 +64,7 @@ public class CssParserTest extends TestBase {
 
     private SimpleNode parse(String source) throws ParseException {
         CssParser parser = new CssParser();
-        CssParserTokenManager tokenManager = new PatchedCssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
-        parser.ReInit(tokenManager);
-
+        parser.ReInit(new ASCII_CharStream(new StringReader(source)));
         return parser.styleSheet();
     }
 
@@ -175,6 +173,25 @@ public class CssParserTest extends TestBase {
 
     public void testTemplatingInComment() throws ParseException {
         check("EXAMPLE { /* @@@ */ }");
+    }
+
+    public void testParserRootNodeSpan() throws ParseException {
+        String source = "h1 { }";
+        //               0123456
+        SimpleNode node = parse(source);
+        Assert.assertNotNull(node);
+        assertNoErrors(node);
+
+//        Token t = node.jjtGetFirstToken();
+//        while(t != null) {
+//            System.out.print(t);
+//            System.out.println(" ["+t.kind+"]");
+//            t = t.next;
+//        }
+
+        //test the root node size - if it spans over the whole source text
+        assertEquals(source.length(), node.endOffset() - node.startOffset());
+
     }
 
     public void testPropertyValueWithComment() throws ParseException {

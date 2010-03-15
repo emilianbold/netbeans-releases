@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.html.editor.api;
 
-import java.io.File;
-import java.net.URI;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -50,8 +47,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -62,82 +57,11 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class Utils {
 
-   
-    /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
-    *  @param relativeTo url to which the relative URL is related. Treated as directory iff
-    *    ends with '/'
-    *  @param url the relative URL by RFC 2396
-    *  @exception IllegalArgumentException if url is not absolute and relativeTo
-    * can not be related to, or if url is intended to be a directory
-    */
-    public static String resolveRelativeURL(String relativeTo, String url) {
-        //System.out.println("- resolving " + url + " relative to " + relativeTo);
-        String result;
-        if (url.startsWith("/")) { // NOI18N
-            result = "/"; // NOI18N
-            url = url.substring(1);
-        }
-        else {
-            // canonize relativeTo
-            if ((relativeTo == null) || (!relativeTo.startsWith("/"))) // NOI18N
-                throw new IllegalArgumentException();
-            relativeTo = resolveRelativeURL(null, relativeTo);
-            int lastSlash = relativeTo.lastIndexOf('/');
-            if (lastSlash == -1)
-                throw new IllegalArgumentException();
-            result = relativeTo.substring(0, lastSlash + 1);
-        }
-
-        // now url does not start with '/' and result starts with '/' and ends with '/'
-        StringTokenizer st = new StringTokenizer(url, "/", true); // NOI18N
-        while(st.hasMoreTokens()) {
-            String tok = st.nextToken();
-            //System.out.println("token : \"" + tok + "\""); // NOI18N
-            if (tok.equals("/")) { // NOI18N
-                if (!result.endsWith("/")) // NOI18N
-                    result = result + "/"; // NOI18N
-            }
-            else
-                if (tok.equals("")) // NOI18N
-                    ;  // do nohing
-                else
-                    if (tok.equals(".")) // NOI18N
-                        ;  // do nohing
-                    else
-                        if (tok.equals("..")) { // NOI18N
-                            String withoutSlash = result.substring(0, result.length() - 1);
-                            int ls = withoutSlash.lastIndexOf("/"); // NOI18N
-                            if (ls != -1)
-                                result = withoutSlash.substring(0, ls + 1);
-                        }
-                        else {
-                            // some file
-                            result = result + tok;
-                        }
-            //System.out.println("result : " + result); // NOI18N
-        }
-        //System.out.println("- resolved to " + result);
-        return result;
-    }
-
-      /** This method returns an image, which is displayed for the FileObject in the explorer.
-     * @param doc This is the documet, in which the icon will be used (for exmaple for completion).
-     * @param fo file object for which the icon is looking for
-     * @return an Image which is dislayed in the explorer for the file.
-     */
-    public static java.awt.Image getIcon(FileObject fo){
-        try {
-            return DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-        }catch(DataObjectNotFoundException e) {
-            Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Cannot find icon for " + fo.getNameExt(), e);
-        }
-        return null;
-    }
-
     /** returns top most joined html token seuence for the document at the specified offset. */
     public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence();
+        //XXX this seems to be wrong, the return code should be checked
         ts.move(offset);
 
         while(ts.moveNext() || ts.movePrevious()) {
@@ -152,6 +76,7 @@ public class Utils {
             }
 
             //position the embedded ts so we can search deeper
+            //XXX this seems to be wrong, the return code should be checked
             ts.move(offset);
         }
 

@@ -70,12 +70,14 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -189,7 +191,7 @@ public class SvnUtils {
      * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      */
     public static Context getCurrentContext(Node[] nodes) {
-        if (nodes == null || nodes.length == 0) {
+        if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         VCSContext ctx = VCSContext.forNodes(nodes);
@@ -1457,5 +1459,35 @@ public class SvnUtils {
         } else {
             return CommitOptions.ADD_DIRECTORY;
         }
+    }
+
+    public void scanForProjects(File workingFolder, String[] checkedOutFolders, SvnProgressSupport support) {
+
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
+        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+        // checkout creates new folders and cache must be aware of them
+        refreshParents(normalizedWorkingFolder);
+        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+        if (fo != null) {
+            for (int i = 0; i < checkedOutFolders.length; i++) {
+                if (support != null && support.isCanceled()) {
+                    return;
+                }
+                String module = checkedOutFolders[i];
+                if (".".equals(module)) {                   // NOI18N
+                    // root folder is scanned, skip remaining modules
+                    ProjectUtilities.scanForProjects(fo, checkedOutProjects);
+                    break;
+                } else {
+                    FileObject subfolder = fo.getFileObject(module);
+                    if (subfolder != null) {
+                        ProjectUtilities.scanForProjects(subfolder, checkedOutProjects);
+                    }
+                }
+            }
+        }
+        // open project selection
+        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
     }
 }

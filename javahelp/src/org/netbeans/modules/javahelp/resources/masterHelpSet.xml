@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
     <view>
         <name>Search</name>
         <label>Search</label>
-        <type>javax.help.ModifiedSearchView</type>
+        <type>javax.help.SearchView</type>
     </view>
     <!--
     <view>

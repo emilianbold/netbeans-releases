@@ -40,20 +40,33 @@
  */
 package org.openide.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.*;
-
-import java.beans.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.util.LookupListener;
+import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 
 /** A "meta-action" that displays (in a submenu) a list of enabled actions provided by modules.
@@ -64,10 +77,9 @@ import org.openide.awt.DynamicMenuContent;
 * It is desirable for most nodes to include this action somewhere in their popup menu.
 *
 * <p><em>Note:</em> you do not need to touch this class to add a service action!
-* Just add the action to a module manifest in an <code>Action</code> section.
-*
-* <p>The list of registered service actions is provided to this action from the implementation
-* by means of {@link ActionManager}.
+* Just register your action into <code>UI/ToolActions</code> layer folder
+* (read <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">more about layers</a>)
+ * since version 6.15.
 *
 * @author Jaroslav Tulach
 */
@@ -90,34 +102,40 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     /* @return name
     */
+    @Override
     public String getName() {
         return getActionName();
     }
 
     /* @return help for this action
     */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ToolsAction.class);
     }
 
     /* @return menu presenter for the action
     */
+    @Override
     public JMenuItem getMenuPresenter() {
         return new Inline(this);
     }
 
     /* @return menu presenter for the action
     */
+    @Override
     public JMenuItem getPopupPresenter() {
         return new Popup(this);
     }
 
     /* Does nothing.
     */
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         assert false;
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new DelegateAction(this, actionContext);
     }
@@ -128,6 +146,28 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         return NbBundle.getMessage(ToolsAction.class, "CTL_Tools");
     }
 
+    static List<Action> getToolActions() {
+        ActionManager am = ActionManager.getDefault();
+        List<Action> arr = new ArrayList<Action>();
+        arr.addAll(Arrays.<Action>asList(am.getContextActions()));
+
+        String pref = arr.isEmpty() ? null : "";
+        for (Lookup.Item<Action> item : gl().result.allItems()) {
+            final Action action = item.getInstance();
+            if (action == null) {
+                continue;
+            }
+            String where = item.getId().replaceFirst("[^/]*$", ""); // NOI18N
+            if (pref != null && !pref.equals(where)) {
+                arr.add(null);
+            }
+            pref = where;
+            arr.add(action);
+        }
+        return arr;
+    }
+
+
     /** Implementation method that regenerates the items in the menu or
     * in the array.
     *
@@ -135,9 +175,8 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     * @param list (can be null)
     */
     private static List<JMenuItem> generate(Action toolsAction, boolean forMenu) {
-        ActionManager am = ActionManager.getDefault();
-        SystemAction[] actions = am.getContextActions();
-        List<JMenuItem> list = new ArrayList<JMenuItem>(actions.length);
+        List<Action> actions = getToolActions();
+        List<JMenuItem> list = new ArrayList<JMenuItem>(actions.size());
 
         boolean separator = false;
         boolean firstItemAdded = false; // flag to prevent adding separator before actual menu items
@@ -235,6 +274,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
 
         
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             if (timestamp == gl().getTimestamp()) {
                 return items;
@@ -246,6 +286,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         }
         
         
+        @Override
         public JComponent[] getMenuPresenters() {
             return synchMenuPresenters(new JComponent[0]);
         }        
@@ -271,11 +312,13 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         }
 
         
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return gl().isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
         }
         
         
+        @Override
         public JComponent[] getMenuPresenters() {
             return synchMenuPresenters(new JComponent[0]);
         }                
@@ -291,6 +334,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
                 super(getActionName());
             }
 
+            @Override
             public JPopupMenu getPopupMenu() {
                 JPopupMenu popup = super.getPopupMenu();
                 fillSubmenu(popup);
@@ -326,12 +370,15 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
                 }
             }
 
+            @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
             }
 
+            @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             }
 
+            @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 lastPopup.removePopupMenuListener(this);
                 lastPopup = null; // clear the status and stop listening
@@ -341,15 +388,18 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     //------------------------------------------------
     //----------------------------------------------------------
-    private static class G implements PropertyChangeListener {
+    private static class G implements PropertyChangeListener, LookupListener {
         public static final String PROP_STATE = "actionsState"; // NOI18N
         private int timestamp = 1;
-        private SystemAction[] actions = null;
+        private Action[] actions = null;
         private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+        final Lookup.Result<Action> result;
 
         public G() {
             ActionManager am = ActionManager.getDefault();
             am.addPropertyChangeListener(this);
+            result = Lookups.forPath("UI/ToolActions").lookupResult(Action.class); // NOI18N
+            result.addLookupListener(this);
             actionsListChanged();
         }
 
@@ -369,11 +419,11 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             timestamp++;
 
             // deregister all actions listeners
-            SystemAction[] copy = actions;
+            Action[] copy = actions;
 
             if (copy != null) {
                 for (int i = 0; i < copy.length; i++) {
-                    SystemAction act = copy[i];
+                    Action act = copy[i];
 
                     if (act != null) {
                         act.removePropertyChangeListener(this);
@@ -382,10 +432,13 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             }
 
             ActionManager am = ActionManager.getDefault();
-            copy = am.getContextActions();
+            List<Action> all = new ArrayList<Action>();
+            all.addAll(Arrays.asList(am.getContextActions()));
+            all.addAll(result.allInstances());
+            copy = all.toArray(new Action[0]);
 
             for (int i = 0; i < copy.length; i++) {
-                SystemAction act = copy[i];
+                Action act = copy[i];
 
                 if (act != null) {
                     act.addPropertyChangeListener(this);
@@ -402,12 +455,13 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             firePropertyChange(PROP_STATE, null, null); // tell the world
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
 
             if ((prop == null) || prop.equals(ActionManager.PROP_CONTEXT_ACTIONS)) {
                 actionsListChanged();
-            } else if (prop.equals(SystemAction.PROP_ENABLED)) {
+            } else if (prop.equals("enabled")) {
                 actionStateChanged();
             }
         }
@@ -417,7 +471,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
          */
         private boolean isPopupEnabled(Action toolsAction) {
             boolean en = false;
-            SystemAction[] copy = actions;
+            Action[] copy = actions;
 
             // Get action conext.
             Lookup lookup;
@@ -452,6 +506,11 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         private int getTimestamp() {
             return timestamp;
         }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            actionsListChanged();
+        }
     }
 
     /** Delegate tools action. Which act accordingly to current context
@@ -470,48 +529,59 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
         }
 
         /** Overrides superclass method, adds delegate description. */
+        @Override
         public String toString() {
             return super.toString() + "[delegate=" + delegate + "]"; // NOI18N
         }
 
         /** Implements <code>Lookup.Provider</code>. */
+        @Override
         public Lookup getLookup() {
             return lookup;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
         }
 
+        @Override
         public void putValue(String key, Object o) {
         }
 
+        @Override
         public Object getValue(String key) {
             return delegate.getValue(key);
         }
 
+        @Override
         public boolean isEnabled() {
             // Irrelevant see G#isPopupEnabled(..).
             return delegate.isEnabled();
         }
 
+        @Override
         public void setEnabled(boolean b) {
             // Irrelevant see G#isPopupEnabled(..).
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             support.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             support.removePropertyChangeListener(listener);
         }
 
         /** Implements <code>Presenter.Menu</code>. */
+        @Override
         public javax.swing.JMenuItem getMenuPresenter() {
             return new Inline(this);
         }
 
         /** Implements <code>Presenter.Popup</code>. */
+        @Override
         public javax.swing.JMenuItem getPopupPresenter() {
             return new ToolsAction.Popup(this);
         }

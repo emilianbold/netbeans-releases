@@ -43,7 +43,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -127,13 +126,6 @@ public abstract class Query implements Comparable<Query> {
     /*********
      * DATA
      *********/
-
-    /**
-     * Refreshes this Query
-     * @return true if the query was refreshed, otherwise false
-     */
-    public abstract boolean refresh();
-
     /**
      * Sets te queries status as saved. The {@link IssueTable} assotiated with
      * this query will change its column layout

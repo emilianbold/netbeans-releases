@@ -50,8 +50,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.connections.ui.TransferFileTableChangeListener;
-import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
+import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel.TransferFilesChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -66,9 +67,9 @@ public class RemoteConfirmationPanelVisual extends JPanel {
     private static final int STEP_INDEX = 2;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final TransferFileTableChangeListener transferFilterListener;
+    private final TransferFilesChangeListener transferFilesChangeListener;
 
-    private TransferFilter transferFilter;
+    private TransferFilesChooserPanel transferPanel;
     private State state = null;
 
     public RemoteConfirmationPanelVisual(RemoteConfirmationPanel wizardPanel, WizardDescriptor descriptor) {
@@ -86,11 +87,12 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         setFetchingFiles();
         uploadInfoLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "TXT_UploadInfo"));
 
-        transferFilterListener = new TransferFileTableChangeListener() {
-            public void updateUnitsChanged() {
+        transferFilesChangeListener = new TransferFilesChangeListener() {
+            @Override
+            public void selectedFilesChanged() {
                 changeSupport.fireChange();
             }
-
+            @Override
             public void filterChanged() {
             }
         };
@@ -109,11 +111,11 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         assert remoteFiles != null;
 
         state = State.FILES;
-        transferFilter = TransferFilter.getEmbeddableDownloadDialog(remoteFiles);
-        transferFilter.addUpdateUnitListener(transferFilterListener);
+        transferPanel = TransferFilesChooser.forDownload(remoteFiles).getEmbeddablePanel();
+        transferPanel.addChangeListener(transferFilesChangeListener);
 
         filesPanel.removeAll();
-        filesPanel.add(transferFilter);
+        filesPanel.add(transferPanel);
 
         statusLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "LBL_Confirmation")); // NOI18N
         setState(true);
@@ -140,10 +142,10 @@ public class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     public Set<TransferFile> getRemoteFiles() {
-        if (transferFilter == null) {
+        if (transferPanel == null) {
             return Collections.emptySet();
         }
-        return TransferFilter.getSelectedFiles(transferFilter);
+        return transferPanel.getSelectedFiles();
     }
 
     State getState() {
@@ -157,10 +159,10 @@ public class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     private void resetTransferFilter() {
-        if (transferFilter != null) {
-            transferFilter.removeUpdateUnitListener(transferFilterListener);
+        if (transferPanel != null) {
+            transferPanel.removeChangeListener(transferFilesChangeListener);
         }
-        transferFilter = null;
+        transferPanel = null;
     }
 
     /** This method is called from within the constructor to

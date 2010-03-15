@@ -69,16 +69,16 @@ made subject to such option by the copyright holder.
         
      
 <ul>
-                <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
+                <li><b>Driver Name.</b> Choose the registered JDBC driver from the drop-down list.
                 The drop-down list only contains drivers registered with the IDE. 
                 If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> before
                 you can connect to the database.</li>
                 <li><strong>Host.</strong> Type the host for the database. Use <tt>localhost</tt> if the database is located on a local machine.</li>
                 <li><strong>Port.</strong> Type the post to be used by the database connection.</li>
-                <li>Database. Type the name of the database.</li>
-                <li><b>Driver.</b> This field is automatically supplied based on the selected registered driver.</li>
-                  <li><b>User Name.</b> Type user name for the database.</li>
+                <li><strong>Database</strong>. Type the name of the database.</li>
+                <li><b>User Name.</b> Type user name for the database.</li>
                 <li><b>Password.</b> Type the password for the database.</li>
+                <li><strong>Display Name</strong> (optional). In this field, you can enter a display name for the new database connection that is convenient for you. </li>
                 <li><b>Remember Password.</b> Select this if you want the IDE to remember your password.
                  If selected, you will not be prompted for the user name and password on subsequent connections to the database
                   and the Remember Password property is set to True.
@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
             Passwords are scrambled but they are not encrypted.
             For more about securing database passwords, see the following  FAQ:
           <p>
-                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://wiki.netbeans.org/wiki/view/FaqSecuringDBConnectionPasswords">
                 <param name="text" value="<html><u>How do I secure my database password?</u></html>">
                 <param name="textFontSize" value="medium">
@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
             <li><b>Show JDBC URL.</b> When you select this checkbox, the IDE displays the JDBC URL in the text field. This can be useful for identifying the database connection. Ths URL resembles ths following URL:
           <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
           </li>
-            </ul>
+          </ul>
     <li><b>Direct URL Entry.</b> When this radio button is selected, you enter the URL of the database directly. 
     <ul><li><b>Name:</b> Select the name of the driver from the drop down list.</li>
     <li><b>User Name:</b> Type user name for the database.</li>

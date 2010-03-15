@@ -45,7 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -65,7 +65,7 @@ public class OptionsEditorPanel extends javax.swing.JPanel implements PropertyCh
 	additionalLabel.setText(texts[2]);
 	allLabel.setText(texts[3]);
         setPreferredSize(new java.awt.Dimension(400, 300));
-        IpeUtils.requestFocus(additionalOptionsTextArea);
+        CndUIUtilities.requestFocus(additionalOptionsTextArea);
 	if (inheritValues != null) {
 	    inheritCheckBox.setSelected(inheritValues.getValue());
 	}

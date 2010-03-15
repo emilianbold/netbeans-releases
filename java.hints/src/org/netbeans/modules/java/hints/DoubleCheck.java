@@ -121,7 +121,7 @@ public class DoubleCheck extends AbstractHint {
 
         ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
             getSeverity().toEditorSeverity(),
-            NbBundle.getMessage(DoubleCheck.class, "MSG_FixDoubleCheck"), // NOI18N
+            NbBundle.getMessage(DoubleCheck.class, "ERR_DoubleCheck"), // NOI18N
             fixes,
             compilationInfo.getFileObject(),
             span,
@@ -263,7 +263,7 @@ public class DoubleCheck extends AbstractHint {
         
         
         public String getText() {
-            return NbBundle.getMessage(DoubleCheck.class, "MSG_DoubleCheck"); // NOI18N
+            return NbBundle.getMessage(DoubleCheck.class, "FIX_DoubleCheck"); // NOI18N
         }
         
         public ChangeInfo implement() throws IOException {

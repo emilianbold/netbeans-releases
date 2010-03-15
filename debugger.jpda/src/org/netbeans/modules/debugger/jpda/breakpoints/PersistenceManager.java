@@ -128,6 +128,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                 b.removePropertyChangeListener(this);
             }
         }
+        this.breakpoints = null;
         return unloaded.toArray(new Breakpoint[0]);
     }
     
@@ -145,6 +146,9 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
             synchronized (this) {
+                if (breakpoints == null) {
+                    return ;
+                }
                 int n = breakpoints.length;
                 Breakpoint[] newBreakpoints = new Breakpoint[n + 1];
                 System.arraycopy(breakpoints, 0, newBreakpoints, 0, n);
@@ -160,6 +164,9 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
             synchronized (this) {
+                if (breakpoints == null) {
+                    return ;
+                }
                 int n = breakpoints.length;
                 for (int i = 0; i < n; i++) {
                     if (breakpoints[i] == breakpoint) {
@@ -240,6 +247,9 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         @Override
         public void run() {
             synchronized (PersistenceManager.this) {
+                if (breakpoints == null) {
+                    return ;
+                }
                 Properties.getDefault ().getProperties ("debugger").
                     getProperties (DebuggerManager.PROP_BREAKPOINTS).setArray (
                         "jpda",

@@ -44,12 +44,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
@@ -350,8 +352,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                             punit.setTransactionType("RESOURCE_LOCAL");
                         }
                     }
+                    Provider provider = puPanel.getSelectedProvider();
                     if (puPanel.isNonDefaultProviderEnabled()) {
                         punit.setProvider(puPanel.getNonDefaultProvider());
+                        Library lib = PersistenceLibrarySupport.getLibrary(provider);
+                        if (lib != null && !Util.isDefaultProvider(project, provider)) {
+                            Util.addLibraryToProject(project, lib);
+                            provider = null;//to avoid one more addition
+                        }
+                    }
+                    if(provider != null && provider.getAnnotationProcessor() != null){
+                        Library lib = PersistenceLibrarySupport.getLibrary(provider);
+                        if (lib != null){
+                            Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
+                        }
                     }
                 } else {
                     PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;

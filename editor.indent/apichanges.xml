@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
 
+        <change id="CodeStylePreferences.Provider">
+            <summary>Adding CodeStylePreferences.Provider</summary>
+            <version major="1" minor="18"/>
+            <date day="17" month="2" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility addition="yes"/>
+            <description>
+                Adding <code>CodeStylePreferences.Provider</code> interface in order to allow
+                isolating the project-dependent code style preferences storage from the rest
+                of the editor infrastructure.
+            </description>
+            <class package="org.netbeans.modules.editor.indent.spi" name="CodeStylePreferences"/>
+            <issue number="178311"/>
+        </change>
+
         <change id="context.lookup">
             <summary>Enhance Context class with Lookup so that indenters
                 can communicate with each other.</summary>

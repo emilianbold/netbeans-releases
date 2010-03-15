@@ -84,7 +84,7 @@ public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFa
         try {
             final DataObject dobj = DataObject.find(fo);
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+            final CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
             final Document doc = ec.getDocument();
             if (doc != null && file != null) {
                 pr = new PhaseRunnerImpl(dobj, file, doc);

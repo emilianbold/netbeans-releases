@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -58,15 +57,18 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.editor.NamespaceIndexFilter;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
-import org.netbeans.modules.php.editor.index.IndexedElement;
-import org.netbeans.modules.php.editor.index.IndexedFullyQualified;
-import org.netbeans.modules.php.editor.index.IndexedInterface;
-import org.netbeans.modules.php.editor.index.IndexedType;
-import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.model.QualifiedNameKind;
-import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.NameKind.Prefix;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,10 +88,12 @@ public class PHPTypeSearcher implements IndexSearcher {
         if ((kind == Kind.CASE_INSENSITIVE_PREFIX || kind == Kind.PREFIX) && isCamelCasePattern(textForQuery)) {
             kind = Kind.CAMEL_CASE;
         }
+        final Collection<FileObject> findRoots = QuerySupport.findRoots(project,
+                Collections.singleton(PhpSourcePath.SOURCE_CP),
+                Collections.singleton(PhpSourcePath.BOOT_CP),
+                Collections.<String>emptySet());
+        final Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(findRoots));
 
-        PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
-                project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
-                Collections.<String>emptySet()));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         if (index != null && textForQuery.trim().length() > 0) {
@@ -99,21 +103,22 @@ public class PHPTypeSearcher implements IndexSearcher {
             if (!kind.equals(Kind.EXACT)) {//NOI18N
                 query = query.toLowerCase();
             }
+            final NameKind prefix = NameKind.create(query, useKind);
             if (!isVariable) {
-                for (IndexedElement indexedElement : index.getAllTopLevel(null, query,useKind)) {
+                for (PhpElement indexedElement : index.getTopLevelElements(prefix)) {
                     result.add(new PHPTypeDescriptor(indexedElement, helper));
                 }
-                for (IndexedElement indexedElement : index.getMethods(null, (String) null, query, useKind, PHPIndex.ANY_ATTR)) {
+                for (PhpElement indexedElement : index.getMethods(prefix)) {
                     result.add(new PHPTypeDescriptor(indexedElement, helper));
                 }
             }
-            for (IndexedElement indexedElement : getTopLevelVariables(index, isVariable?query:appendDollar(query), useKind)) {
+            for (PhpElement indexedElement : index.getTopLevelVariables(prefix)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
-            for (IndexedElement indexedElement : index.getFields(null, (String) null, isVariable?stripDollar(query):query, useKind, PHPIndex.ANY_ATTR)) {
+            for (PhpElement indexedElement : index.getFields(prefix)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
-            for (IndexedElement indexedElement : index.getTypeConstants(null, (String) null, query, useKind)) {
+            for (PhpElement indexedElement : index.getTypeConstants(prefix)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
         }
@@ -143,28 +148,22 @@ public class PHPTypeSearcher implements IndexSearcher {
             kind = Kind.CAMEL_CASE;
         }
 
-        PHPIndex index = PHPIndex.get(QuerySupport.findRoots(
-                project, Collections.singleton(PhpSourcePath.SOURCE_CP), Collections.singleton(PhpSourcePath.BOOT_CP),
-                Collections.<String>emptySet()));
+        final Collection<FileObject> findRoots = QuerySupport.findRoots(project,
+                Collections.singleton(PhpSourcePath.SOURCE_CP),
+                Collections.singleton(PhpSourcePath.BOOT_CP),
+                Collections.<String>emptySet());
+        final Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(findRoots));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
-        NamespaceIndexFilter<IndexedElement> namespaceFilter = new NamespaceIndexFilter<IndexedElement>(textForQuery);
-        QualifiedNameKind qnk = namespaceFilter.getKind();
+        QualifiedName queryName = QualifiedName.create(textForQuery);
+        QualifiedNameKind qnk = queryName.getKind();
         if (index != null) {
-            String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : namespaceFilter.getName();
-            Collection<IndexedElement> classes = getClasses(index, query, Kind.CASE_INSENSITIVE_PREFIX);
-            if (!qnk.isUnqualified()) {
-                //after typing a\b\ lists all types in namespace a\b
-                classes = namespaceFilter.filter(classes);
-            }
-            for (IndexedElement indexedElement : classes) {
+            String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
+            Prefix prefix = NameKind.prefix(QualifiedName.create(query));
+            for (PhpElement indexedElement : index.getClasses(prefix)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
-            Collection<IndexedElement> interfaces = getInterfaces(index, query, Kind.CASE_INSENSITIVE_PREFIX);
-            if (!qnk.isUnqualified()) {
-                interfaces = namespaceFilter.filter(interfaces);
-            }
-            for (IndexedElement indexedElement : interfaces) {
+            for (PhpElement indexedElement : index.getInterfaces(prefix)) {
                 result.add(new PHPTypeDescriptor(indexedElement, helper));
             }
         }
@@ -183,49 +182,18 @@ public class PHPTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    private static Collection<IndexedElement> getTopLevelVariables(PHPIndex index, String query, QuerySupport.Kind kind) {
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        result.addAll(index.getTopLevelVariables(null, query, kind));
-        return result;
-    }
-    private static Collection<IndexedElement> getClasses(PHPIndex index, String query, QuerySupport.Kind kind) {
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        result.addAll(index.getClasses(null, query, kind));
-        return result;
-
-    }
-    private static Collection<IndexedElement> getInterfaces(PHPIndex index, String query, QuerySupport.Kind kind) {
-        Collection<IndexedElement> result = new ArrayList<IndexedElement>();
-        result.addAll(index.getInterfaces(null, query, kind));
-        return result;
-    }
-
-    private static String stripDollar(String textForQuery) {
-        if (textForQuery.startsWith("$")) {//NOI18N
-            return textForQuery.substring(1);
-        }
-        return textForQuery;
-    }
-
-    private static String appendDollar(String textForQuery) {
-        if (!textForQuery.startsWith("$")) {//NOI18N
-            return "$"+textForQuery;
-        }
-        return textForQuery;
-    }
-
     private static class PHPTypeDescriptor extends Descriptor {
-        private final IndexedElement element;
-        private final IndexedElement enclosingClass;
+        private final PhpElement element;
+        private final PhpElement enclosingClass;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
 
-        public PHPTypeDescriptor(IndexedElement element, Helper helper) {
+        public PHPTypeDescriptor(PhpElement element, Helper helper) {
             this(element, null, helper);
         }
 
-        public PHPTypeDescriptor(IndexedElement element, IndexedElement enclosingClass, Helper helper) {
+        public PHPTypeDescriptor(PhpElement element, PhpElement enclosingClass, Helper helper) {
             this.element = element;
             this.enclosingClass = enclosingClass;
             this.helper = helper;
@@ -235,7 +203,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             if (projectName == null) {
                 initProjectInfo();
             }
-            if (element instanceof IndexedInterface) {
+            if (element instanceof InterfaceElement) {
                 return PHPCompletionItem.getInterfaceIcon();
             }
             return helper.getIcon(element);
@@ -293,10 +261,10 @@ public class PHPTypeSearcher implements IndexSearcher {
         public String getContextName() {
             StringBuilder sb = new StringBuilder();
             boolean s = false;
-            if (element instanceof IndexedFullyQualified) {
-                IndexedFullyQualified fqnElement = (IndexedFullyQualified) element;
-                if (!NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(fqnElement.getNamespaceName())) {
-                    if (element instanceof IndexedType) {
+            if (element instanceof FullyQualifiedElement) {
+                FullyQualifiedElement fqnElement = (FullyQualifiedElement) element;
+                if (!fqnElement.getNamespaceName().isDefaultNamespace()) {
+                    if (element instanceof TypeElement) {
                         sb.append(fqnElement.getFullyQualifiedName());
                     } else {
                         sb.append(fqnElement.getNamespaceName());
@@ -305,9 +273,9 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             } else {
                 if (enclosingClass != null) {
-                    if (enclosingClass instanceof IndexedFullyQualified &&
-                            (!NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(((IndexedFullyQualified)enclosingClass).getNamespaceName()))) {
-                        sb.append(((IndexedFullyQualified) enclosingClass).getFullyQualifiedName());
+                    if ((enclosingClass instanceof FullyQualifiedElement) &&
+                            (!((FullyQualifiedElement)enclosingClass).getNamespaceName().isDefaultNamespace())) {
+                        sb.append(((FullyQualifiedElement) enclosingClass).getFullyQualifiedName().toString());
                     } else {
                         sb.append(enclosingClass.getName());
                     }

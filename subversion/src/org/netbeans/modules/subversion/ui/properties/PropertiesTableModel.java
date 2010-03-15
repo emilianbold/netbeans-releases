@@ -106,6 +106,15 @@ public class PropertiesTableModel extends AbstractTableModel {
         return columns.length;
     }
 
+    @Override
+    public Class<?> getColumnClass (int columnIndex) {
+        String col = columns[columnIndex];
+        if (COLUMN_NAME_NAME.equals(col) || COLUMN_NAME_VALUE.equals(col)) {
+            return String.class;
+        }
+        return super.getColumnClass(columnIndex);
+    }
+
     public Object getValueAt(int rowIndex, int columnIndex) {
         String clm = columns[columnIndex];
         if (clm.equals(COLUMN_NAME_NAME)) {

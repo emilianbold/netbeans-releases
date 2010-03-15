@@ -299,11 +299,12 @@ public class RelatedCMPHelper {
 
         for (Table table : selectedTables.getTables()) {
             genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
-                    selectedTables.getClassName(table), table.getUniqueConstraints());
+                    selectedTables.getClassName(table), selectedTables.getUpdateType(table).toString(), table.getUniqueConstraints());
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly
         // XXX what if this adds related tables that the user didn't want, such as join tables?
+/*
         for (Table table : tableClosure.getAvailableTables()) {
             if (table.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                 Table.ExistingDisabledReason exDisReason = (Table.ExistingDisabledReason)table.getDisabledReason();
@@ -311,12 +312,12 @@ public class RelatedCMPHelper {
                 SourceGroup sourceGroup = Util.getClassSourceGroup(getProject(), fqClassName); // NOI18N
                 if (sourceGroup != null) {
                     genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), sourceGroup.getRootFolder(), 
-                            JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName),
+                            JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName), selectedTables.getUpdateType(table).toString(),
                             table.getUniqueConstraints());
                 }
             }
         }
-
+*/
         generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType);
     }
     
@@ -336,6 +337,7 @@ public class RelatedCMPHelper {
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
+        private final Map<String, String> updateTypes = new HashMap<String, String>();
         private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
         
         public Set<String> getTableNames() {
@@ -343,7 +345,7 @@ public class RelatedCMPHelper {
         }
         
         private void addTable(String catalogName, String schemaName, String tableName, 
-                FileObject rootFolder, String packageName, String className,
+                FileObject rootFolder, String packageName, String className, String updateType,
                 Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
             catalog = catalogName;
@@ -351,6 +353,7 @@ public class RelatedCMPHelper {
             rootFolders.put(tableName, rootFolder);
             packageNames.put(tableName, packageName);
             classNames.put(tableName, className);
+            updateTypes.put(tableName, updateType);
             allUniqueConstraints.put(tableName, uniqueConstraints);
         }
         
@@ -373,7 +376,11 @@ public class RelatedCMPHelper {
         public String getClassName(String tableName) {
             return classNames.get(tableName);
         }
-        
+
+        public String getUpdateType(String tableName){
+            return updateTypes.get(tableName);
+        }
+
         public Set<List<String>> getUniqueConstraints(String tableName) {
             return this.allUniqueConstraints.get(tableName);
         }

@@ -70,13 +70,55 @@ class ModuleUpdate extends Object {
 
     private boolean l10n = false;
     
-    /** Creates new ModuleUpdate for downloaded .nbm file */
-    ModuleUpdate (File nbmFile) {
-        createFromDistribution( nbmFile );
+    /** Creates new ModuleUpdate for downloaded .nbm or .jar file */
+    ModuleUpdate (File file) {
+        if(file.getName().endsWith(ModuleUpdater.JAR_EXTENSION)) {
+            createFromOSGiDistribution( file );
+        } else {
+            createFromNbmDistribution( file );
+        }
+    }
+
+    /** Creates module from downloaded OSGi .jar file */
+    private void createFromOSGiDistribution( File file ) {
+        JarFile jf = null;
+        boolean exit = false;
+        String errorMessage = null;
+        try {
+            jf = new JarFile(file);
+            String cnb = jf.getManifest().getMainAttributes().getValue("Bundle-SymbolicName");
+            if(cnb!=null) {
+                setCodenamebase(cnb);
+            }
+            String specVersion = jf.getManifest().getMainAttributes().getValue("Bundle-Version");
+            setSpecification_version(specVersion!=null ?
+                specVersion.replaceFirst("^(\\d+([.]\\d+([.]\\d+)?)?)([.].+)?$", "$1") :
+                "0");
+
+
+        } catch ( java.io.IOException e ) {
+            errorMessage = "Missing info : " + file.getAbsolutePath (); // NOI18N
+            System.out.println(errorMessage);
+            e.printStackTrace ();
+            exit = true;
+        }
+        finally {
+            try {
+                if (jf != null)
+                    jf.close();
+            } catch ( IOException ioe ) {
+                ioe.printStackTrace();
+                exit = true;
+            }
+        }
+
+        if (exit) {
+            throw new RuntimeException (errorMessage);
+        }
     }
 
     /** Creates module from downloaded .nbm file */
-    private void createFromDistribution( File nbmFile ) {
+    private void createFromNbmDistribution( File nbmFile ) {
 
         Document document = null;
         Node node = null;

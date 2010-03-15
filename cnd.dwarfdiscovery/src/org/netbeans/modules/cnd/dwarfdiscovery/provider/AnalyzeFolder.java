@@ -198,6 +198,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
+                        if (progress != null) {
+                            progress.start();
+                        }
                         Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
                         if (progress != null) {
                             progress.start(set.size());

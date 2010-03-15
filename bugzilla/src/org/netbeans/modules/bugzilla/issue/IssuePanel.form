@@ -56,13 +56,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="730" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="730" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="headerField" max="32767" attributes="0"/>
+                      <Component id="headerField" pref="222" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -100,7 +100,7 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentsPanel" pref="556" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="issueTypeCombo" max="32767" attributes="1"/>
@@ -208,7 +208,7 @@
                           </Group>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="summaryField" max="32767" attributes="0"/>
+                              <Component id="summaryField" pref="530" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
@@ -217,8 +217,8 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
+                          <Component id="messagePanel" alignment="0" pref="556" max="32767" attributes="0"/>
+                          <Component id="customFieldsPanelRight" alignment="0" pref="556" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

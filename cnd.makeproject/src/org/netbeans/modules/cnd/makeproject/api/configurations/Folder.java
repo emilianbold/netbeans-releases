@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -57,9 +56,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -71,6 +70,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
+
     public enum Kind {SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST};
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
@@ -99,6 +99,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.items = new ArrayList<Object>();
     }
 
+    /**
+     * For internal purpose.
+     * Method reduce folder items size
+     */
+    public void pack() {
+        items.trimToSize();
+    }
+
     private void setKind(Kind kind) {
         this.kind = kind;
     }
@@ -120,7 +128,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
         File folderFile = new File(AbsRootPath);
 
@@ -173,7 +181,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, setModified);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
 
                 }
             } else {
@@ -191,7 +199,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
             f.refreshDiskFolder(setModified);
         }
@@ -199,7 +207,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void attachListeners() {
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
         File folderFile = new File(AbsRootPath);
 
         if (!folderFile.exists() || !folderFile.isDirectory()) {
@@ -228,7 +236,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
             f.attachListeners();
         }
@@ -879,15 +887,15 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all logical folder in this folder as an array
      */
     public Folder[] getFoldersAsArray() {
-        Vector<Folder> folders = getFolders();
+        List<Folder> folders = getFolders();
         return folders.toArray(new Folder[folders.size()]);
     }
 
     /*
      * Returns a set of all logical folder in this folder
      */
-    public Vector<Folder> getFolders() {
-        Vector<Folder> folders = new Vector<Folder>();
+    public List<Folder> getFolders() {
+        List<Folder> folders = new ArrayList<Folder>();
         Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
@@ -901,8 +909,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all logical folder and subfolders in this folder
      */
-    public Vector<Folder> getAllFolders(boolean projectFilesOnly) {
-        Vector<Folder> folders = new Vector<Folder>();
+    public List<Folder> getAllFolders(boolean projectFilesOnly) {
+        List<Folder> folders = new ArrayList<Folder>();
 
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
@@ -1007,12 +1015,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (!file.exists() || file.isDirectory()) {
             return; // FIXUP: error
         }
-        if (!AllSourceFileFilter.getInstance().accept(file)) {
+        if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
             return;
         }
         String itemPath = file.getPath();
-        itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = IpeUtils.normalize(itemPath);
+        itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+        itemPath = CndPathUtilitities.normalize(itemPath);
         Item item = new Item(itemPath);
         addItemAction(item, false);
     }
@@ -1029,7 +1037,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             assert false;
             return;
         }
-        /*Folder top =*/ getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
+        /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
     }
 
     @Override
@@ -1104,7 +1112,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder

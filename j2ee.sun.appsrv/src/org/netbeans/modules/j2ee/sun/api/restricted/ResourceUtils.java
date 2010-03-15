@@ -601,7 +601,7 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__NonTransactionalConnections))
                         connPool.setNonTransactionalConnections(value);
                     else if (key.equals(__AllowNonComponentCallers))
-                        connPool.setAllowNonComponentCallers(value);    
+                        connPool.setAllowNonComponentCallers(value);
                 }
                 
             } //for
@@ -1072,7 +1072,8 @@ public class ResourceUtils implements WizardConstants{
     
     private static PropertyElement populatePropertyElement(PropertyElement prop, NameValuePair pair){
         prop.setName(pair.getParamName()); 
-        prop.setValue(pair.getParamValue()); 
+        prop.setValue(pair.getParamValue());
+        if ("()".equals(prop.getValue()))  prop.setValue(""); //NOI18N
         return prop;
     }
     

@@ -72,6 +72,7 @@ public final class NativeProcessInfo {
     private Collection<ChangeListener> listeners = null;
     private Pty pty = null;
     private boolean runInPty;
+    private boolean expandMacros = true;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -185,7 +186,11 @@ public final class NativeProcessInfo {
 
         if (commandLine != null) {
             try {
-                cmd = macroExpander.expandPredefinedMacros(commandLine);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(commandLine);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -193,7 +198,11 @@ public final class NativeProcessInfo {
             result.add(cmd);
         } else {
             try {
-                cmd = macroExpander.expandPredefinedMacros(executable);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(executable);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -201,12 +210,16 @@ public final class NativeProcessInfo {
             result.add(cmd);
 
             for (String arg : arguments) {
-                arg = Utilities.escapeParameters(new String[]{arg});
-                if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
-                        (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
-                    arg = arg.substring(1, arg.length() - 1);
+                if (isExpandMacros()) {
+                    arg = Utilities.escapeParameters(new String[]{arg});
+                    if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
+                            (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
+                        arg = arg.substring(1, arg.length() - 1);
+                    }
+                    result.add('"' + arg + '"'); // NOI18N
+                } else {
+                    result.add(arg);
                 }
-                result.add('"' + arg + '"'); // NOI18N
             }
         }
 
@@ -341,5 +354,19 @@ public final class NativeProcessInfo {
 
     public boolean isPtyMode() {
         return runInPty || getPty() != null;
+    }
+
+    /**
+     * @return the expandMacros
+     */
+    public boolean isExpandMacros() {
+        return expandMacros;
+    }
+
+    /**
+     * @param expandMacros the expandMacros to set
+     */
+    public void setExpandMacros(boolean expandMacros) {
+        this.expandMacros = expandMacros;
     }
 }

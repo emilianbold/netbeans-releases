@@ -42,24 +42,25 @@
 package org.netbeans.modules.cnd.source;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.Node;
 
 
 /** Represents a C++ object in the Repository.
  *
  */
 
-public class CDataObject extends CndDataObject {
+public class CDataObject extends SourceDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = 6859476492905347073L;
 
-    public CDataObject(FileObject pf, CndAbstractDataLoader loader)
+    public CDataObject(FileObject pf, SourceAbstractDataLoader loader)
 			    throws DataObjectExistsException {
 	super(pf, loader);
     }
 
+    @Override
     protected Node createNodeDelegate() {
 	return new CDataNode(this);
     }

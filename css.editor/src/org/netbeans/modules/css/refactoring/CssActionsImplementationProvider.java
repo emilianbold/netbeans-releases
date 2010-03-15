@@ -48,9 +48,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -61,7 +61,9 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -112,24 +114,23 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    return true;
 	}
 
-//	//check if the node represents a folder which may potentially contain
-//	//files containg css files or embedded css in some other files (html, jsp ...)
-//	FileObject fo = getFileObjectFromNode(node);
-//	if (fo != null) {
-//	    //TODO is the file a part of a "web" project like web project, php etc...
-//	    //to achieve this I need to introduce some kind of "web container" SPI
-//	    //which would be registered into either global lookup or into project's
-//	    //lookup.
-//	    //for the time being just say we can refactor all folders on
-//	    //non-read only filesystems
-//	    try {
-//		//XXX We will disable all refactoring actions possibly registered
-//		//behind us for folders!!!! Read my comment in the class javadoc
-//		return fo.isValid() && fo.isFolder() && !fo.getFileSystem().isReadOnly();
-//	    } catch (FileStateInvalidException ex) {
-//		Exceptions.printStackTrace(ex);
-//	    }
-//	}
+	//check if the node represents a folder which may potentially contain
+	//files containg css files or embedded css in some other files (html, jsp ...)
+        //XXX We will disable all refactoring actions possibly registered
+        //behind us for folders!!!! Read my comment in the class javadoc
+	FileObject fo = getFileObjectFromNode(node);
+	if (fo != null && fo.isValid() && fo.isFolder()) {
+            //check if the folder is a part of a web-like project using the
+            //web root query
+            if(ProjectWebRootQuery.getWebRoot(fo) != null) {
+                //looks like the file is a web like project
+                try {
+                    return!fo.getFileSystem().isReadOnly();
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+	}
 
 	return false; //we are not interested in refactoring this object/s
 
@@ -228,7 +229,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
                 @Override
 		public void run() {
-		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset));
+		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset, CssTokenId.language()));
 		}
 	    });
 	    return ref.get();
@@ -251,10 +252,6 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             }
         }
         return false;
-    }
-
-    private static boolean representsOpenedFile(EditorCookie ec) {
-	return ec != null && ec.getOpenedPanes() != null;
     }
 
     private static EditorCookie getEditorCookie(Node node) {

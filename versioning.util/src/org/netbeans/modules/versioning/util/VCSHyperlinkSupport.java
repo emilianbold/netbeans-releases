@@ -56,11 +56,12 @@ import javax.swing.text.Position;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
+ * Implementation provides hyperlink support for VCS anotation bar and history views
  *
  * @author Tomas Stupka
  */
@@ -132,12 +133,12 @@ public class VCSHyperlinkSupport {
         private final int start[];
         private final int end[];
         private final String text;
-        private final HyperlinkProvider hp;
+        private final VCSHyperlinkProvider hp;
         private final File root;
         private final int length;
         private final Style issueHyperlinkStyle;
 
-        private IssueLinker(HyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text, int[] spans) {
+        private IssueLinker(VCSHyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text, int[] spans) {
             this.length = spans.length / 2;
             this.docstart = new int[length];
             this.docend = new int[length];
@@ -165,7 +166,7 @@ public class VCSHyperlinkSupport {
             }
         }
 
-        public static IssueLinker create(HyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text) {
+        public static IssueLinker create(VCSHyperlinkProvider hp, Style issueHyperlinkStyle, File root, StyledDocument sd, String text) {
             int[] spans = hp.getSpans(text);
             if (spans == null) {
                 return null;

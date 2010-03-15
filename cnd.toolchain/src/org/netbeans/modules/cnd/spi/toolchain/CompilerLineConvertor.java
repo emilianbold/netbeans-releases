@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.toolchain.execution.ErrorAnnotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +75,6 @@ public final class CompilerLineConvertor implements LineConvertor {
 		parsers.add(parser);
 	    }
 	}
-        ErrorAnnotation.getInstance().detach(null);
     }
 
     @Override

@@ -310,8 +310,24 @@ public final class RubyIndexerHelper {
                 MethodDefNode method = (MethodDefNode) child.getNode();
                 //hashNames = getAttribute(file, fo, root, method);
                 hashNames = getAttribute(fo, root, method);
+                if (hashNames == null && rdocs != null && child instanceof MethodElement) {
+                    MethodElement me = (MethodElement) child;
+                    boolean match = false;
+                    // try first params with the splat operator
+                    for (String param : me.getParameters()) {
+                        if (param.startsWith("*")) {
+                            hashNames = HashNameAnalyzer.collect(param.substring(1), rdocs);
+                            match = true;
+                            break;
+                        }
+                    }
+                    // attempt to collect options from rdocs if if one the params is 'options'
+                    if (!match && me.getParameters().contains("options")) {
+                        hashNames = HashNameAnalyzer.collect("options", rdocs);
+                        match = true;
+                    }
+                }
             }
-            
             if (hashNames == null) {
                 hashNames = "";
             } else {

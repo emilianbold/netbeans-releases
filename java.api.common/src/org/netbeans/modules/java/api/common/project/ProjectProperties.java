@@ -73,6 +73,10 @@ public final class ProjectProperties {
      * @since org.netbeans.modules.java.api.common/0 1.14
      */
     public static final String ANNOTATION_PROCESSING_SOURCE_OUTPUT = "annotation.processing.source.output"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.15
+     */
+    public static final String ANNOTATION_PROCESSING_PROCESSOR_OPTIONS = "annotation.processing.processor.options"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
     /**
      * @since org.netbeans.modules.java.api.common/0 1.14

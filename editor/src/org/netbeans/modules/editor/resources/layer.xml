@@ -361,6 +361,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-editor-url-HyperlinkImpl.instance" />
         </folder>
         
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-editor-annotations-is_overridden.xml" url="override/is-overridden-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-annotations-has_implementations.xml" url="override/has-implementations-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-annotations-overrides.xml" url="override/overrides-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-annotations-implements.xml" url="override/implements-annotation.xml"/>
+            <file name="implements-has-implementations-combined.xml" url="override/implements-has-implementations-combined.xml" />
+            <file name="implements-is-overridden-combined.xml" url="override/implements-is-overridden-combined.xml" />
+            <file name="override-is-overridden-combined.xml" url="override/override-is-overridden-combined.xml" />
+        </folder>
     </folder>
 
     <folder name="xml">

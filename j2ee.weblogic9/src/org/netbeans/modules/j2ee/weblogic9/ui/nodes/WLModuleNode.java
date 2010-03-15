@@ -44,21 +44,23 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 import java.awt.Image;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ControlModuleCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ModuleCookieSupport;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StartModuleAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StopModuleAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleCookie;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -107,18 +109,20 @@ public class WLModuleNode extends AbstractNode {
         if (url != null) {
             getCookieSet().add(new OpenModuleUrlCookieImpl(url));
         }
+        getCookieSet().add(new ControlModuleCookieImpl(module, lookup, !stopped));
         getCookieSet().add(new UndeployModuleCookieImpl(module, lookup));
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        if (url != null && !stopped) {
-            return new SystemAction[] {
-                SystemAction.get(UndeployModuleAction.class),
-                SystemAction.get(OpenModuleUrlAction.class)
-            };
-        }
-        return new SystemAction[] { SystemAction.get(UndeployModuleAction.class) };
+        List<Action> actions = new ArrayList<Action>(7);
+        actions.add(SystemAction.get(StartModuleAction.class));
+        actions.add(SystemAction.get(StopModuleAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(OpenModuleUrlAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(UndeployModuleAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
@@ -159,38 +163,61 @@ public class WLModuleNode extends AbstractNode {
 
     private static class UndeployModuleCookieImpl implements UndeployModuleCookie {
 
-        private final TargetModuleID module;
-
-        private final Lookup lookup;
+        private final ModuleCookieSupport support;
 
         public UndeployModuleCookieImpl(TargetModuleID module, Lookup lookup) {
-            this.module = module;
-            this.lookup = lookup;
+            this.support = new ModuleCookieSupport(module, lookup);
         }
 
         @Override
         public void undeploy() {
-            WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
-            if (manager != null) {
-                // TODO should we make it batch somehow (it is rare case)
-                ProgressObject obj = manager.undeploy(new TargetModuleID[] {module});
-                final CountDownLatch latch = new CountDownLatch(1);
-                obj.addProgressListener(new ProgressListener() {
+            support.performAction(new ModuleCookieSupport.Action() {
 
-                    @Override
-                    public void handleProgressEvent(ProgressEvent pe) {
-                        if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
-                            latch.countDown();
-                        }
-                    }
-                });
-                try {
-                    latch.await(60000, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.undeploy(new TargetModuleID[] {module});
                 }
-            }
+            });
+        }
+    }
+
+    private static class ControlModuleCookieImpl implements ControlModuleCookie {
+
+        private final ModuleCookieSupport support;
+
+        private final boolean running;
+
+        public ControlModuleCookieImpl(TargetModuleID module, Lookup lookup, boolean running) {
+            this.support = new ModuleCookieSupport(module, lookup);
+            this.running = running;
         }
 
+        @Override
+        public void start() {
+            support.performAction(new ModuleCookieSupport.Action() {
+
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.start(new TargetModuleID[] {module});
+                }
+            });
+        }
+
+        @Override
+        public void stop() {
+            support.performAction(new ModuleCookieSupport.Action() {
+
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.stop(new TargetModuleID[] {module});
+                }
+            });
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running;
+        }
     }
+
 }

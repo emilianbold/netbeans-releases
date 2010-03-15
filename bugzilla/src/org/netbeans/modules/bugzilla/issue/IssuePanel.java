@@ -99,6 +99,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
@@ -107,7 +108,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -118,8 +119,6 @@ import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -228,6 +227,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public void setIssue(BugzillaIssue issue) {
+        assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
@@ -299,16 +299,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
-        if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
-            Node[] selection = issue.getSelection();
-            if(selection == null) {
-                // XXX not sure why we need this - i'm going to keep it for now,
-                // doesn't seem to harm
-                selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (issue.isNew()) {
+            if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
+                Node[] selection = issue.getSelection();
+                if(selection == null) {
+                    // XXX not sure why we need this - i'm going to keep it for now,
+                    // doesn't seem to harm
+                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                }
+                ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+                addNetbeansInfo();
             }
-            ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+            selectProduct();
         }
-        selectProduct();
 
         // Hack to "link" the width of both columns
         Dimension dim = ccField.getPreferredSize();
@@ -328,9 +331,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 selectInCombo(componentCombo, component, true);
             }
         } else {
-            if(issue.getRepository() instanceof KenaiRepository) {
-                String productName = ((KenaiRepository)issue.getRepository()).getProductName();
+            BugzillaRepository repository = issue.getBugzillaRepository();
+            if (repository instanceof KenaiRepository) {
+                String productName = ((KenaiRepository)repository).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else if (BugzillaUtil.isNbRepository(repository)) {
+                // Issue 181224
+                String defaultProduct = "ide"; // NOI18N
+                String defaultComponent = "Code"; // NOI18N
+                productCombo.setSelectedItem(defaultProduct);
+                componentCombo.setSelectedItem(defaultComponent);
             } else {
                 productCombo.setSelectedIndex(0);
             }
@@ -470,9 +480,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
-                    ku.setMessage(KenaiUtil.getChatLink(issue));
-                    JLabel label = ku.createUserWidget();
+                    JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
                     reportedStatusLabel = label;
@@ -491,9 +499,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
                 label.setVisible(assignedToStatusLabel.isVisible());
@@ -528,7 +534,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
-        if (force) {
+        if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
         updateTasklistButton();
@@ -2541,6 +2547,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    private void addNetbeansInfo() {
+        String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.newIssue.netbeansInfo"); // NOI18N
+        Object[] info = new Object[] {
+            getProductVersionValue(),
+            System.getProperty("os.name", "unknown"), // NOI18N
+            System.getProperty("os.version", "unknown"), // NOI18N
+            System.getProperty("os.arch", "unknown"),  // NOI18N
+            System.getProperty("java.version", "unknown"), // NOI18N
+            System.getProperty("java.vm.name", "unknown"), // NOI18N
+            System.getProperty("java.vm.version", "") // NOI18N
+        };
+        String infoTxt = MessageFormat.format(format, info);
+        addCommentArea.setText(infoTxt);
+    }
+
+    public static String getProductVersionValue () {
+        return MessageFormat.format(
+            NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+            new Object[] {System.getProperty("netbeans.buildnumber")});                         // NOI18N
     }
 
     class CancelHighlightDocumentListener implements DocumentListener {

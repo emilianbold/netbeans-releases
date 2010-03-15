@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -133,7 +133,7 @@ public abstract class QtInfoProvider {
                     result.add(baseDir + File.separator + "QtWebKit"); // NOI18N
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
-                if (IpeUtils.isPathAbsolute(uiDir)) {
+                if (CndPathUtilitities.isPathAbsolute(uiDir)) {
                     result.add(uiDir);
                 } else {
                     result.add(conf.getBaseDir() + File.separator + uiDir);
@@ -208,9 +208,9 @@ public abstract class QtInfoProvider {
 
         private static String guessBaseQtIncludeDir(String qmakePath) {
             // .../bin/qmake -> .../include/qt4
-            String binDir = IpeUtils.getDirName(qmakePath);
+            String binDir = CndPathUtilitities.getDirName(qmakePath);
             if (binDir != null) {
-                String baseDir = IpeUtils.getDirName(binDir);
+                String baseDir = CndPathUtilitities.getDirName(binDir);
                 if (baseDir != null) {
                     return baseDir + "/include/qt4"; // NOI18N
                 }

@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookFactory;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookFactory;
 
 /**
  *

@@ -55,7 +55,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
@@ -67,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -118,6 +122,44 @@ public class BreakpointsViewButtons {
                 }
                 menu.show(button, 16, 0);
 
+            }
+        });
+        button.setVisible(false);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                boolean groupableBreakpoints = false;
+                Breakpoint[] brkps = DebuggerManager.getDebuggerManager().getBreakpoints();
+                for (Breakpoint b : brkps) {
+                    if (b.getGroupProperties() != null) {
+                        groupableBreakpoints = true;
+                        break;
+                    }
+                }
+                if (groupableBreakpoints) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            button.setVisible(true);
+                        }
+                    });
+                } else {
+                    final boolean[] gb = new boolean[] { groupableBreakpoints };
+                    DebuggerManager.getDebuggerManager().addDebuggerListener(new DebuggerManagerAdapter() {
+                        @Override
+                        public void breakpointAdded(Breakpoint breakpoint) {
+                            if (!gb[0] && breakpoint.getGroupProperties() != null) {
+                                gb[0] = true;
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        button.setVisible(true);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             }
         });
         return button;

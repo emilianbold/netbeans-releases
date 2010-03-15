@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -165,6 +166,7 @@ public class DefaultDataObjectTest extends NbTestCase {
         assertNotNull("Document can be created", listener.doc);
     }
 
+    @RandomlyFails // #181230
     public void testRenameOpenComponent() throws Exception {
         {
             OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);

@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,12 +150,12 @@ public class RailsProjectUtil {
 
     /**
      * Gets the rails version the given <code>project</code> uses. Returns
-     * <code>null</code> if the version could not be determined.
+     * version <code>0</code> if the version could not be determined.
      *
      * @param project
-     * @return
+     * @return the version; <code>0</code> if unknown, never <code>null</code>.
      */
-    public static String getRailsVersion(Project project) {
+    public static RailsVersion getRailsVersion(Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
@@ -180,7 +181,10 @@ public class RailsProjectUtil {
             }
         }
 
-        return railsVersion;
+        if (railsVersion == null) {
+            return new RailsVersion(0);
+        }
+        return versionFor(railsVersion);
     }
 
     /** Return the version of Rails requested in environment.rb */
@@ -192,7 +196,7 @@ public class RailsProjectUtil {
             // in environment.rb
             br = new BufferedReader(new InputStreamReader(environment.getInputStream()));
 
-            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]((\\d+)\\.(\\d+)\\.(\\d+))['\"].*"); // NOI18N
+            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]" + GemFilesParser.VERSION_REGEX + "['\"].*"); // NOI18N
             for (int line = 0; line < 20; line++) {
                 String s = br.readLine();
                 if (s == null) {
@@ -302,7 +306,7 @@ public class RailsProjectUtil {
             if (splitted.length == 2) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]));
-            } else if (splitted.length == 3) {
+            } else if (splitted.length >= 3) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));
@@ -314,6 +318,9 @@ public class RailsProjectUtil {
 
     }
 
+    /**
+     * Represents a rails version.
+     */
     public static final class RailsVersion implements Comparable<RailsVersion> {
         private final int major;
         private final int minor;
@@ -346,6 +353,10 @@ public class RailsProjectUtil {
 
         public String asString() {
             return getMajor() + "." + getMinor() + "." + getRevision();
+        }
+
+        public boolean isRails3OrHigher() {
+            return compareTo(new RailsVersion(3)) >= 0;
         }
 
         public int compareTo(RailsVersion o) {

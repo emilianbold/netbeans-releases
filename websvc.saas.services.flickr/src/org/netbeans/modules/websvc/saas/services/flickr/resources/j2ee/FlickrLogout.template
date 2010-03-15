@@ -1,0 +1,5 @@
+{
+    javax.servlet.http.HttpSession session = request.getSession(true);
+    session.removeAttribute("flickr_frob");
+    session.removeAttribute("flickr_auth_token");
+}

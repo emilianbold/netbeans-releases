@@ -75,6 +75,9 @@ public class GeneralPHP extends JellyTestCase {
     protected boolean bRandomCheck = false;
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
+    static final String SAMPLES = "Samples";
+    static final String PROJECT_JOBEET = "Jobeet";
+    static final String PROJECT_AirAliance = "Air Alliance Sample Application";
     static protected final int COMPLETION_LIST_THRESHOLD = 5000;
     protected static final String PHP_EXTENSION = ".php";
 
@@ -126,6 +129,34 @@ public class GeneralPHP extends JellyTestCase {
         } catch (InterruptedException ex) {
             System.out.println("=== Interrupted sleep ===");
         }
+    }
+
+    protected String CreateSamplePHPApplication(String type) {
+        NewProjectWizardOperator.invoke().cancel();
+
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
+
+        opNewProjectWizard.selectCategory(SAMPLES + "|" + PHP_CATEGORY_NAME);
+//        opNewProjectWizard.selectCategory(PHP_CATEGORY_NAME);
+
+        String typeName = "";
+
+        if (type == "Jobeet") {
+            opNewProjectWizard.selectProject(PROJECT_JOBEET);
+        } else if (type == "AirAlliance") {
+            opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        }
+
+        opNewProjectWizard.next();
+
+        JDialogOperator jdNew = new JDialogOperator("New PHP Sample Project");
+        JTextComponentOperator jtName = new JTextComponentOperator(jdNew, 0);
+
+        String sResult = jtName.getText();
+
+        opNewProjectWizard.finish();
+        return sResult;
+
     }
 
     // All defaults including name

@@ -70,12 +70,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=FunctionCallsProvider.class)
 public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
     @Override
-    public List<FunctionCall> getFunctionCalls(StyledDocument document, int line) {
+    public List<CsmReference> getFunctionCalls(StyledDocument document, int line) {
         if (line < 0 || document == null) {
             return Collections.emptyList();
         }
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
         if (csmFile == null || !csmFile.isParsed()) {
             return Collections.emptyList();
         }
@@ -85,7 +85,7 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
         return getFunctionCalls(csmFile, lineRootElement, line);
     }
 
-    private static List<FunctionCall> getFunctionCalls(final CsmFile csmFile,
+    private static List<CsmReference> getFunctionCalls(final CsmFile csmFile,
                                 final Element lineRootElement,
                                 final int line) {
         final Element lineElem = lineRootElement.getElement(line);
@@ -107,7 +107,7 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
         final int startOffset = lineStartOffset;
         final int endOffset = lineEndOffset;
 
-        final List<FunctionCall> res = new ArrayList<FunctionCall>();
+        final List<CsmReference> res = new ArrayList<CsmReference>();
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
@@ -131,9 +131,10 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
 //                                if (CsmKindUtilities.isClass(scope)) {
 //                                    scopeName = ((CsmClass)scope).getQualifiedName().toString();
 //                                }
-                                res.add(new FunctionCall(function.getSignature().toString(),
-                                    reference.getStartOffset(),
-                                    reference.getEndOffset()));
+                                res.add(reference);
+                                //new FunctionCall(function.getSignature().toString(),
+//                                    reference.getStartOffset(),
+//                                    reference.getEndOffset()));
                             }
                         }
 //                          else if (AUTOS_INCLUDE_MACROS && CsmKindUtilities.isMacro(referencedObject)) {

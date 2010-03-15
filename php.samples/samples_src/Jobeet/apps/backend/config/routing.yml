@@ -1,0 +1,38 @@
+jobeet_affiliate:
+  class: sfDoctrineRouteCollection
+  options:
+    model:               JobeetAffiliate
+    module:              affiliate
+    prefix_path:         affiliate
+    column:              id
+    with_wildcard_routes: true
+
+jobeet_category:
+  class: sfDoctrineRouteCollection
+  options:
+    model:               JobeetCategory
+    module:              category
+    prefix_path:         category
+    column:              id
+    with_wildcard_routes: true
+
+jobeet_job:
+  class: sfDoctrineRouteCollection
+  options:
+    model:               JobeetJob
+    module:              job
+    prefix_path:         job
+    column:              id
+    with_wildcard_routes: true
+
+# default rules
+homepage:
+  url:   /
+  param: { module: job, action: index }
+
+default_index:
+  url:   /:module
+  param: { action: index }
+
+default:
+  url:   /:module/:action/*

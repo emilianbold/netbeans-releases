@@ -139,6 +139,10 @@ public abstract class TestBase extends NbTestCase {
         testSourceFO = FileUtil.toFileObject(testSource);
 
         assertNotNull(testSourceFO);
+
+        if (sourceLevel != null) {
+            SourceUtilsTestUtil.setSourceLevel(testSourceFO, sourceLevel);
+        }
         
         File testBuildTo = new File(wd, "test-build");
         
@@ -252,6 +256,12 @@ public abstract class TestBase extends NbTestCase {
         } else {
             return null;
         }
+    }
+
+    private String sourceLevel;
+
+    protected final void setSourceLevel(String sourceLevel) {
+        this.sourceLevel = sourceLevel;
     }
 
     final class ErrorDescriptionSetterImpl implements SemanticHighlighter.ErrorDescriptionSetter {

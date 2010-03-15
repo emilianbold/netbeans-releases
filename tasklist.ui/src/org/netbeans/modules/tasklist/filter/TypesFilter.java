@@ -128,5 +128,7 @@ class TypesFilter {
         enabledProviders.add("org.netbeans.modules.tasklist.todo.TodoTaskScanner"); //NOI18N
         enabledProviders.add("org.netbeans.modules.csl.core.GsfTaskProvider"); //NOI18N
         enabledProviders.add("org.netbeans.modules.bugtracking.tasklist.TaskListProvider"); //NOI18N
+        enabledProviders.add("org.netbeans.modules.javafx.source.tasklist.JavaFXTaskListProvider"); //NOI18N
+
     } 
 } 

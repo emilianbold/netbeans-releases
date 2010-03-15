@@ -5060,4 +5060,74 @@ public class FormatterTestCase extends EditorBase {
                 "};\n"
                 );
     }
+    
+    //  Bug 180110 - Inconsistent C/C++ switch statement formatting
+    public void testIZ180110() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration,
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch,
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        setLoadDocumentText(
+                "int foo(){\n"
+                + "    switch(value)\n"
+                + "    {\n"
+                + "     case MACRO(x):\n"
+                + "      {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case MACRO_2:\n"
+                + "     {\n"
+                + "        break;\n"
+                + "   }\n"
+                + "    case (MACRO_3):\n"
+                + "   {\n"
+                + "    break;\n"
+                + "  }\n"
+                + "    }\n"
+                + "}\n");
+        reformat();
+        assertDocumentText("Bug 180110 - Inconsistent C/C++ switch statement formatting",
+                "int foo() {\n"
+                + "    switch (value)\n"
+                + "    {\n"
+                + "    case MACRO(x):\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case MACRO_2:\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    case (MACRO_3):\n"
+                + "    {\n"
+                + "        break;\n"
+                + "    }\n"
+                + "    }\n"
+                + "}\n");
+    }
+
+    //  Bug 176820 -  Erroneous formatting of typecasting of reference
+    public void testIZ176820() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i=(int *) &a;\n"+
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i = (int *) &a;\n"+
+                "}\n"
+                    );
+    }
 }

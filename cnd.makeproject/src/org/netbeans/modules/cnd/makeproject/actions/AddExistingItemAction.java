@@ -46,10 +46,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.utils.AllFileFilter;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
-import org.netbeans.modules.cnd.api.utils.CCSourceFileFilter;
-import org.netbeans.modules.cnd.api.utils.CSourceFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -58,11 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
-import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.QtFileFilter;
-import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
@@ -122,14 +115,14 @@ public class AddExistingItemAction extends NodeAction {
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
-        fileChooser.addChoosableFileFilter(CSourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(CCSourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(HeaderSourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(FortranSourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(ResourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(QtFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(AllSourceFileFilter.getInstance());
-        fileChooser.addChoosableFileFilter(AllFileFilter.getInstance());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getCSourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getCCSourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getHeaderSourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getFortranSourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getResourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getQtFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getAllSourceFileFilter());
+        fileChooser.addChoosableFileFilter(FileFilterFactory.getAllFileFilter());
         fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
 	if (ret == FileChooser.CANCEL_OPTION) {
@@ -142,9 +135,9 @@ public class AddExistingItemAction extends NodeAction {
 //	for (int i = 0; i < files.length; i++) {
 //	    String itemPath;
 //	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
-//		itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//		itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 //	    else if (PathPanel.getMode() == PathPanel.REL)
-//		itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//		itemPath = CndPathUtilitities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 //	    else
 //		itemPath = files[i].getPath();
 //	    itemPath = FilePathAdaptor.normalize(itemPath);
@@ -157,7 +150,7 @@ public class AddExistingItemAction extends NodeAction {
 //                Item item = new Item(itemPath);
 //		folder.addItemAction(item);
 //                items.add(item);
-//		if (IpeUtils.isPathAbsolute(itemPath))
+//		if (CndPathUtilitities.isPathAbsolute(itemPath))
 //		    notifySources = true;
 //	    }
 //	}
@@ -177,13 +170,13 @@ public class AddExistingItemAction extends NodeAction {
                 for (int i = 0; i < files.length; i++) {
                     String itemPath;
                     if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+                        itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
                     } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+                        itemPath = CndPathUtilitities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
                     } else {
                         itemPath = files[i].getPath();
                     }
-                    itemPath = IpeUtils.normalize(itemPath);
+                    itemPath = CndPathUtilitities.normalize(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
@@ -192,7 +185,7 @@ public class AddExistingItemAction extends NodeAction {
                         Item item = new Item(itemPath);
                         folder.addItemAction(item);
                         items.add(item);
-                        if (IpeUtils.isPathAbsolute(itemPath)) {
+                        if (CndPathUtilitities.isPathAbsolute(itemPath)) {
                             notifySources = true;
                         }
                     }

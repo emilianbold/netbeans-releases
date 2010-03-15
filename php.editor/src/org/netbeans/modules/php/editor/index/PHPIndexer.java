@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -59,6 +60,8 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
@@ -119,25 +122,27 @@ public final class PHPIndexer extends EmbeddingIndexer {
     // ;flags;;args;offset;docoffset;browsercompat;types;
     // (between flags and args you have the case sensitive name for flags)
 
-    static final String FIELD_BASE = "base"; //NOI18N
-    static final String FIELD_EXTEND = "extend"; //NOI18N
-    static final String FIELD_CLASS = "clz"; //NOI18N
-    static final String FIELD_IFACE = "iface"; //NOI18N
-    static final String FIELD_CONST = "const"; //NOI18N
-    static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
-    static final String FIELD_FIELD = "field"; //NOI18N
-    static final String FIELD_METHOD = "method"; //NOI18N
-    static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
-    static final String FIELD_INCLUDE = "include"; //NOI18N
-    static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
-    static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
-    static final String FIELD_NAMESPACE = "ns"; //NOI18N
+    public static final String FIELD_BASE = "base"; //NOI18N
+    public static final String FIELD_EXTEND = "extend"; //NOI18N
+    public static final String FIELD_CLASS = "clz"; //NOI18N
+    public static final String FIELD_SUPER_CLASS = "superclz"; //NOI18N
+    public static final String FIELD_IFACE = "iface"; //NOI18N
+    public static final String FIELD_SUPER_IFACE = "superiface"; //NOI18N
+    public static final String FIELD_CONST = "const"; //NOI18N
+    public static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
+    public static final String FIELD_FIELD = "field"; //NOI18N
+    public static final String FIELD_METHOD = "method"; //NOI18N
+    public static final String FIELD_CONSTRUCTOR = "constructor"; //NOI18N
+    public static final String FIELD_INCLUDE = "include"; //NOI18N
+    public static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
+    public static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
+    public static final String FIELD_NAMESPACE = "ns"; //NOI18N
 
-    static final String FIELD_VAR = "var"; //NOI18N
+    public static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
-    static final String FIELD_TOP_LEVEL = "top"; //NOI18N
+    public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    static final String [] ALL_FIELDS = new String [] {
+    public static final String [] ALL_FIELDS = new String [] {
         FIELD_BASE,
         FIELD_EXTEND,
         FIELD_CLASS,
@@ -183,7 +188,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (processedFileURL == null) {
                 return;
             }
-            PHPIndex.clearNamespaceCache();
+            IndexQueryImpl.clearNamespaceCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = r.getModel();
@@ -194,6 +199,18 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 IndexDocument classDocument = support.createDocument(indexable);
                 documents.add(classDocument);
                 classDocument.addPair(FIELD_CLASS, classScope.getIndexSignature(), true, true);
+                QualifiedName superClassName = classScope.getSuperClassName();
+                if (superClassName != null) {
+                    final String name = superClassName.getName();
+                    final String namespaceName = superClassName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
+                Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
+                for (QualifiedName superIfaceName : superInterfaces) {
+                    final String name = superIfaceName.getName();
+                    final String namespaceName = superIfaceName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
 
                 for (MethodScope methodScope : classScope.getDeclaredMethods()) {
@@ -213,6 +230,13 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 IndexDocument classDocument = support.createDocument(indexable);
                 documents.add(classDocument);
                 classDocument.addPair(FIELD_IFACE, ifaceSCope.getIndexSignature(), true, true);
+                Set<QualifiedName> superInterfaces = ifaceSCope.getSuperInterfaces();
+                for (QualifiedName superIfaceName : superInterfaces) {
+                    final String name = superIfaceName.getName();
+                    final String namespaceName = superIfaceName.toNamespaceName().toString();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                }
+
                 classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
                 for (MethodScope methodScope : ifaceSCope.getDeclaredMethods()) {
                     classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
@@ -292,7 +316,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 13;
+        public static final int VERSION = 14;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

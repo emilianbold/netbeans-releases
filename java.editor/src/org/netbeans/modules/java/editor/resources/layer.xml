@@ -403,12 +403,18 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-editor-codegen-EqualsHashCodeGenerator$Factory.instance">
                         <attr name="position" intvalue="300"/>
                     </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-ToStringGenerator$Factory.instance">
+                        <attr name="position" intvalue="350"/>
+                    </file>
                     <file name="org-netbeans-modules-java-editor-codegen-DelegateMethodGenerator$Factory.instance">
                         <attr name="position" intvalue="400"/>
                     </file>
                     <file name="org-netbeans-modules-java-editor-codegen-ImplementOverrideMethodGenerator$Factory.instance">
                         <attr name="position" intvalue="500"/>
                     </file>
+                </folder>
+                <folder name="AnnotationProcessors">
+                    <file name="org-netbeans-modules-editor-java-SupportedAnnotationTypesCompletion.instance" />
                 </folder>
                 <folder name="text">
                     <folder name="x-java-string">
@@ -428,16 +434,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
                 </folder>
             </folder>
-        </folder>
-
-        <folder name="AnnotationTypes">
-            <file name="org-netbeans-modules-editor-java-is_overridden.xml" url="is-overridden-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-has_implementations.xml" url="has-implementations-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-overrides.xml" url="overrides-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml"/>
-            <file name="implements-has-implementations-combined.xml" url="implements-has-implementations-combined.xml" />
-            <file name="implements-is-overridden-combined.xml" url="implements-is-overridden-combined.xml" />
-            <file name="override-is-overridden-combined.xml" url="override-is-overridden-combined.xml" />
         </folder>
     </folder>
 

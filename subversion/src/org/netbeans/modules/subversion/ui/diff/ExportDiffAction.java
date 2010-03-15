@@ -125,8 +125,12 @@ public class ExportDiffAction extends ContextAction {
         return super.enable(nodes) && Lookup.getDefault().lookup(DiffProvider.class) != null;                
     }
 
-    protected void performContextAction(final Node[] nodes) {
-       
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        performContextAction(nodes, false);
+    }
+
+    void performContextAction (final Node[] nodes, final boolean singleDiffSetup) {
         // reevaluate fast enablement logic guess
 
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -153,7 +157,7 @@ public class ExportDiffAction extends ContextAction {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
                 SvnProgressSupport ps = new SvnProgressSupport() {
                     protected void perform() {
-                        async(this, nodes, toFile);
+                        async(this, nodes, toFile, singleDiffSetup);
                     }
                 };
                 ps.start(rp, null, getRunningName(nodes)).waitFinished();
@@ -167,7 +171,7 @@ public class ExportDiffAction extends ContextAction {
         return false;
     }
 
-    private void async(SvnProgressSupport progress, Node[] nodes, File destination) {
+    private void async(SvnProgressSupport progress, Node[] nodes, File destination, boolean singleDiffSetup) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
@@ -180,7 +184,15 @@ public class ExportDiffAction extends ContextAction {
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
-                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                if (!singleDiffSetup) {
+                    setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                } else {
+                    if (nodes.length > 0 && nodes[0] instanceof DiffNode) {
+                        setups = new ArrayList<Setup>(Collections.singletonList(((DiffNode)nodes[0]).getSetup()));
+                    } else {
+                        return;
+                    }
+                }
                 List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
@@ -277,7 +289,7 @@ public class ExportDiffAction extends ContextAction {
 
     private static File getCommonParent(File [] files) {
         File root = files[0];
-        if (root.isFile()) root = root.getParentFile();
+        if (!root.exists() || root.isFile()) root = root.getParentFile();
         for (int i = 1; i < files.length; i++) {
             root = Utils.getCommonParent(root, files[i]);
             if (root == null) return null;

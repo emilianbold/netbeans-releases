@@ -72,11 +72,13 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -139,13 +141,6 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             refresh();
     }
     
-//<<<<<<< local
-//    private static String formatUri(String glassfishRoot, String host, int port, String uriFragment) {
-//        return "[" + glassfishRoot + "]" + uriFragment + ":" + host + ":" + port;
-//    }
-//
-//=======
-//>>>>>>> other
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
         String result = map.get(key);
         if(result == null) {
@@ -245,20 +240,36 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return properties.get(HOSTNAME_ATTR);
     }
     
-    public String getDomainsRoot() {
+    public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
-//        if (null == retVal) {
-//            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
-//                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
-//        }
+        File candidate = new File(retVal);
+        if (candidate.exists() && !Utils.canWrite(candidate)) {
+            // we need to do some surgury here...
+            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            FileObject destdir = null;
+            try {
+                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (null != destdir) {
+                candidate = new File(candidate, properties.get(DOMAIN_NAME_ATTR));
+                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
+                try {
+                    Utils.doCopy(source, destdir);
+
+                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
+                    properties.put(DOMAINS_FOLDER_ATTR,retVal);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return retVal;
     }
     
     public String getDomainName() {
         String retVal = properties.get(DOMAIN_NAME_ATTR);
-//        if (null == retVal) {
-//            retVal = GlassfishInstance.DEFAULT_DOMAIN_NAME;
-//        }
         return retVal;
     }
     
@@ -287,18 +298,24 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     // ------------------------------------------------------------------------
     // GlassfishModule interface implementation
     // ------------------------------------------------------------------------
+    @Override
     public Map<String, String> getInstanceProperties() {
+        // force the domains conversion
+        getDomainsRoot();
         return Collections.unmodifiableMap(properties);
     }
     
+    @Override
     public GlassfishInstanceProvider getInstanceProvider() {
         return instanceProvider;
     }
 
+    @Override
     public boolean isRemote() {
         return isRemote;
     }
 
+    @Override
     public Future<OperationState> startServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.RUNNING);
@@ -308,6 +325,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return task;
     }
 
+    @Override
     public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener startServerListener = new StartOperationStateListener(GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
@@ -332,9 +350,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return recognizers;
     }
     
+    @Override
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         OperationStateListener stopServerListener = new OperationStateListener() {
+            @Override
             public void operationStateChanged(OperationState newState, String message) {
                 if(newState == OperationState.RUNNING) {
                     setServerState(ServerState.STOPPING);
@@ -350,13 +370,16 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // prevent j2eeserver from stopping a server it did not start.
         if (stopDisabled) {
             stopServerListener.operationStateChanged(OperationState.COMPLETED, "");
-            stateListener.operationStateChanged(OperationState.COMPLETED, "");
+            if (null != stateListener) {
+                stateListener.operationStateChanged(OperationState.COMPLETED, "");
+            }
             return task;
         }
         RequestProcessor.getDefault().post(task);
         return task;
     }
 
+    @Override
     public Future<OperationState> restartServer(OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
         FutureTask<OperationState> task = new FutureTask<OperationState>(
@@ -365,39 +388,46 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return task;
     }
     
+    @Override
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name) {
         return deploy(stateListener, application, name, null);
     }
 
+    @Override
     public Future<OperationState> deploy(final OperationStateListener stateListener, 
             final File application, final String name, final String contextRoot) {
         return deploy(stateListener, application, name, contextRoot, null);
     }
 
+    @Override
     public Future<OperationState> deploy(final OperationStateListener stateListener,
-            final File application, final String name, final String contextRoot, Map properties) {
+            final File application, final String name, final String contextRoot, Map<String,String> properties) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         
         return mgr.deploy(application, name, contextRoot, properties);
     }
     
+    @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name) {
         return redeploy(stateListener, name, null);
     }
         
+    @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name, final String contextRoot) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.redeploy(name, contextRoot);
     }
 
+    @Override
     public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.undeploy(name);
     }
     
+    @Override
     public Future<OperationState> execute(ServerCommand command) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
@@ -407,6 +437,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
     }
+    @Override
     public AppDesc [] getModuleList(String container) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
         int total = 0;
@@ -425,6 +456,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return result;
     }
 
+    @Override
     public Map<String, ResourceDesc> getResourcesMap(String type) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
         Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
@@ -435,18 +467,22 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return resourcesMap;
     }
 
+    @Override
     public ServerState getServerState() {
         return serverState;
     }
     
+    @Override
     public void addChangeListener(final ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(final ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
     
+    @Override
     public String setEnvironmentProperty(final String name, final String value, 
             final boolean overwrite) {    
         String result = null;
@@ -570,77 +606,24 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return isReady;
     }
 
-    /**
-     * !PW XXX Is there a more efficient way to implement a failed future object? 
-     * 
-     * @return Future object that represents an immediate failed operation
-     */
-    private static Future<OperationState> failedOperation() {
-        return new Future<OperationState>() {
-
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-
-            public boolean isCancelled() {
-                return false;
-            }
-
-            public boolean isDone() {
-                return true;
-            }
-
-            public OperationState get() throws InterruptedException, ExecutionException {
-                return OperationState.FAILED;
-            }
-
-            public OperationState get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return OperationState.FAILED;
-            }
-        };
-    }
-    
-    /**
-     * !PW XXX Is there a more efficient way to implement a successful future object?
-     * 
-     * @return Future object that represents an immediate successful operation
-     */
-    private static Future<OperationState> successfulOperation() {
-        return new Future<OperationState>() {
-
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-
-            public boolean isCancelled() {
-                return false;
-            }
-
-            public boolean isDone() {
-                return true;
-            }
-
-            public OperationState get() throws InterruptedException, ExecutionException {
-                return OperationState.COMPLETED;
-            }
-
-            public OperationState get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return OperationState.COMPLETED;
-            }
-        };
-    }
-
     // ------------------------------------------------------------------------
     //  RefreshModulesCookie implementation (for refreshing server state)
     // ------------------------------------------------------------------------
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
+    @Override
     public void refresh() {
+        refresh(null,null);
+    }
+
+    @Override
+    public void refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
         if(refreshRunning.compareAndSet(false, true)) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     // Can block for up to a few seconds...
                     boolean isRunning = isReallyRunning();
@@ -664,6 +647,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         stopDisabled = true;
     }
 
+    @Override
     public CommandFactory getCommandFactory() {
         return instanceProvider.getCommandFactory();
     }
@@ -675,6 +659,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             this.endState = endState;
         }
 
+        @Override
         public void operationStateChanged(OperationState newState, String message) {
             if(newState == OperationState.RUNNING) {
                 setServerState(ServerState.STARTING);

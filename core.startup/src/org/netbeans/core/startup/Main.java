@@ -106,7 +106,7 @@ public final class Main extends Object {
    * Sets up the custom font size and theme url for the plaf library to
    * process.
    */
-  static void initUICustomizations() {
+    public static void initUICustomizations() {
       if (!CLIOptions.isGui ()) {
           return;
       }

@@ -90,7 +90,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -285,6 +285,8 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.bugtracking.kenai</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.hudson.kenai</friend>
                 <friend>org.netbeans.modules.jira</friend>

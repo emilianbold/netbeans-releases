@@ -51,26 +51,47 @@ public class TransferFileTest extends NbTestCase {
         super(name);
     }
 
-    public void testTransferInfo() throws Exception {
-        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
+    public void testTransferFilePaths() {
+        TransferFile file = TransferFile.fromFile(null, new File("/a/b/c"), "/a");
         assertEquals("c", file.getName());
         assertEquals("b/c", file.getRelativePath());
         assertEquals("b", file.getParentRelativePath());
 
-        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
+        TransferFile file2 = TransferFile.fromFile(null, new File("/a/b/c"), "/a/b");
         assertFalse(file.equals(file2));
 
-        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
+        TransferFile file3 = TransferFile.fromFile(null, new File("/0/1/2/b/c"), "/0/1/2");
         assertTrue(file.equals(file3));
 
-        file = TransferFile.fromFile(new File("/a/b"), "/a");
+        file = TransferFile.fromFile(null, new File("/a/b"), "/a");
         assertEquals("b", file.getName());
         assertEquals("b", file.getRelativePath());
         assertEquals(TransferFile.CWD, file.getParentRelativePath());
 
-        file = TransferFile.fromFile(new File("/a"), "/a");
+        file = TransferFile.fromFile(null, new File("/a"), "/a");
         assertEquals("a", file.getName());
         assertSame(TransferFile.CWD, file.getRelativePath());
         assertEquals(null, file.getParentRelativePath());
+    }
+
+    public void testTransferFileRelations() {
+        TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
+        assertNull(projectRoot.getParent());
+        assertTrue(projectRoot.isRoot());
+        assertTrue(projectRoot.isProjectRoot());
+        assertFalse(projectRoot.getChildren().toString(), projectRoot.hasChildren());
+
+        TransferFile child1 = TransferFile.fromFile(projectRoot, new File("/a/1"), "/a");
+        TransferFile child2 = TransferFile.fromFile(projectRoot, new File("/a/2"), "/a");
+        for (TransferFile child : new TransferFile[] {child1, child2}) {
+            assertNotNull(child.getParent());
+            assertFalse(child.isRoot());
+            assertFalse(child.isProjectRoot());
+            assertSame(child.getParent().toString(), projectRoot, child.getParent());
+        }
+        assertTrue(projectRoot.getChildren().toString(), projectRoot.hasChildren());
+        assertSame(projectRoot.getChildren().toString(), 2, projectRoot.getChildren().size());
+        assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child1));
+        assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child2));
     }
 }

@@ -42,7 +42,7 @@ package org.netbeans.modules.mercurial.ui.push;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 
@@ -55,7 +55,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -239,7 +239,11 @@ public class PushAction extends ContextAction {
                 if(hooks.size() > 0) {
                     HgHookContext.LogEntry[] entries = new HgHookContext.LogEntry[messages.size()];
                     for (int i = 0; i < messages.size(); i++) {
-                        entries[i] = new HgHookContext.LogEntry(messages.get(i));
+                        entries[i] = new HgHookContext.LogEntry(
+                                messages.get(i).getMessage(),
+                                messages.get(i).getAuthor(),
+                                messages.get(i).getCSetShortID(),
+                                messages.get(i).getDate());
                     }
                     context = new HgHookContext(new File[] {root}, null, entries);
                 }

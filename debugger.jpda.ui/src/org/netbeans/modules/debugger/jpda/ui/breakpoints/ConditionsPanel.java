@@ -41,12 +41,17 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -57,6 +62,8 @@ import org.openide.util.NbBundle;
  * @author  Martin Entlicher
  */
 public class ConditionsPanel extends javax.swing.JPanel {
+
+    private static final int MAX_SAVED_CONDITIONS = 10;
     
     /** Creates new form ConditionsPanel */
     public ConditionsPanel(String helpId) {
@@ -65,14 +72,6 @@ public class ConditionsPanel extends javax.swing.JPanel {
         tfConditionFieldForUI = new javax.swing.JTextField();
         tfConditionFieldForUI.setEnabled(false);
         tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(tfConditionFieldForUI, gridBagConstraints);
         
         classFilterCheckBoxActionPerformed(null);
         conditionCheckBoxActionPerformed(null);
@@ -93,6 +92,14 @@ public class ConditionsPanel extends javax.swing.JPanel {
             NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.cbWhenHitCount.greater"), // NOI18N
             NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.cbWhenHitCount.multiple") // NOI18N
         }));
+        conditionComboBox.setEditor(new ConditionComboBoxEditor());
+        Object[] conditions = getSavedConditions();
+        conditionComboBox.setModel(new DefaultComboBoxModel(conditions));
+    }
+
+    private static Object[] getSavedConditions() {
+        return Properties.getDefault().getProperties("debugger.jpda").
+                getArray("BPConditions", new Object[0]);
     }
     
     // Data Show:
@@ -102,9 +109,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         if (show) {
             conditionCheckBoxActionPerformed(null);
         } else {
-            spCondition.setVisible(show);
-            tfCondition.setVisible(show);
-            tfConditionFieldForUI.setVisible(show);
+            conditionComboBox.setVisible(show);
         }
     }
     
@@ -234,7 +239,38 @@ public class ConditionsPanel extends javax.swing.JPanel {
     
     public String getCondition() {
         if (conditionCheckBox.isSelected()) {
-            return tfCondition.getText().trim();
+            String condition = tfCondition.getText().trim();
+            if (condition.length() > 0) {
+                Object[] savedConditions = getSavedConditions();
+                Object[] conditions = null;
+                boolean containsCondition = false;
+                for (int i = 0; i < savedConditions.length; i++) {
+                    Object c = savedConditions[i];
+                    if (condition.equals(c)) {
+                        containsCondition = true;
+                        conditions = savedConditions;
+                        if (i > 0) {
+                            System.arraycopy(conditions, 0, conditions, 1, i);
+                            conditions[0] = condition;
+                        }
+                        break;
+                    }
+                }
+                if (!containsCondition) {
+                    if (savedConditions.length < MAX_SAVED_CONDITIONS) {
+                        conditions = new Object[savedConditions.length + 1];
+                        conditions[0] = condition;
+                        System.arraycopy(savedConditions, 0, conditions, 1, savedConditions.length);
+                    } else {
+                        conditions = savedConditions;
+                        System.arraycopy(conditions, 0, conditions, 1, conditions.length - 1);
+                        conditions[0] = condition;
+                    }
+                }
+                Properties.getDefault().getProperties("debugger.jpda").
+                        setArray("BPConditions", conditions);
+            }
+            return condition;
         } else {
             return "";
         }
@@ -306,6 +342,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        spCondition = new javax.swing.JScrollPane();
+        tfCondition = new JEditorPane("text/x-java", "");
         classFilterCheckBox = new javax.swing.JCheckBox();
         classIncludeFilterLabel = new javax.swing.JLabel();
         classIncludeFilterTextField = new javax.swing.JTextField();
@@ -317,8 +355,15 @@ public class ConditionsPanel extends javax.swing.JPanel {
         tfHitCountFilter = new javax.swing.JTextField();
         cbHitStyle = new javax.swing.JComboBox();
         cbWhenHitCount = new javax.swing.JCheckBox();
-        spCondition = new javax.swing.JScrollPane();
-        tfCondition = new JEditorPane("text/x-java", "");
+        conditionComboBox = new javax.swing.JComboBox();
+
+        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
+        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
+
+        tfCondition.setContentType("text/x-java");
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.toolTipText")); // NOI18N
+        spCondition.setViewportView(tfCondition);
+        tfCondition.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSN_ConditionTF")); // NOI18N
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -447,22 +492,16 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(panelHitCountFilter, gridBagConstraints);
 
-        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
-        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
-
-        tfCondition.setContentType("text/x-java");
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.toolTipText")); // NOI18N
-        spCondition.setViewportView(tfCondition);
-        tfCondition.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSN_ConditionTF")); // NOI18N
-
+        conditionComboBox.setEditable(true);
+        conditionComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 3, 3, 1);
-        add(spCondition, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(1, 3, 3, 3);
+        add(conditionComboBox, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSD_Conditions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -479,15 +518,8 @@ private void cbWhenHitCountActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 private void conditionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conditionCheckBoxActionPerformed
     boolean isSelected = conditionCheckBox.isSelected();
-    if (isSelected) {
-        spCondition.setVisible(true);
-        tfConditionFieldForUI.setVisible(false);
-        tfCondition.requestFocusInWindow();
-    } else {
-        spCondition.setVisible(false);
-        tfConditionFieldForUI.setText(tfCondition.getText());
-        tfConditionFieldForUI.setVisible(true);
-    }
+    conditionComboBox.setEnabled(isSelected);
+    conditionComboBox.setEditor(new ConditionComboBoxEditor());
     revalidate();
     repaint();
 }//GEN-LAST:event_conditionCheckBoxActionPerformed
@@ -497,7 +529,49 @@ private void classFilterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) 
     classIncludeFilterTextField.setEnabled(classFilterEnabled);
     classExcludeFilterTextField.setEnabled(classFilterEnabled);
 }//GEN-LAST:event_classFilterCheckBoxActionPerformed
-    
+
+    private final class ConditionComboBoxEditor implements ComboBoxEditor {
+
+        @Override
+        public Component getEditorComponent() {
+            if (!conditionCheckBox.isSelected()) {
+                return tfConditionFieldForUI;
+            } else {
+                return spCondition;
+            }
+        }
+
+        @Override
+        public void setItem(Object anObject) {
+            if (anObject != null) {
+                tfCondition.setText(anObject.toString());
+            } else {
+                tfCondition.setText("");
+            }
+        }
+
+        @Override
+        public Object getItem() {
+            return tfCondition.getText();
+        }
+
+        @Override
+        public void selectAll() {
+            tfCondition.selectAll();
+        }
+
+        @Override
+        public void addActionListener(ActionListener l) {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removeActionListener(ActionListener l) {
+            //throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
+
     private javax.swing.JTextField tfConditionFieldForUI;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbHitStyle;
@@ -509,6 +583,7 @@ private void classFilterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) 
     private javax.swing.JLabel classIncludeFilterLabel;
     private javax.swing.JTextField classIncludeFilterTextField;
     private javax.swing.JCheckBox conditionCheckBox;
+    private javax.swing.JComboBox conditionComboBox;
     private javax.swing.JPanel panelHitCountFilter;
     private javax.swing.JScrollPane spCondition;
     private javax.swing.JEditorPane tfCondition;

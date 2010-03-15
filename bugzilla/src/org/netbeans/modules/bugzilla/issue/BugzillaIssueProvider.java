@@ -44,6 +44,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,19 +60,17 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -228,18 +227,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                     }
                 }
             }
-        } else if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
-            // kenai issues need instantiated repository so they can be shown in tasklist
-            // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
-            // when user loggs in so the repository can be created.
-            final Kenai kenai = (Kenai)evt.getSource();
-            rp.post(new Runnable() { // do not block here
-                @Override
-                public void run() {
-                    notifyKenaiLogin(kenai);
-                }
-            });
-        }
+        } 
     }
 
     /**
@@ -429,7 +417,6 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     private void addKenaiIssues (Map<String, List<String>> repositoryIssues) {
         // now what remains are kenai issues and non-existant repositories
-        boolean kenaiIssueAdded = false;
         for (Map.Entry<String, List<String>> e : repositoryIssues.entrySet()) {
             String projectName = e.getKey();
             if (projectName.startsWith(KENAI_REPOSITORY_IDENT_PREFIX)) { // is kenai
@@ -457,17 +444,55 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                             continue;
                         }
                         add(issueName, issueUrl, issueId, projectName);
-                        kenaiIssueAdded = true;
+                        KenaiAccessor ka = KenaiUtil.getKenaiAccessor();
+                        if(ka != null) {
+                            String host = issueUrl.getHost();
+                            Map<String, PropertyChangeListener> kl = getKenaiListeners();
+                            PropertyChangeListener l = kl.get(host);
+                            if (l == null) {
+                                // kenai host not registered yet
+                                l = new KenaiListener(host);
+                                ka.addPropertyChangeListener(l, host);
+                                kl.put(host, l);
+                            }
+                        }
                     }
                 }
             }
         }
-        if (kenaiIssueAdded) {
-            KenaiManager.getDefault().removePropertyChangeListener(this);
-            KenaiManager.getDefault().addPropertyChangeListener(this);
+    }
+
+    private class KenaiListener implements PropertyChangeListener {
+        private final String kenaiHost;
+
+        public KenaiListener(String kenaiHost) {
+            this.kenaiHost = kenaiHost;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (KenaiAccessor.PROP_LOGIN.equals(evt.getPropertyName())) {
+                // kenai issues need instantiated repository so they can be shown in tasklist
+                // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
+                // when user loggs in so the repository can be created.
+                rp.post(new Runnable() { // do not block here
+                    @Override
+                    public void run() {
+                        notifyKenaiLogin(kenaiHost);
+                    }
+                });
+            }
         }
     }
 
+    private Map<String, PropertyChangeListener> kenaiListeners;
+    private Map<String, PropertyChangeListener> getKenaiListeners() {
+        if (kenaiListeners == null) {
+            kenaiListeners = new HashMap<String, PropertyChangeListener>();
+        }
+        return kenaiListeners;
+    }
+    
     private void remove (URL url, boolean savePermanently) {
         BugzillaLazyIssue lazyIssue;
         synchronized (LOCK) {
@@ -548,13 +573,12 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
      * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
      * and issue tracking repository cannot be created.
      */
-    private void notifyKenaiLogin (Kenai notifiedKenai) {
-        assert notifiedKenai != null;
+    private void notifyKenaiLogin (String notifiedKenaiHost) {
+        assert notifiedKenaiHost != null;
         synchronized (LOCK) {
             for (BugzillaLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiBugzillaLazyIssue) {
-                    Kenai issueKenai = KenaiUtil.getKenai(issue.getUrl().toString());
-                    if(notifiedKenai.equals(issueKenai)) {
+                    if(notifiedKenaiHost.equals(issue.getUrl().getHost())) {
                         ((KenaiBugzillaLazyIssue) issue).notifyKenaiLogin();
                     }
                 }
@@ -776,10 +800,8 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                     String url = getUrl().toString();
-                    if (KenaiUtil.getKenai(url) != null) {
-                        repo = KenaiUtil.getKenaiBugtrackingRepository(url, projectName);
-                    }
-                } catch (KenaiException ex) {
+                    repo = KenaiUtil.getRepository(url, projectName);
+                } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
                 loginStatusChanged = false;

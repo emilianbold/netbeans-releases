@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -159,7 +160,11 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-        COMMAND_CUSTOM_ACTION,     };
+        COMMAND_CUSTOM_ACTION,
+        
+        COMMAND_TEST,
+        COMMAND_TEST_SINGLE,
+    };
 
     // Project
     private MakeProject project;
@@ -184,6 +189,9 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
     private static final String CUSTOM_ACTION_STEP = "custom-action"; // NOI18N
     private static final String VALIDATE_TOOLCHAIN = "validate-toolchain"; // NOI18N
+    private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
+    private static final String TEST_STEP = "test"; // NOI18N
+    private static final String TEST_SINGLE_STEP = "test-single"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
         this.project = project;
@@ -435,6 +443,8 @@ public final class MakeActionProvider implements ActionProvider {
             return onValidateToolchainStep(pd, conf, cancelled, validated);
         } else if (targetName.equals(BUILD_STEP)) {
             return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
+        } else if (targetName.equals(BUILD_TESTS_STEP)) {
+            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD_TESTS);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
             return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
@@ -442,15 +452,19 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
             return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.RUN);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.RUN);
+        } else if (targetName.equals(TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.TEST);
+        } else if (targetName.equals(TEST_SINGLE_STEP)) {
+            return onTestSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.TEST);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
             return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
         } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -468,23 +482,41 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Lookup context, Type actionEvent) {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
-        if (conf.isMakefileConfiguration()) {
+
+        if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+            if (conf.isCompileConfiguration() && !validateProject(conf)) {
+                return true;
+            }
+            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+            String buildCommand;
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test", ""); // NOI18N
+            String args = "";
+            int index = buildCommand.indexOf(' ');
+            if (index > 0) {
+                args = buildCommand.substring(index + 1);
+                buildCommand = buildCommand.substring(0, index);
+            }
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile.setArgs(args);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+            actionEvents.add(projectActionEvent);
+        } else if (conf.isMakefileConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
-                if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
+                if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
                     path = conf.getMakefileConfiguration().getAbsOutput();
-                    path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
                 }
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = IpeUtils.normalize(path);
+                path = CndPathUtilitities.normalize(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
@@ -504,14 +536,14 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 // Add paths from -L option
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
@@ -530,7 +562,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -540,7 +572,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -566,7 +598,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 Iterator<String> iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -607,18 +639,44 @@ public final class MakeActionProvider implements ActionProvider {
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 // naturalize if relative
                 path = makeArtifact.getOutput();
-                //TODO: we also need remote aware IpeUtils..........
-                if (!IpeUtils.isPathAbsolute(path)) {
+                //TODO: we also need remote aware CndPathUtilitities..........
+                if (!CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                    path = IpeUtils.naturalize(path);
-                    path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                    path = IpeUtils.naturalize(path);
+                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                    path = CndPathUtilitities.naturalize(path);
                 }
             } else {
                 // Always absolute
-                path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
+                path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
+
+            // Unit tests
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node != null) {
+                    targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+                }
+            }
+            if (targetFolder != null) {
+                if (targetFolder.isTest()) {
+                    Item[] items = targetFolder.getAllItemsAsArray();
+                    for (int k = 0; k < items.length; k++) {
+                        path = items[k].getPath();
+                        path = path.replaceFirst("\\..*", ""); // NOI18N
+
+                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
+
+                        path = conf.expandMacros(path);
+
+                        path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
+
+                    }
+                }
+            }
+
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
@@ -647,7 +705,12 @@ public final class MakeActionProvider implements ActionProvider {
             return true;
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-        String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
+        String buildCommand;
+        if(actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " build-tests", ""); // NOI18N
+        } else {
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), ""); // NOI18N
+        }
         String args = "";
         int index = buildCommand.indexOf(' ');
         if (index > 0) {
@@ -773,6 +836,58 @@ public final class MakeActionProvider implements ActionProvider {
             projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
         }
+        return true;
+    }
+
+    private boolean onTestSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
+
+        if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+            if (conf.isCompileConfiguration() && !validateProject(conf)) {
+                return true;
+            }
+            
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node == null) {
+                    return true;
+                }
+                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+            }
+            if (targetFolder == null) {
+                return true;
+            }
+
+            List<Folder> list = targetFolder.getAllTests();
+            if (targetFolder.isTest()) {
+                list.add(targetFolder);
+            }
+
+            loop: for (Folder folder : list) {
+                Item[] items = folder.getAllItemsAsArray();
+                for (int k = 0; k < items.length; k++) {
+                    String test = items[k].getName();
+                    test = test.replaceFirst("\\..*", ""); // NOI18N
+
+                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                    String buildCommand;
+                    buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + test, ""); // NOI18N
+                    String args = "";
+                    int index = buildCommand.indexOf(' ');
+                    if (index > 0) {
+                        args = buildCommand.substring(index + 1);
+                        buildCommand = buildCommand.substring(0, index);
+                    }
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                    profile.setArgs(args);
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+                    actionEvents.add(projectActionEvent);
+
+                    break loop;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -917,6 +1032,8 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             Node node = context.lookup(Node.class);
             return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
+        } else if (command.equals(COMMAND_TEST)) {
+            return true;
         } else {
             return false;
         }
@@ -1191,9 +1308,9 @@ public final class MakeActionProvider implements ActionProvider {
 //        if (errormsg == null) {
 //            String tool = conf.getPackagingConfiguration().getToolValue();
 //            if (conf.getDevelopmentHost().isLocalhost()) {
-//                if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+//                if (!CndPathUtilitities.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
 //                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
-//                } else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+//                } else if (CndPathUtilitities.isPathAbsolute(tool) && !(new File(tool).exists())) {
 //                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
 //                }
 //            } else {

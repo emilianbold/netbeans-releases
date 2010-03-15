@@ -111,7 +111,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
     public String getCommandFolder(int platform) {
         ToolchainDescriptor d = getToolchainDescriptor();
         if (d != null) {
-            return ToolchainManagerImpl.getImpl().getCommandFolder(d, platform);
+            return ToolUtils.getCommandFolder(d, platform);
         }
         return null;
     }
@@ -151,7 +151,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
             return getUnknown(platform);
         }
         for (CompilerFlavorImpl flavor : flavors) {
-            if (name.equals(flavor.sval) && ToolchainManagerImpl.getImpl().isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
+            if (name.equals(flavor.sval) && ToolUtils.isPlatforSupported(platform, flavor.getToolchainDescriptor())) {
                 return flavor;
             }
         }
@@ -188,7 +188,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
     private static boolean isPlatforSupported(CompilerFlavor flavor, int platform) {
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
         if (d != null) {
-            return ToolchainManagerImpl.getImpl().isPlatforSupported(platform, d);
+            return ToolUtils.isPlatforSupported(platform, d);
         }
         return true;
     }

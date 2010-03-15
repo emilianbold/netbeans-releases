@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
@@ -186,19 +187,24 @@ public class ModelTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myFieldA")){
-                        checkA( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.One", "foo.Two");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myGen")){
-                        checkGen( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Generic");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myIndex")){
-                        checkIndex( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductionsVar((VariableElement)element, provider, "productionField");
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldB")){
-                        checkB( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductions((VariableElement)element, provider, "getThread");
                     }
                     else if ( element.getSimpleName().contentEquals("myThread")){
-                        checkThread( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Generic1");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                 }
                 
@@ -213,7 +219,131 @@ public class ModelTest extends CommonTestCase {
 
         });
     }
-    
+
+    public void testInjectable() throws MetadataModelException, IOException,
+        InterruptedException
+    {
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Fast.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Fast  {" +
+                "}");
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Slow.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Slow  {" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Producer.java",
+                "package foo; " +
+                "import java.util.List; " +
+                "public interface Producer  { " +
+                "  List<String> getItems(); " +
+                "}" );
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SlowProducer.java",
+                "package foo; " +
+                "import java.util.List; " +
+                "import javax.enterprise.inject.Default; " +
+                "@Slow @Default " +
+                "public class SlowProducer implements Producer { " +
+                "  public List<String> getItems() { return null;} " +
+                "}" );
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/FastProducer.java",
+                "package foo; " +
+                "import java.util.List; " +
+                "import javax.enterprise.inject.Default; " +
+                "@Fast @Default " +
+                "public class FastProducer implements Producer { " +
+                "  public List<String> getItems() { return null;} " +
+                "}" );
+
+        TestUtilities.copyStringToFileObject(srcFO, "foo/User.java",
+                "package foo; " +
+                "import java.util.List; " +
+                "import javax.inject.*; "+
+                "import javax.enterprise.inject.Default; " +
+                "public class User { " +
+                "  @Inject @Slow @Default " +
+                "  public Producer mySlowProducer; " +
+                "  @Inject @Fast @Default " +
+                "  public Producer myFastProducer; " +
+                "  @Inject @Default " +
+                "  public Producer myAmbiguousProducer; " +
+                "}" );
+
+        inform("start injectable test");
+
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.User" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints =
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+
+                Set<String> names = new HashSet<String>();
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("mySlowProducer")){
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.SlowProducer");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("mySlowProducer")){
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.FastProducer");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myAmbiguousProducer")){
+                        // XXX: why "foo.Producer" is in results? it should not be there
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.SlowProducer", "foo.FastProducer", "foo.Producer");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
+                    }
+                }
+
+                assert names.contains("mySlowProducer");
+                assert names.contains("myFastProducer");
+                assert names.contains("myAmbiguousProducer");
+
+                return null;
+            }
+
+        });
+    }
+
+
+
     public void testMixedBindings() throws MetadataModelException, IOException, 
         InterruptedException 
     {
@@ -364,25 +494,32 @@ public class ModelTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myFieldA")){
-                        checkMixedA( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Clazz4");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldB")){
-                        checkMixedB( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Clazz3");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldC")){
-                        checkMixedC( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Clazz3");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldD")){
-                        checkMixedD( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Clazz6");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldE")){
-                        checkMixedE( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductionsVar((VariableElement)element, provider, "productionField1");
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldF")){
-                        checkMixedF( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductionsVar((VariableElement)element, provider, "productionField2");
                     }
                     else if ( element.getSimpleName().contentEquals("myFieldG")){
-                        checkMixedG( element , provider);
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductions((VariableElement)element, provider, "productionMethod");
                     }
                 }
                 
@@ -399,259 +536,4 @@ public class ModelTest extends CommonTestCase {
         
     }
     
-    protected void checkMixedG( VariableElement element, 
-            TestWebBeansModelProviderImpl provider) 
-    {
-        inform("test field myFieldG");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        
-        assertTrue("Expect production method as injectable for 'myFieldG' "
-                + "field, but found :" + injectable.getKind(),
-                injectable instanceof ExecutableElement);
-        assertEquals("productionMethod", injectable.getSimpleName().toString());
-    }
-
-    protected void checkMixedF( VariableElement element, 
-            TestWebBeansModelProviderImpl provider) 
-    {
-        inform("test field myFieldF");
-        
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-
-        assertTrue("Expect production field as injectable for 'myFieldF' "
-                + "field, but found :" + injectable.getKind(),
-                injectable instanceof VariableElement);
-        assertEquals("productionField2", injectable.getSimpleName().toString());
-    }
-
-    protected void checkMixedE( VariableElement element, 
-            TestWebBeansModelProviderImpl provider) 
-    {
-        inform("test field myFieldE");
-        
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-
-        assertTrue("Expect production field as injectable for 'myFieldE' "
-                + "field, but found :" + injectable.getKind(),
-                injectable instanceof VariableElement);
-        assertEquals("productionField1", injectable.getSimpleName().toString());
-    }
-
-    protected void checkMixedD( VariableElement element, 
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myFieldD");
-        
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-
-        assertEquals("foo.Clazz6", injectable.getQualifiedName().toString());
-    }
-
-    protected void checkMixedC( VariableElement element, 
-            TestWebBeansModelProviderImpl provider) 
-    {
-        inform("test field myFieldC");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-
-        assertEquals("foo.Clazz3", injectable.getQualifiedName().toString());
-    }
-
-    protected void checkMixedB( VariableElement element, 
-            TestWebBeansModelProviderImpl provider ) 
-    {
-        inform("test field myFieldB");
-        
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(1 , typeElements.size());
-        assertEquals(0 , productions.size());
-        
-        TypeElement injectable = typeElements.iterator().next();
-
-        assertEquals("foo.Clazz3", injectable.getQualifiedName().toString());
-    }
-
-    protected void checkMixedA( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test field myFieldA");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(1 , typeElements.size());
-        assertEquals(0 , productions.size());
-        
-        TypeElement injectable = typeElements.iterator().next();
-        
-        assertNotNull(injectable);
-        assertEquals("foo.Clazz4", injectable.getQualifiedName().toString());
-    }
-
-    protected void checkB( VariableElement element, 
-            TestWebBeansModelProviderImpl provider  ) 
-    {
-        inform("test field myFieldB");
-        Result result  = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(0 , typeElements.size());
-        assertEquals(1 , productions.size());
-        Element production = productions.iterator().next();
-        assertTrue("Found injectable should be a method, but found "
-                + production.getKind(), production instanceof ExecutableElement);
-        assertEquals("getThread", ((ExecutableElement) production).getSimpleName()
-                .toString());
-    }
-
-    protected void checkThread( VariableElement element, 
-            TestWebBeansModelProviderImpl provider  ) 
-    {
-        inform("test field myThread");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(1 , typeElements.size());
-        assertEquals(0 , productions.size());
-        
-        TypeElement injectable = typeElements.iterator().next();
-        
-        assertNotNull(injectable);
-        assertEquals("foo.Generic1", injectable.getQualifiedName().toString());
-    }
-
-    private void checkA( VariableElement element, 
-            TestWebBeansModelProviderImpl provider ) 
-    {
-        inform("test field myFieldA");
-        Result result = provider.findVariableInjectable(element, null);
-        
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-
-        assertEquals(2, typeElements.size());
-        assertEquals(0, productions.size());
-        
-        Set<String> set = new HashSet<String>();
-        for (TypeElement injactable : typeElements) {
-            set.add(injactable.getQualifiedName().toString());
-        }
-
-        assertTrue("Result of typesafe resolution should contains foo.One"
-                + " class definition", set.contains("foo.One"));
-        assertTrue("Result of typesafe resolution should contains foo.Two"
-                + " class definition", set.contains("foo.Two"));
-    }
-
-    private void checkGen( VariableElement element, 
-            TestWebBeansModelProviderImpl provider  ) 
-    {
-        inform("test field myGen");
-        Result result = provider.findVariableInjectable(element, null);
-        
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-        
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull( injactable );
-        
-        assertEquals("foo.Generic", injactable.getQualifiedName().toString());
-    }
-
-    private void checkIndex( VariableElement element, 
-            TestWebBeansModelProviderImpl provider  ) 
-    {
-        inform("test field myIndex");
-        Result result = provider.findVariableInjectable(element, null);
-        
-        assertNotNull(result);
-        assertTrue( result instanceof ResultImpl );
-        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
-        Set<Element> productions = ((ResultImpl)result).getProductions();
-        
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        
-        assertNotNull(injectable);
-
-        assertEquals("productionField", injectable.getSimpleName().toString());
-    }
-
 }

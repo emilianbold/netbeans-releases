@@ -74,7 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author lahvac
  */
 @SupportedAnnotationTypes("*")
-//@ServiceProvider(service=Processor.class, position=Integer.MAX_VALUE)
+@ServiceProvider(service=Processor.class)
 public class CleaningAnnotationProcessor extends AbstractProcessor {
 
     @Override

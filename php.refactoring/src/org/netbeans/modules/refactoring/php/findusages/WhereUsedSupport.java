@@ -58,19 +58,21 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.model.FindUsageSupport;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
-import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassElement;
+import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassAttributedElement;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -84,23 +86,23 @@ public final class WhereUsedSupport {
     private ASTNode node;
     private FileObject fo;
     private int offset;
-    private PhpKind kind;
+    private PhpElementKind kind;
     private ModelElement modelElement;
     private Results results;
     private Set<Modifier> modifier;
     private FindUsageSupport usageSupport;
 
-    private WhereUsedSupport(PHPIndex idx,ModelElement aElement, ASTNode node, FileObject fo) {
+    private WhereUsedSupport(ElementQuery.Index idx,ModelElement aElement, ASTNode node, FileObject fo) {
         this(idx, aElement, node.getStartOffset(), fo);
         this.node = node;
     }
 
-    private WhereUsedSupport(PHPIndex idx, ModelElement aElement, int offset, FileObject fo) {
+    private WhereUsedSupport(ElementQuery.Index idx, ModelElement aElement, int offset, FileObject fo) {
         this.fo = fo;
         this.offset = offset;
         this.modelElement = aElement;
         this.usageSupport =FindUsageSupport.getInstance(idx, aElement);
-        kind = aElement.getPhpKind();
+        kind = aElement.getPhpElementKind();
         this.results = new Results();
     }
 
@@ -120,7 +122,7 @@ public final class WhereUsedSupport {
         return offset;
     }
 
-    public PhpKind getKind() {
+    public PhpElementKind getKind() {
         return kind;
     }
 
@@ -169,8 +171,8 @@ public final class WhereUsedSupport {
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
         Occurence occurence = occurencesSupport.getOccurence();
         final boolean canContinue = occurence != null && occurence.getDeclaration() != null && occurence.getAllDeclarations().size() <= 1;
-        return canContinue ? new WhereUsedSupport(PHPIndex.get(info),
-                occurence.getDeclaration(), offset, info.getSnapshot().getSource().getFileObject()) : null;
+        return canContinue ? new WhereUsedSupport(ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info)),
+                (ModelElement)occurence.getDeclaration(), offset, info.getSnapshot().getSource().getFileObject()) : null;
     }
 
     public ModelElement getModelElement() {
@@ -217,8 +219,8 @@ public final class WhereUsedSupport {
 
     public static boolean matchDirectSubclass(ModelElement elemToBeFound, ASTNode node, AttributedElement elem) {
         boolean retval = false;
-        if (elem != null && elem instanceof ClassElement && node instanceof ClassDeclaration) {
-            ClassElement superClass = ((ClassElement) elem).getSuperClass();
+        if (elem != null && elem instanceof ClassAttributedElement && node instanceof ClassDeclaration) {
+            ClassAttributedElement superClass = ((ClassAttributedElement) elem).getSuperClass();
             if (superClass != null && superClass.getName().equals(elemToBeFound.getName())) {
                 retval = true;
             }
@@ -244,7 +246,7 @@ public final class WhereUsedSupport {
         private Results() {
         }
         private void addEntry(FileObject fo, Occurence occurence) {
-            ModelElement decl = occurence.getDeclaration();
+            ModelElement decl = (ModelElement) occurence.getDeclaration();
             Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getPHPElement().getModifiers());
             elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
         }

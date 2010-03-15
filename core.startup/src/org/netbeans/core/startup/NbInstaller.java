@@ -62,6 +62,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -321,9 +323,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
         
-        for (Module m: modules) {
-            checkForDeprecations(m);
-        }
+        checkForDeprecations(modules);
         
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
@@ -617,26 +617,38 @@ final class NbInstaller extends ModuleInstaller {
      * And if the module is not actually enabled, it does not matter.
      * Indirect dependencies are someone else's problem.
      * Provide-require dependencies do not count either.
-     * @param m the module which is now being turned on
+     * @param modules the modules which are now being turned on
      */
-    private void checkForDeprecations(Module m) {
-        if (!Boolean.valueOf((String)m.getAttribute("OpenIDE-Module-Deprecated")).booleanValue()) { // NOI18N
-            for (Dependency dep : m.getDependencies()) {
-                if (dep.getType() == Dependency.TYPE_MODULE) {
-                    String cnb = (String) Util.parseCodeName(dep.getName())[0];
-                    Module o = mgr.get(cnb);
-                    if (o == null) throw new IllegalStateException("No such module: " + cnb); // NOI18N
-                    if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
-                        String message = (String)o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
-                        // XXX use NbEvents? I18N?
-                        // For now, assume this is a developer-oriented message that need not be localized
-                        // or displayed in a pretty fashion.
-                        if (message != null) {
-                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated: " + message); // NOI18N
-                        } else {
-                            Util.err.warning("the module " + m.getCodeNameBase() + " uses " + cnb + " which is deprecated."); // NOI18N
+    private void checkForDeprecations(List<Module> modules) {
+        Map<String,Set<String>> depToUsers = new TreeMap<String,Set<String>>();
+        for (Module m : modules) {
+            if (!Boolean.parseBoolean((String) m.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+                for (Dependency dep : m.getDependencies()) {
+                    if (dep.getType() == Dependency.TYPE_MODULE) {
+                        String cnb = (String) Util.parseCodeName(dep.getName())[0];
+                        Set<String> users = depToUsers.get(cnb);
+                        if (users == null) {
+                            users = new TreeSet<String>();
+                            depToUsers.put(cnb, users);
                         }
+                        users.add(m.getCodeNameBase());
                     }
+                }
+            }
+        }
+        for (Map.Entry<String,Set<String>> entry : depToUsers.entrySet()) {
+            String dep = entry.getKey();
+            Module o = mgr.get(dep);
+            assert o != null : "No such module: " + dep;
+            if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+                String message = (String) o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
+                // XXX use NbEvents? I18N?
+                // For now, assume this is a developer-oriented message that need not be localized or displayed in a pretty fashion.
+                Set<String> users = entry.getValue();
+                if (message != null) {
+                    Util.err.log(Level.WARNING, "the modules {0} use {1} which is deprecated: {2}", new Object[] {users, dep, message});
+                } else {
+                    Util.err.log(Level.WARNING, "the modules {0} use {1} which is deprecated.", new Object[] {users, dep});
                 }
             }
         }
@@ -759,32 +771,11 @@ final class NbInstaller extends ModuleInstaller {
             Util.err.warning(rep.toString());
         }
     }
-    
+
     public @Override String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
             List<String> arr = new ArrayList<String>(4);
-            
-            if (Utilities.isUnix()) {
-                arr.add("org.openide.modules.os.Unix"); // NOI18N
-                if (!Utilities.isMac()) {
-                    arr.add("org.openide.modules.os.PlainUnix"); // NOI18N
-                }
-            }
-            if (Utilities.isWindows()) {
-                arr.add("org.openide.modules.os.Windows"); // NOI18N
-            }
-            if (Utilities.isMac()) {
-                arr.add("org.openide.modules.os.MacOSX"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_OS2) != 0) {
-                arr.add("org.openide.modules.os.OS2"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_LINUX) != 0) {
-                arr.add("org.openide.modules.os.Linux"); // NOI18N
-            }
-            if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
-                arr.add("org.openide.modules.os.Solaris"); // NOI18N
-            }
+            CoreBridge.defineOsTokens(arr);
             
             // module format is now 2
             arr.add("org.openide.modules.ModuleFormat1"); // NOI18N

@@ -59,7 +59,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author Max Sauer
  */
-@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.ForbiddenMethod.hint", category="general")
+//@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.ForbiddenMethod.hint", category="general")
 public class ForbiddenMethod {
 
     private static final Map<String, Pair<String, String>> map;

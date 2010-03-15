@@ -117,8 +117,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_TYPE             = "jira.issue.type";        // NOI18N
     static final String LABEL_NAME_PRIORITY         = "jira.issue.priority";    // NOI18N
     static final String LABEL_NAME_STATUS           = "jira.issue.status";      // NOI18N
-    static final String LABEL_NAME_RESOLUTION       = "jira.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY          = "jira.issue.summary";     // NOI18N
+    static final String LABEL_NAME_RESOLUTION       = "jira.issue.resolution";  // NOI18N    
     static final String LABEL_NAME_ASSIGNED_TO      = "jira.issue.assigned";    // NOI18N
 
     static final String LABEL_NAME_PROJECT          = "jira.issue.project";     // NOI18N
@@ -993,7 +992,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                                               loc.getString("CTL_Issue_ID_Title"), // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"), // NOI18N
                                               BugtrackingUtil.getColumnWidthInPixels(20, t)),
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"), // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
@@ -1088,7 +1087,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param f
      * @return
      */
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
         return getFieldValue(taskData, f);
     }
 

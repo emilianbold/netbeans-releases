@@ -73,10 +73,10 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -317,7 +317,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         doc.runAtomic(new Runnable() {
             public void run() {
                 String url = HgUtils.getRemoteRepository(repositoryRoot);
-                boolean isKenaiRepository = url != null && HgKenaiSupport.getInstance().isKenai(url);
+                boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
                 if(isKenaiRepository) {
                     kenaiUsersMap = new HashMap<String, KenaiUser>();
                 }
@@ -335,7 +335,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         if(isKenaiRepository) {
                             String author = line.getAuthor();
                             if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = HgKenaiSupport.getInstance().forName(author, url);
+                                KenaiUser ku = HgKenaiAccessor.getInstance().forName(author, url);
                                 if(ku != null) {
                                     kenaiUsersMap.put(author, ku);
                                 }

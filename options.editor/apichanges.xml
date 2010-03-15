@@ -107,6 +107,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="FormattingCustomizerPanel.moved">
+      <api name="spi"/>
+      <summary>Moving FormattingCustomizerPanel to editor.indent.project module</summary>
+      <version major="1" minor="20"/>
+      <date day="17" month="2" year="2010"/>
+      <author login="vstejskal"/>
+      <compatibility source="incompatible" binary="compatible" deletion="yes" addition="no" modification="no"/>
+      <description>
+        <p>
+            Moving <code>FormattingCustomizerPanel</code> class to <code>editor.indent.project</code> module.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.indentation" name="FormattingCustomizerPanel"/>
+      <issue number="178311"/>
+  </change>
+
   <change id="tree.model.filter">
       <api name="spi"/>
       <summary>Adding OptionsFilter to allow filtering inside the options dialog</summary>

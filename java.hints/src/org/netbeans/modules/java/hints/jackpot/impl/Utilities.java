@@ -288,7 +288,7 @@ public class Utilities {
     private static Tree parseAndAttribute(CompilationInfo info, JavacTaskImpl jti, String pattern, Scope scope) {
         Context c = jti.getContext();
         TreeFactory make = TreeFactory.instance(c);
-        Tree patternTree = !isStatement(pattern) ? jti.parseExpression(pattern, new SourcePositions[1]) : null;
+        Tree patternTree = !isStatement(pattern) ? parseExpression(c, pattern, true, new SourcePositions[1]) : null;
         boolean expression = true;
         boolean classMember = false;
 
@@ -296,7 +296,7 @@ public class Utilities {
             Log log = Log.instance(c);
             DiagnosticListener<? super JavaFileObject> old = log.getDiagnosticListener();
             DiagnosticCollector<JavaFileObject> dc = new DiagnosticCollector<JavaFileObject>();
-            
+
             log.setDiagnosticListener(dc);
 
             try {
@@ -330,7 +330,7 @@ public class Utilities {
 
                 if (hasErrors || containsError(currentPatternTree)) {
                     //maybe a class member?
-                    Tree classPatternTree = parseExpression(c, "new Object() {" + pattern + "}", new SourcePositions[1]);
+                    Tree classPatternTree = parseExpression(c, "new Object() {" + pattern + "}", false, new SourcePositions[1]);
 
                     classPatternTree = fixTree(c, classPatternTree);
 
@@ -490,7 +490,7 @@ public class Utilities {
         }
     }
 
-    private static JCExpression parseExpression(Context context, CharSequence expr, SourcePositions[] pos) {
+    private static JCExpression parseExpression(Context context, CharSequence expr, boolean onlyFullInput, SourcePositions[] pos) {
         if (expr == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
@@ -500,11 +500,16 @@ public class Utilities {
             ParserFactory factory = ParserFactory.instance(context);
             Scanner.Factory scannerFactory = Scanner.Factory.instance(context);
             Names names = Names.instance(context);
-            Parser parser = new JackpotJavacParser(factory, scannerFactory.newScanner(buf), false, false, CancelService.instance(context), names);
+            Scanner scanner = scannerFactory.newScanner(buf);
+            Parser parser = new JackpotJavacParser(factory, scanner, false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
 //                if (pos != null)
 //                    pos[0] = new ParserSourcePositions((JavacParser)parser);
-                return parser.parseExpression();
+                JCExpression result = parser.parseExpression();
+
+                if (!onlyFullInput || scanner.token() == Token.EOF) {
+                    return result;
+                }
             }
             return null;
         } finally {
@@ -586,15 +591,16 @@ public class Utilities {
 
         JavacTaskImpl jti = JavaSourceAccessor.getINSTANCE().getJavacTask(info);
         Context context = jti.getContext();
+        JavaCompiler jc = JavaCompiler.instance(context);
 
         Log.instance(context).nerrors = 0;
 
         //TODO: remove impl. dep. on java.source
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/t" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
-        boolean oldSkipAPs = jti.skipAnnotationProcessing;
+        boolean oldSkipAPs = jc.skipAnnotationProcessing;
 
         try {
-            jti.skipAnnotationProcessing = true;
+            jc.skipAnnotationProcessing = true;
             
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
@@ -606,7 +612,7 @@ public class Utilities {
             Exceptions.printStackTrace(ex);
             return null;
         } finally {
-            jti.skipAnnotationProcessing = oldSkipAPs;
+            jc.skipAnnotationProcessing = oldSkipAPs;
         }
     }
     }
@@ -667,8 +673,6 @@ public class Utilities {
     }
 
     public static ClasspathInfo createUniversalCPInfo() {
-        //TODO: cannot be a class constant, would break the standalone workers
-        final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
         JavaPlatform select = JavaPlatform.getDefault();
 
         for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
@@ -677,7 +681,7 @@ public class Utilities {
             }
         }
 
-        return ClasspathInfo.create(select.getBootstrapLibraries(), EMPTY, EMPTY);
+        return ClasspathInfo.create(select.getBootstrapLibraries(), ClassPath.EMPTY, ClassPath.EMPTY);
     }
 
     @SuppressWarnings("deprecation")

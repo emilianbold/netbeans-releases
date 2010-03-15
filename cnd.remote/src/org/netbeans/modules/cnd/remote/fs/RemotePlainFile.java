@@ -55,8 +55,9 @@ import org.openide.filesystems.FileObject;
  */
 public class RemotePlainFile extends RemoteFileObjectBase {
 
-    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, String remotePath, File cache) {
-        super(fileSystem, execEnv, remotePath, cache);
+    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+            FileObject parent, String remotePath, File cache) {
+        super(fileSystem, execEnv, parent, remotePath, cache);
     }
 
     @Override

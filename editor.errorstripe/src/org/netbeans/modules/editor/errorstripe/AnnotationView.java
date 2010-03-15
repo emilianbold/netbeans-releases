@@ -476,6 +476,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int result;
         
         if (ui instanceof BaseTextUI) {
+            // For some reason the offset may become -1; uncomment following line to see that
+            offset = Math.max(offset, 0);
             result = ((BaseTextUI) ui).getYFromPos(offset);
         } else {
             Rectangle r = pane.modelToView(offset);
@@ -750,13 +752,22 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             String description = mark.getShortDescription();
             
             if (description != null) {
-                return "<html><body>" + translate(description); // NOI18N
+                if (description != null) {
+                    // #122422 - some descriptions are intentionaly a valid HTML and don't want to be escaped
+                    if (description.startsWith(HTML_PREFIX_LOWERCASE) || description.startsWith(HTML_PREFIX_UPPERCASE)) {
+                        return description;
+                    } else {
+                        return "<html><body>" + translate(description); // NOI18N
+                    }
+                }
             }
         }
         
         return null;
     }
     
+    private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
+    private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
     private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
     private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
     

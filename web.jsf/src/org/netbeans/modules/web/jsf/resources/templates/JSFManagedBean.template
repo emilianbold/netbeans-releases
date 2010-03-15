@@ -7,11 +7,20 @@
 package ${package};
 
 </#if>
-<#if classAnnotation??>
+<#if CDIEnabled??>
+    <#if classAnnotation??>
+import javax.inject.Named;
+    </#if>
+    <#if scopeAnnotation??>
+import javax.enterprise.context.${scopeAnnotation};
+    </#if>
+<#else>
+    <#if classAnnotation??>
 import javax.faces.bean.ManagedBean;
-</#if>
-<#if scopeAnnotation??>
+    </#if>
+    <#if scopeAnnotation??>
 import javax.faces.bean.${scopeAnnotation};
+    </#if>
 </#if>
 
 /**

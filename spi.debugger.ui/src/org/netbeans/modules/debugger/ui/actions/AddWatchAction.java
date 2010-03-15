@@ -45,7 +45,11 @@ import java.awt.Dialog;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.debugger.ui.WatchPanel;
 
 import org.netbeans.modules.debugger.ui.views.VariablesViewButtons;
@@ -55,6 +59,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -101,54 +107,82 @@ public class AddWatchAction extends CallableSystemAction {
     }
     
     public void performAction () {
-        ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
+        final AddWatchListener addWatchListener = performEngineAddWatchAction();
+        if (addWatchListener != null) {
+            if (addWatchListener.getTask().isFinished()) {
+                if (addWatchListener.isWatchAdded()) {
+                    openWatchesView();
+                }
+                DebuggerManager.getDebuggerManager().removeDebuggerListener(addWatchListener);
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public @Override void run() {
+                        addWatchListener.getTask().waitFinished();
+                        if (addWatchListener.isWatchAdded()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public @Override void run() {
+                                    openWatchesView();
+                                }
+                            });
+                        }
+                        DebuggerManager.getDebuggerManager().removeDebuggerListener(addWatchListener);
+                    }
+                });
+            }
+        } else {
+            ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
 
-        WatchPanel wp = new WatchPanel (watchHistory);
-        JComponent panel = wp.getPanel ();
+            WatchPanel wp = new WatchPanel (watchHistory);
+            JComponent panel = wp.getPanel ();
 
-        // <RAVE>
-        // Add help ID for 'Add Watch' dialog
-        // org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
-        //      panel,
-        //      bundle.getString ("CTL_WatchDialog_Title") // NOI18N
-        // );
-        // ====
-        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
-            panel, 
-            bundle.getString ("CTL_WatchDialog_Title"), // NOI18N
-            true,
-            org.openide.DialogDescriptor.OK_CANCEL_OPTION,
-            null,
-            org.openide.DialogDescriptor.DEFAULT_ALIGN,
-            new org.openide.util.HelpCtx("debug.add.watch"),
-            null
-        );
-        // </RAVE>
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
-        dialog.setVisible (true);
-        dialog.dispose ();
+            // <RAVE>
+            // Add help ID for 'Add Watch' dialog
+            // org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
+            //      panel,
+            //      bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+            // );
+            // ====
+            org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
+                panel,
+                bundle.getString ("CTL_WatchDialog_Title"), // NOI18N
+                true,
+                org.openide.DialogDescriptor.OK_CANCEL_OPTION,
+                null,
+                org.openide.DialogDescriptor.DEFAULT_ALIGN,
+                new org.openide.util.HelpCtx("debug.add.watch"),
+                null
+            );
+            // </RAVE>
+            Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
+            dialog.setVisible (true);
+            dialog.dispose ();
 
-        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
-        String watch = wp.getExpression ();
-        if ( (watch == null) || 
-             (watch.trim ().length () == 0)
-        )   return;
-        
-        String s = watch;
-        int i = s.indexOf (';');
-        while (i > 0) {
-            String ss = s.substring (0, i).trim ();
-            if (ss.length () > 0)
-                DebuggerManager.getDebuggerManager ().createWatch (ss);
-            s = s.substring (i + 1);
-            i = s.indexOf (';');
+            if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
+            String watch = wp.getExpression ();
+            if ( (watch == null) ||
+                 (watch.trim ().length () == 0)
+            )   return;
+
+            String s = watch;
+            int i = s.indexOf (';');
+            while (i > 0) {
+                String ss = s.substring (0, i).trim ();
+                if (ss.length () > 0)
+                    DebuggerManager.getDebuggerManager ().createWatch (ss);
+                s = s.substring (i + 1);
+                i = s.indexOf (';');
+            }
+            s = s.trim ();
+            if (s.length () > 0)
+                DebuggerManager.getDebuggerManager ().createWatch (s);
+
+            watchHistory = watch;
+
+            openWatchesView();
         }
-        s = s.trim ();
-        if (s.length () > 0)
-            DebuggerManager.getDebuggerManager ().createWatch (s);
-        
-        watchHistory = watch;
-        
+    }
+
+    private static void openWatchesView() {
         // open watches view
         TopComponent watchesView = WindowManager.getDefault().findTopComponent("watchesView"); // NOI18N
         if (watchesView != null && watchesView.isOpened()) {
@@ -159,5 +193,44 @@ public class AddWatchAction extends CallableSystemAction {
         }
         String viewName = VariablesViewButtons.isWatchesViewNested() ? "localsView" : "watchesView";
         ViewActions.openComponent (viewName, false).requestVisible();
+    }
+
+    private static AddWatchListener performEngineAddWatchAction() {
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine != null) {
+            ActionsManager manager = engine.getActionsManager();
+            if (manager.isEnabled(ActionsManager.ACTION_NEW_WATCH)) {
+                AddWatchListener addWatchListener = new AddWatchListener();
+                DebuggerManager.getDebuggerManager().addDebuggerListener(addWatchListener);
+                Task addWatchTask = manager.postAction(ActionsManager.ACTION_NEW_WATCH);
+                addWatchListener.setTask(addWatchTask);
+                return addWatchListener;
+            }
+        }
+        return null;
+    }
+
+    private static final class AddWatchListener extends DebuggerManagerAdapter {
+
+        private boolean watchAdded;
+        private Task addWatchTask;
+
+        @Override
+        public void watchAdded(Watch watch) {
+            watchAdded = true;
+        }
+
+        public boolean isWatchAdded() {
+            return watchAdded;
+        }
+
+        public void setTask(Task addWatchTask) {
+            this.addWatchTask = addWatchTask;
+        }
+
+        public Task getTask() {
+            return addWatchTask;
+        }
+        
     }
 }

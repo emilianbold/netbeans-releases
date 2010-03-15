@@ -47,6 +47,7 @@ import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -65,6 +66,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -77,6 +79,8 @@ public class PhpUnitOptionsPanel extends JPanel {
         initComponents();
 
         errorLabel.setText(" "); // NOI18N
+        scriptInfoLabel.setText(NbBundle.getMessage(PhpUnitOptionsPanel.class,
+                "LBL_PhpUnitScriptInfo", Utilities.isWindows() ? "bat" : "sh")); // NOI18N
 
         phpUnitTextField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -145,10 +149,12 @@ public class PhpUnitOptionsPanel extends JPanel {
 
 
 
+
         phpUnitLabel = new JLabel();
         phpUnitTextField = new JTextField();
         phpUnitBrowseButton = new JButton();
         phpUnitSearchButton = new JButton();
+        scriptInfoLabel = new JLabel();
         noteLabel = new JLabel();
         phpUnitInfoLabel = new JLabel();
         phpUnitPhp53InfoLabel = new JLabel();
@@ -168,6 +174,7 @@ public class PhpUnitOptionsPanel extends JPanel {
                 phpUnitSearchButtonActionPerformed(evt);
             }
         });
+        Mnemonics.setLocalizedText(scriptInfoLabel, "HINT");
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.text"));
         Mnemonics.setLocalizedText(phpUnitInfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.text"));
         Mnemonics.setLocalizedText(phpUnitPhp53InfoLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.text"));
@@ -182,7 +189,7 @@ public class PhpUnitOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -192,18 +199,21 @@ public class PhpUnitOptionsPanel extends JPanel {
                         .addGap(0, 0, 0)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(errorLabel)
+                            .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(phpUnitLabel)
                                 .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(phpUnitTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(phpUnitBrowseButton)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(phpUnitSearchButton))
-                            .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(scriptInfoLabel)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(phpUnitTextField, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(phpUnitBrowseButton)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(phpUnitSearchButton))))))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(phpUnitInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(phpUnitPhp53InfoLabel))
@@ -212,7 +222,7 @@ public class PhpUnitOptionsPanel extends JPanel {
                         .addComponent(installationInfoLabel))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -220,20 +230,22 @@ public class PhpUnitOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(phpUnitLabel)
-                    .addComponent(phpUnitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpUnitSearchButton)
                     .addComponent(phpUnitBrowseButton))
-                .addGap(18, 18, 18)
-                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpUnitInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(scriptInfoLabel)
+                .addGap(18, 18, 18)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(phpUnitPhp53InfoLabel)
                 .addGap(18, 18, 18)
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addComponent(errorLabel)
                 .addGap(0, 0, 0))
         );
@@ -296,6 +308,7 @@ public class PhpUnitOptionsPanel extends JPanel {
     private JLabel phpUnitPhp53InfoLabel;
     private JButton phpUnitSearchButton;
     private JTextField phpUnitTextField;
+    private JLabel scriptInfoLabel;
     // End of variables declaration//GEN-END:variables
 
 }

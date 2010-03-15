@@ -54,6 +54,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 
 /**
  * Test several simple lexer impls.
@@ -121,4 +123,34 @@ public class EmbeddingUpdateTest extends NbTestCase {
         doc.insertString(3, "x", null); // there will be empty /**/
     }        
         
+    public void testEmbeddingActivityChange() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        doc.putProperty(Language.class,TestTokenId.language());
+        doc.insertString(0, "a/*abc def*/", null);
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
+        TokenSequence<?> ets = ts.embedded();
+        assertNotNull(ets);
+        assertTrue(ts.moveNext());
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
+        assertTrue(ets.moveNext());
+        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
+        assertFalse(ets.moveNext());
+
+        MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+        TokenHierarchyControl control = input.tokenHierarchyControl();
+        control.setActive(false);
+        control.setActive(true);
+
+    }
+
 }

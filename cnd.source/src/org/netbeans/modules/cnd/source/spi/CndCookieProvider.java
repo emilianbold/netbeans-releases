@@ -40,8 +40,8 @@ package org.netbeans.modules.cnd.source.spi;
 
 import java.util.Collection;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Some CND components, like <code>cnd.editor</code> or
@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  */
 public abstract class CndCookieProvider {
 
-    public abstract void addCookies(DataObject dao, CookieSet cookies);
+    public abstract void addLookup(DataObject dao, InstanceContent ic);
 
     private static CndCookieProvider DEFAULT;
 
@@ -73,9 +73,10 @@ public abstract class CndCookieProvider {
             providers = Lookup.getDefault().lookupAll(CndCookieProvider.class);
         }
 
-        public void addCookies(DataObject dao, CookieSet cookies) {
+        @Override
+        public void addLookup(DataObject dao, InstanceContent ic) {
             for (CndCookieProvider provider : providers) {
-                provider.addCookies(dao, cookies);
+                provider.addLookup(dao, ic);
             }
         }
     }

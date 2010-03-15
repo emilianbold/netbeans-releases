@@ -114,13 +114,13 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider.createRails"/>
                 <attr name="position" intvalue="100"/>
             </file>
-                <file name="Gems.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createGems"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
+            <file name="Gems.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createGems"/>
+                <attr name="position" intvalue="400"/>
+            </file>
             <file name="Formatting.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
                 <attr name="allowedMimeTypes" stringvalue="text/x-ruby,application/x-httpd-eruby,text/x-java"/>
                 <attr name="position" intvalue="1000"/>
             </file>

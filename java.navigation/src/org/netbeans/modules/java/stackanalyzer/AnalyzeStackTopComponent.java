@@ -38,66 +38,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.java.stackanalyzer;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
+
+import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
+
 
 /**
- * Top component which displays something.
+ * Analyser Stack Window implementation.
+ *
  * @author Jan Becicka
  */
 final class AnalyzeStackTopComponent extends TopComponent {
 
     private static AnalyzeStackTopComponent instance;
-    /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-
     private static final String PREFERRED_ID = "AnalyzeStackTopComponent";
 
-    private AnalyzeStackTopComponent() {
-        initComponents();
-        setName(NbBundle.getMessage(AnalyzeStackTopComponent.class, "CTL_AnalyzeStackTopComponent"));
-        setToolTipText(NbBundle.getMessage(AnalyzeStackTopComponent.class, "HINT_AnalyzeStackTopComponent"));
-        getActionMap().put(DefaultEditorKit.pasteAction, new AbstractActionImpl());
-        insertButton.getActionMap().put(DefaultEditorKit.pasteAction, new AbstractActionImpl());
-        analyzeScroll.getActionMap().put(DefaultEditorKit.pasteAction, new AbstractActionImpl());
-        analyzePane.getActionMap().put(DefaultEditorKit.pasteAction, new AbstractActionImpl());
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
-    }
-    
-    
 
-    private void fillIn(Reader stackTrace) {
-       analyzePane.setModel(new StackListModel(stackTrace));
+    private AnalyzeStackTopComponent () {
+        initComponents ();
+        setName (NbBundle.getMessage (AnalyzeStackTopComponent.class, "CTL_AnalyzeStackTopComponent"));
+        setToolTipText (NbBundle.getMessage (AnalyzeStackTopComponent.class, "HINT_AnalyzeStackTopComponent"));
+        getActionMap ().put (DefaultEditorKit.pasteAction, new PasteAction ());
+        insertButton.getActionMap ().put (DefaultEditorKit.pasteAction, new PasteAction ());
+        scrollPane.getActionMap ().put (DefaultEditorKit.pasteAction, new PasteAction ());
+        list.getActionMap ().put (DefaultEditorKit.pasteAction, new PasteAction ());
+        list.setCellRenderer (new AnalyserCellRenderer ());
+        list.addKeyListener (new KeyAdapter () {
+
+            @Override
+            public void keyTyped (KeyEvent e) {
+                if (e.getKeyChar () == KeyEvent.VK_ENTER) {
+                    String currentLine = (String) list.getSelectedValue ();
+                    open (currentLine);
+                }
+            }
+        });
+        list.addMouseListener (new MouseAdapter () {
+
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                if (e.getClickCount () != 2) return;
+                int i = list.locationToIndex (e.getPoint ());
+                if (i < 0) return;
+                String currentLine = (String) list.getModel ().getElementAt (i);
+                open (currentLine);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -109,8 +118,8 @@ final class AnalyzeStackTopComponent extends TopComponent {
     private void initComponents() {
 
         insertButton = new javax.swing.JButton();
-        analyzeScroll = new javax.swing.JScrollPane();
-        analyzePane = new javax.swing.JList();
+        scrollPane = new javax.swing.JScrollPane();
+        list = new javax.swing.JList();
 
         setName("Form"); // NOI18N
 
@@ -122,16 +131,11 @@ final class AnalyzeStackTopComponent extends TopComponent {
             }
         });
 
-        analyzeScroll.setName("analyzeScroll"); // NOI18N
+        scrollPane.setName("scrollPane"); // NOI18N
 
-        analyzePane.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        analyzePane.setName("analyzePane"); // NOI18N
-        analyzePane.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                analyzePaneValueChanged(evt);
-            }
-        });
-        analyzeScroll.setViewportView(analyzePane);
+        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        list.setName("list"); // NOI18N
+        scrollPane.setViewportView(list);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -140,7 +144,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(analyzeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                     .add(insertButton))
                 .addContainerGap())
         );
@@ -150,7 +154,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
                 .addContainerGap()
                 .add(insertButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(analyzeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -162,35 +166,55 @@ final class AnalyzeStackTopComponent extends TopComponent {
 
     private void insertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertButtonActionPerformed
         try {
-            Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            Reader stackTrace = DataFlavor.stringFlavor.getReaderForText(clipBoard.getContents(this));//GEN-LAST:event_insertButtonActionPerformed
-            fillIn(stackTrace);
+            Clipboard clipBoard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
+            Transferable transferable = clipBoard.getContents (this);
+            if (!transferable.isDataFlavorSupported (DataFlavor.stringFlavor))
+                return;
+            Reader reader = DataFlavor.stringFlavor.getReaderForText (transferable);
+            BufferedReader r = new BufferedReader (reader);
+            DefaultListModel model = new DefaultListModel ();
+            String currentLine = null;
+            String lastLine = null;
+            try {
+                for (;;) {
+                    currentLine = r.readLine ();
+                    if (currentLine == null) break;
+                    currentLine = currentLine.trim ();
+                    if (lastLine == null && currentLine.equals ("at")) {
+                        lastLine = currentLine;
+                        continue;
+                    }
+                    if (lastLine != null) {
+                        currentLine = lastLine + ' ' + currentLine;
+                        lastLine = null;
+                    }
+                    model.addElement (currentLine);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            list.setModel (model);
         } catch (UnsupportedFlavorException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace (ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace (ex);
         }
-}
-
-    private void analyzePaneValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_analyzePaneValueChanged
-        String line = (String) analyzePane.getSelectedValue();
-        if (line!=null)
-            select(line);
-    }//GEN-LAST:event_analyzePaneValueChanged
+    }//GEN-LAST:event_insertButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList analyzePane;
-    private javax.swing.JScrollPane analyzeScroll;
     private javax.swing.JButton insertButton;
+    private javax.swing.JList list;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link findInstance}.
      */
-    public static synchronized AnalyzeStackTopComponent getDefault() {
+    public static synchronized AnalyzeStackTopComponent getDefault () {
         if (instance == null) {
-            instance = new AnalyzeStackTopComponent();
+            instance = new AnalyzeStackTopComponent ();
         }
         return instance;
     }
@@ -198,45 +222,45 @@ final class AnalyzeStackTopComponent extends TopComponent {
     /**
      * Obtain the AnalyzeStackTopComponent instance. Never call {@link #getDefault} directly!
      */
-    public static synchronized AnalyzeStackTopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+    public static synchronized AnalyzeStackTopComponent findInstance () {
+        TopComponent win = WindowManager.getDefault ().findTopComponent (PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(AnalyzeStackTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-            return getDefault();
+            Logger.getLogger (AnalyzeStackTopComponent.class.getName ()).warning (
+                "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+            return getDefault ();
         }
         if (win instanceof AnalyzeStackTopComponent) {
             return (AnalyzeStackTopComponent) win;
         }
-        Logger.getLogger(AnalyzeStackTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
-        return getDefault();
+        Logger.getLogger (AnalyzeStackTopComponent.class.getName ()).warning (
+            "There seem to be multiple components with the '" + PREFERRED_ID +
+            "' ID. That is a potential source of errors and unexpected behavior.");
+        return getDefault ();
     }
 
     @Override
-    public int getPersistenceType() {
+    public int getPersistenceType () {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
-    public void componentOpened() {
-    // TODO add custom code on component opening
+    public void componentOpened () {
+        // TODO add custom code on component opening
     }
 
     @Override
-    public void componentClosed() {
-    // TODO add custom code on component closing
+    public void componentClosed () {
+        // TODO add custom code on component closing
     }
 
     /** replaces this in object stream */
     @Override
-    public Object writeReplace() {
-        return new ResolvableHelper();
+    public Object writeReplace () {
+        return new ResolvableHelper ();
     }
 
     @Override
-    protected String preferredID() {
+    protected String preferredID () {
         return PREFERRED_ID;
     }
 
@@ -244,90 +268,24 @@ final class AnalyzeStackTopComponent extends TopComponent {
 
         private static final long serialVersionUID = 1L;
 
-        public Object readResolve() {
-            return AnalyzeStackTopComponent.getDefault();
+        public Object readResolve () {
+            return AnalyzeStackTopComponent.getDefault ();
         }
     }
 
-    /**
-     * Regexp matching one line (not the first) of a stack trace.
-     * Captured groups:
-     * <ol>
-     * <li>package
-     * <li>filename
-     * <li>line number
-     * </ol>
-     */
-    static final Pattern STACK_TRACE = Pattern.compile(
-    "(\\s)+(|catch )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
-    
-    /**
-     * Regexp matching the first line of a stack trace, with the exception message.
-     * Captured groups:
-     * <ol>
-     * <li>unqualified name of exception class plus possible message
-     * </ol>
-     */
-    static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
-    // #42894: JRockit uses "Main Thread" not "main"
-    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)"); // NOI18N
-    
-    private void select(String line) {
-        Matcher m = STACK_TRACE.matcher(line);
-        if (m.matches()) {
-            String pkg = m.group(3);
-            String filename = m.group(4);
-            String resource = pkg.replace('.', '/') + filename;
-            int lineNumber = Integer.parseInt(m.group(5));
-                ClassPath cp = ClassPathSupport.createClassPath(GlobalPathRegistry.getDefault().getSourceRoots().toArray(new FileObject[0]));
-                FileObject source = cp.findResource(resource);
-                if (source != null) {
-                    doOpen(source, lineNumber);
-                }
-            }
-        }
-    
-        private static boolean doOpen(FileObject fo, int line) {
-        try {
-            DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
-            
-            if (ec != null && lc != null && line != -1) {                
-                StyledDocument doc = ec.openDocument();                
-                if (doc != null) {
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line-1);
-                        
-                        if (l != null) {
-                            l.show(Line.SHOW_GOTO);
-                            return true;
-                        }
-                    }
-                }
-            }
-            
-            OpenCookie oc = (OpenCookie) od.getCookie(OpenCookie.class);
-            
-            if (oc != null) {
-                oc.open();                
-                return true;
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        
-        return false;
+    private void open (String line) {
+        Link link = StackLineAnalyser.analyse (line);
+        if (link != null) link.show ();
     }
 
-    private class AbstractActionImpl extends AbstractAction {
+    private class PasteAction extends AbstractAction {
 
-        public AbstractActionImpl() {
+        public PasteAction () {
         }
 
-        public void actionPerformed(ActionEvent e) {
-            insertButtonActionPerformed(null);
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            insertButtonActionPerformed (null);
         }
     }
-    
 }

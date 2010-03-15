@@ -70,7 +70,7 @@ public class DerbySupport {
      */
     public static void setLocation(String location) {
         LOGGER.log(Level.FINE, "setLocation called for {0}", location); // NOI18N
-        String jdkDerbyLocation = JDKDerbyHelper.forDefaultPlatform().findDerbyLocation();
+        String jdkDerbyLocation = JDKDerbyHelper.forDefault().findDerbyLocation();
         String realLocation = (jdkDerbyLocation != null) ? jdkDerbyLocation : location;
         DerbyOptions.getDefault().trySetLocation(realLocation);
     }

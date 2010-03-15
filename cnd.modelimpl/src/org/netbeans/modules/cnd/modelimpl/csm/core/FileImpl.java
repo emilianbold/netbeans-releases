@@ -131,7 +131,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static void incParseCount() {
         parseCount.incrementAndGet();
     }
-    
+
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
@@ -146,7 +146,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * so there are a lot of sync issues on this way.
      *
      * Previously, null value was used instead; using null is much less clear an visible
-     * 
+     *
      * So, putting DUMMY_STATE into the queue
      *
      * 1) does not harm states that are in queue or will be put there (see ParserQueue code)
@@ -173,11 +173,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return false;
         }
     };
-    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
+    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
-    /** 
-     * It's a map since we need to eliminate duplications 
+    /**
+     * It's a map since we need to eliminate duplications
      */
     private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
@@ -220,13 +220,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
     private final List<CsmUID<FunctionImplEx>> fakeRegistrationPairs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private FileSnapshot fileSnapshot;
+    private final Object snapShotLock = new Object();
 
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
     private int hash = 0; // Default to 0
-    /** 
-     * Stores the UIDs of the static functions declarations (not definitions) 
-     * This is necessary for finding definitions/declarations 
+    /**
+     * Stores the UIDs of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
@@ -344,7 +346,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             fileType = FileType.HEADER_FILE;
         }
     }
-    
+
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
     public APTLanguageFilter getLanguageFilter(APTPreprocHandler.State ppState) {
         FileImpl startFile = ppState == null ? null : ProjectBase.getStartFile(ppState);
@@ -413,7 +415,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return null;
     }
-    
+
 //    private Collection<APTPreprocHandler.State> getPreprocStates() {
 //        ProjectBase project = getProjectImpl(true);
 //        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
@@ -458,7 +460,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     // ONLY FOR PARSER THREAD USAGE
     // Parser Queue ensures that the same file can be parsed at the same time
-    // only by one thread. 
+    // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
         boolean wasDummy = false;
         if (handlers == DUMMY_HANDLERS) {
@@ -672,10 +674,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return aptFull;
     }
-    
+
     private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
+        }
+        synchronized(snapShotLock) {
+            fileSnapshot = new FileSnapshot(this);
         }
         _clearIncludes();
         _clearMacros();
@@ -691,6 +696,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
+        }
+        fileSnapshot = null;
+    }
+
+    CsmFile getSnapshot(){
+        synchronized(snapShotLock) {
+            FileSnapshot res = fileSnapshot;
+            if (res != null) {
+                return res;
+            }
+            return new FileSnapshot(this);
         }
     }
 
@@ -972,7 +988,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             APTFileCacheManager.setAPTCacheEntry(getAbsolutePath(), preprocHandler, entry, cleanOthers);
         }
     }
-    
+
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -1028,15 +1044,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private static class CppParsing implements Parsing {
 
-        File file;
-        int flags;
-        CPPParserEx parser;
+        private File file;
+        private int flags;
+        private CPPParserEx parser;
 
         public CppParsing(File file, int flags) {
             this.file = file;
             this.flags = flags;
         }
 
+        @Override
         public void stageOne(TokenStream ts) {
             parser = CPPParserEx.getInstance(file.getName(), ts, flags);
             try {
@@ -1047,6 +1064,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 
+        @Override
         public void stageTwo(FileImpl file) {
             AST ast = parser.getAST();
             if(ast != null) {
@@ -1055,10 +1073,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 
+        @Override
         public Object getAST() {
             return parser.getAST();
         }
 
+        @Override
         public int getErrorCount() {
             return parser.getErrorCount();
         }
@@ -1066,14 +1086,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private static class FortranParsing implements Parsing {
 
-        File file;
-        FortranParserEx parser;
-        FortranParserEx.program_return ret;
+        private File file;
+        private FortranParserEx parser;
+        private FortranParserEx.program_return ret;
 
         public FortranParsing(File file) {
             this.file = file;
         }
 
+        @Override
         public void stageOne(TokenStream ts) {
 //                FortranParserEx.MyTokenStream ts2 = new FortranParserEx.MyTokenStream(new org.netbeans.modules.cnd.antlr.TokenBuffer(filteredTokenStream));
 //                while(ts2.LA(1) != -1) {
@@ -1092,15 +1113,18 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 
+        @Override
         public void stageTwo(FileImpl file) {
             new DataRenderer(file).render(parser.parsedObjects);
             incParseCount();
         }
 
+        @Override
         public Object getAST() {
             return ret.getTree();
         }
 
+        @Override
         public int getErrorCount() {
             return parser.getNumberOfSyntaxErrors();
         }
@@ -1180,7 +1204,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
             }
             startProject.setParsedPCState(this, ppState, pcState);
-            
+
             if (emptyAstStatictics) {
                 time = System.currentTimeMillis() - time;
                 final Object ast = parsing.getAST();
@@ -1390,7 +1414,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //            declarationsLock.readLock().unlock();
 //        }
     }
-    
+
     @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
@@ -1662,9 +1686,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    /** 
-     * Gets the list of the static functions declarations (not definitions) 
-     * This is necessary for finding definitions/declarations 
+    /**
+     * Gets the list of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
@@ -1874,8 +1898,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return wereFakes;
     }
-    
-    public 
+
+    public
     @Override
     String toString() {
         return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID; // NOI18N
@@ -2001,7 +2025,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
 
-    public 
+    public
     @Override
     int hashCode() {
         if (hash == 0) {   // we don't need sync here - at worst, we'll calculate the same value twice
@@ -2011,7 +2035,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return hash;
     }
 
-    public 
+    public
     @Override
     boolean equals(Object obj) {
         if (obj == null || !(obj instanceof FileImpl)) {

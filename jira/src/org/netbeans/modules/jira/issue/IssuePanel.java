@@ -115,7 +115,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.jira.Jira;
@@ -127,7 +127,6 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -601,9 +600,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                KenaiUserUI ku = new KenaiUserUI(reporter + "@" + host);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -630,9 +627,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                KenaiUserUI ku = new KenaiUserUI(assignee + "@" + host);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;

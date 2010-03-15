@@ -40,12 +40,9 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-
 import org.netbeans.modules.xml.actions.CollectXMLAction;
 import org.netbeans.modules.xml.lib.GuiUtil;
 import org.openide.util.NbBundle;
@@ -53,20 +50,6 @@ import org.openide.util.NbBundle;
 public abstract class XMLGenerateAction extends CookieAction {
     /** Stream serialVersionUID as of Build1099j. */
     protected static final long serialVersionUID = -6614874187800576344L;
-
-/****************
-    public static synchronized XMLGenerateAction _getInstance() {
-        XMLGenerateAction actionInstance = null;
-        String thisClassName = XMLGenerateAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (XMLGenerateAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-**************/
     
     /* @return the mode of action. */
     protected int mode() {
@@ -116,20 +99,6 @@ public abstract class XMLGenerateAction extends CookieAction {
     public static class GenerateDTDAction extends XMLGenerateAction implements CollectXMLAction.XMLAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 8532990650127561962L;
-
-/******************
-        public static synchronized GenerateDTDAction getInstance() {
-            GenerateDTDAction actionInstance = null;
-            String thisClassName = GenerateDTDAction.class.getName();
-            try {
-                Class actionInstanceClass = Class.forName(thisClassName);
-                actionInstance = (GenerateDTDAction) actionInstanceClass.newInstance();
-            } catch(Exception e) {
-                Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-            }
-            return actionInstance;
-        }
-*****************/
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.

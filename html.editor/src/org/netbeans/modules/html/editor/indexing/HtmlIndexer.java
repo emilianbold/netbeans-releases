@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.indexing.HtmlFileModel.Entry;
+import org.netbeans.modules.html.editor.indexing.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -92,10 +92,10 @@ public class HtmlIndexer extends EmbeddingIndexer {
         }
     }
  
-    private void storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
+    private void storeEntries(Collection<? extends Entry> entries, IndexDocument doc, String key) {
         if (!entries.isEmpty()) {
             StringBuffer sb = new StringBuffer();
-            Iterator<Entry> i = entries.iterator();
+            Iterator<? extends Entry> i = entries.iterator();
             while (i.hasNext()) {
                 sb.append(i.next().getName());
                 if (i.hasNext()) {

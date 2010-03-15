@@ -44,11 +44,11 @@ import java.util.concurrent.FutureTask;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.modules.dlight.terminal.api.IOEmulation;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
+import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,7 +81,7 @@ public final class NativeExecutionService {
     }
 
     public Future<Integer> run() {
-        if (TerminalIOProviderSupport.isTerminalIO(descriptor.inputOutput)) {
+        if (IOTerm.isSupported(descriptor.inputOutput)) {
             return runTerm();
         } else {
             return runRegular();

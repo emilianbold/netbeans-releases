@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
@@ -97,9 +97,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
         includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
-        inheritIncludes = new BooleanConfiguration(null, true, null, null);
+        inheritIncludes = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
-        inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
+        inheritPreprocessor = new BooleanConfiguration(true);
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -283,7 +283,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 if (compilerSet != null) {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                item = IpeUtils.escapeOddCharacters(item);
+                item = CndPathUtilitities.escapeOddCharacters(item);
                 return prepend == null ? item : prepend + item;
             } else {
                 return ""; // NOI18N

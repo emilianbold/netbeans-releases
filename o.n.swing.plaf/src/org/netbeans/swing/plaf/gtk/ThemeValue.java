@@ -49,7 +49,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.Iterator;
+import org.netbeans.swing.plaf.util.UIUtils;
 
 /**
  * Value which will look something up via reflection from the GTK theme.
@@ -177,14 +177,14 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     private static void checkFunctioning() {
         functioning = Boolean.FALSE;
         try {
-            gtkLookAndFeel = Class.forName ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //NOI18N 
-            synthLookAndFeel = Class.forName ("javax.swing.plaf.synth.SynthLookAndFeel"); //NOI18N
-            region = Class.forName ("javax.swing.plaf.synth.Region"); //NOI18N
-            synthStyle = Class.forName ("javax.swing.plaf.synth.SynthStyle"); //NOI18N
-            synthContext = Class.forName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
-            colorType = Class.forName ("javax.swing.plaf.synth.ColorType"); //NOI18N
-            gtkColorType = Class.forName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
-            synthUI = Class.forName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
+            gtkLookAndFeel = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //NOI18N
+            synthLookAndFeel = UIUtils.classForName ("javax.swing.plaf.synth.SynthLookAndFeel"); //NOI18N
+            region = UIUtils.classForName ("javax.swing.plaf.synth.Region"); //NOI18N
+            synthStyle = UIUtils.classForName ("javax.swing.plaf.synth.SynthStyle"); //NOI18N
+            synthContext = UIUtils.classForName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
+            colorType = UIUtils.classForName ("javax.swing.plaf.synth.ColorType"); //NOI18N
+            gtkColorType = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
+            synthUI = UIUtils.classForName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
 
 
             synthContextConstructor = synthContext.getDeclaredConstructor(
@@ -235,7 +235,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
 
             functioning = Boolean.TRUE;
         } catch (Exception e) {
-            System.err.println ("Cannot initialize GTK colors - using hardcoded defaults " + e.getMessage()); //NOI18N
+            System.err.println ("Cannot initialize GTK colors - using hardcoded defaults: " + e); //NOI18N
             if (log) {
                 e.printStackTrace();
             }

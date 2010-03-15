@@ -104,7 +104,7 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
         textField = new javax.swing.JTextField();
 
         label.setLabelFor(textField);
-        label.setText(org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "LBL_AnnotationProcessorFQN")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "LBL_AnnotationProcessorFQN")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

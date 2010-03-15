@@ -1,0 +1,218 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.tomcat5.registration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.tomcat5.util.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+
+/**
+ * Registers a Tomcat instance by creating instance file in cluster config
+ * directory. Designed to be called from installer.
+ * <p>
+ * Sample command line<br>
+ * java -cp platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-tomcat5.jar org.netbeans.modules.tomcat5.registration.AutomaticRegistration %lt;clusterDir&gt; &lt;catalinaHome&gt;
+ *
+ * @author Petr Hejl
+ * @see #main(args)
+ */
+public class AutomaticRegistration {
+
+    private static final Logger LOGGER = Logger.getLogger(AutomaticRegistration.class.getName());
+
+    /**
+     * Performs registration.
+     *
+     * Exit codes:<p>
+     * <ul>
+     *   <li> 1: could not hadle cluster folder
+     *   <li> 2: could not find/create config/J2EE/InstalledServers folder
+     *   <li> 3: could not find catalina home
+     *   <li> 4: could not recognize Tomcat version
+     *   <li> 5: unsupported version of Tomcat
+     *   <li> 6: could not write registration FileObject
+     * </ul>
+     * @param args command line arguments - cluster path and catalina home expected
+     */
+    public static void main(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Parameters: <clusterDir> <catalinaHome>");
+            System.exit(-1);
+        }
+        
+        int status = autoregisterTomcatInstance(args[0], args[1]);
+        System.exit(status);
+    }
+
+    private static int autoregisterTomcatInstance(String clusterDirValue, String catalinaHomeValue) {
+        // tell the infrastructure that the userdir is cluster dir
+        System.setProperty("netbeans.user", clusterDirValue); // NOI18N
+
+        FileObject serverInstanceDir = FileUtil.getConfigFile("J2EE/InstalledServers"); // NOI18N
+        
+        if (serverInstanceDir == null) {
+            LOGGER.log(Level.INFO, "Cannot register the default Tomcat server. The config/J2EE/InstalledServers folder cannot be created."); // NOI18N
+            return 2;
+        }
+
+        File catalinaHome = new File(catalinaHomeValue);
+        if (!catalinaHome.exists()) {
+            LOGGER.log(Level.INFO, "Cannot register the default Tomcat server. "
+                    + "The Catalina Home directory " + catalinaHomeValue // NOI18N
+                    + " does not exist."); // NOI18N
+            return 3;
+        }
+
+        String version;
+        try {
+            version = TomcatFactory.getTomcatVersion(catalinaHome);
+        } catch (IllegalStateException e) {
+            LOGGER.log(Level.INFO, "Cannot register the default Tomcat server.  Cannot recognize the Tomcat version."); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
+            return 4;
+        }
+
+        // build URL
+        StringBuilder urlTmp;
+        if (version.startsWith("5.0.")) { // NOI18N
+            urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_50);
+        } else if (version.startsWith("5.5.")) { // NOI18N
+            urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_55);
+        } else if (version.startsWith("6.")) { // NOI18N
+            urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_60);
+        } else {
+            LOGGER.log(Level.INFO, "Cannot register the default Tomcat server. " + " The version " + version + " is not supported."); // NOI18N
+            return 5;
+        }
+        urlTmp.append(TomcatFactory.TOMCAT_URI_HOME_PREFIX);
+        urlTmp.append(catalinaHomeValue);
+        urlTmp.append(TomcatFactory.TOMCAT_URI_BASE_PREFIX);
+        urlTmp.append("apache-tomcat-"); // NOI18N
+        urlTmp.append(version);
+        urlTmp.append("_base"); // NOI18N
+
+        final String url = urlTmp.toString();
+
+        // make sure the server is not registered yet
+        for (FileObject fo : serverInstanceDir.getChildren()) {
+            if (url.equals(fo.getAttribute(InstanceProperties.URL_ATTR))) {
+                // the server is already registered, do nothing
+                return 0;
+            }
+        }
+
+        String displayName = generateUniqueDisplayName(serverInstanceDir, version);
+        boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName);
+        if (ok) {
+            return 0;
+        } else {
+            return 6;
+        }
+    }
+
+    /**
+     * Generates a unique display name for the specified version of Tomcat
+     *
+     * @param serverInstanceDir /J2EE/InstalledServers folder
+     * @param version Tomcat version
+     *
+     * @return a unique display name for the specified version of Tomcat
+     */
+    private static String generateUniqueDisplayName(FileObject serverInstanceDir, String version) {
+        // find a unique display name
+        String displayName = NbBundle.getMessage(TomcatFactory.class, "LBL_ApacheTomcat", version);
+        boolean unique = true;
+        int i = 1;
+        while (true) {
+            for (FileObject fo : serverInstanceDir.getChildren()) {
+                if (displayName.equals(fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR))) {
+                    // there is already some server of the same name
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique) {
+                break;
+            }
+            displayName = NbBundle.getMessage(TomcatFactory.class, "LBL_ApacheTomcatAlt", version, i++);
+            unique = true;
+        };
+        return displayName;
+    }
+
+    /**
+     * Registers the server instance file object and set the default properties.
+     *
+     * @param serverInstanceDir /J2EE/InstalledServers folder
+     * @param url server instance url/ID
+     * @param displayName display name
+     */
+    private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url, String displayName) {
+        String name = FileUtil.findFreeFileName(serverInstanceDir, "tomcat_autoregistered_instance", null); // NOI18N
+        FileObject instanceFO;
+        try {
+            instanceFO = serverInstanceDir.createData(name);
+            instanceFO.setAttribute(InstanceProperties.URL_ATTR, url);
+            instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, "ide"); // NOI18N
+            String password = Utils.generatePassword(8);
+            instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, password);
+            instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+            instanceFO.setAttribute(InstanceProperties.HTTP_PORT_NUMBER, "8084"); // NOI18N
+            instanceFO.setAttribute(TomcatProperties.PROP_SHUTDOWN, "8025"); // NOI18N
+            instanceFO.setAttribute(TomcatProperties.PROP_MONITOR, "true"); // NOI18N
+            instanceFO.setAttribute(TomcatManager.PROP_BUNDLED_TOMCAT, "true"); // NOI18N
+            instanceFO.setAttribute(TomcatProperties.PROP_AUTOREGISTERED, "true"); // NOI18N
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, "Cannot register the default Tomcat server."); // NOI18N
+            LOGGER.log(Level.INFO, null, e);
+        }
+        return false;
+    }
+}

@@ -185,4 +185,8 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
             filter.setEnabled(controller.supportsFilter(mimeType));
         }
     }
+
+    void setCurrentMimeType(String key) {
+        languageCombo.setSelectedItem(key);
+    }
 }

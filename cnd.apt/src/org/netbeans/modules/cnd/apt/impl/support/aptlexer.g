@@ -70,13 +70,106 @@ options {
 
 // DW 4/11/02 put in to support manual hoisting
 tokens {
-    FLOATONE;
-    FLOATTWO;
-    ELLIPSIS;
-    HEXADECIMALINT;
-    DOT;
-    OCTALINT;
-    DECIMALINT;
+    // tokens with constant text, we put them in small indices to reduce size
+        ELLIPSIS;
+        DOT;
+	ASSIGNEQUAL;
+	COLON;
+	COMMA;
+	QUESTIONMARK;
+	SEMICOLON;
+	POINTERTO;
+	LPAREN;
+	RPAREN;
+	LSQUARE;
+	RSQUARE;
+	LCURLY;
+	RCURLY;
+	EQUAL;
+	NOTEQUAL;
+	LESSTHANOREQUALTO;
+	LESSTHAN;
+	GREATERTHANOREQUALTO;
+	GREATERTHAN;
+	DIVIDE;
+	DIVIDEEQUAL;
+	PLUS;
+	PLUSEQUAL;
+	PLUSPLUS;
+	MINUS;
+	MINUSEQUAL;
+	MINUSMINUS;
+	STAR;
+	TIMESEQUAL;
+	MOD;
+	MODEQUAL;
+	SHIFTRIGHT;
+	SHIFTRIGHTEQUAL;
+	SHIFTLEFT;
+	SHIFTLEFTEQUAL;
+	AND;
+	NOT;
+	OR;
+	AMPERSAND;
+	BITWISEANDEQUAL;
+	TILDE;
+	BITWISEOR;
+	BITWISEOREQUAL;
+	BITWISEXOR;
+	BITWISEXOREQUAL;
+	POINTERTOMBR;
+	DOTMBR;
+	SCOPE;
+        AT;
+        DOLLAR;
+        BACK_SLASH;
+
+	DEFINED;
+	DBL_SHARP;
+	SHARP;
+        FUN_LIKE_MACRO_LPAREN;
+
+        // marker for last const text token
+        LAST_CONST_TEXT_TOKEN;
+
+        // other tokens
+        FLOATONE;
+        FLOATTWO;
+        HEXADECIMALINT;
+        OCTALINT;
+        DECIMALINT;
+
+	Whitespace;
+	EndOfLine;
+	Skip;
+	PreProcComment;
+	PPLiterals;
+	Space;
+	PreProcBlockComment;
+	PreProcLineComment;
+	Comment;
+	CPPComment;
+	CHAR_LITERAL;
+	STRING_LITERAL;
+	InterStringWhitespace;
+	StringPart;
+	Escape;
+	Digit;
+	Decimal;
+	LongSuffix;
+	UnsignedSuffix;
+	FloatSuffix;
+	Exponent;
+	Vocabulary;
+	NUMBER;
+	ID;
+        BINARYINT;
+
+    // preprocessor specific tokens
+    INCLUDE_STRING;
+    SYS_INCLUDE_STRING;
+    END_PREPROC_DIRECTIVE;
+
     // preprocessor directives
     INCLUDE;
     INCLUDE_NEXT;
@@ -143,7 +236,7 @@ tokens {
     LITERAL___declspec="__declspec"; // NOI18N
     LITERAL_class="class"; // NOI18N
     LITERAL_struct="struct"; // NOI18N
-    LITERAL_union="union"; // NOI18N    
+    LITERAL_union="union"; // NOI18N
     LITERAL_this="this"; // NOI18N
     LITERAL_true="true"; // NOI18N
     LITERAL_false="false"; // NOI18N
@@ -196,94 +289,10 @@ tokens {
     LITERAL___restrict="__restrict"; // NOI18N
     LITERAL___complex__="__complex__"; // NOI18N
     LITERAL___imag="__imag__"; // NOI18N
-    LITERAL___real="__real__"; // NOI18N          
+    LITERAL___real="__real__"; // NOI18N
     LITERAL___global="__global"; // NOI18N
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
-
-	ASSIGNEQUAL;
-	COLON;
-	COMMA;
-	QUESTIONMARK;
-	SEMICOLON;
-	POINTERTO;
-	LPAREN;
-	RPAREN;
-	LSQUARE;
-	RSQUARE;
-	LCURLY;
-	RCURLY;
-	EQUAL;
-	NOTEQUAL;
-	LESSTHANOREQUALTO;
-	LESSTHAN;
-	GREATERTHANOREQUALTO;
-	GREATERTHAN;
-	DIVIDE;
-	DIVIDEEQUAL;
-	PLUS;
-	PLUSEQUAL;
-	PLUSPLUS;
-	MINUS;
-	MINUSEQUAL;
-	MINUSMINUS;
-	STAR;
-	TIMESEQUAL;
-	MOD;
-	MODEQUAL;
-	SHIFTRIGHT;
-	SHIFTRIGHTEQUAL;
-	SHIFTLEFT;
-	SHIFTLEFTEQUAL;
-	AND;
-	NOT;
-	OR;
-	AMPERSAND;
-	BITWISEANDEQUAL;
-	TILDE;
-	BITWISEOR;
-	BITWISEOREQUAL;
-	BITWISEXOR;
-	BITWISEXOREQUAL;
-	POINTERTOMBR;
-	DOTMBR;
-	SCOPE;
-	Whitespace;
-	EndOfLine;
-	DEFINED;
-	DBL_SHARP;
-	SHARP;
-	Skip;
-	PreProcComment;
-	PPLiterals;
-	Space;
-	PreProcBlockComment;
-	PreProcLineComment;
-	Comment;
-	CPPComment;
-	CHAR_LITERAL;
-	STRING_LITERAL;
-	InterStringWhitespace;
-	StringPart;
-	Escape;
-	Digit;
-	Decimal;
-	LongSuffix;
-	UnsignedSuffix;
-	FloatSuffix;
-	Exponent;
-	Vocabulary;
-	NUMBER;
-	ID;
-        BINARYINT;
-
-    // preprocessor specific tokens
-    INCLUDE_STRING;
-    SYS_INCLUDE_STRING;
-    END_PREPROC_DIRECTIVE;
-    FUN_LIKE_MACRO_LPAREN;
-    BACK_SLASH;
-
     LITERAL___attribute="__attribute"; // NOI18N
 
 
@@ -515,10 +524,12 @@ tokens {
     }
 
     // overriden to avoid class loading
+    @Override
     public void setTokenObjectClass(String cl) {
     }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
+    @Override
     protected APTToken createToken(int type) {
         return APTUtils.createAPTToken(type);
     }
@@ -528,6 +539,7 @@ tokens {
         APTUtils.setTokenText((APTToken)_token, buf, start, count);
     }
 
+    @Override
     public void traceIn(String rname) {
         traceDepth ++;
         traceIndent();
@@ -688,12 +700,8 @@ tokens {
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){
                 return null;
             }
-        } 
-        APTToken k = (APTToken)super.makeToken(t);
-        k.setOffset(tokenStartOffset);
-        k.setEndOffset(offset);
-        k.setEndColumn(inputState.getColumn());
-        k.setEndLine(inputState.getLine());
+        }
+        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine());
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()

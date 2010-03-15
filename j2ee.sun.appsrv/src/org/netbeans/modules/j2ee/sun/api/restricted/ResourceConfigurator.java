@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -140,10 +140,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @returns true if the resource exists in the resource, or false for all
      *  other possibilities.
      */
+    @Override
     public boolean isJMSResourceDefined(String jndiName, File dir) {
         return requiredResourceExists(jndiName, dir, JMS_RESOURCE);
     }
 
+    @Override
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
         SunMessageDestination msgDest = null;
         if(! jndiName.startsWith(JMS_PREFIX)){ 
@@ -203,6 +205,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param ejbName name of ejb.
      * @param dir Folder where the resource should be stored.  Should not be null.
      */
+    @Override
     public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir) {
         FileObject location = FileUtil.toFileObject(dir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
@@ -245,6 +248,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
+    @Override
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir) {
         /*try {
             String name = refName;
@@ -281,6 +285,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }*/
     }
     
+    @Override
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
         /*String name = "jdbc/" + beanName; // NOI18N
         String jndiName = name;
@@ -623,21 +628,23 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if (null != portNumber && portNumber.length() > 0) {
                 serverPort += ":" + portNumber; //NOI18N
             }
-            if ((databaseUrl.indexOf(serverPort) != -1) 
-                    && ((databaseUrl.indexOf(databaseName) != -1) 
-                    || (databaseUrl.indexOf(sid) != -1))) {
-                if ((username != null && user.equals(username)) 
-                        && (password != null && pwd.equals(password))) {
-                    for (int i = 0; i < pl.length; i++) {
-                        String prop = pl[i].getName();
-                        if (prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
-                            String urlValue = pl[i].getValue();
-                            if (urlValue.equals(databaseUrl)) {
-                                poolJndiName = connPool.getName();
-                                break;
+            if (null != databaseUrl) {
+                if ((databaseUrl.indexOf(serverPort) != -1)
+                        && ((databaseUrl.indexOf(databaseName) != -1)
+                        || (databaseUrl.indexOf(sid) != -1))) {
+                    if ((username != null && user.equals(username))
+                            && (password != null && pwd.equals(password))) {
+                        for (int i = 0; i < pl.length; i++) {
+                            String prop = pl[i].getName();
+                            if (prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
+                                String urlValue = pl[i].getValue();
+                                if (urlValue.equals(databaseUrl)) {
+                                    poolJndiName = connPool.getName();
+                                    break;
+                                }
                             }
-                        }
-                    } //for
+                        } //for
+                    }
                 }
             }
         }
@@ -654,6 +661,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     public static void showInformation(final String msg) {
         // Asynchronous message posting.  Placed on AWT thread automatically by DialogDescriptor.
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
@@ -744,6 +752,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      * @return Set containing SunDataSource
      */
+    @Override
     public HashSet getServerDataSources() {
         return ResourceUtils.getServerDataSources(this.currentDM);
     }
@@ -755,6 +764,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @return Returns Set of SunDatasource's(JDBC Resources) present in this J2EE project
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public HashSet getResources(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
@@ -904,6 +914,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param driver Driver ClassName for database referred to by this JDBC Resource's Connection Pool
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir) throws DatasourceAlreadyExistsException {
         SunDatasource ds = null;
         try {
@@ -1175,6 +1186,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
      * @param dir File providing location of the project's server resource directory
      */
+    @Override
     public HashSet getMessageDestinations(File resourceDir) {
         HashSet serverresources = new HashSet();
         File resourceFile = getServerResourceFiles(resourceDir);
@@ -1200,6 +1212,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return destinations;
     }
     
+    @Override
     public HashSet getServerDestinations() {
         return ResourceUtils.getServerDestinations(this.currentDM);
     }

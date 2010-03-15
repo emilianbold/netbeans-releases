@@ -72,6 +72,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-subversion-ui-update-UpdateAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateAction"/>
             </file>
+            <file name="org-netbeans-modules-subversion-ui-update-UpdateToAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateToAction"/>
+            </file>
             <file name="org-netbeans-modules-subversion-ui-commit-CommitAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.commit.CommitAction"/>
             </file>

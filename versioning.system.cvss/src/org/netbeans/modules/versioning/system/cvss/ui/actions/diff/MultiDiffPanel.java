@@ -73,6 +73,8 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -81,11 +83,8 @@ import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
@@ -93,7 +92,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
+class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -391,6 +390,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         super.addNotify();
         if (refreshTask != null) {
             CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
+            CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -424,6 +424,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     @Override
     public void removeNotify() {
         CvsVersioningSystem.getInstance().getStatusCache().removeVersioningListener(this);
+        if (refreshTask != null) {
+            CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        }
         super.removeNotify();
     }
     
@@ -441,6 +444,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                     refreshTask.schedule(0);
                 }
             }
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
         }
     }
     
@@ -475,11 +485,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
-                Node node = Node.EMPTY;
-                if (fileObj != null) {
-                    node = new AbstractNode(Children.LEAF, Lookups.singleton(fileObj));
-                }
-                tc.setActivatedNodes(new Node[] {node});
+                Node node = setups[currentModelIndex].getNode();
+                tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
             }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {
@@ -685,7 +692,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         for (int i = 0; i < newSetups.length; i++) {
             File file = files[i];
             newSetups[i] = new Setup(file, currentType);
-            newSetups[i].setNode(new DiffNode(newSetups[i]));
+            newSetups[i].setNode(new DiffNode(newSetups[i], new CvsFileNode(file)));
         }
         Arrays.sort(newSetups, new SetupsComparator());
 
@@ -770,7 +777,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         final int fi = i;
                         StreamSource ss1 = prepareSetups[fi].getFirstSource();
                         StreamSource ss2 = prepareSetups[fi].getSecondSource();
-                        final DiffController view = DiffController.create(ss1, ss2);  // possibly executing slow external diff
+                        final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                         view.addPropertyChangeListener(MultiDiffPanel.this);
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {

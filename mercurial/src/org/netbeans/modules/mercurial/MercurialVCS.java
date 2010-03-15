@@ -69,10 +69,13 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
 
     private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    private final static String PROP_PRIORITY = "Integer VCS.Priority"; //NOI18N
+    private final static Integer priority = Utils.getPriority("mercurial"); //NOI18N
     
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
+        putProperty(PROP_PRIORITY, priority);
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
 

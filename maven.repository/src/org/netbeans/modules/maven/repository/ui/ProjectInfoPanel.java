@@ -53,6 +53,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.IssueManagement;
@@ -72,6 +73,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.netbeans.modules.maven.repository.M2RepositoryBrowserTopComponent;
 
 /**
  *
@@ -87,6 +89,16 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         super(lookup);
         initComponents();
         btnCheckout.setIcon(null);
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.pnlCim.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.pnlIssues.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.pnlLicense.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.jPanel4.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.pnlMailingLists.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            this.pnlScm.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+        }
     }
 
     /** This method is called from within the constructor to
@@ -98,6 +110,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanel4 = new javax.swing.JPanel();
         lblProjectName = new javax.swing.JLabel();
@@ -127,6 +140,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         btnCimUrl = new javax.swing.JButton();
         pnlLicense = new javax.swing.JPanel();
         pnlMailingLists = new javax.swing.JPanel();
+
+        setLayout(new java.awt.BorderLayout());
 
         lblProjectName.setText(org.openide.util.NbBundle.getMessage(ProjectInfoPanel.class, "ProjectInfoPanel.lblProjectName.text")); // NOI18N
 
@@ -172,8 +187,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblIssues))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlIssuesLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
-                    .add(txtSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
+                    .add(btnIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+                    .add(txtSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlIssuesLayout.setVerticalGroup(
@@ -222,7 +237,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblDevConnection))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnScmUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+                    .add(btnScmUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
                     .add(pnlScmLayout.createSequentialGroup()
                         .add(pnlScmLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, txtDevConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
@@ -274,8 +289,8 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
                     .add(lblCimUrl))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pnlCimLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btnCimUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
-                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
+                    .add(btnCimUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+                    .add(txtCimSystem, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlCimLayout.setVerticalGroup(
@@ -304,20 +319,20 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMailingLists, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlMailingLists, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pnlLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4Layout.createSequentialGroup()
                         .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblProjectName)
                             .add(lblDescription))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-                            .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+                            .add(txtProjectName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)))
                     .add(jPanel4Layout.createSequentialGroup()
                         .add(lblProjectHome)
                         .add(18, 18, 18)
-                        .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE))
+                        .add(btnProjectHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlIssues, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlScm, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pnlCim, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -353,20 +368,28 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
         jScrollPane2.setViewportView(jPanel4);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 682, Short.MAX_VALUE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE))
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 551, Short.MAX_VALUE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
+
+        add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -376,6 +399,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private javax.swing.JButton btnIssues;
     private javax.swing.JButton btnProjectHome;
     private javax.swing.JButton btnScmUrl;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -408,7 +432,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new JToolBar();
+            toolbar = new M2RepositoryBrowserTopComponent.EditorToolbar();
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());

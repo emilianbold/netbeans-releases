@@ -152,20 +152,16 @@ public final class TableSorter extends AbstractTableModel {
     // key is either Class or Integer
     private Map<Object, Comparator> columnComparators = new HashMap<Object, Comparator>();
     private List<Directive> sortingColumns = new ArrayList<Directive>();
-
-    public TableSorter() {
-        this.mouseListener = new MouseHandler();
-        this.tableModelListener = new TableModelHandler();
-    }
+    private final IssueTable issueTable;
 
     public TableSorter(TableModel tableModel) {
-        this();
-        setTableModel(tableModel);
+        this(tableModel, null);
     }
 
-    public TableSorter(TableModel tableModel, JTableHeader tableHeader) {
-        this();
-        setTableHeader(tableHeader);
+    public TableSorter(TableModel tableModel, IssueTable issueTable) {
+        this.mouseListener = new MouseHandler();
+        this.tableModelListener = new TableModelHandler();
+        this.issueTable = issueTable;
         setTableModel(tableModel);
     }
 
@@ -475,6 +471,9 @@ public final class TableSorter extends AbstractTableModel {
                 status += e.isShiftDown() ? -1 : 1;
                 status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
                 setSortingStatus(column, status);
+                if(issueTable != null) {
+                    issueTable.sortOrderChanged();
+                }
             }
         }
     }

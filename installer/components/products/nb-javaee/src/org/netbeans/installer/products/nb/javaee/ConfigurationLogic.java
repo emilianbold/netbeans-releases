@@ -35,10 +35,18 @@
  */
 package org.netbeans.installer.products.nb.javaee;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -53,6 +61,7 @@ import org.netbeans.installer.utils.progress.Progress;
 public class ConfigurationLogic extends NbClusterConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+
     private static final String ENTERPRISE_CLUSTER =
             "{enterprise-cluster}"; // NOI18N
     //private static final String VISUALWEB_CLUSTER =
@@ -63,13 +72,12 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "WEBEE"; // NOI18N
     private static final String MOBILITY_END_2_END_KIT =
             "org-netbeans-modules-mobility-end2end-kit";
-    
     private static final String NB_JAVAME_UID = "nb-javame";
-    
     private static final String MOBILITY_CLUSTER =
             "{mobility-cluster}";
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+
     public ConfigurationLogic() throws InitializationException {
         super(new String[]{
                     ENTERPRISE_CLUSTER,
@@ -84,6 +92,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 getProduct().getDependencyByUid(BASE_IDE_UID);
         final Product nbProduct =
                 Registry.getInstance().getProducts(dependencies.get(0)).get(0);
+        final File installLocation = nbProduct.getInstallationLocation();
 
         for (Product product : Registry.getInstance().getInavoidableDependents(nbProduct)) {
             if (product.getUid().equals(NB_JAVAME_UID) && product.getStatus().equals(Status.INSTALLED)) {
@@ -95,5 +104,95 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 break;
             }
         }
+
+        //get bundled registry to perform further runtime integration
+        //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
+        Registry bundledRegistry = new Registry();
+        try {
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+
+            bundledRegistry.loadProductRegistry(
+                    (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+        } catch (InitializationException e) {
+            LogManager.log("Cannot load bundled registry", e);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.install.tomcat.integration")); // NOI18N
+
+            final List<Product> tomcats =
+                    Registry.getInstance().getProducts("tomcat");
+
+            Product productToIntegrate = null;
+            for (Product tomcat : tomcats) {
+                final Product bundledProduct = bundledRegistry.getProduct(
+                        tomcat.getUid(), tomcat.getVersion());
+                if (tomcat.getStatus() == Status.INSTALLED && bundledProduct != null) {
+                    final File location = tomcat.getInstallationLocation();
+                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                        productToIntegrate = tomcat;
+                        break;
+                    }
+                }
+            }
+            if (productToIntegrate == null) {
+                for (Product tomcat : tomcats) {
+                    if (tomcat.getStatus() == Status.INSTALLED) {
+                        final File location = tomcat.getInstallationLocation();
+                        if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                            productToIntegrate = tomcat;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (productToIntegrate != null) {
+                final File location = productToIntegrate.getInstallationLocation();
+                LogManager.log("... integrate " + nbProduct.getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
+                registerTomcat(installLocation, location);
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.tomcat.integration"), // NOI18N
+                    e);
+        }
+
     }
+
+    
+    private boolean registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String[] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeapis.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeserver.jar",
+            "enterprise/modules/org-netbeans-modules-tomcat5.jar"
+        };
+        for (String c : cp) {
+            File f = new File(nbLocation, c);
+            if (!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for Tomcat integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.tomcat5.registration.AutomaticRegistration";
+        List<String> commands = new ArrayList<String>();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add("--add");
+        commands.add(nbCluster.getAbsolutePath());
+        commands.add(tomcatLocation.getAbsolutePath());
+        
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
+    }    
 }

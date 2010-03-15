@@ -198,7 +198,7 @@ public class CommitTableModel extends AbstractTableModel {
                 String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
-                shortPath = nodes[rowIndex].getRelativePath();
+                shortPath = nodes[rowIndex].getLocation();
                 if (shortPath == null) {
                     shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }

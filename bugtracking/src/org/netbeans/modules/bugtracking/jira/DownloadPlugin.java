@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DownloadPlugin implements ActionListener {
+class DownloadPlugin implements ActionListener {
 
     private DownloadPanel panel;
     private JButton install;

@@ -137,6 +137,7 @@ public class ActionProviderImpl implements ActionProvider {
         result = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
     }
 
+    @Override
     public String[] getSupportedActions() {
         Set<String> supp = new HashSet<String>();
         supp.addAll( Arrays.asList( supported));
@@ -153,6 +154,7 @@ public class ActionProviderImpl implements ActionProvider {
         return supp.toArray(new String[0]);
     }
 
+    @Override
     public void invokeAction(final String action, final Lookup lookup) {
         if (COMMAND_DELETE.equals(action)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -174,6 +176,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     ActionProviderImpl.this.invokeAction(action, lookup);
                 }
@@ -265,6 +268,7 @@ public class ActionProviderImpl implements ActionProvider {
         task.addTaskListener(new TaskListener() {
 
             @SuppressWarnings("unchecked")
+            @Override
             public void taskFinished(Task task2) {
 //reload is done in executors
 //                NbMavenProject.fireMavenProjectReload(project);
@@ -313,6 +317,7 @@ public class ActionProviderImpl implements ActionProvider {
         bc.setTaskDisplayName(title);
     }
 
+    @Override
     public boolean isActionEnabled(String action, Lookup lookup) {
         if (COMMAND_DELETE.equals(action) ||
                 COMMAND_RENAME.equals(action) ||
@@ -376,6 +381,7 @@ public class ActionProviderImpl implements ActionProvider {
             }
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (provider != null) {
                 provider.invokeAction(actionid, context);
@@ -390,6 +396,7 @@ public class ActionProviderImpl implements ActionProvider {
             return false;
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new BasicAction((String) getValue(Action.NAME), actionid, actionContext);
         }
@@ -406,6 +413,7 @@ public class ActionProviderImpl implements ActionProvider {
             this.showUI = showUI;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (!showUI) {
                 ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null);
@@ -480,9 +488,11 @@ public class ActionProviderImpl implements ActionProvider {
             putValue(Action.NAME, NbBundle.getMessage(ActionProviderImpl.class, "LBL_Custom_Run"));
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
 
             final JMenu menu = new JMenu(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Custom_Run"));
@@ -492,6 +502,7 @@ public class ActionProviderImpl implements ActionProvider {
             /*using lazy construction strategy*/
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     NetbeansActionMapping[] maps = ActionToGoalUtils.getActiveCustomMappings(project);
                     for (int i = 0; i < maps.length; i++) {
@@ -504,6 +515,7 @@ public class ActionProviderImpl implements ActionProvider {
                     menu.add(new JMenuItem(createCustomMavenAction(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Custom_run_goals"), new NetbeansActionMapping())));
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             boolean selected = menu.isSelected();
                             menu.remove(loading);
@@ -525,9 +537,11 @@ public class ActionProviderImpl implements ActionProvider {
             putValue(Action.NAME, NbBundle.getMessage(ActionProviderImpl.class, "LBL_Profiles"));
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
 
             final JMenu menu = new JMenu(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Profiles"));
@@ -536,6 +550,7 @@ public class ActionProviderImpl implements ActionProvider {
             menu.add(loading);
             /*using lazy construction strategy*/
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     final ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
                     List<String> retrieveAllProfiles = profileHandler.getAllProfiles();
@@ -549,6 +564,7 @@ public class ActionProviderImpl implements ActionProvider {
                         final JCheckBoxMenuItem item = new JCheckBoxMenuItem(profile, mergedActiveProfiles.contains(profile));
                         menu.add(item);
                         item.setAction(new AbstractAction(profile) {
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 if (item.isSelected()) {
                                     profileHandler.enableProfile( profile, false);
@@ -564,6 +580,7 @@ public class ActionProviderImpl implements ActionProvider {
                         });
                     }
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             boolean selected = menu.isSelected();
                             menu.remove(loading);

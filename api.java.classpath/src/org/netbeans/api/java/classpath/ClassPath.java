@@ -212,7 +212,7 @@ public final class ClassPath {
      * Contains no entries and never fires events.
      * @since 1.24
      */
-    public static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    public static final ClassPath EMPTY = new ClassPath();
 
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
@@ -350,9 +350,30 @@ public final class ClassPath {
     private ClassPath (ClassPathImplementation impl) {
         if (impl == null)
             throw new IllegalArgumentException ();
+        this.propSupport = new PropertyChangeSupport(this);
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
+        caller = new IllegalArgumentException();
+    }
+
+    private ClassPath() {
+        this.propSupport = new PropertyChangeSupport(this) {
+            @Override
+            public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public void firePropertyChange(PropertyChangeEvent evt) {}
+        };
+        this.impl = new ClassPathImplementation() {
+            public List<? extends PathResourceImplementation> getResources() {
+                return Collections.emptyList();
+            }
+            public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        };
+        this.pListener = new SPIListener ();
         caller = new IllegalArgumentException();
     }
 
@@ -818,7 +839,7 @@ public final class ClassPath {
 
     //-------------------- Implementation details ------------------------//
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propSupport;
     
     
     /**

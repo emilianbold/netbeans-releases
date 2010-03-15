@@ -305,7 +305,7 @@ public class WebProjectUtilities {
         
         // #119052
         if (sourceLevel == null) {
-            sourceLevel = "1.5"; // NOI18N
+            sourceLevel = "1.6"; // NOI18N
         }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, new SpecificationVersion(sourceLevel));
         
@@ -626,8 +626,10 @@ public class WebProjectUtilities {
         
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel != null && sourceLevel.equals("1.7")) {
+            sourceLevel = "1.6";
+        }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper
@@ -721,6 +723,12 @@ public class WebProjectUtilities {
         
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
+
         // XXX the following just for testing, TBD:
         ep.setProperty(WebProjectProperties.DIST_DIR, "dist"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
@@ -738,6 +746,8 @@ public class WebProjectUtilities {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
         
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
+        ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
         
         ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
         

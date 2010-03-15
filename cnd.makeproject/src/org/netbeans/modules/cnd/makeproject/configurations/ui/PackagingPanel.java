@@ -48,7 +48,6 @@ import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -137,7 +136,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 }
             }
             // Copy edited list
-            Vector<PackagerInfoElement> editedList = packagingInfoPanel.getListData();
+            List<PackagerInfoElement> editedList = packagingInfoPanel.getListData();
             for (PackagerInfoElement elem : editedList) {
                 newList.add(elem);
             }

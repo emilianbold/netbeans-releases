@@ -26,9 +26,9 @@ jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 . "$script_dir"/env.sh
 
-"$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$2"
-
 "$script_dir"/unpack200.sh "$2" "$2" "$jdk_home"
+
+"$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$2"
 
 cd "$2"
 

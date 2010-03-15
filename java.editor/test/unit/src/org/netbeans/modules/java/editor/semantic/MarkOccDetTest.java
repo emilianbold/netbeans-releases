@@ -335,6 +335,21 @@ public class MarkOccDetTest extends TestBase {
         performTest("ExitPoints", 115, 22);
     }
 
+    public void testExoticIdentifiers1() throws Exception {
+        performTest("ExoticIdentifier", 3, 43);
+        performTest("ExoticIdentifier", 4, 20);
+        performTest("ExoticIdentifier", 5, 20);
+    }
+
+    public void testExoticIdentifiers2() throws Exception {
+        performTest("ExoticIdentifier", 3, 27);
+        performTest("ExoticIdentifier", 5, 12);
+    }
+
+    public void testExoticIdentifiers3() throws Exception {
+        performTest("ExoticIdentifier", 4, 28);
+    }
+
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }

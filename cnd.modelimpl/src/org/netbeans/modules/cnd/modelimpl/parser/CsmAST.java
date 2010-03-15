@@ -58,8 +58,8 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 public class CsmAST extends BaseAST implements Serializable {
 
     private static final long serialVersionUID = -1975495157952833337L;
-    
-    transient protected Token token = CsmToken.NIL;
+    private static final Token NIL = new APTBaseToken();
+    transient protected Token token = NIL;
 
     /** Creates a new instance of CsmAST */
     public CsmAST() {
@@ -77,12 +77,14 @@ public class CsmAST extends BaseAST implements Serializable {
     }
 
     public void initialize(AST t) {
-        if (t instanceof CsmAST)
+
+        if (t instanceof CsmAST) {
             token = ((CsmAST)t).token;
-        else {
-            token = new CsmToken();
-            token.setType(t.getType());
-            token.setText(t.getText());
+        } else {
+            assert false;
+//            token = new CsmToken();
+//            token.setType(t.getType());
+//            token.setText(t.getText());
         }
     }
 

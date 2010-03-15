@@ -330,7 +330,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-javac">
+            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
@@ -349,6 +349,106 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
+                        <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <!-- XXX #137060 likely needs to be fixed here -->
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">                            
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            </xsl:if>                            
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
+                                <xsl:attribute name="fork">yes</xsl:attribute>
+                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                            </xsl:if>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg value="-processorpath" />
+                            <compilerarg path="@{{processorpath}}" />
+                            <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg value="-s" />
+                            <compilerarg path="@{{apgeneratedsrcdir}}" />
+                            <compilerarg line="${{ap.proc.none.internal}}" />
+                            <customize/>
+                        </javac>
+                    </sequential>
+                </macrodef>
+            </target>
+            <target name="-init-macrodef-javac-without-processors" depends="-init-ap-cmdline-properties" unless="ap.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
@@ -380,10 +480,10 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
-                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">                            
+                            <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            </xsl:if>                            
+                            </xsl:if>
                             <xsl:attribute name="includes">@{includes}</xsl:attribute>
                             <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
@@ -408,6 +508,70 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
+            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
+                <macrodef> <!-- #36033, #85707 -->
+                    <xsl:attribute name="name">depend</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/carproject:data/carproject:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <depend>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="cache">${build.dir}/depcache</xsl:attribute>
+                            <xsl:attribute name="includes">${includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">${excludes}</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                        </depend>
+                    </sequential>
+                </macrodef>
+                <macrodef> <!-- #85707 -->
+                    <xsl:attribute name="name">force-recompile</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/car-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <fail unless="javac.includes">Must set javac.includes</fail>
+                        <!-- XXX one little flaw in this weird trick: does not work on folders. -->
+                        <pathconvert>
+                            <xsl:attribute name="property">javac.includes.binary</xsl:attribute>
+                            <xsl:attribute name="pathsep">,</xsl:attribute>
+                            <path>
+                                <filelist>
+                                    <xsl:attribute name="dir">@{destdir}</xsl:attribute>
+                                    <xsl:attribute name="files">${javac.includes}</xsl:attribute>
+                                </filelist>
+                            </path>
+                            <globmapper>
+                                <xsl:attribute name="from">*.java</xsl:attribute>
+                                <xsl:attribute name="to">*.class</xsl:attribute>
+                            </globmapper>
+                        </pathconvert>
+                        <delete>
+                            <files includes="${{javac.includes.binary}}"/>
+                        </delete>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="-init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
@@ -698,9 +862,33 @@ exists or setup the property manually. For example like this:
                 </fail>
                 <taskdef resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml" classpath="${{libs.CopyLibs.classpath}}"/>
             </target>
+            
+            <target name="-init-ap-cmdline-properties">
+                <property name="annotation.processing.enabled" value="true" />
+                <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.run.all.processors" value="true" />
+                <property name="javac.processorpath" value="${{javac.classpath}}" />
+                <property name="javac.test.processorpath" value="${{javac.test.classpath}}"/>
+                <condition property="ap.supported.internal" value="true">
+                    <not>
+                        <matches string="${{javac.source}}" pattern="1\.[0-5](\..*)?" />
+                    </not>
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline-supported" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
+                <condition property="ap.processors.internal" value="-processor ${{annotation.processing.processors.list}}" else="">
+                    <isfalse value="${{annotation.processing.run.all.processors}}" />
+                </condition>
+                <condition property="ap.proc.none.internal" value="-proc:none" else="">
+                    <isfalse value="${{annotation.processing.enabled}}" />
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline" depends="-init-ap-cmdline-properties,-init-ap-cmdline-supported">
+                <property name="ap.cmd.line.internal" value=""/>
+            </target>
 
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient,-init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-pre-init-am,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-debug-appclient,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -1363,6 +1551,7 @@ exists or setup the property manually. For example like this:
             
             <target name="-javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>

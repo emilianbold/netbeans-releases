@@ -39,54 +39,27 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.KenaiTopComponent;
-import org.netbeans.modules.kenai.ui.LoginHandleImpl;
-import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.treelist.TreeList;
-import org.netbeans.modules.kenai.ui.treelist.TreeListModel;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.kenai.ui.*;
+import org.netbeans.modules.kenai.ui.treelist.*;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 
 /**
@@ -137,7 +110,7 @@ public final class DashboardImpl extends Dashboard {
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private Kenai kenai = Utilities.getPreferredKenai();
 
     private PropertyChangeListener kenaiListener;
 
@@ -239,13 +212,16 @@ public final class DashboardImpl extends Dashboard {
 
     public void setKenai(Kenai kenai) {
         this.kenai = kenai;
-        final PasswordAuthentication newValue = kenai.getPasswordAuthentication();
+        final PasswordAuthentication newValue = kenai!=null?kenai.getPasswordAuthentication():null;
         if (newValue == null) {
             setUser(null);
         } else {
             setUser(new LoginHandleImpl(newValue.getUserName()));
         }
         refreshNonMemberProjects();
+        if (kenai==null) {
+            return;
+        }
 
         kenaiListener = new PropertyChangeListener() {
 
@@ -482,7 +458,7 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    void refreshMemberProjects(boolean force) {
+    public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
                 removeMemberProjectsFromModel(memberProjects);
@@ -605,6 +581,8 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
+        if (kenai==null)
+            return;
         String kenaiName = kenai.getUrl().getHost();
         Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName)?"":"-"+kenaiName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
@@ -687,6 +665,15 @@ public final class DashboardImpl extends Dashboard {
     public void bookmarkingFinished() {
         userNode.loadingFinished();
     }
+
+    public void deletingStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Deleting"));
+    }
+
+    public void deletingFinished() {
+        userNode.loadingFinished();
+    }
+
 
     private void loggingStarted() {
         userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Authenticating"));
