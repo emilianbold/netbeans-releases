@@ -271,12 +271,12 @@ public class RegisterDerby implements DatabaseRuntime {
         }
         try {
             ExecSupport ee= new ExecSupport();
-            ee.setStringToLookFor("" + getPort());
-            File javaExe = new File(System.getProperty("java.home"), "/bin/java");
+            ee.setStringToLookFor("" + getPort()); // NOI18N
+            File javaExe = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
             assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
             FileObject javaFO = FileUtil.toFileObject(javaExe);
             if (javaFO == null)
-                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound")); // NOI18N
             String java = FileUtil.toFile(javaFO).getAbsolutePath();
             
             // create the derby.properties file
