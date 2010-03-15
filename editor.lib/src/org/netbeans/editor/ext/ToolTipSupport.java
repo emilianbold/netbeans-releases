@@ -180,6 +180,10 @@ public class ToolTipSupport {
     private final Action HIDE_ACTION = new TextAction("tooltip-hide-action") { //NOI18N
         public @Override void actionPerformed(ActionEvent e) {
             ToolTipSupport.this.setToolTipVisible(false);
+            JTextComponent jtc = extEditorUI.getComponent();
+            if (jtc != null) {
+                Utilities.requestFocus(jtc);
+            }
         }
     };
 
@@ -523,10 +527,6 @@ public class ToolTipSupport {
                 }
 
                 setStatus(STATUS_HIDDEN);
-                JTextComponent jtc = extEditorUI.getComponent();
-                if (jtc != null) {
-                    jtc.requestFocusInWindow();
-                }
             }
         }
     }

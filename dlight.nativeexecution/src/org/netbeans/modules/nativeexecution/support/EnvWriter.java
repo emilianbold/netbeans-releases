@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,23 +54,22 @@ import org.openide.util.Exceptions;
 public final class EnvWriter {
 
     private final OutputStream os;
+    private final boolean remote;
 
-    public EnvWriter(OutputStream os) {
+    public EnvWriter(final OutputStream os, final boolean remote) {
         this.os = os;
-    }
-
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset"); // NOI18N
-    /*package*/static String getCharSet() {
-        return remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
+        this.remote = remote;
     }
     
-    public static byte[] getBytesWithRemoteCharset(String str) {
-        final String charSet = getCharSet();
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return str.getBytes(charSet);
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
+    public static byte[] getBytes(String str, boolean remote) {
+        if (remote) {
+            final String charSet = ProcessUtils.getRemoteCharSet();
+            if (java.nio.charset.Charset.isSupported(charSet)) {
+                try {
+                    return str.getBytes(charSet);
+                } catch (UnsupportedEncodingException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         return str.getBytes();
@@ -93,7 +93,7 @@ public final class EnvWriter {
                 value = entry.getValue();
 
                 if (value != null) {
-                    os.write(getBytesWithRemoteCharset(name + "=\"" + value + "\" && export " + name + "\n")); // NOI18N
+                    os.write(getBytes(name + "=\"" + value + "\" && export " + name + "\n", remote)); // NOI18N
                     os.flush();
                 }
             }

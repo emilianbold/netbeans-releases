@@ -27,6 +27,16 @@ public final class TerminalPanel extends javax.swing.JPanel {
 	RP,
     }
 
+    public static enum Execution {
+	RICH,
+	NATIVE,
+    }
+
+    public static enum IOShuttling {
+	INTERNAL,
+	EXTERNAL,
+    }
+
     /** Creates new form TerminalPanel */
     public TerminalPanel() {
         initComponents();
@@ -57,8 +67,22 @@ public final class TerminalPanel extends javax.swing.JPanel {
 	    return DispatchThread.RP;
     }
 
+    public Execution getExecution() {
+	if (executionRadioButton_RICH.isSelected())
+	    return Execution.RICH;
+	else
+	    return Execution.NATIVE;
+    }
+
     public boolean isRestartable() {
 	return restartableCheckBox.isSelected();
+    }
+
+    public IOShuttling getIOShuttling() {
+	if (ioShutlingRadioButton_INTERNAL.isSelected())
+	    return IOShuttling.INTERNAL;
+	else
+	    return IOShuttling.EXTERNAL;
     }
 
     /** This method is called from within the constructor to
@@ -76,6 +100,8 @@ public final class TerminalPanel extends javax.swing.JPanel {
                 containerProviderButtonGroup = new javax.swing.ButtonGroup();
                 ioProviderButtonGroup = new javax.swing.ButtonGroup();
                 threadButtonGroup = new javax.swing.ButtonGroup();
+                executionButtonGroup = new javax.swing.ButtonGroup();
+                ioShuttlingButtonGroup = new javax.swing.ButtonGroup();
                 commandLabel = new javax.swing.JLabel();
                 commandTextField = new javax.swing.JTextField();
                 containerProviderLabel = new javax.swing.JLabel();
@@ -89,6 +115,12 @@ public final class TerminalPanel extends javax.swing.JPanel {
                 rpRadioButton = new javax.swing.JRadioButton();
                 restartableLabel = new javax.swing.JLabel();
                 restartableCheckBox = new javax.swing.JCheckBox();
+                excutionLabel = new javax.swing.JLabel();
+                executionRadioButton_RICH = new javax.swing.JRadioButton();
+                excutionRadioButton_NATIVE = new javax.swing.JRadioButton();
+                ioShuttlingLabel = new javax.swing.JLabel();
+                ioShutlingRadioButton_INTERNAL = new javax.swing.JRadioButton();
+                ioShuttlingRadioButton_EXTERNAL = new javax.swing.JRadioButton();
 
                 commandLabel.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.commandLabel.text")); // NOI18N
 
@@ -122,42 +154,75 @@ public final class TerminalPanel extends javax.swing.JPanel {
                 rpRadioButton.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.rpRadioButton.text")); // NOI18N
 
                 restartableLabel.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.restartableLabel.text")); // NOI18N
+                restartableLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.restartableLabel.toolTipText")); // NOI18N
 
                 restartableCheckBox.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.restartableCheckBox.text")); // NOI18N
+
+                excutionLabel.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.excutionLabel.text")); // NOI18N
+
+                executionButtonGroup.add(executionRadioButton_RICH);
+                executionRadioButton_RICH.setSelected(true);
+                executionRadioButton_RICH.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.executionRadioButton_RICH.text")); // NOI18N
+
+                executionButtonGroup.add(excutionRadioButton_NATIVE);
+                excutionRadioButton_NATIVE.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.excutionRadioButton_NATIVE.text")); // NOI18N
+
+                ioShuttlingLabel.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.ioShuttlingLabel.text")); // NOI18N
+
+                ioShuttlingButtonGroup.add(ioShutlingRadioButton_INTERNAL);
+                ioShutlingRadioButton_INTERNAL.setSelected(true);
+                ioShutlingRadioButton_INTERNAL.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.ioShutlingRadioButton_INTERNAL.text")); // NOI18N
+
+                ioShuttlingButtonGroup.add(ioShuttlingRadioButton_EXTERNAL);
+                ioShuttlingRadioButton_EXTERNAL.setText(org.openide.util.NbBundle.getMessage(TerminalPanel.class, "TerminalPanel.ioShuttlingRadioButton_EXTERNAL.text")); // NOI18N
 
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
                 this.setLayout(layout);
                 layout.setHorizontalGroup(
                         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(restartableLabel)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(jLabel1))
-                                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                        .addComponent(threadLabel)
-                                                        .addComponent(containerProviderLabel)
-                                                        .addComponent(commandLabel))))
-                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(containerProviderRadioButton_DEFAULT)
+                                                .addContainerGap()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                                        .addComponent(containerProviderLabel)
+                                                                        .addComponent(commandLabel))
+                                                                .addComponent(jLabel1)
+                                                                .addComponent(ioShuttlingLabel))
+                                                        .addComponent(excutionLabel))
                                                 .addGap(18, 18, 18)
-                                                .addComponent(containerProviderRadioButton_TERM))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(ioShutlingRadioButton_INTERNAL)
+                                                                .addGap(18, 18, 18)
+                                                                .addComponent(ioShuttlingRadioButton_EXTERNAL))
+                                                        .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(containerProviderRadioButton_DEFAULT)
+                                                                .addGap(18, 18, 18)
+                                                                .addComponent(containerProviderRadioButton_TERM))
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(executionRadioButton_RICH)
+                                                                        .addComponent(ioProviderRadioButton_DEFAULT))
+                                                                .addGap(18, 18, 18)
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(excutionRadioButton_NATIVE)
+                                                                        .addComponent(ioProviderRadioButton_TERM)
+                                                                        .addComponent(rpRadioButton)))))
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(threadRadioButton_EDT)
-                                                .addGap(43, 43, 43)
-                                                .addComponent(rpRadioButton))
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addComponent(ioProviderRadioButton_DEFAULT)
+                                                .addGap(57, 57, 57)
+                                                .addComponent(restartableLabel)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(ioProviderRadioButton_TERM))
-                                        .addComponent(restartableCheckBox))
-                                .addContainerGap(88, Short.MAX_VALUE))
+                                                .addComponent(restartableCheckBox))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGap(84, 84, 84)
+                                                .addComponent(threadLabel)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(threadRadioButton_EDT)))
+                                .addContainerGap(208, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
                         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -176,16 +241,26 @@ public final class TerminalPanel extends javax.swing.JPanel {
                                         .addComponent(jLabel1)
                                         .addComponent(ioProviderRadioButton_DEFAULT)
                                         .addComponent(ioProviderRadioButton_TERM))
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(ioShuttlingLabel)
+                                        .addComponent(ioShutlingRadioButton_INTERNAL)
+                                        .addComponent(ioShuttlingRadioButton_EXTERNAL))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(excutionLabel)
+                                        .addComponent(executionRadioButton_RICH)
+                                        .addComponent(excutionRadioButton_NATIVE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(threadLabel)
                                         .addComponent(threadRadioButton_EDT)
                                         .addComponent(rpRadioButton))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(restartableLabel)
                                         .addComponent(restartableCheckBox))
-                                .addContainerGap(22, Short.MAX_VALUE))
+                                .addContainerGap())
                 );
         }// </editor-fold>//GEN-END:initComponents
 
@@ -197,9 +272,17 @@ public final class TerminalPanel extends javax.swing.JPanel {
         private javax.swing.JLabel containerProviderLabel;
         private javax.swing.JRadioButton containerProviderRadioButton_DEFAULT;
         private javax.swing.JRadioButton containerProviderRadioButton_TERM;
+        private javax.swing.JLabel excutionLabel;
+        private javax.swing.JRadioButton excutionRadioButton_NATIVE;
+        private javax.swing.ButtonGroup executionButtonGroup;
+        private javax.swing.JRadioButton executionRadioButton_RICH;
         private javax.swing.ButtonGroup ioProviderButtonGroup;
         private javax.swing.JRadioButton ioProviderRadioButton_DEFAULT;
         private javax.swing.JRadioButton ioProviderRadioButton_TERM;
+        private javax.swing.JRadioButton ioShutlingRadioButton_INTERNAL;
+        private javax.swing.ButtonGroup ioShuttlingButtonGroup;
+        private javax.swing.JLabel ioShuttlingLabel;
+        private javax.swing.JRadioButton ioShuttlingRadioButton_EXTERNAL;
         private javax.swing.JLabel jLabel1;
         private javax.swing.ButtonGroup providerButtonGroup;
         private javax.swing.JCheckBox restartableCheckBox;
