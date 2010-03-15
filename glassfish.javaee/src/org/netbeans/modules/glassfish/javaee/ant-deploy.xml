@@ -42,7 +42,10 @@
         </jar>
         <delete dir="${gfv3.resources.dir}"/>
     </target>
-    <target name="-deploy-ant" depends="-parse-sun-web,-no-parse-sun-web,-add-resources,-deploy-with-pw,-deploy-without-pw" if="deploy.ant.enabled"/>
+    <target name="-deploy-ant" depends="-parse-sun-web,-no-parse-sun-web,-add-resources" if="deploy.ant.enabled">
+        <antcall target="-deploy-without-pw"/>
+        <antcall target="-deploy-with-pw"/>
+    </target>
 
     <target name="-deploy-without-pw" unless="gfv3.password">
         <echo message="Deploying ${deploy.ant.archive}"/>
@@ -60,16 +63,19 @@
             dest="${gfv3.results.file}"/>
         <delete file="${gfv3.results.file}"/>
     </target>
-    <target name="-undeploy-ant" depends="-init-cl-deployment-env, -undeploy-with-pw, -undeploy-without-pw" if="deploy.ant.enabled"/>
+    <target name="-undeploy-ant" depends="-init-cl-deployment-env" if="deploy.ant.enabled">
+        <antcall target="-undeploy-without-pw"/>
+        <antcall target="-undeploy-with-pw"/>
+    </target>
 
-    <target name="-undeploy-without-pw">
+    <target name="-undeploy-without-pw" unless="gfv3.password">
         <echo message="Undeploying ${deploy.ant.archive}"/>
         <tempfile prefix="gfv3" property="gfv3.results.file" destdir="${java.io.tmpdir}"/>  <!-- do not forget to delete this! -->
         <get src="${gfv3.admin.url}/__asadmin/undeploy?name=${ant.project.name}"
             dest="${gfv3.results.file}"/>
         <delete file="${gfv3.results.file}"/>    
     </target>
-    <target name="-undeploy-with-pw">
+    <target name="-undeploy-with-pw" if="gfv3.password">
         <echo message="Undeploying ${deploy.ant.archive}"/>
         <tempfile prefix="gfv3" property="gfv3.results.file" destdir="${java.io.tmpdir}"/>  <!-- do not forget to delete this! -->
         <get username="${gfv3.username}" password="${gfv3.password}" src="${gfv3.admin.url}/__asadmin/undeploy?name=${ant.project.name}"
