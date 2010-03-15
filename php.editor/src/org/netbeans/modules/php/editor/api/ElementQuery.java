@@ -136,6 +136,7 @@ public interface ElementQuery {
 
         public LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
 
+        public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
         /**
          * @return all extended classes (see method getInheritedClasses) + implemented interfaces (see method getInheritedInterfaces)
          * recursively
