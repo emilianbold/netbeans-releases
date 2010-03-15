@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="smarty_delimiter" foreColor="bf0101">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="comment"  default="smarty"/>
+    <fontcolor name="comment"  default="smarty" foreColor="969696"/>
 
     <!-- colors for LOW-LEVEL lexer -->
     <fontcolor name="pipe" foreColor="FF9300">
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="php_variable" foreColor="6D3206"/>
     <fontcolor name="config_variable" foreColor="FF0000"/>
-    <fontcolor name="error" default="smarty" foreColor="FF0000"/>
+    <fontcolor name="error" default="smarty" waveUnderlined="red"/>
     <fontcolor name="variable_modifier" foreColor="C6CA34" />
     <fontcolor name="string" default="string" />
     <fontcolor name="smarty_operator" default="operator" />
