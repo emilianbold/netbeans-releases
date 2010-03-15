@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -227,7 +228,20 @@ public final class DocumentView extends EditorBoxView
 
     @Override
     public float getPreferredSpan(int axis) {
+        if (lineWrapType == null) {
+            return 0f; // Return zero until parent and etc. gets initialized
+        }
         return super.getPreferredSpan(axis);
+    }
+
+    @Override
+    protected void setMajorAxisSpan(double majorAxisSpan) {
+        super.setMajorAxisSpan(majorAxisSpan);
+    }
+
+    @Override
+    protected void setMinorAxisSpan(float minorAxisSpan) {
+        super.setMinorAxisSpan(minorAxisSpan);
     }
 
     public Object getMonitor() {
@@ -324,8 +338,38 @@ public final class DocumentView extends EditorBoxView
         }
     }
 
+    void recomputeSpans() {
+        int viewCount = getViewCount();
+        boolean heightChange = false;
+        float origWidth = getMinorAxisSpan();
+        float newWidth = 0f;
+        for (int i = 0; i < viewCount; i++) {
+            ParagraphView paragraphView = (ParagraphView) getEditorView(i);
+            double origChildWidth = paragraphView.getMajorAxisSpan();
+            float origChildHeight = paragraphView.getMinorAxisSpan();
+            paragraphView.recomputeSpans();
+            double childWidth = paragraphView.getMajorAxisSpan();
+            boolean childWidthChange = (origChildWidth != childWidth);
+            if (childWidth > newWidth) {
+                newWidth = (float) childWidth;
+            }
+            boolean childHeightChange = (origChildHeight != paragraphView.getMinorAxisSpan());
+            heightChange |= childHeightChange;
+            // Call preference change so that child's major axis span gets updated
+            preferenceChanged(i, childWidthChange, childHeightChange, false);
+        }
+        boolean widthChange = (origWidth != newWidth);
+        if (widthChange) {
+            setMinorAxisSpan(newWidth);
+        }
+        if (widthChange || heightChange) {
+            preferenceChanged(null, widthChange, heightChange);
+        }
+    }
+
     private void updateVisibleWidth() {
         Component parent = textComponent.getParent();
+        float newWidth;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             if (listeningOnViewport != viewport) {
@@ -335,15 +379,14 @@ public final class DocumentView extends EditorBoxView
                 viewport.addChangeListener(this);
                 listeningOnViewport = viewport;
             }
-            float newWidth = viewport.getExtentSize().width;
-            if (newWidth != visibleWidth) {
-                visibleWidth = newWidth;
-                if (getLineWrapType() != LineWrapType.NONE) {
-                    reinitViews();
-                }
-            }
+            newWidth = viewport.getExtentSize().width;
         } else {
-            visibleWidth = textComponent.getWidth();
+            newWidth = textComponent.getWidth();
+        }
+
+        if (newWidth != visibleWidth) {
+            visibleWidth = newWidth;
+            recomputeSpans();
         }
     }
 
@@ -458,6 +501,13 @@ public final class DocumentView extends EditorBoxView
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Font: " + defaultFont + "\nline-height=" + defaultLineHeight + // NOI18N
+                        ", ascent=" + textLayout.getAscent() + ", descent=" + textLayout.getDescent() + // NOI18N
+                        ", leading=" + textLayout.getLeading() + "\nchar-width=" + defaultCharWidth + // NOI18N
+                        ", underlineOffset=" + defaultUnderlineOffset + // NOI18N
+                        ", font-metrics-height=" + textComponent.getFontMetrics(defaultFont).getHeight()); // NOI18N
+            }
         }
     }
 

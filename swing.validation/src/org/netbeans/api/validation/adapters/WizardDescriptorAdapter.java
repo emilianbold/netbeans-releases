@@ -55,11 +55,13 @@ public class WizardDescriptorAdapter implements ValidationUI {
         this.wiz = d;
     }
 
+    @Override
     public void clearProblem() {
         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wiz.setValid(true);
     }
 
+    @Override
     public void setProblem(Problem p) {
         switch (p.severity()) {
             case INFO :

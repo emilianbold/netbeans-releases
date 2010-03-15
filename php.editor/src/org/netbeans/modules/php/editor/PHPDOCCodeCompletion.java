@@ -147,7 +147,7 @@ public class PHPDOCCodeCompletion {
         return false;
     }
 
-    public static void complete(List<CompletionProposal> proposals,
+    public static void complete(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
         
         
@@ -161,7 +161,7 @@ public class PHPDOCCodeCompletion {
         for (String tag : TAGS){
             if (tag.startsWith(prefix)){
                 PHPDOCCodeCompletionItem item = new PHPDOCCodeCompletionItem(request, tag);
-                proposals.add(item);
+                completionResult.add(item);
             }
         }
     }

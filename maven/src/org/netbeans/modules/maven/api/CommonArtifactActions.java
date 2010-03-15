@@ -163,6 +163,7 @@ public class CommonArtifactActions {
             putValue(NAME, NbBundle.getMessage(ShowArtifactAction.class, "ACT_View_Details"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String hint = (String) getValue("PANEL_HINT"); //NOI18N
             ArtifactViewer.showArtifactViewer(artifact, repos, hint);
