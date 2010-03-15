@@ -119,14 +119,19 @@ public class ParagraphView extends EditorBoxView {
     @Override
     public void setParent(View parent) {
         super.setParent(parent);
-        // Set minor axis span to default line height since this way there should be no need
-        // to notify parent about preferenceChange
+        // Set minor axis span to default line height here when children
+        // are not initialized yet since this way there should be no need
+        // to notify parent about preferenceChange later (unless there's e.g. a word wrap).
         if (parent instanceof EditorBoxView) {
             DocumentView documentView = getDocumentView();
             if (documentView != null) {
                 setMinorAxisSpan(documentView.getDefaultLineHeight());
             }
         }
+    }
+
+    void recomputeSpans() {
+        ((ParagraphViewChildren)children).recomputeSpans(this);
     }
 
     @Override
