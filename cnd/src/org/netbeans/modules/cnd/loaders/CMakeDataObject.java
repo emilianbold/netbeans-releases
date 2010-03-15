@@ -68,7 +68,7 @@ public class CMakeDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new CMakeDataNode(this, Children.LEAF, getLookup());
+        return new CMakeDataNode(this, Children.LEAF);
     }
 
     @Override
@@ -78,8 +78,8 @@ public class CMakeDataObject extends MultiDataObject {
 
     private static class CMakeDataNode extends DataNode {
         /** Construct the DataNode */
-        public CMakeDataNode(CMakeDataObject obj, Children ch, Lookup lookup) {
-            super(obj, ch, lookup);
+        public CMakeDataNode(CMakeDataObject obj, Children ch) {
+            super(obj, ch, obj.getLookup());
         }
 
         /** Get the support for methods which need it */
