@@ -90,13 +90,13 @@ public class RegisterDerby implements DatabaseRuntime {
     static Process process = null;
     
     /** Creates a new instance of RegisterDerby */
-    private RegisterDerby() {
-        DerbyActivator.activate();
-    }
+    private RegisterDerby() {}
     
     public static synchronized RegisterDerby getDefault(){
-        if (reg==null)
+        if (reg==null) {
             reg= new RegisterDerby();
+            DerbyActivator.activate();
+        }
         return reg;
     }
     
