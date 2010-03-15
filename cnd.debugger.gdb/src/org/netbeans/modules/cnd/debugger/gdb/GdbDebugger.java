@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,6 +109,7 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -2865,14 +2867,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
     public String getCharSetEncoding() {
         String encoding;
         if (execEnv.isRemote()) {
-            encoding = remoteCharSet;
+            encoding = ProcessUtils.getRemoteCharSet();
         } else {
-            // TODO: use Charset.defaultCharset().name(), but now leave as is...
-            encoding = System.getProperty("sun.jnu.encoding");
+            encoding = Charset.defaultCharset().name();
         }
         return encoding;
     }

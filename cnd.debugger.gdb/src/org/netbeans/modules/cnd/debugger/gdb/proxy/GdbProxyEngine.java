@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -156,7 +157,7 @@ public class GdbProxyEngine {
         final NativeProcess proc = npb.call();
         debuggerPid = proc.getPID();
         // for remote execution we need to convert encoding
-        toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream());
+        toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
             public void run() {
@@ -202,29 +203,21 @@ public class GdbProxyEngine {
         debugger.finish(false);
     }
 
-    private static BufferedReader getReader(final InputStream is, String charSet) {
-        // set charset
-        try {
-            return new BufferedReader(new InputStreamReader(is, charSet));
-        } catch (UnsupportedEncodingException ex) {
-            // this is possible situation
-        }
-        return new BufferedReader(new InputStreamReader(is));
-    }
-    
-    private static PrintStream getPrintStream(final OutputStream os, String charSet) {
-        // set charset
-        try {
-            return new PrintStream(os, true, charSet);
-        } catch (UnsupportedEncodingException ex) {
-            // this is possible situation
+    private static PrintStream getPrintStream(final OutputStream os, boolean remote) {
+        if (remote) {
+            // set charset
+            try {
+                return new PrintStream(os, true, ProcessUtils.getRemoteCharSet());
+            } catch (UnsupportedEncodingException ex) {
+                // this is possible situation
+            }
         }
         return new PrintStream(os, true);
     }
 
-    private PrintStream toGdbWriter(InputStream is, OutputStream os) {
-        PrintStream togdb = getPrintStream(os, debugger.getCharSetEncoding());
-        final BufferedReader fromGdb = getReader(is, debugger.getCharSetEncoding());
+    private PrintStream toGdbWriter(InputStream is, OutputStream os, boolean remote) {
+        PrintStream togdb = getPrintStream(os, remote);
+        final BufferedReader fromGdb = ProcessUtils.getReader(is, remote);
 
         gdbReader = new RequestProcessor("GdbReaderRP").post(new Runnable() { // NOI18N
             public void run() {
