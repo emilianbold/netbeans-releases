@@ -213,11 +213,6 @@ public abstract class EditorBoxView extends EditorView {
         return children.getViewMajorAxisSpan(this, index);
     }
 
-    @Override
-    public void setParent(View parent) {
-        super.setParent(parent);
-    }
-    
     public void releaseChildren() {
         if (children != null) {
             children = null;
