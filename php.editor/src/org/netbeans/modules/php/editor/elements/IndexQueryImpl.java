@@ -484,21 +484,29 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public final Set<MethodElement> getMethods(final NameKind.Exact typeQuery, final NameKind methodQuery) {
+        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE));
+    }
+
+    private final Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         //two queries: once for classes, second for ifaces
-        final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
-                new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : clzResults) {
-            for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.CLASS)) {
+            final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : clzResults) {
+                for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
             }
         }
-        final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
-                new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : ifaceResults) {
-            for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.IFACE)) {
+            final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : ifaceResults) {
+                for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -626,21 +634,29 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public Set<TypeConstantElement> getTypeConstants(NameKind.Exact typeQuery, NameKind constantQuery) {
+        return getTypeConstantsImpl(typeQuery, constantQuery, EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE));
+    }
+
+    private Set<TypeConstantElement> getTypeConstantsImpl(NameKind.Exact typeQuery, NameKind constantQuery, EnumSet<PhpElementKind> typeKinds) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         //two queries: once for classes, second for ifaces
-        final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
-                new String[]{ClassElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : clzResults) {
-            for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.CLASS)) {
+            final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{ClassElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : clzResults) {
+                for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+                }
             }
         }
-        final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
-                new String[]{InterfaceElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : ifaceResults) {
-            for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.IFACE)) {
+            final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{InterfaceElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : ifaceResults) {
+                for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -747,7 +763,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(retval);
     }
 
-    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypesWithMembers(final TypeElement typeElement,
+    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypeMembers(final TypeElement typeElement,
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
@@ -758,13 +774,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(superClassName), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                                    getMethodsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                         case FIELD:
                             directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(superClassName), NameKind.empty())));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(superClassName), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                                    getTypeConstantsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                     }
                 }
@@ -777,13 +795,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(iface), NameKind.empty())));
-                            break;
-                        case FIELD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(iface), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(iface), NameKind.empty(), 
+                                    EnumSet.of(PhpElementKind.IFACE))));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(iface), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
+                                    EnumSet.of(PhpElementKind.IFACE))));
                             break;
                     }
                 }
@@ -922,7 +939,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             LinkedHashSet<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         if (recursionPrevention.add(typeElement)) {
             final LinkedHashSet<TypeMemberElement> typeMembers =
-                    getDirectInheritedTypesWithMembers(typeElement, typeKinds, memberKinds);
+                    getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
             retval.addAll(forComparingNameKinds(retval).reverseFilter(typeMembers));
             for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
