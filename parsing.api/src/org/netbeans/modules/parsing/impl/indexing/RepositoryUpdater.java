@@ -2740,7 +2740,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                     nextBinRoots2Deps.putAll(depCtx.newBinaries2InvDeps);
                     controller.binRoots2Dependencies = Collections.unmodifiableMap(nextBinRoots2Deps);
                 }
-                
+
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
@@ -2830,13 +2830,27 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             }
 
             boolean finished = scanBinaries(depCtx);
-            if (finished) {                
+            if (finished) {
                 finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
             }
 
+            final List<URL> missingRoots = new LinkedList<URL>();
             for(URL root : depCtx.scannedRoots) {
                 List<URL> deps = depCtx.newRoots2Deps.get(root);
+                if (deps == null) {
+                    //binDeps not a part of newRoots2Deps, cycle in dependencies?
+                    //rescue by EMPTY_DEPS and log
+                    deps = EMPTY_DEPS;
+                    missingRoots.add(root);
+                }
                 scannedRoots2Dependencies.put(root, deps);
+            }
+            if (!missingRoots.isEmpty()) {
+                StringBuilder log = new StringBuilder("Missing dependencies for roots: ");  //NOI18N
+                printCollection(missingRoots, log);
+                log.append("Context:");    //NOI18N
+                log.append(depCtx);
+                LOGGER.info(log.toString());
             }
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
 
@@ -2860,7 +2874,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
                 controller.roots2Dependencies = Collections.unmodifiableMap(scannedRoots2Dependencies);
                 controller.binRoots2Dependencies = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
             }
-           
+
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
 
             final Level logLevel = Level.FINE;
@@ -3600,7 +3614,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             sb.append("  initialRoots2Deps(").append(initialRoots2Deps.size()).append(")=\n"); //NOI18N
             printMap(initialRoots2Deps, sb);
             sb.append("  initialBinaries(").append(initialBinaries2InvDeps.size()).append(")=\n"); //NOI18N
-            printCollection(initialBinaries2InvDeps.keySet(), sb);
+            printMap(initialBinaries2InvDeps, sb);
             sb.append("  oldRoots(").append(oldRoots.size()).append(")=\n"); //NOI18N
             printCollection(oldRoots, sb);
             sb.append("  oldBinaries(").append(oldBinaries.size()).append(")=\n"); //NOI18N
@@ -3656,7 +3670,7 @@ public final class RepositoryUpdater implements PathRegistryListener, FileChange
             super();
             RepositoryUpdater.this.start(false);
         }
-        
+
         @Override
         public void enterProtectedMode() {
             getWorker().enterProtectedMode();
