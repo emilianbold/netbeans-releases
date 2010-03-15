@@ -141,7 +141,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
         if (length <= 0) {
             throw new IllegalStateException("startOffset=" + startOffset // NOI18N
-                    + ", length=" + length + "highlight: <" + highlightStartOffset // NOI18N
+                    + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
                     + "," + highlightEndOffset // NOI18N
                     + ">, newlineOffset=" + newlineOffset); // NOI18N
         }

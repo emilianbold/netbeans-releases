@@ -40,37 +40,25 @@ package org.netbeans.modules.nativeexecution.support;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 public final class EnvReader implements Callable<Map<String, String>> {
 
     private final InputStream is;
+    private final boolean remote;
 
-    public EnvReader(final InputStream is) {
+    public EnvReader(final InputStream is, final boolean remote) {
         this.is = is;
-    }
-    
-    private BufferedReader getReader(final InputStream is) {
-        final String charSet = EnvWriter.getCharSet(); // NOI18N
-        // set charset
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return new BufferedReader(new InputStreamReader(is, charSet));
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return new BufferedReader(new InputStreamReader(is));
+        this.remote = remote;
     }
 
+    @Override
     public Map<String, String> call() throws Exception {
         Map<String, String> result = new HashMap<String, String>();
-        BufferedReader br = getReader(is);
+        BufferedReader br = ProcessUtils.getReader(is, remote);
         String s = null;
         StringBuilder buffer = new StringBuilder();
 

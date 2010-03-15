@@ -70,6 +70,6 @@ public class CmdTermAction extends AbstractAction {
 
         boolean restartable = true;
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeCommand(iop, container, cmd, restartable);
+	support.executeRichCommand(iop, container, cmd, restartable, true);
     }
 }

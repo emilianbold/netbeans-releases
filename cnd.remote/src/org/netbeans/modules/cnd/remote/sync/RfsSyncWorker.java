@@ -46,9 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -65,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -140,34 +139,6 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset"); // NOI18N
-
-    private BufferedReader getReader(final InputStream is) {
-        final String charSet = remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
-        // set charset
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return new BufferedReader(new InputStreamReader(is, charSet));
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return new BufferedReader(new InputStreamReader(is));
-    }
-
-    private PrintWriter getWriter(final OutputStream os) {
-        final String charSet = remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
-        // set charset
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return new PrintWriter(new OutputStreamWriter(os, charSet));
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return  new PrintWriter(os);
-    }
-
     private void startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
         String remoteControllerPath;
         String ldLibraryPath;
@@ -195,8 +166,8 @@ import org.openide.util.RequestProcessor;
 
         final InputStream rcInputStream = remoteControllerProcess.getInputStream();
         final OutputStream rcOutputStream = remoteControllerProcess.getOutputStream();
-        final BufferedReader rcInputStreamReader = getReader(rcInputStream);
-        final PrintWriter rcOutputStreamWriter = getWriter(rcOutputStream);
+        final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
+        final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
                 executionEnvironment, files, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
