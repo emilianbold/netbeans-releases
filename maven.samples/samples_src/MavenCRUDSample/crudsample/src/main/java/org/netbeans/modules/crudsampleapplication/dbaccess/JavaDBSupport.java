@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class JavaDBSupport {
     public static final String JAVADB_HOME = "javadb.home";
@@ -61,7 +62,7 @@ public class JavaDBSupport {
 
     private static void startDB() throws IOException {
             String java = null;
-            File javaExecuble = new File(System.getProperty("java.home"), "/bin/java");
+            File javaExecuble = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
             if (javaExecuble != null && javaExecuble.exists()) {
                 if (javaExecuble.canExecute()) {
                     java = javaExecuble.getAbsolutePath();
