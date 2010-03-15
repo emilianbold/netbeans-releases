@@ -220,6 +220,9 @@ made subject to such option by the copyright holder.
                 <attr name="extends" stringvalue="SunStudio"/>
             </file>
             <!-- General SunStudio -->
+            <file name="OracleSolarisStudio.xml" url="toolchain/OracleSolarisStudio.xml">
+                <attr name="position" intvalue="1908"/>
+            </file>
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
                 <attr name="position" intvalue="1910"/>
             </file>

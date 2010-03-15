@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio_12.2" display="Sun Studio 12.2 Compiler Collection" family="SunStudio"/>
+    <toolchain name="OracleSolarisStudio_12.2" display="Oracle Solaris Studio 12.2 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
         <platform os="linux" directory="/opt/sun/sunstudio12.2/bin"/>
