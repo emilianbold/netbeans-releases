@@ -62,7 +62,7 @@ public class PathUtils {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
             final NativeProcess process = npb.call();
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader br = ProcessUtils.getReader(process.getInputStream(), execEnv.isRemote());
             String line = br.readLine(); // just read 1st line...
             br.close();
             if (line != null) {
