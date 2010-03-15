@@ -431,6 +431,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         productParameter.setAlwaysDisabled(true);
     }
 
+    protected void selectFirstProduct() {
+        if(panel.productList.getModel().getSize() > 0) {
+            panel.productList.setSelectedIndex(0);
+        }
+    }
+
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }
