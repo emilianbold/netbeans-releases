@@ -176,6 +176,10 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 return false; //cannot properly map back
             }
             int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
+            if(baseIndent == -1) {
+                //in case of empty line
+                baseIndent = 0;
+            }
             if (increaseIndent.get()) {
                 //add one indent level (after HEAD open tag)
                 baseIndent += IndentUtils.indentLevelSize(context.getDocument());
@@ -255,6 +259,10 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 return; //cannot properly map back
             }
             int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
+            if(baseIndent == -1) {
+                //in case of empty line
+                baseIndent = 0;
+            }
             if(increaseIndent.get()) {
                 //add one indent level (after HEAD open tag)
                 baseIndent += IndentUtils.indentLevelSize(context.getDocument());
@@ -449,7 +457,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
         });
 
-        return ret.get();
+        int indent = ret.get();
+        return indent == -1 ? 0 : indent; //the Utilities.getRowIndent() returns -1 for blank line
     }
 
 }
