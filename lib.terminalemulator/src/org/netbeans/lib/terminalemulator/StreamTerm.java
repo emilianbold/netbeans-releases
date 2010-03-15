@@ -171,9 +171,9 @@ public class StreamTerm extends Term {
             while (cx < count) {
                 // print numbers
                 int cx0 = cx;
-		System.out.printf("%4d: ", cx);
+		System.out.printf("%4d: ", cx);		// NOI18N
                 for (int x = 0; x < width && cx < count; cx++, x++) {
-		    System.out.printf("%02x ", (int) buf[offset+cx]);
+		    System.out.printf("%02x ", (int) buf[offset+cx]);	// NOI18N
                 }
                 System.out.println();
 
@@ -185,7 +185,7 @@ public class StreamTerm extends Term {
                     if (Character.isISOControl(c)) {
                         c = ' ';
                     }
-		    System.out.printf("%2c ", c);
+		    System.out.printf("%2c ", c);	// NOI18N
                 }
                 System.out.println();
             }
@@ -327,7 +327,7 @@ public class StreamTerm extends Term {
      */
     public void disconnect(final Runnable continuation) {
 	if (!connected) {
-	    System.out.printf("disconnect() called redundantly\n");
+	    // System.out.printf("disconnect() called redundantly\n");
 	    return;
 	}
 
