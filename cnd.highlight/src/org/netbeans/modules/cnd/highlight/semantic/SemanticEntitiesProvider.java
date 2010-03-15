@@ -39,15 +39,20 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
 import org.openide.util.NbBundle;
@@ -94,8 +99,9 @@ public class SemanticEntitiesProvider {
         };
     }
 
+    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     private SemanticEntity getFunctions(){
-        return new AbstractSemanticEntity() {
+        return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
             @Override
             public String getName() {
                 return "functions-names"; // NOI18N
@@ -108,10 +114,29 @@ public class SemanticEntitiesProvider {
             public ReferenceCollector getCollector() {
                 return new ModelUtils.FunctionReferenceCollector();
             }
+
+            @Override
+            public AttributeSet getAttributes(CsmOffsetable obj) {
+                CsmReference ref = (CsmReference) obj;
+                CsmFunction fun = (CsmFunction) ref.getReferencedObject();
+                if (fun == null) {
+                    return color;
+                }
+                // check if we are in the function declaration
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS)) {
+                    return color;
+                } else {
+                    return funUsageColors;
+                }
+            }
+
             @Override
             public void updateFontColors(FontColorProvider provider) {
-                color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
+                super.updateFontColors(provider);
+                funUsageColors = getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE);
             }
+            protected AttributeSet funDeclColors;
+            protected AttributeSet funUsageColors;
         };
     }
 
@@ -148,8 +173,8 @@ public class SemanticEntitiesProvider {
             @Override
             public void updateFontColors(FontColorProvider provider) {
                 super.updateFontColors(provider);
-                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
-                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO); // NOI18N
+                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO);
+                userMacroColors = getFontColor(provider, FontColorProvider.Entity.USER_MACRO);
             }
         };
     }

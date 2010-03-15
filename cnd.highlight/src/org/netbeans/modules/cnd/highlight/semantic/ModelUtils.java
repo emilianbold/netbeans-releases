@@ -150,7 +150,6 @@ public class ModelUtils {
             }
         }
     }
-    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
         public String getEntityName() {
             return "functions-names"; // NOI18N
@@ -163,11 +162,7 @@ public class ModelUtils {
         }
         private boolean isWanted(CsmReference ref, CsmFile file) {
             CsmObject csmObject = ref.getReferencedObject();
-            if (CsmKindUtilities.isFunction(csmObject)) {
-                // check if we are in the function declaration
-                return CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS);
-            }
-            return false;
+            return CsmKindUtilities.isFunction(csmObject);
         }
     }
 
