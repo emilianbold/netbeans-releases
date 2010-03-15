@@ -411,7 +411,7 @@ public class BugzillaRepository extends Repository {
     }
 
     protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? password : "");
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
         if(httpUser != null || httpPassword != null) {
