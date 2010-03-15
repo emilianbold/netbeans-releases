@@ -52,25 +52,24 @@ import java.io.PipedWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.swing.SwingUtilities;
 
 public class StreamTerm extends Term {
 
-    private enum IOState {
-	NONE,
-	INTERNAL,		// getIn()/getOut() were used for internal i/o or
-				// explicit i/o shuttling to external process
-	EXTERNAL,		// connect() was used to deal with external process
-    }
+    private boolean connected = false;
 
-    private IOState ioState = IOState.NONE;
-
-    // Objects used when ioState == INTERNAL
+    // Objects used with getIn() and getOut()
     private Writer writer;      // processes writes from child process
     private Pipe pipe;          // buffers keystrokes to child process
 
-    // Objects used when ioState == EXTERNAL
+    // Objects used with connect()
     private OutputStreamWriter outputStreamWriter;	// writes to child process
+    private InputMonitor stdinMonitor;	// pass keybd input to process stdin
+    private OutputMonitor stdoutMonitor;
+    private OutputMonitor stderrMonitor;
 
     /*
      * Return the OutputStreamWriter used for writing to the child.
@@ -79,19 +78,20 @@ public class StreamTerm extends Term {
      * as if they were typed at the keyboard.
      */
     public OutputStreamWriter getOutputStreamWriter() {
-	switch (ioState) {
-	    case NONE:
-	    case INTERNAL:
-		throw new IllegalStateException("getOutputStreamWriter() can only be used after connect()"); //NOI18N
-	    case EXTERNAL:
-		break;
-	}
+	if (!connected)
+	    throw new IllegalStateException("getOutputStreamWriter() can only be used after connect()"); //NOI18N
         return outputStreamWriter;
     }
 
-    /**
+    /*
      * Transfers typed keystrokes to an OutputStreamWriter which usually
      * passes stuff on to an external process.
+     *
+     * When the external process goes away writes/flushes will fail with
+     * IOException("Bad file number"). There's no way to test for this (e.g.
+     * isClosed()) or catch a specific exception about this, so we're just
+     * stay quiet about it.
+     * Eventually disconnect() will get called and remove us as a listener.
      */
     private static final class InputMonitor implements TermInputListener {
 	private final OutputStreamWriter outputStreamWriter;
@@ -102,30 +102,28 @@ public class StreamTerm extends Term {
 
 	@Override
 	public void sendChars(char c[], int offset, int count) {
-	    if (outputStreamWriter == null) {
-		return;
-	    }
 	    try {
 		outputStreamWriter.write(c, offset, count);
 		outputStreamWriter.flush();
+	    } catch (IOException x) {
+		// no-op
 	    } catch (Exception x) {
-		x.printStackTrace();
+		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
 	    }
 	}
 
 	@Override
 	public void sendChar(char c) {
-	    if (outputStreamWriter == null) {
-		return;
-	    }
 	    try {
 		outputStreamWriter.write(c);
 		// writer is buffered, need to use flush!
 		// perhaps SHOULD use an unbuffered writer?
 		// Also fix send_chars()
 		outputStreamWriter.flush();
+	    } catch (IOException x) {
+		// no-op
 	    } catch (Exception x) {
-		x.printStackTrace();
+		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, x);
 	    }
 	}
     }
@@ -154,6 +152,14 @@ public class StreamTerm extends Term {
             // if we have a firehose sub-process.
             setPriority(1);
         }
+
+	public void close() {
+	    try {
+		reader.close();
+	    } catch (IOException ex) {
+		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
+	    }
+	}
 
         private void db_echo_receipt(char buf[], int offset, int count) {
             /*
@@ -254,6 +260,7 @@ public class StreamTerm extends Term {
 
     /**
      * Connect an I/O stream pair or triple to this Term.
+     * Call disconnect() before attempting to connect() again.
      *
      * @param pin Input (and paste operations) to the sub-process.
      *             this stream.
@@ -265,41 +272,88 @@ public class StreamTerm extends Term {
      */
     public void connect(OutputStream pin, InputStream pout, InputStream perr) {
 
-	switch (ioState) {
-	    case NONE:
-		break;
-	    case INTERNAL:
-		throw new IllegalStateException("Cannot call connect() after getIn()/getOut"); //NOI18N
-	    case EXTERNAL:
-		throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
-	}
+	if (connected)
+	    throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
 
         // Now that we have a stream force resize notifications to be sent out.
         updateTtySize();
 
         if (pin != null) {
             outputStreamWriter = new OutputStreamWriter(pin);
-	    addInputListener(new InputMonitor(outputStreamWriter));
+	    stdinMonitor = new InputMonitor(outputStreamWriter);
+	    addInputListener(stdinMonitor);
         }
 
 	if (pout != null) {
 	    InputStreamReader pout_reader = new InputStreamReader(pout);
-	    OutputMonitor out_monitor = new OutputMonitor(pout_reader, this);
-	    out_monitor.start();
+	    stdoutMonitor = new OutputMonitor(pout_reader, this);
+	    stdoutMonitor.start();
 	}
 
         if (perr != null) {
             InputStreamReader err_reader = new InputStreamReader(perr);
-            OutputMonitor err_monitor = new OutputMonitor(err_reader, this);
-            err_monitor.start();
+            stderrMonitor = new OutputMonitor(err_reader, this);
+            stderrMonitor.start();
         }
+	connected = true;
+    }
+
+    private void disconnectWork() {
+	if (stdoutMonitor != null) {
+	    try {
+		stdoutMonitor.join();
+	    } catch (InterruptedException ex) {
+		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
+	    }
+	}
+	if (stderrMonitor != null) {
+	    try {
+		stderrMonitor.join();
+	    } catch (InterruptedException ex) {
+		Logger.getLogger(StreamTerm.class.getName()).log(Level.SEVERE, null, ex);
+	    }
+	}
+	connected = false;
+    }
+
+    /**
+     * Disconnect previously connected Streams and free resources.
+     * Arrange to wait until all pending output from a terminated or exited
+     * process has been rendered in the terminal and then call
+     * continuation.run() on the EDT thread.
+     * Only then can connect() be called again.
+     * @param continuation The continuation to run after all output has been
+     *        drained.
+     */
+    public void disconnect(final Runnable continuation) {
+	if (!connected) {
+	    System.out.printf("disconnect() called redundantly\n");
+	    return;
+	}
+
+	if (stdinMonitor != null)
+	    removeInputListener(stdinMonitor);
+
+	// Wait until the outputmonitors exit and then pass on control
+	// to the continuation.
+	Thread drainer = new Thread() {
+	    @Override
+	    public void run() {
+		disconnectWork();
+		SwingUtilities.invokeLater(continuation);
+	    }
+	};
+	drainer.start();
+	/* Do this way when debugging
+	disconnectWork();
+	continuation.run();
+	 */
     }
 
     /**
      * Help pass keystrokes to process.
      */
     private static final class Pipe {
-        // OLD private final Term term;
         private final PipedReader pipedReader;
         private final PipedWriter pipedWriter;
 
@@ -326,7 +380,6 @@ public class StreamTerm extends Term {
         }
 
         Pipe(Term term) throws IOException {
-            // OLD this.term = term;
             pipedReader = new PipedReader();
             pipedWriter = new PipedWriter(pipedReader);
 
@@ -377,14 +430,6 @@ public class StreamTerm extends Term {
      * @return the reader.
      */
     public Reader getIn() {
-	switch (ioState) {
-	    case NONE:
-		break;
-	    case INTERNAL:
-		break;
-	    case EXTERNAL:
-		throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
-	}
         if (pipe == null) {
             try {
                 pipe = new Pipe(this);
@@ -400,14 +445,6 @@ public class StreamTerm extends Term {
      * @return the writer.
      */
     public Writer getOut() {
-	switch (ioState) {
-	    case NONE:
-		break;
-	    case INTERNAL:
-		break;
-	    case EXTERNAL:
-		throw new IllegalStateException("Cannot call getIn() after connect()"); //NOI18N
-	}
         if (writer == null)
             writer = new TermWriter();
         return writer;

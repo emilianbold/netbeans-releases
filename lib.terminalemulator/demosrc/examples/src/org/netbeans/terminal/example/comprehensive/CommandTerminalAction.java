@@ -42,9 +42,12 @@ public final class CommandTerminalAction implements ActionListener {
 	dd.setClosingOptions(null);
 
 	Object closer = DialogDisplayer.getDefault().notify(dd);
-	if (closer == DialogDescriptor.CANCEL_OPTION ||
-	    closer == DialogDescriptor.CLOSED_OPTION) {
-
+	if (closer == DialogDescriptor.CANCEL_OPTION) {
+	    System.out.printf("Dialog cancelled\n");
+	    return;
+	}
+	if (closer == DialogDescriptor.CLOSED_OPTION) {
+	    System.out.printf("Dialog closed\n");
 	    return;
 	}
 

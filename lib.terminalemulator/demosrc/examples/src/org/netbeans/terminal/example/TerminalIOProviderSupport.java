@@ -23,7 +23,6 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.richexecution.PtyProcess;
-import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -52,8 +51,16 @@ import org.openide.windows.OutputWriter;
 public final class TerminalIOProviderSupport {
 
     private static abstract class ExecutionSupport {
+	protected enum State {
+	    INIT,
+	    RUNNING,
+	    EXITED,
+	};
+
 	private boolean restartable = false;
 	private boolean interalIOShuttle = true;	// use Term.connect()
+	private State state = State.INIT;
+
 	protected Action stopAction;
 	protected Action rerunAction;
 	protected InputOutput io;
@@ -90,6 +97,48 @@ public final class TerminalIOProviderSupport {
 	    return interalIOShuttle;
 	}
 
+	public final void setState(State state) {
+	    this.state = state;
+
+	    switch (this.state) {
+		case INIT:
+		    break;
+		case RUNNING:
+		    if (isRestartable()) {
+			stopAction.setEnabled(true);
+			rerunAction.setEnabled(false);
+		    }
+		    break;
+		case EXITED:
+		    if (isRestartable() /* LATER && !closing */) {
+			stopAction.setEnabled(false);
+			rerunAction.setEnabled(true);
+		    } else {
+			/* LATER
+			closing = true;
+			closeWork();
+			*/
+		    }
+		    break;
+	    }
+	}
+
+	public final State getState() {
+	    return state;
+	}
+
+	public final boolean isRunning() {
+	    return state == State.RUNNING;
+	}
+
+	private void tprintln(String msg) {
+	    try {
+		IOColorLines.println(io, msg + "\r", Color.GREEN);
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	}
+
 	public final void setupIO(IOProvider iop,
 			     IOContainer ioContainer,
 			     String title) {
@@ -106,14 +155,43 @@ public final class TerminalIOProviderSupport {
 	    io.select();
 
 	    if (IOTerm.isSupported(io)) {
-		Term term = IOTerm.term(io);
+		// Term term = IOTerm.term(io);
 		// term.setDebugFlags(Term.DEBUG_INPUT);
 	    }
-	    try {
-		IOColorLines.println(io, "GREETINGS\r", Color.GREEN);
-	    } catch (IOException ex) {
-		Exceptions.printStackTrace(ex);
-	    }
+	    tprintln("GREETINGS");
+	}
+
+	/* *
+	 * It's important to start the reaper after setting up the io
+	 * connections because a very short-lived process might finish before
+	 * the io is setup and we'll be in a situatin of disconnecting before
+	 * connecting.
+	 */
+	protected final void startReaper() {
+	    //
+	    // Start a reaper and wait for processes completion
+	    //
+	    Thread reaperThread = new Thread() {
+		@Override
+		public void run() {
+		    final int exitValue = waitFor();
+
+		    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
+			System.out.printf("Process exited. Calling disconnect ...\n");
+			IOTerm.disconnect(io, new Runnable() {
+			    public void run() {
+				System.out.printf("Disconnected.\n");
+				String exitMsg = String.format("Exited with %d", exitValue);
+				tprintln(exitMsg);
+				setState(ExecutionSupport.State.EXITED);
+			    }
+			});
+		    } else {
+			System.out.printf("Process exited.\n");
+		    }
+		}
+	    };
+	    reaperThread.start();
 	}
 
 	protected final void startShuttle(OutputStream pin, InputStream pout) {
@@ -123,8 +201,8 @@ public final class TerminalIOProviderSupport {
 	    shuttle.run();
 	}
 
-	public abstract boolean isRunning();
 	public abstract void execute(String cmd);
+	public abstract int waitFor();
 	public abstract void sizeChanged(Dimension c, Dimension p);
 	public abstract void reRun();
 	public abstract void stop();
@@ -135,13 +213,13 @@ public final class TerminalIOProviderSupport {
 	private Pty pty;
 	private Program lastProgram;
 
-	public boolean isRunning() {
-	    return richProcess != null;
-	}
-
 	public void execute(String cmd) {
 	    Program program = new Command(cmd);
 	    startProgram(program);
+	}
+
+	public int waitFor() {
+	    return richProcess.waitFor();
 	}
 
 	public void sizeChanged(Dimension cells, Dimension pixels) {
@@ -179,31 +257,9 @@ public final class TerminalIOProviderSupport {
 	    PtyExecutor executor = new PtyExecutor();
 	    richProcess = executor.start(program, pty);
 
-	    if (isRestartable()) {
-		stopAction.setEnabled(true);
-		rerunAction.setEnabled(false);
-	    }
+	    setState(State.RUNNING);
 
-	    Thread reaperThread = new Thread() {
-		@Override
-		public void run() {
-		    richProcess.waitFor();
-		    if (isRestartable() /* LATER && !closing */) {
-			stopAction.setEnabled(false);
-			rerunAction.setEnabled(true);
-		    } else {
-			/* LATER
-			closing = true;
-			closeWork();
-			*/
-		    }
-		    // This doesn't yield the desired result because we need to
-		    // wait for all the output to be processed:
-		    // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
-		    richProcess = null;
-		}
-	    };
-	    reaperThread.start();
+	    // OLD startReaper();
 
 	    //
 	    // connect them up
@@ -220,32 +276,28 @@ public final class TerminalIOProviderSupport {
 	    } else {
 		startShuttle(pin, pout);
 	    }
+
+	    startReaper();
 	}
 
 	public void reRun() {
-            if (richProcess != null)
-                return;     // still someone running
-            if (lastProgram == null)
-                return;
-            startProgram(lastProgram);
+            if (lastProgram != null)
+		startProgram(lastProgram);
 	}
 
 	public void stop() {
-            if (richProcess == null)
-                return;
             richProcess.terminate();
 	}
     }
 
     private static final class NativeExecutionSupport extends ExecutionSupport {
+	private String cmd;
 	private NativeProcess nativeProcess;
 	private PtyImplementation impl;
 
-	public boolean isRunning() {
-	    return nativeProcess != null;
-	}
-
 	public void execute(String cmd) {
+	    this.cmd = cmd;
+
 	    ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
 	    NativeProcessBuilder pb =
 		    NativeProcessBuilder.newProcessBuilder(ee);
@@ -271,10 +323,7 @@ public final class TerminalIOProviderSupport {
 		return;
 	    }
 
-	    if (isRestartable()) {
-		stopAction.setEnabled(true);
-		rerunAction.setEnabled(false);
-	    }
+	    setState(State.RUNNING);
 
 	    //
 	    // Connect the IO
@@ -295,43 +344,29 @@ public final class TerminalIOProviderSupport {
 	    if (IOResizable.isSupported(io))
 		IOResizable.addListener(io, new ResizeListener(this));
 
-	    //
-	    // Start a reaper and wait for processes completion
-	    //
-	    Thread reaperThread = new Thread() {
-		@Override
-		public void run() {
-		    try {
-			nativeProcess.waitFor();
-		    } catch (InterruptedException ex) {
-			Exceptions.printStackTrace(ex);
-		    }
-		    if (isRestartable() /* LATER && !closing */) {
-			stopAction.setEnabled(false);
-			rerunAction.setEnabled(true);
-		    } else {
-			/* LATER
-			closing = true;
-			closeWork();
-			*/
-		    }
-		    // This doesn't yield the desired result because we need to
-		    // wait for all the output to be processed:
-		    // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
-		    nativeProcess = null;
-		}
-	    };
-	    reaperThread.start();
+	    startReaper();
+	}
+
+	public int waitFor() {
+	    try {
+		return nativeProcess.waitFor();
+	    } catch (InterruptedException ex) {
+		Exceptions.printStackTrace(ex);
+		return 0;
+	    }
 	}
 
 	public void sizeChanged(Dimension c, Dimension p) {
-	    impl.masterTIOCSWINSZ(c.width, c.height, p.width, p.height);
+	    // TMP impl.masterTIOCSWINSZ(c.width, c.height, p.width, p.height);
 	}
 
 	public void reRun() {
+	    if (cmd != null)
+		execute(cmd);
 	}
 
 	public void stop() {
+	    nativeProcess.destroy();
 	}
     }
 
@@ -361,6 +396,9 @@ public final class TerminalIOProviderSupport {
             System.out.printf("Re-run pressed!\n");
             if (!isEnabled())
                 return;
+	    if (executionSupport.getState() == ExecutionSupport.State.RUNNING)
+                return;     // still someone running
+            // TMP setEnabled(false);
 	    executionSupport.reRun();
         }
     }
@@ -388,6 +426,9 @@ public final class TerminalIOProviderSupport {
             System.out.printf("Stop pressed!\n");
             if (!isEnabled())
                 return;
+	    if (executionSupport.getState() != ExecutionSupport.State.RUNNING)
+                return;
+            // TMP setEnabled(false);
 	    executionSupport.stop();
         }
     }
@@ -428,12 +469,13 @@ public final class TerminalIOProviderSupport {
             throw new IllegalStateException("Process already running");
 
 	final String title = "Cmd: " + cmd;
-	Action stopAction = new StopAction(richExecutionSupport);
-	Action rerunAction = new RerunAction(richExecutionSupport);
-	if (restartable)
-	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
+	if (restartable) {
+	    Action stopAction = new StopAction(richExecutionSupport);
+	    Action rerunAction = new RerunAction(richExecutionSupport);
+	    richExecutionSupport.setRestartable(stopAction, rerunAction);
+	}
 
-	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
+	richExecutionSupport.setInternalIOShuttle(internalIOShuttle);
 	richExecutionSupport.setupIO(iop, ioContainer, title);
 
 	richExecutionSupport.execute(cmd);
@@ -457,10 +499,11 @@ public final class TerminalIOProviderSupport {
 
 	final String title = "Cmd: " + cmd;
 
-	Action stopAction = new StopAction(richExecutionSupport);
-	Action rerunAction = new RerunAction(richExecutionSupport);
-	if (restartable)
+	if (restartable) {
+	    Action stopAction = new StopAction(nativeExecutionSupport);
+	    Action rerunAction = new RerunAction(nativeExecutionSupport);
 	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
+	}
 
 	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
 	nativeExecutionSupport.setupIO(iop, ioContainer, title);
