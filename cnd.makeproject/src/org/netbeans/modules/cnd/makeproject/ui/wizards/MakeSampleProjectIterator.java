@@ -47,18 +47,19 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
-public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
+public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstantiatingIterator<WizardDescriptor> {
 
     private static final long serialVersionUID = 4L;
     private transient int index = 0;
     private transient WizardDescriptor.Panel<WizardDescriptor> panel;
-    private transient WizardDescriptor wiz;
+    private transient TemplateWizard wiz;
 
     static Object create() {
         return new MakeSampleProjectIterator();
@@ -91,14 +92,14 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public void initialize(TemplateWizard templateWizard) {
+    public void initialize(WizardDescriptor wizard) {
         int i = 0;
-        this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getName();
+        this.wiz = (TemplateWizard)wizard;
+        String name = wiz.getTemplate().getNodeDelegate().getName();
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }
-        templateWizard.putProperty("name", name); // NOI18N
+        wiz.putProperty("name", name); // NOI18N
         String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
         String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
 
@@ -111,7 +112,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
+    public void uninitialize(WizardDescriptor templateWizard) {
         panel = null;
         index = -1;
         this.wiz.putProperty("projdir", null); // NOI18N
@@ -119,10 +120,20 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public Set<DataObject> instantiate(TemplateWizard templateWizard) throws IOException {
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiate();
+        } finally {
+            handle.finish();
+        }
+    }
+    
+    @Override
+    public Set<DataObject> instantiate() throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
-        return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
+        return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), projectLocation, name);
     }
 
     @Override
