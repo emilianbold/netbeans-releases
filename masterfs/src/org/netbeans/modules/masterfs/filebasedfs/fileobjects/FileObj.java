@@ -141,9 +141,11 @@ public class FileObj extends BaseFileObj {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
         }
-
+        LOGGER.log(Level.FINEST,"FileObj.getInputStream_after_is_valid");   //NOI18N - Used by unit test
         final File f = getFileName().getFile();
-                        
+        if (!f.exists()) {
+            throw new FileNotFoundException();
+        }
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
         

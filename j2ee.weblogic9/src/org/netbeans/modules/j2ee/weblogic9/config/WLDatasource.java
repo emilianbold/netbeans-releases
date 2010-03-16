@@ -37,42 +37,62 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spellchecker.api;
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.swing.text.JTextComponent;
-
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
  *
- * @author hanz
- * @since 1.3
+ * @author Petr Hejl
  */
-public class Spellchecker {
+public class WLDatasource implements Datasource {
 
-    public static void register (
-        JTextComponent          textComponent
-    ) {
-        ClassLoader systemClassLoader = Lookup.getDefault ().lookup (ClassLoader.class);
-        try {
-            Class componentPeerClass = systemClassLoader.loadClass ("org.netbeans.modules.spellchecker.ComponentPeer");
-            Method assureInstalledMethod = componentPeerClass.getMethod ("assureInstalled", Class.forName ("javax.swing.text.JTextComponent"));
-            assureInstalledMethod.invoke (null, textComponent);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace (ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace (ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace (ex);
-        } catch (ClassNotFoundException ex) {
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace (ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace (ex);
-        }
+    private final String url;
+
+    private final String jndi;
+
+    private final String user;
+
+    private final String password;
+
+    private final String driver;
+
+    public WLDatasource(String url, String jndi, String user, String password, String driver) {
+        this.url = url;
+        this.jndi = jndi;
+        this.user = user;
+        this.password = password;
+        this.driver = driver;
     }
+
+    @Override
+    public String getDisplayName() {
+        return getJndiName();
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return driver;
+    }
+
+    @Override
+    public String getJndiName() {
+        return jndi;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return user;
+    }
+
 }

@@ -10,7 +10,7 @@ METHOD     BulletSection($sFieldName, $sT  [PUBLIC]   HTMLbase
 METHOD     BulletSection($sFieldName, $sT  [PUBLIC]   HTMLbase
 METHOD     BulletSubSection($sFieldName)   [PUBLIC]   HTMLbase
 METHOD     Clear()                         [PUBLIC]   HTMLbase
-METHOD     ClearOthers($s)                 [PUBLIC]   HTMLbase
+METHOD     ClearOthers(&$s)                [PUBLIC]   HTMLbase
 METHOD     CommaSection($sFieldName)       [PUBLIC]   HTMLbase
 METHOD     Debug($s)                       [PUBLIC]   HTMLbase
 METHOD     FieldsetSection()               [PUBLIC]   HTMLbase

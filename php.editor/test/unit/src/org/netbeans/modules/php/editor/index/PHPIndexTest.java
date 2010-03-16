@@ -435,7 +435,7 @@ public class PHPIndexTest extends TestBase {
         } else {
             assertEquals(firstType.getName(), clz.getSuperInterfaces().iterator().next().getName());
             assertEquals(getSecond(methods).getType().getName(), clz.getSuperClassName().getName());
-            assertEquals(firstMethod.getName(), "testMethodDeclarationIface1");
+            assertTrue(firstMethod.getName().startsWith("testMethodDeclarationIface"));
         }
         Collection<String> methodNames = Arrays.asList(
                 new String[]{"testMethodDeclaration",
