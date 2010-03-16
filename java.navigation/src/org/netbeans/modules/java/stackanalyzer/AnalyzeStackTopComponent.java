@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.java.stackanalyzer;
 
+import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -105,6 +107,30 @@ final class AnalyzeStackTopComponent extends TopComponent {
                 if (i < 0) return;
                 String currentLine = (String) list.getModel ().getElementAt (i);
                 open (currentLine);
+            }
+        });
+        list.addMouseMotionListener (new MouseAdapter () {
+
+            @Override
+            public void mouseMoved (MouseEvent e) {
+                int i = list.locationToIndex (e.getPoint ());
+                if (i >= 0) {
+                    Rectangle r = list.getCellBounds (i, i);
+                    if (r.contains (e.getPoint ())) {
+                        String line = (String) list.getModel ().getElementAt (i);
+                        Link link = StackLineAnalyser.analyse (line);
+                        if (link != null && link.hasSource ()) {
+                            list.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
+                            return;
+                        }
+                    }
+                }
+                list.setCursor (Cursor.getDefaultCursor ());
+            }
+
+            @Override
+            public void mouseExited (MouseEvent e) {
+                list.setCursor (Cursor.getDefaultCursor ());
             }
         });
     }

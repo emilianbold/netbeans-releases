@@ -196,6 +196,7 @@ final class ViewBuilder {
         // Compute repaint region as area of views being removed
         DocumentView docView = dReplace.view;
         JTextComponent textComponent = docView.getTextComponent();
+        assert (textComponent != null) : "Null textComponent"; // NOI18N
         boolean docViewHeightChanged = false;
         boolean docViewWidthChanged = false;
         Rectangle repaintBounds = new Rectangle(0,0,-1,-1);

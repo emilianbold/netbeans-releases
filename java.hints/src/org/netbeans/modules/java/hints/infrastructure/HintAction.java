@@ -37,6 +37,7 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -44,6 +45,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
@@ -108,8 +110,11 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         JTextComponent pane = null;
 
         //XXX check if inside AWT?
-        if (SwingUtilities.isEventDispatchThread() && (tc instanceof CloneableEditorSupport.Pane)) {
-            pane = ((CloneableEditorSupport.Pane) tc).getEditorPane();
+        if (SwingUtilities.isEventDispatchThread()) {
+            EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                pane = NbDocument.findRecentEditorPane(ec);
+            }
         }
 
         if(pane == null)
