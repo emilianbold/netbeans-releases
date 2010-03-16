@@ -66,6 +66,7 @@ public class ViewJavadocAction extends AbstractAction {
 
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
         File javadocFile = getJavadocFile();
         FileObject fo = FileUtil.toFileObject(javadocFile);
