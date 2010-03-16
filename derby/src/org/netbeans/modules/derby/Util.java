@@ -115,6 +115,9 @@ public class Util {
     }
 
     public static boolean isDerbyInstallLocation(File location) {
+        if (location == null || ! location.exists()) {
+            return false;
+        }
         File libDir = new File(location, "lib"); // NOI18N
         if (!libDir.exists()) {
             return false;
