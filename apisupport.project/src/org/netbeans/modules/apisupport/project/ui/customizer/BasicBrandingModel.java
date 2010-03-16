@@ -322,7 +322,7 @@ public class BasicBrandingModel {
             getBranding().brandBundleKeys(winsysKeys);
 
             getBranding().brandBundleKeys(generalResourceBundleKeys);
-            
+
         } else {
             if (brandingChanged && null != suiteProps) {//#115737
                 suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
@@ -772,5 +772,9 @@ public class BasicBrandingModel {
 
     public @CheckForNull BundleKey getWsEnableSliding() {
         return wsEnableSliding;
+    }
+
+    SuiteProperties getSuiteProperties() {
+        return suiteProps;
     }
 }

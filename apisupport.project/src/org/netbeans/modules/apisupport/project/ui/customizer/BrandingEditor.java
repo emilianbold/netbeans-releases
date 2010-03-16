@@ -58,7 +58,7 @@ public class BrandingEditor {
      */
     public static void open( SuiteProject suite ) {
         SuiteProperties properties = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
-        BasicBrandingModel model = new BasicBrandingModel(properties);
+        BasicBrandingModel model = properties.getBrandingModel();
         open( NbBundle.getMessage(BrandingEditor.class, "Title_BrandingEditor", properties.getProjectDisplayName()), suite, model, true );
     }
 
