@@ -108,14 +108,17 @@ public class AddViewDialog {
             pane.add(namefld);
             DocumentListener docListener = new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     validate();
                 }
@@ -156,12 +159,14 @@ public class AddViewDialog {
             pane.add(spane);
 
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     return AddViewDDL.addView(spec, 
                                             schemaName,
@@ -199,7 +204,7 @@ public class AddViewDialog {
             dialog.setResizable(true);
             validate();
         } catch (MissingResourceException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
     }
 

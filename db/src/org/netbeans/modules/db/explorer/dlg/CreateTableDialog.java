@@ -101,10 +101,10 @@ public class CreateTableDialog {
 
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
-    private static Logger LOGGER = Logger.getLogger(
+    private static final Logger LOGGER = Logger.getLogger(
             CreateTableDialog.class.getName());
 
-    public static final Map getProperties() {
+    public static Map getProperties() {
         if (dlgtab == null) try {
             ClassLoader cl = CreateTableDialog.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(filename);
@@ -116,7 +116,7 @@ public class CreateTableDialog {
             dlgtab = reader.getData();
             stream.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             dlgtab = null;
         }
 
@@ -163,14 +163,17 @@ public class CreateTableDialog {
             pane.add(dbnamefield);
             dbnamefield.getDocument().addDocumentListener(new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     validate();
                 }
@@ -207,6 +210,7 @@ public class CreateTableDialog {
             });
             table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
+                @Override
                 public void valueChanged(ListSelectionEvent e) {
                     // update Edit and Remove buttons
                     validate();
@@ -214,6 +218,7 @@ public class CreateTableDialog {
             });
             table.getModel().addTableModelListener(new TableModelListener() {
 
+                @Override
                 public void tableChanged(TableModelEvent e) {
                     validate();
                 }
@@ -241,6 +246,7 @@ public class CreateTableDialog {
             addbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableAddButtonTitleA11yDesc"));
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
 
                     ColumnItem columnItem = AddTableColumnDialog.showDialog(spec, null);
@@ -259,6 +265,7 @@ public class CreateTableDialog {
             btnpane.add(editBtn);
             editBtn.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     int selectedIndex = table.getSelectedRow();
                     if (selectedIndex != -1) {
@@ -280,6 +287,7 @@ public class CreateTableDialog {
             delbtn.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableRemoveButtonTitleA11yDesc")); // NOI18N
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     int idx = table.getSelectedRow();
                     if (idx != -1) {
@@ -289,15 +297,17 @@ public class CreateTableDialog {
             });
 
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     final ActionEvent evt = event;
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         try {
                             final String tablename = getTableName();
                             final DataModel dataModel = (DataModel)table.getModel();
-                            final Vector data = dataModel.getData();
+                            final Vector<Object> data = dataModel.getData();
 
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     CreateTableDDL ddl = new CreateTableDDL(
                                             spec, schema, tablename);
@@ -340,7 +350,7 @@ public class CreateTableDialog {
             dialog.setResizable(true);
             validate();
         } catch (MissingResourceException ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
         }
     }
 
