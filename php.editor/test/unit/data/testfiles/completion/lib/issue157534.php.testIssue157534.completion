@@ -1,4 +1,4 @@
 Code completion result for source line:
 issue157534|;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     issue157534($var)                          issue157534.php
+METHOD     issue157534(&$var)                         issue157534.php
