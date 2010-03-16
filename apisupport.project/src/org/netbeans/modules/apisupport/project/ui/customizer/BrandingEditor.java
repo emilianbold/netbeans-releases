@@ -39,6 +39,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Dialog;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.openide.util.NbBundle;
@@ -51,6 +56,8 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  */
 public class BrandingEditor {
+
+    private static final Map<Project, Dialog> project2dialog = new HashMap<Project, Dialog>(10);
 
     /**
      * Open branding editor for given suite project.
@@ -70,9 +77,26 @@ public class BrandingEditor {
      * @param contextAvailable True if the given project knows which platform
      * app it belongs and the platform jars/projects are available, false otherwise.
      */
-    public static void open( String displayName, Project p, BasicBrandingModel model, boolean contextAvailable ) {
-        BrandingEditorPanel editor = new BrandingEditorPanel(displayName, p, model, contextAvailable);
-        editor.open();
+    public static void open( String displayName, final Project p, BasicBrandingModel model, boolean contextAvailable ) {
+        synchronized( project2dialog ) {
+            Dialog dlg = project2dialog.get(p);
+            if( null == dlg ) {
+                BrandingEditorPanel editor = new BrandingEditorPanel(displayName, p, model, contextAvailable);
+                dlg = editor.open();
+                project2dialog.put(p, dlg);
+                dlg.addWindowListener( new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        synchronized( project2dialog ) {
+                            project2dialog.remove(p);
+                        }
+                    }
+                });
+            } else {
+                dlg.setVisible(true);
+                dlg.requestFocusInWindow();
+            }
+        }
     }
 
 

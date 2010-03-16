@@ -116,7 +116,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
-    void open() {
+    Dialog open() {
         descriptor = new DialogDescriptor(this, title, false, DialogDescriptor.OK_CANCEL_OPTION, null, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -141,6 +141,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
                 refreshBrandingEnabled();
             }
         });
+        return dlg;
     }
 
     void setModified() {
