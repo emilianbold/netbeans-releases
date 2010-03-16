@@ -66,7 +66,7 @@ public class QtProjectDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new QMakeDataNode(this, Children.LEAF, getLookup());
+        return new QMakeDataNode(this, Children.LEAF);
     }
 
     @Override
@@ -76,12 +76,12 @@ public class QtProjectDataObject extends MultiDataObject {
 
     private static class QMakeDataNode extends DataNode {
         /** Construct the DataNode */
-        public QMakeDataNode(QtProjectDataObject obj, Children ch, Lookup lookup) {
-            super(obj, ch, lookup);
+        public QMakeDataNode(QtProjectDataObject obj, Children ch) {
+            super(obj, ch, obj.getLookup());
         }
 
         /** Get the support for methods which need it */
-        private final QMakeExecSupport getSupport() {
+        private QMakeExecSupport getSupport() {
             return getCookie(QMakeExecSupport.class);
         }
 

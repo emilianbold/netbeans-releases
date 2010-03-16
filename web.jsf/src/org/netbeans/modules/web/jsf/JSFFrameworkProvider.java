@@ -197,7 +197,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
             }
             assert webInf != null;
-            FileSystem fileSystem = webModule.getWebInf().getFileSystem();
+            FileSystem fileSystem = webInf.getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):

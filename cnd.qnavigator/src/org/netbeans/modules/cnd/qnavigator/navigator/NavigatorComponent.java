@@ -70,14 +70,17 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /** actual data */
     private DataObject curData;
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(NavigatorComponent.class).getString("LBL_members"); //NOI18N
     }
     
+    @Override
     public String getDisplayHint() {
         return NbBundle.getBundle(NavigatorComponent.class).getString("HINT_NavigatorTopComponen"); //NOI18N
     }
     
+    @Override
     public JComponent getComponent() {
         return getPanelUI();
     }
@@ -92,6 +95,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
      *
      * @param context Lookup instance representing current context
      */
+    @Override
     public synchronized void panelActivated(Lookup context) {
         doContext = context.lookupResult(DataObject.class);
         doContext.addLookupListener(this);
@@ -102,6 +106,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /** Called when this panel's component is about to being hidden.
      * Right place to detach, remove listeners from data context.
      */
+    @Override
     public synchronized void panelDeactivated() {
         doContext.removeLookupListener(this);
         doContext = null;
@@ -111,6 +116,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     /** Impl of LookupListener, reacts to changes of context */
+    @Override
     public synchronized void resultChanged(LookupEvent ev) {
         for (DataObject dob : doContext.allInstances()) {
             if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
@@ -124,6 +130,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
         }
     }
     
+    @Override
     public Lookup getLookup() {
         return this.panelUI.getLookup();
     }
@@ -135,6 +142,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
             getPanelUI().setBusyState(true);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     getPanelUI().setBusyState(true);
                 }
@@ -147,6 +155,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
             getPanelUI().setBusyState(false);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     getPanelUI().setBusyState(false);
                 }
@@ -175,6 +184,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
 	CsmModelAccessor.getModel().enqueue(new Runnable() {
+            @Override
 	    public void run() {
 		setNewContentImpl(cdo, ui);
 	    }

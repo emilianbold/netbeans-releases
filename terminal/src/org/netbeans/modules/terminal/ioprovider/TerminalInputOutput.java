@@ -84,6 +84,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     private final Terminal terminal;
     private final StreamTerm term;
     private OutputWriter outputWriter;
+    private OutputWriter errWriter;
 
     // shadow copies in support of IOTab
     private Icon icon;
@@ -403,6 +404,37 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         }
     }
 
+    /**
+     * Delegate prints and writes to a Term via TermWriter.
+     */
+    private final class TermErrWriter extends OutputWriter {
+
+	TermErrWriter() {
+	    super(term.getOut());
+	}
+
+	@Override
+	public void println(String s, OutputListener l) throws IOException {
+	    TerminalInputOutput.this.println(s, l, false, Color.red);
+	}
+
+	@Override
+	public void println(String s, OutputListener l, boolean important) throws IOException {
+	    TerminalInputOutput.this.println(s, l, important, Color.red);
+	}
+
+	@Override
+	public void println(String x) {
+	    TerminalInputOutput.this.println(x, Color.red);
+	}
+
+	@Override
+	public void reset() throws IOException {
+	    // no-op
+	}
+
+    }
+
     private static class TerminalOutputEvent extends OutputEvent {
         private final String text;
 
@@ -462,7 +494,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     public StreamTerm term() {
         return term;
     }
-    
+
     /**
      * Stream to write to stuff being output by the proceess destined for the
      * terminal.
@@ -499,7 +531,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public OutputWriter getErr() {
-        throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	// workaround for #182063: -  UnsupportedOperationException
+	if (errWriter == null) {
+	    errWriter = new TermErrWriter();
+	}
+	return errWriter;
     }
 
     @Override

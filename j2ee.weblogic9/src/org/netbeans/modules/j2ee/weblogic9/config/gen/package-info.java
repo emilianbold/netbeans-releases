@@ -73,6 +73,15 @@
         attrProp=true,
         removeUnreferencedNodes=true,
         docRoot="weblogic-web-app"
+    ),
+    @Schema2Beans(
+        schema="../../resources/weblogic-jdbc-data-source.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="jdbc-data-source"
     )
 })
 package org.netbeans.modules.j2ee.weblogic9.config.gen;

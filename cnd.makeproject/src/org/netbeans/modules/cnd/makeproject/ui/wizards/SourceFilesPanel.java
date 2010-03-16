@@ -274,7 +274,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             if (data == null) {
                 return null;
             }
-            return data.get(col).getFolderName();
+            return data.get(row).getFolderName();
         }
 
         @Override

@@ -47,15 +47,7 @@ import org.openide.nodes.Children;
 public class DllNode extends CndDataNode {
 
     public DllNode(DllObject obj) {
-	this(obj, Children.LEAF);
-    }
-
-    public DllNode(DllObject obj, Children ch) {
-	super(obj, ch);
+	super(obj, Children.LEAF, obj.getLookup());
 	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ShobjElfIcon.gif");	// NOI18N
-    }
-
-    private DllObject getShobjElfObject() {
-	return (DllObject) getDataObject();
     }
 }
