@@ -138,8 +138,10 @@ public class SvnHookImpl extends SvnHook {
 
     @Override
     public void afterCommit(SvnHookContext context) {
-        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
-        VCSHooksConfig.getInstance().setSvnLink(isLinkSelected());
+        if(panel == null) {
+            LOG.fine("no settings for afterCommit");                                // NOI18N
+            return;
+        }
 
         if(context.getFiles().length == 0) {
             LOG.warning("calling svn afterCommit for zero files");              // NOI18N
@@ -149,6 +151,15 @@ public class SvnHookImpl extends SvnHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "svn afterCommit start for " + file);               // NOI18N
 
+        Issue issue = getIssue();
+        if (issue == null) {
+            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+            return;
+        }
+
+        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
+        VCSHooksConfig.getInstance().setSvnLink(isLinkSelected());
+
         if(!isLinkSelected() &&
            !isResolveSelected())
         {
@@ -156,11 +167,6 @@ public class SvnHookImpl extends SvnHook {
             return;
         }
 
-        Issue issue = getIssue();
-        if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
-            return;
-        }
         
         String msg = null;
         if(isLinkSelected()) {
@@ -206,10 +212,10 @@ public class SvnHookImpl extends SvnHook {
             referenceFile = context.getFiles()[0];
         }
 
-        panel = new HookPanel();
-        panel.linkCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnLink());
-        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getSvnResolve());
-        panel.commitRadioButton.setSelected(false);
+        panel = new HookPanel(
+                    VCSHooksConfig.getInstance().getSvnLink(),
+                    VCSHooksConfig.getInstance().getSvnResolve(),
+                    false);
 
         if (referenceFile != null) {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);

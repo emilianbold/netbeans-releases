@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -185,7 +186,7 @@ public final class BugtrackingManager implements LookupListener {
         }
         List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
-            l = new ArrayList<RecentIssue>();
+            l = new LinkedList<RecentIssue>();
             getRecentIssues().put(repo.getID(), l);
         }
         for (RecentIssue i : l) {
@@ -193,9 +194,6 @@ public final class BugtrackingManager implements LookupListener {
                 l.remove(i);
                 break;
             }
-        }
-        if(l.size() == 5) {
-            l.remove(4);
         }
         l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
         if(LOG.isLoggable(Level.FINE)) {

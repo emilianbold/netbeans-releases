@@ -324,68 +324,23 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         }
 
-                        /*
-                        for (Object s : props.keySet()) {
-                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
-                        "[" + s + "] = " + props.get(s));
-                        }
-                         */
-                        /*
-                        File tmpProps = null;
                         try {
-                        tmpProps = File.createTempFile("nbi-properties-", ".properties");
-                        FileOutputStream fos = new FileOutputStream(tmpProps);
-                        props.store(fos, null);
-                        fos.close();
-                        } catch (IOException ex) {
-                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
-                        }*/
-                        try {
-                            /*final ExecutorTask executorTask = */ActionUtils.runTarget(findGenXml(), new String[]{"build"}, props);
-                            /*
-                            executorTask.addTaskListener(new TaskListener() {
-
-                            public void taskFinished(Task task) {
-                            if (executorTask.result() == 0) {
-                            try {
-                            ActionUtils.runTarget(findInstXml(prj), new String[]{"build"}, new Properties());
-                            } catch (FileStateInvalidException ex) {
-                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
-                            } catch (IOException ex) {
-                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
-
-                            }
-                            }
-                            }
-                            });*/
+                            ActionUtils.runTarget(findGenXml(), new String[]{"build"}, props);
                         } catch (FileStateInvalidException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         } catch (IOException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         }
-
-                        /*
-                        if (tmpProps != null && !tmpProps.delete() && tmpProps.exists()) {
-                        tmpProps.deleteOnExit();
-                        }*/
                     }
 
         }
 
-//        private static FileObject findBuildXml(Project project) {
-//            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//        }
 
         private static FileObject findGenXml() {
             return FileUtil.toFileObject(InstalledFileLocator.getDefault().locate(
                     "nbi/stub/template.xml",
                     "org.netbeans.libs.nbi.ant", false));
         }
-
-//        private static FileObject findInstXml(Project project) throws FileStateInvalidException {
-//            return project.getProjectDirectory().getFileObject("build/installer/build.xml");
-//        }
-
     }
 }
 
