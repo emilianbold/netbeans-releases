@@ -74,6 +74,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.beans.Introspector;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1281,7 +1282,7 @@ public class ActionManager {
                             if(TypeKind.BOOLEAN.equals(el.getReturnType().getKind())) {
                                 String name = el.getSimpleName().toString();
                                 if(name.startsWith("is") && name.length()>2) { // NOI18N
-                                    props.add(name.substring(2,3).toLowerCase()+name.substring(3));//el.getSimpleName().toString().substring(3));
+                                    props.add(Introspector.decapitalize(name.substring(2)));
                                 }
                             }
                         }
