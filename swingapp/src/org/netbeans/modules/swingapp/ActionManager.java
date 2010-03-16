@@ -1283,6 +1283,8 @@ public class ActionManager {
                                 String name = el.getSimpleName().toString();
                                 if(name.startsWith("is") && name.length()>2) { // NOI18N
                                     props.add(Introspector.decapitalize(name.substring(2)));
+                                } else if (name.startsWith("get") && name.length()>3) { // NOI18N
+                                    props.add(Introspector.decapitalize(name.substring(3)));
                                 }
                             }
                         }
