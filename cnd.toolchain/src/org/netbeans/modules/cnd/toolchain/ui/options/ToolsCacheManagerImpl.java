@@ -96,7 +96,6 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     @Override
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
-        fireChange(this);
     }
     
     @Override

@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
         this.failmsg = failmsg;
     }
 
+    @Override
     public void open() {
         ProcessBuilder pb = new ProcessBuilder(program, dao.getPrimaryFile().getPath());
         try {

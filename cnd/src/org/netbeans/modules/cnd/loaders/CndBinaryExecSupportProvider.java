@@ -45,7 +45,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * TODO: Is it needed class? All binaries data objects create binary support in constructors.
@@ -82,12 +81,12 @@ public final class CndBinaryExecSupportProvider extends CndCookieProvider {
 
         @Override
         public String id(MultiDataObject obj) {
-            return BinaryExecSupport.class.getName();
+            return BinaryExecSupport.class.getName()+obj.getPrimaryFile().getPath();
         }
 
         @Override
         public String displayName(MultiDataObject obj) {
-            return BinaryExecSupport.class.getName();
+            return id(obj);
         }
     }
 }
