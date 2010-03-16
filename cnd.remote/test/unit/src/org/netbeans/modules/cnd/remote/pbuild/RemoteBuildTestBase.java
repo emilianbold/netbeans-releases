@@ -120,7 +120,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 wiz.putProperty("name", destdir.getName());
                 wiz.putProperty("projdir", destdir);
                 try {
-                    projectCreator.instantiate(wiz);
+                    projectCreator.instantiate();
                 } catch (IOException ex) {
                     exRef.set(ex);
                 }
