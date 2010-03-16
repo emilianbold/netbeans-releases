@@ -202,19 +202,29 @@ final class AnalyzeStackTopComponent extends TopComponent {
             String currentLine = null;
             String lastLine = null;
             try {
-                for (;;) {
-                    currentLine = r.readLine ();
-                    if (currentLine == null) break;
-                    currentLine = currentLine.trim ();
-                    if (lastLine == null && currentLine.equals ("at")) {
-                        lastLine = currentLine;
-                        continue;
-                    }
-                    if (lastLine != null) {
-                        currentLine = lastLine + ' ' + currentLine;
+                while ((currentLine = r.readLine()) != null) {
+                    currentLine = currentLine.trim();
+                    if (StackLineAnalyser.matches(currentLine)) {
+                        if (lastLine != null) {
+                            model.addElement(lastLine);
+                        }
+                        model.addElement (currentLine);
                         lastLine = null;
+                    } else {
+                        if (lastLine == null) {
+                            lastLine = currentLine;
+                        } else {
+                            String together = lastLine + currentLine;
+                            if (StackLineAnalyser.matches(together)) {
+                                model.addElement(together);
+                                lastLine = null;
+                            } else {
+                                model.addElement(lastLine);
+                                lastLine = currentLine;
+                            }
+                        }
                     }
-                    model.addElement (currentLine);
+                    
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
