@@ -94,7 +94,7 @@ public class UpdateAction extends ContextAction {
         File[] files = HgUtils.filterForRepository(ctx, root, false);
         String rev = null;
 
-        final Update update = new Update(root, files);
+        final Update update = new Update(root);
         if (!update.showDialog()) {
             return;
         }
