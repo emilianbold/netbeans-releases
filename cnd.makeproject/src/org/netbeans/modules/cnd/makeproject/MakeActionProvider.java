@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -662,17 +663,11 @@ public final class MakeActionProvider implements ActionProvider {
             }
             if (targetFolder != null) {
                 if (targetFolder.isTest()) {
-                    Item[] items = targetFolder.getAllItemsAsArray();
-                    for (int k = 0; k < items.length; k++) {
-                        path = items[k].getPath();
-                        path = path.replaceFirst("\\..*", ""); // NOI18N
-
-                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
-
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    if(compilerSet != null) {
+                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + '/' + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, targetFolder.getPath())); // NOI18N
                         path = conf.expandMacros(path);
-
                         path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
-
                     }
                 }
             }
@@ -863,28 +858,28 @@ public final class MakeActionProvider implements ActionProvider {
                 list.add(targetFolder);
             }
 
-            loop: for (Folder folder : list) {
-                Item[] items = folder.getAllItemsAsArray();
-                for (int k = 0; k < items.length; k++) {
-                    String test = items[k].getName();
-                    test = test.replaceFirst("\\..*", ""); // NOI18N
-
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand;
-                    buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + test, ""); // NOI18N
-                    String args = "";
-                    int index = buildCommand.indexOf(' ');
-                    if (index > 0) {
-                        args = buildCommand.substring(index + 1);
-                        buildCommand = buildCommand.substring(0, index);
-                    }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                    profile.setArgs(args);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
-                    actionEvents.add(projectActionEvent);
-
-                    break loop;
+            for (Folder folder : list) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if(compilerSet == null) {
+                    continue;
                 }
+                String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String buildCommand;
+                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + target, ""); // NOI18N
+                String args = "";
+                int index = buildCommand.indexOf(' ');
+                if (index > 0) {
+                    args = buildCommand.substring(index + 1);
+                    buildCommand = buildCommand.substring(0, index);
+                }
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                profile.setArgs(args);
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+                actionEvents.add(projectActionEvent);
+
+                break;
             }
         }
 
