@@ -67,24 +67,30 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     public MakeSampleProjectIterator() {
     }
 
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panel;
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return false;
     }
 
+    @Override
     public void initialize(TemplateWizard templateWizard) {
         int i = 0;
         this.wiz = templateWizard;
@@ -104,6 +110,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
     }
 
+    @Override
     public void uninitialize(org.openide.loaders.TemplateWizard templateWizard) {
         panel = null;
         index = -1;
@@ -111,16 +118,19 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         this.wiz.putProperty("name", null); // NOI18N
     }
 
+    @Override
     public Set<DataObject> instantiate(TemplateWizard templateWizard) throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
         return MakeSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
     }
 
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -128,6 +138,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
