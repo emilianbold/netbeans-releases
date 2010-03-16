@@ -151,7 +151,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param majorAxisSpan
      */
-    void setMajorAxisSpan(double majorAxisSpan) {
+    protected void setMajorAxisSpan(double majorAxisSpan) {
         this.majorAxisSpan = majorAxisSpan;
     }
 
@@ -164,7 +164,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param minorAxisSpan
      */
-    void setMinorAxisSpan(float minorAxisSpan) {
+    protected void setMinorAxisSpan(float minorAxisSpan) {
         this.minorAxisSpan = minorAxisSpan;
     }
 
@@ -213,11 +213,6 @@ public abstract class EditorBoxView extends EditorView {
         return children.getViewMajorAxisSpan(this, index);
     }
 
-    @Override
-    public void setParent(View parent) {
-        super.setParent(parent);
-    }
-    
     public void releaseChildren() {
         if (children != null) {
             children = null;
@@ -262,9 +257,7 @@ public abstract class EditorBoxView extends EditorView {
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
         }
-        ReplaceResult result = new ReplaceResult();
-        children.replace(this, result, index, length, (EditorView[]) views, offsetDelta, alloc);
-        return result;
+        return children.replace(this, new ReplaceResult(), index, length, (EditorView[]) views, offsetDelta, alloc);
     }
 
     /**
@@ -317,7 +310,7 @@ public abstract class EditorBoxView extends EditorView {
             }
             double delta = newSpan - origSpan;
             if (delta != 0d) { // TODO (diff < epsilon) instead ?
-                children.fixOffsetsAndSpan(this, childViewIndex + 1, 0, delta);
+                children.fixOffsetsAndMajorSpan(this, childViewIndex + 1, 0, delta);
             } else {
                 majorSpanChange = false; // No real change
             }
@@ -326,7 +319,7 @@ public abstract class EditorBoxView extends EditorView {
             int minorAxis = ViewUtils.getOtherAxis(majorAxis);
             float newSpan = childView.getPreferredSpan(minorAxis);
             if (newSpan > minorAxisSpan) {
-                minorAxisSpan = newSpan;
+                setMinorAxisSpan(newSpan);
             } else {
                 minorSpanChange = false; // No change for this view
             }
@@ -499,7 +492,7 @@ public abstract class EditorBoxView extends EditorView {
     }
 
     final void fixSpans(int index, int offsetDelta, double visualDelta) {
-        children.fixOffsetsAndSpan(this, index, offsetDelta, visualDelta);
+        children.fixOffsetsAndMajorSpan(this, index, offsetDelta, visualDelta);
     }
 
     @Override

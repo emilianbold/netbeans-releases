@@ -42,9 +42,12 @@ public final class CommandTerminalAction implements ActionListener {
 	dd.setClosingOptions(null);
 
 	Object closer = DialogDisplayer.getDefault().notify(dd);
-	if (closer == DialogDescriptor.CANCEL_OPTION ||
-	    closer == DialogDescriptor.CLOSED_OPTION) {
-
+	if (closer == DialogDescriptor.CANCEL_OPTION) {
+	    System.out.printf("Dialog cancelled\n");
+	    return;
+	}
+	if (closer == DialogDescriptor.CLOSED_OPTION) {
+	    System.out.printf("Dialog closed\n");
 	    return;
 	}
 
@@ -57,6 +60,7 @@ public final class CommandTerminalAction implements ActionListener {
 	final boolean restartable = terminalPanel.isRestartable();
 	final IOContainer container;
 	final IOProvider iop;
+	final boolean useInternalIOShuttle;
 
 	switch (terminalPanel.getContainerProvider()) {
 	    case TERM:
@@ -78,9 +82,28 @@ public final class CommandTerminalAction implements ActionListener {
 		break;
 	}
 
+	switch (terminalPanel.getIOShuttling()) {
+	    case EXTERNAL:
+		useInternalIOShuttle = false;
+		break;
+	    case INTERNAL:
+	    default:
+		useInternalIOShuttle = true;
+		break;
+	}
+
 	final Runnable runnable = new Runnable() {
 	    public void run() {
-		support.executeCommand(iop, container, cmd, restartable);
+		switch (terminalPanel.getExecution()) {
+		    case RICH:
+			support.executeRichCommand(iop, container, cmd,
+				                   restartable, useInternalIOShuttle);
+			break;
+		    case NATIVE:
+			support.executeNativeCommand(iop, container, cmd,
+				                     restartable, useInternalIOShuttle);
+			break;
+		}
 	    }
 	};
 

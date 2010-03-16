@@ -242,6 +242,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         char[] cbuf = new char[2];
         StringBuilder sb = new StringBuilder();
 
+        // LATER: shouldn't it use ProcessUtils.getReader?
         Reader r = new InputStreamReader(in);
 
         while (pos != len && r.read(cbuf, 0, 1) != -1) {

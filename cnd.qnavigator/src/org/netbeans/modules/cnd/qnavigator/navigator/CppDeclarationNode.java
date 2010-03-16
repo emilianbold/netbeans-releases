@@ -175,6 +175,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return 9*10+0;
     }
 
+    @Override
     public CsmObject getCsmObject() {
         if (CsmKindUtilities.isCsmObject(object)) {
             return (CsmObject) object;
@@ -198,6 +199,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         fireIconChange();
     }
     
+    @Override
     public int compareTo(CppDeclarationNode o) {
         int res = compareToWithoutOffset(o);
         if (res == 0) {
