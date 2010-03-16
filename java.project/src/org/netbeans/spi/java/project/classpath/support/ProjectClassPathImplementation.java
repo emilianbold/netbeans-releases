@@ -139,7 +139,6 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
                     final File f = PropertyUtils.resolveFile(this.projectFolder, piece);
-                    final boolean existsBefore = f.exists();
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
                         try {
@@ -153,10 +152,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                             } catch (MalformedURLException ex) {
                                 foStatus = "malformed"; //NOI18N
                             }
-                            final String log = String.format("File: %s, Property value: %s, Exists before: %b, Exists now: %b, FileObject: %s", //NOI18N
+                            final String log = String.format("File: %s, Property value: %s, Exists: %b, FileObject: %s", //NOI18N
                                     f.getAbsolutePath(),
                                     piece,
-                                    existsBefore,
                                     f.exists(),
                                     foStatus);
                             throw new IllegalArgumentException(log, iae);
