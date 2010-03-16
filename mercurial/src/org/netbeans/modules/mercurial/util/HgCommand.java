@@ -370,7 +370,7 @@ public class HgCommand {
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
     static {
-        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(14);
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(15);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
@@ -380,6 +380,7 @@ public class HgCommand {
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_RESOLVE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
@@ -1181,8 +1182,8 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        command.add(HG_VERBOSE_CMD);
         if (limit >= 0) {
                 command.add(HG_LOG_LIMIT_CMD);
                 command.add(Integer.toString(limit));
@@ -3307,7 +3308,12 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(FileUtil.normalizeFile(file).getAbsolutePath());
-        List<String> list = exec(command);
+        List<String> list;
+        try {
+            list = exec(command);
+        } finally {
+            Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+        }
 
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {

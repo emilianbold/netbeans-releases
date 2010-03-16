@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
  * @author Jiri Rechtacek
  */
 public class RailsProjectUtil {
-    
+
     private RailsProjectUtil () {}
 
     /**
@@ -306,10 +306,15 @@ public class RailsProjectUtil {
             if (splitted.length == 2) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]));
-            } else if (splitted.length >= 3) {
+            } else if (splitted.length == 3) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));
+            } else if (splitted.length == 4) {
+                return new RailsVersion(Integer.parseInt(splitted[0]),
+                        Integer.parseInt(splitted[1]),
+                        Integer.parseInt(splitted[2]),
+                        splitted[3]);
             }
         } catch (NumberFormatException ne) {
             return new RailsVersion(0);
@@ -325,6 +330,7 @@ public class RailsProjectUtil {
         private final int major;
         private final int minor;
         private final int revision;
+        private final String suffix;
 
         public RailsVersion(int major) {
             this(major, 0);
@@ -334,9 +340,14 @@ public class RailsProjectUtil {
         }
 
         public RailsVersion(int major, int minor, int revision) {
+            this(major, minor, revision, "");
+        }
+
+        public RailsVersion(int major, int minor, int revision, String suffix) {
             this.major = major;
             this.minor = minor;
             this.revision = revision;
+            this.suffix = suffix;
         }
 
         public int getMajor() {
@@ -351,8 +362,16 @@ public class RailsProjectUtil {
             return revision;
         }
 
+        public String getSuffix() {
+            return suffix;
+        }
+
         public String asString() {
-            return getMajor() + "." + getMinor() + "." + getRevision();
+            String result = getMajor() + "." + getMinor() + "." + getRevision();
+            if (getSuffix().length() > 0) {
+                result += "." + getSuffix();
+            }
+            return result;
         }
 
         public boolean isRails3OrHigher() {
@@ -371,7 +390,7 @@ public class RailsProjectUtil {
                     if (revision > o.revision) {
                         return 1;
                     }
-                    return revision == o.revision ? 0 : -1;
+                    return revision == o.revision ? this.suffix.compareTo(o.suffix) : -1;
                 }
             }
             return -1;

@@ -75,6 +75,12 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
         connectionLabel.setVisible(false);
     }
 
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        controller.cancel();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
