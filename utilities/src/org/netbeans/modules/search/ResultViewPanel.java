@@ -956,10 +956,14 @@ class ResultViewPanel extends JPanel{
             for (i = currMatchingObjIndex + 1; i < matchingObjs.length; i++) {
                 nextMatchingObj = matchingObjs[i];
                 if (resultModel.hasDetails(nextMatchingObj)) {
+                    Node[] details = resultModel.getDetails(nextMatchingObj);
+                    if(details == null) { // #177642
+                        continue;
+                    }
                     return new TreePath(new Object[] {
                             root,
                             nextMatchingObj,
-                            resultModel.getDetails(nextMatchingObj)[0]});
+                            details[0]});
                 }
             }
         } else {

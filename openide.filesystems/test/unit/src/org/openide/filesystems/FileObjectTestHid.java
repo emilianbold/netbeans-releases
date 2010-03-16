@@ -1197,6 +1197,15 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
 
+    public void testGetMIMETypeCachedInAtomicAction() throws IOException {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                testGetMIMETypeCached();
+            }
+        });
+    }
+
     public static final class MR extends MIMEResolver {
         public static FileObject tested;
         

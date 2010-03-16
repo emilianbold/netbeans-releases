@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
+import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -57,6 +58,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
@@ -77,6 +79,14 @@ public class CopyFinderTest extends NbTestCase {
         super(testName);
     }
 
+//    public static TestSuite suite() {
+//        NbTestSuite nb = new NbTestSuite();
+//
+//        nb.addTest(new CopyFinderTest("testCorrectSite3"));
+//
+//        return nb;
+//    }
+    
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
@@ -195,11 +205,10 @@ public class CopyFinderTest extends NbTestCase {
 //    }
 
     public void testOverridingImplementing1() throws Exception {
-        doPerformTest("package test; public class Test {public void test() { T t = null; t.test(); test(); } public static class T extends Test { public void test() { } } }", 98 - 22, 104 - 22, -1, 88 - 22, 96 - 22);
-    }
-
-    public void testOverridingImplementing2() throws Exception {
-        doPerformTest("package test; public class Test {public static class T extends Test { public void test() { Test t = null; t.test(); test(); } } public void test() { } }", 130 - 24, 138 - 24, -1, 140 - 24, 146 - 24);
+        performVariablesTest("package test; public class Test implements Runnable { { this.run(); } public void run() { } } }",
+                             "$0{java.lang.Runnable}.run()",
+                             new Pair[] {new Pair<String, int[]>("$0", new int[] {56, 60})},
+                             new Pair[0]);
     }
 
     public void testMemberSelectCCE() throws Exception {
@@ -412,7 +421,7 @@ public class CopyFinderTest extends NbTestCase {
 
     public void testTryCatch() throws Exception {
         performVariablesTest("package test; import java.io.*; public class Test { public void test() { InputStream ins = null; try { ins = new FileInputStream(\"\"); } catch (IOException e) { e.printStackTrace(); } finally {ins.close();} } }",
-                             "try {$stmts$;} catch (java.io.IOException $e) {$e.printStackTrace();} finally {$finally$}",
+                             "try {$stmts$;} catch (java.io.IOException $e) {$e.printStackTrace();} finally {$finally$;}",
                              new Pair[] {
                                    new Pair<String, int[]>("$e", new int[] {176 - 31 - 2, 189 - 31 - 2}),
                              },
@@ -670,12 +679,38 @@ public class CopyFinderTest extends NbTestCase {
                              "}\n",
                              "i");
     }
-    
+
     public void testVariableMemberSelect() throws Exception {
         performVariablesTest("package test; public class Test {public void test(String str) { str.length(); str.length(); } public void test1(String str) { str.length(); str.isEmpty(); } }",
                              "{ $str.$method(); $str.$method(); }",
                              new Pair[0],
                              new Pair[] {new Pair<String, String>("$method", "length")});
+    }
+
+    public void testCorrectSite1() throws Exception {
+        performVariablesTest("package test; public class Test { public void test(Object o) { o.wait(); } }",
+                             "$s{java.util.concurrent.locks.Condition}.wait()",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true);
+    }
+
+    public void testCorrectSite2() throws Exception {
+        performVariablesTest("package test; public class Test { public void test(Object o) { wait(); } }",
+                             "$s{java.util.concurrent.locks.Condition}.wait()",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true);
+    }
+
+    public void testCorrectSite3() throws Exception {
+        performVariablesTest("package test; public abstract class Test implements java.util.concurrent.locks.Condition { public void test() { new Runnable() { public void run() { wait(); } } } }",
+                             "$s{java.util.concurrent.locks.Condition}.wait()",
+                             new Pair[0],// {new Pair<String, int[]>("$s", new int[] {-1, -1})},
+                             new Pair[0],
+                             new Pair[0]);
     }
 
     protected void prepareTest(String code) throws Exception {

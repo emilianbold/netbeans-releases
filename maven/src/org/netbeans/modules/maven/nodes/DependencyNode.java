@@ -635,6 +635,7 @@ public class DependencyNode extends AbstractNode {
             final List<Artifact> unremoved = new ArrayList<Artifact>();
 
             final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     for (Artifact art : artifacts) {
                         org.netbeans.modules.maven.model.pom.Dependency dep =

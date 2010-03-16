@@ -329,7 +329,6 @@ o.n.m.groovy.support                      OptionsDialog/Advanced/o-n-m-groovy-su
 o.n.m.javacard.project                    OptionsDialog/Advanced/o-n-m-javacard-options-javacardAdvancedOption.instance
 o.n.m.mobility.svgcore                    OptionsDialog/Advanced/o-n-m-mobility-svgcore-options-SvgcoreAdvancedOption.instance
 o.n.m.perspective                         OptionsDialog/Advanced/o-n-m-perspective-options-PerspectiveAdvancedOption.instance
-o.n.m.spellchecker                        OptionsDialog/Advanced/o-n-m-spellchecker-options-SpellcheckerOption.instance
 o.n.m.tasklist.usertasks                  OptionsDialog/Advanced/o-n-m-tasklist-usertasks-Options.instance
 o.n.m.visualweb.designer.jsf              OptionsDialog/Advanced/o-n-m-visualweb-designer-jsf-JsfDesignerAdvancedOptions.instance
 o.n.m.vmd.componentssupport               OptionsDialog/Advanced/o-n-m-vmd-componentssupport-options-ComponentssupportAdvancedOption.instance

@@ -91,8 +91,7 @@ final class IOShuttle {
         private final char[] buf = new char[BUFSZ];
 
         InputMonitor(Reader reader, Writer writer) {
-            super("ExecutorUnix.InputMonitor");
-            // NOI18N
+            super("ExecutorUnix.InputMonitor");			// NOI18N
             this.reader = reader;
             this.writer = writer;
 
@@ -112,6 +111,8 @@ final class IOShuttle {
                     writer.flush();
                 }
                 writer.close();
+            } catch (IOException e) {
+		// no-op
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }

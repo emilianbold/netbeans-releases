@@ -181,7 +181,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, setModified);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
 
                 }
             } else {
@@ -1037,7 +1037,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             assert false;
             return;
         }
-        /*Folder top =*/ getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
+        /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
     }
 
     @Override
@@ -1112,7 +1112,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder

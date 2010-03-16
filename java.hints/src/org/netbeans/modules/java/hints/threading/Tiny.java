@@ -90,8 +90,6 @@ public class Tiny {
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"))
     })
     public static ErrorDescription notifyOnCondition(HintContext ctx) {
-        if (!isCondition(ctx, "$cond")) return null;
-        
         String method = methodName((MethodInvocationTree) ctx.getPath().getLeaf());
         String toName = method.endsWith("All") ? "signalAll" : "signal";
 
@@ -119,8 +117,6 @@ public class Tiny {
                         })
     })
     public static ErrorDescription waitOnCondition(HintContext ctx) {
-        if (!isCondition(ctx, "$cond")) return null;
-
         //TODO: =>await?
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_WaitOnCondition");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -444,27 +440,5 @@ public class Tiny {
         }
 
         return LOOP_KINDS.contains(inspect.getLeaf().getKind()) ? inspect : null;
-    }
-
-    
-
-
-    //Workarounding #181580:
-    private static boolean isCondition(HintContext ctx, String variable) {
-        TypeElement condEl = ctx.getInfo().getElements().getTypeElement("java.util.concurrent.locks.Condition");
-        TreePath var = ctx.getVariables().get(variable);
-
-        if (condEl == null || var == null) {
-            return false;
-        }
-        
-        TypeMirror  varType = ctx.getInfo().getTrees().getTypeMirror(var);
-        TypeMirror  condType = condEl.asType();
-
-        if (condType == null || varType == null) {
-            return false;
-        }
-
-        return ctx.getInfo().getTypes().isSubtype(varType, condType);
     }
 }

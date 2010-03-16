@@ -151,6 +151,7 @@ public class CssCompletionItem implements CompletionProposal {
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
 
+    protected static int SORT_PRIORITY = 300;
 
     private CssCompletionItem() {
     }
@@ -238,7 +239,7 @@ public class CssCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return 0;
+        return SORT_PRIORITY;
     }
 
     private static ImageIcon createIcon(String colorCode) {
@@ -349,6 +350,8 @@ public class CssCompletionItem implements CompletionProposal {
 
     static class HashColorCompletionItem extends ColorCompletionItem {
 
+        private static int HASH_COLOR_SORT_PRIORITY = SORT_PRIORITY - 10;
+
         private boolean usedInCurrentFile;
 
         private HashColorCompletionItem(CssElement element,
@@ -377,7 +380,7 @@ public class CssCompletionItem implements CompletionProposal {
 
         @Override
         public int getSortPrioOverride() {
-            return super.getSortPrioOverride() + (usedInCurrentFile ? 1 : 0);
+            return HASH_COLOR_SORT_PRIORITY - (usedInCurrentFile ? 1 : 0);
         }
 
         @Override
@@ -543,7 +546,7 @@ public class CssCompletionItem implements CompletionProposal {
 
         @Override
         public int getSortPrioOverride() {
-            return super.getSortPrioOverride() + (related ? 1 : 0);
+            return super.getSortPrioOverride() - (related ? 1 : 0);
         }
     }
 
