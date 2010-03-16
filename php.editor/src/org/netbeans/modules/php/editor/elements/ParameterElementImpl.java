@@ -58,19 +58,23 @@ public final class ParameterElementImpl implements ParameterElement {
     private final int offset;
     private boolean isRawType;
     private boolean isMandatory;
+    private boolean isReference;
 
     public ParameterElementImpl(
             final String name,
             final String defaultValue,
             final int offset,
             final Set<TypeResolver> types,
-            final boolean isRawType) {
+            final boolean isMandatory,
+            final boolean isRawType,
+            final boolean isReference) {
         this.name = name;
-        this.isMandatory = defaultValue == null;
-        this.defaultValue = defaultValue != null ? decode(defaultValue) : null;//NOI18N
+        this.isMandatory = isMandatory;
+        this.defaultValue = (!isMandatory && defaultValue != null) ? decode(defaultValue) : "";//NOI18N
         this.offset = offset;
         this.types = types;
         this.isRawType = isRawType;
+        this.isReference = isReference;
 
     }
 
@@ -96,9 +100,11 @@ public final class ParameterElementImpl implements ParameterElement {
             String paramName = parts[0];
             Set<TypeResolver> types = TypeResolverImpl.parseTypes(parts[1]);
             boolean isRawType = Integer.parseInt(parts[2]) > 0;
+            boolean isMandatory = Integer.parseInt(parts[4]) > 0;
+            boolean isReference = Integer.parseInt(parts[5]) > 0;
             String defValue = parts.length > 3 ? parts[3] : null;
             retval = new ParameterElementImpl(
-                    paramName, defValue, -1, types, isRawType);
+                    paramName, defValue, -1, types, isMandatory, isRawType, isReference);
         }
         return retval;
     }
@@ -119,6 +125,10 @@ public final class ParameterElementImpl implements ParameterElement {
             final String defVal = getDefaultValue();
             sb.append(encode(defVal));
         }
+        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(isMandatory ? 1 : 0);
+        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(isReference ? 1 : 0);
         checkSignature(sb);
         return sb.toString();
     }
@@ -236,6 +246,7 @@ public final class ParameterElementImpl implements ParameterElement {
 //                parsedParameter.getDefaultValue() == null :
 //                getDefaultValue().equals(parsedParameter.getDefaultValue()));
 //            assert isMandatory() == parsedParameter.isMandatory();
+            assert isReference() == parsedParameter.isReference();
         }
     }
 
@@ -261,6 +272,9 @@ public final class ParameterElementImpl implements ParameterElement {
                 }
             }
         }
+        if (isReference()) {
+            sb.append(VariableElementImpl.REFERENCE_PREFIX);
+        }
         sb.append(getName());
         String defVal = getDefaultValue();
         if (!isMandatory()) {
@@ -271,5 +285,10 @@ public final class ParameterElementImpl implements ParameterElement {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean isReference() {
+        return isReference;
     }
 }
