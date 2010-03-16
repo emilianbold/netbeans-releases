@@ -630,47 +630,35 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         {
             boolean instanceContext = !staticContext;
 
-            if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+            if (tokenSequence.token().id() != PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
+                    && tokenSequence.token().id() != PHPTokenId.PHP_OBJECT_OPERATOR) {
                 tokenSequence.movePrevious();
             }
             tokenSequence.movePrevious();
-
+            if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+                tokenSequence.movePrevious();
+            }
             String varName = tokenSequence.token().text().toString();
+            tokenSequence.moveNext();
+
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
             Collection<? extends TypeScope> types = Collections.emptyList();
 
+            if (staticContext && varName.startsWith("$")) {
+                return;
+            }
+            types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             if (varName.equals("self")) { //NOI18N
-                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-                if (!types.isEmpty()) {
-                    staticContext = true;
-                }
+                staticContext = true;
             } else if (varName.equals("parent")) { //NOI18N
                 invalidProposalsForClsMembers = Collections.emptyList();
-                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-                if (!types.isEmpty()) {
-                    TypeScope type = ModelUtils.getFirst(types);
-                    if (type != null) {
-                        staticContext = instanceContext = true;
-                    }
-                }
+                staticContext = true;
+                instanceContext = true;
             } else if (varName.equals("$this")) { //NOI18N
-                if (staticContext) {
-                    return;
-                }
-                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-                if (!types.isEmpty()) {
-                    staticContext = false;
-                    instanceContext = true;
-                }
+                staticContext = false;
+                instanceContext = true;
             } else {
-                if (staticContext) {
-                    if (varName.startsWith("$")) {//NOI18N
-                        return;
-                    }
-                }
-                types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
-
                 if (types.isEmpty()) {
                     // frameworks
                     VariableScope variableScope = model.getVariableScope(request.anchor);
@@ -690,13 +678,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             if (types != null) {
-                Set<QualifiedName> processedTypeNames = new HashSet<QualifiedName>();
-                TypeElement enclosingType = getEnclosingType(request, types);                    
+                TypeElement enclosingType = getEnclosingType(request, types);
 
                 for (TypeScope typeScope : types) {
-                    String typeName = typeScope.getName();
-                    final QualifiedName qualifiedTypeName = typeScope.getNamespaceName().append(typeName);
-                    if (!processedTypeNames.add(qualifiedTypeName)) continue;
                     final StaticOrInstanceMembersFilter staticFlagFilter =
                             new StaticOrInstanceMembersFilter(staticContext, instanceContext);
                     
@@ -800,7 +784,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
         final boolean offerGlobalVariables = OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL);
-        final Prefix prefix = NameKind.prefix(QualifiedName.create(request.prefix));
+        final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
+        final NameKind prefix = NameKind.create(request.prefix,
+                isCamelCase ? Kind.CAMEL_CASE : Kind.PREFIX);
+
         final Set<VariableElement> globalVariables = new HashSet<VariableElement>();
        
         for (final PhpElement element : request.index.getTopLevelElements(prefix)) {

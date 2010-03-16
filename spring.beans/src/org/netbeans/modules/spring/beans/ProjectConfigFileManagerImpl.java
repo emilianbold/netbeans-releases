@@ -118,8 +118,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                     }
                     assert files != null;
                 }
-                List<File> result = new ArrayList<File>(files.size());
-                result.addAll(files);
+                List<File> result = new ArrayList<File>();
+                for (File file : files) {
+                    if (file.exists()) {
+                        result.add(file);
+                    }
+                }
                 return result;
             }
         });
@@ -143,6 +147,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 }
                 List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>(groups.size());
                 result.addAll(groups);
+                removeUnknownFiles(result, new HashSet<File>(files));
                 return result;
             }
         });
@@ -198,7 +203,10 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 list = configFileGroupsEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
                 readGroups(list, projectDir, newGroups);
             }
-            removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
+            List<File> modifiedList = removeUnknownFiles(newGroups, new HashSet<File>(newFiles));
+            if (modifiedList.size()>0) {
+                newFiles = modifiedList;
+            }
         }
         files = newFiles;
         groups = newGroups;
@@ -226,10 +234,16 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         }
     }
 
-    private void removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+    private List<File> removeUnknownFiles(List<ConfigFileGroup> newGroups, Set<File> knownFiles) {
+        boolean modified = false;
+        List<File> fileList = new ArrayList<File>();
         for (int i = 0; i < newGroups.size(); i++) {
             ConfigFileGroup group = newGroups.get(i);
             for (File file : group.getFiles()) {
+                if (!file.exists()) {
+                    knownFiles.remove(file);
+                    modified = true;
+                }
                 if (!knownFiles.contains(file)) {
                     // Found an unknown file, so we will need to remove all unknown files from this group.
                     List<File> newGroupFiles = new ArrayList<File>(group.getFiles().size());
@@ -243,6 +257,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
                 }
             }
         }
+        if (modified) {
+            for (File file: knownFiles) {
+                fileList.add(file);
+            }
+        }
+        return fileList;
     }
 
     private void writeConfiguration(List<File> files, List<ConfigFileGroup> groups) {
