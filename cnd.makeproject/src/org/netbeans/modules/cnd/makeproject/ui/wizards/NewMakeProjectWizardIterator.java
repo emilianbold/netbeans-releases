@@ -50,7 +50,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -192,6 +191,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return steps;
     }
 
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
@@ -255,6 +255,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     private transient WizardDescriptor.Panel[] simplePanels;
     private transient WizardDescriptor wiz;
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -276,6 +277,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir", null); // NOI18N
         this.wiz.putProperty("name", null); // NOI18N
@@ -288,6 +290,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         simplePanels = null;
     }
 
+    @Override
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName"), // NOI18N
                 new Object[]{Integer.valueOf(index + 1), Integer.valueOf(panels.length)});
@@ -297,6 +300,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         return wizardtype == TYPE_MAKEFILE && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
     }
 
+    @Override
     public boolean hasNext() {
         if (isSimple()) {
             return index < simplePanels.length - 1;
@@ -305,10 +309,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -316,6 +322,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -323,6 +330,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         index--;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         if (isSimple()) {
             return simplePanels[index];
@@ -332,12 +340,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-
+    
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
