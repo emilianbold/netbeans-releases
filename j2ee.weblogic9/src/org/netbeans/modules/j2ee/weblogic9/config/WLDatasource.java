@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,30 +34,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.editor.api.elements;
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-import java.util.Set;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
- * @author Radek Matous
+ *
+ * @author Petr Hejl
  */
-public interface ParameterElement {
-    String getName();
-    String asString();
-    boolean isReference();
-    Set<TypeResolver> getTypes();
-    @CheckForNull
-    String getDefaultValue();
-    /**
-     * @return false if the type information is taken from PHPDoc
-     */
-    boolean hasDeclaredType();
-    boolean isMandatory();
-    int  getOffset();
-    OffsetRange  getOffsetRange();
+public class WLDatasource implements Datasource {
+
+    private final String url;
+
+    private final String jndi;
+
+    private final String user;
+
+    private final String password;
+
+    private final String driver;
+
+    public WLDatasource(String url, String jndi, String user, String password, String driver) {
+        this.url = url;
+        this.jndi = jndi;
+        this.user = user;
+        this.password = password;
+        this.driver = driver;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return getJndiName();
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return driver;
+    }
+
+    @Override
+    public String getJndiName() {
+        return jndi;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return user;
+    }
+
 }
