@@ -91,6 +91,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -1266,12 +1267,12 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         NO_MATCH;
     }
     
-    protected VerifyResult verifyElements(TreePath node, TreePath p) {
+    protected @NonNull VerifyResult verifyElements(TreePath node, TreePath p) {
         Element nodeEl = info.getTrees().getElement(node);
         Element pEl    = info.getTrees().getElement(p);
 
         if (nodeEl == null) {
-            return pEl == null ? VerifyResult.MATCH : null; //TODO: correct? shouldn't be MATCH_CHECK_DEEPER?
+            return pEl == null ? VerifyResult.MATCH : VerifyResult.NO_MATCH_CONTINUE; //TODO: correct? shouldn't be MATCH_CHECK_DEEPER?
         }
 
         VerifyResult matchingResult;
