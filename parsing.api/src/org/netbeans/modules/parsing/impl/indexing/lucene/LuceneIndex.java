@@ -585,21 +585,22 @@ public class LuceneIndex implements IndexImpl, Evictable {
             default:
                 throw new UnsupportedOperationException (kind.toString());
         }
-        TermDocs tds = in.termDocs();
-        Set<Integer> docNums = new TreeSet<Integer>();
-        int[] docs = new int[25];
-        int[] freq = new int [25];
-        int len;
-        for(Term t : toSearch) {
-            tds.seek(t);
-            while ((len = tds.read(docs, freq))>0) {
-                for (int i = 0; i < len; i++) {
-                    docNums.add (docs[i]);
-                }
-                if (len < docs.length) {
-                    break;
+        final TermDocs tds = in.termDocs();
+        final Set<Integer> docNums = new TreeSet<Integer>();
+        try {
+            int[] docs = new int[25];
+            int[] freq = new int [25];
+            int len;
+            for(Term t : toSearch) {
+                tds.seek(t);
+                while ((len = tds.read(docs, freq))>0) {
+                    for (int i = 0; i < len; i++) {
+                        docNums.add (docs[i]);
+                    }
                 }
             }
+        } finally {
+            tds.close();
         }
         final FieldSelector selector = DocumentUtil.selector(fieldsToLoad);
         for (Integer docNum : docNums) {

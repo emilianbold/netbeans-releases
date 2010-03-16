@@ -77,25 +77,27 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         private boolean addLinkInfo = false;
         private boolean resolve = false;
         private boolean commit = false;
+        private boolean stored = false;
         void store() {
             addLinkInfo = linkCheckBox.isSelected();
             resolve = resolveCheckBox.isSelected();
             commit = commitRadioButton.isSelected();
 
             linkCheckBox.setSelected(false);
-            linkCheckBox.setSelected(false);
             resolveCheckBox.setSelected(false);
             commitRadioButton.setSelected(false);
+            stored = true;
         }
         void restore() {
             linkCheckBox.setSelected(addLinkInfo);
             resolveCheckBox.setSelected(resolve);
             commitRadioButton.setSelected(commit);
+            stored = false;
         }
     }
     private FieldValues fieldValues = null;
     
-    public HookPanel() {
+    public HookPanel(boolean link, boolean resolve, boolean commit) {
         initComponents();
         this.fieldValues = new FieldValues();
 
@@ -103,8 +105,13 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         issuePanel.add(qs, BorderLayout.NORTH);
         issueLabel.setLabelFor(qs.getIssueComponent());
 
+        linkCheckBox.setSelected(link);
+        resolveCheckBox.setSelected(resolve);
+        commitRadioButton.setSelected(commit);
+
+        enableFields();
+
         repositoryComboBox.addItemListener(this);
-        enableFields();        
     }
 
     Issue getIssue() {
@@ -117,19 +124,21 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 
     private void enableFields() {
         boolean repoSelected = isRepositorySelected();
-        boolean enableUpdateFields = repoSelected && (getIssue() != null);
+        boolean enableFields = repoSelected && (getIssue() != null);
 
-        if(!enableUpdateFields) {            
+        if(!enableFields && !fieldValues.stored) { // !fieldValues.stored ->
+                                                   //  storing twice would override
+                                                   //  the originaly stored values
             fieldValues.store();
-        } else {
+        } else if (enableFields) {
             fieldValues.restore();
         }
 
-        linkCheckBox.setEnabled(enableUpdateFields);
-        resolveCheckBox.setEnabled(enableUpdateFields);
-        pushRadioButton.setEnabled(enableUpdateFields);
-        commitRadioButton.setEnabled(enableUpdateFields);
-        changeFormatButton.setEnabled(enableUpdateFields);
+        linkCheckBox.setEnabled(enableFields);
+        resolveCheckBox.setEnabled(enableFields);
+        pushRadioButton.setEnabled(enableFields);
+        commitRadioButton.setEnabled(enableFields);
+        changeFormatButton.setEnabled(enableFields);
 
         issueLabel.setEnabled(repoSelected);
         qs.enableFields(repoSelected);

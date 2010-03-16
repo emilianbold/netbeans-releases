@@ -228,7 +228,7 @@ public final class NativeProcessInfo {
 
     private String quoteSpecialChars(String orig) {
         StringBuilder sb = new StringBuilder();
-        String escapeChars = (isWindows) ? " \"'()" : " \"'()!"; // NOI18N
+        String escapeChars = (isWindows) ? " &\"'()" : " &\"'()!"; // NOI18N
 
         for (char c : orig.toCharArray()) {
             if (escapeChars.indexOf(c) >= 0) { // NOI18N

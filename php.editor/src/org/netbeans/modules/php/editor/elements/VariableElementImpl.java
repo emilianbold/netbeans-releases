@@ -63,6 +63,7 @@ import org.openide.util.Parameters;
  */
 public final class VariableElementImpl extends PhpElementImpl implements VariableElement {
     public static final String DOLLAR_PREFIX = "$";//NOI18N
+    public static final String REFERENCE_PREFIX = "&";//NOI18N
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
     private final Set<TypeResolver> instanceTypes;
     public VariableElementImpl(

@@ -152,9 +152,7 @@ public final class AddExistingFolderItemsAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == addButton) {
-            Iterator<? extends SourceFolderInfo> iterator = sourceFilesPanel.getSourceListData().iterator();
-            while (iterator.hasNext()) {
-                SourceFolderInfo sourceFolderInfo = iterator.next();
+            for (SourceFolderInfo sourceFolderInfo : sourceFilesPanel.getSourceListData()) {
                 makeConfigurationDescriptor.addFilesFromRoot(folder, sourceFolderInfo.getFile(), false, false, sourceFilesPanel.getFileFilter());
             }
         }

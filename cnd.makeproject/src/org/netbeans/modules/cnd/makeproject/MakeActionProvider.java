@@ -319,7 +319,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
         ServerRecord record = ServerList.get(exeEnv);
         assert record != null;
-        invokeRemoteHostAction(record, actionWorker);
+        invokeLongAction(record, actionWorker);
     }
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
@@ -336,7 +336,7 @@ public final class MakeActionProvider implements ActionProvider {
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final CancellableTask actionWorker) {
+    private static void invokeLongAction(final ServerRecord record, final CancellableTask actionWorker) {
         CancellableTask wrapper;
         if (!record.isDeleted() && record.isOnline()) {
             wrapper = actionWorker;
@@ -1430,12 +1430,12 @@ public final class MakeActionProvider implements ActionProvider {
 
             buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
             buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
-            buildButton.addActionListener(this);
+            buildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.setMnemonic(getString("CleanBuildButtonMn").charAt(0));
-            rebuildButton.addActionListener(this);
+            rebuildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.getAccessibleContext().setAccessibleDescription(getString("CleanBuildButtonAD"));
             cleanButton.setMnemonic(getString("CleanButtonMn").charAt(0));
-            cleanButton.addActionListener(this);
+            cleanButton.addActionListener(BatchConfigurationSelector.this);
             cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
             closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
             // Show the dialog

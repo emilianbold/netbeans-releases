@@ -66,7 +66,7 @@ public class ExeObject extends MultiDataObject {
     }
 
     @Override
-    public synchronized Lookup getLookup() {
+    public final synchronized Lookup getLookup() {
         if (myLookup == null) {
             ic = new InstanceContent();
             ic.add(this);
@@ -80,7 +80,7 @@ public class ExeObject extends MultiDataObject {
     }
 
     @Override
-    public <T extends Cookie> T getCookie(Class<T> type) {
+    public final <T extends Cookie> T getCookie(Class<T> type) {
         return getLookup().lookup(type);
     }
 

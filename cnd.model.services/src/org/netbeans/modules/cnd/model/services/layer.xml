@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-cnd-sourcefile">
+                <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+            </folder>
+            <folder name="x-h">
+                <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                </file>
+            </folder>
+            <folder name="x-c++">
+                <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                </file>
+            </folder>
+
+            <folder name="x-c">
+                <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                </file>
+            </folder>
+
+            <folder name="x-fortran">
+                <file name="org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-model-services-FakeHighlightsFactory.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

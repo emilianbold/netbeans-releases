@@ -921,10 +921,9 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String path = PathUtils.getExePath(pid, execEnv);
             if (path != null) {
-                File exefile = new File(exepath);
                 try {
                     if (HostInfoUtils.fileExists(execEnv, exepath)) {
-                        if (comparePaths(path, exefile.getAbsolutePath())) {
+                        if (comparePaths(path, exepath)) {
                             return true;
                         }
                     }

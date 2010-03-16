@@ -60,9 +60,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /*package*/ abstract class CCCCompiler extends AbstractCompiler {
@@ -71,7 +71,7 @@ import org.openide.util.Utilities;
 
     private volatile Pair compilerDefinitions;
     private static File emptyFile = null;
-    
+
     protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
@@ -163,50 +163,56 @@ import org.openide.util.Utilities;
             }
         }
     }
-    
+
     @Override
     public void resetSystemProperties() {
         CndUtils.assertNonUiThread();
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
     }
-    
+
     protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {
         String compilerPath = getPath();
         if (compilerPath == null || compilerPath.length() == 0) {
             return;
         }
         ExecutionEnvironment execEnv = getExecutionEnvironment();
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
-        }
-        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
-            compilerPath = getDefaultPath();
-        }
-        if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
-            return;
-        }
-
-        List<String> argsList = new ArrayList<String>();
-        argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
-        argsList.add(getEmptyFile(execEnv));
-
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable(compilerPath);
-        npb.setArguments(argsList.toArray(new String[argsList.size()]));
-        npb.getEnvironment().prependPathVariable("PATH", ToolUtils.getDirName(compilerPath)); // NOI18N
-
         try {
+            if (execEnv.isLocal() && Utilities.isWindows()) {
+                compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+            }
+            if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                compilerPath = getDefaultPath();
+            }
+            if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                return;
+            }
+
+            List<String> argsList = new ArrayList<String>();
+            argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
+            argsList.add(getEmptyFile(execEnv));
+
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(compilerPath);
+            npb.setArguments(argsList.toArray(new String[argsList.size()]));
+            npb.getEnvironment().prependPathVariable("PATH", ToolUtils.getDirName(compilerPath)); // NOI18N
+
             NativeProcess process = npb.call();
-            InputStream stream = stdout? process.getInputStream() : process.getErrorStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            try {
-                parseCompilerOutput(reader, pair);
-            } finally {
-                reader.close();
+            if (process.getState() != State.ERROR) {
+                InputStream stream = stdout? process.getInputStream() : process.getErrorStream();
+                if (stream != null) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+                    try {
+                        parseCompilerOutput(reader, pair);
+                    } finally {
+                        reader.close();
+                    }
+                }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            throw ex;
+        } catch (Throwable ex) {
+            throw new IOException(ex);
         }
     }
 
@@ -222,7 +228,7 @@ import org.openide.util.Utilities;
         }
         return ""; // NOI18N
     }
-    
+
     /**
      * Determines whether the given macro presents in the list
      * @param macrosList list of macros strings (in the form "macro=value" or just "macro")

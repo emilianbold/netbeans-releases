@@ -154,8 +154,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     synchronized Query getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
-            
-            String url = getQueryUrl();
+            String url = getMyIssuesQueryUrl();
             myIssues =
                 new KenaiQuery(
                     NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
@@ -168,8 +167,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return myIssues;
     }
 
-    private String getQueryUrl() {
-        StringBuffer url = new StringBuffer();
+    private String getMyIssuesQueryUrl() {
+        StringBuilder url = new StringBuilder();
         url.append(urlParam);
         String user = getKenaiUser(kenaiProject);
         if (user == null) {
@@ -179,7 +178,8 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         // XXX what if user already mail address?
         // XXX escape @?
         String userMail = user + "@" + host; // NOI18N
-        url.append(MessageFormat.format(BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT, product, userMail));
+        String urlFormat = BugzillaUtil.isNbRepository(this) ? BugzillaConstants.NB_MY_ISSUES_PARAMETERS_FORMAT : BugzillaConstants.MY_ISSUES_PARAMETERS_FORMAT;
+        url.append(MessageFormat.format(urlFormat, product, userMail));
         return url.toString();
     }
 
@@ -306,7 +306,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
                     if(myIssues != null) {
                         // XXX this is a mess - setting the controller and the query
                         KenaiQueryController c = (KenaiQueryController) myIssues.getController();
-                        String url = getQueryUrl();
+                        String url = getMyIssuesQueryUrl();
                         c.populate(url);
                         myIssues.setUrlParameters(url);
                     }
