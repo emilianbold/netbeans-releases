@@ -166,8 +166,8 @@ public class WebUtils {
         //If there is a link ../C/file1 in file2 the bottom most folder is B
         //If there is a link ../../file0 in file2 the bottom most folder is A
         //If there is a link B/C/file1 in file0 the bottom most folder is A
-        assert !source.isFolder();
-        assert !link.startsWith("/"); //NOI18N
+        assert !source.isFolder() : "The source file " + source.getPath() + " is not a folder!"; //NOI18N
+        assert !link.startsWith("/") : "The relative link " + link + "starts with a slash!"; //NOI18N
         if(link.startsWith("./")) { //NOI18N
             link = link.substring(2); //cut off the ./
         }

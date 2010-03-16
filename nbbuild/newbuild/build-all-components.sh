@@ -43,7 +43,7 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines,vars
 ERROR_CODE=$?
 
 create_test_result "build.IDE" "Build IDE" $ERROR_CODE

@@ -504,13 +504,18 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    @Override
     public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
         assert groupId != null;
         assert artifactId != null;
         java.util.List<Dependency> deps = getDependencies();
         if (deps != null) {
             for (Dependency d : deps) {
-                if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId()) &&
+                String realGroupId = d.getGroupId();
+                if ("${project.groupId}".equals(realGroupId)) {
+                    realGroupId = getGroupId();
+                }
+                if (groupId.equals(realGroupId) && artifactId.equals(d.getArtifactId()) &&
                         (classifier == null || classifier.equals(d.getClassifier()))) {
                     return d;
                 }
@@ -519,6 +524,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    @Override
     public Profile findProfileById(String id) {
         assert id != null;
         java.util.List<Profile> profiles = getProfiles();

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
@@ -102,7 +103,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     private int allocatedColors = 0;
 
     private final Map<IOColors.OutputType, Color> typeColorMap =
-        new HashMap<IOColors.OutputType, Color>();
+        new EnumMap<IOColors.OutputType, Color>(IOColors.OutputType.class);
 
     private int outputColor = 0;
 
@@ -357,6 +358,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
 	    term.connect(pin, pout, perr);
+	}
+
+	@Override
+	protected void disconnect(Runnable continuation) {
+	    term.disconnect(continuation);
 	}
     }
 

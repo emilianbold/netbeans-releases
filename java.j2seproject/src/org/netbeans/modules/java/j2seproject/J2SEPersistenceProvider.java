@@ -310,7 +310,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                             ap = "";
                         }
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
-                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
+                        if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             SourceGroup firstGroup = groups[0];

@@ -86,6 +86,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         init(doc);
     }
 
+    @Override
     protected void updateFontColors(FontColorProvider provider) {
         for (SemanticEntity semanticEntity : SemanticEntitiesProvider.instance().get()) {
             semanticEntity.updateFontColors(provider);
@@ -142,12 +143,15 @@ public final class SemanticHighlighter extends HighlighterBase {
             DocumentListener listener =  null;
             if (interrupter instanceof InterrupterImpl) {
                 listener = new DocumentListener(){
+                    @Override
                     public void insertUpdate(DocumentEvent e) {
                         ((InterrupterImpl)interrupter).cancel();
                     }
+                    @Override
                     public void removeUpdate(DocumentEvent e) {
                         ((InterrupterImpl)interrupter).cancel();
                     }
+                    @Override
                     public void changedUpdate(DocumentEvent e) {
                     }
                 };
@@ -171,7 +175,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         long start = System.currentTimeMillis();
         if (csmFile != null && csmFile.isParsed()) {
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
+                LOG.log(Level.FINER, "Semantic Highlighting update() have started for file {0}", csmFile.getAbsolutePath());
             }
             final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
             final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
@@ -226,6 +230,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             // but not for huge documents
             if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
                 CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                    @Override
                     public void visit(CsmReferenceContext context) {
                         CsmReference ref = context.getReference();
                         for (ReferenceCollector c : collectors) {
@@ -242,7 +247,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
+                LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
             }
         }
         if (!interrupter.cancelled()){
@@ -281,6 +286,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     // PhaseRunner
+    @Override
     public void run(Phase phase) {
         if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
             InterrupterImpl interrupter = new InterrupterImpl();
@@ -303,10 +309,12 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
     
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public boolean isHighPriority() {
         return false;
     }

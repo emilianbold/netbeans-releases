@@ -424,7 +424,7 @@ public class PHPIndexTest extends TestBase {
         methods = index.getDeclaredMethods(clz);
         assertEquals(3, methods.size());
         methods = index.getInheritedMethods(clz);
-        assertEquals(2, methods.size());
+        assertEquals(3, methods.size());
         MethodElement firstMethod = getFirst(methods);
         TypeElement firstType = firstMethod.getType();
         final boolean isFirstTypeClass = firstType.getPhpElementKind().equals(PhpElementKind.CLASS);
@@ -435,7 +435,7 @@ public class PHPIndexTest extends TestBase {
         } else {
             assertEquals(firstType.getName(), clz.getSuperInterfaces().iterator().next().getName());
             assertEquals(getSecond(methods).getType().getName(), clz.getSuperClassName().getName());
-            assertEquals(firstMethod.getName(), "testMethodDeclarationIface2");
+            assertEquals(firstMethod.getName(), "testMethodDeclarationIface1");
         }
         Collection<String> methodNames = Arrays.asList(
                 new String[]{"testMethodDeclaration",
