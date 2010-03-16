@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -66,7 +67,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new Make project.
  */
-public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final long serialVersionUID = 1L;
     public static final String APPLICATION_PROJECT_NAME = "CppApplication"; // NOI18N
@@ -190,6 +191,17 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
         }
         return steps;
     }
+
+    @Override
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        try {
+            handle.start();
+            return instantiate();
+        } finally {
+            handle.finish();
+        }
+    }
+
 
     @Override
     public Set<FileObject> instantiate() throws IOException {
