@@ -140,6 +140,11 @@ public class UpdateAction extends ContextAction {
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
+                        // Force Status Refresh from this dir and below
+                        if(!bNoUpdates) {
+                            HgUtils.notifyUpdatedFiles(root, list);
+                            HgUtils.forceStatusRefreshProject(ctx);
+                        }
                         //logger.clearOutput();
                         logger.output(list);
                         logger.output(""); // NOI18N
@@ -149,10 +154,6 @@ public class UpdateAction extends ContextAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
-                
-                // Force Status Refresh from this dir and below
-                if(!bNoUpdates)
-                    HgUtils.forceStatusRefreshProject(ctx);
 
                 logger.outputInRed(
                         NbBundle.getMessage(UpdateAction.class,
