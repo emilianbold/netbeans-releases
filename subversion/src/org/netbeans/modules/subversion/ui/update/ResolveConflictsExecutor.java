@@ -101,7 +101,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         try {
             FileObject fo = FileUtil.toFileObject(file);
             if(fo == null) {
-                Subversion.LOG.warning("can't resolve conflicts for null fileobject : " + file + ", exists: " + file.exists());
+                Subversion.LOG.log(Level.WARNING, "can''t resolve conflicts for null fileobject : {0}, exists: {1}", new Object[]{file, file.exists()});
                 return;
             }
             FileLock lock = fo.lock();
@@ -115,6 +115,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             }
         } catch (FileAlreadyLockedException e) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     Set components = TopComponent.getRegistry().getOpened();
                     for (Iterator i = components.iterator(); i.hasNext();) {
@@ -132,7 +133,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                                               JOptionPane.WARNING_MESSAGE);
                 Utils.openFile(file);
             } else {
-                Subversion.LOG.log(Level.SEVERE, null, ioex);;
+                Subversion.LOG.log(Level.SEVERE, null, ioex);
             }
         }
     }
@@ -198,7 +199,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
             }
         } catch (IOException ioex) {
-            Subversion.LOG.log(Level.SEVERE, null, ioex);;
+            Subversion.LOG.log(Level.SEVERE, null, ioex);
         }
         return true;
     }
@@ -219,8 +220,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             boolean isChangeLeft = false;
             boolean isChangeRight = false;
             int f1l1 = 0, f1l2 = 0, f2l1 = 0, f2l2 = 0;
-            StringBuffer text1 = new StringBuffer();
-            StringBuffer text2 = new StringBuffer();
+            StringBuilder text1 = new StringBuilder();
+            StringBuilder text2 = new StringBuilder();
             int i = 1, j = 1;
             while ((line = r.readLine()) != null) {
                 if (line.startsWith(CHANGE_LEFT)) {
@@ -362,8 +363,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                     w.write(line);
                     w.newLine();
                 }
-                if (isChangeLeft) text1.append(line + "\n"); // NOI18N
-                if (isChangeRight) text2.append(line + "\n"); // NOI18N
+                if (isChangeLeft) text1.append(line).append("\n"); // NOI18N
+                if (isChangeRight) text2.append(line).append("\n"); // NOI18N
                 if (generateDiffs) {
                     if (isChangeLeft) i++;
                     else if (isChangeRight) j++;
@@ -387,10 +388,12 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
     }
 
+    @Override
     public void perform() {
         exec();
     }
 
+    @Override
     public void run() {
         throw new RuntimeException("Not implemented"); // NOI18N
     }
@@ -426,18 +429,22 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             this.encoding = encoding;
         }
         
+        @Override
         public String getName() {
             return outputFile.getName();
         }
         
+        @Override
         public String getTitle() {
             return org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Merge.titleResult"); // NOI18N
         }
         
+        @Override
         public String getMIMEType() {
             return mimeType;
         }
         
+        @Override
         public Reader createReader() throws IOException {
             throw new IOException("No reader of merge result"); // NOI18N
         }
@@ -448,6 +455,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
          *                  Can be <code>null</code> if there are no conflicts.
          * @return The writer or <code>null</code>, when no writer can be created.
          */
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             Writer w;
             if (fo != null) {
@@ -468,6 +476,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
          * This method is called when the visual merging process is finished.
          * All possible writting processes are finished before this method is called.
          */
+        @Override
         public void close() {
             tempf1.delete();
             tempf2.delete();
@@ -518,6 +527,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             this.fo = fo;
         }
         
+        @Override
         public void write(String str) throws IOException {
             super.write(str);
             lineNumber += numChars('\n', str);
@@ -543,6 +553,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             return n;
         }
         
+        @Override
         public void close() throws IOException {
             super.close();
             if (fo != null) fo.refresh(true);
