@@ -335,28 +335,28 @@ class LuceneIndex extends Index implements Evictable {
                 }
             default:
                 throw new UnsupportedOperationException (kind.toString());
-        }           
-        TermDocs tds = in.termDocs();
+        }
         LOGGER.fine(String.format("LuceneIndex.getDeclaredTypes[%s] returned %d elements\n",this.toString(), toSearch.size()));
-        final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
-        Set<Integer> docNums = new TreeSet<Integer>();
-        int[] docs = new int[25];
-        int[] freq = new int [25];
-        int len;
-        while (it.hasNext()) {
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            tds.seek(it.next());
-            while ((len = tds.read(docs, freq))>0) {
-                for (int i = 0; i < len; i++) {
-                    docNums.add (docs[i]);
+        final Set<Integer> docNums = new TreeSet<Integer>();
+        final TermDocs tds = in.termDocs();
+        try {
+            int[] docs = new int[25];
+            int[] freq = new int [25];
+            int len;
+            for (Term t : toSearch) {
+                if (cancel.get()) {
+                    throw new InterruptedException ();
                 }
-                if (len < docs.length) {
-                    break;
+                tds.seek(t);
+                while ((len = tds.read(docs, freq))>0) {
+                    for (int i = 0; i < len; i++) {
+                        docNums.add (docs[i]);
+                    }
                 }
             }
+        } finally {
+            tds.close();
         }
         for (Integer docNum : docNums) {
             if (cancel.get()) {
@@ -365,9 +365,9 @@ class LuceneIndex extends Index implements Evictable {
             final Document doc = in.document(docNum, DocumentUtil.declaredTypesFieldSelector());
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
             result.add (convertor.convert(kindHolder[0],binaryName));
-        }        
+        }
     }
-    
+
     public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
         checkPreconditions();
         if (!isValid(false)) {
@@ -468,42 +468,41 @@ class LuceneIndex extends Index implements Evictable {
             default:
                 throw new UnsupportedOperationException (kind.toString());
         }
-        TermDocs tds = in.termDocs();
         LOGGER.fine(String.format("LuceneIndex.getDeclaredElements[%s] returned %d elements\n",this.toString(), toSearch.size()));  //NOI18N
-        final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
-        Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
-        int[] docs = new int[25];
-        int[] freq = new int [25];
-        int len;
-        while (it.hasNext()) {
-            if (cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Term term = it.next();
-            tds.seek(term);
-            while ((len = tds.read(docs, freq))>0) {
-                for (int i = 0; i < len; i++) {
-                    Set<String> row = docNums.get(docs[i]);
-                    if (row == null) {
-                        row = new HashSet<String>();
-                        docNums.put(docs[i], row);
+        final Map<Integer,Set<String>> docNums = new HashMap<Integer,Set<String>>();   //todo: TreeMap may perform better, ordered according to doc nums => linear IO
+        final TermDocs tds = in.termDocs();
+        try {
+            int[] docs = new int[25];
+            int[] freq = new int [25];
+            int len;
+            for (Term t : toSearch) {
+                if (cancel.get()) {
+                    throw new InterruptedException ();
+                }
+                tds.seek(t);
+                while ((len = tds.read(docs, freq))>0) {
+                    for (int i = 0; i < len; i++) {
+                        Set<String> row = docNums.get(docs[i]);
+                        if (row == null) {
+                            row = new HashSet<String>();
+                            docNums.put(docs[i], row);
+                        }
+                        row.add(t.text());
                     }
-                    row.add(term.text());
-                }
-                if (len < docs.length) {
-                    break;
                 }
             }
+        } finally {
+            tds.close();
         }
         for (Map.Entry<Integer,Set<String>> docNum : docNums.entrySet()) {
             if (cancel.get()) {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
-            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);            
+            final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
             result.put (convertor.convert(kindHolder[0],binaryName),docNum.getValue());
-        }        
+        }
     }
     
     //<editor-fold desc="Implementation of Evictable interface">
