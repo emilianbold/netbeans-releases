@@ -355,11 +355,17 @@ class FilesystemHandler extends VCSInterceptor {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
             return new Runnable() {
+                @Override
                 public void run() {
+                    if (!SvnUtils.isManaged(file)) {
+                        return;
+                    }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(file);
-                        Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
-                        StatusAction.executeStatus(file, client, null);
+                        if (client != null) {
+                            Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
+                            StatusAction.executeStatus(file, client, null);
+                        }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
