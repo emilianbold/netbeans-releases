@@ -61,6 +61,7 @@ import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 public class AddViewDialog {
 
@@ -188,6 +189,7 @@ public class AddViewDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewDialogA11yDesc")); //NOI18N
 
             descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddViewDialog.class, "AddViewTitle"), true, listener); //NOI18N
+            descriptor.setHelpCtx(new HelpCtx("createviews")); // NOI18N
             statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
