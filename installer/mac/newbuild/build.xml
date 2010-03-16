@@ -105,14 +105,20 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="prepare-javame-sdk-zip">
         <mkdir dir="build"/> 
-        <get src="${javame_sdk30_bits_location}"  dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <get src="${javame_sdk30_bits_location}"         dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <get src="${javame_sdk30_bits_update_location}"  dest="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
 
         <mkdir dir="${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk.zip"/>
-        </exec>      
+        </exec>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
+        </exec>
         <delete file="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <delete file="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
 
         <!-- see netBeans/javame/pkg/scripts/postflight for more info on this -->
         <exec executable="sh" failonerror="yes">

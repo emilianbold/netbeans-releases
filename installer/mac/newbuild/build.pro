@@ -119,6 +119,7 @@
 
     <!-- Java ME SDK 3.0 Properties-->
     <property name="javame_sdk30_bits_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac.zip"/>
+    <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
 
