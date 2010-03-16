@@ -260,7 +260,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     helper.createCacheDirectoryProvider(),
                     spp,
                     new MakeActionProvider(this),
-                    new MakeLogicalViewProvider(this, spp),
+                    new MakeLogicalViewProvider(this),
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
