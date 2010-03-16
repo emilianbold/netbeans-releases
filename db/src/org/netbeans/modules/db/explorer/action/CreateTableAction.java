@@ -54,6 +54,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class CreateTableAction extends BaseAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -74,10 +75,12 @@ public class CreateTableAction extends BaseAction {
         return new HelpCtx(CreateTableAction.class);
     }
 
+    @Override
     public void performAction (Node[] activatedNodes) {
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     perform(node);
                 }
