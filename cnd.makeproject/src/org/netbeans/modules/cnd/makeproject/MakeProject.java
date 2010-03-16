@@ -213,7 +213,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             nl = nl.item(0).getChildNodes();
             if (nl.getLength() == 1) {
                 String extensions = nl.item(0).getNodeValue();
-                set.addAll(Arrays.asList(extensions.split(",")));
+                set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
     }
