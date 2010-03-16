@@ -1280,7 +1280,7 @@ public class ActionManager {
                         if(el.getModifiers().contains(Modifier.PUBLIC)) {
                             if(TypeKind.BOOLEAN.equals(el.getReturnType().getKind())) {
                                 String name = el.getSimpleName().toString();
-                                if(name.startsWith("is")) {
+                                if(name.startsWith("is") && name.length()>2) { // NOI18N
                                     props.add(name.substring(2,3).toLowerCase()+name.substring(3));//el.getSimpleName().toString().substring(3));
                                 }
                             }
@@ -1290,6 +1290,7 @@ public class ActionManager {
                 }
             }.execute();
         } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return new ArrayList<String>();
         }
     }
