@@ -87,6 +87,7 @@ import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 public class CreateTableDialog {
     Dialog dialog = null;
@@ -329,6 +330,7 @@ public class CreateTableDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableDialogA11yDesc")); // NOI18N
 
             descriptor = new DialogDescriptor(pane, NbBundle.getMessage (CreateTableDialog.class, "CreateTableDialogTitle"), true, listener); // NOI18N
+            descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.db.explorer.actions.CreateTableAction")); // NOI18N
             statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
