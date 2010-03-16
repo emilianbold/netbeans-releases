@@ -106,7 +106,6 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -151,7 +150,6 @@ import org.openidex.search.SearchInfo;
 public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private final MakeProject project;
-    private final SubprojectProvider spp;
     private static final Boolean ASYNC_ROOT_NODE = Boolean.getBoolean("cnd.async.root");// NOI18N
     private static final Logger log = Logger.getLogger("cnd.async.root");// NOI18N
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
@@ -163,11 +161,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static StandardNodeAction renameAction = null;
     private static StandardNodeAction deleteAction = null;
 
-    public MakeLogicalViewProvider(MakeProject project, SubprojectProvider spp) {
+    public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
         assert project != null;
-        this.spp = spp;
-        assert spp != null;
     }
 
     @Override
