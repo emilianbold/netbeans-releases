@@ -118,12 +118,7 @@ made subject to such option by the copyright holder.
             Now make sure that the scripting language integration is also available
             by requesting a token in standard format, for freemarker just put
             <code>OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker</code>
-            in your manifest. Also create a runtime dependency
-            on 
-            <code>org.netbeans.modules.templates</code> -
-            the module providing the templates/scripting languages integration.
-            the module providing the templates/scripting languages integration.
-            This tells the NetBeans module system that a 
+            in your manifest. This tells the NetBeans module system that a 
             module providing integration with such scripting engine has to be 
             enabled. Now you can use regular script language tags inside of
             your template file. When you write your <code>instantiate</code>
