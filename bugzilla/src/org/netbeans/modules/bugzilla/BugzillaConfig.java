@@ -243,7 +243,7 @@ public class BugzillaConfig {
         String httpUser = values.length > 3 ? values[3] : null;
         String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
 
-        repository.setAuthentication(user, password, httpUser, httpPassword);
+        repository.setCredentials(user, password, httpUser, httpPassword);
     }
 
     public String[] getRepositories() {
