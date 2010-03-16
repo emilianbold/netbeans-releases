@@ -61,7 +61,10 @@ class CCompilerCustomizerNode extends CustomizerNode {
         switch (getContext().getKind()){
             case Item:
                 ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
-                return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
+                if (itemConfiguration != null) {
+                    return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
+                }
+                break;
             case Folder:
                 Folder folder = getContext().getFolder();
                 return folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
