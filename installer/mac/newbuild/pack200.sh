@@ -46,7 +46,7 @@ do
         echo "Jar Descriptor (.jad) exists, skipping packing of the original file $f"
         continue
     fi
-    if [ 2 -eq `unzip -l "$f" 2>/dev/null | grep "META-INF/" | sed "s/.*META-INF\///g" | grep "\.SF\|\.RSA\|\.DSA"` ] ; then
+    if [ 2 -eq `unzip -l "$f" 2>/dev/null | grep "META-INF/" | sed "s/.*META-INF\///g" | grep "\.SF\|\.RSA\|\.DSA"| wc -l` ] ; then
         echo "Jar file $f is signed, skipping packing"
         continue
     fi
