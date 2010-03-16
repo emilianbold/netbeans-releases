@@ -76,17 +76,17 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     @Override
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
-        result.add(new SuiteStartingHandler());
-        result.add(new SuiteStartedHandler());
-        result.add(new SuiteFinishedHandler());
-        result.add(new SuiteErrorOutputHandler());
-        result.add(new TestStartedHandler());
-        result.add(new TestFailedHandler());
-        result.add(new TestErrorHandler());
-        result.add(new TestFinishedHandler());
-        result.add(new TestLoggerHandler());
-        result.add(new TestMiscHandler());
-        result.add(new SuiteMiscHandler());
+        result.add(new SimpleSuiteStartingHandler());
+        result.add(new SimpleSuiteStartedHandler());
+        result.add(new SimpleSuiteFinishedHandler());
+        result.add(new SimpleSuiteErrorOutputHandler());
+        result.add(new SimpleTestStartedHandler());
+        result.add(new SimpleTestFailedHandler());
+        result.add(new SimpleTestErrorHandler());
+        result.add(new SimpleTestFinishedHandler());
+        result.add(new SimpleTestLoggerHandler());
+        result.add(new SimpleTestMiscHandler());
+        result.add(new SimpleSuiteMiscHandler());
         return result;
     }
 
@@ -145,14 +145,14 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     }
 
 
-    static class TestFailedHandler extends TestRecognizerHandler {
+    static class SimpleTestFailedHandler extends TestRecognizerHandler {
         private List<String> output;
 
-        public TestFailedHandler(String regex) {
+        public SimpleTestFailedHandler(String regex) {
             super(regex);
         }
 
-        public TestFailedHandler() {
+        public SimpleTestFailedHandler() {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
@@ -194,11 +194,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestErrorHandler extends TestRecognizerHandler {
+    static class SimpleTestErrorHandler extends TestRecognizerHandler {
 
         private List<String> output;
 
-        public TestErrorHandler() {
+        public SimpleTestErrorHandler() {
             super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
@@ -236,9 +236,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestStartedHandler extends TestRecognizerHandler {
+    static class SimpleTestStartedHandler extends TestRecognizerHandler {
 
-        public TestStartedHandler() {
+        public SimpleTestStartedHandler() {
             super("%TEST_STARTED%\\s*(.+) \\((.+)\\)"); //NOI18N
         }
 
@@ -247,13 +247,13 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestFinishedHandler extends TestRecognizerHandler {
+    static class SimpleTestFinishedHandler extends TestRecognizerHandler {
 
-        public TestFinishedHandler(String regex) {
+        public SimpleTestFinishedHandler(String regex) {
             super(regex);
         }
 
-        public TestFinishedHandler() {
+        public SimpleTestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\s+(.+) \\((.+)\\)"); //NOI18N
         }
 
@@ -270,9 +270,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
      * Captures the rest of %TEST_* patterns that are not handled
      * otherwise (yet).
      */
-    static class TestMiscHandler extends TestRecognizerHandler {
+    static class SimpleTestMiscHandler extends TestRecognizerHandler {
 
-        public TestMiscHandler() {
+        public SimpleTestMiscHandler() {
             super("%TEST_.*"); //NOI18N
         }
 
@@ -281,9 +281,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteFinishedHandler extends TestRecognizerHandler {
+    static class SimpleSuiteFinishedHandler extends TestRecognizerHandler {
 
-        public SuiteFinishedHandler() {
+        public SimpleSuiteFinishedHandler() {
             super("%SUITE_FINISHED%\\s+time=(.+)"); //NOI18N
         }
 
@@ -294,9 +294,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteStartedHandler extends TestRecognizerHandler {
+    static class SimpleSuiteStartedHandler extends TestRecognizerHandler {
 
-        public SuiteStartedHandler() {
+        public SimpleSuiteStartedHandler() {
             super("%SUITE_STARTED%\\s.*"); //NOI18N
         }
 
@@ -305,9 +305,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteErrorOutputHandler extends TestRecognizerHandler {
+    static class SimpleSuiteErrorOutputHandler extends TestRecognizerHandler {
 
-        public SuiteErrorOutputHandler() {
+        public SimpleSuiteErrorOutputHandler() {
             super("%SUITE_ERROR_OUTPUT%\\serror=(.*)"); //NOI18N
         }
 
@@ -324,11 +324,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
     }
 
-    static class SuiteStartingHandler extends TestRecognizerHandler {
+    static class SimpleSuiteStartingHandler extends TestRecognizerHandler {
 
         private boolean firstSuite = true;
 
-        public SuiteStartingHandler() {
+        public SimpleSuiteStartingHandler() {
             super("%SUITE_STARTING%\\s+(.+)"); //NOI18N
         }
 
@@ -348,9 +348,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
      * Captures the rest of %SUITE_* patterns that are not handled
      * otherwise (yet).
      */
-    static class SuiteMiscHandler extends TestRecognizerHandler {
+    static class SimpleSuiteMiscHandler extends TestRecognizerHandler {
 
-        public SuiteMiscHandler() {
+        public SimpleSuiteMiscHandler() {
             super("%SUITE_.*"); //NOI18N
         }
 
@@ -362,9 +362,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     /**
      * Captures output meant for logging.
      */
-    static class TestLoggerHandler extends TestRecognizerHandler {
+    static class SimpleTestLoggerHandler extends TestRecognizerHandler {
 
-        public TestLoggerHandler() {
+        public SimpleTestLoggerHandler() {
             super("%TEST_LOGGER%\\slevel=(.+)\\smsg=(.*)"); //NOI18N
         }
 
