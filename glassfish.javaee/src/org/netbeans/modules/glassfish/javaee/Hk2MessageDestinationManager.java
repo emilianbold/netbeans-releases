@@ -88,11 +88,15 @@ public class Hk2MessageDestinationManager implements  MessageDestinationDeployme
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-        // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
+        if (null != domainsDir) {
+            // XXX Fix to work with current server domain, not just default domain.
+            File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
 
-        // TODO : need to account for a remote domain here?
-        return readMessageDestinations(domainXml, "/domain/", null);
+            // TODO : need to account for a remote domain here?
+            return readMessageDestinations(domainXml, "/domain/", null);
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
 
     @Override

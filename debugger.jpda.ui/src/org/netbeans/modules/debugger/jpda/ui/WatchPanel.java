@@ -71,6 +71,7 @@ import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Session;
@@ -341,7 +342,15 @@ public class WatchPanel {
     }
     
     public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
-        editorPane.setKeymap(new FilteredKeymap(editorPane));
+        // Remove control keys:
+        KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+        InputMap im = editorPane.getInputMap();
+        im.put(enterKs, "none");
+        im.put(escKs, "none");
+        im.put(tabKs, "none");
+        
         final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                 

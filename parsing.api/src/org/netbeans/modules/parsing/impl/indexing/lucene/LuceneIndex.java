@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -700,18 +701,16 @@ public class LuceneIndex implements IndexImpl, Evictable {
         synchronized (this) {
             IndexReader r = reader;
             if (r == null) {
-                boolean exists = IndexReader.indexExists(this.directory);
-                if (exists) {
-                    //Issue #149757 - logging
-                    try {
-                        //It's important that no Query will get access to original IndexReader
-                        //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-                        r = reader = new NoNormsReader(IndexReader.open(this.directory));
-                    } catch (IOException ioe) {
-                        throw annotateException(ioe, indexFolder);
-                    }
-                } else {
+                //Issue #149757 - logging
+                try {
+                    //It's important that no Query will get access to original IndexReader
+                    //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+                    r = reader = new NoNormsReader(IndexReader.open(this.directory));
+                } catch (FileNotFoundException fnf) {
                     LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
+                    //pass - returns null
+                } catch (IOException ioe) {
+                    throw annotateException(ioe, indexFolder);
                 }
             }
             return r;

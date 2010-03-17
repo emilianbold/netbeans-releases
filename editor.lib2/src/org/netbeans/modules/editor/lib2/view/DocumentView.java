@@ -580,40 +580,23 @@ public final class DocumentView extends EditorBoxView
         }
     }
 
+    boolean isActive() {
+        return textComponent != null && children != null;
+    }
+
     @Override
     public void insertUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (textComponent != null && children != null && viewUpdates != null) {
-                checkDocumentLocked();
-                if (children != null) {
-                    viewUpdates.insertUpdate(evt, alloc, viewFactory);
-                }
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     @Override
     public void removeUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (textComponent != null && children != null && viewUpdates != null) {
-                checkDocumentLocked();
-                if (children != null) {
-                    viewUpdates.removeUpdate(evt, alloc, viewFactory);
-                }
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     @Override
     public void changedUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        synchronized (getMonitor()) {
-            if (textComponent != null && children != null && viewUpdates != null) {
-                checkDocumentLocked();
-                if (children != null) {
-                    viewUpdates.changedUpdate(evt, alloc, viewFactory);
-                }
-            }
-        }
+        // Do nothing here - see ViewUpdates constructor
     }
 
     float getVisibleWidth() {

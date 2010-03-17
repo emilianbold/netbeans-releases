@@ -74,11 +74,6 @@ org.netbeans.modules.css.visual.ui.preview.CssTCController
 #177560
 org.netbeans.modules.csl.core.GsfModuleInstaller
 
-#173031
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction
-org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction
-org.netbeans.modules.xsl.actions.TransformAction
-
 #177561
 org.netbeans.modules.cnd.debug.DebugUtils
 org.netbeans.modules.cnd.debugger.common.EditorContext
