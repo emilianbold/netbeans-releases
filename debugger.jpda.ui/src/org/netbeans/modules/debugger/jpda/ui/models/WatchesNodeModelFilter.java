@@ -95,7 +95,11 @@ public class WatchesNodeModelFilter extends VariablesNodeModel implements Extend
             }
             return ((JPDAWatch) o).getExpression ();
         }
-        return super.getDisplayName (o);
+        try {
+            return model.getDisplayName(o);
+        } catch (UnknownTypeException utex) {
+            return super.getDisplayName (o);
+        }
     }
 
     public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
@@ -180,7 +184,11 @@ public class WatchesNodeModelFilter extends VariablesNodeModel implements Extend
             }
             return WATCH;
         }
-        return super.getIconBaseWithExtension(node);
+        try {
+            return model.getIconBaseWithExtension(node);
+        } catch (UnknownTypeException utex) {
+            return super.getIconBaseWithExtension(node);
+        }
     }
 
 }

@@ -80,6 +80,18 @@ public class BaseFunctionElementSupport  {
                 template.append(parameters2String(getParameters()));
                 template.append(")"); //NOI18N
                 break;
+            case DeclarationWithoutBody:
+                final String modifiers = element.getPhpModifiers().toString();
+                if (modifiers.length() > 0) {
+                    template.append(modifiers).append(" ");//NOI18N
+                }
+                template.append("function");//NOI18N
+                template.append(asString(PrintAs.NameAndParams, element));
+                break;
+            case DeclarationWithEmptyBody:
+                template.append(asString(PrintAs.DeclarationWithoutBody, element));
+                template.append("{\n}");//NOI18N
+                break;
             case ReturnTypes:
                 for (TypeResolver typeResolver : getReturnTypes()) {
                     if (typeResolver.isResolved()) {

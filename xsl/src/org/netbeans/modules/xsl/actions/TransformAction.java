@@ -40,15 +40,11 @@
  */
 package org.netbeans.modules.xsl.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-
 import org.netbeans.api.xml.cookies.TransformableCookie;
 import org.netbeans.modules.xml.actions.CollectXMLAction;
-
 import org.netbeans.modules.xsl.XSLDataObject;
 import org.netbeans.modules.xsl.transform.TransformPerformer;
 import org.openide.util.NbBundle;
@@ -65,20 +61,6 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     private static final long serialVersionUID = -640535981015250507L;
 
     private static TransformPerformer recentPerfomer;
-
-/*************
-    public static synchronized TransformAction getInstance() {
-        TransformAction actionInstance = null;
-        String thisClassName = TransformAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (TransformAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-***************/
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
@@ -103,17 +85,20 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     }
 
     /** */
+    @Override
     protected Class[] cookieClasses () {
         return new Class[] { TransformableCookie.class, XSLDataObject.class };
     }
 
     /** All selected nodes must be XML one to allow this action. */
+    @Override
     protected int mode () {
         return MODE_ALL;
     }
 
 
     /** Human presentable name. */
+    @Override
     public String getName() {
         return NbBundle.getMessage(TransformAction.class, "NAME_transform_action");
     }
@@ -125,12 +110,14 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     }
 
     /** Provide accurate help. */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (TransformAction.class);
     }
 
 
     /** Check all selected nodes. */
+    @Override
     protected void performAction (Node[] nodes) {
         recentPerfomer = new TransformPerformer (nodes);
         recentPerfomer.perform();
@@ -140,5 +127,4 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
     protected boolean asynchronous() {
         return false;
     }
-
 }

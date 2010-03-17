@@ -45,12 +45,14 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDriverDeployer;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -113,6 +115,10 @@ public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
         return new WLDatasourceManager((WLDeploymentManager) dm);
     }
 
+    @Override
+    public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
+        return new WLDriverDeployer((WLDeploymentManager) dm);
+    }
 
     /**
      * Returns an instance of the custom wizard for adding a server instance.

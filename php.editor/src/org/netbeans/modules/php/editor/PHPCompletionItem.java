@@ -680,7 +680,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          */
         protected String getFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            if (isMagic()) {
+            MethodElement method = (MethodElement)getBaseFunctionElement();
+            TypeElement type = method.getType();
+            if (isMagic() || type.isInterface() || method.isAbstract()) {
                 template.append("${cursor};\n");//NOI18N
             } else {
                 template.append("${cursor}parent::" + getSignature().replace("&$", "$") + ";\n");//NOI18N

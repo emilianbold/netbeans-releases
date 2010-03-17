@@ -24,6 +24,9 @@
         <attr name="hideNoSelectionOption">
             <type name="boolean"/>
         </attr>
+        <attr name="style">
+            <mimetype>text/css</mimetype>
+        </attr>
     </common_attributes>
     <tag name="body"/>
     <tag name="button"/>
