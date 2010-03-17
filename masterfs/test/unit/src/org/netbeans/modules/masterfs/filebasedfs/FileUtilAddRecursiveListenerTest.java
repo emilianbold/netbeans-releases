@@ -43,6 +43,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileLock;
@@ -56,9 +57,11 @@ import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeList
  * @author Jiri Skrivanek
  */
 public class FileUtilAddRecursiveListenerTest extends NbTestCase {
+    private final Logger LOG;
 
     public FileUtilAddRecursiveListenerTest(String name) {
         super(name);
+        LOG = Logger.getLogger("TEST." + name);
     }
 
     @Override
@@ -223,6 +226,9 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
         FileUtil.refreshAll();
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
+        LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         // TODO - should be 3
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         // TODO - should be 2
@@ -234,6 +240,9 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         TestFileUtils.touch(subsubfileF, null);
         TestFileUtils.touch(subfileF, null);
         TestFileUtils.touch(fileF, null);
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
+        LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         FileUtil.refreshAll();
         assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
         assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
