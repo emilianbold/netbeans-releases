@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.xml.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.xml.util.Util;
 import org.openide.util.HelpCtx;
 
@@ -51,38 +49,34 @@ import org.openide.util.HelpCtx;
  * @version 0.1
  */
 public class CollectXMLAction extends CollectSystemAction {
+    private static final String FOLDER_PATH_XML_ACTIONS = "Loaders/text/xml/Actions"; //NOI18N
+
     /** Serial Version UID */
     private static final long serialVersionUID = 8562401343966139988L;
-
-/***********************
-    public static synchronized CollectXMLAction getInstance() {
-        CollectXMLAction actionInstance = null;
-        String thisClassName = CollectXMLAction.class.getName();
-        try {
-            Class actionInstanceClass = Class.forName(thisClassName);
-            actionInstance = (CollectXMLAction) actionInstanceClass.newInstance();
-        } catch(Exception e) {
-            Logger.getLogger(thisClassName).log(Level.SEVERE, "", e);
-        }
-        return actionInstance;
-    }
-*****************/
 
     /**
      * Getter for class
      */
+    @Override
     protected Class getActionLookClass () {
         return XMLAction.class;
     }
 
+    @Override
+    protected void addRegisteredAction() {
+        super.addRegisteredAction(FOLDER_PATH_XML_ACTIONS);
+    }
+
     /* Getter for name
     */
+    @Override
     public String getName () {
         return Util.THIS.getString (CollectXMLAction.class, "NAME_CollectXMLAction");
     }
 
     /* Getter for help.
     */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (CollectXMLAction.class);
     }

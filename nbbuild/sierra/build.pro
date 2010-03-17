@@ -56,7 +56,7 @@
     <property name="netbeans.user" value=".netbeans/dev"/>
 
     <!-- Sierra latest continuous -->
-    <property name="sierra.host" value="http://beryl.russia.sun.com:8080"/>
+    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
     <property name="sierra.path" value="hudson/job/sierra/ws/cache/latest"/>
     <property name="sierra.file" value="sierra.zip"/>
 

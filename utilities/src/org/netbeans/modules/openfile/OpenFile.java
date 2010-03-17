@@ -42,9 +42,6 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;

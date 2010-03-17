@@ -312,14 +312,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
 
-        /* Check whether the corresponding test class already exists: */
-        ClassTree tstTopClass = null;
-        for (ClassTree tstClass : tstTopClasses) {
-            if (tstClass.getSimpleName().contentEquals(testClassSimpleName)) {
-                tstTopClass = tstClass;     //yes, it exists
-                break;
-            }
-        }
+        ClassTree tstTopClass = findClass(testClassSimpleName, tstTopClasses);
         
         if (tstTopClass != null) {      //if the test class already exists
             TreePath tstTopClassTreePath = new TreePath(compUnitPath,
@@ -2082,6 +2075,27 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 Collections.<ExpressionTree>singletonList(maker.Literal("java:global/classes/"+instanceClsName)) // NOI18N
         );
         return invocation;
+    }
+
+    /**
+     * Finds a class with the specified simple name in the specified list of
+     * classes.
+     * @param simpleName the simple class name.
+     * @param classes the list of the {@code ClassTree}s.
+     * @return a {@code ClassTree} of the class if the specified simple class
+     *         name is not {@code null}, and a class with that name exists,
+     *         otherwise {@code null}.
+     */
+    private ClassTree findClass(String simpleName, List<ClassTree> classes) {
+        if(simpleName == null) { // #180480
+            return null;
+        }
+        for (ClassTree cls : classes) {
+            if (cls.getSimpleName().contentEquals(simpleName)) {
+                return cls;     // class exists
+            }
+        }
+        return null;
     }
 
 }

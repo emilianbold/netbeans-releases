@@ -66,6 +66,10 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -423,6 +427,7 @@ public abstract class Properties {
 
         private HashMap properties = new HashMap ();
         private boolean isInitialized = false;
+        private HashMap<String, ReentrantReadWriteLock> propertyRWLocks = new HashMap<String, ReentrantReadWriteLock>();
 
 
         public String getProperty (String propertyName, String defaultValue) {
@@ -448,6 +453,49 @@ public abstract class Properties {
                 properties.put (propertyName, value);
             }
             save ();
+        }
+
+        private synchronized ReentrantReadWriteLock getRWLock(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                rwl = new ReentrantReadWriteLock(true);
+                propertyRWLocks.put(propertyName, rwl);
+            }
+            return rwl;
+        }
+
+        public void lockRead(String propertyName) {
+            ReentrantReadWriteLock rwl = getRWLock(propertyName);
+            ReadLock rl = rwl.readLock();
+            rl.lock();
+        }
+
+        public void lockWrite(String propertyName) {
+            ReentrantReadWriteLock rwl = getRWLock(propertyName);
+            WriteLock wl = rwl.writeLock();
+            wl.lock();
+        }
+
+        public synchronized void unLockRead(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                throw new IllegalStateException("No lock for property "+propertyName);
+            }
+            rwl.readLock().unlock();
+            if (rwl.getReadLockCount() == 0 && !rwl.isWriteLocked()) {
+                propertyRWLocks.remove(propertyName);
+            }
+        }
+
+        public synchronized void unLockWrite(String propertyName) {
+            ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
+            if (rwl == null) {
+                throw new IllegalStateException("No lock for property "+propertyName);
+            }
+            rwl.writeLock().unlock();
+            if (rwl.getReadLockCount() == 0 && !rwl.isWriteLocked()) {
+                propertyRWLocks.remove(propertyName);
+            }
         }
 
         private synchronized void load () {
@@ -984,7 +1032,8 @@ public abstract class Properties {
         }
 
         public Object getObject (String propertyName, Object defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Object initialValue = getInitialValue(propertyName, Object.class);
@@ -1033,11 +1082,14 @@ public abstract class Properties {
                     return defaultValue;
                 }
                 return r.read (typeID, getProperties (propertyName));
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setObject (String propertyName, Object value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, "# null"); // NOI18N
                 } else if (value instanceof String) {
@@ -1062,12 +1114,15 @@ public abstract class Properties {
                     impl.setProperty (propertyName, "# " + value.getClass ().getName ()); // NOI18N
 
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String arrayType = impl.getProperty (propertyName + ".array_type", null); // NOI18N
                 if (arrayType == null) {
                     Object[] initialValue = getInitialValue(propertyName, Object[].class);
@@ -1095,11 +1150,14 @@ public abstract class Properties {
                     os [i] = o;
                 }
                 return os;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setArray (String propertyName, Object[] value) {
-            synchronized (impl) {
+            try {
+                impl.lockWrite(propertyName);
                 impl.setProperty (propertyName, "# array"); // NOI18N
                 impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ()); // NOI18N
                 Properties p = getProperties (propertyName);
@@ -1107,12 +1165,15 @@ public abstract class Properties {
                 p.setInt ("length", k); // NOI18N
                 for (i = 0; i < k; i++)
                     p.setObject ("" + i, value [i]); // NOI18N
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Collection getCollection (String propertyName, Collection defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Collection initialValue = getInitialValue(propertyName, Collection.class);
@@ -1149,11 +1210,14 @@ public abstract class Properties {
                     c.add (o);
                 }
                 return c;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setCollection (String propertyName, Collection value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
@@ -1167,12 +1231,15 @@ public abstract class Properties {
                         i++;
                     }
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
 
         public Map getMap (String propertyName, Map defaultValue) {
-            synchronized(impl) {
+            try {
+                impl.lockRead(propertyName);
                 String typeID = impl.getProperty (propertyName, null);
                 if (typeID == null) {
                     Map initialValue = getInitialValue(propertyName, Map.class);
@@ -1205,11 +1272,14 @@ public abstract class Properties {
                     m.put (key, value);
                 }
                 return m;
+            } finally {
+                impl.unLockRead(propertyName);
             }
         }
 
         public void setMap (String propertyName, Map value) {
-            synchronized(impl) {
+            try {
+                impl.lockWrite(propertyName);
                 if (value == null) {
                     impl.setProperty (propertyName, null);
                 } else {
@@ -1225,6 +1295,8 @@ public abstract class Properties {
                         i++;
                     }
                 }
+            } finally {
+                impl.unLockWrite(propertyName);
             }
             pcs.firePropertyChange(propertyName, null, value);
         }

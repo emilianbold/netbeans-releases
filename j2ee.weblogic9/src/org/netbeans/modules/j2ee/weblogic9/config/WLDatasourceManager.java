@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
  */
 public class WLDatasourceManager implements DatasourceManager {
 
+    private static final Logger LOGGER = Logger.getLogger(WLDatasourceManager.class.getName());
+
     private static final String JDBCdotXML = "-jdbc.xml"; // NOI18N
 
     private final WLDeploymentManager manager;
@@ -77,7 +79,7 @@ public class WLDatasourceManager implements DatasourceManager {
     public WLDatasourceManager(WLDeploymentManager manager) {
         this.manager = manager;
     }
-    
+
     @Override
     public void deployDatasources(Set<Datasource> datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
     }
@@ -94,7 +96,7 @@ public class WLDatasourceManager implements DatasourceManager {
         }
 
         if (jdbcConfig == null || !jdbcConfig.isValid() || !jdbcConfig.isFolder() || !jdbcConfig.canRead()) {
-            Logger.getLogger("global").log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR"));
             return datasources;
         }
 
@@ -102,15 +104,17 @@ public class WLDatasourceManager implements DatasourceManager {
         List<FileObject> confs = new LinkedList<FileObject>();
         while (files.hasMoreElements()) { // searching for config files with DS
             FileObject file = (FileObject) files.nextElement();
-            if (!file.isFolder() && file.getNameExt().endsWith(JDBCdotXML) && file.canRead())
+            if (!file.isFolder() && file.getNameExt().endsWith(JDBCdotXML) && file.canRead()) {
                 confs.add(file);
+            }
         }
 
-        if (confs.size() == 0) // nowhere to search
+        if (confs.size() == 0) { // nowhere to search
             return datasources;
+        }
 
         for (Iterator it = confs.iterator(); it.hasNext();) {
-            FileObject dsFO = (FileObject)it.next();
+            FileObject dsFO = (FileObject) it.next();
             File dsFile = FileUtil.toFile(dsFO);
             try {
                 JdbcDataSource ds = null;
@@ -126,8 +130,9 @@ public class WLDatasourceManager implements DatasourceManager {
                 // FIXME password
                 // FIXME multiple jndis
                 if (getJndiNames(ds) != null && getJndiNames(ds).length > 0) {
-                    datasources.add(new WLDatasource(getConnectionUrl(ds), getJndiNames(ds)[0],
-                            getUserName(ds), getUserName(ds), getDriverClass(ds)));
+                    datasources.add(new WLDatasource(getName(ds), getConnectionUrl(ds),
+                            getJndiNames(ds)[0], getUserName(ds), getUserName(ds),
+                            getDriverClass(ds)));
                 }
             } catch (IOException ioe) {
                 String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_CannotReadDatasources", dsFile.getAbsolutePath());
@@ -142,8 +147,11 @@ public class WLDatasourceManager implements DatasourceManager {
         return datasources;
     }
 
+    private static String getName(JdbcDataSource ds) {
+        return ds.getName();
+    }
 
-    private String[] getJndiNames(JdbcDataSource ds) {
+    private static String[] getJndiNames(JdbcDataSource ds) {
         JdbcDataSourceParamsType params = ds.getJdbcDataSourceParams();
         if (params != null) {
             return params.getJndiName();
@@ -151,7 +159,7 @@ public class WLDatasourceManager implements DatasourceManager {
         return null;
     }
 
-    private String getConnectionUrl(JdbcDataSource ds) {
+    private static String getConnectionUrl(JdbcDataSource ds) {
         JdbcDriverParamsType params = ds.getJdbcDriverParams();
         if (params != null) {
             return params.getUrl();
@@ -159,7 +167,7 @@ public class WLDatasourceManager implements DatasourceManager {
         return null;
     }
 
-    private String getDriverClass(JdbcDataSource ds) {
+    private static String getDriverClass(JdbcDataSource ds) {
         JdbcDriverParamsType params = ds.getJdbcDriverParams();
         if (params != null) {
             return params.getDriverName();
@@ -167,13 +175,13 @@ public class WLDatasourceManager implements DatasourceManager {
         return null;
     }
 
-    private String getUserName(JdbcDataSource ds) {
+    private static String getUserName(JdbcDataSource ds) {
         JdbcDriverParamsType params = ds.getJdbcDriverParams();
         if (params != null) {
             JdbcPropertiesType props = params.getProperties();
             if (props != null) {
                 for (JdbcPropertyType item : props.getProperty2()) {
-                    if ("user".equals(item.getName())) {
+                    if ("user".equals(item.getName())) { // NOI18N
                         return item.getValue();
                     }
                 }
