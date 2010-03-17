@@ -65,7 +65,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         this.txt2 = txt2;
         this.txt3 = txt3;
         oldname = configuration.getOption();
-        configuration.setCompilerSetNodeProp(this);
+        configuration.setCompilerSetNodeProp(CompilerSetNodeProp.this);
     }
 
     public String getOldname() {
@@ -91,10 +91,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return configuration.getCompilerSetName().getValue();
     }
 
+    @Override
     public void setValue(String v) {
         configuration.setValue(v);
     }
@@ -114,10 +116,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return !configuration.getCompilerSetName().getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return canWrite;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
