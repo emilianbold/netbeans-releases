@@ -138,6 +138,24 @@ public abstract class ElementFilter {
             }
         };
     }
+    public static <T extends PhpElement> ElementFilter forExcludedElements(final Collection<T> excludedElements) {
+        return new ElementFilter() {
+            private ElementFilter delegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (delegate == null) {
+                    PhpElementKind kind = PhpElementKind.CLASS;
+                    if (excludedElements.size() > 0) {
+                        kind = excludedElements.iterator().next().getPhpElementKind();
+                    }
+                    delegate  = ElementFilter.forExcludedNames(toNames(excludedElements), kind);
+                }
+                return delegate.isAccepted(element);
+            }
+        };
+
+    }
+
 
     public static ElementFilter forOffset(final int offset) {
         return new ElementFilter() {
@@ -379,4 +397,13 @@ public abstract class ElementFilter {
 
         return Collections.unmodifiableSet(retval);
     }
+
+    private static Set<String> toNames(Collection<? extends PhpElement> elements) {
+        Set<String> names = new HashSet<String>();
+        for (PhpElement elem : elements) {
+            names.add(elem.getName());
+        }
+        return names;
+    }
+
 }
