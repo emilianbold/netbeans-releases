@@ -1963,10 +1963,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
                 System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-                if (CndUtils.isDebugMode() && !firstDump) {
-                    firstDump = true;
-                    CndUtils.threadsDump();
-                }
+                //if (CndUtils.isDebugMode() && !firstDump) {
+                //    firstDump = true;
+                //    CndUtils.threadsDump();
+                //}
             }
             curState = State.PARSED;
         }
@@ -1979,8 +1979,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             staticLock.readLock().unlock();
         }
     }
-    private static boolean firstDump = false;
-
+    //private static boolean firstDump = false;
 
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);

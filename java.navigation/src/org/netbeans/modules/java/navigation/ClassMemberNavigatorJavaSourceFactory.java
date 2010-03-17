@@ -46,6 +46,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -66,7 +67,12 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     };
     
     static ClassMemberNavigatorJavaSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(ClassMemberNavigatorJavaSourceFactory.class);
+        for(JavaSourceTaskFactory t : Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
+            if (t instanceof ClassMemberNavigatorJavaSourceFactory) {
+                return (ClassMemberNavigatorJavaSourceFactory) t;
+            }
+        }
+        return null;
     }
     
     public ClassMemberNavigatorJavaSourceFactory() {        

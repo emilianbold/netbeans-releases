@@ -123,7 +123,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write("echo $$\n".getBytes()); // NOI18N
         processInput.flush();
 
-        EnvWriter ew = new EnvWriter(processInput);
+        EnvWriter ew = new EnvWriter(processInput, false);
         ew.write(env);
 
         if (info.getInitialSuspend()) {

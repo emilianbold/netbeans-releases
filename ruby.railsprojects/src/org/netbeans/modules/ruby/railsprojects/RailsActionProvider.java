@@ -479,14 +479,24 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     private void openRailsConsole(Lookup context) {
         String displayName = NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
-        String script = "script" + File.separator + "console"; // NOI18N
-        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String script = null;
         List<String> additionalArgs = new ArrayList<String>();
-        if (Utilities.isWindows() && !getPlatform().isJRuby()) {
-            // see #133066
-            additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+        boolean rails3 = RailsProjectUtil.getRailsVersion(project).isRails3OrHigher();
+        if (rails3) {
+             script = "script" + File.separator + "rails"; // NOI18N
+             additionalArgs.add("console");
         } else {
-            additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            script = "script" + File.separator + "console"; // NOI18N
+        }
+        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        // --irb not supported in rails3
+        if (!rails3) {
+            if (Utilities.isWindows() && !getPlatform().isJRuby()) {
+                // see #133066
+                additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+            } else {
+                additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            }
         }
         String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
         if (railsEnv != null && !"".equals(railsEnv.trim())) {

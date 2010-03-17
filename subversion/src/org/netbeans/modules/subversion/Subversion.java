@@ -67,6 +67,7 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -224,6 +225,7 @@ public class Subversion {
     }
 
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
+        Parameters.notNull("repositoryUrl", repositoryUrl); //NOI18N
         String username = ""; // NOI18N
         char[] password = null;
 
@@ -268,7 +270,7 @@ public class Subversion {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged."; // NOI18N
 
-        return getClient(repositoryUrl, support);
+        return repositoryUrl == null ? null : getClient(repositoryUrl, support);
     }
 
     public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {

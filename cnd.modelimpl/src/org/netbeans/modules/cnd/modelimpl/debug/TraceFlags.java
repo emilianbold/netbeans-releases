@@ -151,7 +151,7 @@ public class TraceFlags {
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
 
     // experimental expression evaluator for template instantiations
-    public static boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", false); // NOI18N
+    public static boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
 
     public static final List<String> logMacros;
     static {

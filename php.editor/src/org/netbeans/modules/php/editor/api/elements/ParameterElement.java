@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 public interface ParameterElement {
     String getName();
     String asString();
+    boolean isReference();
     Set<TypeResolver> getTypes();
     @CheckForNull
     String getDefaultValue();

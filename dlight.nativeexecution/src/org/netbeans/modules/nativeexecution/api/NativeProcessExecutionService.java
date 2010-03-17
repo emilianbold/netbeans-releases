@@ -123,6 +123,7 @@ public final class NativeProcessExecutionService {
                 is = process.getInputStream();
 
                 if (is != null) {
+                    // LATER: shouldn't it use ProcessUtils.getReader?
                     br = new BufferedReader(new InputStreamReader(is));
                     String line;
 

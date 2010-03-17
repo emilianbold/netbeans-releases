@@ -76,7 +76,6 @@ public class JBrowseModule extends ModuleInstall {
 
     public @Override void restored() {
         super.restored();
-        JavaSourceTaskFactoryManager.register();
         if (ENABLE_MBEANS) {
             registerMBeans();
         }

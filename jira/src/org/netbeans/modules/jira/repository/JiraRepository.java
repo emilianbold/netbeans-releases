@@ -72,6 +72,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -139,7 +140,12 @@ public class JiraRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        Jira.getInstance().addRepository(this);
+        register();
+    }
+
+    final void register() {
+        // register with mylyn to force issue externalization
+        BugtrackingRuntime.getInstance().getTaskRepositoryManager().addRepository(taskRepository);
     }
 
     @Override
@@ -696,7 +702,6 @@ public class JiraRepository extends Repository {
         attributes.put(ATTRIBUTE_URL, getUrl());
         return attributes;
     }
-
 
     private class Cache extends IssueCache<TaskData> {
         Cache() {

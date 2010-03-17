@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.stackanalyzer;
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import javax.swing.AbstractListModel;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+
 /**
- * @author Jan Becicka
+ *
+ * @author Petr Hejl
  */
-class StackListModel extends AbstractListModel {
-    private ArrayList<String> lines = new ArrayList();
+public class WLDatasource implements Datasource {
 
-    public StackListModel(Reader stack) {
-        BufferedReader r = new BufferedReader(stack);
-        String currentLine = null;
-        do {
-            try {
-                currentLine = r.readLine();
-                if (currentLine != null) {
-                    Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                    m = AnalyzeStackTopComponent.FIRST_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } while (currentLine!=null);
+    private final String url;
+
+    private final String jndi;
+
+    private final String user;
+
+    private final String password;
+
+    private final String driver;
+
+    public WLDatasource(String url, String jndi, String user, String password, String driver) {
+        this.url = url;
+        this.jndi = jndi;
+        this.user = user;
+        this.password = password;
+        this.driver = driver;
     }
 
-    public int getSize() {
-        return lines.size();
+    @Override
+    public String getDisplayName() {
+        return getJndiName();
     }
 
-    public Object getElementAt(int index) {
-        return lines.get(index);
+    @Override
+    public String getDriverClassName() {
+        return driver;
     }
+
+    @Override
+    public String getJndiName() {
+        return jndi;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return user;
+    }
+
 }

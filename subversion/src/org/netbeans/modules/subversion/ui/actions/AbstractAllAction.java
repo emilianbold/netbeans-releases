@@ -73,7 +73,7 @@ public abstract class AbstractAllAction extends SystemAction {
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projects.length; i++) {
                 Project project = projects[i];
-                if (SvnUtils.isVersionedProject(project)) {
+                if (SvnUtils.isVersionedProject(project, false)) {
                     return true;
                 }
             }

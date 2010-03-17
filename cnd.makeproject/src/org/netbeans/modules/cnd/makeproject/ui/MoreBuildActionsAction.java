@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,48 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.spellchecker.options;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Utilities;
+package org.netbeans.modules.cnd.makeproject.ui;
 
-/**
- *
- * @author Jan Lahoda
- */
-public class SpellcheckerOption extends AdvancedOption {
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-    /**
-     * Creates a new instance of SpellcheckerOption
-     */
-    public SpellcheckerOption() {
+public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    private JMenu subMenu = null;
+    Action[] actions;
+
+    /** Creates a new instance of BrowserAction */
+    public MoreBuildActionsAction(Action[] actions) {
+        super(NbBundle.getMessage( MoreBuildActionsAction.class, "LBL_MoreBuildActionsAction_Name"), null);   // NOI18N
+        this.actions = actions;
     }
-
-    public OptionsPanelController create() {
-        return new SpellcheckerOptionsPanelController();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Spellchecker";
-    }
-
-    @Override
-    public String getTooltip() {
-        return "Spellchecker";
-    }
-    
-    private Icon i;
-    
-    public synchronized Icon getIcon() {
-        if (i == null) {
-            i = new ImageIcon(Utilities.loadImage("org/netbeans/modules/spellchecker/resources/option.png"));
-        }
         
-        return i;
+    @Override
+    public void actionPerformed(java.awt.event.ActionEvent ev) {
+        // no operation
     }
 
+    @Override
+    public JMenuItem getPopupPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+    
+    @Override
+    public JMenuItem getMenuPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+        
+    private void createSubMenu() {
+        if (subMenu == null) {
+            String label = getString("LBL_MoreBuildActionsAction_Name"); // NOI18N
+            subMenu = new JMenu(label);
+            for (Action action : actions) {
+                subMenu.add(action);
+            }
+        }
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(MoreBuildActionsAction.class, key);
+    }
+    
 }

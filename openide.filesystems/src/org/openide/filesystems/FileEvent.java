@@ -91,6 +91,7 @@ public class FileEvent extends EventObject {
         super(src);
         this.file = file;
         this.time = System.currentTimeMillis();
+        MIMESupport.freeCaches();
     }
 
     /** Creates new <code>FileEvent</code>. The <code>FileObject</code> where the action occurred

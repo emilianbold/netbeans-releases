@@ -61,19 +61,24 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
+                        <attr name="position" intvalue="19000"/>
                         &dtd-action-attributes;
                     </file>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
+                        <attr name="position" intvalue="19100"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-doclet-DocletAction.instance"/>
+                        <attr name="position" intvalue="19200"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
+                        <attr name="position" intvalue="19300"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance"/>
+                        <attr name="position" intvalue="19400"/>
                     </file>
                 </folder>
             </folder>

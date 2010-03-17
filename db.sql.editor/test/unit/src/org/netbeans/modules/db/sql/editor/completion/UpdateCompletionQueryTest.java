@@ -68,6 +68,8 @@ public class UpdateCompletionQueryTest extends SelectCompletionQueryTest {
         suite.addTest(new UpdateCompletionQueryTest("updateSet"));
         suite.addTest(new UpdateCompletionQueryTest("updateSetValue"));
         suite.addTest(new UpdateCompletionQueryTest("updateWhere"));
+
+        suite.addTest(new UpdateCompletionQueryTest("updateView"));
         return suite;
     }
 }
