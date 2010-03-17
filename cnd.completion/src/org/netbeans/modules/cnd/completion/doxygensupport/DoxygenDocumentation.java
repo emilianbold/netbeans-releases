@@ -154,6 +154,7 @@ public class DoxygenDocumentation {
     static {
         commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\author", new CommandDescription(EndsOn.PAR, "<strong>Author:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameter:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
@@ -234,9 +235,11 @@ public class DoxygenDocumentation {
         while (i < text.length()) {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
-                    result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
+                    if (i < text.length()-1 && (text.charAt(i+1) == '@' || text.charAt(i+1) == '\\')) {
+                        result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
+                        wasContent = false;
+                    }
                     i++;
-                    wasContent = false;
                     break;
                 case ' ': // NOI18N
                 case '\t': // NOI18N
