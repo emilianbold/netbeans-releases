@@ -96,6 +96,9 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
         } else if (isFolder()){
             FileObject folder = renameRefactoring.getRefactoringSource().lookup(FileObject.class);
             ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+            if(classPath == null){
+                return null;//it may happens for folders in php and similar projects
+            }
             FileObject root = classPath.findOwnerRoot(folder);
             // issue 62320. By JavaDoc, ClassPath.fineOwnerRoot can return null
             if(root == null ) {
