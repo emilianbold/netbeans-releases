@@ -29,3 +29,8 @@ dirname=`dirname "$0"`
 #clean receipts
 "$dirname"/clean_receipts.sh "javame-$NB_ID" "org.netbeans.ide.javame"
 
+#Workaround. Having .app in the data results in TokenDefinitions.plist been created in the package
+#and IFPkgPathMappings added to Info.plist in the .pkg. That results in error during installation for some reason.
+cd "$NETBEANS_INSTALL_DIR"/Contents/Resources/NetBeans*/mobility/Java_ME_platform_SDK_3.0
+mv Updaterapp Updater.app
+mv device-managerapp device-manager.app

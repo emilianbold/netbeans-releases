@@ -296,6 +296,10 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
                 wrapLineIndex = 0;
             } else {
                 wrapLineIndex = (int) (relY / wrapLineHeight);
+                int wrapLineCount = wrapInfo.size();
+                if (wrapLineIndex >= wrapLineCount) {
+                    wrapLineIndex = wrapLineCount - 1;
+                }
             }
             allocBounds.y += relY;
             allocBounds.height = wrapInfo.childrenHeight;
