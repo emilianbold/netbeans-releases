@@ -382,7 +382,7 @@ public final class DBMetaDataFactory {
     private void checkForeignKeys(DBTable newTable) {
         // get the foreing keys
         Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
-        if (foreignKeys != null && foreignKeys.size() != 0) {
+        if (foreignKeys != null && !foreignKeys.isEmpty()) {
             newTable.setForeignKeyMap(foreignKeys);
 
             // create a hash set of the keys
