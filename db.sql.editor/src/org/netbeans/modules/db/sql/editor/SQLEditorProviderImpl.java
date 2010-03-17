@@ -72,13 +72,14 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
 
     private static final String CMD_FOLDER = "Databases/SQLCommands"; // NOI18N
     
+    @Override
     public void openSQLEditor(DatabaseConnection dbconn, String sql, boolean execute) {
         FileObject tmpFo = FileUtil.getConfigFile(CMD_FOLDER);
         if (tmpFo == null) {
             try {
                 tmpFo = FileUtil.createFolder(FileUtil.getConfigRoot(), CMD_FOLDER );
             } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             }
         }
         
@@ -122,7 +123,7 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         try {
             sqlDo = DataObject.find(sqlFo);
         } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             return;
         }
         
