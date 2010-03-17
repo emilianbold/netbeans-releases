@@ -6,6 +6,7 @@ package org.netbeans.modules.php.editor.codegen;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -140,11 +141,19 @@ public class CGSInfo {
                             for (ClassElement classElement : classes) {
                                 ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
                                 Set<MethodElement> accessibleMethods = forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement));
+                                List<MethodProperty> properties = new ArrayList<MethodProperty>();
                                 for (final MethodElement methodElement : accessibleMethods) {
-                                    if (!methodElement.isFinal() && (methodElement.isAbstract() || methodElement.getType().isInterface())) {
-                                        getPossibleInherited().add(new MethodProperty(methodElement));
+                                    if (!methodElement.isFinal()) {
+                                        properties.add(new MethodProperty(methodElement, classElement));
                                     }
                                 }
+                                Collections.<MethodProperty>sort(properties, new Comparator<MethodProperty>() {
+                                    @Override
+                                    public int compare(MethodProperty o1, MethodProperty o2) {
+                                        return -Boolean.valueOf(o1.isSelected()).compareTo(o2.isSelected());
+                                    }
+                                });
+                                getPossibleInherited().addAll(properties);
 
                             }
                         }
@@ -244,9 +253,12 @@ public class CGSInfo {
 
     static class MethodProperty extends Property {
         final private MethodElement method;
-        private MethodProperty(final MethodElement method) {
+        private MethodProperty(final MethodElement method, final ClassElement enclosingClass) {
             super(method.asString(PrintAs.NameAndParams), method.getPhpModifiers().toFlags());
             this.method = method;
+            boolean typeIsAbstract = enclosingClass.getPhpModifiers().isAbstract();
+            final boolean methodIsAbstract = method.isAbstract() || method.getType().isInterface();
+            setSelected(!typeIsAbstract && methodIsAbstract);
         }
 
         MethodElement getMethod() {
