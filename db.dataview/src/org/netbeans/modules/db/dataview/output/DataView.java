@@ -242,6 +242,7 @@ public class DataView {
         assert dataViewUI != null;
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.disableButtons();
             }
@@ -252,6 +253,7 @@ public class DataView {
     synchronized void removeComponents() {
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.getParent().setVisible(false);
                 dataViewUI.removeAll();
@@ -294,6 +296,7 @@ public class DataView {
         assert dataViewUI != null;
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.resetToolbar(wasError);
             }
@@ -311,6 +314,7 @@ public class DataView {
         if (dataPage.getCurrentRows() != null) {
             Mutex.EVENT.readAccess(new Runnable() {
 
+                @Override
                 public void run() {
                     dataViewUI.setDataRows(dataPage.getCurrentRows());
                     dataViewUI.setTotalCount(dataPage.getTotalRows());
@@ -324,6 +328,7 @@ public class DataView {
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.setTotalCount(dataPage.getTotalRows());
             }
@@ -335,6 +340,7 @@ public class DataView {
         dataPage.decrementRowSize(count);
         Mutex.EVENT.readAccess(new Runnable() {
 
+            @Override
             public void run() {
                 dataViewUI.setTotalCount(dataPage.getTotalRows());
             }
