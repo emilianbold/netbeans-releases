@@ -40,9 +40,16 @@
  */
 package org.netbeans.modules.mercurial.ui.merge;
 
+import java.util.Set;
+import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.update.*;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,6 +61,7 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
     public MergeRevisionsPanel (File repo,File [] roots) {
         super(repo, roots);
         initComponents();
+        setInitMessageInfoFetcher(new HeadsInfoFetcher());
         loadRevisions();
     }
 
@@ -65,5 +73,19 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
     private void initComponents() {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MergeRevisionsPanel.class, "infoLabel.text")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MergeRevisionsPanel.class, "infoLabel2.text")); // NOI18N
+    }
+
+    private static final class HeadsInfoFetcher extends MessageInfoFetcher {
+        @Override
+        protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
+            HgLogMessage[] messages;
+            try {
+                messages = HgCommand.getHeadRevisionsInfo(repository, logger);
+            } catch (HgException ex) {
+                Logger.getLogger(MergeRevisionsPanel.class.getName()).log(Level.INFO, null, ex);
+                messages = new HgLogMessage[0];
+            }
+            return messages;
+        }
     }
 }

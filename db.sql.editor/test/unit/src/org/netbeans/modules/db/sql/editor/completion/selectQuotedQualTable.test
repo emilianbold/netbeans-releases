@@ -5,6 +5,8 @@ select "customers".|
   customers*
     customer
       customer_id
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id

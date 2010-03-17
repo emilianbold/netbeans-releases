@@ -7,6 +7,8 @@ select "customer"."|
       customer_id
       customer_rating
       address_line
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id
