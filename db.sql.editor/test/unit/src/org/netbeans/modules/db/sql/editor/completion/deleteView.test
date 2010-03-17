@@ -3,10 +3,10 @@ delete from |
 --
 catalog_1*
   sch_customers*
-    tab_customer
-      col_customer_id
     view_customer[view]
       col_customer_id
+    view_order[view]
+      col_order_id
   sch_accounting
     tab_invoice
       col_invoice_id
