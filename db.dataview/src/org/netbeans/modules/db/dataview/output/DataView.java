@@ -217,10 +217,16 @@ public class DataView {
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
+        if (execHelper == null) {
+            execHelper = new SQLExecutionHelper(this);
+        }
         return execHelper;
     }
 
     SQLStatementGenerator getSQLStatementGenerator() {
+        if (stmtGenerator == null) {
+            stmtGenerator = new SQLStatementGenerator(this);
+        }
         return stmtGenerator;
     }
 
