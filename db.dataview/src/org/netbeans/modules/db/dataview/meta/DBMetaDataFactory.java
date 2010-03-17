@@ -179,7 +179,15 @@ public final class DBMetaDataFactory {
                 tableName = noTableName;
             }
             String schemaName = rsMeta.getSchemaName(i);
+            // although Javadoc admit of returning null, SQLite returns null
+            if (schemaName == null) {
+                schemaName = "";
+            }
             String catalogName = rsMeta.getCatalogName(i);
+            // although Javadoc admit of returning null, SQLite returns null
+            if (catalogName == null) {
+                catalogName = "";
+            }
             if (schemaName.trim().length() == 0 && catalogName.equals(tableName)) {
                 // a workaround for SQLite
                 // suppose the catalog shouldn't be same if schema is not supported
