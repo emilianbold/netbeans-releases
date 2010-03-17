@@ -38,11 +38,14 @@
  */
 package org.netbeans.modules.php.editor.api.elements;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -240,6 +243,22 @@ public abstract class ElementFilter {
             }
         };
     }
+    public static ElementFilter forMembersOfTypeName(final TypeElement typeElement) {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forName(NameKind.exact(typeElement.getFullyQualifiedName()));
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
 
     public static <T extends PhpElement> ElementFilter forInstanceOf(final Class<T> cls) {
         return new ElementFilter() {
@@ -326,28 +345,38 @@ public abstract class ElementFilter {
         return Collections.unmodifiableSet(retval);
     }
 
+    //slow impl.
     public <T extends PhpElement> Set<T> prefer(Set<T> original) {
         Set<T> retval = original;
-        Set<T> remove = new HashSet<T>();
-        Map<Pair<PhpElementKind, String>, T> map = new HashMap<Pair<PhpElementKind, String>, T>();
+        Set<T> notAccepted = new HashSet<T>();
+        Map<T, ElementFilter>  accepted = new HashMap<T, ElementFilter>();
+
         for (T baseElement : original) {
-            final PhpElementKind kind = baseElement.getPhpElementKind();
-            final String name = baseElement.getName();
-            final Pair<PhpElementKind, String> key =
-                    Pair.<PhpElementKind, String>of(kind, name);
-            T old = map.put(key, baseElement);
-            if (old != null) {
-                if (isAccepted(baseElement)) {
-                    remove.add(old);
+            if (isAccepted(baseElement)) {
+                List<ElementFilter> filters = new ArrayList<ElementFilter>();
+                if (baseElement instanceof FullyQualifiedElement) {
+                    FullyQualifiedElement fqnElement = (FullyQualifiedElement) baseElement;
+                    filters.add(ElementFilter.forName(NameKind.exact(fqnElement.getFullyQualifiedName())));
                 } else {
-                    remove.add(map.put(key, old));
+                    filters.add(ElementFilter.forName(NameKind.exact(baseElement.getName())));
                 }
+                if (baseElement instanceof TypeMemberElement) {
+                    TypeMemberElement member = (TypeMemberElement)baseElement;
+                    filters.add(ElementFilter.forMembersOfTypeName(member.getType()));
+                }
+                accepted.put(baseElement, ElementFilter.allOf(filters));
+            } else {
+                notAccepted.add(baseElement);
             }
         }
-        if (!remove.isEmpty()) {
+        if (accepted.size() > 0 && notAccepted.size() > 0) {
             retval = new HashSet<T>(original);
-            retval.removeAll(remove);
+            for (Entry<T, ElementFilter> entry : accepted.entrySet()) {
+                ElementFilter filter = entry.getValue();
+                retval.removeAll(filter.filter(notAccepted));
+            }
         }
+
         return Collections.unmodifiableSet(retval);
     }
 }
