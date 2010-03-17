@@ -47,6 +47,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
  */
 public class WLDatasource implements Datasource {
 
+    private final String name;
+
     private final String url;
 
     private final String jndi;
@@ -57,7 +59,9 @@ public class WLDatasource implements Datasource {
 
     private final String driver;
 
-    public WLDatasource(String url, String jndi, String user, String password, String driver) {
+    public WLDatasource(String name, String url, String jndi, String user,
+            String password, String driver) {
+        this.name = name;
         this.url = url;
         this.jndi = jndi;
         this.user = user;
@@ -67,7 +71,7 @@ public class WLDatasource implements Datasource {
 
     @Override
     public String getDisplayName() {
-        return getJndiName();
+        return name;
     }
 
     @Override
