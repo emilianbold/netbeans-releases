@@ -61,6 +61,7 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
+                        <attr name="position" intvalue="19000"/>
                         &dtd-action-attributes;
                     </file>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow">
