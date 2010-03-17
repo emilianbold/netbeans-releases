@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -76,6 +77,8 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     @Override
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
+
+        // Simple
         result.add(new SimpleSuiteStartingHandler());
         result.add(new SimpleSuiteStartedHandler());
         result.add(new SimpleSuiteFinishedHandler());
@@ -87,6 +90,10 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         result.add(new SimpleTestLoggerHandler());
         result.add(new SimpleTestMiscHandler());
         result.add(new SimpleSuiteMiscHandler());
+
+        // CppUnit
+        result.add(new CppUnitHandler());
+
         return result;
     }
 
@@ -375,5 +382,129 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
                 LOGGER.log(level, matcher.group(2));
         }
     }
+
+    //
+    // CppUnit tests output support
+    //
+
+    static class CppUnitHandler extends TestRecognizerHandler {
+
+        private final List<TestRecognizerHandler> handlers;
+
+        private String currentSuiteName;
+        private boolean currentSuiteFinished = false;
+
+        public CppUnitHandler() {
+            super("((.*)::(.+) : .*)|(Run: )"); //NOI18N
+
+            handlers = new ArrayList<TestRecognizerHandler>();
+            handlers.add(new CppUnitTestFinishedHandler());
+            handlers.add(new CppUnitTestFailedHandler());
+            handlers.add(new CppUnitSuiteFinishedHandler());
+        }
+
+        @Override
+        void updateUI(Manager manager, TestSession session) {
+            String line = matcher.group(0);
+            for (TestRecognizerHandler handler : handlers) {
+                if (handler.matches(line)) {
+                    handler.updateUI(manager, session);
+                    break;
+                }
+            }
+        }
+
+        class CppUnitTestFinishedHandler extends TestRecognizerHandler {
+
+            public CppUnitTestFinishedHandler() {
+                super("(.*)::(.+) : OK"); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+
+                String suiteName = matcher.group(1);
+
+                final TestSuite currentSuite = session.getCurrentSuite();
+                if (currentSuite == null) {
+                    manager.testStarted(session);
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                    currentSuiteFinished = false;
+                } else if(!currentSuite.getName().equals(suiteName)) {
+                    if(currentSuite.getName().equals(currentSuiteName) &&
+                            !currentSuiteFinished) {
+                        manager.displayReport(session, session.getReport(0));
+                    }
+
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                    currentSuiteFinished = false;
+                }
+                currentSuiteName = suiteName;
+
+                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                testcase.setTimeMillis(0);
+                testcase.setClassName(suiteName);
+
+                session.addTestCase(testcase);
+            }
+        }
+
+        class CppUnitTestFailedHandler extends TestRecognizerHandler {
+
+            public CppUnitTestFailedHandler() {
+                super("(.*)::(.+) : (.*)"); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+
+                String suiteName = matcher.group(1);
+
+                final TestSuite currentSuite = session.getCurrentSuite();
+                if (currentSuite == null) {
+                    manager.testStarted(session);
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                } else if(!currentSuite.getName().equals(suiteName)) {
+                    if(currentSuite.getName().equals(currentSuiteName) &&
+                            !currentSuiteFinished) {
+                        manager.displayReport(session, session.getReport(0));
+                        currentSuiteFinished = true;
+                    }
+
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                }
+                currentSuiteName = suiteName;
+
+                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                testcase.setTimeMillis(0);
+                testcase.setClassName(suiteName);
+
+                testcase.setTrouble(new Trouble(false));
+                String message = matcher.group(3); // NOI18N
+                testcase.getTrouble().setStackTrace(getStackTrace(message ,"")); // NOI18N
+
+                session.addTestCase(testcase);
+            }
+        }
+
+        class CppUnitSuiteFinishedHandler extends TestRecognizerHandler {
+
+            public CppUnitSuiteFinishedHandler() {
+                super("Run: "); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+                manager.displayReport(session, session.getReport(0));
+                manager.sessionFinished(session);
+                currentSuiteFinished = true;
+            }
+        }
+    }
+
 }
 
