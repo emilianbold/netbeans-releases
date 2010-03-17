@@ -59,7 +59,6 @@ import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.editor.hyperlink.PopupUtil;
-import org.netbeans.modules.csl.navigation.Icons;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,16 +68,15 @@ import org.openide.filesystems.FileObject;
 public class IsOverriddenPopup extends JPanel implements FocusListener {
     
     private String caption;
-    private List<AlternativeLocation> declarations;
+    private List<OverrideDescription> declarations;
     
-    /** Creates new form IsOverriddenPopup */
-    public IsOverriddenPopup(String caption, List<AlternativeLocation> declarations) {
+    public IsOverriddenPopup(String caption, List<OverrideDescription> declarations) {
         this.caption = caption;
         this.declarations = declarations;
 
-        Collections.sort(declarations, new Comparator<AlternativeLocation>() {
-            public int compare(AlternativeLocation o1, AlternativeLocation o2) {
-                return o1.getDisplayHtml(new GsfHtmlFormatter()).compareTo(o2.getDisplayHtml(new GsfHtmlFormatter()));
+        Collections.sort(declarations, new Comparator<OverrideDescription>() {
+            public int compare(OverrideDescription o1, OverrideDescription o2) {
+                return o1.location.getDisplayHtml(new GsfHtmlFormatter()).compareTo(o2.location.getDisplayHtml(new GsfHtmlFormatter()));
             }
         });
         
@@ -161,13 +159,13 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
     // End of variables declaration//GEN-END:variables
     
     private void openSelected() {
-        AlternativeLocation desc = (AlternativeLocation) jList1.getSelectedValue();
+        OverrideDescription desc = (OverrideDescription) jList1.getSelectedValue();
         
         if (desc != null) {
-            FileObject file = desc.getLocation().getFileObject();
+            FileObject file = desc.location.getLocation().getFileObject();
             
             if (file != null) {
-                UiUtils.open(file, desc.getLocation().getOffset());
+                UiUtils.open(file, desc.location.getLocation().getOffset());
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -179,7 +177,7 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
     private ListModel createListModel() {
         DefaultListModel dlm = new DefaultListModel();
         
-        for (AlternativeLocation el: declarations) {
+        for (OverrideDescription el: declarations) {
             dlm.addElement(el);
         }
         
@@ -195,11 +193,11 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
                 boolean cellHasFocus) {
             Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             
-            if (value instanceof AlternativeLocation) {
-                AlternativeLocation desc = (AlternativeLocation) value;
+            if (value instanceof OverrideDescription) {
+                OverrideDescription desc = (OverrideDescription) value;
                 
-                setIcon(Icons.getElementIcon(desc.getElement().getKind(), desc.getElement().getModifiers()));
-                setText(desc.getDisplayHtml(new GsfHtmlFormatter()));
+                setIcon(desc.getIcon());
+                setText(desc.location.getDisplayHtml(new GsfHtmlFormatter()));
             }
             
             return c;
