@@ -38,12 +38,16 @@
  */
 package org.netbeans.modules.cnd.api.toolchain.ui;
 
+import java.awt.Component;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.ui.options.HostToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.WeakSet;
 
 /**
@@ -135,7 +139,13 @@ public class ToolsPanelSupport {
         return isChanged;
     }
 
-
+    public static Component getToolsPanelComonent(ExecutionEnvironment env) {
+        HostToolsPanelModel model = new HostToolsPanelModel(env);
+        ToolsPanel tp = new ToolsPanel(model);
+        tp.update();
+        return tp;
+    }
+    
     private ToolsPanelSupport() {
     }
 }
