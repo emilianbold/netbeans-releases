@@ -66,7 +66,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINER;
     }
 
     /** Tests FileObject.addRecursiveListener on folder as declared in
@@ -220,15 +220,17 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         fcl.clearAll();
 
         // disk changes
+        LOG.log(Level.INFO, "Going to sleep {0}", System.currentTimeMillis());
         Thread.sleep(1000); // give OS same time
+        LOG.log(Level.INFO, "Waking up {0}", System.currentTimeMillis());
         assertTrue(subsubdirF.mkdirs());
         assertTrue(fileF.createNewFile());
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
-        FileUtil.refreshAll();
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{fileF, fileF.lastModified()});
+        FileUtil.refreshAll();
         // TODO - should be 3
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         // TODO - should be 2
