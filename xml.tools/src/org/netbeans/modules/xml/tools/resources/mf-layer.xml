@@ -97,6 +97,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
             <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>
+            <file name="org-netbeans-modules-xml-tools-actions-CheckDTDAction.instance"/>
         </folder>
     </folder>
 
