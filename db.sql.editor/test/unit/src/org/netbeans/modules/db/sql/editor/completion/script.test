@@ -13,4 +13,6 @@ insert into customer values (3);
       customer_id
     address
       address_id
+    csummary[view]
+      csummary_id
   

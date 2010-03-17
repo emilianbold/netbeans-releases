@@ -1,10 +1,12 @@
-select | from "accounting"."invoice", "accounting"."customer" "foo"
+select | from "accounting"."invoice", "accounting"."customer" "foo", "asummary" "a"
 
 --
 <unknown>
   customers*
     customer
       customer_id
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id
