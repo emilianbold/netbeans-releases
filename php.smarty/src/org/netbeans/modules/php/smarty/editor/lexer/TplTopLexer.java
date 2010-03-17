@@ -284,7 +284,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         input.backup(closeDelimiterLength);
                         break;
                     } else {
-                        return TplTopTokenId.T_ERROR;
+                        break;
                     }
 
                 case CLOSE_DELIMITER:
@@ -332,7 +332,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         }
                         else {
                             state = State.CLOSE_DELIMITER;
-                            input.backup(1);
+                            input.backup(closeDelimiterLength);
                             if (input.readLength() != 0) {
                                 return TplTopTokenId.T_SMARTY;
                             }
@@ -366,13 +366,23 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         private boolean isSmartyOpenDelimiter(CharSequence text) {
-            return (text.toString().endsWith(new String("{")));
+            if (SmartyFramework.useCustomDelimiters) {
+                return (text.toString().endsWith(SmartyFramework.DELIMITER_CUSTOM_OPEN));
+            }
+            else {
+                return (text.toString().endsWith(SmartyFramework.DELIMITER_DEFAULT_OPEN));
+            }
         }
 
         private boolean isSmartyCloseDelimiter(CharSequence text) {
-            return (text.toString().endsWith(new String("}")));
+            if (SmartyFramework.useCustomDelimiters) {
+                return (text.toString().endsWith(SmartyFramework.DELIMITER_CUSTOM_CLOSE));
+            }
+            else {
+                return (text.toString().endsWith(SmartyFramework.DELIMITER_DEFAULT_CLOSE));
+            }
         }
-
+        
         private int getOpenDelimiterLength() {
             return (SmartyFramework.useCustomDelimiters?
                 SmartyFramework.DELIMITER_CUSTOM_OPEN.length() : SmartyFramework.DELIMITER_DEFAULT_OPEN.length());
