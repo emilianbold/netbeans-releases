@@ -363,10 +363,12 @@ AtomicLockListener, FoldHierarchyListener {
             }
         
             if (newCaretBounds != null) {
+                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}", new Object [] { caretBounds, newCaretBounds }); //NOI18N
                 caretBounds = newCaretBounds;
                 return true;
             }
         }
+        LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", caretBounds); //NOI18N
         return false;
     }
 
@@ -424,6 +426,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
         
         component = null; // invalidate
+        caretBounds = null;
 
         // No idea why the sync is done the way how it is, but the locks must
         // always be acquired in the same order otherwise the code will deadlock
@@ -436,11 +439,15 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
         
-        c.removeMouseMotionListener(this);
-        c.removeMouseListener(this);
-        c.removeFocusListener(listenerImpl);
+        c.removeComponentListener(listenerImpl);
         c.removePropertyChangeListener(this);
+        c.removeFocusListener(listenerImpl);
+        c.removeMouseListener(this);
+        c.removeMouseMotionListener(this);
         
+        EditorUI editorUI = Utilities.getEditorUI(c);
+        editorUI.removePropertyChangeListener(this);
+
         if (weakFHListener != null) {
             FoldHierarchy hierarchy = FoldHierarchy.get(c);
             if (hierarchy != null) {
