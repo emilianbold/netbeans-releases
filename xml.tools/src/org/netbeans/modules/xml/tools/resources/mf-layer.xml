@@ -78,13 +78,16 @@ made subject to such option by the copyright holder.
                 <folder name="Actions">
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                        <attr name="position" intvalue="19100"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                        <attr name="position" intvalue="19200"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.shadow">
                         <attr name="originalFile"
                               stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance"/>
+                        <attr name="position" intvalue="19300"/>
                     </file>
                 </folder>
             </folder>
