@@ -52,7 +52,6 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
-//import org.netbeans.modules.php.smarty.editor.utils.EditorUtils;
 
 /**
  * Provides model for TPL files.
@@ -86,15 +85,27 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         int len = 0;
         while (sequence.moveNext()) {
             Token t = sequence.token();
-            if (t.id() == TplTopTokenId.T_SMARTY) {
+            if (t.id().getClass() == TplTopTokenId.class && isSmartyToken((TplTopTokenId) t.id())) {
                 if(from < 0) {
                     from = sequence.offset();
                 }
                 len += t.length();
+                if (t.id() == TplTopTokenId.T_PHP) {
+                    if(from >= 0) {
+                        embeddings.add(snapshot.create(from, len, "text/x-php")); //NOI18N
+                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php"));
+                        from = -1;
+                        len = 0;
+                    }
+                }
             } else {
                 if (from < 0) {
-                        from = sequence.offset();
-                    }
+                    from = sequence.offset();
+                }
+                if (len > 0 && from >= 0) {
+                    from += len;
+                    len = 0;
+                }
                 len += t.length();
                 if(from >= 0) {
                     embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
@@ -133,5 +144,11 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         public Collection<SchedulerTask> create(final Snapshot snapshot) {
             return Collections.<SchedulerTask>singletonList(new TplEmbeddingProvider());
         }
+    }
+
+    public boolean isSmartyToken(TplTopTokenId tokenId) {
+        return ((tokenId == TplTopTokenId.T_COMMENT) || (tokenId == TplTopTokenId.T_LITERAL_DEL) ||
+                (tokenId == TplTopTokenId.T_PHP_DEL) || (tokenId == TplTopTokenId.T_SMARTY) ||
+                (tokenId == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) || (tokenId == TplTopTokenId.T_SMARTY_OPEN_DELIMITER));
     }
 }

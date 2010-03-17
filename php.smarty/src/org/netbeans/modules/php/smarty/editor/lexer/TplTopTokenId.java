@@ -67,7 +67,6 @@ public enum TplTopTokenId implements TokenId {
     T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter"),
     T_COMMENT(null, "comment"),
     T_LITERAL_DEL(null, "literal"),
-    T_WS(null, "top_level_whitespace"),
     T_ERROR(null, "error"),
     T_PHP(null, "php_embedding"),
     T_PHP_DEL(null, "php_del");
@@ -88,11 +87,6 @@ public enum TplTopTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private enum State {
-        OUTER,
-        IN_SMARTY
-    }
-    
     private static final Language<TplTopTokenId> language =
             new LanguageHierarchy<TplTopTokenId>() {
 

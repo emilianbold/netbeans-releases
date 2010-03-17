@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     
     <!-- colors for TOP-LEVEL lexer -->
     <fontcolor name="smarty" bgColor="FFFEC9" default="default"/>
-    <fontcolor name="smarty_delimiter" foreColor="bf0101">
+    <fontcolor name="smarty_delimiter" foreColor="DAE808">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="comment"  default="smarty" foreColor="969696"/>
