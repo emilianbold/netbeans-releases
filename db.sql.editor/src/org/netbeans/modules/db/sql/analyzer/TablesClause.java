@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Holds table names with possible aliases which can be defined in FROM or UPDATE
+ * Holds table or view names with possible aliases which can be defined in FROM or UPDATE
  * clause.
  *
  * @author Andrei Badea
@@ -58,14 +58,23 @@ public class TablesClause {
         this.aliasedTableNames = aliasedTableNames;
     }
 
+    /**
+     * @return set of unaliased table or view names
+     */
     public Set<QualIdent> getUnaliasedTableNames() {
         return unaliasedTableNames;
     }
 
+    /**
+     * @return map of aliased table or view names
+     */
     public Map<String, QualIdent> getAliasedTableNames() {
         return aliasedTableNames;
     }
 
+    /**
+     * @return unaliased table or view name
+     */
     public QualIdent getTableNameByAlias(String alias) {
         return aliasedTableNames.get(alias);
     }
