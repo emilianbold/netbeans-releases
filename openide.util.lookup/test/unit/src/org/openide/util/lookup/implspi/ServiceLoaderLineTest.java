@@ -73,7 +73,7 @@ public class ServiceLoaderLineTest extends NbTestCase {
             line.write(pw);
         }
         pw.flush();
-        return w.toString().replace('\n', ' ');
+        return w.toString().replace('\n', ' ').replace("\r", "");
     }
 
 }
