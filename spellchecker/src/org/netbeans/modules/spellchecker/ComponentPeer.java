@@ -464,12 +464,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private static final AttributeSet ERROR = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.RED, EditorStyleConstants.Tooltip, NbBundle.getMessage(ComponentPeer.class, "TP_MisspelledWord"));
 
     private static FileObject getFile(Document doc) {
-        DataObject file = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        DataObject dataObject = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
-        if (file == null)
+        if (dataObject == null)
             return null;
 
-        return file.getPrimaryFile();
+        return dataObject.getPrimaryFile();
     }
 
     public void insertUpdate(DocumentEvent e) {
