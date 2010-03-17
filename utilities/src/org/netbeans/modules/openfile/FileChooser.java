@@ -49,9 +49,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -67,15 +70,23 @@ class FileChooser extends JFileChooser {
         
         /* initialize file filters */
         FileFilter currentFilter = getFileFilter();
-        addChoosableFileFilter(new Filter(
-            new String[] {DefaultOpenFileImpl.JAVA_EXT},
-            NbBundle.getMessage(FileChooser.class, "TXT_JavaFilter"))); //NOI18N
-        addChoosableFileFilter(new Filter(
-            new String[] {DefaultOpenFileImpl.TXT_EXT}, 
-            NbBundle.getMessage(FileChooser.class, "TXT_TxtFilter")));  //NOI18N
+        addChoosableFileFilters();
         setFileFilter(currentFilter);
     }
+
+    /**
+     * Adds filters to the list of user choosable file filters.
+     *
+     * @see javax.swing.JFileChooser
+     */
+    public void addChoosableFileFilters() {
+        for (OpenFileDialogFilter f :
+                    Lookup.getDefault().lookupAll(OpenFileDialogFilter.class)) {
+            addChoosableFileFilter(f);
+        }
+    }
     
+    @Override
     public void approveSelection() {
         final File[] selectedFiles = getSelectedFiles();
 
@@ -116,60 +127,33 @@ class FileChooser extends JFileChooser {
         }
     }
 
-    /** File chooser filter that filters files by their names' suffixes. */
-    private static class Filter extends FileFilter {
-        
-        /** suffixes accepted by this filter */
-        private String[] extensions;
-        
-        /** localized description of this filter */
-        private String description;
-        
-        
-        /**
-         * Creates a new filter that accepts files having specified suffixes.
-         * The filter is case-insensitive.
-         * <p>
-         * The filter does not use file <em>extensions</em> but it just
-         * tests whether the file name ends with the specified string.
-         * So it is recommended to pass a file name extension including the
-         * preceding dot rather than just the extension.
-         *
-         * @param  extensions  list of accepted suffixes
-         * @param  description  name of the filter
-         */
-        public Filter(String[] extensions, String description) {
-            
-            this.extensions = new String[extensions.length];
-            for (int i = 0; i < extensions.length; i++) {
-                this.extensions[i] = extensions[i].toUpperCase();
-            }
-            this.description = description;
+
+    @ServiceProvider(service=org.netbeans.modules.openfile.OpenFileDialogFilter.class)
+    public static class JavaFilesFilter extends OpenFileDialogFilter {
+
+        @Override
+        public String getDescriptionString() {
+            return NbBundle.getMessage(getClass(), "OFDFD_Java"); // NOI18N
         }
-        
-        
-        /**
-         * @return  <code>true</code> if the file's name ends with one of the
-         *          strings specified by the constructor or if the file
-         *          is a directory, <code>false</code> otherwise
-         */
-        public boolean accept(File file) {
-            if (file.isDirectory()) {
-                return true;
-            }
-            for (int i = 0; i < extensions.length; i++) {
-                if (file.getName().toUpperCase().endsWith(extensions[i])) {
-                    return true;
-                }
-            }
-            
-            return false;
+
+        @Override
+        public String[] getSuffixes() {
+            return new String[] {".java"};
         }
-        
-        /** */
-        public String getDescription() {
-            return description;
+
+    }
+
+    @ServiceProvider(service=OpenFileDialogFilter.class)
+    public static class TxtFileFilter
+            extends OpenFileDialogFilter.ExtensionFilter {
+
+        @Override
+        public FileNameExtensionFilter getFilter() {
+            return new FileNameExtensionFilter(
+                            NbBundle.getMessage(getClass(), "OFDFD_Txt"),
+                            "txt"); // NOI18N
         }
-    } // End of Filter class.
+
+    } // End of TxtFileFilter
 
 }

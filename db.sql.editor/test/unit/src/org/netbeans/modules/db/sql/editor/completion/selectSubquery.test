@@ -8,3 +8,5 @@ select * from customer cust where cust.customer_id in (select distinct | from in
     invoice
       invoice_id
       customer_id
+    asummary[view]
+      asummary_id

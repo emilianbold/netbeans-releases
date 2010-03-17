@@ -61,11 +61,13 @@ final class XMLViewActions extends CollectSystemAction {
 
     /**
      */
+    @Override
     protected final Class getActionLookClass () {
         // will not be called because rewritten getPossibleActions by subclasses
         return null;
     }
 
+    @Override
     protected Collection getPossibleActions () {
         Collection actions = new Vector(2);
         
@@ -88,25 +90,29 @@ final class XMLViewActions extends CollectSystemAction {
         return actions;
     }
 
+    @Override
+    protected void addRegisteredAction() {}
 
     /* Do nothing.
      * This action itself does nothing, it only presents other actions.
      * @param ev ignored
      */
+    @Override
     public void actionPerformed (java.awt.event.ActionEvent e) {
     }
 
 
     /* Getter for name
      */
+    @Override
     public String getName () {
         return NbBundle.getMessage(XMLViewActions.class, "NAME_WeakXMLActions");
     }
 
     /* Getter for help.
      */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx (XMLViewActions.class);
     }
-
 }

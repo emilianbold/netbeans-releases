@@ -81,7 +81,7 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
         private final Property property;
 
         public CGSPropertyNode(Property property) {
-            super(property.getName(), false, false);
+            super(property.getName(), false, property.isSelected());
             this.property = property;
         }
 
