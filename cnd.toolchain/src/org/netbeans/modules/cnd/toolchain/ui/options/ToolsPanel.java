@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -78,10 +80,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -915,7 +919,19 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
             @Override
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(set);
+            if (!ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
+                try {
+                    ConnectionManager.getInstance().connectTo(getSelectedRecord().getExecutionEnvironment());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            String versions = null;
+            if (ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
+                versions = getToolCollectionPanel().getVersion(set);
+            }
             SwingUtilities.invokeLater(new Runnable() {
                     @Override
                 public void run() {
@@ -923,9 +939,11 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             });
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
+            if (versions != null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+            }
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
