@@ -283,7 +283,10 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
                 try {
                     if (EventQueue.isDispatchThread()) {
                         if (show) {
-                            ReporterResultTopComponent.this.requestVisible();
+                            ReporterResultTopComponent topComponent =
+                                    ReporterResultTopComponent.this;
+                            topComponent.requestVisible();
+                            topComponent.requestActive();
                         }
                         dataDisplayer.setPage(localData);
                     } else {

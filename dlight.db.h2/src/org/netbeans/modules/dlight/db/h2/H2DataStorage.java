@@ -110,7 +110,7 @@ public final class H2DataStorage extends SQLDataStorage {
         storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");// NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
         try {
-            persistentURL = "jdbc:h2:tcp://" + HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname() + storagesDir;
+            persistentURL = "jdbc:h2:tcp://" + System.getProperty("dlight.storages.host", HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname()) + storagesDir;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             persistentURL = url;

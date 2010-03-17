@@ -60,6 +60,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -368,6 +369,15 @@ public class MercurialInterceptor extends VCSInterceptor {
                 initializeFiles();
             }
         });
+        private RequestProcessor.Task refreshOpenFilesTask = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                Set<File> openFiles = Utils.getOpenFiles();
+                for (File file : openFiles) {
+                    Mercurial.getInstance().notifyFileChanged(file);
+                }
+            }
+        });
 
         /**
          *
@@ -423,6 +433,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     File repository = hgFolder.getParentFile();
                     Mercurial.STATUS_LOG.fine("handleDirstateEvent: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
+                    refreshOpenFilesTask.schedule(3000);
                 }
             }
         }

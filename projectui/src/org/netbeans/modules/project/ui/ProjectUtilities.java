@@ -297,23 +297,14 @@ public class ProjectUtilities {
      * @param requestFocus if set to true the project tab will not only become visible but also
      *        will gain focus
      */
-    public static void makeProjectTabVisible( final boolean requestFocus ) {
-        final ProjectTab ptLogical  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
-        
-//        SwingUtilities.invokeLater (new Runnable () {
-//            public void run () {
-                ptLogical.open();
-                if ( requestFocus ) {
-                    ptLogical.requestActive();
-                }
-                else {
-                    ptLogical.requestVisible();
-                }
-//            }
-//        });
-                
+    public static void makeProjectTabVisible() {
+        if (Boolean.getBoolean("project.tab.no.selection")) {
+            return;
+        }
+        ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+        ptLogical.open();
+        ptLogical.requestActive();
     }
-    
     
     /** Checks if the given file name can be created in the target folder.
      *

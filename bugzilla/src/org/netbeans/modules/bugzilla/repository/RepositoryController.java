@@ -47,8 +47,6 @@ import java.net.URL;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
@@ -75,7 +73,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     private RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
-    private boolean populating;
+    private boolean populated = false;
+    private TaskRunner taskRunner;
+    private RequestProcessor rp;
 
     RepositoryController(BugzillaRepository repository) {
         this.repository = repository;
@@ -86,14 +86,6 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.psswdField.getDocument().addDocumentListener(this);
 
         panel.validateButton.addActionListener(this);
-        panel.addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                populate();
-            }
-            public void ancestorRemoved(AncestorEvent event) { }
-            public void ancestorMoved(AncestorEvent event)   { }
-        });
-
     }
 
     public JComponent getComponent() {
@@ -138,6 +130,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private boolean validate() {
+        if(!populated) {
+            return true;
+        }
         if(validateError) {
             return false;
         }
@@ -224,49 +219,68 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     void populate() {
-        if(repository.getTaskRepository() != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    populating = true;
-                    AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-                    panel.userField.setText(c.getUserName());
-                    panel.psswdField.setText(c.getPassword());
-                    c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
-                    if(c != null) {
-                        String httpUser = c.getUserName();
-                        String httpPsswd = c.getPassword();
-                        if(httpUser != null && !httpUser.equals("") &&          // NOI18N
-                           httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
-                        {
-                            panel.httpCheckBox.setSelected(true);
-                            panel.httpUserField.setText(httpUser);
-                            panel.httpPsswdField.setText(httpPsswd);
+        taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
+            @Override
+            protected void preRun() {
+                panel.validateButton.setVisible(false);
+                super.preRun();
+            }
+            @Override
+            protected void postRun() {
+                panel.validateButton.setVisible(true);
+                super.postRun();
+            }
+            @Override
+            void execute() {
+                BugzillaConfig.getInstance().setupCredentials(repository);
+                if(repository.getTaskRepository() != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
+                            panel.userField.setText(c.getUserName());
+                            panel.psswdField.setText(c.getPassword());
+                            c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                            if(c != null) {
+                                String httpUser = c.getUserName();
+                                String httpPsswd = c.getPassword();
+                                if(httpUser != null && !httpUser.equals("") &&          // NOI18N
+                                   httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
+                                {
+                                    panel.httpCheckBox.setSelected(true);
+                                    panel.httpUserField.setText(httpUser);
+                                    panel.httpPsswdField.setText(httpPsswd);
+                                }
+                            }
+                            panel.urlField.setText(repository.getTaskRepository().getUrl());
+                            panel.nameField.setText(repository.getDisplayName());
+                            panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
+                            populated = true;
+                            fireDataChanged();
                         }
-                    }
-                    panel.urlField.setText(repository.getTaskRepository().getUrl());
-                    panel.nameField.setText(repository.getDisplayName());
-                    panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
-                    populating = false;
+                    });
+                } else {
+                    populated = false;
                     fireDataChanged();
                 }
-            });
-        }
+            }
+        };
+        taskRunner.startTask();
     }
 
     public void insertUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void removeUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void changedUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
@@ -278,33 +292,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private void onValidate() {
-        RequestProcessor rp = Bugzilla.getInstance().getRequestProcessor();
-
-        final Task[] task = new Task[1];
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                panel.progressPanel.setVisible(false);
-                panel.validateLabel.setVisible(false);
-                if(task[0] != null) {
-                    task[0].cancel();
-                }
-                return true;
-            }
-        };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c); // NOI18N
-        JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
-        panel.progressPanel.removeAll();
-        panel.progressPanel.add(comp, BorderLayout.CENTER);
-
-        task[0] = rp.create(new Runnable() {
-            public void run() {
-                panel.connectionLabel.setVisible(false);
-                handle.start();
-                panel.progressPanel.setVisible(true);
-                panel.validateLabel.setVisible(true);
-                panel.enableFields(false);
-                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
-                try {
+        taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
+            @Override
+            void execute() {
                     repository.resetRepository(); // reset mylyns caching
 
                     String name = getName();
@@ -339,19 +329,13 @@ public class RepositoryController extends BugtrackingController implements Docum
                         logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
                                            Level.INFO, name, url, user, httpUser);
                     }
-                } finally {
-                    panel.enableFields(true);
-                    panel.progressPanel.setVisible(false);
-                    panel.validateLabel.setVisible(false);
-                    handle.finish();
-                }
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
                 Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, httpUser});
             }
-        });
-        task[0].schedule(0);
+        };
+        taskRunner.startTask();
     }
 
     private void validateErrorOff(DocumentEvent e) {
@@ -359,4 +343,80 @@ public class RepositoryController extends BugtrackingController implements Docum
             validateError = false;
         }
     }
+
+    void cancel() {
+        if(taskRunner != null) {
+            taskRunner.cancel();
+        }
+    }
+
+    private abstract class TaskRunner implements Runnable, Cancellable {
+        private Task task;
+        private ProgressHandle handle;
+        private String labelText;
+
+        public TaskRunner(String labelText) {
+            this.labelText = labelText;
+        }
+
+        final void startTask() {
+            cancel();
+            task = getRequestProcessor().create(this);
+            task.schedule(0);
+        }
+
+        @Override
+        final public void run() {
+            preRun();
+            try {
+                execute();
+            } finally {
+                postRun();
+            }
+        }
+
+        abstract void execute();
+
+        protected void preRun() {
+            handle = ProgressHandleFactory.createHandle(labelText, this);
+            JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
+            panel.progressPanel.removeAll();
+            panel.progressPanel.add(comp, BorderLayout.CENTER);
+
+            panel.connectionLabel.setVisible(false);
+            handle.start();
+            panel.progressPanel.setVisible(true);
+            panel.validateLabel.setVisible(true);
+            panel.enableFields(false);
+            panel.validateLabel.setText(labelText); // NOI18N
+        }
+
+        protected void postRun() {
+            if(handle != null) {
+                handle.finish();
+            }
+            panel.progressPanel.setVisible(false);
+            panel.validateLabel.setVisible(false);
+            panel.enableFields(true);
+        }
+
+        @Override
+        public boolean cancel() {
+            boolean ret = true;
+            postRun();
+            if(task != null) {
+                ret = task.cancel();
+            }
+            errorMessage = null;
+            return ret;
+        }
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("Bugzilla Repository tasks", 1, true); // NOI18N
+        }
+        return rp;
+    }
+
 }

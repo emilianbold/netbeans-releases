@@ -7,9 +7,20 @@
             <type name="bool"/>
         </attr>
     </common_attributes>
+
+    <tag name="actionSource"/>
+    <tag name="attribute"/>
+    <tag name="editableValueHolder"/>
+    <tag name="extension"/>
+    <tag name="facet"/>
+    <tag name="implementation"/>
+    <tag name="insertChildren"/>
+    <tag name="insertFacet"/>
     <tag name="interface">
         <attr name="required">
             <type name="bool"/>
         </attr>
     </tag>
+    <tag name="renderFacet"/>
+    <tag name="valueHolder"/>
 </library>

@@ -1676,7 +1676,12 @@ public final class FileUtil extends Object {
             // URI.normalize removes ../ and ./ sequences nicely.            
             File absoluteFile = new File(file.toURI().normalize());
             File canonicalFile = file.getCanonicalFile();
-            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absoluteFile.getAbsolutePath());
+            String absolutePath = absoluteFile.getAbsolutePath();
+            if (absolutePath.equals("/..")) { // NOI18N
+                // Special treatment.
+                absoluteFile = new File(absolutePath = "/"); // NOI18N
+            }
+            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absolutePath);
 
             if (isSymLink) {
                 retVal = normalizeSymLinkOnMac(absoluteFile);

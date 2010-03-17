@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *  A base class for CND binary nodes. The functionality from
@@ -70,14 +71,9 @@ public class CndDataNode extends DataNode {
 
 
     /** Constructor for this class */
-    public CndDataNode(DataObject obj, Children ch) {
-	super(obj, ch);
+    public CndDataNode(DataObject obj, Children ch, Lookup lookup) {
+	super(obj, ch, lookup);
 	primary = getDataObject().getPrimaryFile();
-    }
-
-    public CndDataNode(DataObject obj, Children ch, String icon) {
-	super(obj, ch);
-	setIconBaseWithExtension(icon);
     }
 
     /**

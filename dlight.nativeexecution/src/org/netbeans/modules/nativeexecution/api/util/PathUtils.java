@@ -80,11 +80,9 @@ public class PathUtils {
     public static String getExePath(long pid, ExecutionEnvironment execEnv) {
         if (pid > 0) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
-            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            String path = PathUtils.getPathFromSymlink(pathfile.getAbsolutePath(), execEnv);
+            String path = PathUtils.getPathFromSymlink(procdir + "/path/a.out", execEnv); // NOI18N - Solaris only?
             if (path == null) {
-                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-                path = PathUtils.getPathFromSymlink(pathfile.getAbsolutePath(), execEnv);
+                path = PathUtils.getPathFromSymlink(procdir + "/exe", execEnv); // NOI18N - Linux?
             }
             if (path != null && path.length() > 0) {
                 return path;
