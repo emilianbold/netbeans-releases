@@ -135,6 +135,44 @@ final class AnalyzeStackTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * Reads the lines from the supplied reader and fills the supplied
+     * model with the lines.
+     * @param r
+     * @param model
+     */
+    static void fillListModel(BufferedReader r, DefaultListModel model) {
+        String currentLine = null;
+        String lastLine = null;
+        try {
+            while ((currentLine = r.readLine()) != null) {
+                currentLine = currentLine.trim();
+                if (StackLineAnalyser.matches(currentLine)) {
+                    if (lastLine != null) {
+                        model.addElement(lastLine);
+                    }
+                    model.addElement(currentLine);
+                    lastLine = null;
+                } else {
+                    if (lastLine == null) {
+                        lastLine = currentLine;
+                    } else {
+                        String together = lastLine + currentLine;
+                        if (StackLineAnalyser.matches(together)) {
+                            model.addElement(together);
+                            lastLine = null;
+                        } else {
+                            model.addElement(lastLine);
+                            lastLine = currentLine;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -199,36 +237,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
             Reader reader = DataFlavor.stringFlavor.getReaderForText (transferable);
             BufferedReader r = new BufferedReader (reader);
             DefaultListModel model = new DefaultListModel ();
-            String currentLine = null;
-            String lastLine = null;
-            try {
-                while ((currentLine = r.readLine()) != null) {
-                    currentLine = currentLine.trim();
-                    if (StackLineAnalyser.matches(currentLine)) {
-                        if (lastLine != null) {
-                            model.addElement(lastLine);
-                        }
-                        model.addElement (currentLine);
-                        lastLine = null;
-                    } else {
-                        if (lastLine == null) {
-                            lastLine = currentLine;
-                        } else {
-                            String together = lastLine + currentLine;
-                            if (StackLineAnalyser.matches(together)) {
-                                model.addElement(together);
-                                lastLine = null;
-                            } else {
-                                model.addElement(lastLine);
-                                lastLine = currentLine;
-                            }
-                        }
-                    }
-                    
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            fillListModel(r, model);
             list.setModel (model);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace (ex);
