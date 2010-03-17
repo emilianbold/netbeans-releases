@@ -94,6 +94,12 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         // CppUnit
         result.add(new CppUnitHandler());
 
+        // CUnit
+        result.add(new CUnitSuiteStartingHandler());
+        result.add(new CUnitSuiteFinishedHandler());
+        result.add(new CUnitTestFinishedHandler());
+        result.add(new CUnitTestFailedHandler());
+
         return result;
     }
 
@@ -383,6 +389,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
+    
     //
     // CppUnit tests output support
     //
@@ -483,7 +490,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
                 testcase.setTimeMillis(0);
                 testcase.setClassName(suiteName);
 
-                testcase.setTrouble(new Trouble(false));
+                testcase.setTrouble(new Trouble(true));
                 String message = matcher.group(3); // NOI18N
                 testcase.getTrouble().setStackTrace(getStackTrace(message ,"")); // NOI18N
 
@@ -505,6 +512,79 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             }
         }
     }
+
+    
+    //
+    // CppUnit tests output support
+    //
+
+    static class CUnitSuiteStartingHandler extends TestRecognizerHandler {
+
+        private boolean firstSuite = true;
+
+        public CUnitSuiteStartingHandler() {
+            super("Suite: (.+)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            if (firstSuite) {
+                firstSuite = false;
+                manager.testStarted(session);
+            }
+            String suiteName = matcher.group(1);
+            session.addSuite(new TestSuite(suiteName));
+            manager.displaySuiteRunning(session, suiteName);
+        }
+    }
+
+
+    static class CUnitTestFinishedHandler extends TestRecognizerHandler {
+
+        public CUnitTestFinishedHandler() {
+            super("Test: (.*) \\.\\.\\. passed"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
+            testcase.setTimeMillis(0);
+            testcase.setClassName(session.getCurrentSuite().getName());
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class CUnitTestFailedHandler extends TestRecognizerHandler {
+
+        public CUnitTestFailedHandler() {
+            super("Test: (.*) \\.\\.\\. FAILED"); //NOI18N
+        }
+
+        @Override
+        void updateUI(Manager manager, TestSession session) {
+            Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
+            testcase.setTimeMillis(0);
+            testcase.setClassName(session.getCurrentSuite().getName());
+
+            testcase.setTrouble(new Trouble(true));
+
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
+
+        public CUnitSuiteFinishedHandler() {
+            super("--Run Summary: "); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            manager.displayReport(session, session.getReport(0));
+            manager.sessionFinished(session);
+        }
+    }
+
 
 }
 
