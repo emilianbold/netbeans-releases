@@ -65,6 +65,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -118,117 +120,124 @@ public class ClientJavaSourceHelper {
 
     public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className, Security security) {
 
-        // add REST and Jersey dependencies
-        ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
-        List<Library> restLibs = new ArrayList<Library>();
-        if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) { //NOI18N
-            Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
-            if (lib != null) {
-                restLibs.add(lib);
-            }
-        }
-        if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
-            Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
-            if (lib != null) {
-                restLibs.add(lib);
-            }
-        }
-        if (restLibs.size() > 0) {
-            try {
-                ProjectClassPathModifier.addLibraries(
-                        restLibs.toArray(new Library[restLibs.size()]),
-                        targetFo,
-                        ClassPath.COMPILE);
-            } catch (java.io.IOException ex) {
-                // the libraries are likely not available
-                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_CannotAddJerseyLib"),
-                            NotifyDescriptor.WARNING_MESSAGE));
-                return;
-            }
-        }
-
-        // set target project type
-        // PENDING: need to consider web project as well
-        String targetProjectType = null;
-        Project project = FileOwnerQuery.getOwner(targetFo);
-        if (project != null) {
-            targetProjectType = Wadl2JavaHelper.getProjectType(project); //NOI18N
-        } else {
-            targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
-        }
-        security.setProjectType(targetProjectType);
-
-        RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
-        if (restServiceDesc != null) {
-            String uriTemplate = restServiceDesc.getUriTemplate();
-            if (uriTemplate != null) {
-
-                PathFormat pf = null;
-                if (uriTemplate.length() == 0) { // subresource locator
-                    // find recursively the root resource
-                    ResourcePath rootResourcePath = getResourcePath(resourceNode, restServiceDesc.getClassName(), "");
-                    uriTemplate = rootResourcePath.getPath();
-                    pf = rootResourcePath.getPathFormat();
-                } else {
-                    pf = getPathFormat(uriTemplate);
+        ProgressHandle handle = null;
+        try {
+            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_creatingRESTClient"));
+            handle.start();
+            // add REST and Jersey dependencies
+            ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
+            List<Library> restLibs = new ArrayList<Library>();
+            if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) { //NOI18N
+                Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
+                if (lib != null) {
+                    restLibs.add(lib);
                 }
-                // compute baseURL
-                Project prj = resourceNode.getLookup().lookup(Project.class);
-                String baseURL =
-                        (prj == null ? "" : getBaseURL(prj));
-                if (baseURL.endsWith("/")) {
-                    baseURL = baseURL.substring(0, baseURL.length() - 1);
-                }
-
-                // add inner Jersey Client class
-                addJerseyClient(
-                        JavaSource.forFileObject(targetFo),
-                        className,
-                        baseURL,
-                        restServiceDesc,
-                        null,
-                        pf,
-                        security);
             }
-        } else {
-            WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
-            if (saasResource != null) {
+            if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
+                Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
+                if (lib != null) {
+                    restLibs.add(lib);
+                }
+            }
+            if (restLibs.size() > 0) {
+                try {
+                    ProjectClassPathModifier.addLibraries(
+                            restLibs.toArray(new Library[restLibs.size()]),
+                            targetFo,
+                            ClassPath.COMPILE);
+                } catch (java.io.IOException ex) {
+                    // the libraries are likely not available
+                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_CannotAddJerseyLib"),
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    return;
+                }
+            }
 
-                addSecurityMetadata(security, saasResource);
+            // set target project type
+            // PENDING: need to consider web project as well
+            String targetProjectType = null;
+            Project project = FileOwnerQuery.getOwner(targetFo);
+            if (project != null) {
+                targetProjectType = Wadl2JavaHelper.getProjectType(project); //NOI18N
+            } else {
+                targetProjectType = Wadl2JavaHelper.PROJEC_TYPE_DESKTOP;
+            }
+            security.setProjectType(targetProjectType);
 
-                if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
-                    RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
+            if (restServiceDesc != null) {
+                String uriTemplate = restServiceDesc.getUriTemplate();
+                if (uriTemplate != null) {
 
-                    if (restSupport != null && restSupport instanceof WebRestSupport) {
-                        security.setDeploymentDescriptor(((WebRestSupport)restSupport).getDeploymentDescriptor());
+                    PathFormat pf = null;
+                    if (uriTemplate.length() == 0) { // subresource locator
+                        // find recursively the root resource
+                        ResourcePath rootResourcePath = getResourcePath(resourceNode, restServiceDesc.getClassName(), "");
+                        uriTemplate = rootResourcePath.getPath();
+                        pf = rootResourcePath.getPathFormat();
+                    } else {
+                        pf = getPathFormat(uriTemplate);
+                    }
+                    // compute baseURL
+                    Project prj = resourceNode.getLookup().lookup(Project.class);
+                    String baseURL =
+                            (prj == null ? "" : getBaseURL(prj));
+                    if (baseURL.endsWith("/")) {
+                        baseURL = baseURL.substring(0, baseURL.length() - 1);
+                    }
+
+                    // add inner Jersey Client class
+                    addJerseyClient(
+                            JavaSource.forFileObject(targetFo),
+                            className,
+                            baseURL,
+                            restServiceDesc,
+                            null,
+                            pf,
+                            security);
+                }
+            } else {
+                WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
+                if (saasResource != null) {
+
+                    addSecurityMetadata(security, saasResource);
+
+                    if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType()) && Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+                        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+
+                        if (restSupport != null && restSupport instanceof WebRestSupport) {
+                            security.setDeploymentDescriptor(((WebRestSupport)restSupport).getDeploymentDescriptor());
+                        }
+                    }
+
+                    String baseUrl = saasResource.getSaas().getBaseURL();
+                    if (baseUrl.endsWith("/")) {
+                        baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+                    }
+                    ResourcePath resourcePath = getResourcePath(saasResource);
+                    PathFormat pf = resourcePath.getPathFormat();
+                    String resourceUri = baseUrl;
+                    addJerseyClient(
+                            JavaSource.forFileObject(targetFo),
+                            className,
+                            resourceUri,
+                            null,
+                            saasResource,
+                            pf,
+                            security);
+
+                    try {
+                        Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                 }
-
-                String baseUrl = saasResource.getSaas().getBaseURL();
-                if (baseUrl.endsWith("/")) {
-                    baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-                }
-                ResourcePath resourcePath = getResourcePath(saasResource);
-                PathFormat pf = resourcePath.getPathFormat();
-                String resourceUri = baseUrl;
-                addJerseyClient(
-                        JavaSource.forFileObject(targetFo),
-                        className,
-                        resourceUri,
-                        null,
-                        saasResource,
-                        pf,
-                        security);
-                
-                try {
-                    Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
             }
+        } finally {
+            handle.finish();
         }
     }
 
@@ -991,7 +1000,7 @@ public class ClientJavaSourceHelper {
         SaasMetadata saasMetadata = saasResource.getSaas().getSaasMetadata();
         if (saasMetadata != null) {
             SaasMetadata.Authentication auth = saasMetadata.getAuthentication();
-            if (auth != null) {
+            if (auth != null && auth.getSessionKey().size()>0) {
                 SecurityParams securityParams = new SecurityParams();
                 SessionKey sessionKey = auth.getSessionKey().get(0);
                 if (sessionKey != null) {

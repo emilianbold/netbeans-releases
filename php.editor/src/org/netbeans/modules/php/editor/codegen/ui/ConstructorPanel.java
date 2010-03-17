@@ -72,6 +72,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
             case CONSTRUCTOR: properties = cgsInfo.getProperties(); break;
             case GETTER: properties = cgsInfo.getPossibleGetters(); break;
             case SETTER: properties = cgsInfo.getPossibleSetters(); break;
+            case INHERITED_METHODS: properties = cgsInfo.getPossibleInherited(); break;
             default: properties = cgsInfo.getPossibleGettersSetters(); break;
         }
         this.cgsInfo = cgsInfo;
@@ -110,6 +111,9 @@ public class ConstructorPanel extends javax.swing.JPanel {
                     model.addElement(way.getGetterExample(name) + ", " + way.getSetterExample(name));
                 }
                 break;
+            case INHERITED_METHODS:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_INHERITED_METHODS");    //NOI18N
+                customizeMethodGeneration = false;
         }
         this.label.setText(panelTitle);
         this.pGSCustomize.setVisible(customizeMethodGeneration);

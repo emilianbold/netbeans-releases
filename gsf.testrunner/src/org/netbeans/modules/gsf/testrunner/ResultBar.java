@@ -108,6 +108,9 @@ public final class ResultBar extends JComponent implements ActionListener{
     }
 
     public void setPassedPercentage(float passedPercentage) {
+        if(Float.isNaN(passedPercentage)) { // #167230
+            passedPercentage = 0.0f;
+        }
         this.passedPercentage = passedPercentage;
         this.passedReported = true;
         repaint();

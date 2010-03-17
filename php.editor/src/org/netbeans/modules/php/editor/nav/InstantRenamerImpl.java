@@ -68,6 +68,7 @@ public class InstantRenamerImpl implements InstantRenamer {
     private static final boolean IS_RENAME_REFACTORING_ENABLED = false;
     private List<Occurence> allOccurences = Collections.emptyList();
 
+    @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         allOccurences.clear();        
         PHPParseResult result = (PHPParseResult) info;
@@ -105,6 +106,7 @@ public class InstantRenamerImpl implements InstantRenamer {
         return false;
     }
 
+    @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
         Set<OffsetRange> retval = new HashSet<OffsetRange>();
         for (Occurence occurence : allOccurences) {

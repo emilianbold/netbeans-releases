@@ -57,6 +57,8 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.1.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.1.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jettison-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.1.4.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.1.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
@@ -71,5 +73,6 @@ made subject to such option by the copyright holder.
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.1.4/jersey-json-1.1.4.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.1.4/jersey-server-1.1.4.pom</resource>
         <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.1.4/jersey-client-1.1.4.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.1.4/oauth-client-1.1.4.pom</resource>
     </volume>
 </library>
