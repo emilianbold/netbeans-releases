@@ -100,6 +100,10 @@ final class ViewReplace<V extends EditorBoxView, CV extends EditorView> {
         return views;
     }
 
+    EditorView childViewAtIndex() {
+        return view.getEditorView(index);
+    }
+
     EditorBoxView.ReplaceResult replaceViews(int offsetDelta, Shape alloc) {
         if (removeCount > 0 || added != null) {
             return view.replace(index, removeCount, addedViews(), offsetDelta, alloc); // minor span modified
