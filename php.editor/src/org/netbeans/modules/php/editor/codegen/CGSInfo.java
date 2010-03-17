@@ -4,10 +4,10 @@
  */
 package org.netbeans.modules.php.editor.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -15,6 +15,14 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -35,6 +43,7 @@ public class CGSInfo {
     final private List<Property> possibleGetters;
     final private List<Property> possibleSetters;
     final private List<Property> possibleGettersSetters;
+    final private List<Property> possibleInherited;
     final private JTextComponent textComp;
     /**
      * how to generate  getters and setters method name
@@ -47,6 +56,7 @@ public class CGSInfo {
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
+        possibleInherited = new ArrayList<Property>();
         className = null;
         this.textComp = textComp;
         hasConstructor = false;
@@ -62,6 +72,10 @@ public class CGSInfo {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public List<Property> getPossibleInherited() {
+        return possibleInherited;
     }
 
     public List<Property> getPossibleGetters() {
@@ -119,6 +133,22 @@ public class CGSInfo {
                     ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
                     if (classDecl != null) {
                         className = classDecl.getName().getName();
+                        if (info != null && className != null) {
+                            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+                            Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+                            Set<ClassElement> classes = ElementFilter.forFiles(fileObject).filter(index.getClasses(NameKind.exact(className)));
+                            for (ClassElement classElement : classes) {
+                                ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
+                                Set<MethodElement> accessibleMethods = forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement));
+                                for (final MethodElement methodElement : accessibleMethods) {
+                                    if (!methodElement.isFinal() && (methodElement.isAbstract() || methodElement.getType().isInterface())) {
+                                        getPossibleInherited().add(new MethodProperty(methodElement));
+                                    }
+                                }
+
+                            }
+                        }
+
                         List<String> existingGetters = new ArrayList<String>();
                         List<String> existingSetters = new ArrayList<String>();
 
@@ -209,6 +239,18 @@ public class CGSInfo {
                     hasConstructor = true;
                 }
             }
+        }
+    }
+
+    static class MethodProperty extends Property {
+        final private MethodElement method;
+        private MethodProperty(final MethodElement method) {
+            super(method.asString(PrintAs.NameAndParams), method.getPhpModifiers().toFlags());
+            this.method = method;
+        }
+
+        MethodElement getMethod() {
+            return method;
         }
     }
 }
