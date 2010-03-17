@@ -71,11 +71,12 @@ public class MergeAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Merge";                                    //NOI18N
     }
@@ -102,6 +103,7 @@ public class MergeAction extends ContextAction {
         }
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 final OutputLogger logger = getLogger();
                 try {
