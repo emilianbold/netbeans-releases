@@ -40,6 +40,8 @@
 package org.netbeans.modules.java.stackanalyzer;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,50 +61,33 @@ import org.openide.text.Line;
  */
 class StackLineAnalyser {
 
-    static Link analyse (
-        String                  line
-    ) {
-        int i = 0;
-        int l = line.length ();
-        while (i < l) {
-            if (Character.isJavaIdentifierStart (line.charAt (i))) {
-                int start = i;
-                int end = -1;
-                do {
-                    i++;
-                    while (i < l && Character.isJavaIdentifierPart (line.charAt (i)))
-                        i++;
-                    if (i >= l) return null;
-                    if (line.charAt (i) == '(') {
-                        i++;
-                        if (i >= l || !Character.isJavaIdentifierStart (line.charAt (i))) break;
-                        i++;
-                        while (i < l && Character.isJavaIdentifierPart (line.charAt (i)))
-                            i++;
-                        if (l - i < 8) return null;
-                        if (!line.substring (i, i + 6).equals (".java:")) break;
-                        i += 6;
-                        if (!Character.isDigit (line.charAt (i))) break;
-                        int lineNumberStart = i;
-                        i++;
-                        while (i < l && Character.isDigit (line.charAt (i)))
-                            i++;
-                        if (i >= l) return null;
-                        if (line.charAt (i) != ')') break;
-                        if (end <= start) break;
-                        return new Link (
-                            line.substring (start, end),
-                            Integer.parseInt (line.substring (lineNumberStart, i)),
-                            start,
-                            i + 1
-                        );
-                    }
-                    if (line.charAt (i) != '.') break;
-                    end = i;
-                    i++;
-                } while (i < l && Character.isJavaIdentifierStart (line.charAt (i)));
+    private static final String IDENTIFIER =
+        "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";    // NOI18N
+    private static final Pattern LINE_PATTERN = Pattern.compile(
+        "at\\s" +                                       //  initial at // NOI18N
+        "(("+IDENTIFIER+"(\\."+IDENTIFIER+")*)\\.)?("+IDENTIFIER+")" + // class name // NOI18N
+        "\\.("+IDENTIFIER+"|\\<init\\>|\\<clinit\\>)\\("+IDENTIFIER+"\\.java" + // method and file name // NOI18N
+        "\\:([0-9]*)\\)");                              // line number // NOI18N
+
+    static boolean matches(String line) {
+        Matcher matcher = LINE_PATTERN.matcher(line);
+        return matcher.find();
+    }
+
+    static Link analyse(String line) {
+        Matcher matcher = LINE_PATTERN.matcher(line);
+        if (matcher.find()) {
+            int lineNumber = -1;
+            try {
+                lineNumber = Integer.parseInt(matcher.group(6));
+            } catch (NumberFormatException nfe) {
+                return null;
             }
-            i++;
+            return new Link(matcher.group(1) + matcher.group(4).split("\\$")[0],
+                            lineNumber,
+                            matcher.start(1),
+                            matcher.end(6)+1
+                            );
         }
         return null;
     }
