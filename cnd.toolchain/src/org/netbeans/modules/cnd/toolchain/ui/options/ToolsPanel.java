@@ -137,6 +137,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     public ToolsPanel(ToolsPanelModel model) {
         this();
         this.model = model;
+        ExecutionEnvironment env = model.getSelectedDevelopmentHost();
+        if (env != null) {
+            execEnv = env;
+        }
     }
 
     private void initializeLong() {
