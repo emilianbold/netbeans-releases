@@ -3228,14 +3228,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public boolean canRedo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(2, myDoc).booleanResult;
+            return new RenderUndo(2, myDoc, 0, true).booleanResult;
         }
 
         @Override
         public boolean canUndo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(3, myDoc).booleanResult;
+            return new RenderUndo(3, myDoc, 0, true).booleanResult;
         }
 
         @Override
@@ -3317,25 +3317,35 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             public boolean booleanResult;
             public int intResult;
             public String stringResult;
+            private final boolean readonly;
 
             public RenderUndo(int type, StyledDocument doc) {
                 this(type, doc, 0);
             }
 
             public RenderUndo(int type, StyledDocument doc, int intValue) {
+                this(type, doc, intValue, false);
+            }
+
+            public RenderUndo(int type, StyledDocument doc, int intValue, boolean readonly) {
                 this.type = type;
                 this.intResult = intValue;
+                this.readonly = readonly;
 
-                if (doc instanceof NbDocument.WriteLockable) {
+                if (!readonly && (doc instanceof NbDocument.WriteLockable)) {
                     ((NbDocument.WriteLockable) doc).runAtomic(this);
                 } else {
-                    // if the document is not one of "NetBeans ready"
-                    // that supports locking we do not have many 
-                    // chances to do something. Maybe check for AbstractDocument
-                    // and call writeLock using reflection, but better than
-                    // that, let's leave this simple for now and wait for
-                    // bug reports (if any appear)
-                    run();
+                    if (readonly && doc != null) {
+                        doc.render(this);
+                    } else {
+                        // if the document is not one of "NetBeans ready"
+                        // that supports locking we do not have many
+                        // chances to do something. Maybe check for AbstractDocument
+                        // and call writeLock using reflection, but better than
+                        // that, let's leave this simple for now and wait for
+                        // bug reports (if any appear)
+                        run();
+                    }
                 }
             }
 

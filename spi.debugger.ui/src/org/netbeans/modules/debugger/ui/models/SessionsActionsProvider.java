@@ -72,6 +72,11 @@ public class SessionsActionsProvider implements NodeActionsProvider {
     
     private final Action FINISH_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_FinishAll_Label")) {
+            @Override
+            public boolean isEnabled() {
+                return DebuggerManager.getDebuggerManager().getSessions().length > 0;
+            }
+
             public void actionPerformed (ActionEvent e) {
                 getSessionActionsRP().post(new Runnable() {
                     public void run() {

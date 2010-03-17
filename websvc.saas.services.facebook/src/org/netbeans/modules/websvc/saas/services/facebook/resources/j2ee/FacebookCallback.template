@@ -29,12 +29,21 @@ public class ${name} extends HttpServlet {
         PrintWriter out = response.getWriter();
         try {
             HttpSession session = request.getSession(true);
+            String fb_session_key = request.getParameter("fb_sig_session_key");
+            if (fb_session_key != null) {
+                // use session key obtained from Facebook
+                session.setAttribute("facebook_session_key", fb_session_key);
+                //redirecting to application context path (application root)
+                response.sendRedirect(request.getContextPath());
+            }
             String authToken = request.getParameter("auth_token");
-            session.setAttribute("facebook_auth_token", authToken);
-            
-            FacebookSocialNetworkingServiceAuthenticator.login(request, response);
+            if (authToken != null) {
+                // auth_token obtained from Login servlet response
+                // sent back to login method to get session key from Facebook, using auth_token
+                session.setAttribute("facebook_auth_token", authToken);
+                FacebookSocialNetworkingServiceAuthenticator.login(request, response);
+            }
             String sessionKey = FacebookSocialNetworkingServiceAuthenticator.getSessionKey(request, response);
-         
             out.println("<html>");
             out.println("<head>");
             out.println("<title>Servlet FacebookCallback</title>");
