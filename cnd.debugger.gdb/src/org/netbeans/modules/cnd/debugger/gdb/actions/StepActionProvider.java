@@ -115,35 +115,33 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      */    
     public void runAction(final Object action) {
         if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_STEP_INTO) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepI();
-                    } else {
-                        doSmartStepInto();
-                    }
-                    return;
+            if (action == ActionsManager.ACTION_STEP_INTO) {
+                if (Disassembly.isInDisasm()) {
+                    getDebugger().stepI();
+                } else {
+                    doSmartStepInto();
                 }
-                if (action == ActionsManager.ACTION_STEP_OUT) {
-                    getDebugger().stepOut();
-                    return;
+                return;
+            }
+            if (action == ActionsManager.ACTION_STEP_OUT) {
+                getDebugger().stepOut();
+                return;
+            }
+            if (action == ActionsManager.ACTION_STEP_OVER) {
+                if (Disassembly.isInDisasm()) {
+                    getDebugger().stepOverInstr();
+                } else {
+                    getDebugger().stepOver();
                 }
-                if (action == ActionsManager.ACTION_STEP_OVER) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepOverInstr();
-                    } else {
-                        getDebugger().stepOver();
-                    }
-                    return;
-                }
-                if (action == ActionsManager.ACTION_CONTINUE) {
-                    getDebugger().resume();
-                    return;
-                }
-                if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
-                    getDebugger().runToCursor();
-                    return;
-                }
+                return;
+            }
+            if (action == ActionsManager.ACTION_CONTINUE) {
+                getDebugger().resume();
+                return;
+            }
+            if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
+                getDebugger().runToCursor();
+                return;
             }
         }
     }

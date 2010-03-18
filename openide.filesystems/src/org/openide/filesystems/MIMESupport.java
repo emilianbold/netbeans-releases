@@ -87,10 +87,9 @@ final class MIMESupport extends Object {
      * to be as effective as any other more complex caching due to typical
      * access pattern from DataSystems.
      */
-    private static final Reference<FileObject> EMPTY = new WeakReference<FileObject>(null);
-    private static final Reference<FileObject> CLEARED= new WeakReference<FileObject>(null);
-    private static Reference<FileObject> lastFo = EMPTY;
-    private static Reference<FileObject> lastCfo = EMPTY;
+    private static final Reference<CachedFileObject> EMPTY = new WeakReference<CachedFileObject>(null);
+    private static final Reference<CachedFileObject> CLEARED= new WeakReference<CachedFileObject>(null);
+    private static Reference<CachedFileObject> lastCfo = EMPTY;
     private static final Object lock = new Object();
     
     /** for logging and test interaction */
@@ -100,7 +99,13 @@ final class MIMESupport extends Object {
     }
 
     static void freeCaches() {
-        lastFo = CLEARED;
+        synchronized (lock) {
+            CachedFileObject cfo = lastCfo.get();
+            if (cfo != null) {
+                cfo.clear();
+            }
+            lastCfo = CLEARED;
+        }
     }
 
     /** Asks all registered subclasses of MIMEResolver to resolve FileObject passed as parameter.
@@ -113,25 +118,29 @@ final class MIMESupport extends Object {
         }
 
         CachedFileObject cfo = null;
+        CachedFileObject lcfo = null;
 
         try {
             synchronized (lock) {
-                CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
-                if (lcfo == null || fo != lastFo.get()) {
+                lcfo = lastCfo.get();
+                if (lcfo == null || fo != lcfo.fileObj) {
                     cfo = new CachedFileObject(fo);
                 } else {
                     cfo = lcfo;
                 }
-
                 lastCfo = EMPTY;
             }
 
             return cfo.getMIMEType(withinMIMETypes);
         } finally {
             synchronized (lock) {
-                if (lastFo != CLEARED) {
-                    lastFo = new WeakReference<FileObject>(fo);
-                    lastCfo = new WeakReference<FileObject>(cfo);
+                if (lastCfo != CLEARED) {
+                    lastCfo = new WeakReference<CachedFileObject>(cfo);
+                } else {
+                    cfo.clear();
+                }
+                if (cfo != lcfo && lcfo != null) {
+                    lcfo.clear();
                 }
             }
         }
@@ -159,11 +168,15 @@ final class MIMESupport extends Object {
 
         /*All calls delegated to this object.
          Except few methods, that returns cached values*/
-        FileObject fileObj;
+        final FileObject fileObj;
 
         CachedFileObject(FileObject fo) {
             fileObj = fo;
-            fileObj.addFileChangeListener(FileUtil.weakFileChangeListener(this, fileObj));
+            fileObj.addFileChangeListener(this);
+        }
+
+        final void clear() {
+            fileObj.removeFileChangeListener(this);
         }
 
         private static MIMEResolver[] getResolvers() {
@@ -233,8 +246,13 @@ final class MIMESupport extends Object {
                 previousResolvers = prev.first();
             }
             resolvers = null;
-            lastFo = EMPTY;
-            lastCfo = EMPTY;
+            synchronized (lock) {
+                CachedFileObject cfo = lastCfo.get();
+                if (cfo != null) {
+                    cfo.clear();
+                }
+                lastCfo = EMPTY;
+            }
         }
 
         private static final FileChangeListener declarativeFolderListener = new FileChangeAdapter() {

@@ -53,9 +53,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -120,6 +122,7 @@ public class JaxWsCodeGenerator {
                 "request", "response", "session", "out", "page", "config", "application", "pageContext" //NOI18N
             });
     private static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
+
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
     // {2} = port getter method (e.g. "getAddNumbersPort")
@@ -140,6 +143,10 @@ public class JaxWsCodeGenerator {
             "   {4} result = port.{5}({6});\n"; //NOI18N
     private static final String JAVA_VOID =
             "   {3}" + //NOI18N
+            "   port.{5}({6});\n"; //NOI18N
+    private static final String JAVA_RESULT_1 =
+            "   return port.{5}({6});\n"; //NOI18N
+    private static final String JAVA_VOID_1 =
             "   port.{5}({6});\n"; //NOI18N
     private static final String JAVA_OUT =
             "   {8}.println(\"Result = \"+result);\n"; //NOI18N
@@ -265,7 +272,7 @@ public class JaxWsCodeGenerator {
             "\t// TODO handle custom exceptions here\n" + //NOI18N
             "    '}'\n" + //NOI18N
             "    %>\n" + //NOI18N
-            "    <%-- end web service invocation(async. polling) --%><hr/>\n"; //NOI18N
+            "    <%-- end web service invocation(async. polling) --%><hr/>\n"; //NOI18N            
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
     // {2} = port getter method (e.g. "getAddNumbersPort")
@@ -562,6 +569,9 @@ public class JaxWsCodeGenerator {
         String responseType = "Object"; //NOI18N
         String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
         String argumentInitializationPart, argumentDeclarationPart;
+        String[] paramNames;
+        String[] paramTypes;
+        String[] exceptionTypes;
 
         try {
             serviceFieldName = "service"; //NOI18N
@@ -571,9 +581,17 @@ public class JaxWsCodeGenerator {
             serviceJavaName = service.getJavaName();
             List arguments = operation.getParameters();
             returnTypeName = operation.getReturnTypeName();
+            Iterator<String> it = operation.getExceptions();
+            List<String> exceptionList = new ArrayList<String>();
+            while (it.hasNext()) {
+                exceptionList.add(it.next());
+            }
             StringBuffer argumentBuffer1 = new StringBuffer();
             StringBuffer argumentBuffer2 = new StringBuffer();
-            for (int i = 0; i < arguments.size(); i++) {
+            List<String> paramTypesList = new ArrayList<String>();
+            List<String> paramNamesList = new ArrayList<String>();
+            int argSize = arguments.size();
+            for (int i = 0; i < argSize; i++) {
                 String argumentTypeName = ((WsdlParameter) arguments.get(i)).getTypeName();
                 if (argumentTypeName.startsWith("javax.xml.ws.AsyncHandler")) { //NOI18N
                     responseType = resolveResponseType(argumentTypeName);
@@ -589,7 +607,16 @@ public class JaxWsCodeGenerator {
                 argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + " = " + resolveInitValue(argumentTypeName,
                         NbEditorUtilities.getFileObject(document)) + "\n"); //NOI18N
                 argumentBuffer2.append(i > 0 ? ", " + argumentName : argumentName); //NOI18N
+                paramTypesList.add(argumentTypeName);
+                paramNamesList.add(argumentName);
             }
+            paramTypes = new String[argSize];
+            paramTypesList.toArray(paramTypes);
+            paramNames = new String[argSize];
+            paramNamesList.toArray(paramNames);
+            exceptionTypes = new String[exceptionList.size()];
+            exceptionList.toArray(exceptionTypes);
+
             argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
             argumentDeclarationPart = argumentBuffer2.toString();
 
@@ -659,29 +686,50 @@ public class JaxWsCodeGenerator {
                     argumentDeclPart, 
                     argumentInitPart);
             targetSource.runUserActionTask(task, true);
+            
+            if (WsdlOperation.TYPE_NORMAL == operation.getOperationType()) {
+                String body = task.getMethodBody(portJavaName, portGetterMethod, returnTypeName, operationJavaName);
+                // generate static method when @WebServiceRef injection is missing, or for J2ee Client application
+                boolean isStatic = !task.isWsRefInjection() || (Car.getCar(targetFo) != null);
+                JaxWsClientMethodGenerator clientMethodGenerator =
+                    new JaxWsClientMethodGenerator (
+                            isStatic,
+                            operationJavaName,
+                            returnTypeName,
+                            paramTypes,
+                            paramNames,
+                            exceptionTypes,
+                            "{"+body+"}"); //NOI18N
 
-            // create & format inserted text
-            IndentEngine eng = IndentEngine.find(document);
-            StringWriter textWriter = new StringWriter();
-            Writer indentWriter = eng.createWriter(document, pos, textWriter);
+                targetSource.runModificationTask(clientMethodGenerator).commit();
+            } else {
+                try {
+                    // create & format inserted text
+                    IndentEngine eng = IndentEngine.find(document);
+                    StringWriter textWriter = new StringWriter();
+                    Writer indentWriter = eng.createWriter(document, pos, textWriter);
 
-            // create the inserted text
-            String invocationBody = task.getJavaInvocationBody(
-                    operation,
-                    portJavaName,
-                    portGetterMethod,
-                    returnTypeName,
-                    operationJavaName,
-                    respType);
+                    // create the inserted text
+                    String invocationBody = task.getJavaInvocationBody(
+                            operation,
+                            portJavaName,
+                            portGetterMethod,
+                            returnTypeName,
+                            operationJavaName,
+                            respType);
 
-            indentWriter.write(invocationBody);
-            indentWriter.close();
-            String textToInsert = textWriter.toString();
+                    indentWriter.write(invocationBody);
+                    indentWriter.close();
+                    String textToInsert = textWriter.toString();
 
-            try {
-                document.insertString(pos, textToInsert, null);
-            } catch (BadLocationException badLoc) {
-                document.insertString(pos + 1, textToInsert, null);
+                    try {
+                        document.insertString(pos, textToInsert, null);
+                    } catch (BadLocationException badLoc) {
+                        document.insertString(pos + 1, textToInsert, null);
+                    }
+                } catch (BadLocationException badLoc) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
+                }
             }
 
             // @insert WebServiceRef injection
@@ -689,8 +737,6 @@ public class JaxWsCodeGenerator {
                 InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
                 targetSource.runModificationTask(modificationTask).commit();
             }
-        } catch (BadLocationException badLoc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
@@ -729,6 +775,9 @@ public class JaxWsCodeGenerator {
         return invocationBody;
     }
 
+    /** This is the compilation task that provides various information about the inserting code
+     *
+     */
     static final class CompilerTask implements CancellableTask<CompilationController> {
 
         private final boolean[] insertServiceDef = {true};
@@ -801,15 +850,43 @@ public class JaxWsCodeGenerator {
             }
         }
 
+        @Override
         public void cancel() {
         }
+        
+        String getMethodBody(
+                String portJavaName,
+                String portGetterMethod, String returnTypeName,
+                String operationJavaName) {
 
+            String methodBody = ""; //NOI18N
+            Object[] args = new Object[] {
+                serviceJavaName, portJavaName,
+                portGetterMethod, "", "", operationJavaName,
+                argumentDeclPart[0], serviceFName[0]
+                //printerName[0]
+            };
+            if ("void".equals(returnTypeName)) { //NOI18N
+                String body =
+                        (insertServiceDef[0] ? JAVA_SERVICE_DEF : "") +
+                        JAVA_PORT_DEF +
+                        JAVA_VOID_1;
+                methodBody = MessageFormat.format(body, args);
+            } else {
+                String body =
+                        (insertServiceDef[0] ? JAVA_SERVICE_DEF : "") +
+                        JAVA_PORT_DEF +
+                        JAVA_RESULT_1;
+                methodBody = MessageFormat.format(body, args);
+            }
+            return methodBody;
+        }
         public String getJavaInvocationBody(
                 WsdlOperation operation, String portJavaName,
                 String portGetterMethod, String returnTypeName,
                 String operationJavaName, String responseType) {
             String invocationBody = "";
-            Object[] args = new Object[]{
+            Object[] args = new Object[] {
                 serviceJavaName, portJavaName,
                 portGetterMethod, argumentInitPart[0],
                 returnTypeName, operationJavaName,
@@ -855,6 +932,10 @@ public class JaxWsCodeGenerator {
             return !generateWsRefInjection[0];
         }
 
+        boolean isWsRefInjection() {
+            return !insertServiceDef[0];
+        }
+
         private static boolean isServletClass(CompilationController controller, TypeElement typeElement) {
             return SourceUtils.isSubtype(controller, typeElement, "javax.servlet.http.HttpServlet"); // NOI18N
         }
@@ -897,6 +978,9 @@ public class JaxWsCodeGenerator {
         }
     }
 
+    /** This is task for inserting field annotated with @WebServiceRef annotation
+     * (only available since Java EE 5 version - in objects mangeable by container(servlets, EJBs, Web Services)
+     */
     static class InsertTask implements CancellableTask<WorkingCopy> {
 
         private final String serviceJavaName;
@@ -930,11 +1014,10 @@ public class JaxWsCodeGenerator {
                         Collections.<AnnotationTree>singletonList(wsRefAnnotation));
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(serviceJavaName);
                 VariableTree serviceRefInjection = make.Variable(
-                methodModifiers,
-                serviceFName,
-                (typeElement != null ?
-                    make.Type(typeElement.asType()) : make.Identifier(serviceJavaName)),
-                null);
+                    methodModifiers,
+                    serviceFName,
+                    (typeElement != null ? make.Type(typeElement.asType()) : make.Identifier(serviceJavaName)),
+                    null);
                 
                 ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
                 workingCopy.rewrite(javaClass, modifiedClass);
