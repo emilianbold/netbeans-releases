@@ -122,7 +122,7 @@ public final class ResultModel {
     /** */
     final boolean searchAndReplace;
     /** list of matching objects (usually {@code DataObject}s) */
-    final List<MatchingObject> matchingObjects
+    private final List<MatchingObject> matchingObjects
             = new ArrayList<MatchingObject>();
     /** set of matching objects - only used as a prevention from duplicates */
     private final Set<MatchingObject> matchingObjectsSet
@@ -240,10 +240,11 @@ public final class ResultModel {
     }
     
     /**
+     * @return a list of the {@code MatchingObject}s associated to this
+     * {@code ResultModel}.
      */
-    synchronized MatchingObject[] getMatchingObjects() {
-        return matchingObjects.toArray(
-                                    new MatchingObject[matchingObjects.size()]);
+    synchronized List<MatchingObject> getMatchingObjects() {
+        return matchingObjects;
     }
     
     /**
