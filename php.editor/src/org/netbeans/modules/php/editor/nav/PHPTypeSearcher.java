@@ -79,12 +79,14 @@ import org.openide.filesystems.FileUtil;
  */
 public class PHPTypeSearcher implements IndexSearcher {
     //TODO: no supported: came cases, regular expressions in queries (needs improve PHPIndex methods)
-    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind kind, Helper helper) {
+    public Set<? extends Descriptor> getSymbols(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
+        EnumSet<Kind> insensitiveKinds = EnumSet.of(Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP, Kind.CASE_INSENSITIVE_PREFIX);
         // PHP isn't Java so we may need to overrule the chosen kind
         // in case the query looks like it may be a camel-case/wildcard pattern
         // fix for #167687
+        Kind kind = originalkind;
         if ((kind == Kind.CASE_INSENSITIVE_PREFIX || kind == Kind.PREFIX) && isCamelCasePattern(textForQuery)) {
             kind = Kind.CAMEL_CASE;
         }
@@ -126,7 +128,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
             result = new HashSet<PHPTypeDescriptor>();
-            Pattern pattern = queryToPattern(textForQuery);
+            Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
             for (PHPTypeDescriptor typeDescriptor : originalResult) {
                 String typeName = typeDescriptor.getElement().getName();
                 if (pattern.matcher(typeName).matches()) {
@@ -138,12 +140,14 @@ public class PHPTypeSearcher implements IndexSearcher {
         return result;
     }
 
-    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind kind, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Project project, String textForQuery, Kind originalkind, Helper helper) {
         // XXX: use PHP specific path ids
         EnumSet<Kind> regexpKinds = EnumSet.of(Kind.CAMEL_CASE, Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP);
+        EnumSet<Kind> insensitiveKinds = EnumSet.of(Kind.CASE_INSENSITIVE_CAMEL_CASE,  Kind.CASE_INSENSITIVE_REGEXP, Kind.CASE_INSENSITIVE_PREFIX);
         // PHP isn't Java so we may need to overrule the chosen kind
         // in case the query looks like it may be a camel-case/wildcard pattern
         // fix for #167687
+        Kind kind = originalkind;
         if ((kind == Kind.CASE_INSENSITIVE_PREFIX || kind == Kind.PREFIX) && isCamelCasePattern(textForQuery)) {
             kind = Kind.CAMEL_CASE;
         }
@@ -171,7 +175,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
             result = new HashSet<PHPTypeDescriptor>();
-            Pattern pattern = queryToPattern(textForQuery);
+            Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
             for (PHPTypeDescriptor typeDescriptor : originalResult) {
                 String typeName = typeDescriptor.getElement().getName();
                 if (pattern.matcher(typeName).matches()) {
@@ -334,7 +338,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
     }
     
-    private static Pattern queryToPattern(String query) {
+    private static Pattern queryToPattern(String query, boolean caseInsensitive) {
         StringBuilder sb = new StringBuilder();
         char[] chars = query.toCharArray();
         boolean incamel = false;
@@ -361,7 +365,9 @@ public class PHPTypeSearcher implements IndexSearcher {
         sb.append(".*");//NOI18N
         String patternString = sb.toString();
         patternString = patternString.replaceAll(Pattern.quote(".."), ".");//NOI18N
-        return Pattern.compile(patternString);
+        return caseInsensitive ?
+            Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) :
+            Pattern.compile(patternString);
     }
 
     private String prepareIdxQuery(String textForQuery, EnumSet<Kind> regexpKinds, Kind kind) {
