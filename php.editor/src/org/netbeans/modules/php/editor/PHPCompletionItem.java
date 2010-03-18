@@ -493,10 +493,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
 
                 if (!parameter.isMandatory()) {
-                    formatter.appendText(parameter.asString());
+                    formatter.appendText(parameter.asString(true));
                 } else {
                     formatter.emphasis(true);
-                    formatter.appendText(parameter.asString());
+                    formatter.appendText(parameter.asString(true));
                     formatter.emphasis(false);
                 }
             }
@@ -668,7 +668,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(getBaseFunctionElement().asString(PrintAs.NameAndParams));
+            template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration));
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
             template.append("}");//NOI18N

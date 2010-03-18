@@ -87,10 +87,8 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      */
     public void doAction(Object action) {
         if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_PAUSE) {
-                    getDebugger().interrupt();
-                }
+            if (action == ActionsManager.ACTION_PAUSE) {
+                getDebugger().interrupt();
             }
         }
     }

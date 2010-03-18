@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
@@ -53,15 +54,17 @@ import org.openide.util.WeakSet;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class DeepListener extends WeakReference<FileChangeListener>
-implements FileChangeListener, Runnable {
+implements FileChangeListener, Runnable, Callable<Boolean> {
     private final File path;
     private FileObject watching;
     private boolean removed;
+    private final Callable<Boolean> stop;
     private static List<DeepListener> keep = new ArrayList<DeepListener>();
 
-    public DeepListener(FileChangeListener listener, File path) {
+    DeepListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
         super(listener, Utilities.activeReferenceQueue());
         this.path = path;
+        this.stop = stop;
         relisten();
         keep.add(this);
     }
@@ -199,4 +202,8 @@ implements FileChangeListener, Runnable {
         return get();
     }
 
+    @Override
+    public Boolean call() throws Exception {
+        return stop != null ? stop.call() : null;
+    }
 }

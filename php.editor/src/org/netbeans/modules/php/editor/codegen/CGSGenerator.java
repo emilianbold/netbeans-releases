@@ -39,7 +39,7 @@ public class CGSGenerator implements CodeGenerator {
         GETTER,
         SETTER,
         GETTER_AND_SETTER,
-        INHERITED_METHODS
+        METHODS;
     }
 
     public enum GenWay {
@@ -117,8 +117,8 @@ public class CGSGenerator implements CodeGenerator {
             case GETTER_AND_SETTER:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS_AND_SETTERS");    //NOI18N
                 break;
-            case INHERITED_METHODS:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_INHERITED_METHODS");    //NOI18N
+            case METHODS:
+                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS");    //NOI18N
                 break;
 
         }
@@ -154,8 +154,8 @@ public class CGSGenerator implements CodeGenerator {
             case GETTER_AND_SETTER:
                 name = NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER_AND_SETTER");    //NOI18N
                 break;
-            case INHERITED_METHODS:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_INHERITED_METHODS");    //NOI18N
+            case METHODS:
+                name = NbBundle.getMessage(CGSGenerator.class, "LBL_METHODS");    //NOI18N
                 break;
         }
         return name;
@@ -182,8 +182,8 @@ public class CGSGenerator implements CodeGenerator {
                 if (info.getPossibleGettersSetters().size() > 0) {
                     ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
                 }
-                if (info.getPossibleInherited().size() > 0) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.INHERITED_METHODS));
+                if (info.getPossibleMethods().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.METHODS));
                 }
             }
             return ret;
@@ -252,13 +252,17 @@ public class CGSGenerator implements CodeGenerator {
                 }
                 text = gettersAndSetters.toString();
                 break;
-            case INHERITED_METHODS:
+            case METHODS:
                 StringBuffer inheritedMethods = new StringBuffer();
-                for (Property property : cgsInfo.getPossibleInherited()) {
+                for (Property property : cgsInfo.getPossibleMethods()) {
                     if (property.isSelected() && (property instanceof CGSInfo.MethodProperty)) {
                         CGSInfo.MethodProperty methodProperty = (CGSInfo.MethodProperty)property;
                         MethodElement method = methodProperty.getMethod();
-                        inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody).replace("abstract ", "")); //NOI18N;
+                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody).replace("abstract ", "")); //NOI18N;
+                        } else {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody).replace("abstract ", "")); //NOI18N;
+                        }
                         inheritedMethods.append(NEW_LINE);
                     }
                 }
