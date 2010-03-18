@@ -46,7 +46,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
@@ -71,6 +75,9 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -105,6 +112,7 @@ public final class CLIODataCollector
     private List<ValidationListener> validationListeners =
             Collections.synchronizedList(new ArrayList<ValidationListener>());
     private final DataStorageType dataStorageType;
+    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
 
     /**
      *
@@ -130,6 +138,72 @@ public final class CLIODataCollector
             displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex + 1);
         }
         this.dataStorageType = accessor.getDataStorageType(configuration);
+    }
+
+ /**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    @Override
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    @Override
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final CollectorState state) {
+        DataCollectorListener[] ll;
+
+        synchronized (this) {
+            ll = listeners.toArray(new DataCollectorListener[0]);
+        }
+
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DataCollectorListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        l.collectorStateChanged(CLIODataCollector.this, state);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     public String getName() {
@@ -179,7 +253,7 @@ public final class CLIODataCollector
         } else {
             cmd += argsTemplate;
         }
-        log.fine("Starting CLIODataCollector cmd: " + cmd); // NOI18N
+        log.log(Level.FINE, "Starting CLIODataCollector cmd: {0}", cmd); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(target.getExecEnv());
         npb.setCommandLine(cmd);
 
@@ -192,6 +266,28 @@ public final class CLIODataCollector
                 npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
 
         collectorTask = execService.run();
+
+        DLightExecutorService.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                notifyListeners(CollectorState.RUNNING);
+                try {
+                    collectorTask.get();
+                } catch (InterruptedException ex) {
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                } catch (ExecutionException ex) {
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                }catch (CancellationException ex){
+                    notifyListeners(CollectorState.TERMINATED);
+                    return;
+                }
+                notifyListeners(CollectorState.STOPPED);
+
+            }
+        }, "Listen for the CLIO task");//NOI8N
     }
 
     private void targetFinished(DLightTarget target) {
@@ -199,28 +295,31 @@ public final class CLIODataCollector
             // It could be already done here, because tracked process is
             // finished and, depending on command-line utility, it may exit as
             // well... But, if not - terminate it.
-            log.fine("Stopping CLIODataCollector: " + collectorTask.toString()); // NOI18N
+            log.log(Level.FINE, "Stopping CLIODataCollector: {0}", collectorTask.toString()); // NOI18N
             collectorTask.cancel(true);
-            collectorTask = null;
         }
     }
 
     /** {@inheritDoc */
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
         return dataTablesMetadata;
     }
 
     /** {@inheritDoc */
+    @Override
     public boolean isAttachable() {
         return true;
     }
 
     /** {@inheritDoc */
+    @Override
     public String getCmd() {
         return command;
     }
 
     /** {@inheritDoc */
+    @Override
     public String[] getArgs() {
         return null;
     }
@@ -229,6 +328,7 @@ public final class CLIODataCollector
      * Registers a validation listener
      * @param listener a validation listener to add
      */
+    @Override
     public void addValidationListener(ValidationListener listener) {
         if (!validationListeners.contains(listener)) {
             validationListeners.add(listener);
@@ -239,6 +339,7 @@ public final class CLIODataCollector
      * Removes a validation listener
      * @param listener a listener to remove
      */
+    @Override
     public void removeValidationListener(ValidationListener listener) {
         validationListeners.remove(listener);
     }
@@ -260,6 +361,7 @@ public final class CLIODataCollector
         return NbBundle.getMessage(CLIODataCollector.class, key, params);
     }
 
+    @Override
     public ValidationStatus validate(final DLightTarget target) {
         if (validationStatus.isValid()) {
             return validationStatus;
@@ -274,6 +376,7 @@ public final class CLIODataCollector
         return newStatus;
     }
 
+    @Override
     public void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
     }
@@ -307,6 +410,7 @@ public final class CLIODataCollector
 
             Runnable doOnConnect = new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -322,10 +426,12 @@ public final class CLIODataCollector
         return result;
     }
 
+    @Override
     public ValidationStatus getValidationStatus() {
         return validationStatus;
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -351,11 +457,13 @@ public final class CLIODataCollector
         env.putAll(envs);
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
     private class CLIOInputProcessorFactory implements InputProcessorFactory {
 
+        @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.bridge(new LineProcessor() {
 
@@ -364,9 +472,11 @@ public final class CLIODataCollector
                     CLIODataCollector.this.processLine(line);
                 }
 
+                @Override
                 public void reset() {
                 }
 
+                @Override
                 public void close() {
                 }
             });
