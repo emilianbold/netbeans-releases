@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
@@ -205,6 +206,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         private final VetoableChangeListener delegate;
         public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
             this.setLayout(new BorderLayout());
+            this.setBorder(new EmptyBorder(6,6,0,6));
             AtomicReference<VetoableChangeListener> okListenerRef = new AtomicReference<VetoableChangeListener>();
             Component tpc = ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment(), okListenerRef);
             delegate = okListenerRef.get();
