@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,7 +70,10 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.ServiceInfoDataStorageImpl;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
+import org.netbeans.modules.dlight.api.execution.TerminatedTarget;
 import org.netbeans.modules.dlight.management.api.impl.DLightSessionAccessor;
+import org.netbeans.modules.dlight.spi.collector.DataCollector.CollectorState;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
@@ -93,12 +97,13 @@ import org.openide.windows.InputOutput;
  * This class represents D-Light Session.
  * 
  */
-public final class DLightSession implements DLightTargetListener, DataFilterManager, DLightSessionIOProvider, DLightSessionInternalReference {
+public final class DLightSession implements
+        DLightTargetListener, DataFilterManager, DLightSessionIOProvider,
+        DLightSessionInternalReference, DataCollectorListener {
 
-    static{
+    static {
         DLightSessionAccessor.setDefault(new DLightSessionAccessorImpl());
     }
-
     private long startTimestamp = 0;
     private static int sessionCount = 0;
     private static final Logger log = DLightLogger.getLogger(DLightSession.class);
@@ -121,6 +126,8 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     private InputOutput io;
     private final String sharedStorageID;
     private final boolean useSharedStorage;
+    private CountDownLatch collectorsDoneFlag;
+    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();
 
     public static enum SessionState {
 
@@ -132,8 +139,72 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         CLOSED
     }
 
+    /**
+     * Created new DLightSession instance. This should not be called directly.
+     * Instead DLightManager.newSession() should be used.
+     *
+     */
+    DLightSession(String sharedStorageID, String name) {
+        this.state = SessionState.CONFIGURATION;
+        this.name = name;
+        this.sharedStorageID = sharedStorageID;
+        this.useSharedStorage = sharedStorageID != null;
+        sessionID = sessionCount++;
+        dataFiltersSupport = new SessionDataFiltersSupport();
+    }
+
     public final long getStartTime() {
         return startTimestamp;
+    }
+
+    @Override
+    public void collectorStateChanged(DataCollector source, CollectorState state) {
+        if (collectors.contains(source) && (state == CollectorState.STOPPED || state == CollectorState.FAILED
+                || state == CollectorState.TERMINATED)) {
+            collectorsDoneFlag.countDown();
+            if (collectorsDoneFlag.getCount() == 0) {
+                final DLightTarget target = getExecutionContexts().get(0).getTarget();
+                if (!(target instanceof TerminatedTarget)){
+                    return;
+                }
+                //terminate the session if it is not
+                switch (target.getState()) {
+                    case RUNNING:
+                    case STARTING:
+                    case INIT:
+                        DLightTargetAccessor.getDefault().getDLightTargetExecution(target).terminate(target);
+
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!collectorListeners.contains(listener)) {
+                collectorListeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            collectorListeners.remove(listener);
+        }
     }
 
     /**
@@ -144,7 +215,6 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
     public final String getID() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
-
 
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
@@ -166,20 +236,6 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 targetFinished(event.target);
                 return;
         }
-    }
-
-    /**
-     * Created new DLightSession instance. This should not be called directly.
-     * Instead DLightManager.newSession() should be used.
-     *
-     */
-    DLightSession(String sharedStorageID, String name) {
-        this.state = SessionState.CONFIGURATION;
-        this.name = name;
-        this.sharedStorageID = sharedStorageID;
-        this.useSharedStorage = sharedStorageID != null;
-        sessionID = sessionCount++;
-        dataFiltersSupport = new SessionDataFiltersSupport();
     }
 
     void cleanVisualizers() {
@@ -352,9 +408,9 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                     storages.clear();
                 }
                 //in case we are using the shared session we need to collect all info of
-                if (useSharedStorage){//we should share this info
+                if (useSharedStorage) {//we should share this info
                     serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
-                }else{
+                } else {
                     serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
                 }
 
@@ -531,7 +587,14 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 }
             }
         } else {
+            for (DataCollector c : collectors) {
+                c.removeDataCollectorListener(this);
+                for (DataCollectorListener l : collectorListeners) {
+                    c.removeDataCollectorListener(l);
+                }
+            }
             collectors.clear();
+
         }
 
         Collection<IndicatorDataProvider<?>> idproviders = new ArrayList<IndicatorDataProvider<?>>();
@@ -610,7 +673,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         serviceInfoDataStorage.put(ServiceInfoDataStorage.CONFIFURATION_NAME, context.getDLightConfiguration().getConfigurationName());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.IDP_NAMES, idpsNames.toString());
         serviceInfoDataStorage.put(ServiceInfoDataStorage.COLLECTOR_NAMES, collectorNames.toString());
-        if (useSharedStorage){
+        if (useSharedStorage) {
             serviceInfoDataStorage.put(ServiceInfoDataStorage.STORAGE_UNIQUE_KEY, this.sharedStorageID);
             targetInfo.getInfo().put(ServiceInfoDataStorage.STORAGE_UNIQUE_KEY, this.sharedStorageID);
         }
@@ -619,7 +682,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
 
         if (collectors != null && collectors.size() > 0) {
             for (DataCollector<?> toolCollector : collectors) {
-                collectorNames.append(toolCollector.getName() + ServiceInfoDataStorage.DELIMITER);
+                collectorNames.append(toolCollector.getName()).append(ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
 
                 if (toolCollector instanceof DLightTarget.ExecutionEnvVariablesProvider) {
@@ -651,7 +714,13 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
                 target.addTargetListener(toolCollector);
             }
         }
-
+        for (DataCollector c : collectors) {
+            c.addDataCollectorListener(this);
+            for (DataCollectorListener l : collectorListeners) {
+                c.addDataCollectorListener(l);
+            }
+        }
+        collectorsDoneFlag = new CountDownLatch(collectors.size());
         for (IndicatorDataProvider<?> idp : idproviders) {
             idp.init(serviceInfoDataStorage);
             addDataFilterListener(idp);
@@ -941,7 +1010,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         return NbBundle.getMessage(DLightSession.class, key, params);
     }
 
-    private static final class DLightSessionAccessorImpl extends DLightSessionAccessor{
+    private static final class DLightSessionAccessorImpl extends DLightSessionAccessor {
 
         @Override
         public boolean isUsingSharedStorage(DLightSession session) {
@@ -952,6 +1021,5 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         public String getSharedStorageUniqueKey(DLightSession session) {
             return session.sharedStorageID;
         }
-        
     }
 }
