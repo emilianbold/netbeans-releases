@@ -7,6 +7,7 @@ package org.netbeans.modules.php.editor.codegen.ui;
 import java.awt.Image;
 import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.codegen.Property;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.openide.util.ImageUtilities;
@@ -93,11 +94,23 @@ public abstract class CheckNode extends DefaultMutableTreeNode {
 
         @Override
         public Image getIcon() {
+            final int modifier = property.getModifier();
+            final boolean isPublic = BodyDeclaration.Modifier.isPublic(modifier);
+            final boolean isProtected = isPublic ? false : BodyDeclaration.Modifier.isProtected(modifier);
+            final boolean isStatic = BodyDeclaration.Modifier.isStatic(modifier);
             String name = "fieldPrivate";           //NOI18N
-            if (BodyDeclaration.Modifier.isPublic(property.getModifier())) {
-                name = "fieldPublic";               //NOI18N
-            } else if (BodyDeclaration.Modifier.isProtected(property.getModifier())) {
-                name = "fieldProtected";               //NOI18N
+            if (property.getKind().equals(PhpElementKind.METHOD)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(isStatic? "methodStatic" : "method");//NOI18N
+                sb.append(isPublic ? "Public" : "Protected");//NOI18N
+                name = sb.toString();
+            } else {
+                name = "fieldPrivate";
+                if (isPublic) {
+                    name = "fieldPublic";               //NOI18N
+                } else if (isProtected) {
+                    name = "fieldProtected";               //NOI18N
+                }
             }
             return ImageUtilities.loadImage(ICON_BASE + name + ICON_EXTENSION);
         }

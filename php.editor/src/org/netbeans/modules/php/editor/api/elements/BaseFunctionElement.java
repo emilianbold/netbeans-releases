@@ -48,9 +48,11 @@ import java.util.List;
  */
 public interface BaseFunctionElement extends PhpElement{
     enum PrintAs {
-        NameAndParams,
+        NameAndParamsDeclaration,
+        NameAndParamsInvocation,
         DeclarationWithoutBody,
         DeclarationWithEmptyBody,
+        DeclarationWithParentCallInBody,
         ReturnTypes
     }
     List<ParameterElement> getParameters();

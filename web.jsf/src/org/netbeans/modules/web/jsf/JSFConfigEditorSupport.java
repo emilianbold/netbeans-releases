@@ -368,17 +368,24 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
-        try {
-            // synchronize the model with the document. See issue #116315
-            JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
-            if (configModel != null) {
-                // the model can be null, if the file wasn't opened.
-                configModel.sync();
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                try {
+                    // synchronize the model with the document. See issue #116315
+                    JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
+                    if (configModel != null) {
+                        // the model can be null, if the file wasn't opened.
+                        configModel.sync();
+                    }
+                } catch (IOException ex) {
+                    // Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync Config Model took: "+ (System.currentTimeMillis() - time) + " ms");   //NOI18N
             }
-        } catch (IOException ex) {
-            // Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
-        
+        });
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */

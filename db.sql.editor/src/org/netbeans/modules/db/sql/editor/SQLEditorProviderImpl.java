@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.spi.sql.editor.SQLEditorProvider;
@@ -70,13 +72,14 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
 
     private static final String CMD_FOLDER = "Databases/SQLCommands"; // NOI18N
     
+    @Override
     public void openSQLEditor(DatabaseConnection dbconn, String sql, boolean execute) {
         FileObject tmpFo = FileUtil.getConfigFile(CMD_FOLDER);
         if (tmpFo == null) {
             try {
                 tmpFo = FileUtil.createFolder(FileUtil.getConfigRoot(), CMD_FOLDER );
             } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             }
         }
         
@@ -120,7 +123,7 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         try {
             sqlDo = DataObject.find(sqlFo);
         } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, e.getLocalizedMessage(), e);
             return;
         }
         
@@ -128,9 +131,13 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         openCookie.open();
         
         SQLExecuteCookie sqlCookie = sqlDo.getCookie (SQLExecuteCookie.class);
-        sqlCookie.setDatabaseConnection(dbconn);
-        if (execute) {
-            sqlCookie.execute();
+        if (sqlCookie != null) {
+            sqlCookie.setDatabaseConnection(dbconn);
+            if (execute) {
+                sqlCookie.execute();
+            }
+        } else {
+            Logger.getLogger(SQLEditorProviderImpl.class.getName()).log(Level.INFO, "No SQLExecuteCookie found for " + sqlDo);
         }
     }
 }
