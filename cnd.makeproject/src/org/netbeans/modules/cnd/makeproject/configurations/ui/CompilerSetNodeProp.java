@@ -40,16 +40,23 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class CompilerSetNodeProp extends Node.Property<String> {
 
@@ -140,8 +147,8 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return new CompilerSetEditor();
     }
 
-    private class CompilerSetEditor extends PropertyEditorSupport {
-
+    private class CompilerSetEditor extends PropertyEditorSupport implements ExPropertyEditor {
+        private PropertyEnv env;
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -180,14 +187,31 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
         @Override
         public boolean supportsCustomEditor() {
-            return false;
+            return true;
         }
 
         @Override
         public Component getCustomEditor() {
-//            OptionsDisplayer.getDefault().open(CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_PATH);
-            return ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment());
+            return new CompilerSetEditorCustomizer(env);
         }
 
+        @Override
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
+        }
+    }
+
+    private final class CompilerSetEditorCustomizer extends JPanel {
+        private final VetoableChangeListener delegate;
+        public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
+            this.setLayout(new BorderLayout());
+            AtomicReference<VetoableChangeListener> okListenerRef = new AtomicReference<VetoableChangeListener>();
+            Component tpc = ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment(), okListenerRef);
+            delegate = okListenerRef.get();
+            add(tpc, BorderLayout.CENTER);
+            this.putClientProperty("title", NbBundle.getMessage(CompilerSetNodeProp.class, "CompilerSetEditorCustomizerTitile", hostConfiguration.getExecutionEnvironment().getDisplayName()));
+            propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            propertyEnv.addVetoableChangeListener(delegate);
+        }
     }
 }
