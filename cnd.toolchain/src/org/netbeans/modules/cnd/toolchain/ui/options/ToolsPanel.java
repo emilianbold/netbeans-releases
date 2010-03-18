@@ -460,6 +460,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         dataValid();
     }
 
+    public String getSelectedToolchain() {
+        return currentCompilerSet != null ? currentCompilerSet.getName() : "";
+    }
+
     public void applyChanges(boolean force) {
         changed = force;
         applyChanges();

@@ -42,12 +42,14 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -202,18 +204,28 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         }
     }
 
-    private final class CompilerSetEditorCustomizer extends JPanel {
+    private final class CompilerSetEditorCustomizer extends JPanel implements VetoableChangeListener {
         private final VetoableChangeListener delegate;
+        private final JComponent tpc;
         public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
             this.setLayout(new BorderLayout());
-            this.setBorder(new EmptyBorder(6,6,0,6));
-            AtomicReference<VetoableChangeListener> okListenerRef = new AtomicReference<VetoableChangeListener>();
-            Component tpc = ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment(), okListenerRef);
-            delegate = okListenerRef.get();
+            tpc = ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment());
+            delegate = (VetoableChangeListener) tpc.getClientProperty(ToolsPanelSupport.OK_LISTENER_KEY);
             add(tpc, BorderLayout.CENTER);
             this.putClientProperty("title", NbBundle.getMessage(CompilerSetNodeProp.class, "CompilerSetEditorCustomizerTitile", hostConfiguration.getExecutionEnvironment().getDisplayName()));
             propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-            propertyEnv.addVetoableChangeListener(delegate);
+            propertyEnv.addVetoableChangeListener(CompilerSetEditorCustomizer.this);
+        }
+
+        @Override
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            if (delegate != null) {
+                delegate.vetoableChange(evt);
+            }
+            String toolchain = (String) tpc.getClientProperty(ToolsPanelSupport.SELECTED_TOOLCHAIN_KEY);
+            if (toolchain != null) {
+                setValue(toolchain);
+            }
         }
     }
 }
