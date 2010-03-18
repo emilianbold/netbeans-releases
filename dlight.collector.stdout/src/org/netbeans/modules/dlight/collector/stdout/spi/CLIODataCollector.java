@@ -286,7 +286,7 @@ public final class CLIODataCollector
                 notifyListeners(CollectorState.STOPPED);
 
             }
-        }, "Listen for the CLIO task");//NOI8N
+        }, "Listen for the CLIO task");//NOI18N
     }
 
     private void targetFinished(DLightTarget target) {
