@@ -119,6 +119,7 @@ import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -182,6 +183,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
+        initSpellChecker();
 
         BugtrackingUtil.issue163946Hack(scrollPane1);
     }
@@ -1134,6 +1136,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 });
             }
         });
+    }
+
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
     }
 
     private List<CustomFieldInfo> customFields = new LinkedList<CustomFieldInfo>();
