@@ -359,7 +359,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             } else if (i == 0 && chars[i] == '$') {
                 sb.append('\\').append(chars[i]);//NOI18N
             }else {
-                sb.append(chars[i]);
+                sb.append(Pattern.quote(String.valueOf(chars[i])));
             }
         }
         sb.append(".*");//NOI18N
