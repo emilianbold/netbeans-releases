@@ -541,6 +541,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     @Override
     public void closeInputOutput() {
         terminal.close();
+	TerminalIOProvider.remove(this);
     }
 
     @Override

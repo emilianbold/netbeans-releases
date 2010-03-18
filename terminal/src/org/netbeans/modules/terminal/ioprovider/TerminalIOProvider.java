@@ -5,8 +5,13 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.Action;
+
 import org.openide.util.lookup.ServiceProvider;
+
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -28,6 +33,10 @@ import org.openide.windows.OutputWriter;
 @ServiceProvider(service = IOProvider.class, position=200)
 
 public final class TerminalIOProvider extends IOProvider {
+
+    private static final Map<String, InputOutput> map =
+	    new HashMap<String, InputOutput>();
+
     @Override
     public String getName() {
         return "Terminal";      // NOI18N
@@ -35,23 +44,32 @@ public final class TerminalIOProvider extends IOProvider {
 
     @Override
     public InputOutput getIO(String name, Action[] additionalActions) {
-//        throw new UnsupportedOperationException("Not supported yet.");
 	// FIXUP: to try from CND
-	return getIO(name, true);
+	return getIO(name, true, additionalActions, null);
     }
 
     @Override
     public InputOutput getIO(String name, boolean newIO) {
-        IOContainer ioContainer = IOContainer.getDefault();
-        return new TerminalInputOutput(name, null, ioContainer);
-
+	return getIO(name, newIO, null, null);
     }
 
     @Override
     public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
-        if (ioContainer == null)
-            ioContainer = IOContainer.getDefault();
-        return new TerminalInputOutput(name, actions, ioContainer);
+	return getIO(name, true, actions, ioContainer);
+    }
+
+    private InputOutput getIO(String name,
+	                      boolean newIO,
+			      Action[] actions,
+			      IOContainer ioContainer) {
+	InputOutput io = map.get(name);
+	if (io == null || newIO) {
+	    if (ioContainer == null)
+		ioContainer = IOContainer.getDefault();
+	    io = new TerminalInputOutput(name, actions, ioContainer);
+	    map.put(name, io);
+	}
+	return io;
     }
 
     /**
@@ -62,6 +80,10 @@ public final class TerminalIOProvider extends IOProvider {
     @Override
     public OutputWriter getStdOut() {
         throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+    }
+
+    static void remove(TerminalInputOutput io) {
+	map.remove(io);
     }
 
 }
