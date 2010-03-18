@@ -59,6 +59,7 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
  */
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
+    private boolean isPhpEnabled = false;
     public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
@@ -67,12 +68,12 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
 
         //issue #159775 logging >>>
-        if(sequence == null) {
+        if (sequence == null) {
             Logger.getLogger("TplEmbeddingProvider").warning(
-                    "TokenHierarchy.tokenSequence(TplTopTokenId.language()) == null " +
-                    "for static immutable TPL TokenHierarchy!\nFile = '"+
-                    snapshot.getSource().getFileObject().getPath() +
-                    "' ;snapshot mimepath='" + snapshot.getMimePath() + "'");
+                    "TokenHierarchy.tokenSequence(TplTopTokenId.language()) == null "
+                    + "for static immutable TPL TokenHierarchy!\nFile = '"
+                    + snapshot.getSource().getFileObject().getPath()
+                    + "' ;snapshot mimepath='" + snapshot.getMimePath() + "'");
 
             return Collections.emptyList();
         }
@@ -86,18 +87,14 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         while (sequence.moveNext()) {
             Token t = sequence.token();
             if (t.id().getClass() == TplTopTokenId.class && isSmartyToken((TplTopTokenId) t.id())) {
-                if(from < 0) {
+//                if (isPhpEnabled) {
+//                    isPhpEnabled = false;
+//                    embeddings.add(snapshot.create(";?>", "text/x-php5"));
+//                }
+                if (from < 0) {
                     from = sequence.offset();
                 }
                 len += t.length();
-                if (t.id() == TplTopTokenId.T_PHP) {
-                    if(from >= 0) {
-                        embeddings.add(snapshot.create(from, len, "text/x-php")); //NOI18N
-                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php"));
-                        from = -1;
-                        len = 0;
-                    }
-                }
             } else {
                 if (from < 0) {
                     from = sequence.offset();
@@ -107,20 +104,29 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
                     len = 0;
                 }
                 len += t.length();
-                if(from >= 0) {
-                    embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
-                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
-                } 
+                if (from >= 0) {
+//                    if (t.id() == TplTopTokenId.T_PHP) {
+//                        if (!isPhpEnabled) {
+//                            isPhpEnabled = true;
+//                            embeddings.add(snapshot.create("<?", "text/x-php5"));
+//                        }
+//                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+//                    } else {
+//                        if (isPhpEnabled) {
+//                            isPhpEnabled = false;
+//                            embeddings.add(snapshot.create(";?>", "text/x-php5"));
+//                        }
+                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+//                    }
+                }
 
                 from = -1;
                 len = 0;
             }
         }
-
-        if(from >= 0) {
-            embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
+        if (from >= 0) {
+            embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
         }
-
         if (embeddings.isEmpty()) {
             return Collections.emptyList();
         } else {
@@ -131,6 +137,8 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
     @Override
     public int getPriority() {
         return 130;
+
+
     }
 
     @Override
@@ -147,8 +155,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
     }
 
     public boolean isSmartyToken(TplTopTokenId tokenId) {
-        return ((tokenId == TplTopTokenId.T_COMMENT) || (tokenId == TplTopTokenId.T_LITERAL_DEL) ||
-                (tokenId == TplTopTokenId.T_PHP_DEL) || (tokenId == TplTopTokenId.T_SMARTY) ||
-                (tokenId == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) || (tokenId == TplTopTokenId.T_SMARTY_OPEN_DELIMITER));
+        return ((tokenId == TplTopTokenId.T_COMMENT) || (tokenId == TplTopTokenId.T_LITERAL_DEL)
+                || (tokenId == TplTopTokenId.T_PHP_DEL) || (tokenId == TplTopTokenId.T_SMARTY)
+                || (tokenId == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) || (tokenId == TplTopTokenId.T_SMARTY_OPEN_DELIMITER));
+
     }
 }

@@ -229,6 +229,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                     input.backup(input.readLength());
                                     break;
                                 } else {
+                                    input.backup(input.readLength()-1);
                                     state = State.IN_LITERAL;
                                 }
                                 return TplTopTokenId.T_HTML;
@@ -307,9 +308,11 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                 case IN_PHP:
                     if (isSmartyOpenDelimiter(text)) {
                         state = State.OPEN_DELIMITER;
-                        input.backup(1);
+                        input.backup(openDelimiterLength);
+                        if (input.readLength() > 0)
+                            return TplTopTokenId.T_PHP;
                     }
-                    if (input.readLength() > 0) {
+                    if (input.readLength() > 1) {
                         return TplTopTokenId.T_PHP;
                     }
                     break;
@@ -317,7 +320,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                 case IN_LITERAL:
                     if (isSmartyOpenDelimiter(text)) {
                         state = State.OPEN_DELIMITER;
-                        input.backup(1);
+                        input.backup(openDelimiterLength);
                     }
                     if (input.readLength() > 0) {
                         return TplTopTokenId.T_HTML;
@@ -380,7 +383,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             }
             else {
                 return (text.toString().endsWith(SmartyFramework.DELIMITER_DEFAULT_CLOSE));
-            }
+                }
         }
         
         private int getOpenDelimiterLength() {
