@@ -95,18 +95,12 @@ public class AttributesImpl implements Attributes, PropertyHandler {
         AnnotationMirror manyToManyAnnotation = annByType.get("javax.persistence.ManyToMany"); // NOI18N
         AnnotationMirror embeddedIdAnnotation = annByType.get("javax.persistence.EmbeddedId"); // NOI18N
 
-        AnnotationMirror derivedOdAnnotation = null;
-
         if (oneToOneAnnotation != null) {
             oneToOneList.add(new OneToOneImpl(helper, element, oneToOneAnnotation, propertyName, annByType));
-            //may be also derived id
-            derivedOdAnnotation = annByType.get("javax.persistence.Id"); // NOI18N
         } else if (oneToManyAnnotation != null) {
             oneToManyList.add(new OneToManyImpl(helper, element, oneToManyAnnotation, propertyName, annByType));
         } else if (manyToOneAnnotation != null) {
             manyToOneList.add(new ManyToOneImpl(helper, element, manyToOneAnnotation, propertyName, annByType));
-             //may be also derived id
-            derivedOdAnnotation = annByType.get("javax.persistence.Id"); // NOI18N
         } else if (manyToManyAnnotation != null) {
             manyToManyList.add(new ManyToManyImpl(helper, element, manyToManyAnnotation, propertyName, annByType));
         } else {
@@ -131,16 +125,6 @@ public class AttributesImpl implements Attributes, PropertyHandler {
                     basicList.add(new BasicImpl(helper, basicAnnotation, propertyName, column, temporal));
                 }
             }
-        }
-
-        if(derivedOdAnnotation!=null){
-                AnnotationMirror columnAnnotation = annByType.get("javax.persistence.Column"); // NOI18N, TODO some annotations may not be valid for derived id and it may  not be requires, also need to separate from usual id later(just like embedded ids) to find if exist
-                AnnotationMirror temporalAnnotation = annByType.get("javax.persistence.Temporal"); // NOI18N
-                String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
-                Column column = new ColumnImpl(helper, columnAnnotation, propertyName.toUpperCase()); // NOI18N
-                AnnotationMirror generatedValueAnnotation = annByType.get("javax.persistence.GeneratedValue"); // NOI18N
-                GeneratedValue genValue = generatedValueAnnotation != null ? new GeneratedValueImpl(helper, generatedValueAnnotation) : null;
-                idList.add(new IdImpl(propertyName, genValue, column, temporal));
         }
     }
 
