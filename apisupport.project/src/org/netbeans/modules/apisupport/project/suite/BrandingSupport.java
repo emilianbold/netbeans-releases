@@ -68,6 +68,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
@@ -293,7 +294,7 @@ public final class BrandingSupport {
     
     public void brandFile(final BrandedFile bFile) throws IOException {
         if (!bFile.isModified()) return;
-        
+
         File target = bFile.getFileLocation();
         if (!target.exists()) {
             target.getParentFile().mkdirs();
@@ -301,12 +302,12 @@ public final class BrandingSupport {
         }
         
         assert target.exists();
-        
+        FileObject fo = FileUtil.toFileObject(target);
         InputStream is = null;
         OutputStream os = null;
         try {
             is = bFile.getBrandingSource().openStream();
-            os = new FileOutputStream(target);
+            os = fo.getOutputStream();
             FileUtil.copy(is, os);
         } finally {
             if (is != null) {
@@ -318,7 +319,7 @@ public final class BrandingSupport {
             }
             
             brandedFiles.add(bFile);
-            bFile.modified = false;            
+            bFile.modified = false;
         }
     }
     
@@ -465,14 +466,15 @@ public final class BrandingSupport {
     }
     
     private static void storeEditableProperties(final EditableProperties p, final File bundle) throws IOException {
-        OutputStream os = new FileOutputStream(bundle);
+        FileObject fo = FileUtil.toFileObject(bundle);
+        OutputStream os = null == fo ? new FileOutputStream(bundle) : fo.getOutputStream();
         try {
             p.store(os);
         } finally {
             os.close();
         }
     }
-    
+
     
     private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry, final Set<String> keys, final Set<BundleKey> bundleKeys) {
         EditableProperties p = ModuleList.loadBundleInfo(moduleEntry.getSourceLocation()).toEditableProperties();

@@ -257,7 +257,7 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     @Override
-    public String asString() {
+    public String asString(boolean forDeclaration) {
         StringBuilder sb = new StringBuilder();
         Set<TypeResolver> typesResolvers = getTypes();
         if (hasDeclaredType()) {
@@ -272,16 +272,18 @@ public final class ParameterElementImpl implements ParameterElement {
                 }
             }
         }
-        if (isReference()) {
+        if (forDeclaration && isReference()) {
             sb.append(VariableElementImpl.REFERENCE_PREFIX);
         }
         sb.append(getName());
-        String defVal = getDefaultValue();
-        if (!isMandatory()) {
-            sb.append(" = ");//NOI18N
-            if (defVal != null) {
-                sb.append(defVal.length() > 10 ?
-                            "..." : defVal); //NOI18N
+        if (forDeclaration) {
+            String defVal = getDefaultValue();
+            if (!isMandatory()) {
+                sb.append(" = ");//NOI18N
+                if (defVal != null) {
+                    sb.append(defVal.length() > 10 ?
+                                "..." : defVal); //NOI18N
+                }
             }
         }
         return sb.toString();
