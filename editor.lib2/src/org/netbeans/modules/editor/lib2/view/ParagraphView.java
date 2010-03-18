@@ -63,7 +63,7 @@ public class ParagraphView extends EditorBoxView {
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
 
-    private Position startPos;
+    private Position startPos; // 40 + 4 = 44 bytes
 
     public ParagraphView(Position startPos) {
         super(null);
@@ -82,13 +82,17 @@ public class ParagraphView extends EditorBoxView {
 
     @Override
     public int getEndOffset() {
-        int viewCount = getViewCount();
-        return (viewCount > 0) ? getView(viewCount - 1).getEndOffset() : getStartOffset();
+        return getStartOffset() + getLength();
     }
 
     @Override
     public AttributeSet getAttributes() {
         return null;
+    }
+
+    @Override
+    public int getLength() { // Total length of contained child views
+        return (children != null) ? children.getLength() : 0;
     }
 
     @Override
