@@ -40,32 +40,37 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.openide.nodes.Node;
 
 public class CompilerSetNodeProp extends Node.Property<String> {
 
     private CompilerSet2Configuration configuration;
+    private final DevelopmentHostConfiguration hostConfiguration;
     private boolean canWrite;
     //private String txt1;
     private String txt2;
     private String txt3;
     private String oldname;
 
-    public CompilerSetNodeProp(CompilerSet2Configuration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
+    public CompilerSetNodeProp(CompilerSet2Configuration configuration, DevelopmentHostConfiguration hostConf, boolean canWrite, String txt1, String txt2, String txt3) {
         super(String.class);
         this.configuration = configuration;
+        this.hostConfiguration = hostConf;
         this.canWrite = canWrite;
         //this.txt1 = txt1;
         this.txt2 = txt2;
         this.txt3 = txt3;
         oldname = configuration.getOption();
-        configuration.setCompilerSetNodeProp(this);
+        configuration.setCompilerSetNodeProp(CompilerSetNodeProp.this);
     }
 
     public String getOldname() {
@@ -91,10 +96,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return configuration.getCompilerSetName().getValue();
     }
 
+    @Override
     public void setValue(String v) {
         configuration.setValue(v);
     }
@@ -114,10 +121,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return !configuration.getCompilerSetName().getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return canWrite;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
@@ -168,5 +177,17 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         public void repaint() {
             firePropertyChange();
         }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return false;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+//            OptionsDisplayer.getDefault().open(CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_PATH);
+            return ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment());
+        }
+
     }
 }
