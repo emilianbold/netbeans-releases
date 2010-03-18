@@ -38,8 +38,11 @@
  */
 package org.netbeans.modules.cnd.api.toolchain.ui;
 
-import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -57,7 +60,10 @@ import org.openide.util.WeakSet;
 public class ToolsPanelSupport {
     private static CompilerSet currentCompilerSet;
     private static final ToolsCacheManagerImpl cacheManager = (ToolsCacheManagerImpl) ToolsCacheManager.createInstance();
-
+    // component.getClientProperty(OK_LISTENER_KEY) can have vetoable listener (VetoableChangeListener)
+    public final static String OK_LISTENER_KEY = "okVetoableListener"; // NOI18N
+    // component.getClientProperty(OK_LISTENER_KEY) can have selected toolchain name (String)
+    public final static String SELECTED_TOOLCHAIN_KEY = "selectedToolchain"; // NOI18N
     public static ToolsCacheManager getToolsCacheManager() {
         return cacheManager;
     }
@@ -139,10 +145,24 @@ public class ToolsPanelSupport {
         return isChanged;
     }
 
-    public static Component getToolsPanelComonent(ExecutionEnvironment env) {
+    /**
+     * returns toolchain manager component to be embedded in other containers
+     * @param env execution environment for which manager is created
+     * @param outContainerOKListener reference with listener to be used by containers to notify about OK vs Cancel
+     * @return toolchain manager component for specified execution environmen
+     */
+    public static JComponent getToolsPanelComonent(ExecutionEnvironment env) {
         HostToolsPanelModel model = new HostToolsPanelModel(env);
-        ToolsPanel tp = new ToolsPanel(model);
+        final ToolsPanel tp = new ToolsPanel(model);
         tp.update();
+        VetoableChangeListener okL = new VetoableChangeListener() {
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                tp.applyChanges();
+                tp.putClientProperty(SELECTED_TOOLCHAIN_KEY, tp.getSelectedToolchain());
+            }
+        };
+        tp.putClientProperty(OK_LISTENER_KEY, okL); // NOI18N
         return tp;
     }
     

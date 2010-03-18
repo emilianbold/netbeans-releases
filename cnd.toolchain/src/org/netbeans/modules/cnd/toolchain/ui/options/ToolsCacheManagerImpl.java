@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -144,10 +145,15 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
                 fireChange(ToolsCacheManagerImpl.this);
             }
         };
-        Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        String title = NbBundle.getMessage(ToolsCacheManagerImpl.class, "DLG_TITLE_ApplyChanges"); // NOI18N
-        String msg = NbBundle.getMessage(ToolsCacheManagerImpl.class, "MSG_TITLE_ApplyChanges"); // NOI18N
-        ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
+        if (SwingUtilities.isEventDispatchThread()) {
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = NbBundle.getMessage(ToolsCacheManagerImpl.class, "DLG_TITLE_ApplyChanges"); // NOI18N
+            String msg = NbBundle.getMessage(ToolsCacheManagerImpl.class, "MSG_TITLE_ApplyChanges"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
+        } else {
+            runner.doWork();
+            runner.doPostRunInEDT();
+        }
     }
 
     public Collection<? extends ServerRecord> getHosts() {
