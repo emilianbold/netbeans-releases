@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +75,11 @@ final class FileObjectKeeper implements FileChangeListener {
             listeners = new CopyOnWriteArraySet<FileChangeListener>();
         }
         if (listeners.isEmpty()) {
-            listenToAll();
+            Callable<?> stop = null;
+            if (fcl instanceof Callable && fcl.getClass().getName().equals("org.openide.filesystems.DeepListener")) { // NOI18N
+                stop = (Callable<?>)fcl;
+            }
+            listenToAll(stop);
         }
         listeners.add(fcl);
     }
@@ -131,7 +136,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
-    private void listenToAll() {
+    private void listenToAll(Callable<?> stop) {
         assert Thread.holdsLock(this);
         assert kept == null;
         kept = new HashSet<FileObject>();
@@ -140,7 +145,19 @@ final class FileObjectKeeper implements FileChangeListener {
         while (en.hasMoreElements()) {
             FileObject fo = en.nextElement();
             if (fo instanceof FolderObj) {
-                FolderObj obj = (FolderObj)fo;
+                FolderObj obj = (FolderObj) fo;
+                Object shallStop = null;
+                if (stop != null) {
+                    try {
+                        shallStop = stop.call();
+                    } catch (Exception ex) {
+                        shallStop = Boolean.TRUE;
+                    }
+                }
+                if (Boolean.TRUE.equals(shallStop)) {
+                    LOG.log(Level.INFO, "addRecursiveListener to {0} interrupted", root); // NOI18N
+                    return;
+                }
                 listenTo(obj, true);
                 kept.add(obj);
                 obj.getKeeper();
