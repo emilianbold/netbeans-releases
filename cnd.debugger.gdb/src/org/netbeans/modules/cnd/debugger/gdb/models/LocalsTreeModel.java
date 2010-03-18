@@ -227,28 +227,24 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     // private methods .........................................................
     
     private AbstractVariable[] getLocalVariables() {
-        synchronized (debugger.LOCK) {
-            GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
-            if (callStackFrame == null) {
-                return new AbstractVariable[0];
-            }
-            return callStackFrame.getLocalVariables();
-        } // synchronized
+        GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
+        if (callStackFrame == null) {
+            return new AbstractVariable[0];
+        }
+        return callStackFrame.getLocalVariables();
     }
 
     private AbstractVariable[] getAutos() {
-        synchronized (debugger.LOCK) {
-            GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
-            if (callStackFrame == null) {
-                return new AbstractVariable[0];
-            }
-            AbstractVariable[] res = callStackFrame.getAutos();
-            if (res != null) {
-                return res;
-            } else {
-                return new AbstractVariable[0];
-            }
-        } // synchronized
+        GdbCallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
+        if (callStackFrame == null) {
+            return new AbstractVariable[0];
+        }
+        AbstractVariable[] res = callStackFrame.getAutos();
+        if (res != null) {
+            return res;
+        } else {
+            return new AbstractVariable[0];
+        }
     }
     
     GdbDebugger getDebugger() {
