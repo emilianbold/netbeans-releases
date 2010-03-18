@@ -75,9 +75,14 @@ public class BaseFunctionElementSupport  {
     public final String asString(PrintAs as, BaseFunctionElement element) {
         StringBuilder template = new StringBuilder();
         switch (as) {
-            case NameAndParams:
+            case NameAndParamsDeclaration:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters()));
+                template.append(parameters2String(getParameters(), true));
+                template.append(")"); //NOI18N
+                break;
+            case NameAndParamsInvocation:
+                template.append(" ").append(element.getName()).append("("); //NOI18N
+                template.append(parameters2String(getParameters(), false));
                 template.append(")"); //NOI18N
                 break;
             case DeclarationWithoutBody:
@@ -86,11 +91,20 @@ public class BaseFunctionElementSupport  {
                     template.append(modifiers).append(" ");//NOI18N
                 }
                 template.append("function");//NOI18N
-                template.append(asString(PrintAs.NameAndParams, element));
+                template.append(asString(PrintAs.NameAndParamsDeclaration, element));
                 break;
             case DeclarationWithEmptyBody:
                 template.append(asString(PrintAs.DeclarationWithoutBody, element));
                 template.append("{\n}");//NOI18N
+                break;
+            case DeclarationWithParentCallInBody:
+                template.append(asString(PrintAs.DeclarationWithoutBody, element));
+                Collection<TypeResolver> returns = getReturnTypes();
+                if (returns.size() > 0) {
+                    template.append(String.format("{\nreturn parent::%s;\n}", asString(PrintAs.NameAndParamsInvocation, element)));//NOI18N
+                } else {
+                    template.append(String.format("{\nparent::%s;\n}", asString(PrintAs.NameAndParamsInvocation, element)));//NOI18N
+                }
                 break;
             case ReturnTypes:
                 for (TypeResolver typeResolver : getReturnTypes()) {
@@ -108,7 +122,7 @@ public class BaseFunctionElementSupport  {
         return template.toString();
     }
 
-    private static String parameters2String(final List<ParameterElement> parameterList) {
+    private static String parameters2String(final List<ParameterElement> parameterList, boolean forDeclaration) {
         StringBuilder template = new StringBuilder();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
@@ -117,7 +131,7 @@ public class BaseFunctionElementSupport  {
                     paramSb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
-                paramSb.append(param.asString());
+                paramSb.append(param.asString(forDeclaration));
                 template.append(paramSb);
             }
         }
