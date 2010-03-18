@@ -457,9 +457,9 @@ public class ConfigurationMakefileWriter {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
             if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
-                CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
+                qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
             }
-            if (0 < qmakeSpec.length()) {
+            if (!qmakeSpec.isEmpty()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
             bw.write("nbproject/qt-${CND_CONF}.mk: nbproject/qt-${CND_CONF}.pro FORCE\n"); // NOI18N
