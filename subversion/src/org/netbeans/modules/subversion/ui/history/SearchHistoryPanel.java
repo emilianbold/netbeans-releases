@@ -65,7 +65,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
+import java.io.FileFilter;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -92,6 +94,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     private AbstractAction nextAction;
     private AbstractAction prevAction;
+    private FileFilter fileFilter;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -198,15 +201,29 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
 
-        if(roots.length == 1) {
-            File file = roots[0];
-            if(!file.isFile()) fileInfoCheckBox.setEnabled(false);
+        if (!(roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
+            fileInfoCheckBox.setEnabled(false);
         }
         if(fileInfoCheckBox.isEnabled()) {
             fileInfoCheckBox.setSelected(SvnModuleConfig.getDefault().getShowFileAllInfo());
         } else {
             fileInfoCheckBox.setSelected(true);
         }
+        fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                boolean retval = fileInfoCheckBox.isSelected();
+                if (!retval) {
+                    for (File root : roots) {
+                        if (root.equals(file)) {
+                            retval = true;
+                            break;
+                        }
+                    }
+                }
+                return retval;
+            }
+        };
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -261,11 +278,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             // set filter for revision events
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventFullNameComparator());
-                                rev.setFilter(null);
-                            } else {
-                                // no need to sort now, since events for only one file are shown
-                                rev.setFilter(roots[0]);
                             }
+                            rev.setFilter(fileFilter);
                         }
                         summaryView = new SummaryView(this, results);
                     }
@@ -276,11 +290,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                             // set filter for revision events
                             if (fileInfoCheckBox.isSelected()) {
                                 rev.sort(new RepositoryRevision.EventBaseNameComparator());
-                                rev.setFilter(null);
-                            } else {
-                                // no need to sort now, since events for only one file are shown
-                                rev.setFilter(roots[0]);
                             }
+                            rev.setFilter(fileFilter);
                         }
                         diffView = diffViewFactory.createDiffResultsView(this, results);
                     }
