@@ -164,26 +164,20 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
-                if(ts.isAutofill()) {
-                    messageTextArea.setText(ts.getTemplate());
-                } else {
-                    String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage();
-                    if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences()).isAutoFill()) {
-                        List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-                        if (messages.size() > 0) {
-                            lastCommitMessage = messages.get(0);
-                        }
-                    }
-                    messageTextArea.setText(lastCommitMessage);
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        if (ts.isAutofill()) {
+            messageTextArea.setText(ts.getTemplate());
+        } else {
+            String lastCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage();
+            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(HgModuleConfig.getDefault().getPreferences()).isAutoFill()) {
+                List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+                if (messages.size() > 0) {
+                    lastCommitMessage = messages.get(0);
                 }
-                messageTextArea.selectAll();
             }
-        });
-
+            messageTextArea.setText(lastCommitMessage);
+        }
+        messageTextArea.selectAll();
         initCollapsibleSections();
     }
 

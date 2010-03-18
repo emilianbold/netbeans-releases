@@ -177,7 +177,7 @@ public class FormLAF {
             // Force switch of the LayoutStyle
             if (previewDefaults.get("LayoutStyle.instance") == null) { // NOI18N
                 previewDefaults.put("LayoutStyle.instance", // NOI18N
-                    createLayoutStyle(previewLookAndFeel.getID())); 
+                    createLayoutStyle(previewLookAndFeel)); 
             }
 
             return info;
@@ -398,7 +398,8 @@ public class FormLAF {
      * which is not affected by our LAF switch => we have to create
      * the new LayoutStyle manually.
      */
-    private static LayoutStyle createLayoutStyle(String lafID) {
+    private static LayoutStyle createLayoutStyle(LookAndFeel laf) {
+        String lafID = laf.getID();
         boolean useCoreLayoutStyle = false;
         try {
             Class.forName("javax.swing.LayoutStyle"); // NOI18N
@@ -406,7 +407,17 @@ public class FormLAF {
         } catch (ClassNotFoundException cnfex) {}
         String layoutStyleClass;
         if (useCoreLayoutStyle) {
-            layoutStyleClass = "Swing"; // NOI18N
+            if ("Aqua" == lafID) { // NOI18N
+                try {
+                    laf.getClass().getDeclaredMethod("getLayoutStyle", new Class[0]); // NOI18N
+                    layoutStyleClass = "Swing"; // NOI18N
+                } catch (NoSuchMethodException nsfex) {
+                    // getLayoutStyle() not overriden => use our own (issue 52)
+                    layoutStyleClass = "Aqua";
+                }
+            } else {
+                layoutStyleClass = "Swing"; // NOI18N
+            }
         } else if ("Metal" == lafID) { // NOI18N
             layoutStyleClass = "Metal"; // NOI18N
         }

@@ -356,7 +356,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
                 case WINDOWS:
                     return false;
                 case MACOSX:
-                    return false;
+                    return true;
                 case SUNOS:
                     return (hostInfo.getCpuFamily() == HostInfo.CpuFamily.X86);
                 default:

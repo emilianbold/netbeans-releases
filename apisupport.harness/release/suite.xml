@@ -399,7 +399,9 @@ See: http://wiki.netbeans.org/DevFaqHowToReuseModules
         <mkdir dir="${dist.dir}/${app.name}.app/Contents"/>
         <mkdir dir="${dist.dir}/${app.name}.app/Contents/MacOS"/>
         <mkdir dir="${dist.dir}/${app.name}.app/Contents/Resources"/>
-        <copy file="${harness.dir}/etc/applicationIcon.icns" tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        <property name="app.icon.icns" value="${harness.dir}/etc/applicationIcon.icns"/>
+        <copy file="${app.icon.icns}" tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+
         <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin">
             <fileset dir="${build.launcher.dir}/bin/" />
         </copy>

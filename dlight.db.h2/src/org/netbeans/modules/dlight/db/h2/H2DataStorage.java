@@ -87,7 +87,7 @@ public final class H2DataStorage extends SQLDataStorage {
     static {
         try {
             Class driver = Class.forName("org.h2.Driver"); // NOI18N
-            logger.fine("Driver for H2DB (" + driver.getName() + ") Loaded "); // NOI18N
+            logger.log(Level.FINE, "Driver for H2DB ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -109,14 +109,10 @@ public final class H2DataStorage extends SQLDataStorage {
 
         storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");// NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
-        try {
-            persistentURL = "jdbc:h2:tcp://" + System.getProperty("dlight.storages.host", HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname()) + storagesDir;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            persistentURL = url;
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-            persistentURL = url;
+        if (System.getProperty("dlight.storages.host") != null){
+            persistentURL = "jdbc:h2:tcp://" + System.getProperty("dlight.storages.host") + storagesDir;
+        }else{
+            persistentURL = url;//use EMBEDDED version if dlight.storages.host is not defined
         }
         CommonTasksSupport.mkDir(ExecutionEnvironmentFactory.getLocal(), storagesDir, new StringWriter());
         tmpDir = tempDir;
@@ -126,6 +122,7 @@ public final class H2DataStorage extends SQLDataStorage {
         if (tmpDirFile.exists()) {
             final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
+                @Override
                 public boolean accept(File dir, String name) {
                     return dir.isDirectory() && name.startsWith("h2_db_dlight"); // NOI18N
                 }
@@ -143,6 +140,7 @@ public final class H2DataStorage extends SQLDataStorage {
             if (System.getProperty("dlight.storages.folder") == null){// NOI18N
                 DLightExecutorService.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         for (File file : files) {
                             Util.deleteLocalDirectory(file);
@@ -281,10 +279,12 @@ public final class H2DataStorage extends SQLDataStorage {
 //    public ThreadDump getThreadDump(long timestamp, long threadID, int threadState) {
 //        return stackStorage.getThreadDump(timestamp, threadID, threadState);
 //    }
+    @Override
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
         }
 
+    @Override
     public boolean supportsType(DataStorageType storageType) {
         return getStorageTypes().contains(storageType);
     }

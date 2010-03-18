@@ -166,7 +166,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public SimpleTestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -176,8 +176,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4).replace("%BR%", "\n"); // NOI18N
-            String location = matcher.group(5);
-            testcase.getTrouble().setStackTrace(getStackTrace(message, location));
+            testcase.getTrouble().setStackTrace(getStackTrace(message, "")); // NOI18N
             testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
 
             session.addTestCase(testcase);
@@ -212,7 +211,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         private List<String> output;
 
         public SimpleTestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -221,7 +220,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5))); // NOI18N
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), "")); // NOI18N
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());

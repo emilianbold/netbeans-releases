@@ -540,17 +540,17 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
                 if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
                     // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
 
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++){
                         View view = rootView.getView(i);                
-                        paintGutterForView(g, view, y);
-                        y += editorUI.getLineHeight();
+                        Rectangle rec = textUI.modelToView(component, view.getStartOffset());
+                        int y = (rec == null) ? 0 : rec.y;
                         if (y >= clipEndY) {
                             break;
                         }
+
+                        paintGutterForView(g, view, y);
                     }
                 }
                 
