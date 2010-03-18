@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.openide.filesystems
 OpenIDE-Module-Localizing-Bundle: org/openide/filesystems/Bundle.properties
 OpenIDE-Module-Layer: org/openide/filesystems/resources/layer.xml
-OpenIDE-Module-Specification-Version: 7.36
+OpenIDE-Module-Specification-Version: 7.37
 
