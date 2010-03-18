@@ -45,6 +45,8 @@ import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
+import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**
  * Implementation of the <code>DataCollectorConfiguration</code> interface
@@ -69,6 +71,7 @@ public final class CLIODCConfiguration
     private final List<DataTableMetadata> dataTablesMetadata;
     private boolean indicatorDataProvider;
     private String collectorName;
+    private DataStorageType dataStorageType;
 
 
     static {
@@ -101,6 +104,7 @@ public final class CLIODCConfiguration
         this.parser = parser;
         this.dataTablesMetadata = dataTablesMetadata;
         this.envs = new HashMap<String, String>();
+        this.dataStorageType = SQLDataStorage.getStorageType();
     }
 
     public void setName(String collectorName){
@@ -118,6 +122,10 @@ public final class CLIODCConfiguration
     public void setDLightTargetExecutionEnv(Map<String, String> envs){
         this.envs.clear();
         this.envs.putAll(envs);
+    }
+
+    public void setDataStorageType(DataStorageType dataStorageType) {
+        this.dataStorageType = dataStorageType;
     }
 
     /**
@@ -154,6 +162,10 @@ public final class CLIODCConfiguration
 
     private CLIOParser getParser() {
         return parser;
+    }
+
+    private DataStorageType getDataStorageType() {
+        return dataStorageType;
     }
 
     private static final class CLIODCConfigurationAccessorImpl
@@ -199,6 +211,11 @@ public final class CLIODCConfiguration
         @Override
         public String getName(CLIODCConfiguration configuration) {
             return configuration.collectorName;
+        }
+
+        @Override
+        public DataStorageType getDataStorageType(CLIODCConfiguration configuration) {
+            return configuration.getDataStorageType();
         }
     }
 }
