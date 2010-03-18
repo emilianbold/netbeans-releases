@@ -2182,12 +2182,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             }
             else {
-                if (compAlignment == LEADING) {
-                    alignment = SwingConstants.NORTH;
-                }
-                else {
+// See issue 182286 for the reason why the following code is commented out
+//                if (compAlignment == LEADING) {
+//                    alignment = SwingConstants.NORTH;
+//                }
+//                else {
                     alignment = SwingConstants.SOUTH;
-                }
+//                }
             }
             int prefPadding = FormLAF.getDesignerLayoutStyle().getContainerGap(comp, alignment, parent);
 
