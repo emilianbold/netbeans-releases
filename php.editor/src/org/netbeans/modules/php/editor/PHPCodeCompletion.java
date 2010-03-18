@@ -247,6 +247,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (result.getProgram() == null) {
                 return CodeCompletionResult.NONE;
             }
+            final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+            if (fileObject == null) {
+                return CodeCompletionResult.NONE;
+            }
 
             CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
             LOGGER.fine("CC context: " + context);
@@ -268,7 +272,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
 
             try {
-                request.currentlyEditedFileURL = result.getSnapshot().getSource().getFileObject().getURL().toString();
+                request.currentlyEditedFileURL = fileObject.getURL().toString();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

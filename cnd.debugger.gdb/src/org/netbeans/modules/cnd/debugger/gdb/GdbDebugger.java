@@ -183,7 +183,6 @@ public class GdbDebugger implements PropertyChangeListener {
     private final List<GdbCallStackFrame> callstack = Collections.synchronizedList(new ArrayList<GdbCallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
     private GdbCallStackFrame currentCallStackFrame;
-    public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
@@ -1048,9 +1047,10 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_continue();
     }
 
+    private final Object LV_LOCK = new String("Locals lock"); //NOI18N
     /** Sends request to get arguments and local variables */
     private void updateLocalVariables(int frame) {
-        synchronized (LOCK) {
+        synchronized (LV_LOCK) {
             synchronized (localVariables) {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }

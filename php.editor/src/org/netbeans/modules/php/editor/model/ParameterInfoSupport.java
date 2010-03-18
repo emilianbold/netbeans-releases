@@ -405,7 +405,7 @@ public class ParameterInfoSupport {
         List<String> paramNames = new ArrayList<String>();
         List<? extends ParameterElement> parameters = functionScope.getParameters();
         for (ParameterElement parameter : parameters) {
-            paramNames.add(parameter.asString());
+            paramNames.add(parameter.asString(true));
         }
         return paramNames;
     }

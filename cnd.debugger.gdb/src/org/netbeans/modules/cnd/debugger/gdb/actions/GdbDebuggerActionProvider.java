@@ -55,15 +55,14 @@ import org.netbeans.spi.debugger.ContextProvider;
 public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
                 implements PropertyChangeListener {
     
-    private GdbDebugger debugger;
-    
-    private volatile boolean disabled;
+    private final GdbDebugger debugger;
     
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if (pname.equals(GdbDebugger.PROP_STATE) ||
@@ -77,15 +76,11 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     
     @Override
     public boolean isEnabled(Object action) {
-        if (!disabled) {
-            checkEnabled(debugger.getState());
-        }
+        checkEnabled(debugger.getState());
         return super.isEnabled(action);
     }
     
     GdbDebugger getDebugger() {
         return debugger;
     }
-    
-    
 }
