@@ -82,14 +82,14 @@ public class DoxygenDocumentation {
                     output.append(t.image);
                     break;
                 case WORD:
-                    for (String s : wordEnd) {
-                        output.append(s);
-                    }
-                    wordEnd.clear();
                     if (nextWordFormat != null) {
                         output.append(nextWordFormat[0]);
                     }
                     output.append(t.image);
+                    for (String s : wordEnd) {
+                        output.append(s);
+                    }
+                    wordEnd.clear();
                     if (nextWordFormat != null) {
                         output.append(nextWordFormat[1]);
                     }
