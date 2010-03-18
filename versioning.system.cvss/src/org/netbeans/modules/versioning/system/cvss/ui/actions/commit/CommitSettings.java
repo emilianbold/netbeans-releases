@@ -139,13 +139,8 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                taMessage.selectAll();
-                taMessage.requestFocus();  // #67106
-            }
-        });
+        taMessage.selectAll();
+        taMessage.requestFocus();  // #67106
     }
 
     @Override

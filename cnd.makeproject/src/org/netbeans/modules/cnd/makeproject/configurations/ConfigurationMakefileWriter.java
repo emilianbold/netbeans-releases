@@ -457,9 +457,9 @@ public class ConfigurationMakefileWriter {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
             if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
-                CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
+                qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
             }
-            if (0 < qmakeSpec.length()) {
+            if (!qmakeSpec.isEmpty()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
             bw.write("nbproject/qt-${CND_CONF}.mk: nbproject/qt-${CND_CONF}.pro FORCE\n"); // NOI18N
@@ -539,7 +539,12 @@ public class ConfigurationMakefileWriter {
         String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
-        bw.write("\t${MAKE} -f nbproject/qt-${CND_CONF}.mk " + output + "\n"); // NOI18N
+        bw.write("\t${MAKE} -f nbproject/qt-${CND_CONF}.mk " + output + "\n\n"); // NOI18N
+
+        // #179140 compile single file (qt project)
+        // redirect any request for building an object file to the qmake-generated makefile
+        bw.write("build/" + conf.getName() + "/%.o: nbproject/qt-" + conf.getName() + ".mk\n"); // NOI18N
+        bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
