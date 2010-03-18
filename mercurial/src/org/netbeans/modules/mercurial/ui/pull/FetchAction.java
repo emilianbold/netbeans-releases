@@ -143,6 +143,7 @@ public class FetchAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
                 MergeAction.handleMergeOutput(root, list, false, logger);
+                HgUtils.notifyUpdatedFiles(root, list);
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
