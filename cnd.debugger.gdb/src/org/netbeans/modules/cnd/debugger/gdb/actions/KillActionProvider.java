@@ -99,11 +99,9 @@ public class KillActionProvider extends ActionsProvider {
      */
     public void runAction(final Object action) {
         if (debuggerImpl != null) {
-            synchronized (debuggerImpl.LOCK) {
-                if (action == ActionsManager.ACTION_KILL) {
-                    debuggerImpl.finish(true);
-                    return;
-                }
+            if (action == ActionsManager.ACTION_KILL) {
+                debuggerImpl.finish(true);
+                return;
             }
         }
     }
