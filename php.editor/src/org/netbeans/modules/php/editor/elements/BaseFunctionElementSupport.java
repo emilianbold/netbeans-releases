@@ -100,10 +100,14 @@ public class BaseFunctionElementSupport  {
             case DeclarationWithParentCallInBody:
                 template.append(asString(PrintAs.DeclarationWithoutBody, element));
                 Collection<TypeResolver> returns = getReturnTypes();
+                String methdodInvocation = asString(PrintAs.NameAndParamsInvocation, element);
+                if (methdodInvocation.startsWith(" ")) {
+                    methdodInvocation = methdodInvocation.substring(1);
+                }
                 if (returns.size() > 0) {
-                    template.append(String.format("{\nreturn parent::%s;\n}", asString(PrintAs.NameAndParamsInvocation, element)));//NOI18N
+                    template.append(String.format("{\nreturn parent::%s;\n}", methdodInvocation));//NOI18N
                 } else {
-                    template.append(String.format("{\nparent::%s;\n}", asString(PrintAs.NameAndParamsInvocation, element)));//NOI18N
+                    template.append(String.format("{\nparent::%s;\n}", methdodInvocation));//NOI18N
                 }
                 break;
             case ReturnTypes:
