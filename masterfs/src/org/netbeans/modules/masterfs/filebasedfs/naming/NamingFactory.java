@@ -103,7 +103,7 @@ public final class NamingFactory {
         final ArrayList all = new ArrayList();
         boolean retVal = false;
         synchronized(NamingFactory.class) {
-            remove(fNaming, null);
+            removeImpl(fNaming, null);
         }
         
         retVal = fNaming.rename(newName, handler);
@@ -117,6 +117,7 @@ public final class NamingFactory {
     }
 
     private static void renameChildren(final ArrayList all) {
+        assert Thread.holdsLock(NamingFactory.class);
         HashMap toRename = new HashMap ();
         for (Iterator iterator = nameMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry entry = (Map.Entry) iterator.next();
@@ -149,13 +150,18 @@ public final class NamingFactory {
             Integer id = (Integer)entry.getKey();
             FileNaming fN = (FileNaming)entry.getValue(); 
             all.add(fN);    
-            remove(fN, id);
+            removeImpl(fN, id);
             fN.getId(true);
             NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false, FileType.unknown);            
         }
     }
 
-    public static void remove(final FileNaming fNaming, Integer id) {
+    public static synchronized void remove(FileNaming fNaming, Integer id) {
+        removeImpl(fNaming, id);
+    }
+
+    private static void removeImpl(final FileNaming fNaming, Integer id) {
+        assert Thread.holdsLock(NamingFactory.class);
         id = (id != null) ? id : fNaming.getId();         
         Object value = NamingFactory.nameMap.get(id);
         if (value instanceof List) {
@@ -178,7 +184,8 @@ public final class NamingFactory {
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
         FileNaming retVal;
 
-        final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
+        assert Thread.holdsLock(NamingFactory.class);
+        final Object value = nameMap.get(new Integer(file.hashCode()));
         Reference ref = (Reference) (value instanceof Reference ? value : null);
         ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
@@ -209,7 +216,7 @@ public final class NamingFactory {
                         List children = collectChildren(original);
                         for (Iterator childrenIt = children.iterator(); childrenIt.hasNext();) {
                             FileNaming child = (FileNaming) childrenIt.next();
-                            remove(child, null);
+                            removeImpl(child, null);
                         }
                     }
                 }
@@ -222,6 +229,7 @@ public final class NamingFactory {
     }
 
     private static List collectChildren(FileName parent) {
+        assert Thread.holdsLock(NamingFactory.class);
         List retval = new ArrayList();
         for (Object value : nameMap.values()) {
             if (value instanceof List) {
