@@ -39,7 +39,11 @@
 package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -139,10 +143,23 @@ public class ToolsPanelSupport {
         return isChanged;
     }
 
-    public static Component getToolsPanelComonent(ExecutionEnvironment env) {
+    /**
+     * returns toolchain manager component to be embedded in other containers
+     * @param env execution environment for which manager is created
+     * @param outContainerOKListener reference with listener to be used by containers to notify about OK vs Cancel
+     * @return toolchain manager component for specified execution environmen
+     */
+    public static Component getToolsPanelComonent(ExecutionEnvironment env, AtomicReference<VetoableChangeListener> outContainerOKListener) {
         HostToolsPanelModel model = new HostToolsPanelModel(env);
-        ToolsPanel tp = new ToolsPanel(model);
+        final ToolsPanel tp = new ToolsPanel(model);
         tp.update();
+        VetoableChangeListener okL = new VetoableChangeListener() {
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                tp.applyChanges();
+            }
+        };
+        outContainerOKListener.set(okL);
         return tp;
     }
     
