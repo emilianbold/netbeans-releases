@@ -508,9 +508,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (scope instanceof MethodScope && varInfo.getName().equals("$this")) {//NOI18N
                 scope = scope.getInScope();
             }
-            createVariable((VariableNameFactory) scope, node);
+            if (scope instanceof VariableNameFactory) {
+                createVariable((VariableNameFactory) scope, node);
+            }
         } else {
-            assert scope instanceof ClassScope : scope;
+            assert scope instanceof TypeScope : scope;
         }
         super.visit(node);
     }
