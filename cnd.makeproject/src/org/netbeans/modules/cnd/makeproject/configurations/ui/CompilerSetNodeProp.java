@@ -209,6 +209,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         private final JComponent tpc;
         public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
             this.setLayout(new BorderLayout());
+            this.setBorder(new EmptyBorder(6,6,0,6));
             tpc = ToolsPanelSupport.getToolsPanelComonent(hostConfiguration.getExecutionEnvironment());
             delegate = (VetoableChangeListener) tpc.getClientProperty(ToolsPanelSupport.OK_LISTENER_KEY);
             add(tpc, BorderLayout.CENTER);
