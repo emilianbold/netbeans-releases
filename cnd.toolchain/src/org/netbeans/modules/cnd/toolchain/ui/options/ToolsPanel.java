@@ -134,7 +134,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
             setOpaque(false);
         }
-
+        // clean up previous caches
+        tcm.clear();
         HelpCtx.setHelpIDString(ToolsPanel.this, "ResolveBuildTools"); // NOI18N
     }
 
