@@ -148,8 +148,11 @@ public class ToolsPanelSupport {
     /**
      * returns toolchain manager component to be embedded in other containers
      * @param env execution environment for which manager is created
-     * @param outContainerOKListener reference with listener to be used by containers to notify about OK vs Cancel
      * @return toolchain manager component for specified execution environmen
+     *  reference to listener to be used by containers to notify about OK is in component
+     *  property OK_LISTENER_KEY (VetoableChangeListener)
+     *  client can find selected toolchain after OK in property
+     *  SELECTED_TOOLCHAIN_KEY (String name of toolchain)
      */
     public static JComponent getToolsPanelComonent(ExecutionEnvironment env) {
         HostToolsPanelModel model = new HostToolsPanelModel(env);

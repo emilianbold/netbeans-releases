@@ -65,6 +65,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
     private CompilerSet2Configuration configuration;
     private final DevelopmentHostConfiguration hostConfiguration;
+    private volatile boolean supportDefault = true;
     private boolean canWrite;
     //private String txt1;
     private String txt2;
@@ -123,7 +124,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
     @Override
     public boolean supportsDefaultValue() {
-        return true;
+        return supportDefault;
     }
 
     @Override
@@ -170,6 +171,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
         @Override
         public String[] getTags() {
+            supportDefault = true;
             List<String> list = new ArrayList<String>();
             // TODO: this works unpredictable on switching development hosts
             // TODO: should be resolved later on
@@ -195,6 +197,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
         @Override
         public Component getCustomEditor() {
+            supportDefault = false;
             return new CompilerSetEditorCustomizer(env);
         }
 
