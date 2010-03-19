@@ -78,7 +78,7 @@ final class KeywordsPanel extends JPanel implements ActionListener, PropertyChan
     private FilterSubpanel subpanel;
 
     /**
-     * Creates new form FilterPanel. 
+     * Creates new form KeywordsPanel. 
      *
      * @param view view with the given filter
      * @param filter filter to be edited. Can be null and in that case
@@ -168,17 +168,13 @@ final class KeywordsPanel extends JPanel implements ActionListener, PropertyChan
     private void initComponents() {
 
         matchGroup.add(matchAllRadio);
-        /*
-        org.openide.awt.Mnemonics.setLocalizedText(matchAllRadio, NbBundle.getMessage(FilterPanel.class, "MatchAll")); // NOI18N(); // NOI18N
-        */
+        org.openide.awt.Mnemonics.setLocalizedText(matchAllRadio, NbBundle.getMessage(KeywordsPanel.class, "MatchAll")); // NOI18N(); // NOI18N
         matchAllRadio.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "HINT_MatchAll")); // NOI18N
         matchAllRadio.setOpaque(false);
 
         matchGroup.add(matchAnyRadio);
         matchAnyRadio.setSelected(true);
-        /*
-        org.openide.awt.Mnemonics.setLocalizedText(matchAnyRadio, NbBundle.getMessage(FilterPanel.class, "MatchAny")); // NOI18N(); // NOI18N
-        */
+        org.openide.awt.Mnemonics.setLocalizedText(matchAnyRadio, NbBundle.getMessage(KeywordsPanel.class, "MatchAny")); // NOI18N(); // NOI18N
         matchAnyRadio.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "HINT_MatchAny")); // NOI18N
         matchAnyRadio.setOpaque(false);
 
@@ -190,14 +186,10 @@ final class KeywordsPanel extends JPanel implements ActionListener, PropertyChan
         conditionsPanel.setLayout(new java.awt.GridBagLayout());
         conditionsScrollPane.setViewportView(conditionsPanel);
 
-        /*
-        org.openide.awt.Mnemonics.setLocalizedText(fewerButton, NbBundle.getMessage(FilterPanel.class, "Fewer")); // NOI18N(); // NOI18N
-        */
+        org.openide.awt.Mnemonics.setLocalizedText(fewerButton, NbBundle.getMessage(KeywordsPanel.class, "Fewer")); // NOI18N(); // NOI18N
         fewerButton.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "HINT_Fewer")); // NOI18N
 
-        /*
-        org.openide.awt.Mnemonics.setLocalizedText(moreButton, NbBundle.getMessage(FilterPanel.class, "More")); // NOI18N(); // NOI18N
-        */
+        org.openide.awt.Mnemonics.setLocalizedText(moreButton, NbBundle.getMessage(KeywordsPanel.class, "More")); // NOI18N(); // NOI18N
         moreButton.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "HINT_More")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
