@@ -91,6 +91,6 @@ public class ProjectGenerator {
      * Used by Sun Studio
      */
     public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
-        MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder, projectName), projectName); // NOI18N
+        MakeSampleProjectGenerator.createProjectFromTemplate(url.openStream(), new File(projectFolder, projectName), projectName); // NOI18N
     }
 }

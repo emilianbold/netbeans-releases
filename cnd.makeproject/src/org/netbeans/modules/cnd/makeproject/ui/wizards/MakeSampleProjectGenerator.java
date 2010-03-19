@@ -50,7 +50,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -112,10 +111,6 @@ public class MakeSampleProjectGenerator {
         } else {
             return createProjectFromTemplate(template.getInputStream(), projectLocation, name);
         }
-    }
-    
-    public static Set<DataObject> createProjectFromTemplate(final URL template, File projectLocation, final String name) throws IOException {
-        return createProjectFromTemplate(template.openStream(), projectLocation, name);
     }
     
     private static void postProcessProject(FileObject prjLoc, String name) throws IOException {
@@ -260,7 +255,7 @@ public class MakeSampleProjectGenerator {
         }
     }
     
-    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
+    private static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
         List<DataObject> set = new ArrayList<DataObject>();
         unzip(inputStream, projectLocation);
         addToSet(set, mainProjectLocation);
