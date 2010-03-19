@@ -630,7 +630,7 @@ public class ConfigurationMakefileWriter {
                     }
                     command += "-o " + target + " "; // NOI18N
                     command += "$^" + " "; // NOI18N
-                    command += "${LDLIBSOPTIONS} -lcppunit -lcunit" + " "; // NOI18N
+                    command += "${LDLIBSOPTIONS}" + " "; // NOI18N
                     String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
                     for (int i = 0; i < additionalDependencies.length; i++) {
                         bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
