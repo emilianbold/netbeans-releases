@@ -75,7 +75,7 @@ public class FileObj extends BaseFileObj {
 
     FileObj(final File file, final FileNaming name) {
         super(file, name);
-        setLastModified(System.currentTimeMillis());        
+        setLastModified(System.currentTimeMillis(), null);
     }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
@@ -112,7 +112,7 @@ public class FileObj extends BaseFileObj {
                     if (!closable.isClosed()) {
                         super.close();
                         closable.close();
-                        setLastModified(f.lastModified());
+                        setLastModified(f.lastModified(), f);
                         fireFileChangedEvent(false);
                     }
                 }
@@ -212,14 +212,14 @@ public class FileObj extends BaseFileObj {
         return super.canWrite();
     }
         
-    final void setLastModified(long lastModified) {
+    final void setLastModified(long lastModified, File forFile) {
         if (this.lastModified != 0) { // #130998 - don't set when already invalidated
             if (this.lastModified != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
             if (LOGGER.isLoggable(Level.FINER)) {
                 Exception trace = LOGGER.isLoggable(Level.FINEST) ? new Exception("StackTrace") : null; // NOI18N
-                LOGGER.log(Level.FINER, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", trace);  //NOI18N
+                LOGGER.log(Level.FINER, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ") on " + forFile, trace);  //NOI18N
             }
             this.lastModified = lastModified;
         }
@@ -271,7 +271,8 @@ public class FileObj extends BaseFileObj {
     public void refreshImpl(final boolean expected, boolean fire) {
         final long oldLastModified = lastModified;
         boolean isReal = realLastModifiedCached;
-        setLastModified(getFileName().getFile().lastModified());
+        final File file = getFileName().getFile();
+        setLastModified(file.lastModified(), file);
         boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(
@@ -347,6 +348,7 @@ public class FileObj extends BaseFileObj {
     @Override
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
-        setLastModified(getFileName().getFile().lastModified());
+        final File rename = getFileName().getFile();
+        setLastModified(rename.lastModified(), rename);
     }    
 }
