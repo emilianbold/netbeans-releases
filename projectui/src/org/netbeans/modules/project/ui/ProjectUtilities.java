@@ -97,6 +97,7 @@ public class ProjectUtilities {
     
     // support class for xtesting in OpenProjectListTest
     static OpenCloseProjectDocument OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = new OpenCloseProjectDocument () {
+        @Override
         public boolean open (FileObject fo) {
             DataObject dobj;
             try {
@@ -118,6 +119,7 @@ public class ProjectUtilities {
             return true;
         }
         
+        @Override
         public Map<Project,Set<String>> close(final Project[] projects,
                                                     final boolean notifyUI) {
             final Wrapper wr = new Wrapper();
@@ -128,6 +130,7 @@ public class ProjectUtilities {
             } else {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                          public void run() {
                              doClose(projects, notifyUI, wr);
                          }
@@ -224,6 +227,7 @@ public class ProjectUtilities {
             
             final ProjectTab ptLogial = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
             
+            @Override
             public void run () {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
@@ -266,6 +270,7 @@ public class ProjectUtilities {
     public static void openAndSelectNewObject (final DataObject newDo) {
         // call the preferred action on main class
         Mutex.EVENT.writeAccess (new Runnable () {
+            @Override
             public void run () {
                 final Node node = newDo.getNodeDelegate ();
                 Action a = node.getPreferredAction();
@@ -282,6 +287,7 @@ public class ProjectUtilities {
                 // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
                 // select && expand if the focus is outside ProjectTab
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         boolean success = ptLogical.selectNode (newDo.getPrimaryFile ());
                         if (!success) {
@@ -407,6 +413,7 @@ public class ProjectUtilities {
             }
         }
         
+        @Override
         public void run() {
             try {            
                 JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
