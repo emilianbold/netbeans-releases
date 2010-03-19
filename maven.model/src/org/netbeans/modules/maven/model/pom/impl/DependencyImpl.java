@@ -226,21 +226,21 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
          * @return position where the new dependency should be inserted, or -1 to append to the end
          */
         private int findIndexForInsertion(Dependency child) {
-            java.util.List<Dependency> dangerousDeps = new ArrayList<Dependency>();
             DependencyContainer dc = getDependencyContainer();
-            for (String[] depSpec : DANGEROUS_DEPS) {
-                if (dc != null) {
+            if (dc != null) {
+                java.util.List<Dependency> dangerousDeps = new ArrayList<Dependency>();
+                for (String[] depSpec : DANGEROUS_DEPS) {
                     Dependency dep = dc.findDependencyById(depSpec[0], depSpec[1] , null);
                     if (dep != null) {
                         dangerousDeps.add(dep);
                     }
                 }
-            }
-            java.util.List<Dependency> myDeps = dc.getDependencies();
-            for (int i = 0; i < myDeps.size(); i++) {
-                Dependency dep = myDeps.get(i);
-                if (dangerousDeps.contains(dep)) {
-                    return i;
+                java.util.List<Dependency> myDeps = dc.getDependencies();
+                for (int i = 0; i < myDeps.size(); i++) {
+                    Dependency dep = myDeps.get(i);
+                    if (dangerousDeps.contains(dep)) {
+                        return i;
+                    }
                 }
             }
             return -1;
