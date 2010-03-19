@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -446,29 +447,29 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return result;
     }
 
-    private synchronized boolean isCanceled() {
-        return cancel;
+    private boolean isCanceled() {
+        return cancel.get();
     }
 
-    private synchronized void cancel() {
-        cancel = true;
+    private void cancel() {
+        cancel.set(true);
     }
 
-    private synchronized void resume() {
-        cancel = false;
+    private void resume() {
+        cancel.set(false);
     }
 
-    private boolean cancel = false;
+    private final AtomicBoolean cancel = new AtomicBoolean();
 
     private static final AttributeSet ERROR = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.RED, EditorStyleConstants.Tooltip, NbBundle.getMessage(ComponentPeer.class, "TP_MisspelledWord"));
 
     private static FileObject getFile(Document doc) {
-        DataObject file = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        DataObject dataObject = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
-        if (file == null)
+        if (dataObject == null)
             return null;
 
-        return file.getPrimaryFile();
+        return dataObject.getPrimaryFile();
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -488,17 +489,15 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     private void doUpdateCurrentVisibleSpan() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            updateCurrentVisibleSpan();
-            reschedule();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateCurrentVisibleSpan();
-                    reschedule();
-                }
-            });
-        }
+        //#156490: updateCurrentVisibleSpan invokes viewToModel, which may throw StateInvariantError
+        //if the starting position of view disappeared from the document in the current change (before the views are adjusted)
+        //reschedule to later, when the views are adjusted to the new state
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateCurrentVisibleSpan();
+                reschedule();
+            }
+        });
     }
 
     public void stateChanged(ChangeEvent e) {

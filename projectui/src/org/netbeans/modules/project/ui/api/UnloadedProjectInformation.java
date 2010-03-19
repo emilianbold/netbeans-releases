@@ -97,4 +97,8 @@ public final class UnloadedProjectInformation {
         return url;
     }
     
+    public @Override String toString() {
+        return url.toString();
+    }
+
 }

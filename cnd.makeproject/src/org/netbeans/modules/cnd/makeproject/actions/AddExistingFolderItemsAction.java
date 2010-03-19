@@ -60,8 +60,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public class AddExistingFolderItemsAction extends NodeAction {
-    
+public final class AddExistingFolderItemsAction extends NodeAction {
+
+    @Override
     protected boolean enable(Node[] activatedNodes)  {
         if (activatedNodes.length != 1) {
             return false;
@@ -75,11 +76,13 @@ public class AddExistingFolderItemsAction extends NodeAction {
         }
         return true;
     }
-    
+
+    @Override
     public String getName() {
         return getString("CTL_AddExistingFolderItemsAction"); // NOI18N
     }
-    
+
+    @Override
     public void performAction(Node[] activatedNodes) {
         //boolean notifySources = false;
         Node n = activatedNodes[0];
@@ -108,7 +111,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
             addButton,
             DialogDescriptor.CANCEL_OPTION,
         };
-        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(null);
+        SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(null, false);
         JPanel panel = new JPanel();
         panel.setPreferredSize(new Dimension(700, 380));
         panel.setLayout(new java.awt.GridBagLayout());
@@ -149,18 +152,17 @@ public class AddExistingFolderItemsAction extends NodeAction {
                 null);
         Object ret = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (ret == addButton) {
-            Iterator<? extends SourceFolderInfo> iterator = sourceFilesPanel.getSourceListData().iterator();
-            while (iterator.hasNext()) {
-                SourceFolderInfo sourceFolderInfo = iterator.next();
-                makeConfigurationDescriptor.addSourceFilesFromRoot(folder, sourceFolderInfo.getFile(), false, false);
+            for (SourceFolderInfo sourceFolderInfo : sourceFilesPanel.getSourceListData()) {
+                makeConfigurationDescriptor.addFilesFromRoot(folder, sourceFolderInfo.getFile(), false, false, sourceFilesPanel.getFileFilter());
             }
         }
     }
-    
+
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;

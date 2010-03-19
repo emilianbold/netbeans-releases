@@ -125,7 +125,14 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ONLY_OPENED;
+    }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        // redirect focus into current terminal
+        tc.requestFocusInWindow();
     }
 
     @Override

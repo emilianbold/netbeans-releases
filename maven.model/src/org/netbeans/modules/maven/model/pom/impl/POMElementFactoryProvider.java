@@ -67,10 +67,12 @@ public class POMElementFactoryProvider implements ElementFactory {
         all.addAll(nonns.getElementQNames());
     }
 
+    @Override
     public Set<QName> getElementQNames() {
         return all;
     }
 
+    @Override
     public POMComponent create(POMComponent context, Element element) {
         return new POMComponentCreateVisitor().create(element, context);
     }
@@ -176,7 +178,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
-            created = new DependencyImpl.List(context.getModel(), element);
+            created = new ProjectImpl.PList(context.getModel(), element);
             return;
         }
 
@@ -552,7 +554,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     @Override
     public void visit(DependencyManagement context) {
         if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
-            created = new DependencyImpl.List(context.getModel(), element);
+            created = new DependencyManagementImpl.DMList(context.getModel(), element);
             return;
         }
 

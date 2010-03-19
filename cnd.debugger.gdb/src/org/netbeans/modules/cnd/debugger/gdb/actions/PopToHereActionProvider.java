@@ -77,10 +77,8 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
      */
     public void doAction(Object action) {
         if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_POP_TOPMOST_CALL) {
-                    getDebugger().popTopmostCall();
-                }
+            if (action == ActionsManager.ACTION_POP_TOPMOST_CALL) {
+                getDebugger().popTopmostCall();
             }
         }
     }

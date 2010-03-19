@@ -151,6 +151,7 @@ public class HgCommand {
 
     private static final String HG_LOG_CMD = "log"; // NOI18N
     private static final String HG_TIP_CMD = "tip"; // NOI18N
+    private static final String HG_ID_CMD = "identify"; // NOI18N
     private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
@@ -370,16 +371,18 @@ public class HgCommand {
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
     static {
-        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(14);
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(16);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_BUNDLE_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ID_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_RESOLVE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
@@ -1181,8 +1184,8 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        command.add(HG_VERBOSE_CMD);
         if (limit >= 0) {
                 command.add(HG_LOG_LIMIT_CMD);
                 command.add(Integer.toString(limit));
@@ -2150,6 +2153,61 @@ public class HgCommand {
      */
     public static List<String> getHeadRevisions(String repository) throws HgException {
         return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
+    }
+
+    /**
+     * Returns the info of heads in repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return head info.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static HgLogMessage[] getHeadRevisionsInfo (File repository, OutputLogger logger) throws HgException {
+        List<String> list = getHeadInfo(repository, HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger); //NOI18N
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(null, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
+             }
+        }
+        List<HgLogMessage> messages = new ArrayList<HgLogMessage>(5);
+        messages = processLogMessages(repository, null, list, messages, false);
+        return messages.toArray(new HgLogMessage[messages.size()]);
+    }
+
+    /**
+     * Returns the changeset id of current head
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return current head's changeset id
+     */
+    public static String getCurrentHeadChangeset (File repository, OutputLogger logger) {
+        if (repository == null) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_ID_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add("-i"); //NOI18N
+
+        List<String> list;
+        try {
+            list = exec(command);
+        } catch (HgException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            list = Collections.<String>emptyList();
+        }
+        String id = "-1"; //NOI18N
+        if (!list.isEmpty()) {
+            id = list.get(0).trim();
+            if (id.endsWith("+")) { //NOI18N
+                id = id.substring(0, id.length() - 1);
+            }
+        }
+        return id;
     }
 
     private static List<String> getHeadInfo(String repository, String template) throws HgException {
@@ -3307,7 +3365,12 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(FileUtil.normalizeFile(file).getAbsolutePath());
-        List<String> list = exec(command);
+        List<String> list;
+        try {
+            list = exec(command);
+        } finally {
+            Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+        }
 
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {

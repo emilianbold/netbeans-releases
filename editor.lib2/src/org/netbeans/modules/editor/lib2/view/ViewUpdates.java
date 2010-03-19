@@ -41,15 +41,16 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Shape;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.ViewFactory;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * Update paragraph views by document and view factory changes.
@@ -57,7 +58,7 @@ import javax.swing.text.ViewFactory;
  * @author Miloslav Metelka
  */
 
-public final class ViewUpdates {
+public final class ViewUpdates implements DocumentListener {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUpdates.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUpdates.class.getName());
@@ -68,11 +69,33 @@ public final class ViewUpdates {
 
     private FactoriesListener factoriesListener;
 
-    private boolean delayedRebuild;
+    private DocumentListener incomingModificationListener;
+
+    private boolean incomingModification;
+
+    int rebuildStartOffset;
+
+    int rebuildEndOffset;
 
     public ViewUpdates(DocumentView documentView) {
         this.documentView = documentView;
         factoriesListener = new FactoriesListener();
+        incomingModificationListener = new IncomingModificationListener();
+        Document doc = documentView.getDocument();
+        // View hierarchy uses a pair of its own document listeners and DocumentView ignores
+        // document change notifications sent from BasicTextUI.RootView.
+        // First listener - incomingModificationListener at DocumentListenerPriority.FIRST notifies the hierarchy
+        // about incoming document modification.
+        // Second listener is "this" at DocumentListenerPriority.VIEW updates the view hierarchy structure
+        // according to the document modification.
+        // These two listeners avoid situation when a document modification modifies line structure
+        // and so the view hierarchy (which uses swing Positions for line view statrts) is inconsistent
+        // since e.g. with insert there may be gaps between views and with removal there may be overlapping views
+        // but the document listeners that are just being notified include a highlighting layer's document listener
+        // BEFORE the BasicTextUI.RootView listener. At that point the highlighting layer would fire a highlighting
+        // change and the view hierarchy would attempt to rebuild itself but that would fail.
+        DocumentUtilities.addDocumentListener(doc, incomingModificationListener, DocumentListenerPriority.FIRST);
+        DocumentUtilities.addDocumentListener(doc, this, DocumentListenerPriority.VIEW);
     }
 
     private void reinitFactories() {
@@ -103,8 +126,7 @@ public final class ViewUpdates {
         Document doc = documentView.getDocument();
         checkFactoriesComponentInited();
         ViewBuilder viewBuilder = new ViewBuilder(
-                new ViewReplace<DocumentView,ParagraphView>(documentView, 0),
-                null, viewFactories, 0, doc.getLength() + 1, 0);
+                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, 0);
         try {
             viewBuilder.createViews();
             viewBuilder.repaintAndReplaceViews();
@@ -113,210 +135,258 @@ public final class ViewUpdates {
         }
     }
 
-    public void insertUpdate(DocumentEvent evt, Shape alloc, ViewFactory viewFactory) {
-        // Insert into document was performed -> update or rebuild views
-        // First update factories since they may fire rebuilding
-        checkFactoriesComponentInited();
-        delayedRebuild = true;
-        try {
-            for (int i = 0; i < viewFactories.length; i++) {
-                EditorViewFactory editorViewFactory = viewFactories[i];
-                editorViewFactory.insertUpdate(evt);
-            }
-        } finally {
-            delayedRebuild = false;
-        }
-
-        // Check if the factories fired any changes
-        int rebuildStartOffset = factoriesListener.rebuildStartOffset;;
-        int rebuildEndOffset = factoriesListener.rebuildEndOffset;
-        boolean noRebuild = (rebuildStartOffset == Integer.MAX_VALUE);
-        int insertOffset = evt.getOffset();
-        int insertLength = evt.getLength();
-        rebuildStartOffset = Math.min(rebuildStartOffset, insertOffset);
-        rebuildEndOffset = Math.max(rebuildEndOffset, insertOffset + insertLength);
-        Element[] addedLines = null;
-        // If line elements were modified the views will be modified too
-        Document doc = evt.getDocument();
-        DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
-        if (lineElementChange != null) {
-            Element[] removedLines = lineElementChange.getChildrenRemoved();
-            if (removedLines.length > 0) { // Insertion at line's begining
-                noRebuild = false;
-                assert (removedLines.length == 1) : "Expected 1 removed line during insert only"; // NOI18N
-                Element removedLine = removedLines[0];
-                int removedLineStartOffset = removedLine.getStartOffset();
-                int removedLineEndOffset = removedLine.getEndOffset();
-                assert (insertOffset >= removedLineStartOffset && insertOffset <= removedLineEndOffset);
-                if (removedLineStartOffset < rebuildStartOffset) {
-                    rebuildStartOffset = removedLineStartOffset;
-                }
-                if (removedLineEndOffset > rebuildEndOffset) {
-                    rebuildEndOffset = removedLineEndOffset;
-                }
-            }
-            addedLines = lineElementChange.getChildrenAdded();
-            noRebuild &= (addedLines == null || addedLines.length == 0);
-        }
-        int paragraphViewIndex = documentView.getViewIndex(rebuildStartOffset);
-        assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-        ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
-
-        if (noRebuild) {
-            // Just inform the view at the offset to contain more data
-            // Use rebuildEndOffset if there was a move inside views
-            int childViewIndex = paragraphView.getViewIndex(rebuildEndOffset);
-            EditorView childView = paragraphView.getEditorView(childViewIndex);
-            if (insertOffset == childView.getStartOffset()) { // View starting right at insertOffset => use previous
-                childViewIndex--;
-                if (childViewIndex < 0) {
-                    noRebuild = false;
-                } else {
-                    childView = paragraphView.getEditorView(childViewIndex); // re-get childView at new index
-                }
-            }
-            if (noRebuild) {
-                // View may refuse length setting in which case it must be rebuilt
-                noRebuild = childView.setLength(childView.getLength() + insertLength);
-                // Update offsets of the views that follow the modified one
-                if (noRebuild) {
-                    double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
-                            paragraphView.getViewMajorAxisSpan(childViewIndex);
-                    // [TODO] fix line wrap info
-                    paragraphView.fixSpans(childViewIndex + 1, insertLength, visualDelta);
-                }
-            }
-        }
-
-        if (!noRebuild) {
-            ViewReplace<DocumentView, ParagraphView> docViewReplace =
-                    new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
-            ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                    paragraphView, paragraphView.getViewIndex(rebuildStartOffset));
-            docViewReplace.index++; // Increase index since paragraph view of local replace won't be removed
-            // Views contained in paragraph view are not updated yet by the inserted length
-            int paragraphViewEndOffset = paragraphView.getEndOffset() + insertLength;
-            if (rebuildEndOffset < paragraphViewEndOffset) {
-                // Rebuild till end of line so that the local views do not need to be updated
-                rebuildEndOffset = paragraphViewEndOffset;
-            }
-            ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
-                    viewFactories, rebuildStartOffset, rebuildEndOffset, insertLength);
+    @Override
+    public void insertUpdate(DocumentEvent evt) {
+        synchronized (documentView.getMonitor()) {
             try {
-                viewBuilder.createViews();
-                viewBuilder.repaintAndReplaceViews();
+                // Insert into document was performed -> update or rebuild views
+                // First update factories since they may fire rebuilding
+                checkFactoriesComponentInited();
+                for (int i = 0; i < viewFactories.length; i++) {
+                    EditorViewFactory editorViewFactory = viewFactories[i];
+                    editorViewFactory.insertUpdate(evt);
+                }
+
+                // Check if the factories fired any changes
+                int rStartOffset = rebuildStartOffset;;
+                int rEndOffset = rebuildEndOffset;
+                boolean rebuildNecessary = isRebuildNecessary();
+                int insertOffset = evt.getOffset();
+                int insertLength = evt.getLength();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("\nDOCUMENT-INSERT: offset=" + insertOffset + ", length=" + insertLength + '\n'); // NOI18N
+                }
+                rStartOffset = Math.min(rStartOffset, insertOffset);
+                rEndOffset = Math.max(rEndOffset, insertOffset + insertLength);
+                // If line elements were modified the views will be modified too
+                Document doc = evt.getDocument();
+                DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
+                if (lineElementChange != null) {
+                    Element[] removedLines = lineElementChange.getChildrenRemoved();
+                    if (removedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
+                        int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
+                        assert (insertOffset >= firstRemovedLineStartOffset && insertOffset <= lastRemovedLineEndOffset);
+                        if (firstRemovedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstRemovedLineStartOffset;
+                        }
+                        if (lastRemovedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastRemovedLineEndOffset;
+                        }
+                    }
+                    Element[] addedLines = lineElementChange.getChildrenAdded();
+                    if (addedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstAddedLineStartOffset = addedLines[0].getStartOffset();
+                        int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
+                        if (firstAddedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstAddedLineStartOffset;
+                        }
+                        if (lastAddedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastAddedLineEndOffset;
+                        }
+                    }
+                    rebuildNecessary |= (addedLines.length > 0);
+                }
+                int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
+                assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+
+                if (!rebuildNecessary) { // Attempt to update just a single view locally
+                    // Just inform the view at the offset to contain more data
+                    // Use rebuildEndOffset if there was a move inside views
+                    int childViewIndex = paragraphView.getViewIndex(rEndOffset);
+                    EditorView childView = paragraphView.getEditorView(childViewIndex);
+                    if (insertOffset == childView.getStartOffset()) { // View starting right at insertOffset => use previous
+                        childViewIndex--;
+                        if (childViewIndex < 0) {
+                            rebuildNecessary = true;
+                        } else {
+                            childView = paragraphView.getEditorView(childViewIndex); // re-get childView at new index
+                        }
+                    }
+                    if (!rebuildNecessary) {
+                        // View may refuse length setting in which case it must be rebuilt
+                        rebuildNecessary = !childView.setLength(childView.getLength() + insertLength);
+                        // Update offsets of the views that follow the modified one
+                        if (!rebuildNecessary) {
+                            double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
+                                    paragraphView.getViewMajorAxisSpan(childViewIndex);
+                            // [TODO] fix line wrap info
+                            paragraphView.fixSpans(childViewIndex + 1, insertLength, visualDelta);
+                        }
+                    }
+                }
+
+                if (rebuildNecessary) {
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
+                            viewFactories, rStartOffset, rEndOffset, insertLength);
+                    try {
+                        viewBuilder.createViews();
+                        viewBuilder.repaintAndReplaceViews();
+                    } finally {
+                        viewBuilder.finish(); // Includes factory.finish() in each factory
+                    }
+                }
+
+                checkIntegrity();
             } finally {
-                viewBuilder.finish(); // Includes factory.finish() in each factory
+                incomingModification = false;
             }
         }
-
-        checkIntegrity();
     }
 
-    public void removeUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
-        // Removal in document was performed -> update or rebuild views
-        checkFactoriesComponentInited();
-        delayedRebuild = true;
-        try {
-            for (int i = 0; i < viewFactories.length; i++) {
-                EditorViewFactory editorViewFactory = viewFactories[i];
-                editorViewFactory.removeUpdate(evt);
-            }
-        } finally {
-            delayedRebuild = false;
-        }
-
-        // Check if the factories fired any changes
-        int rebuildStartOffset = factoriesListener.rebuildStartOffset;;
-        int rebuildEndOffset = factoriesListener.rebuildEndOffset;
-        boolean noRebuild = (rebuildStartOffset == Integer.MAX_VALUE);
-        int removeOffset = evt.getOffset();
-        int removeLength = evt.getLength();
-        rebuildStartOffset = Math.min(rebuildStartOffset, removeOffset);
-        rebuildEndOffset = Math.max(rebuildEndOffset, removeOffset + removeLength);
-        // If line elements were modified the views will be modified too
-        Document doc = evt.getDocument();
-        DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
-        Element[] removedLines = null;
-        if (lineElementChange != null) {
-            removedLines = lineElementChange.getChildrenRemoved();
-            if (removedLines.length > 0) { // Insertion at line's begining
-                noRebuild = false;
-                int removedLineStartOffset = removedLines[0].getStartOffset();
-                int removedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
-                if (removedLineStartOffset < rebuildStartOffset) {
-                    rebuildStartOffset = removedLineStartOffset;
-                }
-                if (removedLineEndOffset > rebuildEndOffset) {
-                    rebuildEndOffset = removedLineEndOffset;
-                }
-            }
-        }
-        int paragraphViewIndex = documentView.getViewIndex(rebuildStartOffset);
-        assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-        ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
-
-        if (noRebuild) {
-            // Just inform the view at the offset to contain more data
-            // Use rebuildEndOffset if there was a move inside views
-            int childViewIndex = paragraphView.getViewIndex(rebuildEndOffset);
-            EditorView childView = paragraphView.getEditorView(childViewIndex);
-            int childStartOffset = childView.getStartOffset();
-            int childEndOffset = childView.getEndOffset();
-            noRebuild = ((removeOffset == childStartOffset && removeOffset + removeLength < childEndOffset) ||
-                    (removeOffset > childStartOffset && removeOffset + removeLength <= childEndOffset));
-            if (noRebuild) {
-                // View may refuse length setting in which case it must be rebuilt
-                noRebuild = childView.setLength(childView.getLength() - removeLength);
-                // Update offsets of the views that follow the modified one
-                if (noRebuild) {
-                    double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
-                            paragraphView.getViewMajorAxisSpan(childViewIndex);
-                    // [TODO] fix line wrap info
-                    paragraphView.fixSpans(childViewIndex + 1, -removeLength, visualDelta);
-                }
-            }
-        }
-
-        if (!noRebuild) {
-            ViewReplace<DocumentView, ParagraphView> docViewReplace =
-                    new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
-            ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                    paragraphView, paragraphView.getViewIndex(rebuildStartOffset));
-            docViewReplace.index++; // Increase index since paragraph view of local replace won't be removed
-            // Views contained in paragraph view are not updated yet by the inserted length
-            int paragraphViewEndOffset = paragraphView.getEndOffset() - removeLength;
-            if (rebuildEndOffset < paragraphViewEndOffset) {
-                // Rebuild till end of line so that the local views do not need to be updated
-                rebuildEndOffset = paragraphViewEndOffset;
-            }
-            ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
-                    viewFactories, rebuildStartOffset, rebuildEndOffset, removeLength);
+    @Override
+    public void removeUpdate(DocumentEvent evt) {
+        synchronized (documentView.getMonitor()) {
             try {
-                viewBuilder.createViews();
-                viewBuilder.repaintAndReplaceViews();
+                // Removal in document was performed -> update or rebuild views
+                checkFactoriesComponentInited();
+                for (int i = 0; i < viewFactories.length; i++) {
+                    EditorViewFactory editorViewFactory = viewFactories[i];
+                    editorViewFactory.removeUpdate(evt);
+                }
+
+                // Check if the factories fired any changes
+                int rStartOffset = rebuildStartOffset;
+                int rEndOffset = rebuildEndOffset;
+                boolean rebuildNecessary = isRebuildNecessary();
+                int removeOffset = evt.getOffset();
+                int removeLength = evt.getLength();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("\nDOCUMENT-REMOVE: offset=" + removeOffset + ", length=" + removeLength + '\n'); // NOI18N
+                }
+                rStartOffset = Math.min(rStartOffset, removeOffset);
+                rEndOffset = Math.max(rEndOffset, removeOffset + removeLength);
+                // If line elements were modified the views will be modified too
+                Document doc = evt.getDocument();
+                DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
+                Element[] removedLines = null;
+                if (lineElementChange != null) {
+                    removedLines = lineElementChange.getChildrenRemoved();
+                    if (removedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
+                        int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
+                        if (firstRemovedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstRemovedLineStartOffset;
+                        }
+                        if (lastRemovedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastRemovedLineEndOffset;
+                        }
+                    }
+                    Element[] addedLines = lineElementChange.getChildrenAdded();
+                    if (addedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstAddedLineStartOffset = addedLines[0].getStartOffset();
+                        int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
+                        if (firstAddedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstAddedLineStartOffset;
+                        }
+                        if (lastAddedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastAddedLineEndOffset;
+                        }
+                    }
+                    rebuildNecessary |= (addedLines.length > 0);
+                }
+                // During remove the paragraph views (which are based on positions) may get fused.
+                // Thus use getViewIndexFirst() to find for the first one.
+                int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
+                assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+
+                if (!rebuildNecessary) {
+                    // Just inform the view at the offset to contain more data
+                    // Use rebuildEndOffset if there was a move inside views
+                    int childViewIndex = paragraphView.getViewIndex(rEndOffset);
+                    EditorView childView = paragraphView.getEditorView(childViewIndex);
+                    int childStartOffset = childView.getStartOffset();
+                    int childEndOffset = childView.getEndOffset();
+                    boolean localEdit = ((removeOffset == childStartOffset && removeOffset + removeLength < childEndOffset) ||
+                            (removeOffset > childStartOffset && removeOffset + removeLength <= childEndOffset));
+                    rebuildNecessary = !localEdit;
+                    if (!rebuildNecessary) {
+                        // View may refuse length setting in which case it must be rebuilt
+                        rebuildNecessary = !childView.setLength(childView.getLength() - removeLength);
+                        // Update offsets of the views that follow the modified one
+                        if (!rebuildNecessary) {
+                            double visualDelta = childView.getPreferredSpan(paragraphView.getMajorAxis()) -
+                                    paragraphView.getViewMajorAxisSpan(childViewIndex);
+                            // [TODO] fix line wrap info
+                            paragraphView.fixSpans(childViewIndex + 1, -removeLength, visualDelta);
+                        }
+                    }
+                }
+
+                if (rebuildNecessary) {
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
+                            viewFactories, rStartOffset, rEndOffset, -removeLength);
+                    try {
+                        viewBuilder.createViews();
+                        viewBuilder.repaintAndReplaceViews();
+                    } finally {
+                        viewBuilder.finish(); // Includes factory.finish() in each factory
+                    }
+                }
+                resetRebuildInfo();
+                checkIntegrity();
             } finally {
-                viewBuilder.finish(); // Includes factory.finish() in each factory
+                incomingModification = false;
             }
         }
-
-        checkIntegrity();
     }
 
-    public void changedUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
-        checkFactoriesComponentInited();
-        delayedRebuild = true;
-        try {
-            for (int i = 0; i < viewFactories.length; i++) {
-                EditorViewFactory editorViewFactory = viewFactories[i];
-                editorViewFactory.changedUpdate(evt);
+    @Override
+    public void changedUpdate(DocumentEvent evt) {
+        synchronized (documentView.getMonitor()) {
+            try {
+                checkFactoriesComponentInited();
+                for (int i = 0; i < viewFactories.length; i++) {
+                    EditorViewFactory editorViewFactory = viewFactories[i];
+                    editorViewFactory.changedUpdate(evt);
+                }
+                // TODO finish
+                resetRebuildInfo();
+                checkIntegrity();
+            } finally {
+                incomingModification = false;
             }
-        } finally {
-            delayedRebuild = false;
         }
+    }
 
-        // TODO finish
-        checkIntegrity();
+    boolean isRebuildNecessary() {
+        return rebuildStartOffset != Integer.MAX_VALUE;
+    }
+
+    void resetRebuildInfo() {
+        rebuildStartOffset = Integer.MAX_VALUE;
+        rebuildEndOffset = Integer.MIN_VALUE;
+    }
+
+    void extendRebuildInfo(int startOffset, int endOffset) {
+        if (startOffset == Integer.MAX_VALUE) {
+            rebuildStartOffset = startOffset;
+            rebuildEndOffset = endOffset;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("ViewUpdates.Change set to <" + rebuildStartOffset
+                        + "," + rebuildEndOffset + ">\n");
+            }
+        } else {
+            boolean change = false;
+            if (startOffset < rebuildStartOffset) {
+                rebuildStartOffset = startOffset;
+                change = true;
+            }
+            if (endOffset > rebuildEndOffset) {
+                rebuildEndOffset = endOffset;
+                change = true;
+            }
+            if (change && LOG.isLoggable(Level.FINE)) {
+                LOG.fine("ViewUpdates.Change extended to <" + rebuildStartOffset
+                        + "," + rebuildEndOffset + ">\n");
+            }
+        }
     }
 
     private void checkIntegrity() {
@@ -334,29 +404,22 @@ public final class ViewUpdates {
 
     /*private*/ void checkRebuild() {
         synchronized (documentView.getMonitor()) {
-            if (!delayedRebuild) {
-                if (factoriesListener.isModified()) {
-                    int rebuildStartOffset = factoriesListener.rebuildStartOffset;
-                    int rebuildEndOffset = factoriesListener.rebuildEndOffset;
-                    int paragraphViewIndex = documentView.getViewIndex(rebuildStartOffset);
+            if (!incomingModification) {
+                if (isRebuildNecessary()) {
+                    int rStartOffset = rebuildStartOffset;
+                    int rEndOffset = rebuildEndOffset;
+                    int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
                     assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-                    EditorView child = documentView.getEditorView(paragraphViewIndex);
-                    ParagraphView paragraphView = (ParagraphView) child;
-                    // Use paragraphViewIndex+1 since localReplace's paragraph view won't be removed
-                    ViewReplace<DocumentView,ParagraphView> docViewReplace =
-                            new ViewReplace<DocumentView,ParagraphView>(documentView, paragraphViewIndex + 1);
-                    ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                            paragraphView, paragraphView.getViewIndex(rebuildStartOffset));
-                    ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
-                            viewFactories, rebuildStartOffset, rebuildEndOffset, 0);
+                    ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
+                            viewFactories, rStartOffset, rEndOffset, 0);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
                     } finally {
                         viewBuilder.finish(); // Includes factory.finish() in each factory
                     }
-
-                    factoriesListener.reset();
+                    resetRebuildInfo();
                 }
             }
         }
@@ -364,23 +427,6 @@ public final class ViewUpdates {
 
 
     private final class FactoriesListener implements EditorViewFactoryListener {
-
-        int rebuildStartOffset;
-
-        int rebuildEndOffset;
-
-        FactoriesListener() {
-            reset();
-        }
-
-        boolean isModified() {
-            return rebuildStartOffset != Integer.MAX_VALUE;
-        }
-
-        void reset() {
-            rebuildStartOffset = Integer.MAX_VALUE;
-            rebuildEndOffset = Integer.MIN_VALUE;
-        }
 
         @Override
         public void viewFactoryChanged(EditorViewFactoryEvent evt) {
@@ -399,6 +445,25 @@ public final class ViewUpdates {
                 }
                 checkRebuild();
             }
+        }
+
+    }
+
+    private final class IncomingModificationListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            incomingModification = true;
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            incomingModification = true;
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            incomingModification = true;
         }
 
     }

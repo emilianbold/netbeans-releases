@@ -39,20 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.model.services;
+package org.netbeans.modules.cnd.makeproject.ui;
 
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactoryManager;
-import org.openide.modules.ModuleInstall;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-/**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
- */
-public class Installer extends ModuleInstall {
-    
+public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    private JMenu subMenu = null;
+    Action[] actions;
+
+    /** Creates a new instance of BrowserAction */
+    public MoreBuildActionsAction(Action[] actions) {
+        super(NbBundle.getMessage( MoreBuildActionsAction.class, "LBL_MoreBuildActionsAction_Name"), null);   // NOI18N
+        this.actions = actions;
+    }
+        
     @Override
-    public void restored() {
-        CsmFileTaskFactoryManager.register();
+    public void actionPerformed(java.awt.event.ActionEvent ev) {
+        // no operation
     }
 
+    @Override
+    public JMenuItem getPopupPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+    
+    @Override
+    public JMenuItem getMenuPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+        
+    private void createSubMenu() {
+        if (subMenu == null) {
+            String label = getString("LBL_MoreBuildActionsAction_Name"); // NOI18N
+            subMenu = new JMenu(label);
+            for (Action action : actions) {
+                subMenu.add(action);
+            }
+        }
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(MoreBuildActionsAction.class, key);
+    }
+    
 }

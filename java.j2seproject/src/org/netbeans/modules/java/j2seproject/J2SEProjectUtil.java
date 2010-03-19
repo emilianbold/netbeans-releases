@@ -213,4 +213,15 @@ public class J2SEProjectUtil {
         return (compileOnSaveProperty != null && Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
+    /**
+     * Returns true when value is ant true|on|yes
+     * @param value to be checked
+     * @return boolean
+     */
+    public static boolean isTrue(final String param) {
+        return "true".equalsIgnoreCase(param) ||    //NOI18N
+               "yes".equalsIgnoreCase(param) ||     //NOI18N
+               "on".equalsIgnoreCase(param);        //NOI18N
+    }
+
 }

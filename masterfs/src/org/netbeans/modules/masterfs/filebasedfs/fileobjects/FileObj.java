@@ -141,9 +141,11 @@ public class FileObj extends BaseFileObj {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
         }
-
+        LOGGER.log(Level.FINEST,"FileObj.getInputStream_after_is_valid");   //NOI18N - Used by unit test
         final File f = getFileName().getFile();
-                        
+        if (!f.exists()) {
+            throw new FileNotFoundException();
+        }
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
         
@@ -215,8 +217,9 @@ public class FileObj extends BaseFileObj {
             if (this.lastModified != -1 && !realLastModifiedCached) {
                 realLastModifiedCached = true;
             }
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", new Exception("Stack trace"));  //NOI18N
+            if (LOGGER.isLoggable(Level.FINER)) {
+                Exception trace = LOGGER.isLoggable(Level.FINEST) ? new Exception("StackTrace") : null; // NOI18N
+                LOGGER.log(Level.FINER, "setLastModified: " + this.lastModified + " -> " + lastModified + " (" + this + ")", trace);  //NOI18N
             }
             this.lastModified = lastModified;
         }
@@ -264,11 +267,21 @@ public class FileObj extends BaseFileObj {
         return false;
     }
 
+    @Override
     public void refreshImpl(final boolean expected, boolean fire) {
         final long oldLastModified = lastModified;
         boolean isReal = realLastModifiedCached;
         setLastModified(getFileName().getFile().lastModified());
         boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(
+                Level.FINER,
+                "refreshImpl for {0} isReal: {1} isModified: {2} oldLastModified: {3} lastModified: {4}",
+                new Object[]{
+                    this, isReal, isModified, oldLastModified, lastModified
+                 }
+            );
+        }
         if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
             fireFileChangedEvent(expected);
         }

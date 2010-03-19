@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -63,12 +62,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
@@ -361,19 +358,6 @@ public class Utils {
             }
         }
         return result.toString();
-    }
-
-    public static AntArtifact getAntArtifact(final EjbReference ejbReference) throws IOException {
-        
-        Project project = getProject(ejbReference);
-        if (project == null) {
-            return null;
-        }
-        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
-        
-        return hasArtifact ? antArtifacts[0] : null;
-        
     }
 
     public static Project getProject(final EjbReference ejbReference) throws IOException {

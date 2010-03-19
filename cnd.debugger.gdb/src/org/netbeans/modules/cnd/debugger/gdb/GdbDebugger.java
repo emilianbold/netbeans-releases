@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,6 +109,7 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -181,7 +183,6 @@ public class GdbDebugger implements PropertyChangeListener {
     private final List<GdbCallStackFrame> callstack = Collections.synchronizedList(new ArrayList<GdbCallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
     private GdbCallStackFrame currentCallStackFrame;
-    public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
@@ -919,10 +920,9 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String path = PathUtils.getExePath(pid, execEnv);
             if (path != null) {
-                File exefile = new File(exepath);
                 try {
                     if (HostInfoUtils.fileExists(execEnv, exepath)) {
-                        if (comparePaths(path, exefile.getAbsolutePath())) {
+                        if (comparePaths(path, exepath)) {
                             return true;
                         }
                     }
@@ -1047,9 +1047,10 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_continue();
     }
 
+    private final Object LV_LOCK = new String("Locals lock"); //NOI18N
     /** Sends request to get arguments and local variables */
     private void updateLocalVariables(int frame) {
-        synchronized (LOCK) {
+        synchronized (LV_LOCK) {
             synchronized (localVariables) {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }
@@ -2865,14 +2866,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
     public String getCharSetEncoding() {
         String encoding;
         if (execEnv.isRemote()) {
-            encoding = remoteCharSet;
+            encoding = ProcessUtils.getRemoteCharSet();
         } else {
-            // TODO: use Charset.defaultCharset().name(), but now leave as is...
-            encoding = System.getProperty("sun.jnu.encoding");
+            encoding = Charset.defaultCharset().name();
         }
         return encoding;
     }

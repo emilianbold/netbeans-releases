@@ -73,7 +73,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunProfile implements ConfigurationAuxObject {
+public final class RunProfile implements ConfigurationAuxObject {
 
     private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
     public static final String PROFILE_ID = "runprofile"; // NOI18N

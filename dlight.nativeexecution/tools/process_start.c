@@ -43,11 +43,12 @@
 #define _XOPEN_SOURCE 600
 #define _BSD_SOURCE
 #include <termios.h>
+#else
+#include <stropts.h>
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stropts.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>

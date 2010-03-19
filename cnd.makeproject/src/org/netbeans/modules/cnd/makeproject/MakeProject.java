@@ -169,7 +169,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Start of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
+            System.err.println("Start of creation MakeProject@"+System.identityHashCode(MakeProject.this)+" "+helper.getProjectDirectory().getName()); // NOI18N
         }
         this.helper = helper;
         eval = createEvaluator();
@@ -177,13 +177,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
         if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Create ConfigurationDescriptorProvider@"+System.identityHashCode(projectDescriptorProvider)+" for MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
+            System.err.println("Create ConfigurationDescriptorProvider@"+System.identityHashCode(projectDescriptorProvider)+" for MakeProject@"+System.identityHashCode(MakeProject.this)+" "+helper.getProjectDirectory().getName()); // NOI18N
         }
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
         lookup = createLookup(aux);
-        helper.addAntProjectListener(this);
+        helper.addAntProjectListener(MakeProject.this);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -203,7 +203,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
         if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("End of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
+            System.err.println("End of creation MakeProject@"+System.identityHashCode(MakeProject.this)+" "+helper.getProjectDirectory().getName()); // NOI18N
         }
     }
 
@@ -213,9 +213,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             nl = nl.item(0).getChildNodes();
             if (nl.getLength() == 1) {
                 String extensions = nl.item(0).getNodeValue();
-                for (String e : extensions.split(",")) { // NOI18N
-                    set.add(e);
-                }
+                set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
     }
@@ -260,7 +258,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     helper.createCacheDirectoryProvider(),
                     spp,
                     new MakeActionProvider(this),
-                    new MakeLogicalViewProvider(this, spp),
+                    new MakeLogicalViewProvider(this),
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
@@ -1029,7 +1027,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         public MutableCP(MakeSources sources) {
             this.sources = sources;
-            this.sources.addChangeListener(WeakListeners.change(this, this.sources));
+            this.sources.addChangeListener(WeakListeners.change(MutableCP.this, this.sources));
         }
 
         @Override
@@ -1093,7 +1091,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         public PathResourceImpl(PathResourceImplementation delegate) {
             this.delegate = delegate;
-            this.delegate.addPropertyChangeListener(this);
+            this.delegate.addPropertyChangeListener(PathResourceImpl.this);
         }
 
         @Override

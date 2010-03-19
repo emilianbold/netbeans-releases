@@ -58,6 +58,7 @@ static void* join_threadfunc(void *p) {
     pthread_barrier_wait(&start);
     work_t* work = (work_t*) p;
     work_run(work, 5 * (1 + work->id) * MICROS_PER_SECOND);
+    return NULL;
 }
 
 void join_demo(int threads, work_t* works) {

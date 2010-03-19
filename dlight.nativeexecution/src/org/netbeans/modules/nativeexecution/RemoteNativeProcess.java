@@ -74,10 +74,11 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                     final String workingDirectory = info.getWorkingDirectory(true);
 
                     if (workingDirectory != null) {
-                        streams.in.write(EnvWriter.getBytesWithRemoteCharset("cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n")); // NOI18N
+                        streams.in.write(EnvWriter.getBytes(
+                                "cd \"" + workingDirectory + "\" || exit " + startupErrorExitValue + "\n", true)); // NOI18N
                     }
 
-                    EnvWriter ew = new EnvWriter(streams.in);
+                    EnvWriter ew = new EnvWriter(streams.in, true);
                     ew.write(envVars);
 
                     if (info.getInitialSuspend()) {
@@ -85,7 +86,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                         streams.in.write("trap 'ITS_TIME_TO_START=1' CONT\n".getBytes()); // NOI18N
                         streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
                     }
-                    streams.in.write(EnvWriter.getBytesWithRemoteCharset("exec " + commandLine + "\n")); // NOI18N
+                    streams.in.write(EnvWriter.getBytes("exec " + commandLine + "\n", true)); // NOI18N
                     streams.in.flush();
 
                     readPID(streams.out);

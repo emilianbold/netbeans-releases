@@ -62,6 +62,7 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
         initComponents();
         GuiUtils.prepareContainer(this);
         fileField.getDocument().addDocumentListener(this);
+        descriptionLabel.getCaret().setVisible(false);
     }
     private IntermediatePanelKind kind;
 
@@ -109,7 +110,8 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
         fileLabel = new javax.swing.JLabel();
         fileField = new javax.swing.JTextField();
         browseFileButton = new javax.swing.JButton();
-        descriptionLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        descriptionLabel = new javax.swing.JTextArea();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setLayout(new java.awt.GridBagLayout());
@@ -142,18 +144,27 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
         add(browseFileButton, gridBagConstraints);
 
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(ChooseSigOrExpFilePanelVisual.class, "ChooseSigOrExpFilePanelVisual.descriptionLabel.text")); // NOI18N
-        descriptionLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jScrollPane1.setBackground(javax.swing.UIManager.getDefaults().getColor("control"));
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        descriptionLabel.setBackground(javax.swing.UIManager.getDefaults().getColor("control"));
+        descriptionLabel.setColumns(20);
+        descriptionLabel.setEditable(false);
+        descriptionLabel.setLineWrap(true);
+        descriptionLabel.setRows(5);
+        descriptionLabel.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(descriptionLabel);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.ipadx = 200;
-        gridBagConstraints.ipady = 120;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 1.0;
-        add(descriptionLabel, gridBagConstraints);
+        add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     boolean valid() {
@@ -168,12 +179,9 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
                         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                                 NbBundle.getMessage(ChooseSigOrExpFilePanelVisual.class,
                                 "ERR_FILE_DOES_NOT_EXIST", kind)); //NOI18N
-                    } else if (f.isDirectory()) {
-                        result = false;
-                        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                                NbBundle.getMessage(ChooseSigOrExpFilePanelVisual.class,
-                                "ERR_FILE_IS_A_DIRECTORY", kind)); //NOI18N
                     } else {
+                        //PENDING:  Check that structure actually matches
+                        //.class files in JAR?
                         result = true;
                     }
                     break;
@@ -226,16 +234,16 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
         File f;
         if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).setFileFilter(kind == IntermediatePanelKind.EXP_FILE ? new ExpFileFilter() : new SigFilter()).
                 setTitle(kind.toString()).
-                setFilesOnly(true).
                 showOpenDialog()) != null) {
             fileField.setText(f.getAbsolutePath());
         }
 }//GEN-LAST:event_browseFileButtononBrowseOrigin
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseFileButton;
-    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JTextArea descriptionLabel;
     private javax.swing.JTextField fileField;
     private javax.swing.JLabel fileLabel;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
     public void insertUpdate(DocumentEvent e) {

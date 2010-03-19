@@ -233,7 +233,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 wiz.putProperty("name", destdir.getName());
                 wiz.putProperty("projdir", destdir);
                 try {
-                    setRef.set(projectCreator.instantiate(wiz));
+                    setRef.set(projectCreator.instantiate());
                 } catch (IOException ex) {
                     exRef.set(ex);
                 }

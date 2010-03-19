@@ -559,7 +559,8 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        return Boolean.getBoolean("org.netbeans.editor.linewrap")
+        return ((false || Boolean.getBoolean("org.netbeans.editor.linewrap")) &&
+                !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"))
                 ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
                 : null;
     }
@@ -880,6 +881,7 @@ public class BaseKit extends DefaultEditorKit {
                    new PreviousWordAction(selectionPreviousWordAction),
                    new ActionFactory.RemoveWordNextAction(),
                    new ActionFactory.RemoveWordPreviousAction(),
+                   new ActionFactory.ToggleHighlightSearchAction(),
 
                    // Self test actions
                    //      new EditorDebug.SelfTestAction(),

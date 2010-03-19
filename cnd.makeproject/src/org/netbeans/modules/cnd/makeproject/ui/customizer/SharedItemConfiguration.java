@@ -60,10 +60,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
     public ItemConfiguration getItemConfiguration(Configuration configuration) {
         ItemConfiguration res = itemConfigurations.get(configuration);
         if (res == null) {
-            res = new ProxyItemConfiguration(configuration, item);
-            itemConfigurations.put(configuration, res);
-            ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
-            configuration.addAuxObject(res);
+            res = ProxyItemConfiguration.proxyFactory(configuration, item);
+            if (res != null) {
+                itemConfigurations.put(configuration, res);
+                ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
+                configuration.addAuxObject(res);
+            }
         }
         return res;
     }
