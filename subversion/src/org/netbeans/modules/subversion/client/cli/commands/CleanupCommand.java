@@ -37,47 +37,33 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.exceptionreporter;
+package org.netbeans.modules.subversion.client.cli.commands;
 
-import org.netbeans.lib.uihandler.NBBugzillaAccessor;
-import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
-import org.openide.util.RequestProcessor;
+import java.io.File;
+import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.NBBugzillaAccessor.class)
-public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
+public class CleanupCommand extends SvnCommand {
+    
+    private final File file;
 
-    @Override
-    public void openIssue(final String issueID) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                NBBugzillaUtils.openIssue(issueID);
-            }
-        });
+    public CleanupCommand(File file) {
+        this.file = file;
     }
 
     @Override
-    public String getNBUsername() {
-        return NBBugzillaUtils.getNBUsername();
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.CLEANUP;
     }
 
     @Override
-    public char[] getNBPassword() {
-        return NBBugzillaUtils.getNBPassword();
+    public void prepareCommand(Arguments arguments) {
+        arguments.add("cleanup"); //NOI18N
+        arguments.add(file.getAbsolutePath());
+        setCommandWorkingDirectory(file);
     }
-
-    @Override
-    public void saveNBUsername(String username) {
-        NBBugzillaUtils.saveNBUsername(username);
-    }
-
-    @Override
-    public void saveNBPassword(char[] password) {
-        NBBugzillaUtils.saveNBPassword(password);
-    }
-
 }
