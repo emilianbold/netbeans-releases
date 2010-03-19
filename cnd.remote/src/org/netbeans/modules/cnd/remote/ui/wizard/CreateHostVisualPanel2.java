@@ -82,14 +82,17 @@ import org.openide.util.RequestProcessor;
 
         DocumentListener dl = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 fireChange();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 fireChange();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 fireChange();
             }
@@ -230,6 +233,7 @@ import org.openide.util.RequestProcessor;
     public Future<Boolean> validateHost() {
         FutureTask<Boolean> validationTask = new FutureTask<Boolean>(new Callable<Boolean>() {
 
+            @Override
             public Boolean call() throws Exception {
                 final char[] password = getPassword();
                 final boolean rememberPassword = cbSavePassword.isSelected();
