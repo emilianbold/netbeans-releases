@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** Action for removing project from the open projects tab
  */
@@ -67,7 +68,16 @@ public class CloseProject extends ProjectAction {
     }
         
     @Override
-    protected void actionPerformed( Lookup context ) {
+    protected void actionPerformed( final Lookup context ) {
+        if (EventQueue.isDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    actionPerformed(context);
+                }
+            });
+            return;
+        }
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         // show all modified documents, if an user cancel it then no project is closed        
         OpenProjectList.getDefault().close( projects, true );
