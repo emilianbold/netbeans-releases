@@ -84,7 +84,7 @@ public final class ParameterElementImpl implements ParameterElement {
             final String regexp = String.format("\\%s", SEPARATOR.COMMA.toString());//NOI18N
             for (String sign : signature.split(regexp)) {
                 try {
-                    final ParameterElement param = parseParameter(sign);
+                    final ParameterElement param = parseOneParameter(sign);
                     if (param != null) {
                         retval.add(param);
                     }
@@ -99,7 +99,7 @@ public final class ParameterElementImpl implements ParameterElement {
         return retval;
     }
 
-    private static ParameterElement parseParameter(String sig) throws NumberFormatException {
+    private static ParameterElement parseOneParameter(String sig) throws NumberFormatException {
         ParameterElement retval = null;
         final String regexp = String.format("\\%s", SEPARATOR.COLON.toString());//NOI18N
         String[] parts = sig.split(regexp);
@@ -251,7 +251,7 @@ public final class ParameterElementImpl implements ParameterElement {
         if (checkEnabled) {
             String signature = sb.toString();
             try {
-                ParameterElement parsedParameter = parseParameter(signature);
+                ParameterElement parsedParameter = parseOneParameter(signature);
                 assert getName().equals(parsedParameter.getName()) : signature;
                 assert hasDeclaredType() == parsedParameter.hasDeclaredType() : signature;
                 if (getDefaultValue() != null) {
