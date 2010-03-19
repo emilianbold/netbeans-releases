@@ -66,7 +66,6 @@ import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
-import org.netbeans.modules.j2ee.persistence.spi.PersistenceProjectPropertiesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
@@ -75,7 +74,6 @@ import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataM
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -88,7 +86,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Andrei Badea
  */
-public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener, PersistenceProjectPropertiesProvider {
+public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
 
     private final J2SEProject project;
     private final ClassPathProviderImpl cpProvider;
@@ -251,17 +249,6 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                 scopesHelper.changePersistenceScope(null, null);
                 modelHelper.changePersistenceXml(null);
             }
-        }
-    }
-
-    @Override
-    public String getProjectProperty(Property key) {
-        if( Property.SOURCELEVEL.equals(key)){
-            EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            String js = prop.getProperty(J2SEProjectProperties.JAVAC_SOURCE);
-            return js;
-        } else {
-            return null;
         }
     }
 

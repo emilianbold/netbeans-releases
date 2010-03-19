@@ -58,10 +58,10 @@ import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.spi.PersistenceProjectPropertiesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
+import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -423,14 +423,11 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         String warning = null;
         if(prov != null){
             if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
-                PersistenceProjectPropertiesProvider propProvider = project.getLookup().lookup(PersistenceProjectPropertiesProvider.class);
-                if(propProvider != null){
-                    String sourceLevel = propProvider.getProjectProperty(PersistenceProjectPropertiesProvider.Property.SOURCELEVEL);
+                    String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                     if(sourceLevel !=null ){
-                        if(!"1.6".equals(sourceLevel))
+                        if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6))
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
-                }
             }
         }
         ImageIcon icon = null;
