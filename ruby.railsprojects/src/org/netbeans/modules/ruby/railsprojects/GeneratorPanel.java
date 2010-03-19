@@ -67,6 +67,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.Generator.Script;
@@ -361,23 +362,28 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
                             continue;
                         }
 
-                        if (gem.endsWith("_generator")) { // NOI18N
-                            String version = gemManager.getLatestVersion(gem);
-                            if (version != null) {
-                                File f = new File(gemDir, gem + "-" + version); // NOI18N
-                                if (f.exists()) {
-                                    FileObject fo = FileUtil.toFileObject(f);
-                                    // The generator is named "gem"
-                                    int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
+                        String version = gemManager.getLatestVersion(gem);
+                        if (version != null) {
+                            File f = new File(gemDir, gem + "-" + version); // NOI18N
+                            if (f.exists()) {
+                                FileObject fo = FileUtil.toFileObject(f);
+                                String name = null;
+                                if (gem.endsWith("_generator")) {
                                     // Chop off _generator suffix
-                                    String name = gem.substring(0, gem.length()-"_generator".length()); // NOI18N
-                                    Generator generator = new Generator(name, fo, argsRequired);
-                                    generators.add(generator);
-                                    added.add(generator.getName());
+                                    name = gem.substring(0, gem.length() - "_generator".length());
+                                } else if (fo.getFileObject("generators/") != null) {
+                                    name = gem;
+                                } else {
+                                    // not a generator
+                                    continue;
                                 }
+                                int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
+                                Generator generator = new Generator(name, fo, argsRequired);
+                                generators.add(generator);
+                                added.add(generator.getName());
                             }
-
                         }
+
                     }
                 }
             }
