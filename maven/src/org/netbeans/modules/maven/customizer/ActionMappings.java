@@ -75,6 +75,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
@@ -159,6 +160,11 @@ public class ActionMappings extends javax.swing.JPanel {
         taProperties.addFocusListener(focus);
         goalcompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGoals, " "); //NOI18N
         profilecompleter = new TextValueCompleter(Collections.<String>emptyList(), txtProfiles, " "); //NOI18N
+
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            this.lblHint.setOpaque(true);
+            jScrollPane2.setBorder(null);
+        }
     }
     
     public ActionMappings(ActionToGoalMapping mapp) {
