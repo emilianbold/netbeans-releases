@@ -237,6 +237,10 @@ public final class Unresolved implements Disposable {
             return true;
         }
 
+        public FileType getFileType() {
+            return FileType.UNDEFINED_FILE;
+        }
+        
         public Collection<CsmErrorDirective> getErrors() {
             return Collections.<CsmErrorDirective>emptyList();
         }

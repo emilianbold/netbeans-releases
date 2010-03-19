@@ -113,14 +113,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
-    public static enum FileType {
-        UNDEFINED_FILE,
-        SOURCE_FILE,
-        SOURCE_C_FILE,
-        SOURCE_CPP_FILE,
-        SOURCE_FORTRAN_FILE,
-        HEADER_FILE,
-    };
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -340,6 +332,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public boolean isHeaderFile() {
         return fileType == FileType.HEADER_FILE;
     }
+
+    @Override
+    public FileType getFileType() {
+        return fileType;
+    }
+
 
     /*package local*/ void setHeaderFile() {
         if (fileType == FileType.UNDEFINED_FILE) {
