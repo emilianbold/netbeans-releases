@@ -42,8 +42,11 @@
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,10 +55,14 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceProjectPropertiesProvider;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,6 +100,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         
         unitNameTextField.getDocument().addDocumentListener(new ValidationListener());
         errorMessage.setForeground(Color.RED);
+                updateWarning();
     }
     
     
@@ -189,6 +197,31 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     public void setErrorMessage(String msg) {
         errorMessage.setText(msg);
     }
+    private void updateWarning() {
+        Provider prov = (Provider) libraryCombo.getSelectedItem();
+        String warning = null;
+        if(prov != null){
+            if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
+                PersistenceProjectPropertiesProvider propProvider = project.getLookup().lookup(PersistenceProjectPropertiesProvider.class);
+                if(propProvider != null){
+                    String sourceLevel = propProvider.getProjectProperty(PersistenceProjectPropertiesProvider.Property.SOURCELEVEL);
+                    if(sourceLevel !=null ){
+                        if(!"1.6".equals(sourceLevel))
+                        warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                    }
+                }
+            }
+        }
+        ImageIcon icon = null;
+        if(warning != null){
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif", false); //NOI18N
+        } else {
+            warning = "  ";
+        }
+        createPUWarningLabel.setIcon(icon);
+        createPUWarningLabel.setText(warning);
+        createPUWarningLabel.setToolTipText(warning);
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -211,7 +244,9 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         libraryCombo = new javax.swing.JComboBox();
         jdbcCombo = new javax.swing.JComboBox();
         jdbcLabel = new javax.swing.JLabel();
+        warnPanel = new javax.swing.JPanel();
         errorMessage = new javax.swing.JLabel();
+        createPUWarningLabel = new ShyLabel();
 
         setName(org.openide.util.NbBundle.getMessage(PersistenceUnitWizardPanelJdbc.class, "LBL_Step1")); // NOI18N
 
@@ -246,6 +281,11 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         libraryLabel.setLabelFor(libraryCombo);
         libraryLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitWizardPanelJdbc.class, "LBL_Library")); // NOI18N
 
+        libraryCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                libraryComboItemStateChanged(evt);
+            }
+        });
         libraryCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 libraryComboActionPerformed(evt);
@@ -258,14 +298,22 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         jdbcLabel.setLabelFor(jdbcCombo);
         jdbcLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitWizardPanelJdbc.class, "LBL_JdbcConnection")); // NOI18N
 
+        warnPanel.setLayout(new java.awt.BorderLayout());
+
+        errorMessage.setPreferredSize(new java.awt.Dimension(0, 20));
+        warnPanel.add(errorMessage, java.awt.BorderLayout.NORTH);
+
+        createPUWarningLabel.setText(" ");
+        createPUWarningLabel.setPreferredSize(new java.awt.Dimension(4, 20));
+        warnPanel.add(createPUWarningLabel, java.awt.BorderLayout.PAGE_END);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(errorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(unitNameLabel)
                             .add(libraryLabel)
@@ -275,15 +323,16 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
                             .add(libraryCombo, 0, 372, Short.MAX_VALUE)
                             .add(jdbcCombo, 0, 372, Short.MAX_VALUE)
                             .add(unitNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(jLabel1)
+                    .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(ddlCreate)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(ddlDropCreate)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ddlUnkown)))
+                        .add(ddlUnkown))
+                    .add(warnPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -308,9 +357,9 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
                     .add(ddlDropCreate)
                     .add(ddlUnkown)
                     .add(jLabel2))
-                .add(20, 20, 20)
-                .add(errorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(warnPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(112, Short.MAX_VALUE))
         );
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/unit/Bundle"); // NOI18N
@@ -326,10 +375,15 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     private void libraryComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryComboActionPerformed
         checkValidity();
     }//GEN-LAST:event_libraryComboActionPerformed
+
+    private void libraryComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_libraryComboItemStateChanged
+        updateWarning();
+    }//GEN-LAST:event_libraryComboItemStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel createPUWarningLabel;
     private javax.swing.JRadioButton ddlCreate;
     private javax.swing.JRadioButton ddlDropCreate;
     private javax.swing.JRadioButton ddlUnkown;
@@ -343,6 +397,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     private javax.swing.ButtonGroup tableCreationButtonGroup;
     private javax.swing.JLabel unitNameLabel;
     private javax.swing.JTextField unitNameTextField;
+    private javax.swing.JPanel warnPanel;
     // End of variables declaration//GEN-END:variables
     
     /**
@@ -358,6 +413,25 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         }
         public void changedUpdate(DocumentEvent e) {
             checkValidity();
+        }
+    }
+    /**
+     * A crude attempt at a label which doesn't expand its parent.
+     */
+    private static final class ShyLabel extends JLabel {
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension size = super.getPreferredSize();
+            size.width = 0;
+            return size;
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            Dimension size = super.getMinimumSize();
+            size.width = 0;
+            return size;
         }
     }
 }
