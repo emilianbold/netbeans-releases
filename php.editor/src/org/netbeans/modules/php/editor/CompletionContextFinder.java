@@ -175,6 +175,7 @@ class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_FINAL,PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_CURLY_OPEN},
             new Object[]{PHPTokenId.PHP_LINE_COMMENT},
+            new Object[]{PHPTokenId.PHP_LINE_COMMENT,PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_LINE_COMMENT,PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE,PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_COMMENT_END},
@@ -421,7 +422,7 @@ class CompletionContextFinder {
 
         tokenSequence.move(orgTokenSequencePos);
         tokenSequence.moveNext();
-        return accept;
+       return accept;
     }
 
     private static boolean consumeNameSpace(TokenSequence tokenSequence){
@@ -499,7 +500,7 @@ class CompletionContextFinder {
         boolean isString = false;
         Token<PHPTokenId> stringToken = null;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-        for (Token<PHPTokenId> cToken : preceedingLineTokens) {
+       for (Token<PHPTokenId> cToken : preceedingLineTokens) {
             TokenId id = cToken.id();
             boolean nokeywords = !isIface && !isClass && !isExtends && !isImplements && !isNsSeparator;
            if (id.equals(PHPTokenId.PHP_CLASS)) {
