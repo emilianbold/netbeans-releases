@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceProjectPropertiesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
@@ -85,7 +86,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Andrei Badea
  */
-public class WebPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
+public class WebPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener, PersistenceProjectPropertiesProvider {
 
     private final WebProject project;
     private final PropertyEvaluator evaluator;
@@ -294,4 +295,15 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
             }
         });
     }
-}
+
+
+    @Override
+    public String getProjectProperty(Property key) {
+        if( Property.SOURCELEVEL.equals(key)){
+            EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String js = prop.getProperty(WebProjectProperties.JAVAC_SOURCE);
+            return js;
+        } else {
+            return null;
+        }
+    }}

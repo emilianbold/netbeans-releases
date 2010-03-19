@@ -1113,7 +1113,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getInsertPrefix() {
             Completion.get().showToolTip();
-            return getName();
+             return getName();
         }
 
 
