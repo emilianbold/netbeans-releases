@@ -64,11 +64,7 @@ public class ProjectGenerator {
     public static String getValidProjectName(String projectFolder, String suggestedProjectName) {
         return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
     }
-
-    public static Project createBlankProject(boolean open) throws IOException {
-        return MakeProjectGenerator.createBlankProject(open);
-    }
-
+    
     public static Project createBlankProject(String projectName, String projectFolder) throws IOException {
         return MakeProjectGenerator.createBlankProject(projectName, projectFolder, false);
     }
@@ -92,5 +88,8 @@ public class ProjectGenerator {
      */
     public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
         MakeSampleProjectGenerator.createProjectFromTemplate(url.openStream(), new File(projectFolder, projectName), projectName); // NOI18N
+    }
+
+    private ProjectGenerator() {
     }
 }

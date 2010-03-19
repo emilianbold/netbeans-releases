@@ -105,14 +105,6 @@ public class MakeProjectGenerator {
         return projectName;
     }
 
-    public static MakeProject createBlankProject(boolean open) throws IOException {
-        String projectFolder = getDefaultProjectFolder();
-        String projectName = getValidProjectName(projectFolder);
-        String baseDir = projectFolder + File.separator + projectName;
-        MakeConfiguration conf = new MakeConfiguration(baseDir, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/Bundle").getString("DefaultProjectName"), MakeConfiguration.TYPE_MAKEFILE); // FIXUP
-        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, new MakeConfiguration[]{conf}, open);
-    }
-
     public static MakeProject createBlankProject(String projectName, String projectFolder, boolean open) throws IOException {
         return createBlankProject(projectName, projectFolder, new MakeConfiguration[0], open);
     }
