@@ -39,6 +39,8 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -48,6 +50,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -227,6 +231,21 @@ import org.openide.util.RequestProcessor;
     }
 
     public boolean canValidateHost() {
+        List<ServerRecord> records = new ArrayList<ServerRecord>();
+        if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
+            records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
+        } else {
+            records = new ArrayList<ServerRecord>(ServerList.getRecords());
+        }
+        for (ServerRecord record : records) {
+            if (record.isRemote()) {
+                if (record.getServerName().equals(data.getHostName())
+                        && record.getExecutionEnvironment().getSSHPort() == data.getPort()
+                        && record.getUserName().equals(textLoginName.getText())) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 

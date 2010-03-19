@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.ExternalTerminal;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxyEngine;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -995,7 +996,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     if (gdb != null) {
                         ProjectActionEvent.Type type = lookupProvider.lookupFirst(null, ProjectActionEvent.class).getType();
                         if (state == State.RUNNING) {
-                            gdb.exec_interrupt();
+                            interrupt();
                             if (type != DEBUG_ATTACH) {
                                 gdb.exec_abort();
                             }
@@ -1455,11 +1456,27 @@ public class GdbDebugger implements PropertyChangeListener {
     /**
      * Interrupts execution of the inferior program.
      * This method is called when "Pause" button is pressed.
-     *
+     * 
+     * This method is supposed to send "-exec-interrupt" to the debugger,
+     * but this feature is not implemented in gdb yet, so it is replaced
+     * with sending a signal "INT" (Unix) or signal TSTP (Windows).
+     * 
      * @return null if action is accepted, otherwise return error message
      */
     public void interrupt() {
-        gdb.exec_interrupt();
+        if (state == State.RUNNING || state == State.SILENT_STOP) {
+            // First try engine interrrupt
+            if (GdbProxyEngine.ENGINE_PTY && !gdb.getProxyEngine().isInferiorTty()) {
+                skipSignal = true;
+                gdb.getProxyEngine().interrupt();
+            }
+            
+            if (getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                kill(Signal.TRAP);
+            } else {
+                kill(Signal.INT);
+            }
+        }
     }
 
     /**
@@ -1503,6 +1520,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                //LATER: use
+                //CommonTasksSupport.sendSignal(debugger.getHostExecutionEnvironment(), pid, Signal.SIGINT, null);
             }
             if (!killcmd.isEmpty()) {
                 killcmd.add("-s"); // NOI18N
