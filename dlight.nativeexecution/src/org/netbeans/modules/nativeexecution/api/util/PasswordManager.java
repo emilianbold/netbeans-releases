@@ -74,38 +74,25 @@ public final class PasswordManager {
         if (cachedPassword != null) {
             return crypter.decrypt(cachedPassword).toCharArray();
         }
-        if (useKeyringAPI) {
-            boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
-            if (stored) {
+        boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
+        if (stored) {
+            if (useKeyringAPI) {
                 char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
                 if (keyringPassword != null) {
                      String encryptedPasswordToStore = String.valueOf(crypter.encrypt(keyringPassword));
                      cache.put(key, encryptedPasswordToStore);
                 }
                 return keyringPassword;
-            }
-            return null;
-        } else {
-            String storedEncryptedPassword = NbPreferences.forModule(PasswordManager.class).get(KEY_PREFIX + key, null);
-            if (storedEncryptedPassword != null) {
-                cache.put(key, storedEncryptedPassword);
-                return crypter.decrypt(storedEncryptedPassword.toCharArray());
-            }
-            return null;
-        }
-    }
-
-    private boolean isKeyExists(String key){
-        try {
-            for (String aKey : NbPreferences.forModule(PasswordManager.class).keys()) {
-                if (aKey.equals(key)) {
-                    return true;
+            } else {
+                String storedEncryptedPassword = NbPreferences.forModule(PasswordManager.class).get(KEY_PREFIX + key, null);
+                if (storedEncryptedPassword != null) {
+                    cache.put(key, storedEncryptedPassword);
+                    return crypter.decrypt(storedEncryptedPassword.toCharArray());
                 }
+                return null;
             }
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        return false;
+        return null;
     }
 
     public void put(ExecutionEnvironment execEnv, char[] password) {
