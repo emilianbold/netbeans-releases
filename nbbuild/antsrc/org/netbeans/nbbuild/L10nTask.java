@@ -45,16 +45,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -176,7 +175,8 @@ public class L10nTask extends Task {
                 for(String packedJar : packGzDs.getIncludedFiles()) {
                     File packedJarFile = new File(nbmDir, packedJar);
                     File unpackedJarFile = new File(nbmDir, packedJar.substring(0, packedJar.length() - suffix.length()) + ".jar");
-                    unpack200(packedJarFile, unpackedJarFile);
+                    log("Unpacking " + packedJar + " to " + unpackedJarFile, Project.MSG_VERBOSE);
+                    AutoUpdate.unpack200(packedJarFile, unpackedJarFile);
                     packedJarFile.delete();
                 }
             }
@@ -270,33 +270,5 @@ public class L10nTask extends Task {
     }
     public void setKitFile(File kitFile) {
         this.kitFile = kitFile;
-    }
-
-    private boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("windows");
-    }
-
-
-    private boolean unpack200(File src, File dest) {
-        String unpack200Executable = new File(System.getProperty("java.home"),
-                "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
-        ProcessBuilder pb = new ProcessBuilder(unpack200Executable, src.getAbsolutePath(), dest.getAbsolutePath());
-        pb.directory(src.getParentFile());
-        int result = 1;
-        try {
-            //maybe reuse start() method here?
-            Process process = pb.start();
-            //TODO: Need to think of unpack200/lvprcsrv.exe issues
-            //https://netbeans.org/bugzilla/show_bug.cgi?id=117334
-            //https://netbeans.org/bugzilla/show_bug.cgi?id=119861
-            result = process.waitFor();
-            process.destroy();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return result == 0;
-    }
-
+    }    
 }

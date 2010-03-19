@@ -260,5 +260,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         // delete folder itself
         dirFO.delete();
         assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
+
+        LOG.info("OK");
     }
 }

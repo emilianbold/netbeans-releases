@@ -65,6 +65,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -260,9 +261,15 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
 
         for (FileObject sr : sources[0]) {
-            File index = JavaIndex.getClassFolder(sr.getURL(), true);
+            URL srURL = sr.getURL();
+            File index = JavaIndex.getClassFolder(srURL, true);
 
             if (index == null) {
+                //#181992: (not nice) ignore the annotation processing target directory:
+                if (srURL.equals(AnnotationProcessingQuery.getAnnotationProcessingOptions(sr).sourceOutputDirectory())) {
+                    continue;
+                }
+                
                 return null;
             }
 

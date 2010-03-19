@@ -261,7 +261,7 @@ public final class FolderObj extends BaseFileObj {
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                retVal.setLastModified(file2Create.lastModified());
+                retVal.setLastModified(file2Create.lastModified(), file2Create);
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {

@@ -194,6 +194,7 @@ public final class FileUtil extends Object {
             LOG.fine("refreshAll - scheduled");  //NOI18N
         }
         taskToWaitFor.waitFinished();
+        LOG.fine("refreshAll - finished");  //NOI18N
     }
 
     /**
