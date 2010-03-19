@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 // Imported classes for ShellCommand() class
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,10 +59,8 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -85,7 +82,6 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private int debuggerPid = -1;
 
     private final MICommand[] commandList = new MICommand[20];
     private int nextCommandPos = 0;
@@ -102,6 +98,9 @@ public class GdbProxyEngine {
     
     private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
 
+    private final boolean inferiorTty;
+    public static final boolean ENGINE_PTY = Boolean.getBoolean("gdb.engine.pty"); // NOI18N
+
     /**
      * Create a gdb process
      *
@@ -113,8 +112,8 @@ public class GdbProxyEngine {
     public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
                     String[] debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
-
-        if (tty != null) {
+        inferiorTty = (tty != null);
+        if (inferiorTty) {
             debuggerCommand.add("-tty"); // NOI18N
             debuggerCommand.add(tty);
         }
@@ -154,8 +153,11 @@ public class GdbProxyEngine {
             environment.appendPathVariable(pathname, cspath);
         }
 
+        if (ENGINE_PTY) {
+            npb.setUsePty(true);
+        }
+
         final NativeProcess proc = npb.call();
-        debuggerPid = proc.getPID();
         // for remote execution we need to convert encoding
         toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 
@@ -175,13 +177,14 @@ public class GdbProxyEngine {
         });
     }
 
-    // Interrupts the debugger
+    public boolean isInferiorTty() {
+        return inferiorTty;
+    }
+
+    // Interrupts the debugger by sending ctrl+C (only for pty mode)
     public void interrupt() {
-        CommonTasksSupport.sendSignal(
-                debugger.getHostExecutionEnvironment(),
-                debuggerPid,
-                Signal.SIGINT,
-                null);
+        char[] ctrlC = {(char)0x03};
+        toGdb.println(ctrlC);
     }
 
     private void unexpectedGdbExit(int rc) {
