@@ -122,11 +122,6 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
-    // Constructors
-    public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
-    }
-
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
     }
