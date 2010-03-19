@@ -193,6 +193,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (switchToForm) {
             elementToOpen = FORM_ELEMENT_INDEX;
         }
+        long ms = System.currentTimeMillis();
         try {
             showOpeningStatus("FMT_PreparingForm"); // NOI18N
 
@@ -206,10 +207,15 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         } finally {
             hideOpeningStatus();
         }
+        Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 1: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
     }
 
     void showOpeningStatus(String fmtMessage) {
         JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+
+        // set wait cursor
+        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        mainWin.getGlassPane().setVisible(true);
 
         // set status text like "Opening form: ..."
         StatusDisplayer.getDefault().setStatusText(
@@ -217,10 +223,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                 fmtMessage, // NOI18N
                 new Object[] { formDataObject.getFormFile().getName() }));
         javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
-
-        // set wait cursor [is not very reliable, but...]
-        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        mainWin.getGlassPane().setVisible(true);
     }
 
     void hideOpeningStatus() {
