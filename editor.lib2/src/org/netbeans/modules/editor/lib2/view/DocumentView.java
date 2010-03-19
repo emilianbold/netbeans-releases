@@ -536,7 +536,15 @@ public final class DocumentView extends EditorBoxView
             if (textComponent != null) {
                 checkDocumentLocked();
                 checkViewsInited();
-                super.paint(g, alloc, clipBounds);
+                boolean ok = false;
+                try {
+                    super.paint(g, alloc, clipBounds);
+                    ok = true;
+                } finally {
+                    if (!ok) {
+                        errorInHierarchy();
+                    }
+                }
             }
         }
     }
@@ -550,7 +558,15 @@ public final class DocumentView extends EditorBoxView
             if (textComponent != null) {
                 checkDocumentLocked();
                 checkViewsInited();
-                return super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
+                boolean ok = false;
+                try {
+                    offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
+                    ok = true;
+                } finally {
+                    if (!ok) {
+                        errorInHierarchy();
+                    }
+                }
             }
             return offset;
         }
@@ -562,7 +578,15 @@ public final class DocumentView extends EditorBoxView
             if (textComponent != null) {
                 checkDocumentLocked();
                 checkViewsInited();
-                return super.modelToViewChecked(offset, alloc, bias);
+                boolean ok = false;
+                try {
+                    alloc = super.modelToViewChecked(offset, alloc, bias);
+                    ok = true;
+                } finally {
+                    if (!ok) {
+                        errorInHierarchy();
+                    }
+                }
             }
             return alloc;
         }
@@ -574,9 +598,27 @@ public final class DocumentView extends EditorBoxView
             if (textComponent != null) {
                 checkDocumentLocked();
                 checkViewsInited();
-                return super.viewToModelChecked(x, y, alloc, biasReturn);
+                boolean ok = false;
+                try {
+                    int offset = super.viewToModelChecked(x, y, alloc, biasReturn);
+                    ok = true;
+                    return offset;
+                } finally {
+                    if (!ok) {
+                        errorInHierarchy();
+                    }
+                }
             }
             return 0;
+        }
+    }
+
+    private static boolean warningShown;
+    private void errorInHierarchy() {
+        if (!warningShown) {
+            LOG.info("An error occurred in the new view hierarchy. Please consider running with the old view hierarchy " +
+                    "by adding \"-J-Dorg.netbeans.editor.linewrap.disable=true\" to your netbeans.conf.");
+            warningShown = true;
         }
     }
 

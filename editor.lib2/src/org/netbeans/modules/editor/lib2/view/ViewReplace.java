@@ -42,7 +42,6 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -119,13 +118,17 @@ final class ViewReplace<V extends EditorBoxView, CV extends EditorView> {
         sb.append(", removeCount=").append(removeCount);
         EditorView[] addedViews = addedViews();
         sb.append(", addedCount=").append(addedViews.length);
-        sb.append(", Added:\n");
-        int maxDigitCount = ArrayUtilities.digitCount(addedViews.length);
-        for (int i = 0; i < addedViews.length; i++) {
-            sb.append("    ");
-            ArrayUtilities.appendBracketedIndex(sb, i, maxDigitCount);
-            sb.append(addedViews[i].toString());
-            sb.append('\n');
+        if (addedViews.length > 0) {
+            sb.append(", Added:\n");
+            int maxDigitCount = ArrayUtilities.digitCount(addedViews.length);
+            for (int i = 0; i < addedViews.length; i++) {
+                sb.append("    ");
+                ArrayUtilities.appendBracketedIndex(sb, i, maxDigitCount);
+                sb.append(addedViews[i].toString());
+                sb.append('\n');
+            }
+        } else {
+            sb.append("\n");
         }
         return sb.toString();
     }
