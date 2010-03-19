@@ -1018,13 +1018,18 @@ public class VariousUtils {
     }
 
     private static String translateSpecialClassName(Scope scp, String clsName) {
-        if (scp instanceof MethodScope) {
+        ClassScope classScope = null;
+        if (scp instanceof ClassScope) {
+            classScope = (ClassScope)scp;
+        } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
-            ClassScope csi = (ClassScope) msi.getInScope();
+            classScope = (ClassScope) msi.getInScope();
+        }
+        if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName)) {//NOI18N
-                clsName = csi.getName();
+                clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
-                ClassScope clzScope = ModelUtils.getFirst(csi.getSuperClasses());
+                ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
                 if (clzScope != null) {
                     clsName = clzScope.getName();
                 }
