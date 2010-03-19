@@ -40,14 +40,23 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -66,6 +75,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private String name;
     private boolean makefileNameChanged = false;
     private int type;
+    private boolean initialized = false;
 
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
@@ -111,6 +121,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainTextField.setVisible(false);
             createMainComboBox.setVisible(false);
         }
+        // init hosts
+        ServerRecord defaultRecord = ServerList.getDefaultRecord();
+        for (ServerRecord serverRecord : ServerList.getRecords()) {
+            hostComboBox.addItem(serverRecord);
+        }
+        hostComboBox.setRenderer(new MyDevHostListCellRenderer());
+        toolchainComboBox.setRenderer(new MyToolchainListCellRenderer());
+        updateToolchains(defaultRecord);
+        initialized = true;
     }
 
     public String getProjectName() {
@@ -120,6 +139,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewAppWizard"); // NOI18N
+    }
+
+    public CompilerSet getProjectCompilerSet() {
+        return (CompilerSet) this.toolchainComboBox.getSelectedItem();
     }
 
     /** This method is called from within the constructor to
@@ -287,7 +310,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         hostLabel.setLabelFor(hostComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_HOST")); // NOI18N
-        hostLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -297,7 +319,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         toolchainLabel.setLabelFor(toolchainComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(toolchainLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_TOOLCHAIN")); // NOI18N
-        toolchainLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -305,10 +326,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(toolchainLabel, gridBagConstraints);
 
-        hostComboBox.setEnabled(false);
-        hostComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hostComboBoxActionPerformed(evt);
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -318,13 +338,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         add(hostComboBox, gridBagConstraints);
-
-        toolchainComboBox.setEnabled(false);
-        toolchainComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toolchainComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -362,13 +375,25 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainComboBox.setEnabled(createMainCheckBox.isSelected());
 }//GEN-LAST:event_createMainCheckBoxActionPerformed
 
-    private void hostComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostComboBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_hostComboBoxActionPerformed
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
+        if (!initialized) {
+            return;
+        }
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            ServerRecord newItem = (ServerRecord) evt.getItem();
+            updateToolchains(newItem);
+        }
+    }
 
-    private void toolchainComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolchainComboBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_toolchainComboBoxActionPerformed
+    private void updateToolchains(ServerRecord newItem) {
+        // change toolchains
+        CompilerSetManager csm = CompilerSetManager.get(newItem.getExecutionEnvironment());
+        toolchainComboBox.removeAllItems();
+        for (CompilerSet compilerSet : csm.getCompilerSets()) {
+            toolchainComboBox.addItem(compilerSet);
+        }
+        toolchainComboBox.setSelectedItem(csm.getDefaultCompilerSet());
+    }//GEN-LAST:event_hostComboBoxItemStateChanged
 
     @Override
     public void addNotify() {
@@ -460,7 +485,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 return false;
             }
         }
-
+        if (toolchainComboBox.getSelectedItem() == null) {
+            // Toolchain is not specified
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalToolchainName")); // NOI18N
+        }
         /*
         if (destFolder.getPath().indexOf(' ') >= 0) {
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
@@ -509,6 +538,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
             }
         }
+        d.putProperty("serverRecord", hostComboBox.getSelectedItem()); // NOI18N
+        d.putProperty("toolchain", toolchainComboBox.getSelectedItem()); // NOI18N
     }
 
     @Override
@@ -520,7 +551,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-
+        ServerRecord sr = (ServerRecord) settings.getProperty("serverRecord");
+        if (sr == null || sr.isDeleted()) {
+            sr = ServerList.getDefaultRecord();
+        }
+        this.hostComboBox.setSelectedItem(sr);
+        CompilerSet cs = (CompilerSet) settings.getProperty("toolchain");
+        if (cs == null) {
+            CompilerSetManager csm = CompilerSetManager.get(sr.getExecutionEnvironment());
+            cs = csm.getDefaultCompilerSet();
+        }
+        this.toolchainComboBox.setSelectedItem(cs);
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
             String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
@@ -669,5 +710,30 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             bundle = NbBundle.getBundle(PanelProjectLocationVisual.class);
         }
         return bundle.getString(s);
+    }
+
+    private static final class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            ServerRecord rec = (ServerRecord) value;
+            if (rec != null) {
+                label.setText(rec.getDisplayName());
+            }
+            return label;
+        }
+    }
+
+    private static final class MyToolchainListCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            CompilerSet cs = (CompilerSet) value;
+            if (cs != null) {
+                label.setText(cs.getDisplayName());
+            }
+            return label;
+        }
     }
 }
