@@ -906,9 +906,16 @@ out:                    for (URL e : roots) {
                 for (URL mainClass : mainClasses) {
                     try {
                         URI relative = root.relativize(mainClass.toURI());
-                        final String ffqn = FileObjects.convertFolder2Package(FileObjects.stripExtension(relative.getPath()),'/');  //NOI18N
+                        final String resourceNameNoExt = FileObjects.stripExtension(relative.getPath());
+                        final String ffqn = FileObjects.convertFolder2Package(resourceNameNoExt,'/');  //NOI18N
                         if (qualifiedName.equals(ffqn)) {
-                            return true;    //todo: Should also check if the class is not hidden by boot cp without main
+                            final ClassPath bootCp = cpInfo.getClassPath(PathKind.BOOT);
+                            if (bootCp.findResource(resourceNameNoExt + '.' + FileObjects.CLASS)!=null) {
+                                //Resource in platform, fall back to slow path
+                                break;
+                            } else {
+                                return true;
+                            }
                         }
                     } catch (URISyntaxException e) {
                         LOG.info("Ignoring fast check for file: " + mainClass.toString() + " due to: " + e.getMessage()); //NOI18N
