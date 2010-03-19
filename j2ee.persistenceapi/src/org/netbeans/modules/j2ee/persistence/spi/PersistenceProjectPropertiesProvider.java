@@ -46,5 +46,5 @@ package org.netbeans.modules.j2ee.persistence.spi;
 public interface PersistenceProjectPropertiesProvider {
     public static  enum Property{SOURCELEVEL};
 
-    public String getProperty(Property key);
+    public String getProjectProperty(Property key);
 }
