@@ -40,11 +40,9 @@ package org.netbeans.modules.html.editor.refactoring;
 
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -94,19 +92,15 @@ public class ExtractInlinedStyleRefactoringUI implements RefactoringUI, Refactor
     public Problem setParameters() {
 
         refactoring.setMode(panel.getSelectedMode());
-
+        refactoring.setSelectorType(panel.getSelectorType());
+        
         switch(panel.getSelectedMode()) {
             case refactorToExistingEmbeddedSection:
-                refactoring.setExistingEmbeddedCssSection(panel.getSelectedExistingEmbeddedSection());
+                refactoring.setExistingEmbeddedCssSection(panel.getSelectedEmbeddedSection());
                 break;
             case refactorToNewEmbeddedSection:
                 break;
             case refactorToReferedExternalSheet:
-                refactoring.setExternalSheet(panel.getSelectedUsedExternalStylesheet());
-                break;
-            case refactorToNewExternalSheet:
-                refactoring.setExternalSheet(panel.getNewStyleSheet());
-                break;
             case refactorToExistingExternalSheet:
                 refactoring.setExternalSheet(panel.getSelectedExternalStyleSheet());
                 break;
@@ -146,4 +140,5 @@ public class ExtractInlinedStyleRefactoringUI implements RefactoringUI, Refactor
     public void doRefactoringBypass() throws IOException {
 	//TODO implement
     }
+
 }
