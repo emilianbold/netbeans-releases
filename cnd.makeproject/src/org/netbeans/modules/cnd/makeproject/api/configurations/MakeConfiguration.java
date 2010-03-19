@@ -124,19 +124,24 @@ public class MakeConfiguration extends Configuration {
     private boolean languagesDirty = true;
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
+        this(baseDir, name, configurationTypeValue, null);
     }
 
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
+        this(baseDir, name, configurationTypeValue, hostUID, null);
+    }
+    
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
         super(baseDir, name);
+        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         }
         else {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
-        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
-        CompilerSet defCS = CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
+        CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
         compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
