@@ -50,6 +50,8 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
@@ -1837,8 +1839,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         @Override
         public void run() {
+            long ms = System.currentTimeMillis();
             final GandalfPersistenceManager persistenceManager = getPersistenceManager();
             final String superClassName = (persistenceManager != null) ? computeSuperClass() : null;
+            Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 2: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
+
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -1883,6 +1888,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void finishComponentShowing() {
+        long ms = System.currentTimeMillis();
+
         if (!formEditor.isFormLoaded()) {
             formEditor.loadFormDesigner();
             if (!formEditor.isFormLoaded()) { // there was a loading error
@@ -1906,6 +1913,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             initialize();
         }
         FormEditorSupport.checkFormGroupVisibility();
+
+        Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 3: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
     }
 
     @Override
