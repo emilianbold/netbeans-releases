@@ -332,9 +332,12 @@ public class BugzillaConfiguration {
             fields.add(IssueField.REMOVECC);
             fields.add(IssueField.COMMENT_COUNT);
             fields.add(IssueField.ATTACHEMENT_COUNT);
-            // Custom fields
-            for (BugzillaCustomField field : rc.getCustomFields()) {
-                fields.add(new CustomIssueField(field));
+            
+            if(rc != null) {
+                // Custom fields
+                for (BugzillaCustomField field : rc.getCustomFields()) {
+                    fields.add(new CustomIssueField(field));
+                }
             }
             issueFields = fields;
         }
