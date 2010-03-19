@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -122,25 +123,26 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
 
-    // Constructors
-    public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
-    }
-
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
+        this(baseDir, name, configurationTypeValue, null);
     }
 
-    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
+        this(baseDir, name, configurationTypeValue, hostUID, null);
+    }
+    
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
         super(baseDir, name);
+        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         }
         else {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
-        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
-        compilerSet = new CompilerSet2Configuration(developmentHost);
+        developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
+        CompilerSet defCS = (hostCS != null) ? hostCS : CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+        compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();

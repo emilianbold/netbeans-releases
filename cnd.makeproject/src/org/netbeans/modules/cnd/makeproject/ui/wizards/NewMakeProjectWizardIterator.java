@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -208,6 +209,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
+        String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
@@ -245,12 +248,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N
             }
-            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype); // NOI18N
+            MakeConfiguration debug = new MakeConfiguration(dirF.getPath(), "Debug", conftype, hostUID, toolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
-            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype); // NOI18N
+            MakeConfiguration release = new MakeConfiguration(dirF.getPath(), "Release", conftype, hostUID, toolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);

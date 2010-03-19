@@ -62,6 +62,8 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -538,7 +540,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
             }
         }
-        d.putProperty("serverRecord", hostComboBox.getSelectedItem()); // NOI18N
+        ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
+        if (sr != null) {
+            d.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment())); // NOI18N
+        }
         d.putProperty("toolchain", toolchainComboBox.getSelectedItem()); // NOI18N
     }
 
@@ -551,7 +556,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        ServerRecord sr = (ServerRecord) settings.getProperty("serverRecord");
+        String hostUID = (String) settings.getProperty("hostUID");
+        ServerRecord sr = null;
+        if (hostUID != null) {
+            ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            if (ee != null) {
+                sr = ServerList.get(ee);
+            }
+        }
         if (sr == null || sr.isDeleted()) {
             sr = ServerList.getDefaultRecord();
         }
