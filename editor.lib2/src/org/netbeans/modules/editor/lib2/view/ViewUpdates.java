@@ -126,8 +126,7 @@ public final class ViewUpdates implements DocumentListener {
         Document doc = documentView.getDocument();
         checkFactoriesComponentInited();
         ViewBuilder viewBuilder = new ViewBuilder(
-                new ViewReplace<DocumentView,ParagraphView>(documentView, 0),
-                null, viewFactories, 0, doc.getLength() + 1, 0);
+                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, 0);
         try {
             viewBuilder.createViews();
             viewBuilder.repaintAndReplaceViews();
@@ -154,9 +153,11 @@ public final class ViewUpdates implements DocumentListener {
                 boolean rebuildNecessary = isRebuildNecessary();
                 int insertOffset = evt.getOffset();
                 int insertLength = evt.getLength();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("\nDOCUMENT-INSERT: offset=" + insertOffset + ", length=" + insertLength + '\n'); // NOI18N
+                }
                 rStartOffset = Math.min(rStartOffset, insertOffset);
                 rEndOffset = Math.max(rEndOffset, insertOffset + insertLength);
-                Element[] addedLines = null;
                 // If line elements were modified the views will be modified too
                 Document doc = evt.getDocument();
                 DocumentEvent.ElementChange lineElementChange = evt.getChange(doc.getDefaultRootElement());
@@ -164,20 +165,29 @@ public final class ViewUpdates implements DocumentListener {
                     Element[] removedLines = lineElementChange.getChildrenRemoved();
                     if (removedLines.length > 0) { // Insertion at line's begining
                         rebuildNecessary = true;
-                        assert (removedLines.length == 1) : "Expected 1 removed line during insert only"; // NOI18N
-                        Element removedLine = removedLines[0];
-                        int removedLineStartOffset = removedLine.getStartOffset();
-                        int removedLineEndOffset = removedLine.getEndOffset();
-                        assert (insertOffset >= removedLineStartOffset && insertOffset <= removedLineEndOffset);
-                        if (removedLineStartOffset < rStartOffset) {
-                            rStartOffset = removedLineStartOffset;
+                        int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
+                        int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
+                        assert (insertOffset >= firstRemovedLineStartOffset && insertOffset <= lastRemovedLineEndOffset);
+                        if (firstRemovedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstRemovedLineStartOffset;
                         }
-                        if (removedLineEndOffset > rEndOffset) {
-                            rEndOffset = removedLineEndOffset;
+                        if (lastRemovedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastRemovedLineEndOffset;
                         }
                     }
-                    addedLines = lineElementChange.getChildrenAdded();
-                    rebuildNecessary |= (addedLines != null && addedLines.length > 0);
+                    Element[] addedLines = lineElementChange.getChildrenAdded();
+                    if (addedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstAddedLineStartOffset = addedLines[0].getStartOffset();
+                        int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
+                        if (firstAddedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstAddedLineStartOffset;
+                        }
+                        if (lastAddedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastAddedLineEndOffset;
+                        }
+                    }
+                    rebuildNecessary |= (addedLines.length > 0);
                 }
                 int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
                 assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
@@ -210,20 +220,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 if (rebuildNecessary) {
-                    ViewReplace<DocumentView, ParagraphView> docViewReplace =
-                            new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
-                    ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                            paragraphView, paragraphView.getViewIndex(rStartOffset));
-                    docViewReplace.index++; // Increase index since paragraph view of local replace won't be removed
-                    // Views contained in paragraph view are not updated yet by the inserted length
-                    int paragraphViewEndOffset = paragraphView.getEndOffset() + insertLength;
-                    EditorView childView = localReplace.childViewAtIndex();
-                    rStartOffset = childView.getStartOffset();
-                    if (rEndOffset < paragraphViewEndOffset) {
-                        // Rebuild till end of line so that the local views do not need to be updated
-                        rEndOffset = paragraphViewEndOffset;
-                    }
-                    ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset, insertLength);
                     try {
                         viewBuilder.createViews();
@@ -252,11 +249,14 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 // Check if the factories fired any changes
-                int rStartOffset = rebuildStartOffset;;
+                int rStartOffset = rebuildStartOffset;
                 int rEndOffset = rebuildEndOffset;
                 boolean rebuildNecessary = isRebuildNecessary();
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("\nDOCUMENT-REMOVE: offset=" + removeOffset + ", length=" + removeLength + '\n'); // NOI18N
+                }
                 rStartOffset = Math.min(rStartOffset, removeOffset);
                 rEndOffset = Math.max(rEndOffset, removeOffset + removeLength);
                 // If line elements were modified the views will be modified too
@@ -267,17 +267,32 @@ public final class ViewUpdates implements DocumentListener {
                     removedLines = lineElementChange.getChildrenRemoved();
                     if (removedLines.length > 0) { // Insertion at line's begining
                         rebuildNecessary = true;
-                        int removedLineStartOffset = removedLines[0].getStartOffset();
-                        int removedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
-                        if (removedLineStartOffset < rStartOffset) {
-                            rStartOffset = removedLineStartOffset;
+                        int firstRemovedLineStartOffset = removedLines[0].getStartOffset();
+                        int lastRemovedLineEndOffset = removedLines[removedLines.length - 1].getEndOffset();
+                        if (firstRemovedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstRemovedLineStartOffset;
                         }
-                        if (removedLineEndOffset > rEndOffset) {
-                            rEndOffset = removedLineEndOffset;
+                        if (lastRemovedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastRemovedLineEndOffset;
                         }
                     }
+                    Element[] addedLines = lineElementChange.getChildrenAdded();
+                    if (addedLines.length > 0) { // Insertion at line's begining
+                        rebuildNecessary = true;
+                        int firstAddedLineStartOffset = addedLines[0].getStartOffset();
+                        int lastAddedLineEndOffset = addedLines[addedLines.length - 1].getEndOffset();
+                        if (firstAddedLineStartOffset < rStartOffset) {
+                            rStartOffset = firstAddedLineStartOffset;
+                        }
+                        if (lastAddedLineEndOffset > rEndOffset) {
+                            rEndOffset = lastAddedLineEndOffset;
+                        }
+                    }
+                    rebuildNecessary |= (addedLines.length > 0);
                 }
-                int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
+                // During remove the paragraph views (which are based on positions) may get fused.
+                // Thus use getViewIndexFirst() to find for the first one.
+                int paragraphViewIndex = documentView.getViewIndexFirst(rStartOffset);
                 assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
                 ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
 
@@ -305,21 +320,8 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 if (rebuildNecessary) {
-                    ViewReplace<DocumentView, ParagraphView> docViewReplace =
-                            new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
-                    ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                            paragraphView, paragraphView.getViewIndex(rStartOffset));
-                    docViewReplace.index++; // Increase index since paragraph view of local replace won't be removed
-                    // Views contained in paragraph view are not updated yet by the inserted length
-                    EditorView childView = localReplace.childViewAtIndex();
-                    rStartOffset = childView.getStartOffset();
-                    int paragraphViewEndOffset = paragraphView.getEndOffset() - removeLength;
-                    if (rEndOffset < paragraphViewEndOffset) {
-                        // Rebuild till end of line so that the local views do not need to be updated
-                        rEndOffset = paragraphViewEndOffset;
-                    }
-                    ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
-                            viewFactories, rStartOffset, rEndOffset, removeLength);
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
+                            viewFactories, rStartOffset, rEndOffset, -removeLength);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
@@ -350,7 +352,6 @@ public final class ViewUpdates implements DocumentListener {
             } finally {
                 incomingModification = false;
             }
-            checkRebuild();
         }
     }
 
@@ -369,7 +370,7 @@ public final class ViewUpdates implements DocumentListener {
             rebuildEndOffset = endOffset;
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("ViewUpdates.Change set to <" + rebuildStartOffset
-                        + "," + rebuildEndOffset + ">");
+                        + "," + rebuildEndOffset + ">\n");
             }
         } else {
             boolean change = false;
@@ -383,7 +384,7 @@ public final class ViewUpdates implements DocumentListener {
             }
             if (change && LOG.isLoggable(Level.FINE)) {
                 LOG.fine("ViewUpdates.Change extended to <" + rebuildStartOffset
-                        + "," + rebuildEndOffset + ">");
+                        + "," + rebuildEndOffset + ">\n");
             }
         }
     }
@@ -409,14 +410,8 @@ public final class ViewUpdates implements DocumentListener {
                     int rEndOffset = rebuildEndOffset;
                     int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
                     assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-                    EditorView child = documentView.getEditorView(paragraphViewIndex);
-                    ParagraphView paragraphView = (ParagraphView) child;
-                    // Use paragraphViewIndex+1 since localReplace's paragraph view won't be removed
-                    ViewReplace<DocumentView,ParagraphView> docViewReplace =
-                            new ViewReplace<DocumentView,ParagraphView>(documentView, paragraphViewIndex + 1);
-                    ViewReplace<ParagraphView,EditorView> localReplace = new ViewReplace<ParagraphView,EditorView>(
-                            paragraphView, paragraphView.getViewIndex(rStartOffset));
-                    ViewBuilder viewBuilder = new ViewBuilder(docViewReplace, localReplace,
+                    ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset, 0);
                     try {
                         viewBuilder.createViews();

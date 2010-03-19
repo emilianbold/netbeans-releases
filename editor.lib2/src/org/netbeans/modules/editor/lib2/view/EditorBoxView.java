@@ -380,6 +380,10 @@ public abstract class EditorBoxView extends EditorView {
         return index;
     }
 
+    public int getViewIndexFirst(int offset) {
+        return children.getViewIndexFirst(offset);
+    }
+
     @Override
     public int getViewIndexChecked(double x, double y, Shape alloc) {
         return children.getViewIndexAtPoint(this, x, y, alloc);
