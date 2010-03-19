@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -135,7 +136,8 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED, null);
         }
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(host));
-        compilerSet = new CompilerSet2Configuration(developmentHost);
+        CompilerSet defCS = CompilerSetManager.get(developmentHost.getExecutionEnvironment()).getDefaultCompilerSet();
+        compilerSet = new CompilerSet2Configuration(developmentHost, defCS);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
