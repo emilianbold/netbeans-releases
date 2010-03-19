@@ -328,7 +328,12 @@ public class ImportProject implements PropertyChangeListener {
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
-        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, tests, importantItemsIterator);
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
+        prjParams.setMakefileName(makefileName).setConfiguration(extConf);
+        prjParams.setSourceFolders(sources).setSourceFoldersFilter(sourceFoldersFilter);
+        prjParams.setTestFolders(tests);
+        prjParams.setImportantFiles(importantItemsIterator);
+        makeProject = ProjectGenerator.createProject(prjParams);
         FileObject dir = FileUtil.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
