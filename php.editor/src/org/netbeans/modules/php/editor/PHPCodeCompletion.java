@@ -194,6 +194,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "$this->", "self::", "parent::"
     };
 
+    final static String[] PHP_STATIC_CLASS_KEYWORDS = {
+        "self::", "parent::"
+    };
+
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList('=', ';', '+', '-', '*', '/',
                 '%', '(', ')', '[', ']', '{', '}', '?'));
@@ -278,6 +282,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             switch (context) {
+                case DEFAULT_PARAMETER_VALUE:
+                    final Prefix nameKindPrefix = NameKind.prefix(prefix);
+                    autoCompleteKeywords(completionResult, request, Arrays.asList("array"));//NOI18N
+                    autoCompleteNamespaces(completionResult, request);
+                    autoCompleteTypeNames(completionResult, request, null, true);
+                    final ElementFilter forName = ElementFilter.forName(nameKindPrefix);
+                    Set<ConstantElement> constants = request.index.getConstants(nameKindPrefix);
+                    for (ConstantElement constant : forName.filter(constants)) {
+                        completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+                    }
+                    final ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
+                    if (enclosingClass != null) {
+                        String clsName = enclosingClass.getName().getName();
+                        for (String classKeyword : PHP_STATIC_CLASS_KEYWORDS) {
+                            if (classKeyword.toLowerCase().startsWith(prefix)) {//NOI18N
+                                completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(clsName, classKeyword, request));
+                            }
+                        }
+                    }
+                    break;
                 case NAMESPACE_KEYWORD:
                     autoCompleteNamespaces(completionResult, request, QualifiedNameKind.QUALIFIED);
                     break;
@@ -307,7 +331,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case USE_KEYWORD:
                     autoCompleteNamespaces(completionResult, request, QualifiedNameKind.QUALIFIED);
-                    autoCompleteTypeNames(completionResult, request, QualifiedNameKind.QUALIFIED);
+                    autoCompleteTypeNames(completionResult, request, QualifiedNameKind.QUALIFIED, false);
                     break;
                 case TYPE_NAME:
                     autoCompleteNamespaces(completionResult, request);
@@ -321,7 +345,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteClassMembers(completionResult, request, false);
                     break;
                 case STATIC_CLASS_MEMBER:
-                    autoCompleteClassMembers(completionResult, request, true);
+                   autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
                     if (PHPDOCCodeCompletion.isTypeCtx(request)) {
@@ -498,9 +522,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
-        autoCompleteTypeNames(completionResult, request, null);
+        autoCompleteTypeNames(completionResult, request, null, false);
     }
-    private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind) {
+    private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         if (request.prefix.trim().length() > 0) {
             final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
             final NameKind nameQuery = NameKind.create(request.prefix,
@@ -512,19 +536,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             for (InterfaceElement iface : interfaces) {
-                completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
+                completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, endWithDoubleColon));
             }
             Set<ClassElement> classes = request.index.getClasses(nameQuery);
             for (ClassElement clazz : classes) {
-                completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, kind));
+                completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
             }
         } else {
             Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty());
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
-                    completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, false, kind));
+                    completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, endWithDoubleColon, kind));
                 } else if (element instanceof InterfaceElement) {
-                    completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, false));
+                    completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
             }
         }

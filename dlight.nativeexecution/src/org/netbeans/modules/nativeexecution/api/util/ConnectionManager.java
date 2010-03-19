@@ -91,7 +91,7 @@ public final class ConnectionManager {
     // Actual sessions pool
     private final JSch jsch;
     private volatile boolean connecting;
-    List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
+    private List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -104,12 +104,14 @@ public final class ConnectionManager {
         if (log.isLoggable(Level.FINEST)) {
             JSch.setLogger(new com.jcraft.jsch.Logger() {
 
+                @Override
                 public boolean isEnabled(int level) {
                     return true;
                 }
 
+                @Override
                 public void log(int level, String message) {
-                    log.log(Level.FINEST, "JSCH: " + message); // NOI18N
+                    log.log(Level.FINEST, "JSCH: {0}", message); // NOI18N
                 }
             });
         }
@@ -120,7 +122,7 @@ public final class ConnectionManager {
             jsch.setKnownHosts(System.getProperty("user.home") + // NOI18N
                     "/.ssh/known_hosts"); // NOI18N
         } catch (JSchException ex) {
-            log.warning("Unable to setKnownHosts for jsch. " + ex.getMessage()); // NOI18N
+            log.log(Level.WARNING, "Unable to setKnownHosts for jsch. {0}", ex.getMessage()); // NOI18N
         }
 
         sessions = new HashMap<ExecutionEnvironment, Session>();
@@ -191,16 +193,13 @@ public final class ConnectionManager {
      *
      * @param env <tt>ExecutionEnvironment</tt> to connect to.
      * @param password password to be used for identification
-     * @param storePassword indicates whether to store the password (in
-     * encrypted form) for further refference or not
      * @return <tt>true</tt> if this call to the function has initiated a new
      * connection to the <tt>env</tt>
      * @throws java.lang.Throwable
      */
     public boolean connectTo(
             final ExecutionEnvironment env,
-            char[] password,
-            boolean storePassword) throws IOException, CancellationException {
+            char[] password) throws IOException, CancellationException {
 
         if (SwingUtilities.isEventDispatchThread()) {
             // otherwise UI can hang forever
@@ -218,7 +217,7 @@ public final class ConnectionManager {
         }
 
         if (password != null) {
-            PasswordManager.getInstance().put(env, password, storePassword);
+            PasswordManager.getInstance().put(env, password);
         }
 
         return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
@@ -283,7 +282,7 @@ public final class ConnectionManager {
                 result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
             } else {
                 try {
-                    result = connectTo(env, passwd, false);
+                    result = connectTo(env, passwd);
                 } catch (ConnectException ex) {
                     if (ex.getMessage().equals("Auth fail")) { // NOI18N
                         // Try with user-interaction
@@ -311,6 +310,7 @@ public final class ConnectionManager {
 
             final Cancellable cancelConnection = new Cancellable() {
 
+                @Override
                 public boolean cancel() {
                     if (task != null) {
                         task.cancel();
@@ -361,6 +361,7 @@ public final class ConnectionManager {
 
                 NativeTaskExecutorService.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             // Initiate a task that will fetch host info...
@@ -375,7 +376,7 @@ public final class ConnectionManager {
                     }
                 }, "Fetch hosts info " + env.toString()); // NOI18N
 
-                log.fine("New connection established: " + env.toString()); // NOI18N
+                log.log(Level.FINE, "New connection established: {0}", env.toString()); // NOI18N
                 return true;
             }
 
@@ -458,9 +459,11 @@ public final class ConnectionManager {
             this.onConnect = onConnect;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             NativeTaskExecutorService.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         invoke();
@@ -471,6 +474,7 @@ public final class ConnectionManager {
             }, "Connecting to " + env.toString()); // NOI18N
         }
 
+        @Override
         public void invoke() throws IOException, CancellationException {
             boolean newConnectionEstablished = cm.connectTo(env);
 
@@ -493,6 +497,7 @@ public final class ConnectionManager {
             this.session = null;
         }
 
+        @Override
         public Session call() throws Exception {
             Session result = null;
 
@@ -605,6 +610,7 @@ public final class ConnectionManager {
             }
         }
 
+        @Override
         public boolean cancel() {
             final Session activeSession;
             cancelled = true;
@@ -633,6 +639,7 @@ public final class ConnectionManager {
             this.addressToConnect = addressToConnect;
         }
 
+        @Override
         public Boolean call() throws Exception {
             socket.connect(addressToConnect, timeout);
             return Boolean.TRUE;

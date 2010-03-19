@@ -498,6 +498,10 @@ public class ProviderUtil {
         return top_provider == null ? DEFAULT_PROVIDER : top_provider;
     }
 
+    public static String getVersion(Provider provider){
+        return provider.getVersion();
+    }
+
      /**
      * Gets the all versions of persistence providers of the given persistence unit
      *

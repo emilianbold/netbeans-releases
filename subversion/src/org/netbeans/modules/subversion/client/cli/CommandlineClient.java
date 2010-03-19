@@ -54,6 +54,7 @@ import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
+import org.netbeans.modules.subversion.client.cli.commands.CleanupCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CopyCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ExportCommand;
@@ -933,8 +934,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void cleanup(File arg0) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void cleanup(File file) throws SVNClientException {
+        CleanupCommand cmd = new CleanupCommand(file);
+        exec(cmd);
     }
 
     private void notifyChangedStatus(File file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {
