@@ -78,21 +78,28 @@ public final class ParameterElementImpl implements ParameterElement {
 
     }
 
-    static List<ParameterElement> parseParameters(String signature) {
+    static List<ParameterElement> parseParameters(final String signature) {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         if (signature != null && signature.length() > 0) {
             final String regexp = String.format("\\%s", SEPARATOR.COMMA.toString());//NOI18N
             for (String sign : signature.split(regexp)) {
-                final ParameterElement param = parseParameter(sign);
-                if (param != null) {
-                    retval.add(param);
+                try {
+                    final ParameterElement param = parseOneParameter(sign);
+                    if (param != null) {
+                        retval.add(param);
+                    }
+                } catch(NumberFormatException originalException) {
+                    final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                    final NumberFormatException formatException = new NumberFormatException(message);
+                    formatException.initCause(originalException);
+                    throw formatException;
                 }
             }
         }
         return retval;
     }
 
-    private static ParameterElement parseParameter(String sig) throws NumberFormatException {
+    private static ParameterElement parseOneParameter(String sig) throws NumberFormatException {
         ParameterElement retval = null;
         final String regexp = String.format("\\%s", SEPARATOR.COLON.toString());//NOI18N
         String[] parts = sig.split(regexp);
@@ -111,13 +118,17 @@ public final class ParameterElementImpl implements ParameterElement {
 
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append(SEPARATOR.COLON);
+        final String parameterName = getName().trim();
+        assert parameterName.equals(encode(parameterName)) : parameterName;
+        sb.append(parameterName).append(SEPARATOR.COLON);
         StringBuilder typeBuilder = new StringBuilder();
         for (TypeResolver typeResolver : getTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             typeBuilder.append(resolverImpl.getSignature());
         }
-        sb.append(typeBuilder);
+        String typeSignatures = typeBuilder.toString().trim();
+        assert typeSignatures.equals(encode(typeSignatures)) : typeSignatures;
+        sb.append(typeSignatures);
         sb.append(SEPARATOR.COLON);//NOI18N
         sb.append(isRawType ? 1 : 0);
         sb.append(SEPARATOR.COLON);//NOI18N
@@ -238,15 +249,22 @@ public final class ParameterElementImpl implements ParameterElement {
         boolean checkEnabled = false;
         assert checkEnabled = true;
         if (checkEnabled) {
-            String retval = sb.toString();
-            ParameterElement parsedParameter = parseParameter(retval);
-            assert getName().equals(parsedParameter.getName());
-            assert hasDeclaredType() == parsedParameter.hasDeclaredType();
-//            assert (getDefaultValue() == null ?
-//                parsedParameter.getDefaultValue() == null :
-//                getDefaultValue().equals(parsedParameter.getDefaultValue()));
-//            assert isMandatory() == parsedParameter.isMandatory();
-            assert isReference() == parsedParameter.isReference();
+            String signature = sb.toString();
+            try {
+                ParameterElement parsedParameter = parseOneParameter(signature);
+                assert getName().equals(parsedParameter.getName()) : signature;
+                assert hasDeclaredType() == parsedParameter.hasDeclaredType() : signature;
+                if (getDefaultValue() != null) {
+                    assert getDefaultValue().equals(parsedParameter.getDefaultValue()) : signature;
+                }
+                assert isMandatory() == parsedParameter.isMandatory() : signature;
+                assert isReference() == parsedParameter.isReference() : signature;
+            } catch (NumberFormatException originalException) {
+                final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                final NumberFormatException formatException = new NumberFormatException(message);
+                formatException.initCause(originalException);
+                throw formatException;
+            }
         }
     }
 
