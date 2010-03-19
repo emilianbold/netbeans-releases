@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -88,7 +87,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -289,51 +287,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionDescriptor descr = null;
-
-        if (actionType == PredefinedType.TEST) {
-            TestRunnerLineConvertorProvider p = Lookup.getDefault().lookup(TestRunnerLineConvertorProvider.class);
-            if (p != null) {
-                final LineConvertor convertor = p.createConvertor(pae.getProject());
-
-                descr = new NativeExecutionDescriptor()
-                        .controllable(true)
-                        .frontWindow(false)
-                        .inputVisible(showInput)
-                        .inputOutput(io)
-                        .outLineBased(!unbuffer)
-                        .showProgress(true)
-                        .postExecution(processChangeListener)
-                        .errConvertorFactory(new LineConvertorFactory() {
-                            LineConvertor c = convertor;
-
-                            @Override
-                            public LineConvertor newLineConvertor() {
-                                return c;
-                            }})
-                        .outConvertorFactory(new LineConvertorFactory() {
-                            LineConvertor c = convertor;
-
-                            @Override
-                            public LineConvertor newLineConvertor() {
-                                return c;
-                            }});
-            }
-        }
-        
-        if(descr == null) {
-            descr = new NativeExecutionDescriptor()
-                    .controllable(true)
-                    .frontWindow(true)
-                    .inputVisible(showInput)
-                    .inputOutput(io)
-                    .outLineBased(!unbuffer)
-                    .showProgress(true)
-                    .postExecution(processChangeListener)
-                    .errConvertorFactory(processChangeListener)
-                    .outConvertorFactory(processChangeListener);
-
-        }
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor()
+                .controllable(true)
+                .frontWindow(true)
+                .inputVisible(showInput)
+                .inputOutput(io)
+                .outLineBased(!unbuffer)
+                .showProgress(true)
+                .postExecution(processChangeListener)
+                .errConvertorFactory(processChangeListener)
+                .outConvertorFactory(processChangeListener);
 
         if (actionType == PredefinedType.BUILD) {
             descr.noReset(true);

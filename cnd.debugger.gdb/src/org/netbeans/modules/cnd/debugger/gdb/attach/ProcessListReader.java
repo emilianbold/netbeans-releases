@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 import java.util.List;
+import java.util.Vector;
 
 /**
  *
@@ -53,6 +54,6 @@ public interface ProcessListReader {
      * 
      * @return list The list of processes
      */
-    public void processListCallback(List<String> procs);
+    public void processListCallback(List<Vector<String>> procs);
 
 }

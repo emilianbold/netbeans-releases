@@ -62,14 +62,15 @@ public class TagAttrMetadata {
     }
 
     public TagAttrMetadata(String name, boolean optional, AttrValueType valueType) {
-        this(name, optional, Collections.singleton(valueType));
+        this(name, optional, Collections.singleton(valueType), null);
     }
 
-    public TagAttrMetadata(String name, Collection<AttrValueType> valueTypes) {
-        this(name, true, valueTypes);
+    public TagAttrMetadata(String name, Collection<AttrValueType> valueTypes, String mimeType) {
+        this(name, true, valueTypes, mimeType);
     }
 
-    public TagAttrMetadata(String name, boolean optional, Collection<AttrValueType> valueTypes) {
+    public TagAttrMetadata(String name, boolean optional, Collection<AttrValueType> valueTypes, String mimeType) {
+        this.mimeType = mimeType;
         this.name = name;
         this.optional = optional;
         this.valueTypes = valueTypes;

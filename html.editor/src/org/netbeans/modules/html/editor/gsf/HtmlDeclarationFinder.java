@@ -47,6 +47,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -259,7 +261,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                                             //locations simply must be "main"!!!
                                             dl = dloc;
                                         }
-                                        HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle);
+                                        HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle, type);
                                         dl.addAlternative(aloc);
                                     }
                                 }
@@ -329,10 +331,14 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
         private DeclarationLocation location;
         private EntryHandle entryHandle;
+        private RefactoringElementType type;
 
-        public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry) {
+        private static final int SELECTOR_TEXT_MAX_LENGTH = 50;
+
+        public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry, RefactoringElementType type) {
             this.location = location;
             this.entryHandle = entry;
+            this.type = type;
         }
 
         @Override
@@ -349,15 +355,77 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             int curlyBracketIndex = entryHandle.entry().getLineText().indexOf('{'); //NOI18N
             String croppedLineText = curlyBracketIndex == -1 ? entryHandle.entry().getLineText() : entryHandle.entry().getLineText().substring(0, curlyBracketIndex);
 
-            b.append("<b><font color=007c00>");//NOI18N
-            b.append(croppedLineText);
-            b.append("</font></b> in "); //NOI18N
+            //split the text to three parts: the element text itself, its prefix and postfix
+            //then render the element test in bold
+            String elementTextPrefix;
+            switch(type) {
+                case CLASS:
+                    elementTextPrefix = "."; //NOI18N
+                    break;
+                case ID:
+                    elementTextPrefix = "#"; //NOI18N
+                    break;
+                default:
+                    elementTextPrefix = "";
+            }
+            String elementText = elementTextPrefix + entryHandle.entry().getName();
+            int elementTextIndex = croppedLineText.indexOf(elementText);
+            assert elementTextIndex != -1;
+            String prefix = croppedLineText.substring(0, elementTextIndex).trim();
+            String postfix = croppedLineText.substring(elementTextIndex + elementText.length()).trim();
+
+            //now strip the prefix and postfix so the whole text is not longer than SELECTOR_TEXT_MAX_LENGTH
+            int overlap = croppedLineText.length() - SELECTOR_TEXT_MAX_LENGTH;
+            if(overlap > 0) {
+                //strip
+                int stripFromPrefix = Math.min(overlap / 2, prefix.length());
+                prefix = ".." + prefix.substring(stripFromPrefix);
+                int stripFromPostfix = Math.min(overlap - stripFromPrefix, postfix.length());
+                postfix = postfix.substring(0, postfix.length() - stripFromPostfix) + "..";
+            }
+
+            b.append("<font color=007c00>");//NOI18N
+            b.append(prefix);
+            b.append(' '); //NOI18N
+            b.append("<b>"); //NOI18N
+            b.append(elementText);
+            b.append("</b>"); //NOI18N
+            b.append(' '); //NOI18N
+            b.append(postfix);
+            b.append("</font> in "); //NOI18N
 
             //add a link to the file relative to the web root
             FileObject file = location.getFileObject();
-            FileObject webRoot = ProjectWebRootQuery.getWebRoot(file);
-            String path = webRoot == null ? file.getPath() : FileUtil.getRelativePath(webRoot, file);
+            FileObject pathRoot = ProjectWebRootQuery.getWebRoot(file);
+            
+            String path = null;
+            String resolveTo = null;
+            if(pathRoot != null) {
+                path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
+            }
+            if (path == null) {
+                //the file cannot be resolved relatively to the webroot or no webroot found
+                //try to resolve relative path to the project's root folder
+                Project project = FileOwnerQuery.getOwner(file);
+                if (project != null) {
+                    pathRoot = project.getProjectDirectory();
+                    path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
+                    if(path != null) {
+                        resolveTo = "${project.home}/"; //NOI18N
+                    }
+                }
+            }
 
+            if(path == null) {
+                //if everything fails, just use the absolute path
+                path = file.getPath();
+            }
+
+            if(resolveTo != null) {
+                b.append("<i>"); //NOI18N
+                b.append(resolveTo);
+                b.append("</i>"); //NOI18N
+            }
             b.append(path);
             int lineOffset = entryHandle.entry().getLineOffset();
             if(lineOffset != -1) {

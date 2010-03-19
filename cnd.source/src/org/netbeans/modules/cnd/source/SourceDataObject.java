@@ -71,12 +71,12 @@ public abstract class SourceDataObject extends MultiDataObject {
         super(pf, loader);
     }
 
-    InstanceContent getInstanceContent(){
+    final InstanceContent getInstanceContent(){
         return ic;
     }
 
     @Override
-    public synchronized Lookup getLookup() {
+    public final synchronized Lookup getLookup() {
         if (myLookup == null) {
             ic = new InstanceContent();
             ic.add(this);
@@ -89,7 +89,7 @@ public abstract class SourceDataObject extends MultiDataObject {
     }
 
     @Override
-    public <T extends Cookie> T getCookie(Class<T> type) {
+    public final <T extends Cookie> T getCookie(Class<T> type) {
         return getLookup().lookup(type);
     }
 

@@ -360,6 +360,28 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         validate();
     }
 
+    @Override
+    public void requestFocus() {
+	// redirect focus into terminal
+	JComponent selected = getSelected();
+	if (selected != null) {
+	    selected.requestFocus();
+	} else {
+	    super.requestFocus();
+	}
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+	// redirect focus into terminal
+	JComponent selected = getSelected();
+	if (selected != null) {
+	    return selected.requestFocusInWindow();
+	} else {
+	    return super.requestFocusInWindow();
+	}
+    }
+
     /**
      * Handle delegation from containing TopComponent.
      */

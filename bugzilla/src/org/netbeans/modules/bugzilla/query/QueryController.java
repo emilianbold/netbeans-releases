@@ -381,10 +381,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                         return;
                     }
                     productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-                    if (panel.productList.getModel().getSize() > 0) {
-                        panel.productList.setSelectedIndex(0);
-                        populateProductDetails(((ParameterValue) panel.productList.getSelectedValue()).getValue());
-                    }
                     if(isNetbeans) {
                         issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
                     } else {
@@ -433,6 +429,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void disableProduct() { // XXX whatever field
         productParameter.setAlwaysDisabled(true);
+    }
+
+    protected void selectFirstProduct() {
+        if(panel.productList.getModel().getSize() > 0) {
+            panel.productList.setSelectedIndex(0);
+        }
     }
 
     public void insertUpdate(DocumentEvent e) {

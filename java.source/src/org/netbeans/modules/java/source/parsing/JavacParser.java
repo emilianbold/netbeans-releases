@@ -625,7 +625,7 @@ public class JavacParser extends Parser {
             sourceLevel = SourceLevelQuery.getSourceLevel(file);
             if (root != null && sourceLevel != null) {
                 try {
-                    JavaCustomIndexer.verifySourceLevel(root.getURL(), sourceLevel);
+                    JavaCustomIndexer.verifySourceLevel(root, file, sourceLevel);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }

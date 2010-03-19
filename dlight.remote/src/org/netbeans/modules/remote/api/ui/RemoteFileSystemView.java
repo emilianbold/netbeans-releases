@@ -92,7 +92,7 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public String getSystemDisplayName(File f) {
-        return "".equals(f.getName()) ? "/" : f.getName();
+        return "".equals(f.getName()) ? "/" : f.getName(); // NOI18N
     }
 
     @Override
@@ -134,7 +134,7 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public File createNewFolder(File containingDir) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override

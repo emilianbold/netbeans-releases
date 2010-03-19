@@ -127,10 +127,11 @@ made subject to such option by the copyright holder.
         <folder name="SpringFramework">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
             <attr name="position" intvalue="825"/>
-            <file name="SpringXMLConfig.xml">
+            <file name="SpringXMLConfig.xml" url="templates/springXMLConfig.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.spring.beans.wizards.NewSpringXMLConfigWizardIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/newSpringXMLConfig.html"/>
                 <attr name="templateCategory" stringvalue="spring-web-types"/>

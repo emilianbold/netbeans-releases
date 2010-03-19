@@ -34,6 +34,7 @@ Not Searchable Keys:
 Document 4
 Searchable Keys:
   iface : bbb;BBB;34;AAA;;
+  superiface : aaa;AAA;
   top : bbb
 
 Not Searchable Keys:
@@ -42,6 +43,7 @@ Not Searchable Keys:
 Document 5
 Searchable Keys:
   iface : ccc;CCC;64;BBB;;
+  superiface : bbb;BBB;
   top : ccc
 
 Not Searchable Keys:

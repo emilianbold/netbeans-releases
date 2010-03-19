@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.dlight.libs.h2</code-name-base>
+            <module-dependencies/>
+            <public-packages>
+                <package>org.h2</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/h2-1.0.79.jar</runtime-relative-path>
+                <binary-origin>external/h2-1.0.79.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

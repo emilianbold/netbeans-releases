@@ -37,16 +37,66 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.spi;
+package org.netbeans.modules.j2ee.weblogic9.config;
 
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Petr Hejl
  */
-public interface TestRunnerLineConvertorProvider {
+public class WLDatasource implements Datasource {
 
-    public LineConvertor createConvertor(Project project);
+    private final String name;
+
+    private final String url;
+
+    private final String jndi;
+
+    private final String user;
+
+    private final String password;
+
+    private final String driver;
+
+    public WLDatasource(String name, String url, String jndi, String user,
+            String password, String driver) {
+        this.name = name;
+        this.url = url;
+        this.jndi = jndi;
+        this.user = user;
+        this.password = password;
+        this.driver = driver;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name;
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return driver;
+    }
+
+    @Override
+    public String getJndiName() {
+        return jndi;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUsername() {
+        return user;
+    }
+
 }

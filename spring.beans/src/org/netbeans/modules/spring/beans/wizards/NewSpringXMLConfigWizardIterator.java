@@ -44,18 +44,16 @@
 package org.netbeans.modules.spring.beans.wizards;
 
 import java.awt.Component;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -63,22 +61,20 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.spring.api.SpringUtilities;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileAlreadyLockedException;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.CloneableEditorSupport;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
@@ -133,33 +129,89 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         return panels;
     }
 
+    @Override
     public Set instantiate() throws IOException {
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
         final String targetName = Templates.getTargetName(wizard);
 
         final FileObject[] createdFile = { null };
 
-        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-
-            public void run() throws IOException {
-                createdFile[0] = targetFolder.createData(targetName, Templates.getTemplate(wizard).getExt());
-                String[] incNamespaces = (String[]) wizard.getProperty(SpringXMLConfigNamespacesPanel.INCLUDED_NAMESPACES);
-                generateFileContents(createdFile[0], incNamespaces);
-            }
-        });
+        String version="";
         boolean addSpringToClassPath = (Boolean) wizard.getProperty(SpringXMLConfigNamespacesPanel.ADD_SPRING_TO_CLASSPATH);
         if (addSpringToClassPath) {
             Library[] libraries = { (Library) wizard.getProperty(SpringXMLConfigNamespacesPanel.SPRING_LIBRARY) };
+            version = SpringUtilities.getSpringLibraryVersion(libraries[0]);
             addLibrariesToClassPath(libraries);
+        } else {
+            //Retriving Spring library version from ClassPath
+            FileObject artifact = getSourceGroupArtifact(Templates.getProject(wizard),targetFolder);
+            ClassPath cp = ClassPath.getClassPath(artifact, ClassPath.COMPILE);
+            FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");    //NOI18N
+
+
+            if ( resource != null ) {
+                FileObject ownerRoot = cp.findOwnerRoot(resource);
+                version = findSpringVersion(ownerRoot);
+            }
         }
+        if (version == null || "".equals(version)) {    //NOI18N
+            version = "2.5";    //NOI18N
+        }
+
+        HashMap<String, Object> params = new HashMap<String, Object>();
         
+        if (version.startsWith("3.0")) {    //NOI18N
+            version = "3.0";
+            params.put("springVersion3", Boolean.TRUE); //NOI18N
+        }
+
+        params.put("namespaces", getNamespacesList(version));   //NOI18N
+        
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+        FileObject templateFO = Templates.getTemplate(wizard);
+        DataObject templateDO = DataObject.find(templateFO);
+        createdFile[0] = templateDO.createFromTemplate(dataFolder, targetName, params).getPrimaryFile();
+
         @SuppressWarnings("unchecked")
         Set<ConfigFileGroup> selectedGroups = (Set<ConfigFileGroup>) wizard.getProperty(SpringXMLConfigGroupPanel.CONFIG_FILE_GROUPS);
         addFileToConfigFileManager(selectedGroups != null ? selectedGroups : Collections.<ConfigFileGroup>emptySet(), FileUtil.toFile(createdFile[0]));
         
         return Collections.singleton(createdFile[0]);
     }
-    
+
+    private List<TemplateData> getNamespacesList(String version) {
+        List<TemplateData> namespaces = new ArrayList<TemplateData>();
+        String[] incNamespaces = (String[]) wizard.getProperty(SpringXMLConfigNamespacesPanel.INCLUDED_NAMESPACES);
+        for (String ns : incNamespaces) {
+            String prefix = ns.substring(0, ns.indexOf("-")).trim(); // NOI18N
+            String schemaName = ns.substring(ns.indexOf("-") + 1).trim();
+            String fileName;
+            if (schemaName.equals("http://www.springframework.org/schema/webflow-config")) {
+                fileName = "spring-"+schemaName.substring(schemaName.lastIndexOf("/")+1)+"-2.0.xsd";   //NOI18N
+            } else {
+                fileName = "spring-"+schemaName.substring(schemaName.lastIndexOf("/")+1)+"-"+version+".xsd";   //NOI18N
+            }
+            namespaces.add(new TemplateData(prefix, schemaName, fileName));
+
+        }
+        return namespaces;
+    }
+
+    private String findSpringVersion(FileObject ownerRoot) {
+        try {
+            if (ownerRoot !=null) { //NOI18N
+                if (ownerRoot.getFileSystem() instanceof JarFileSystem) {
+                    JarFileSystem jarFileSystem = (JarFileSystem) ownerRoot.getFileSystem();
+                    return SpringUtilities.getImplementationVersion(jarFileSystem);
+                }
+            }
+        } catch (FileStateInvalidException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+
     private void addLibrariesToClassPath(Library[] libraries) throws IOException {
         FileObject artifact = getSourceGroupArtifact(Templates.getProject(wizard), Templates.getTargetFolder(wizard));
         if (artifact != null) {
@@ -174,7 +226,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
                 public Void  run() throws IOException {
                     List<File> origFiles = manager.getConfigFiles();
                     List<File> newFiles = new ArrayList<File>(origFiles);
-                    newFiles.add(file);
+                    if (!newFiles.contains(file)) {
+                        newFiles.add(file);
+                    }
                     List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
                     List<ConfigFileGroup> newGroups = null;
                     if (selectedGroups.size() > 0) {
@@ -285,83 +339,6 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         return res;
     }
 
-    private void generateFileContents(final FileObject targetFile, String[] incNamespaces) {
-        StringBuilder sb = generateXML(incNamespaces);
-
-        try {
-            Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-            final BaseDocument doc = new BaseDocument(true, SpringConstants.CONFIG_MIME_TYPE);
-            final Reformat reformat = Reformat.get(doc);
-            
-            doc.remove(0, doc.getLength());
-            doc.insertString(0, sb.toString(), null);
-            reformat.lock();
-            try {
-                doc.runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            reformat.reformat(0, doc.getLength());
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } finally {
-                reformat.unlock();
-            }
-            
-            sb.replace(0, sb.length(), doc.getText(0, doc.getLength()));
-            final String text = sb.toString();
-
-            FileLock lock = targetFile.lock();
-            try {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-                        targetFile.getOutputStream(lock)));
-                bw.write(text);
-                bw.close();
-            } finally {
-                lock.releaseLock();
-            }
-        } catch (FileAlreadyLockedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    private StringBuilder generateXML(String[] incNamespaces) {
-        String sep = System.getProperty("line.separator"); // NOI18N
-        StringBuilder schemaLoc = new StringBuilder();
-        schemaLoc.append("       xsi:schemaLocation=\"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"); // NOI18N
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append(sep); // NOI18N
-        sb.append("<beans xmlns=\"http://www.springframework.org/schema/beans\"").append(sep); // NOI18N
-        sb.append("       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"").append(sep); // NOI18N
-
-        for (String cur : incNamespaces) {
-            String prefix = cur.substring(0, cur.indexOf("-")).trim(); // NOI18N
-            String schemaName = cur.substring(cur.indexOf("-") + 1).trim(); // NOI18N
-            if(!schemaName.equals("http://www.springframework.org/schema/p")) { // NOI18N
-                String namespace = schemaName.substring(0, schemaName.lastIndexOf("/")); // NOI18N
-                sb.append("       xmlns:").append(prefix).append("=\"").append(namespace).append("\"").append(sep); // NOI18N
-                schemaLoc.append(sep);
-                schemaLoc.append("       ").append(namespace).append(" ").append(schemaName); // NOI18N
-            } else {
-                sb.append("       xmlns:").append(prefix).append("=\"").append(schemaName).append("\"").append(sep); // NOI18N
-            }
-        }
-
-        sb.append(schemaLoc).append("\""); // NOI18N
-        sb.append(">").append(sep).append("    ").append(sep); // NOI18N
-        sb.append("</beans>"); // NOI18N
-
-        return sb;
-    }
-    
     static ConfigFileManager getConfigFileManager(Project p) {
         ProjectSpringScopeProvider scopeProvider = p.getLookup().lookup(ProjectSpringScopeProvider.class);
         return scopeProvider != null ?  scopeProvider.getSpringScope().getConfigFileManager() : null;
@@ -380,5 +357,43 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             return group.getRootFolder();
         }
         return null;
+    }
+
+    public static final class TemplateData {
+
+        private String prefix;
+        private String namespace;
+        private String fileName;
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public TemplateData(String prefix, String namespace, String fileName) {
+            this.prefix = prefix;
+            this.namespace = namespace;
+            this.fileName = fileName;
+        }
+
     }
 }

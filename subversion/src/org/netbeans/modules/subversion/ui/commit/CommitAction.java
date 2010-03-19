@@ -191,8 +191,8 @@ public class CommitAction extends ContextAction {
         // show commit dialog
         boolean startCommit = showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton;
         String message = panel.getCommitMessage().trim();
-        if (!message.isEmpty()) {
-            SvnModuleConfig.getDefault().setLastCommitMessage(message);
+        if (!startCommit && !message.isEmpty()) {
+            SvnModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }
         SvnModuleConfig.getDefault().setSortingStatus(PANEL_PREFIX, data.getSortingState());
         if (startCommit) {
@@ -347,6 +347,7 @@ public class CommitAction extends ContextAction {
     private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final Collection<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.getCommitMessage();
+        SvnModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
 
         SVNUrl repository = null;

@@ -192,16 +192,20 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     private String getAllOptions(boolean includeOutput) {
-        String options = ""; // NOI18N
+        StringBuilder options = new StringBuilder();
 
-        options += getReplaceOption().getValue() ? "r" : "" ; // NOI18N
-        options += getVerboseOption().getValue() ? "v" : ""; // NOI18N
-        options += getSupressOption().getValue() ? "c" : ""; // NOI18N
-        options += " "; // NOI18N
-        if (includeOutput) {
-            options += getOutputValue() + " ";  // NOI18N
+        options.append(getReplaceOption().getValue() ? "r" : ""); // NOI18N
+        options.append(getVerboseOption().getValue() ? "v" : ""); // NOI18N
+        options.append(getSupressOption().getValue() ? "c" : ""); // NOI18N
+        if (options.length() > 0) {
+            options.insert(0, "-"); // NOI18N
         }
-        return CppUtils.reformatWhitespaces(options);
+        options.append(" "); // NOI18N
+        if (includeOutput) {
+            options.append(getOutputValue());  // NOI18N
+            options.append(" ");  // NOI18N
+        }
+        return CppUtils.reformatWhitespaces(options.toString());
     }
     
     // Sheet

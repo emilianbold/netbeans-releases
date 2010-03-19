@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -319,7 +320,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
         ServerRecord record = ServerList.get(exeEnv);
         assert record != null;
-        invokeRemoteHostAction(record, actionWorker);
+        invokeLongAction(record, actionWorker);
     }
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
@@ -336,7 +337,7 @@ public final class MakeActionProvider implements ActionProvider {
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final CancellableTask actionWorker) {
+    private static void invokeLongAction(final ServerRecord record, final CancellableTask actionWorker) {
         CancellableTask wrapper;
         if (!record.isDeleted() && record.isOnline()) {
             wrapper = actionWorker;
@@ -653,23 +654,20 @@ public final class MakeActionProvider implements ActionProvider {
             }
 
             // Unit tests
-            Node node = context.lookup(Node.class);
-            if (node != null) {
-                Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
-                if (targetFolder != null) {
-                    if (targetFolder.isTest()) {
-                        Item[] items = targetFolder.getAllItemsAsArray();
-                        for (int k = 0; k < items.length; k++) {
-                            path = items[k].getPath();
-                            path = path.replaceFirst("\\..*", ""); // NOI18N
-
-                            path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
-
-                            path = conf.expandMacros(path);
-
-                            path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
-
-                        }
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node != null) {
+                    targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+                }
+            }
+            if (targetFolder != null) {
+                if (targetFolder.isTest()) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    if(compilerSet != null) {
+                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + '/' + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, targetFolder.getPath())); // NOI18N
+                        path = conf.expandMacros(path);
+                        path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
                     }
                 }
             }
@@ -842,11 +840,15 @@ public final class MakeActionProvider implements ActionProvider {
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
             }
-            Node node = context.lookup(Node.class);
-            if (node == null) {
-                return true;
+            
+            Folder targetFolder = context.lookup(Folder.class);
+            if (targetFolder == null) {
+                Node node = context.lookup(Node.class);
+                if (node == null) {
+                    return true;
+                }
+                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
             }
-            Folder targetFolder = (Folder) node.getValue("Folder"); // NOI18N
             if (targetFolder == null) {
                 return true;
             }
@@ -856,28 +858,28 @@ public final class MakeActionProvider implements ActionProvider {
                 list.add(targetFolder);
             }
 
-            loop: for (Folder folder : list) {
-                Item[] items = folder.getAllItemsAsArray();
-                for (int k = 0; k < items.length; k++) {
-                    String test = items[k].getName();
-                    test = test.replaceFirst("\\..*", ""); // NOI18N
-
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand;
-                    buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + test, ""); // NOI18N
-                    String args = "";
-                    int index = buildCommand.indexOf(' ');
-                    if (index > 0) {
-                        args = buildCommand.substring(index + 1);
-                        buildCommand = buildCommand.substring(0, index);
-                    }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                    profile.setArgs(args);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
-                    actionEvents.add(projectActionEvent);
-
-                    break loop;
+            for (Folder folder : list) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if(compilerSet == null) {
+                    continue;
                 }
+                String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String buildCommand;
+                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + target, ""); // NOI18N
+                String args = "";
+                int index = buildCommand.indexOf(' ');
+                if (index > 0) {
+                    args = buildCommand.substring(index + 1);
+                    buildCommand = buildCommand.substring(0, index);
+                }
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                profile.setArgs(args);
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+                actionEvents.add(projectActionEvent);
+
+                break;
             }
         }
 
@@ -1423,12 +1425,12 @@ public final class MakeActionProvider implements ActionProvider {
 
             buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
             buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
-            buildButton.addActionListener(this);
+            buildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.setMnemonic(getString("CleanBuildButtonMn").charAt(0));
-            rebuildButton.addActionListener(this);
+            rebuildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.getAccessibleContext().setAccessibleDescription(getString("CleanBuildButtonAD"));
             cleanButton.setMnemonic(getString("CleanButtonMn").charAt(0));
-            cleanButton.addActionListener(this);
+            cleanButton.addActionListener(BatchConfigurationSelector.this);
             cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
             closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
             // Show the dialog

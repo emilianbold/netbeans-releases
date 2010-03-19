@@ -60,6 +60,7 @@ public final class QuickSearchAction extends CallableSystemAction {
                         ? new AquaQuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY))
                         : new QuickSearchComboBar((KeyStroke) this.getValue(Action.ACCELERATOR_KEY));
         }
+        comboBar.displayer.explicitlyInvoked();
         if (comboBar.getCommand().isFocusOwner()) {
             // repetitive action invocation, reset search to all categories
             comboBar.evaluateCategory(null, false);

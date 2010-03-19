@@ -59,7 +59,7 @@ import org.openide.WizardDescriptor;
  */
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private final NbmWizardPanel panel;
-    private ValidationGroup vg;
+    private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;
     boolean isSuite = false;
 
@@ -70,7 +70,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         isApp = ArchetypeWizardUtils.NB_APP_ARCH.equals(panel.getArchetype());
         isSuite = ArchetypeWizardUtils.NB_SUITE_ARCH.equals(panel.getArchetype());
         if (isApp || isSuite) {
-            vg = ValidationGroup.create();
             vg.add(txtAddModule, Validators.merge(true,
                     MavenValidators.createArtifactIdValidators(),
                     Validators.REQUIRE_VALID_FILENAME
@@ -104,6 +103,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.jLabel1.text")); // NOI18N
+
+        txtAddModule.setEnabled(false);
 
         cbAddModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbAddModule, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbAddModule.text")); // NOI18N
@@ -169,11 +170,18 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
          File parent = (File) d.getProperty("projdir");
          if (isApp || isSuite) {
              if (cbAddModule.isSelected()) {
-                 String ejbText = txtAddModule.getText().trim();
                  d.putProperty("nbm_artifactId", txtAddModule.getText().trim());
              } else {
                  d.putProperty("nbm_ArtifactId", null);
              }
+         }
+         if (isApp || isSuite) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    panel.getValidationGroup().removeValidationGroup(vg);
+                }
+            });
          }
     }
 

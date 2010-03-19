@@ -479,10 +479,10 @@ public class ProjectsRootNode extends AbstractNode {
             this.ch = ch;
             this.pair = p;
             this.logicalView = logicalView;
-            OpenProjectList.log(Level.FINE, "BadgingNode init {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             setProjectFiles();
-            OpenProjectList.log(Level.FINE, "BadgingNode finished {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {

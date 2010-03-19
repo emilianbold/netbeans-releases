@@ -45,12 +45,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -66,7 +68,7 @@ import org.openide.windows.InputOutput;
 abstract class TerminalAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
-        TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
         instance.open();
         instance.requestActive();
         final IOContainer ioContainer = instance.getIOContainer();
@@ -78,7 +80,24 @@ abstract class TerminalAction implements ActionListener {
 
                     @Override
                     public void run() {
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            instance.requestActive();
+                        } else {
+                            doWork();
+                        }
+                    }
+
+                    private void doWork() {
                         try {
+                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                                ConnectionManager.getInstance().connectTo(env);
+                            }
+                            if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                                HostInfoUtils.getHostInfo(env);
+                            } else {
+                                return;
+                            }
+
                             final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
@@ -89,7 +108,8 @@ abstract class TerminalAction implements ActionListener {
                             descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
                             NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
                             es.run();
-                            io.select();
+                            // ask terminal to become active
+                            SwingUtilities.invokeLater(this);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (CancellationException ex) {

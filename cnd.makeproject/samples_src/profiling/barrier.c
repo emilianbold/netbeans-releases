@@ -60,6 +60,7 @@ static void* barrier_threadfunc(void *p) {
     work_run(work, 5 * (1 + work->id) * MICROS_PER_SECOND);
     pthread_barrier_wait(&barrier);
     usleep(2 * MICROS_PER_SECOND);
+    return NULL;
 }
 
 void barrier_demo(int threads, work_t* works) {

@@ -170,6 +170,60 @@ public final class ToolUtils {
                 return "none"; // NOI18N
         }
     }
+    public static boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+        switch (platform) {
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+                for (String p : d.getPlatforms()) {
+                    if ("sun_sparc".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+                for (String p : d.getPlatforms()) {
+                    if ("sun_intel".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_LINUX:
+                for (String p : d.getPlatforms()) {
+                    if ("linux".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_WINDOWS:
+                for (String p : d.getPlatforms()) {
+                    if ("windows".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_MACOSX:
+                for (String p : d.getPlatforms()) {
+                    if ("mac".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_GENERIC:
+                for (String p : d.getPlatforms()) {
+                    if ("unix".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+            case PlatformTypes.PLATFORM_NONE:
+                for (String p : d.getPlatforms()) {
+                    if ("none".equals(p)) { // NOI18N
+                        return true;
+                    }
+                }
+                break;
+        }
+        return false;
+    }
 
     public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
@@ -491,9 +545,12 @@ public final class ToolUtils {
         }
         ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
         StringBuilder buf = new StringBuilder();
-        if (status.isOK()){
+        //if (status.isOK()){
+        if (status.output != null) {
             buf.append(status.output);
-            buf.append('\n');
+        }
+        buf.append('\n');
+        if (status.error != null) {
             buf.append(status.error);
         }
         commandCache.put(command+" "+flags, buf.toString()); // NOI18N
@@ -519,7 +576,8 @@ public final class ToolUtils {
 
         ExitStatus status = ProcessUtils.executeWithoutMacroExpansion(null, ExecutionEnvironmentFactory.getLocal(), reg_exe, "query", key, "/s"); // NOI18N
 
-        if (status.isOK()){
+        //if (status.isOK()){
+        if (status.output != null) {
             res = status.output.toString();
         } else {
             res = ""; // NOI18N

@@ -643,7 +643,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         //@Deprecated
         private synchronized APTPreprocHandler.State getState() {
-            return getStatePairs().iterator().next().state;
+            final Iterator<PreprocessorStatePair> iterator = getStatePairs().iterator();
+            if (iterator.hasNext()) {
+                return iterator.next().state;
+            }
+            return null;
         }
 
         private synchronized void debugClearState() {

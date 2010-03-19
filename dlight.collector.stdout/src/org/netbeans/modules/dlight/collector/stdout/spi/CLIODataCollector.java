@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -106,6 +104,7 @@ public final class CLIODataCollector
     private ValidationStatus validationStatus = ValidationStatus.initialStatus();
     private List<ValidationListener> validationListeners =
             Collections.synchronizedList(new ArrayList<ValidationListener>());
+    private final DataStorageType dataStorageType;
 
     /**
      *
@@ -130,6 +129,7 @@ public final class CLIODataCollector
             int separatorIndex = this.command.lastIndexOf(File.separator);
             displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex + 1);
         }
+        this.dataStorageType = accessor.getDataStorageType(configuration);
     }
 
     public String getName() {
@@ -142,15 +142,12 @@ public final class CLIODataCollector
      * data collector can put data into
      */
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
-        DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-
-        return Arrays.asList(
-                dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        return Arrays.asList(dataStorageType);
     }
 
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
-        this.storage = storages.get(dstf.getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
+        this.storage = storages.get(dataStorageType);
         log.fine("Do INIT for " + storage.toString()); // NOI18N
     }
 

@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.apache.xerces.parsers.DOMParser;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -259,11 +260,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            org.w3c.dom.Document doc = XMLUtil.parse(
-                new org.xml.sax.InputSource(formFile.getURL().toExternalForm()),
-                false, false, null, null);
-
-            mainElement = doc.getDocumentElement();
+            // We don't use XMLUtil.parse() because there is a bug
+            // in the default JDK 6 DOM parser, see issue 181955
+            DOMParser parser = new DOMParser();
+            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
             throw new PersistenceException(ex, "Cannot open form file"); // NOI18N
@@ -322,10 +323,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            mainElement = XMLUtil.parse(new org.xml.sax.InputSource(
-                                            formFile.getURL().toExternalForm()),
-                                        false, false, null, null)
-                          .getDocumentElement();
+            // We don't use XMLUtil.parse() because there is a bug
+            // in the default JDK 6 DOM parser, see issue 181955
+            DOMParser parser = new DOMParser();
+            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
             PersistenceException pe = new PersistenceException(

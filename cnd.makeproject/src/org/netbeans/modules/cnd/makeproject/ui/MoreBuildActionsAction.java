@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,48 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.stackanalyzer;
+package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import javax.swing.AbstractListModel;
-import org.openide.util.Exceptions;
-/**
- * @author Jan Becicka
- */
-class StackListModel extends AbstractListModel {
-    private ArrayList<String> lines = new ArrayList();
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
-    public StackListModel(Reader stack) {
-        BufferedReader r = new BufferedReader(stack);
-        String currentLine = null;
-        do {
-            try {
-                currentLine = r.readLine();
-                if (currentLine != null) {
-                    Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                    m = AnalyzeStackTopComponent.FIRST_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
+    private JMenu subMenu = null;
+    Action[] actions;
+
+    /** Creates a new instance of BrowserAction */
+    public MoreBuildActionsAction(Action[] actions) {
+        super(NbBundle.getMessage( MoreBuildActionsAction.class, "LBL_MoreBuildActionsAction_Name"), null);   // NOI18N
+        this.actions = actions;
+    }
+        
+    @Override
+    public void actionPerformed(java.awt.event.ActionEvent ev) {
+        // no operation
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+    
+    @Override
+    public JMenuItem getMenuPresenter() {
+        createSubMenu();
+        return subMenu;
+    }
+        
+    private void createSubMenu() {
+        if (subMenu == null) {
+            String label = getString("LBL_MoreBuildActionsAction_Name"); // NOI18N
+            subMenu = new JMenu(label);
+            for (Action action : actions) {
+                subMenu.add(action);
             }
-        } while (currentLine!=null);
+        }
     }
 
-    public int getSize() {
-        return lines.size();
+    private static String getString(String key) {
+        return NbBundle.getMessage(MoreBuildActionsAction.class, key);
     }
-
-    public Object getElementAt(int index) {
-        return lines.get(index);
-    }
+    
 }

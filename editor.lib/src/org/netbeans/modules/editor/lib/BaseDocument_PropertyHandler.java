@@ -37,36 +37,14 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner;
+package org.netbeans.modules.editor.lib;
 
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider;
-import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
-import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
-import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
+import org.netbeans.editor.BaseDocument;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
- */@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider.class)
-public class TestRunnerLineConvertorProviderImpl implements TestRunnerLineConvertorProvider {
-
-    @Override
-     public LineConvertor createConvertor(Project project) {
-            final TestSession session = new TestSession("Test", // NOI18N
-                    project,
-                    SessionType.TEST, new CndTestRunnerNodeFactory());
-
-            //session.setRerunHandler(this);
-
-            final Manager manager = Manager.getInstance();
-            final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
-
-            return new TestRunnerLineConvertor(manager, session, handlerFactory);
-     }
-
+ * @author vita
+ */
+public interface BaseDocument_PropertyHandler extends BaseDocument.PropertyEvaluator {
+    public Object setValue(Object value);
 }
