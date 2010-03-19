@@ -896,6 +896,7 @@ public class VariousUtils {
                             metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token)) {
+                            metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
