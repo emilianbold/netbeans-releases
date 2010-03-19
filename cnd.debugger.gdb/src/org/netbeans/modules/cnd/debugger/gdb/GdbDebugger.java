@@ -1676,10 +1676,10 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void setState(State state) {
-        if (state == this.state) {
+        State oldState = this.state;
+        if (state == oldState) {
             return;
         }
-        State oldState = this.state;
         this.state = state;
         firePropertyChange(PROP_STATE, oldState, state);
     }
@@ -1754,7 +1754,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 map = createMapFromString(frame);
                 updateLastStop(map);
             }
-            setLoading();
+            // See IZ 182316 - attach has a separate setLoading call
+            if (!isAttaching()) {
+                setLoading();
+            }
             return;
         }
         if (state != State.RUNNING) {
