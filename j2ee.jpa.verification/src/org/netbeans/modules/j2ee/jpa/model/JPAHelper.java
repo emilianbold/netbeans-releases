@@ -63,7 +63,7 @@ public class JPAHelper {
     
     /**
      * Utility method to find out if any member is annotated as Id or
-     * EmbeddedId in this class? Checks for derived ids also.
+     * EmbeddedId in this class?
      * It does not check any of the inheritted
      * members.
      *
@@ -85,10 +85,6 @@ public class JPAHelper {
             }
             
             if (attrs.getId().length > 0){
-                return true;
-            }
-
-            if(attrs.getDerivedId().length > 0){
                 return true;
             }
         }

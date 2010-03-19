@@ -58,38 +58,6 @@ public interface Attributes {
     public int removeId(Id value);
     
     public Id newId();
-
-    /**
-     * derived id api
-     * unstable, only basic support
-     */
-    public void setDerivedId(int index, Id value);
-
-    public Id getDerivedId(int index);
-    
-    /**
-     * derived id api
-     * unstable, only basic support
-     */
-    public int sizeDerivedId();
-    
-    public void setDerivedId(Id[] value);
-    
-    /**
-     * derived id api
-     * unstable, only basic support
-     */
-    public Id[] getDerivedId();
-    
-    public int addDerivedId(Id value);
-    
-    public int removeDerivedId(Id value);
-    
-    /**
-     * derived id api
-     * unstable, only basic support
-     */
-    public Id newDerivedId();
     
     public void setEmbeddedId(EmbeddedId value);
     

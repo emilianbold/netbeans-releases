@@ -180,44 +180,16 @@ public class AttributesImpl implements Attributes, PropertyHandler {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
-    @Override
-    public void setDerivedId(int index, Id value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
-    }
-
-    @Override
     public Id getDerivedId(int index) {
         return derivedIdList.get(index);
     }
 
-    @Override
     public int sizeDerivedId() {
         return derivedIdList.size(); // NOI18N
     }
 
-    @Override
-    public void setDerivedId(Id[] value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
-    }
-
-    @Override
     public Id[] getDerivedId() {
         return derivedIdList.toArray(new Id[derivedIdList.size()]);
-    }
-
-    @Override
-    public int addDerivedId(Id value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
-    }
-
-    @Override
-    public int removeDerivedId(Id value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
-    }
-
-    @Override
-    public Id newDerivedId() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     @Override
