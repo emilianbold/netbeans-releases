@@ -911,7 +911,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             try {
                 pxm.replaceDependencies(depsToSave);
             } catch (CyclicDependencyException ex) {
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex);
             }
         }
         Set<String> friends = getFriendListModel().getFriends();
