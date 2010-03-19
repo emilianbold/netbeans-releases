@@ -198,7 +198,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     protected void setCredentials(String user, String password) {
-        super.setTaskRepository(getDisplayName(), getUrl(), user, password, null, null, isShortUsernamesEnabled());
+        super.setCredentials(user, password, null, null);
     }
 
     @Override
