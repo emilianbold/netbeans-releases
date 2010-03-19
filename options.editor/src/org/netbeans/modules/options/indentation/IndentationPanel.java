@@ -95,7 +95,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
-    private final boolean lineWrapOn = Boolean.getBoolean("org.netbeans.editor.linewrap"); //NOI18N
+    private final boolean lineWrapOn = !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"); //NOI18N
 
     private final MimePath mimePath;
     private final CustomizerSelector.PreferencesFactory prefsFactory;
