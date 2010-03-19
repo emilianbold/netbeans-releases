@@ -896,7 +896,7 @@ public class AstRenderer {
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
                                 if (cfdi != null) {
-                                    typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
+                                    typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (results.getEnclosingClassifier() != null) {
