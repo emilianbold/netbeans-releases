@@ -474,8 +474,11 @@ public class VariousUtils {
                             if (varScope instanceof MethodScope) {//NOI18N
                                 MethodScope mScope = (MethodScope) varScope;
                                 if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
-                                    String clsName = ((ClassScope) mScope.getInScope()).getName();
-                                    newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    final Scope inScope = mScope.getInScope();
+                                    if (inScope instanceof ClassScope) {
+                                        String clsName = ((ClassScope) inScope).getName();
+                                        newRecentTypes.addAll(CachingSupport.getClasses(clsName, varScope));
+                                    }
                                 }
                             }
                         }
