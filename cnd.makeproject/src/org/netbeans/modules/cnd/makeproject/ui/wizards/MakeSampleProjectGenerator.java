@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -93,23 +94,24 @@ public class MakeSampleProjectGenerator {
     
     private MakeSampleProjectGenerator() {}
     
-    public static Set<DataObject> createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
+    /*package*/ static Set<DataObject> createProjectFromTemplate(final FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String mainProject = (String)template.getAttribute("mainProjectLocation"); // NOI18N
         String subProjects = (String)template.getAttribute("subProjectLocations"); // NOI18N
         if (mainProject != null) {
-            File mainProjectLocation = new File(projectLocation.getPath(), mainProject);
+            File parentFolderLocation = prjParams.getProjectFolder();
+            File mainProjectLocation = new File(parentFolderLocation, mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
-                    subProjectsFiles.add(new File(projectLocation.getPath() + File.separator + st.nextToken()));
+                    subProjectsFiles.add(new File(parentFolderLocation, st.nextToken()));
                 }
                 subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
-            return createProjectFromTemplate(template.getInputStream(), projectLocation, mainProjectLocation, subProjectLocations, name);
+            return createProjectWithSubprojectsFromTemplate(template.getInputStream(), parentFolderLocation, mainProjectLocation, subProjectLocations, prjParams);
         } else {
-            return createProjectFromTemplate(template.getInputStream(), projectLocation, name);
+            return createProjectFromTemplate(template.getInputStream(), prjParams);
         }
     }
     
@@ -175,8 +177,7 @@ public class MakeSampleProjectGenerator {
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
             recordCreateSampleProject(env);
         } catch (Exception e) {
-            IOException ex = new IOException();
-            ex.initCause(e);
+            IOException ex = new IOException(e);
             throw ex;
         }
     }
@@ -229,12 +230,12 @@ public class MakeSampleProjectGenerator {
         logger.log(logRecord);
     }
 
-    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, final String name) throws IOException {
+    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         FileObject prjLoc;
-        unzip(inputStream, projectLocation);
-        prjLoc = FileUtil.toFileObject(projectLocation);
+        unzip(inputStream, prjParams.getProjectFolder());
+        prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
         
-        postProcessProject(prjLoc, name);
+        postProcessProject(prjLoc, prjParams.getProjectName());
         
         prjLoc.refresh(false);
         
@@ -249,15 +250,14 @@ public class MakeSampleProjectGenerator {
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
         } catch (Exception e) {
-            IOException ex = new IOException();
-            ex.initCause(e);
+            IOException ex = new IOException(e);
             throw ex;
         }
     }
     
-    private static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
+    private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, File parentFolderLocation, File mainProjectLocation, File[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         List<DataObject> set = new ArrayList<DataObject>();
-        unzip(inputStream, projectLocation);
+        unzip(templateResourceStream, parentFolderLocation);
         addToSet(set, mainProjectLocation);
         if (subProjectLocations != null) {
             for (int i = 0; i < subProjectLocations.length; i++) {
