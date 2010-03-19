@@ -59,7 +59,6 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 
 /**
@@ -404,23 +403,6 @@ public class GdbProxy {
     public void exec_continue() {
         debugger.setLastGo(GdbDebugger.LastGoState.CONTINUE);
         engine.sendCommand("-exec-continue"); // NOI18N
-    }
-
-    /**
-     * Interrupts execution of the inferior program.
-     * This method is supposed to send "-exec-interrupt" to the debugger,
-     * but this feature is not implemented in gdb yet, so it is replaced
-     * with sending a signal "INT" (Unix) or signal TSTP (Windows).
-     */
-    public void exec_interrupt() {
-        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                debugger.kill(Signal.TRAP);
-            } else {
-                debugger.kill(Signal.INT);
-            }
-        }
-        //return 0;
     }
 
     /**

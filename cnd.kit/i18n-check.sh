@@ -29,7 +29,7 @@ cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
 	echo "I18n check FAILED"
 	if [ -n "${MAILTO}" ]; then
-		mailx -s "I18n check FAILED" cnd-incremental-builds@sun.com < ${LOG}
+		mailx -s "I18n check FAILED" -r "${MAILTO}" "${MAILTO}" < ${LOG}
 	fi
 else
 	echo "I18n check SUCCEEDED - no warnings"

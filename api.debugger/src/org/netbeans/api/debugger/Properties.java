@@ -468,12 +468,18 @@ public abstract class Properties {
             ReentrantReadWriteLock rwl = getRWLock(propertyName);
             ReadLock rl = rwl.readLock();
             rl.lock();
+            synchronized (this) { // put the lock in again in case it was removed in the mean time by another unlock
+                propertyRWLocks.put(propertyName, rwl);
+            }
         }
 
         public void lockWrite(String propertyName) {
             ReentrantReadWriteLock rwl = getRWLock(propertyName);
             WriteLock wl = rwl.writeLock();
             wl.lock();
+            synchronized (this) { // put the lock in again in case it was removed in the mean time by another unlock
+                propertyRWLocks.put(propertyName, rwl);
+            }
         }
 
         public synchronized void unLockRead(String propertyName) {
