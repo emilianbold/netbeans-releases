@@ -67,8 +67,8 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="matchGroup"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor" preCode="/*" postCode="*/">
-          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="MatchAll" replaceFormat="NbBundle.getMessage(FilterPanel.class, &quot;{key}&quot;)); // NOI18N("/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="MatchAll" replaceFormat="NbBundle.getMessage(KeywordsPanel.class, &quot;{key}&quot;)); // NOI18N("/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="HINT_MatchAll" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -82,8 +82,8 @@
           <ComponentRef name="matchGroup"/>
         </Property>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor" preCode="/*" postCode="*/">
-          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="MatchAny" replaceFormat="NbBundle.getMessage(FilterPanel.class, &quot;{key}&quot;)); // NOI18N("/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="MatchAny" replaceFormat="NbBundle.getMessage(KeywordsPanel.class, &quot;{key}&quot;)); // NOI18N("/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="HINT_MatchAny" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -119,8 +119,8 @@
     </Container>
     <Component class="javax.swing.JButton" name="fewerButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor" preCode="/*" postCode="*/">
-          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="Fewer" replaceFormat="NbBundle.getMessage(FilterPanel.class, &quot;{key}&quot;)); // NOI18N("/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="Fewer" replaceFormat="NbBundle.getMessage(KeywordsPanel.class, &quot;{key}&quot;)); // NOI18N("/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="HINT_Fewer" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -129,8 +129,8 @@
     </Component>
     <Component class="javax.swing.JButton" name="moreButton">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor" preCode="/*" postCode="*/">
-          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="More" replaceFormat="NbBundle.getMessage(FilterPanel.class, &quot;{key}&quot;)); // NOI18N("/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="More" replaceFormat="NbBundle.getMessage(KeywordsPanel.class, &quot;{key}&quot;)); // NOI18N("/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/tasklist/filter/Bundle.properties" key="HINT_More" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
