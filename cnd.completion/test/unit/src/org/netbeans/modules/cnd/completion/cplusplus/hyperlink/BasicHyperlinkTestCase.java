@@ -647,6 +647,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ175877.cc", 12, 6, "IZ175877.cc", 5, 3);
     }
 
+    public void testIZ182152() throws Exception {
+        // Bug 182152 - variable names in prototypes are unresolved in ide display
+        performTest("IZ182152.cc", 3, 66, "IZ182152.cc", 3, 52);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
