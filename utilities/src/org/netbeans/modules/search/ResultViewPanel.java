@@ -346,7 +346,7 @@ class ResultViewPanel extends JPanel{
             setBtnReplaceVisible(hasCheckBoxes);
         }
         if (resultModel != null) {
-            hasResults = !resultModel.isEmpty();
+            hasResults = resultModel.size() != 0;
             hasDetails = hasResults && resultModel.hasDetails();
             resultModel.setObserver(this);
         } else {
@@ -380,9 +380,10 @@ class ResultViewPanel extends JPanel{
     /** Send search details to output window. */
     public void fillOutput() {
         btnShowDetails.setEnabled(false);
-        Manager.getInstance().schedulePrintTask(new PrintDetailsTask(resultModel.getFoundObjects(),
-                                        basicSearchCriteria,
-                                        searchTypes));
+        Manager.getInstance().schedulePrintTask(
+                new PrintDetailsTask((List)resultModel.getMatchingObjects(),
+                                     basicSearchCriteria,
+                                     searchTypes));
     }
 
     /**

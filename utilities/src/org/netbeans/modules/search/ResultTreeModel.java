@@ -388,17 +388,22 @@ final class ResultTreeModel implements TreeModel {
      */
     private void fireNodeAdded(int index, MatchingObject object) {
         assert EventQueue.isDispatchThread();
+        assert object != null;
+        assert index >= 0;
         
         if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
             return;
         }
         
+//        TreeModelEvent event = new TreeModelEvent(this,
+//                                                  rootPath,
+//                                                  new int[] { index },
+//                                                  new Object[] { object });
         TreeModelEvent event = new TreeModelEvent(this,
-                                                  rootPath,
-                                                  new int[] { index },
-                                                  new Object[] { object });
+                                                  rootPath);
         for (TreeModelListener l : treeModelListeners) {
-            l.treeNodesInserted(event);
+//            l.treeNodesInserted(event);
+            l.treeStructureChanged(event);
         }
     }
     

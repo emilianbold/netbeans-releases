@@ -42,12 +42,9 @@
 
 package org.netbeans.modules.search;
 
-
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -88,10 +85,7 @@ public final class ResultModel {
     }
 
     /** */
-    private final long creationTime;
-    
-    /** */
-    private int size = 0;
+    private final long creationTime;   
     /** */
     private int totalDetailsCount = 0;
     /**
@@ -122,11 +116,10 @@ public final class ResultModel {
     /** */
     final boolean searchAndReplace;
     /** list of matching objects (usually {@code DataObject}s) */
-    private final List<MatchingObject> matchingObjects
-            = new ArrayList<MatchingObject>();
-    /** set of matching objects - only used as a prevention from duplicates */
-    private final Set<MatchingObject> matchingObjectsSet
-            = new HashSet<MatchingObject>(40);
+    private final List<MatchingObject> 
+            matchingObjects = new ArraySet<MatchingObject>(COUNT_LIMIT).
+                                  ordering(true).
+                                  nullIsAllowed(false);
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
@@ -192,33 +185,48 @@ public final class ResultModel {
      *
      * @param  object  matching object
      * @return  {@code true} if this result model can accept more objects,
-     *          {@code false} if number of found objects reached the limit
+     *          {@code false} if number of found objects reached the limit, or
+     *          the specified {@code object} already exists in the result model.
      * @param  charset  charset used for full-text search of the object,
      *                  or {@code null} if the object was not full-text searched
      */
     synchronized boolean objectFound(Object object, Charset charset) {
-        MatchingObject matchingObject = new MatchingObject(this, object, charset);
-        if (matchingObjectsSet.add(matchingObject) == false) {
-            return true;
-        }
-
-        matchingObjects.add(matchingObject);
-        
         assert limitReached == null;
         assert treeModel != null;
         assert resultView != null;
-        
-        totalDetailsCount += getDetailsCount(matchingObject);
-        
-        treeModel.objectFound(matchingObject, size++);
-        resultView.objectFound(matchingObject, totalDetailsCount);
-        
-        if (size >= COUNT_LIMIT) {
-            limitReached = Limit.FILES_COUNT_LIMIT;
-        } else if (totalDetailsCount >= DETAILS_COUNT_LIMIT) {
-            limitReached = Limit.MATCHES_COUNT_LIMIT;
+        MatchingObject mo = new MatchingObject(this, object, charset);
+        if(add(mo)) {
+            totalDetailsCount += getDetailsCount(mo);
+            treeModel.objectFound(mo, matchingObjects.indexOf(mo));
+            resultView.objectFound(mo, totalDetailsCount);
+            return !checkLimits();
         }
-        return limitReached == null;
+        return false; // MatchingObject already exists
+    }
+
+    private boolean add(MatchingObject matchingObject) {
+        try {
+            return matchingObjects.add(matchingObject);
+        } catch (IllegalStateException ise) {
+            limitReached = Limit.FILES_COUNT_LIMIT;
+            return false;
+        } catch(IllegalArgumentException iae) {
+            return false; // matchingObject already added.
+        }
+    }
+
+    private boolean checkLimits() {
+// ArraySet and add(MatchingObject matchingObject) do it.
+//        if (size() >= COUNT_LIMIT) {
+//            limitReached = Limit.FILES_COUNT_LIMIT;
+//            return true;
+//        }
+//        else
+        if (totalDetailsCount >= DETAILS_COUNT_LIMIT) {
+            limitReached = Limit.MATCHES_COUNT_LIMIT;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -245,21 +253,6 @@ public final class ResultModel {
      */
     synchronized List<MatchingObject> getMatchingObjects() {
         return matchingObjects;
-    }
-    
-    /**
-     */
-    synchronized Object[] getFoundObjects() {
-        Object[] foundObjects = new Object[matchingObjects.size()];
-        int index = 0;
-        for (MatchingObject matchingObj : matchingObjects) {
-            foundObjects[index++] = matchingObj.object;
-        }
-        return foundObjects;
-    }
-    
-    public void run() {
-        
     }
     
     /**
@@ -457,15 +450,9 @@ public final class ResultModel {
     /**
      */
     synchronized int size() {
-        return size;
+        return matchingObjects.size();
     }
     
-    /**
-     */
-    boolean isEmpty() {
-        return size == 0;
-    }
-
     /** Getter for search group property. */
     SpecialSearchGroup getSearchGroup() {
         return searchGroup;

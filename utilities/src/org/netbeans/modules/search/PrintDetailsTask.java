@@ -59,7 +59,7 @@ final class PrintDetailsTask implements Runnable {
     /** */
     private static final int BUFFER_SIZE = 8;
     /** */
-    private final Object[] objects;
+    private final List<Object> objects;
     /** */
     private final BasicSearchCriteria basicSearchCriteria;
     /** */
@@ -75,7 +75,7 @@ final class PrintDetailsTask implements Runnable {
     
     
     /** Creates a new instance of PrintDetailsTask */
-    PrintDetailsTask(final Object[] matchingObjects,
+    PrintDetailsTask(final List<Object> matchingObjects,
                      final BasicSearchCriteria basicCriteria,
                      final List<SearchType> searchTypes) {
         this.objects = matchingObjects;
