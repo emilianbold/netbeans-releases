@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -132,14 +131,14 @@ public class MakeSampleProjectGenerator {
             
             // Change working dir and default conf in 'projectDescriptor.xml'
             //String workingDir = projectLocation.getPath();
-            String systemOs = getCurrentSystemOs();
+//            String systemOs = getCurrentSystemOs();
             projXml = FileUtil.toFile(prjLoc.getFileObject(PROJECT_CONFIGURATION_FILE));
             doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
             //changeXmlFileByTagName(doc, "buildCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "cleanCommandWorkingDir", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
-            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
+//            changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
             String hostUID = prjParams.getHostUID();
             ExecutionEnvironment env = null;
             if (hostUID != null) {
@@ -152,12 +151,12 @@ public class MakeSampleProjectGenerator {
             CompilerSet compilerSet = prjParams.getToolchain();
             compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
             String variant = null;
-            String csVariant = "GNU";
+            String csVariant = "GNU|GNU"; // NOI18N
             if (compilerSet != null) {
                 variant = MakeConfiguration.getVariant(compilerSet, platform);
                 csVariant = compilerSet.getName();
                 if (compilerSet.getCompilerFlavor() != null) {
-                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();
+                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();// NOI18N
                 }
             }
             changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
