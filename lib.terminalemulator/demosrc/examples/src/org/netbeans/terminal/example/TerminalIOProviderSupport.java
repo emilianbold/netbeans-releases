@@ -139,7 +139,7 @@ public final class TerminalIOProviderSupport {
 	    }
 	}
 
-	public final void setupIO(IOProvider iop,
+	public final InputOutput setupIO(IOProvider iop,
 			     IOContainer ioContainer,
 			     String title) {
 	    Action[] actions = null;
@@ -159,6 +159,7 @@ public final class TerminalIOProviderSupport {
 		// term.setDebugFlags(Term.DEBUG_INPUT);
 	    }
 	    tprintln("GREETINGS");
+	    return io;
 	}
 
 	/* *
@@ -462,7 +463,7 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public void executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd,
+    public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd,
 	                           final boolean restartable,
 				   final boolean internalIOShuttle) {
 	if (richExecutionSupport.isRunning())
@@ -476,9 +477,10 @@ public final class TerminalIOProviderSupport {
 	}
 
 	richExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	richExecutionSupport.setupIO(iop, ioContainer, title);
+	InputOutput io = richExecutionSupport.setupIO(iop, ioContainer, title);
 
 	richExecutionSupport.execute(cmd);
+	return io;
     }
 
     public void executeShell(IOProvider iop, IOContainer ioContainer) {
@@ -491,7 +493,7 @@ public final class TerminalIOProviderSupport {
 	 */
     }
 
-    public void executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd,
+    public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd,
 	                             final boolean restartable,
 				     final boolean internalIOShuttle) {
 	if (nativeExecutionSupport.isRunning())
@@ -506,8 +508,9 @@ public final class TerminalIOProviderSupport {
 	}
 
 	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	nativeExecutionSupport.setupIO(iop, ioContainer, title);
+	InputOutput io = nativeExecutionSupport.setupIO(iop, ioContainer, title);
 
 	nativeExecutionSupport.execute(cmd);
+	return io;
     }
 }
