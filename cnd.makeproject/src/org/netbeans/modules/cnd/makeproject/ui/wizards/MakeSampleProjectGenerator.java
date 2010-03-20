@@ -141,17 +141,28 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
             String hostUID = prjParams.getHostUID();
-            hostUID = (hostUID == null) ? HostInfoUtils.LOCALHOST : hostUID;
-            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            ExecutionEnvironment env = null;
+            if (hostUID != null) {
+                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
             env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
+            String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
             CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = prjParams.getToolchain();
             compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
             String variant = null;
+            String csVariant = "GNU";
             if (compilerSet != null) {
                 variant = MakeConfiguration.getVariant(compilerSet, platform);
+                csVariant = compilerSet.getName();
+                if (compilerSet.getCompilerFlavor() != null) {
+                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();
+                }
             }
+            changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+            changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
+            changeXmlFileByTagName(doc, "platform", ""+platform, "X-PLATFORM-INDEX-X"); // NOI18N
             if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
