@@ -416,15 +416,15 @@ final class NodeListener implements MouseListener, KeyListener,
         if (resultModel == null)
             return;
 
-         final MatchingObject[] matchingObjects
+        final List<MatchingObject> matchingObjects
                                     = resultModel.getMatchingObjects();
 
         int[] toggledIndices = null;
         MatchingObject[] toggledObjects = null;
         List<MatchingObject> expandedToggled = null;
         int toggledCount = 0;
-        for (int i = 0; i < matchingObjects.length; i++) {
-            final MatchingObject matchingObj = matchingObjects[i];
+        int i = 0;
+        for(final MatchingObject matchingObj: matchingObjects) {
 
             boolean collapsed = !matchingObj.isExpanded();
             if (autocollapse && !collapsed) {
@@ -438,7 +438,7 @@ final class NodeListener implements MouseListener, KeyListener,
 
             matchingObj.setSelected(willBeSelected);
             if (toggledCount == 0) {
-                int arrayLength = matchingObjects.length - i;
+                int arrayLength = matchingObjects.size() - i;
                 toggledIndices = new int[arrayLength];
                 toggledObjects = new MatchingObject[arrayLength];
             }
@@ -454,8 +454,9 @@ final class NodeListener implements MouseListener, KeyListener,
                 }
                 expandedToggled.add(matchingObj);
             }
+            i++;
         }
-        if (toggledCount != 0 && toggledCount != matchingObjects.length) {
+        if (toggledCount != 0 && toggledCount != matchingObjects.size()) {
 
             int[] newToggledIndices = new int[toggledCount];
             System.arraycopy(toggledIndices, 0,
