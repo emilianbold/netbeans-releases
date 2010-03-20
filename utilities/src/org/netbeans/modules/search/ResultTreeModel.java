@@ -103,7 +103,7 @@ final class ResultTreeModel implements TreeModel {
             } else {
                 try {
                     //PENDING - threading:
-                    ret = resultModel.matchingObjects.get(index);
+                    ret = resultModel.getMatchingObjects().get(index);
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     assert false;
                     ret = null;
@@ -190,7 +190,7 @@ final class ResultTreeModel implements TreeModel {
         int ret;
         if (parent == getRoot()) {
             ret = (child.getClass() == MatchingObject.class)
-                  ? resultModel.matchingObjects.indexOf(child)
+                  ? resultModel.getMatchingObjects().indexOf(child)
                   : -1;
         } else {
             ret = -1;
@@ -388,17 +388,22 @@ final class ResultTreeModel implements TreeModel {
      */
     private void fireNodeAdded(int index, MatchingObject object) {
         assert EventQueue.isDispatchThread();
+        assert object != null;
+        assert index >= 0;
         
         if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
             return;
         }
         
+//        TreeModelEvent event = new TreeModelEvent(this,
+//                                                  rootPath,
+//                                                  new int[] { index },
+//                                                  new Object[] { object });
         TreeModelEvent event = new TreeModelEvent(this,
-                                                  rootPath,
-                                                  new int[] { index },
-                                                  new Object[] { object });
+                                                  rootPath);
         for (TreeModelListener l : treeModelListeners) {
-            l.treeNodesInserted(event);
+//            l.treeNodesInserted(event);
+            l.treeStructureChanged(event);
         }
     }
     
@@ -475,7 +480,7 @@ final class ResultTreeModel implements TreeModel {
             return;
         }
 
-        final int index = resultModel.matchingObjects.indexOf(matchingObj);
+        final int index = resultModel.getMatchingObjects().indexOf(matchingObj);
         
         /* Notify that the file node itself has changed... */
         TreeModelEvent event = new TreeModelEvent(this,
