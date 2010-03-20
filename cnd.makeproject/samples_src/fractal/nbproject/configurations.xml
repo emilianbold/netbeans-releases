@@ -24,6 +24,11 @@
   <defaultConf>1</defaultConf>
   <confs>
     <conf name="FastBuild" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>0</developmentMode>
@@ -46,6 +51,11 @@
       </item>
     </conf>
     <conf name="Debug" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
         </cCompilerTool>
@@ -66,6 +76,11 @@
       </item>
     </conf>
     <conf name="PerformanceDebug" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>2</developmentMode>
@@ -88,6 +103,11 @@
       </item>
     </conf>
     <conf name="DianogsableRelease" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>4</developmentMode>
@@ -110,6 +130,11 @@
       </item>
     </conf>
     <conf name="Release" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>5</developmentMode>
@@ -132,6 +157,11 @@
       </item>
     </conf>
     <conf name="PerformanceRelease" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>6</developmentMode>
@@ -154,6 +184,11 @@
       </item>
     </conf>
     <conf name="PerformanceRelease64Bits" type="1">
+      <toolsSet>
+        <developmentServer>X-HOST-UID-X</developmentServer>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+        <platform>X-PLATFORM-INDEX-X</platform>
+      </toolsSet>
       <compileType>
         <cCompilerTool>
           <developmentMode>6</developmentMode>

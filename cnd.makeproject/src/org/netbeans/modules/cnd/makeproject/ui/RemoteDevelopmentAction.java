@@ -54,6 +54,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -165,7 +167,14 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
                 return; //true;
             }
             mconf.setDevelopmentHost(dhc);
-            mconf.setCompilerSet(new CompilerSet2Configuration(dhc));
+            // try to use the same compiler set
+            CompilerSet2Configuration oldCS = mconf.getCompilerSet();
+            String oldCSName = oldCS.getName();
+            CompilerSetManager csm = CompilerSetManager.get(dhc.getExecutionEnvironment());
+            CompilerSet newCS = csm.getCompilerSet(oldCSName);
+            // if not found => use default from new host
+            newCS = (newCS == null) ? csm.getDefaultCompilerSet() : newCS;
+            mconf.setCompilerSet(new CompilerSet2Configuration(dhc, newCS));
 //                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
 //                    platformConfiguration.propertyChange(new PropertyChangeEvent(
 //                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));

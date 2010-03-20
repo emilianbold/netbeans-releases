@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -66,6 +67,8 @@ public class ProjectGenerator {
         private Iterator<String> importantFileItems;
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
+        private String hostUID;
+        private CompilerSet cs;
 
         /**
          *
@@ -140,6 +143,12 @@ public class ProjectGenerator {
             return this;
         }
         
+        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs) {
+            this.hostUID = hostUID;
+            this.cs = cs;
+            return this;
+        }
+
         public File getProjectFolder() {
             return projectFolder;
         }
@@ -178,6 +187,14 @@ public class ProjectGenerator {
 
         public Iterator<String> getImportantFiles() {
             return this.importantFileItems;
+        }
+
+        public String getHostUID() {
+            return hostUID;
+        }
+
+        public CompilerSet getToolchain() {
+            return cs;
         }
     }
     

@@ -70,6 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -115,7 +117,7 @@ public class MakeSampleProjectGenerator {
         }
     }
     
-    private static void postProcessProject(FileObject prjLoc, String name) throws IOException {
+    private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
             // Change project name in 'project.xml'
@@ -138,15 +140,29 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-
-            ExecutionEnvironment env = ServerList.getDefaultRecord().getExecutionEnvironment();
+            String hostUID = prjParams.getHostUID();
+            ExecutionEnvironment env = null;
+            if (hostUID != null) {
+                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
+            env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
+            String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
             CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
             int platform = compilerSetManager.getPlatform();
-            CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
+            CompilerSet compilerSet = prjParams.getToolchain();
+            compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
             String variant = null;
+            String csVariant = "GNU";
             if (compilerSet != null) {
                 variant = MakeConfiguration.getVariant(compilerSet, platform);
+                csVariant = compilerSet.getName();
+                if (compilerSet.getCompilerFlavor() != null) {
+                    csVariant += "|" + compilerSet.getCompilerFlavor().toString();
+                }
             }
+            changeXmlFileByTagName(doc, "developmentServer", prjHostUID, "X-HOST-UID-X"); // NOI18N
+            changeXmlFileByTagName(doc, "compilerSet", csVariant, "X-TOOLCHAIN-X"); // NOI18N
+            changeXmlFileByTagName(doc, "platform", ""+platform, "X-PLATFORM-INDEX-X"); // NOI18N
             if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
@@ -235,18 +251,18 @@ public class MakeSampleProjectGenerator {
         unzip(inputStream, prjParams.getProjectFolder());
         prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
         
-        postProcessProject(prjLoc, prjParams.getProjectName());
+        postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         
         prjLoc.refresh(false);
         
         return Collections.singleton(DataObject.find(prjLoc));
     }
     
-    private static void addToSet(List<DataObject> set, File projectFile) throws IOException {
+    private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         try {
             FileObject prjLoc = null;
             prjLoc = FileUtil.toFileObject(projectFile);
-            postProcessProject(prjLoc, null);
+            postProcessProject(prjLoc, null, prjParams);
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
         } catch (Exception e) {
@@ -258,10 +274,10 @@ public class MakeSampleProjectGenerator {
     private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, File parentFolderLocation, File mainProjectLocation, File[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         List<DataObject> set = new ArrayList<DataObject>();
         unzip(templateResourceStream, parentFolderLocation);
-        addToSet(set, mainProjectLocation);
+        addToSet(set, mainProjectLocation, prjParams);
         if (subProjectLocations != null) {
             for (int i = 0; i < subProjectLocations.length; i++) {
-                addToSet(set, subProjectLocations[i]);
+                addToSet(set, subProjectLocations[i], prjParams);
             }
         }
         return new LinkedHashSet<DataObject>(set);

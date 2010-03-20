@@ -333,13 +333,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
-            list.add(RefactoringActionsFactory.renameAction());
-            list.add(RefactoringActionsFactory.whereUsedAction());
-            CsmObject obj = this.getCsmObject();
-            if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {
-                list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
-            } else if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isDestructor(obj)) {
-                list.add(CsmRefactoringActionsFactory.changeParametersAction());
+            if (CsmRefactoringActionsFactory.supportRefactoring(file)) {
+                list.add(RefactoringActionsFactory.renameAction());
+                list.add(RefactoringActionsFactory.whereUsedAction());
+                CsmObject obj = this.getCsmObject();
+                if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {
+                    list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+                } else if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isDestructor(obj)) {
+                    list.add(CsmRefactoringActionsFactory.changeParametersAction());
+                }
             }
             list.add(null);
             for (Action a : model.getActions()){

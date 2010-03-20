@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -140,6 +141,8 @@ public class ImportProject implements PropertyChangeListener {
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
     private boolean setAsMain;
+    private String hostUID;
+    private CompilerSet toolchain;
     private String workingDir;
     private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
     private String cleanCommand = "$(MAKE) -f Makefile clean";  // NOI18N
@@ -185,7 +188,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-
+        hostUID = null; // default host
+        toolchain = null; // default toolchain
+        
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
 
@@ -244,12 +249,14 @@ public class ImportProject implements PropertyChangeListener {
         }
         manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
+        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
-        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel;
         if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
             workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
