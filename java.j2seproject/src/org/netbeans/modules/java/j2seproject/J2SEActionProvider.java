@@ -1385,7 +1385,7 @@ class J2SEActionProvider implements ActionProvider {
                 compilePath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.EXECUTE);
             }
 
-            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.EXECUTE);
+            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
             if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
             }
