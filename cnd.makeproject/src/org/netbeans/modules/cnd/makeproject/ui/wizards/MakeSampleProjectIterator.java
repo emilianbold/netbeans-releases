@@ -48,6 +48,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
@@ -134,7 +135,10 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     public Set<DataObject> instantiate() throws IOException {
         File projectLocation = (File) wiz.getProperty("projdir"); // NOI18N
         String name = (String) wiz.getProperty("name"); // NOI18N
+        String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
+        prjParams.setHostToolchain(hostUID, toolchain);
         return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);
     }
 
