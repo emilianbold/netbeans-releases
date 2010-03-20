@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -125,8 +126,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         // init hosts
         ServerRecord defaultRecord = ServerList.getDefaultRecord();
+        ToolsCacheManager tcm = ToolsCacheManager.createInstance(false);
         for (ServerRecord serverRecord : ServerList.getRecords()) {
-            hostComboBox.addItem(serverRecord);
+            if (serverRecord.isSetUp()) {
+                CompilerSetManager csm = tcm.getCompilerSetManagerCopy(serverRecord.getExecutionEnvironment(), false);
+                if (csm != null && !csm.isEmpty() && !csm.isUninitialized()) {
+                    hostComboBox.addItem(serverRecord);
+                }
+            }
         }
         hostComboBox.setRenderer(new MyDevHostListCellRenderer());
         toolchainComboBox.setRenderer(new MyToolchainListCellRenderer());
@@ -384,6 +391,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             ServerRecord newItem = (ServerRecord) evt.getItem();
             updateToolchains(newItem);
+            panel.fireChangeEvent(); // Notify that the panel changed
         }
     }
 
@@ -487,11 +495,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 return false;
             }
         }
-        if (toolchainComboBox.getSelectedItem() == null) {
-            // Toolchain is not specified
+        ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
+        if (!sr.isOnline()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, // NOI18N
-                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalToolchainName")); // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_OfflineHost")); // NOI18N
         }
+//        CompilerSetManager csm = CompilerSetManager.get(sr.getExecutionEnvironment());
+//        CompilerSet cs = (CompilerSet) toolchainComboBox.getSelectedItem();
+//        if (cs == null || csm == null || csm.isUninitialized() || csm.isEmpty()) {
+//            // Toolchain is not specified
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, // NOI18N
+//                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalToolchainName")); // NOI18N
+//        }
         /*
         if (destFolder.getPath().indexOf(' ') >= 0) {
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N

@@ -37,14 +37,40 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.persistence.spi;
+package org.netbeans.modules.html.editor.refactoring;
+
+import java.util.List;
 
 /**
- * it's a common bridge from properties specific to project to properties requested by persistence
- * @author sp153251
+ *
+ * @author marekfukala
  */
-public interface PersistenceProjectPropertiesProvider {
-    public static  enum Property{SOURCELEVEL};
+public abstract class ResolveDeclarationItem {
 
-    public String getProjectProperty(Property key);
+    private DeclarationItem resolvedTarget;
+
+    public abstract String getName();
+
+    public abstract List<DeclarationItem> getPossibleDeclarations();
+    
+    public void resolve(DeclarationItem resolvedTarget) {
+        this.resolvedTarget = resolvedTarget;
+    }
+    
+    public DeclarationItem getResolvedTarget() {
+        if(resolvedTarget == null) {
+            //by default
+        }
+        return resolvedTarget;
+    }
+
+    @Override
+    public String toString() {
+        return "ResolveDeclarationItem[name=" + getName() +
+                ", possibleDeclarations=" + getPossibleDeclarations().size() +
+                ", resolvedTarget=" + getResolvedTarget() +
+                "]"; //NOI18N
+    }
+
+
 }

@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -114,7 +115,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder externalFileItems = null;
     private Folder testItems = null;
     private Folder rootFolder = null;
-    private HashMap<String, Item> projectItems = null;
+    private Map<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
     private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
@@ -128,7 +129,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         super();
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
-        projectItems = new HashMap<String, Item>();
+        projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
         ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
     }
@@ -354,11 +355,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
     }
 
-    public HashMap<String, Item> getProjectItemsMap() {
+    public Map<String, Item> getProjectItemsMap() {
         return projectItems;
     }
 
-    public void setProjectItemsMap(HashMap<String, Item> projectItems) {
+    public void setProjectItemsMap(Map<String, Item> projectItems) {
         this.projectItems = projectItems;
     }
 
