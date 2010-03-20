@@ -142,7 +142,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             framework.stop();
             framework.waitForStop(10000);
             framework = null;
-            registered.clear();
         } catch (InterruptedException ex) {
             LOG.log(Level.WARNING, "Wait for shutdown failed" + framework, ex);
         } catch (BundleException ex) {
