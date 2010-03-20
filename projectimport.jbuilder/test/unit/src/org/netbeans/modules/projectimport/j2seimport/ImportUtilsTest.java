@@ -43,11 +43,8 @@ package org.netbeans.modules.projectimport.j2seimport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -59,6 +56,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 
 
@@ -80,6 +78,7 @@ public class ImportUtilsTest  extends NbTestCase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
+        MockLookup.setLayersAndInstances();
         try {
             testProject = new AbstractProject(getName(), FileUtil.toFileObject(getWorkDir()));
         } catch(IOException iex) {
@@ -88,15 +87,6 @@ public class ImportUtilsTest  extends NbTestCase {
         }
     }
     
-    
-    protected void tearDown() throws Exception {
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ImportUtilsTest.class);
-        
-        return suite;
-    }
     
     /**
      * Test of importProjectWithoutDependencies method, of class org.netbeans.modules.projectimport.jbuilder.j2seimport.ImportUtils.
