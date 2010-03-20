@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -60,8 +61,10 @@ import org.netbeans.Events;
 import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Basic infrastructure for testing OSGi functionality.
@@ -79,6 +82,13 @@ public class NetigsoHid extends SetupHid {
         Method m = Class.forName("org.netbeans.NetigsoFramework").getDeclaredMethod("shutdownFramework");
         m.setAccessible(true);
         m.invoke(null);
+
+        Netigso net = (Netigso)Lookup.getDefault().lookup(NetigsoFramework.class);
+        final Field field = Netigso.class.getDeclaredField("registered");
+        field.setAccessible(true);
+        Set<?> set = (Set<?>)field.get(net);
+        set.clear();
+
         
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");
