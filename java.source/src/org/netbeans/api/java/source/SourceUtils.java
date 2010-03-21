@@ -96,7 +96,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -129,7 +128,8 @@ import org.openide.util.Utilities;
 public class SourceUtils {    
      
     private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
-    
+    private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
+
     private SourceUtils() {}
     
     /**
@@ -898,6 +898,34 @@ out:                    for (URL e : roots) {
         if (qualifiedName == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
+        //Fast path check by index - main in sources
+        for (ClassPath.Entry entry : cpInfo.getClassPath(PathKind.SOURCE).entries()) {
+            final Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(entry.getURL());
+            try {
+                final URI root = entry.getURL().toURI();
+                for (URL mainClass : mainClasses) {
+                    try {
+                        URI relative = root.relativize(mainClass.toURI());
+                        final String resourceNameNoExt = FileObjects.stripExtension(relative.getPath());
+                        final String ffqn = FileObjects.convertFolder2Package(resourceNameNoExt,'/');  //NOI18N
+                        if (qualifiedName.equals(ffqn)) {
+                            final ClassPath bootCp = cpInfo.getClassPath(PathKind.BOOT);
+                            if (bootCp.findResource(resourceNameNoExt + '.' + FileObjects.CLASS)!=null) {
+                                //Resource in platform, fall back to slow path
+                                break;
+                            } else {
+                                return true;
+                            }
+                        }
+                    } catch (URISyntaxException e) {
+                        LOG.info("Ignoring fast check for file: " + mainClass.toString() + " due to: " + e.getMessage()); //NOI18N
+                    }
+                }
+            } catch (URISyntaxException e) {
+                LOG.info("Ignoring fast check for root: " + entry.getURL().toString() + " due to: " + e.getMessage()); //NOI18N
+            }
+        }
+        //Slow path fallback - for main in libraries
         final boolean[] result = new boolean[]{false};
         JavaSource js = JavaSource.create(cpInfo);
         try {
