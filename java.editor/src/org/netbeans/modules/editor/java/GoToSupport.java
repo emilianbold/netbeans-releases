@@ -611,7 +611,9 @@ public class GoToSupport {
             return 0;
         }
 
-        if (el.getKind() == ElementKind.METHOD) {
+        if (   el.getKind() == ElementKind.METHOD
+            && !el.getModifiers().contains(Modifier.STATIC)
+            && !el.getEnclosingElement().getModifiers().contains(Modifier.FINAL)) {
             return 1;
         }
 
