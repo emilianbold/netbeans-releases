@@ -186,7 +186,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
         }
 
         private int getActionMethodOffset(FileObject action) {
-            String actionMethodName = fo.getName() + ZendUtils.ACTION_METHOD_SUFIX;
+            String actionMethodName = ZendUtils.getActionName(fo);
             EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
             for (PhpClass phpClass : editorSupport.getClasses(action)) {
                 if (actionMethodName != null) {
