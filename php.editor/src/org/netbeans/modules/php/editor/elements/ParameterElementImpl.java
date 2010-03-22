@@ -51,7 +51,6 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public final class ParameterElementImpl implements ParameterElement {
-
     private final String name;
     private final String defaultValue;
     private final Set<TypeResolver> types;
@@ -124,10 +123,12 @@ public final class ParameterElementImpl implements ParameterElement {
         StringBuilder typeBuilder = new StringBuilder();
         for (TypeResolver typeResolver : getTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
+            if (typeBuilder.length() > 0) {
+                typeBuilder.append(SEPARATOR.PIPE);
+            }
             typeBuilder.append(resolverImpl.getSignature());
         }
         String typeSignatures = typeBuilder.toString().trim();
-        assert typeSignatures.equals(encode(typeSignatures)) : typeSignatures;
         sb.append(typeSignatures);
         sb.append(SEPARATOR.COLON);//NOI18N
         sb.append(isRawType ? 1 : 0);
@@ -174,7 +175,7 @@ public final class ParameterElementImpl implements ParameterElement {
         return isMandatory;
     }
 
-    private static String encode(String inStr) {
+    static String encode(String inStr) {
         StringBuffer outStr = new StringBuffer(6 * inStr.length());
 
         for (int i = 0; i < inStr.length(); i++) {
