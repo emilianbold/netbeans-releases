@@ -70,18 +70,24 @@ public class XDMListener implements PropertyChangeListener {
     private AbstractDocumentModel model;
     private boolean inSync;
     private Document oldDocument;
-    
+    private boolean xamModelHasRoot;
+
     /** Creates a new instance of XDMListener */
     public XDMListener(AbstractDocumentModel model) {
         this.model = model;
     }
     
+    public boolean xamModelHasRoot() {
+        return xamModelHasRoot;
+    }
+
     private XDMModel getXDMModel() {
         return ((XDMAccess) model.getAccess()).getXDMModel();
     }
     
     void startSync() {
         inSync = true;
+        xamModelHasRoot = true;
         syncUnits.clear();
         oldDocument = getXDMModel().getCurrentDocument();
         getXDMModel().addPropertyChangeListener(this);
@@ -91,10 +97,12 @@ public class XDMListener implements PropertyChangeListener {
         return oldDocument;
     }
     
-    void endSync() {
-        endSync(true);
-    }
-    
+    /**
+     * After sync processing.
+     * @param processing means that the changes have to be processed, 
+     * which are collected in syncUnits. Usually they have to be discarded 
+     * in case of an error.
+     */
     void endSync(boolean processing) {
         getXDMModel().removePropertyChangeListener(this);
         try {
@@ -173,6 +181,9 @@ public class XDMListener implements PropertyChangeListener {
             }
             //assert eventNode.getId() == 1;
             if (! isAdded) {
+                // It's implied that the root component is deleted here. 
+                // model.removeRootComponent();
+                xamModelHasRoot = false;
                 return;
             }
             Component rootComponent = null;
@@ -187,6 +198,7 @@ public class XDMListener implements PropertyChangeListener {
                     "Unexpected root element "+AbstractDocumentComponent.getQName(eventNode);
                 throw new IllegalArgumentException(new IOException(errorMessage));
             }
+            xamModelHasRoot = true;
             model.firePropertyChangeEvent(new PropertyChangeEvent(model,
                 Model.STATE_PROPERTY, Model.State.NOT_SYNCED, Model.State.VALID));
         } else {

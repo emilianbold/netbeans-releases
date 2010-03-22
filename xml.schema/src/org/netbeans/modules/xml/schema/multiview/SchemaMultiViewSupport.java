@@ -305,7 +305,8 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
                         axiModel = AXIModelFactory.getDefault().getModel(
                                 ((SchemaComponent)component).getModel());
                     }
-                    if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
+                    if(axiModel!=null && axiModel.getRoot() != null &&
+                            axiModel.getState()==AXIModel.State.VALID) {
                         view = View.DESIGN;
                     }
                 }
@@ -362,7 +363,8 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
                     if(!axiModel.canView((SchemaComponent)component))
                         return false;
                 }
-                if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
+                if(axiModel!=null && axiModel.getRoot() != null &&
+                        axiModel.getState()==AXIModel.State.VALID) {
                     return true;
                 }
                 return false;

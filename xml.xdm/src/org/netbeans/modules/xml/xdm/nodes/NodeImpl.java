@@ -865,4 +865,9 @@ public abstract class NodeImpl implements Node, Cloneable {
         }
         return unmodifiableObjects;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "<" + getNodeName() + ">";
+    }
 }
