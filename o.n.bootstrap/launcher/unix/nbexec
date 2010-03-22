@@ -510,12 +510,8 @@ while [ "$restart" ] ; do
     delete_new_clusters_file
     rm -f "${restart_file}"
     eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
-        "$jargs" org.netbeans.Main "$args" '&'
-    PID=$!
-    trap "kill $PID" EXIT
-    wait $PID
+        "$jargs" org.netbeans.Main "$args"
     exitcode=$?
-    trap '' EXIT
     look_for_new_clusters
     # If we should update anything, do it and restart IDE.
     run_updater=""
