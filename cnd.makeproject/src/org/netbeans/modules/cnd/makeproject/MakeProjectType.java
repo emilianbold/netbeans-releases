@@ -92,7 +92,7 @@ public final class MakeProjectType implements AntBasedProjectType {
      * @return A path in the system filesystem
      */
     public String getLookupMergerPath() {
-        return projectLayerPath() + "/Lookup";
+        return projectLayerPath() + "/Lookup"; //NOI18N
     }
 
     /**
@@ -121,6 +121,6 @@ public final class MakeProjectType implements AntBasedProjectType {
     }
 
     private String projectLayerPath() {
-        return "Projects/org-netbeans-modules-cnd-makeproject";
+        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
     }
 }
