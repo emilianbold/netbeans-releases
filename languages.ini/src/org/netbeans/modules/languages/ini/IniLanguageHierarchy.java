@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.languages.ini;
 
-package org.netbeans.modules.php.zend.util;
+import java.util.Collection;
 
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
+import java.util.EnumSet;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
-/**
- * @author Tomas Mysik
- */
-public class ZendUtilsTest extends NbTestCase {
+public class IniLanguageHierarchy extends LanguageHierarchy<IniTokenId> {
 
-    public ZendUtilsTest(String name) {
-        super(name);
+    @Override
+    protected synchronized Collection<IniTokenId> createTokenIds() {
+        return EnumSet.allOf(IniTokenId.class);
     }
 
-    @Test
-    public void testControllerName() {
-        assertEquals("IndexController", ZendUtils.getControllerName("index"));
-        assertEquals("AllJobsController", ZendUtils.getControllerName("all-jobs"));
+    @Override
+    protected Lexer<IniTokenId> createLexer(LexerRestartInfo<IniTokenId> info) {
+        return new IniLexer(info);
     }
 
-    @Test
-    public void testActionName() {
-        assertEquals("indexAction", ZendUtils.getActionName("index"));
-        assertEquals("allJobsAction", ZendUtils.getActionName("all-jobs"));
-    }
-
-    @Test
-    public void testViewName() {
-        assertEquals("index", ZendUtils.getViewName("indexAction"));
-        assertEquals("all-jobs", ZendUtils.getViewName("allJobsAction"));
-    }
-
-    @Test
-    public void testViewFolderName() {
-        assertEquals("index", ZendUtils.getViewFolderName("IndexController"));
-        assertEquals("all-jobs", ZendUtils.getViewFolderName("AllJobsController"));
+    @Override
+    protected String mimeType() {
+        return IniLanguageProvider.MIME_TYPE;
     }
 }

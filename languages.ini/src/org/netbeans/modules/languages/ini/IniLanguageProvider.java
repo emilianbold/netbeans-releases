@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,47 +37,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.languages.ini;
 
-package org.netbeans.modules.php.zend.util;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.util.lookup.ServiceProvider;
 
-import org.junit.Test;
-import org.netbeans.junit.NbTestCase;
+@ServiceProvider(service = LanguageProvider.class)
+public class IniLanguageProvider extends LanguageProvider {
 
-/**
- * @author Tomas Mysik
- */
-public class ZendUtilsTest extends NbTestCase {
+    public static final String MIME_TYPE = "text/x-ini"; // NOI18N
 
-    public ZendUtilsTest(String name) {
-        super(name);
+    @Override
+    public Language<IniTokenId> findLanguage(String mimeType) {
+        if (MIME_TYPE.equals(mimeType)) {
+            return new IniLanguageHierarchy().language();
+        }
+        return null;
     }
 
-    @Test
-    public void testControllerName() {
-        assertEquals("IndexController", ZendUtils.getControllerName("index"));
-        assertEquals("AllJobsController", ZendUtils.getControllerName("all-jobs"));
-    }
-
-    @Test
-    public void testActionName() {
-        assertEquals("indexAction", ZendUtils.getActionName("index"));
-        assertEquals("allJobsAction", ZendUtils.getActionName("all-jobs"));
-    }
-
-    @Test
-    public void testViewName() {
-        assertEquals("index", ZendUtils.getViewName("indexAction"));
-        assertEquals("all-jobs", ZendUtils.getViewName("allJobsAction"));
-    }
-
-    @Test
-    public void testViewFolderName() {
-        assertEquals("index", ZendUtils.getViewFolderName("IndexController"));
-        assertEquals("all-jobs", ZendUtils.getViewFolderName("AllJobsController"));
+    @Override
+    public LanguageEmbedding<?> findLanguageEmbedding(Token<?> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        return null;
     }
 }
