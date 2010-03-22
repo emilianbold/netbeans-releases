@@ -1,0 +1,128 @@
+"README.close_semantics"
+
+Semantics of IO close operations
+================================
+
+Introduction
+------------
+The I/O APIs contain many methods and user visible actions with the
+word "close" in them:
+	InputOutput.closeInputOutput().
+	The Close action in the popup menu.
+	The Close Tab/Close All Tabs/Close Other Tabs actions.
+	IOContainer.CallBacks.closed().
+	OutputWriter.close() (inherited from PrintWriter).
+
+There seems to be no corresponding "open" operation.
+Instead we have various gets's and select's:
+	IOProvider.getIO()
+	InputOutput.getOut().
+
+	InputOutput.select().
+	IOContainer.select().
+
+It turns out that methods based on the words "close" or "select" don't
+all mean or do the same thing.
+
+There also exist various predicates like:
+	InputOutput.isClosed().
+	IOContainer.isClosable().
+The ambiguity of "close" applies to them as well.
+
+This writeup attempts to analyze the situation.
+
+Three levels of closing
+-----------------------
+
+"Stream" closing is initiated when close() is called on either
+of the OutputWriters returned by getOut() or getErr().
+An IO which _isn't_ stream closed has it's title rendered in bold.
+[ The default implementation seems to track this state in two ways:
+  - OutputWriter.isClosed().
+  - An internal property streamClosed.
+  ]
+
+An InputOutput caches the OutputWriters returned by getOut() so
+how can an OutputWriter be re-used upon being closed? OutputWriter.reset().
+
+After a "stream" closing ...
+- The IO can be "found" using 
+      IOProvider.getIO(String name, boolean newIO = false)
+  which has semantics as follows:
+	- choose a set of stream closed IO's with
+	  matching names.
+	- if any are found close all but one and return it.
+	- else return null
+
+
+"Weak" closing is initiated by closing a tab or invoking 
+one of the various Close actions. The main entry point is
+IOContainer.remove().
+It removes the tab and calls IOContainer.CallBacks.closed().
+	Because a weakly closed IO may be resurrected,
+	CallBacks.closed() should not free resources.
+	[ however default impl tries some heuristics and sometimes frees
+	stuff anyway ]
+
+Default I/O API rovides no way of performing a weak closing so 
+I've added IOVisibility.
+
+After a "weak" closing ...
+- The tab can be reinstated using InputOutput.select(). This is,
+  for example, how progress monitor actions can resurrect a tab.
+
+"Strong" closing is initiated solely by calling
+InputOutput.closeInputOutput() and has no associated UI action.
+It acts like a weak close but additionally
+- closes the stdin stream (sending an EOF down the line).
+- disposes all resources.
+
+After a strong closing ...
+- select() should not work.
+  [ But default implementation doesn't seem to check for this! 
+    This would presumably require state to distinguish between
+    weak and strong closures ]
+- getIO(String name, boolean newIO = false) will not locate the 
+  closed InputOutput.
+
+What about InputOutput.isClosed()?
+Javadoc conflates weak and strong closing so I have to assume it's
+the lowest common denominator, weak closing.
+conclusion: select() makes isClosed() return true again.
+
+What about IOContainer[.Provider].isClosable()?
+Not sure if it refers to weak or strong closing.
+Not sure what determines the value ... there's no setter.
+Existing implementation always returns true.
+
+state		to set true		to set false	predicate
+------------------------------------------------------------------------
+weak close	IOContainer.remove()    select() [1]    IO.isClosed()
+		Close menu action	IOVisibility.setVisible(false)
+		Close tab action
+		IOVisibility.setVisible(true)
+
+stream close[4]	OutputWriter.close() [5]
+					OutputWriter.reset()
+							<none>
+
+strong close    IO.closeInputOutput() [2]
+					<none> [3]	<none>
+
+[1] This answers Vladimirs question:
+   > Completely lost  :-)
+   >> So how to achieve "reuse without reset" used by VCS?
+   >> If newIO = false means "reuse with reset"?
+   The answer is, retain a reference to the IO and call select() on it.
+
+[2] A strong close also implies a weak close and a stream close I.e.
+    output will be discarded.
+
+[3] This means closeInputOutput() is final and irreversible.
+    Tim had suggested that select() attempt to restore stuff w/
+    warning but I'm not even inclined to do that.
+
+[4] There is this slight redundancy in existsing impl. between
+    OutputWriter.close() and internal streamClosed().
+
+[5] A stream closed IO is recoverable using reuseable getIO.

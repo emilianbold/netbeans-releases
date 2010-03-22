@@ -132,6 +132,8 @@ public final class Terminal extends JComponent {
     private boolean closing;
     private boolean closed;
 
+    private boolean visibleInContainer;
+
     private class TermOptionsPCL implements PropertyChangeListener {
 	@Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -149,6 +151,7 @@ public final class Terminal extends JComponent {
             // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
+	    setVisibleInContainer(false);
         }
 
 	@Override
@@ -460,6 +463,14 @@ public final class Terminal extends JComponent {
 
     public boolean isClosed() {
         return closed;
+    }
+
+    public void setVisibleInContainer(boolean visible) {
+	this.visibleInContainer = visible;
+    }
+
+    public boolean isVisibleInContainer() {
+	return visibleInContainer;
     }
 
     private boolean isBooleanStateAction(Action a) {

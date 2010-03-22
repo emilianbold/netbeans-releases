@@ -44,6 +44,7 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOVisibility;
 
 /**
  * An implementation of {@link InputOutput} based on
@@ -96,7 +97,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOResizable(),
 						new MyIOEmulation(),
 						new MyIOTerm(),
-                                                new MyIOTab()
+                                                new MyIOTab(),
+						new MyIOVisibility()
                                                 );
 
 
@@ -346,6 +348,20 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	    this.disciplined = true;
 	    if (disciplined)
 		term.pushStream(new LineDiscipline());
+	}
+    }
+
+    private class MyIOVisibility extends IOVisibility {
+
+	@Override
+	protected void setVisible(boolean visible) {
+	    final Task task;
+	    if (visible) {
+		task = new Task.Select(ioContainer, terminal);
+	    } else {
+		task = new Task.DeSelect(ioContainer, terminal);
+	    }
+	    task.dispatch();
 	}
     }
 

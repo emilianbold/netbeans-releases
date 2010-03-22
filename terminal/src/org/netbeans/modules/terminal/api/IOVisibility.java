@@ -37,97 +37,52 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.api;
 
-import javax.swing.SwingUtilities;
-import org.openide.windows.IOContainer;
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
 /**
- * Perform a Task on the EDT.
+ * Capability of an InputOutput which controls whether it is visible
+ * as a tab or not.
+ * setVisible(true) is equivalent to select().
+ * setVisible(false) is equivalent to X'ing the tab or Closing from
+ * the context menu. setVisible() may fail silently if the IO is not
+ * closable. (See IOContainer.isClosable()).
  * @author ivan
  */
+public abstract class IOVisibility {
 
-/* package */ abstract class Task {
-
-    private final IOContainer container;
-    private final Terminal terminal;
+    private static IOVisibility find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOVisibility.class);
+        }
+        return null;
+    }
 
     /**
-     * Schedule this task to be performed on the EDT, or perform it now.
+     * Control the visibility of this I/O.
+     * @param visible
      */
-    public final void dispatch() {
-	if (SwingUtilities.isEventDispatchThread())
-	    perform();
-	else
-	    SwingUtilities.invokeLater(new Runnable() {
-		@Override
-		public void run() {
-		    perform();
-		}
-	    });
+    public static void setVisible(InputOutput io, boolean visible) {
+	IOVisibility iov = find(io);
+	if (iov != null)
+	    iov.setVisible(visible);
     }
 
-    protected abstract void perform();
-
-    protected Task(IOContainer container, Terminal terminal) {
-	this.container = container;
-	this.terminal = terminal;
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
     }
 
-    protected final IOContainer container() {
-	return container;
-    }
-
-    protected final Terminal terminal() {
-	return terminal;
-    }
-
-
-    static class Add extends Task {
-
-	public Add(IOContainer container, Terminal terminal) {
-	    super(container, terminal);
-	}
-
-	@Override
-	public void perform() {
-	    container().add(terminal(), terminal().callBacks());
-	    terminal().setVisibleInContainer(true);
-	    /* OLD bug #181064
-	    container().open();
-	    container().requestActive();
-	     */
-	    if (terminal().name() != null)
-		terminal().setTitle(terminal().name());
-	}
-    }
-
-    static class Select extends Task {
-
-	public Select(IOContainer container, Terminal terminal) {
-	    super(container, terminal);
-	}
-
-	@Override
-	public void perform() {
-	    if (!terminal().isVisibleInContainer()) {
-		container().add(terminal(), terminal().callBacks());
-		terminal().setVisibleInContainer(true);
-	    }
-	    container().select(terminal());
-	}
-    }
-
-    static class DeSelect extends Task {
-
-	public DeSelect(IOContainer container, Terminal terminal) {
-	    super(container, terminal);
-	}
-
-	@Override
-	public void perform() {
-	    container().remove(terminal());
-	}
-    }
-
+    /**
+     * Control the visibility of this I/O.
+     * @param visible
+     */
+    abstract protected void setVisible(boolean visible);
 }
