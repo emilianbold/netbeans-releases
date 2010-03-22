@@ -119,6 +119,7 @@ final class FileObjectKeeper implements FileChangeListener {
                             LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
                         }
                     } else {
+                        LOG.log(Level.FINE, "Do classical refresh for {0}", prevFO);  //NOI18N
                         prevFO.refresh(expected, true);
                     }
                 }
@@ -250,6 +251,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
@@ -265,6 +267,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
