@@ -493,7 +493,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
                     act = copy[i];
                 }
 
-                if (act instanceof Presenter.Popup && act.isEnabled()) {
+                if (act.isEnabled()) {
                     en = true;
 
                     break;
