@@ -66,20 +66,61 @@ public final class MakeProjectType implements AntBasedProjectType {
      */
     public MakeProjectType() {}
     
+    @Override
     public String getType() {
         return TYPE;
     }
     
+    @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         return new MakeProject(helper);
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
     }
     
+    @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
-    
+
+    /**
+     * Get the path in the system filesystem where other modules could place
+     * objects to include them in the projects' lookup
+     * @return A path in the system filesystem
+     */
+    public String getLookupMergerPath() {
+        return projectLayerPath() + "/Lookup";
+    }
+
+    /**
+     * System filesystem path for modules to place Node factories to include additional
+     * nodes under this project
+     * @return A path
+     */
+    public String nodeFactoryPath() {
+        return projectLayerPath() + "/Nodes"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add children to the Important Files subnode
+     * @return A path
+     */
+    public String importantFilesPath() {
+        return projectLayerPath() + "/ImportantFiles"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add customizer panels
+     * @return A path
+     */
+    public String customizerPath() {
+        return projectLayerPath() + "/Customizer"; //NOI18N
+    }
+
+    private String projectLayerPath() {
+        return "Projects/org-netbeans-modules-cnd-makeproject";
+    }
 }
