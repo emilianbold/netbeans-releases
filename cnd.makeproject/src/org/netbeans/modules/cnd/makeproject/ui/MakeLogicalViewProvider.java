@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
@@ -106,6 +107,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -679,9 +681,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             actions.addAll(Arrays.asList(standardActions));
             actions.add(null);
             //actions.add(new CodeAssistanceAction());
-            actions.addAll(Utilities.actionsForPath("NativeProjects/Menu")); // NOI18N
-            actions.add(null);
+            // makeproject sensitive actions
+            final MakeProjectType projectKind = provider.getProject().getLookup().lookup(MakeProjectType.class);
+            final List<? extends Action> actionsForMakeProject = Utilities.actionsForPath(projectKind.actionsPath());
+            if (!actionsForMakeProject.isEmpty()) {
+                actions.addAll(actionsForMakeProject);
+                actions.add(null);
+            }
             actions.add(SystemAction.get(org.openide.actions.FindAction.class));
+            // all project sensitive actions
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             // Add remaining actions
             actions.add(null);
