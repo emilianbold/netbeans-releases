@@ -49,8 +49,18 @@ Contributor(s):
             </file>
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="Actions">
+                <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="NativeProjects">
-        <folder name="Actions">
+        <folder name="CodeAssistanceActions">
             <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
                 <attr name="position" intvalue="100"/>
@@ -86,12 +96,6 @@ Contributor(s):
             <file name="TestRepositoryDistributionAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
                 <attr name="position" intvalue="1800"/>
-            </file>
-        </folder>
-        <folder name="Menu">
-            <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
-                <attr name="position" intvalue="100"/>
             </file>
         </folder>
     </folder>
