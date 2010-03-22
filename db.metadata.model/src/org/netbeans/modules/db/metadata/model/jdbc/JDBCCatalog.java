@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc;
@@ -76,29 +76,37 @@ public class JDBCCatalog extends CatalogImplementation {
         this.name = name;
         this._default = _default;
         this.defaultSchemaName = defaultSchemaName;
+        LOGGER.log(Level.FINE, "Create JDBCCatalog(jdbcMetadata={0}, name={1}, _default={2}, defaultSchemaName={3})",
+                new Object[] {jdbcMetadata, name, _default, defaultSchemaName});
     }
 
+    @Override
     public final String getName() {
         return name;
     }
 
+    @Override
     public final boolean isDefault() {
         return _default;
     }
 
+    @Override
     public final Schema getSyntheticSchema() {
         initSchemas();
         return syntheticSchema;
     }
 
+    @Override
     public final Collection<Schema> getSchemas() {
         return initSchemas().values();
     }
 
+    @Override
     public final Schema getSchema(String name) {
         return MetadataUtilities.find(name, initSchemas());
     }
 
+    @Override
     public final void refresh() {
         schemas = null;
     }
@@ -126,13 +134,16 @@ public class JDBCCatalog extends CatalogImplementation {
                 if (columnCount < 2) {
                     LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
                 }
+                boolean supportsCatalog = jdbcMetadata.getDmd().supportsCatalogsInTableDefinitions();
                 try {
                     while (rs.next()) {
                         String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
                         // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
                         // only returns a TABLE_SCHEM column.
-                        String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
+                        String catalogName = columnCount > 1 && supportsCatalog ? rs.getString("TABLE_CATALOG") : name; // NOI18N
                         LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
+                        LOGGER.log(Level.FINEST, "MetadataUtilities.equals(catalogName=''{0}'', name=''{1}'') returns {2}",
+                                new Object[] {catalogName, name, MetadataUtilities.equals(catalogName, name)});
                         if (MetadataUtilities.equals(catalogName, name)) {
                             if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                                 defaultSchema = createJDBCSchema(defaultSchemaName, true, false).getSchema();
