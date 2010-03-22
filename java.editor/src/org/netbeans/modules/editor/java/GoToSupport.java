@@ -228,7 +228,7 @@ public class GoToSupport {
                                     CALLER.beep(goToSource, javadoc);
                                 } else {
                                     //#71272: it is necessary to translate the offset:
-                                    offsetToOpen[0] = controller.getPositionConverter().getOriginalPosition((int) startPos);
+                                    offsetToOpen[0] = controller.getSnapshot().getOriginalOffset((int) startPos);
                                     displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
                                     tryToOpen[0] = true;
                                 }
@@ -281,7 +281,7 @@ public class GoToSupport {
             return null;
         }
 
-        int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
+        int exactOffset = controller.getSnapshot().getEmbeddedOffset(span[0] + 1);
 
         Element el = null;
         TypeMirror classType = null;
