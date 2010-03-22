@@ -98,6 +98,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -110,6 +111,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -150,6 +152,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
     private static final String MAKE_PROJECT_TYPE = "make-project-type"; // NOI18N
     private static MakeTemplateListener templateListener = null;
+    private final MakeProjectType kind;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -171,6 +174,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (TRACE_MAKE_PROJECT_CREATION){
             System.err.println("Start of creation MakeProject@"+System.identityHashCode(MakeProject.this)+" "+helper.getProjectDirectory().getName()); // NOI18N
         }
+        this.kind = new MakeProjectType();
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
@@ -252,7 +256,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[]{
+        Lookup lkp = Lookups.fixed(new Object[]{
                     new Info(),
                     aux,
                     helper.createCacheDirectoryProvider(),
@@ -262,7 +266,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
-                    new ProjectOpenedHookImpl(),
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
                     new AntProjectHelperProvider(),
@@ -272,12 +276,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
-                    new MakeProjectType(),
+                    kind,
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
                 });
+        return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
     @Override
@@ -1004,7 +1009,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
     }
-
+    
     private class ToolchainProjectImpl implements ToolchainProject {
 
         @Override
