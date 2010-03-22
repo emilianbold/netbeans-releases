@@ -69,10 +69,12 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.PanelProgressSupport;
+import org.netbeans.modules.subversion.ui.actions.ActionUtils;
 import org.netbeans.modules.versioning.hooks.SvnHook;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.subversion.ui.diff.DiffNode;
 import org.netbeans.modules.subversion.ui.status.SyncFileNode;
+import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -523,12 +525,14 @@ public class CommitAction extends ContextAction {
     }
 
     @Override
-    protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
-            return;
-        }
-        final Context ctx = getContext(nodes);
-        commit(getContextDisplayName(nodes), ctx, !isSvnNodes(nodes));
+    protected void performContextAction(final Node[] nodes) {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            @Override
+            public void run() {
+                Context ctx = getContext(nodes);
+                commit(getContextDisplayName(nodes), ctx, !isSvnNodes(nodes));
+            }
+        });
     }
 
     private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, Collection<SvnHook> hooks) {
