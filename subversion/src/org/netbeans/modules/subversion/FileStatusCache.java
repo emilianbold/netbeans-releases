@@ -491,11 +491,12 @@ public class FileStatusCache {
     /**
      * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
      * are brought back to UPTODATE.
+     * DOES NOT refresh ignored files.
      * 
      * @param ctx context to refresh
      */ 
     public void refreshCached(Context ctx) {
-        File [] files = listFiles(ctx, ~0);
+        File [] files = listFiles(ctx, ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             refresh(file, REPOSITORY_STATUS_UNKNOWN);
@@ -506,12 +507,27 @@ public class FileStatusCache {
      * Refreshes the status for the given file and all its children
      * 
      * @param root
+     * @param traverseIgnored if set to false, the recursive refresh will stop on ignored folders
+     * XXX is traverseIgnored really necessary or should it always be considered false?
      */
-    public void refreshRecursively(File root) {  
-        List<File> files = SvnUtils.listRecursively(root);
-        for (File file : files) {
-            refresh(file, REPOSITORY_STATUS_UNKNOWN);
-        }        
+    public void refreshRecursively(File root, boolean traverseIgnored) {
+        if (traverseIgnored) {
+            // use old logic and refresh ALL files under the root
+            List<File> files = SvnUtils.listRecursively(root);
+            for (File file : files) {
+                refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            }
+        } else {
+            // refresh the root itself
+            FileInformation info = refresh(root, REPOSITORY_STATUS_UNKNOWN);
+            // for unignored files, refresh recursively its direct children too
+            if (info == null || (info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                List<File> files = SvnUtils.listChildren(root);
+                for (File file : files) {
+                    refreshRecursively(file, traverseIgnored);
+                }
+            }
+        }
     }    
     
     private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
@@ -656,20 +672,23 @@ public class FileStatusCache {
      * @return true if supplied entries contain equivalent information
      */ 
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
-        long r1 = -1;
-        if (e1 != null) {
-            SVNRevision r = e1.getRevision();
-            r1 = r != null ? e1.getRevision().getNumber() : r1;
-        }
+        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())) {
+            // check revisions just when it's meaningful, unversioned or ignored files have no revision and thus should be considered equal
+            long r1 = -1;
+            if (e1 != null) {
+                SVNRevision r = e1.getRevision();
+                r1 = r != null ? e1.getRevision().getNumber() : r1;
+            }
 
-        long r2 = -2;
-        if (e2 != null) {
-            SVNRevision r = e2.getRevision();
-            r2 = r != null ? e2.getRevision().getNumber() : r2;
-        }
-        
-        if ( r1 != r2 ) {
-            return false;
+            long r2 = -2;
+            if (e2 != null) {
+                SVNRevision r = e2.getRevision();
+                r2 = r != null ? e2.getRevision().getNumber() : r2;
+            }
+
+            if (r1 != r2) {
+                return false;
+            }
         }
         if (e1.isCopied() != e2.isCopied()) {
             return false;
