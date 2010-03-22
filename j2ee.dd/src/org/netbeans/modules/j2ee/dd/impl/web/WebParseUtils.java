@@ -79,7 +79,7 @@ public class WebParseUtils {
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("web-app".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+version);
+                throw new SAXException(ParseUtils.EXCEPTION_PREFIX+(version==null?"2.3":version)); // NOI18N
             }
             if ("web-fragment".equals(rawName)) { //NOI18N
                 String version = atts.getValue("version"); //NOI18N
@@ -105,7 +105,11 @@ public class WebParseUtils {
             }
             String resource=null;
             // return a proper input source
-            if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) { //NOI18N
+            if ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN".equals(publicId)) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_3.dtd"; //NOI18N
+            } else if ("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN".equals(publicId)) { //NOI18N
+                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_2.dtd"; //NOI18N
+            } else if (systemId!=null && systemId.endsWith("web-app_2_4.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_4.xsd"; //NOI18N
             } else if (systemId!=null && systemId.endsWith("web-app_2_5.xsd")) { //NOI18N
                 resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_5.xsd"; //NOI18N

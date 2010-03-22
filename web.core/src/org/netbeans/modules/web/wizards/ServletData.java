@@ -106,7 +106,11 @@ class ServletData extends DeployData {
             // This case is considered as normal in other cases. So I keep it also as valid.
             return true;
         }
-        if ( webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ){
+        if ( webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION ){
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(ServletData.class, "MSG_OldVersion"));
+            return false;
+        } else if ( webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE ){
             if ( webApp.getVersion() == null ){
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServletData.class, "MSG_UnuspportedVersion"));
