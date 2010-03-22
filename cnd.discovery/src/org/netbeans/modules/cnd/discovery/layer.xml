@@ -42,9 +42,6 @@ Contributor(s):
             <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
             </file>
-            <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
-            </file>
         </folder>
         <folder name="NativeProjectCodeAssistance">
             <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance">
