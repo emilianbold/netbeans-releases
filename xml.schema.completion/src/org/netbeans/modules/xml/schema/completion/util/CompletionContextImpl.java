@@ -491,7 +491,7 @@ public class CompletionContextImpl extends CompletionContext {
                     break;
             }
         } catch (Exception e) {
-            _logger.log(Level.WARNING,
+            _logger.log(Level.INFO,
                 e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
             return false;
         }
