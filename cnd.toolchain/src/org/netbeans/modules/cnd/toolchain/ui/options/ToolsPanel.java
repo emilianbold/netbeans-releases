@@ -981,9 +981,9 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
-            if (value != null) {
+            if (rec != null) {
                 label.setText(rec.getDisplayName());
-                if (value.equals(tcm.getDefaultHostRecord())) {
+                if (value != null && value.equals(tcm.getDefaultHostRecord())) {
                     label.setFont(label.getFont().deriveFont(Font.BOLD));
                 }
             }
