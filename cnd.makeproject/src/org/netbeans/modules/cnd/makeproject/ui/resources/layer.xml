@@ -595,5 +595,17 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>        <!-- NoBuildAction -->
     </folder>       <!-- CND -->
-
+    <folder name="Projects">
+        <!-- MakeProject Extension Points-->
+        <folder name="org-netbeans-modules-cnd-makeproject">
+            <folder name="Nodes"/>
+            <folder name="ImportantFiles"/>
+            <folder name="Customizer"/>
+            <folder name="Lookup">
+                <!-- put org.netbeans.spi.project.LookupProvider here
+                    or use @LookupProvider.Registration in code
+                -->
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
