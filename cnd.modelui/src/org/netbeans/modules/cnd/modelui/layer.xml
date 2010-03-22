@@ -37,15 +37,38 @@ Contributor(s):
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Actions">
-        <folder name="View">
-            <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction"/>
-            </file>
-            <file name="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction"/>
-            </file>
+        <folder name="NativeProject">
             <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction"/>
+            </file>
+        </folder>
+        <folder name="NativeProjectCodeAssistance">
+            <file name="SwitchProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction"/>
+            </file>
+            <file name="ReparseProjectAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction"/>
+            </file>
+            <file name="TestProjectAllReferencesPerformanceAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesPerformanceAction"/>
+            </file>
+            <file name="TestProjectAllReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesAction"/>
+            </file>
+            <file name="TestProjectDirectUsageReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
+            </file>
+            <file name="TestProjectSmartCompletionAnalyzerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
+            </file>
+            <file name="TestReparseAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getTestReparseAction"/>
+            </file>
+            <file name="TestErrorHighlightingAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestErrorHighlightingAction.getInstance"/>
+            </file>
+            <file name="TestRepositoryDistributionAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
             </file>
         </folder>
     </folder>
@@ -53,8 +76,7 @@ Contributor(s):
         <folder name="org-netbeans-modules-cnd-makeproject">
             <folder name="Actions">
                 <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
-                    <attr name="position" intvalue="100"/>
+                    <attr name="originalFile" stringvalue="Actions/NativeProject/org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.instance"/>
                 </file>
             </folder>
         </folder>
@@ -62,39 +84,39 @@ Contributor(s):
     <folder name="NativeProjects">
         <folder name="CodeAssistanceActions">
             <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/SwitchProjectAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction..shadow">
-                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction.instance"/>
+            <file name="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/oReparseProjectAction.instance"/>
                 <attr name="position" intvalue="150"/>
             </file>
-            <file name="TestProjectAllReferencesPerformanceAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesPerformanceAction"/>
+            <file name="TestProjectAllReferencesPerformanceAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
                 <attr name="position" intvalue="1200"/>
             </file>
-            <file name="TestProjectAllReferencesAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesAction"/>
+            <file name="TestProjectAllReferencesAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
                 <attr name="position" intvalue="1300"/>
             </file>
-            <file name="TestProjectDirectUsageReferencesAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
+            <file name="TestProjectDirectUsageReferencesAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectDirectUsageReferencesAction.instance"/>
                 <attr name="position" intvalue="1400"/>
             </file>
-            <file name="TestProjectSmartCompletionAnalyzerAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
+            <file name="TestProjectSmartCompletionAnalyzerAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectSmartCompletionAnalyzerAction.instance"/>
                 <attr name="position" intvalue="1500"/>
             </file>
-            <file name="TestReparseAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getTestReparseAction"/>
+            <file name="TestReparseAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestReparseAction.instance"/>
                 <attr name="position" intvalue="1600"/>
             </file>
-            <file name="TestErrorHighlightingAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestErrorHighlightingAction.getInstance"/>
+            <file name="TestErrorHighlightingAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestErrorHighlightingAction.instance"/>
                 <attr name="position" intvalue="1700"/>
             </file>
-            <file name="TestRepositoryDistributionAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
+            <file name="TestRepositoryDistributionAction.shadow">
+                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
             </file>
         </folder>
