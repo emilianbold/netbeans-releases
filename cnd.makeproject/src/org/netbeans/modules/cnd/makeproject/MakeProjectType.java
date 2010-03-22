@@ -120,6 +120,14 @@ public final class MakeProjectType implements AntBasedProjectType {
         return projectLayerPath() + "/Customizer"; //NOI18N
     }
 
+    /**
+     * System fs path for other modules to add make project specific actions
+     * @return A path
+     */
+    public String actionsPath() {
+        return projectLayerPath() + "/Actions"; //NOI18N
+    }
+
     private String projectLayerPath() {
         return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
     }
