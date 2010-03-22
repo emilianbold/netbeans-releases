@@ -89,35 +89,35 @@ Contributor(s):
                 <attr name="position" intvalue="100"/>
             </file>
             <file name="org.netbeans.modules.cnd.modelui.actions.ReparseProjectAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/oReparseProjectAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/ReparseProjectAction.instance"/>
                 <attr name="position" intvalue="150"/>
             </file>
             <file name="TestProjectAllReferencesPerformanceAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
                 <attr name="position" intvalue="1200"/>
             </file>
             <file name="TestProjectAllReferencesAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectAllReferencesPerformanceAction.instance"/>
                 <attr name="position" intvalue="1300"/>
             </file>
             <file name="TestProjectDirectUsageReferencesAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectDirectUsageReferencesAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectDirectUsageReferencesAction.instance"/>
                 <attr name="position" intvalue="1400"/>
             </file>
             <file name="TestProjectSmartCompletionAnalyzerAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestProjectSmartCompletionAnalyzerAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectSmartCompletionAnalyzerAction.instance"/>
                 <attr name="position" intvalue="1500"/>
             </file>
             <file name="TestReparseAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestReparseAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestReparseAction.instance"/>
                 <attr name="position" intvalue="1600"/>
             </file>
             <file name="TestErrorHighlightingAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestErrorHighlightingAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestErrorHighlightingAction.instance"/>
                 <attr name="position" intvalue="1700"/>
             </file>
             <file name="TestRepositoryDistributionAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
             </file>
         </folder>
