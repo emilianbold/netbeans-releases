@@ -42,10 +42,7 @@ package org.netbeans.modules.bugtracking.hyperlink;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
@@ -53,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Provides hyperlink functionality on issue reference in VCS artefects as e.g. log messages in Serach History
+ * Provides hyperlink functionality on issue reference in VCS artefacts as e.g. log messages in Search History
  *
  * @author Tomas Stupka
  */
