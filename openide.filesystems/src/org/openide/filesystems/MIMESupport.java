@@ -136,7 +136,7 @@ final class MIMESupport extends Object {
             synchronized (lock) {
                 if (lastCfo != CLEARED) {
                     lastCfo = new WeakReference<CachedFileObject>(cfo);
-                } else {
+                } else if (cfo != lastCfo.get()) {
                     cfo.clear();
                 }
                 if (cfo != lcfo && lcfo != null) {
