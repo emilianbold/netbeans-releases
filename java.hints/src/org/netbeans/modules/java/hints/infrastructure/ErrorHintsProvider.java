@@ -86,6 +86,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -502,6 +503,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             return ;
         }
 
+        long version = DocumentUtilities.getDocumentVersion(doc);
         String mimeType = result.getSnapshot().getSource().getMimeType();
         
         long start = System.currentTimeMillis();
@@ -513,6 +515,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 return ;
 
             HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
+
+            JavaHintsPositionRefresher.errorsUpdated(doc, version, errors);
             
             long end = System.currentTimeMillis();
 
