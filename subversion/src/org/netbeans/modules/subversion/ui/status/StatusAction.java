@@ -144,7 +144,7 @@ public class StatusAction  extends ContextAction {
                 // a newly created folders children.
                 // As this is the place were such files should be recognized,
                 // we will force the refresh recursivelly.
-                cache.refreshRecursively(file);
+                cache.refreshRecursively(file, false);
             } else {
                 cache.refresh(file, status);
             }
