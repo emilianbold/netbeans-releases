@@ -283,11 +283,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         jLabel1.setLabelFor(lCategories);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DiffColorsPanel.class, "DiffColorsPanel.jLabel1.text")); // NOI18N
 
-        lCategories.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        lCategories.setModel(new DefaultListModel());
         jScrollPane1.setViewportView(lCategories);
 
         jLabel3.setLabelFor(cbBackground);

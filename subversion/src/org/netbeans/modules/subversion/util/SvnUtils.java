@@ -1220,6 +1220,27 @@ public class SvnUtils {
         return ret;
     }
 
+    /**
+     * Lists all children of a given dir with the exception of metadata files or folders
+     * @param root given folder
+     * @return list of all direct children
+     */
+    public static List<File> listChildren (File root) {
+        List<File> ret = new ArrayList<File>();
+        if(root == null) {
+            return ret;
+        }
+        File[] files = root.listFiles();
+        if(files != null) {
+            for (File file : files) {
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {
+                    ret.add(file);
+                }
+            }
+        }
+        return ret;
+    }
+
     public static SvnFileNode [] getNodes(Context context, int includeStatus) {
         File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
         SvnFileNode [] nodes = new SvnFileNode[files.length];
