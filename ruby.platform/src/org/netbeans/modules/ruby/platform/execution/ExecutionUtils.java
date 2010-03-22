@@ -214,24 +214,7 @@ public final class ExecutionUtils {
         return argvList;
     }
 
-    /** Package-private for unit test. */
-    static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
-        StringBuilder cp = new StringBuilder();
-        File[] libs = jrubyLib.listFiles();
-
-        for (File lib : libs) {
-            if (lib.getName().endsWith(".jar")) { // NOI18N
-
-                if (cp.length() > 0) {
-                    cp.append(File.pathSeparatorChar);
-                }
-
-                cp.append(lib.getAbsolutePath());
-            }
-        }
-
-        // Add in user-specified jars passed via JRUBY_EXTRA_CLASSPATH
-
+    public static String getExtraClassPath(String extraCp) {
         if (extraCp != null && File.pathSeparatorChar != ':') {
             // Ugly hack - getClassPath has mixed together path separator chars
             // (:) and filesystem separators, e.g. I might have C:\foo:D:\bar but
@@ -249,8 +232,29 @@ public final class ExecutionUtils {
                 }
                 p.append(c);
             }
-            extraCp = p.toString();
+            return p.toString();
         }
+        return extraCp;
+    }
+
+    /** Package-private for unit test. */
+    static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
+        StringBuilder cp = new StringBuilder();
+        File[] libs = jrubyLib.listFiles();
+
+        for (File lib : libs) {
+            if (lib.getName().endsWith(".jar")) { // NOI18N
+
+                if (cp.length() > 0) {
+                    cp.append(File.pathSeparatorChar);
+                }
+
+                cp.append(lib.getAbsolutePath());
+            }
+        }
+
+        // Add in user-specified jars passed via JRUBY_EXTRA_CLASSPATH
+        extraCp = getExtraClassPath(extraCp);
 
         if (extraCp == null) {
             extraCp = System.getenv("JRUBY_EXTRA_CLASSPATH"); // NOI18N
