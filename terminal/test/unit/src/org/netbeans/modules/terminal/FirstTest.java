@@ -40,12 +40,16 @@
 package org.netbeans.modules.terminal;
 
 import java.awt.BorderLayout;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.TerminalContainer;
-import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -57,7 +61,9 @@ import org.openide.windows.InputOutput;
 public class FirstTest extends NbTestCase {
 
     private JFrame frame;
-    private TerminalContainer tc;
+    // OLD private TerminalContainer tc;
+    private JComponent actualContainer;
+    private IOContainer ioContainer;
     private IOProvider ioProvider;
     private InputOutput io;
 
@@ -77,7 +83,16 @@ public class FirstTest extends NbTestCase {
     protected void setUp() throws Exception {
 	System.out.printf("setUp()\n");
 
-	tc = TerminalContainer.create(null, "Test");
+	boolean defaultContainer = false;
+
+	if (defaultContainer) {
+	    ioContainer = IOContainer.getDefault();
+	    actualContainer = defaultContainer(ioContainer);
+	} else {
+	    TerminalContainer tc = TerminalContainer.create(null, "Test");
+	    actualContainer = tc;
+	    ioContainer = tc.ioContainer();
+	}
 
         SwingUtilities.invokeAndWait(new Runnable() {
 	    @Override
@@ -85,7 +100,7 @@ public class FirstTest extends NbTestCase {
 
 		frame = new JFrame();
 		frame.getContentPane().setLayout(new BorderLayout());
-		frame.getContentPane().add(tc, BorderLayout.CENTER);
+		frame.getContentPane().add(actualContainer, BorderLayout.CENTER);
 		frame.setBounds(20, 20, 700, 300);
 		frame.setVisible(true);
 
@@ -102,7 +117,7 @@ public class FirstTest extends NbTestCase {
 	    assertNotNull ("Could not find IOProvider", ioProvider);
 	    assertTrue("Got default IOProvider", ioProvider != IOProvider.getDefault());
 	}
-	io = ioProvider.getIO("test", null, tc.ioContainer());
+	io = ioProvider.getIO("test", null, ioContainer);
 	assertNotNull ("Could not get InputOutput", io);
 	io.select();
     }
@@ -118,7 +133,8 @@ public class FirstTest extends NbTestCase {
 
 		io = null;
 		ioProvider = null;
-		tc = null;
+		ioContainer = null;
+		actualContainer = null;
 		frame.dispose();
 		frame = null;
 	    }
@@ -139,7 +155,6 @@ public class FirstTest extends NbTestCase {
 
     public void testMultiple() {
 	System.out.printf("testHello()\n");
-	IOContainer ioContainer = tc.ioContainer();
 	InputOutput ios[] = new InputOutput[4];
 	ios[0] = io;
 	sleep(1);
@@ -173,5 +188,36 @@ public class FirstTest extends NbTestCase {
 	sleep(1);
 
 	sleep(3);
+    }
+
+    /**
+     * Use reflection to extract private IOWindow instance so
+     * we can embed it in a JFrame.
+     */
+    static JComponent defaultContainer(IOContainer ioContainer) {
+        JComponent comp = null;
+        try {
+            try {
+                Field f = ioContainer.getClass().getDeclaredField("provider");
+                f.setAccessible(true);
+                IOContainer.Provider prov = (IOContainer.Provider) f.get(ioContainer);
+                Method m = prov.getClass().getDeclaredMethod("impl", new Class[0]);
+                m.setAccessible(true);
+                comp = (JComponent) m.invoke(prov);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return comp;
     }
 }
