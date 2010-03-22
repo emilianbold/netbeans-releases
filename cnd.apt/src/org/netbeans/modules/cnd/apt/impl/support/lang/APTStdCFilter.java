@@ -53,6 +53,7 @@ public class APTStdCFilter extends APTBaseLanguageFilter {
      * Creates a new instance of APTStdCFilter
      */
     public APTStdCFilter() {
+        super(false);
         initialize();
     }
 

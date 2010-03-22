@@ -70,6 +70,7 @@ import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,6 +92,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -186,7 +188,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private FileCompletionPopup completionPopup;
     
-    private RequestProcessor.Task updateWorker;
+    private RequestProcessor.Task updateWorkerTask;
     
     private boolean useShellFolder = false;
     
@@ -199,6 +201,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
     }
+    private LinkedBlockingDeque<File> updateQueue;
 
     public DirectoryChooserUI(JFileChooser filechooser) {
         super(filechooser);
@@ -235,6 +238,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         createPopup();
+
+        initUpdateWorker();
     }
 
     @Override
@@ -730,12 +735,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
 
         };
-        // #105642: start with right content in tree 
-        File curDir = fileChooser.getCurrentDirectory();
-        if (curDir == null) {
-            curDir = fileChooser.getFileSystemView().getRoots()[0];
-        }
-        updateTree(curDir);
         
         tree.setFocusable(true);
         tree.setOpaque(true);
@@ -1089,42 +1088,30 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static ResourceBundle getBundle() {
         return NbBundle.getBundle(DirectoryChooserUI.class);
     }
+
+    @Override
+    public void rescanCurrentDirectory(JFileChooser fc) {
+        super.rescanCurrentDirectory(fc);
+        File curDir = fc.getCurrentDirectory();
+        if (curDir == null) {
+            curDir = fc.getFileSystemView().getRoots()[0];
+        }
+        updateTree(curDir);
+    }
+
+    private void initUpdateWorker () {
+        updateQueue = new LinkedBlockingDeque<File>();
+        UpdateWorker updateWorker = new UpdateWorker();
+        updateWorkerTask = RequestProcessor.getDefault().post(updateWorker);
+        fileChooser.addActionListener(updateWorker);
+    }
     
     private void updateTree(final File file) {
-        // fixed bug #97522
-        if(updateWorker != null) {
-            // try to cancel previous update if possible
-            if (!updateWorker.isFinished()) {
-                updateWorker.cancel();
-            }
-            // #105642 - wait for previous update, to keep time order
-            updateWorker.waitFinished();
+        try {
+            updateQueue.put(file);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        
-        updateWorker = RequestProcessor.getDefault().post(new Runnable() {
-            DirectoryNode node;
-            long startTime;
-            public void run() {
-                if (!EventQueue.isDispatchThread()) {
-                    // first pass, out of EQ thread
-                    markStartTime();
-                    setCursor(fileChooser, Cursor.WAIT_CURSOR);
-                    node = new DirectoryNode(file);
-                    node.loadChildren(fileChooser, true);
-                    // send to second pass
-                    EventQueue.invokeLater(this);
-                } else {
-                    // second pass, in EQ thread
-                    model = new DirectoryTreeModel(node);
-                    tree.setModel(model);
-                    tree.repaint();
-                    setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
-                    checkUpdate();
-                }
-            }
-
-        });
-        
     }
 
     private void markStartTime () {
@@ -2480,4 +2467,61 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
     }
+
+    private class UpdateWorker implements Runnable, ActionListener {
+        private String lastUpdatePathName = null;
+        private boolean workerShouldStop = false;
+
+        @Override
+        public void run() {
+            assert !EventQueue.isDispatchThread();
+            while (true) {
+                File file = null;
+                try {
+                    file = updateQueue.take();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    continue;
+                }
+                if (workerShouldStop) {
+                    return;
+                }
+                if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
+                    continue;
+                }
+                lastUpdatePathName = file.getPath();
+                markStartTime();
+                setCursor(fileChooser, Cursor.WAIT_CURSOR);
+                final DirectoryNode node = new DirectoryNode(file);
+                node.loadChildren(fileChooser, true);
+
+                // update UI in EQ thread
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        model = new DirectoryTreeModel(node);
+                        tree.setModel(model);
+                        tree.repaint();
+                        if (updateQueue.isEmpty()) {
+                            setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+                        }
+                        checkUpdate();
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            fileChooser.removeActionListener(this);
+            workerShouldStop = true;
+            try {
+                updateQueue.put(new File("dummy")); //NOI18N
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    } // end of UpdateWorker
+
 }
