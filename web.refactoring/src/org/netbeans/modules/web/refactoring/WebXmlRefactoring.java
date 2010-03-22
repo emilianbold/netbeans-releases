@@ -64,6 +64,8 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     public Problem preCheck() {
         if (webModel.getStatus() == WebApp.STATE_INVALID_UNPARSABLE){
             return new Problem(false, NbBundle.getMessage(WebXmlRefactoring.class, "TXT_WebXmlInvalidProblem"));
+        } else if (webModel.getStatus() == WebApp.STATE_INVALID_OLD_VERSION){
+            return new Problem(false, NbBundle.getMessage(WebXmlRefactoring.class, "TXT_WebXmlOldVersion"));
         }
         return null;
         
