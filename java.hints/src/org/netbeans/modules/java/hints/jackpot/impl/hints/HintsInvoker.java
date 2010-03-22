@@ -315,6 +315,10 @@ public class HintsInvoker {
             timeLog.put("Pattern Based Hints", patternEnd - patternStart);
         }
 
+        if (path != null) {
+            errors.addAll(computeSuggestions(info, path, hints, patternHints, problems));
+        }
+
         return errors;
     }
 
