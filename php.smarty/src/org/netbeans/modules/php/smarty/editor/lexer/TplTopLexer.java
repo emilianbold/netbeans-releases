@@ -136,22 +136,18 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private enum State {
         INIT,
         OUTER,
-        AFTER_PHP_DELIMITER,
         AFTER_DELIMITER,
         OPEN_DELIMITER,
         CLOSE_DELIMITER,
         IN_COMMENT,
         IN_SMARTY,
         IN_PHP,
-        IN_PHP_TAG,
-        IN_SUBSTATE,
         AFTER_SUBSTATE,
         IN_LITERAL
     }
 
     private enum SubState {
         NO_SUB_STATE,
-        COMMENT,
         PHP_CODE,
         LITERAL
     }
@@ -190,6 +186,9 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         if (textLength > openDelimiterLength) {
                             return TplTopTokenId.T_HTML;
                         }
+                    }
+                    if (cc == '\n') {
+                        return TplTopTokenId.T_HTML;
                     }
                     break;
 
@@ -340,8 +339,18 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                 return TplTopTokenId.T_SMARTY;
                             }
                         }
-                    } else if (cc == LexerInput.EOF) {
-                        return TplTopTokenId.T_SMARTY;
+                    }
+                    switch(c) {
+                        case '\n':
+                           return TplTopTokenId.T_SMARTY;
+                        case LexerInput.EOF:
+                           return TplTopTokenId.T_SMARTY;
+                        case '<':
+                           state = State.OUTER;
+                           input.backup(1);
+                           if (input.readLength() > 1) {
+                                return TplTopTokenId.T_SMARTY;
+                           }
                     }
                     break;
                 }
