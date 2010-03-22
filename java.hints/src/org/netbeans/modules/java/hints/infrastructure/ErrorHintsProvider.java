@@ -341,7 +341,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (dObj == null)
             return new Position[] {null, null};
         LineCookie lc = dObj.getCookie(LineCookie.class);
-        int lineNumber = NbDocument.findLineNumber(sdoc, info.getPositionConverter().getOriginalPosition(startOffset));
+        int lineNumber = NbDocument.findLineNumber(sdoc, info.getSnapshot().getOriginalOffset(startOffset));
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
         Line line = lc.getLineSet().getCurrent(lineNumber);
         
@@ -541,8 +541,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (span == null || span[0] == (-1) || span[1] == (-1))
             return null;
         
-        int start = info.getPositionConverter().getOriginalPosition(span[0]);
-        int end   = info.getPositionConverter().getOriginalPosition(span[1]);
+        int start = info.getSnapshot().getOriginalOffset(span[0]);
+        int end   = info.getSnapshot().getOriginalOffset(span[1]);
         
         if (start == (-1) || end == (-1))
             return null;
