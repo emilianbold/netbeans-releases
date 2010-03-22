@@ -171,7 +171,7 @@ public class ZendEditorExtender extends EditorExtender {
 
             if (className != null
                     && methodName != null
-                    && className.endsWith(ZendUtils.ACTION_CLASS_SUFFIX.toLowerCase())
+                    && className.endsWith(ZendUtils.CONTROLLER_CLASS_SUFFIX.toLowerCase())
                     && methodName.equalsIgnoreCase(actionName)) {
                 // $this->view->variable?
                 if (node.getDispatcher() instanceof FieldAccess) {
