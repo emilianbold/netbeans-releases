@@ -51,6 +51,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class ZendUtils {
     public static final String ACTION_FILE_SUFIX = "Controller"; // NOI18N
+    public static final String ACTION_CLASS_SUFFIX = "Controller"; // NOI18N
     public static final String ACTION_METHOD_SUFIX = "Action"; // NOI18N
 
     private static final String DIR_CONTROLLERS = "controllers"; // NOI18N
@@ -135,5 +136,9 @@ public final class ZendUtils {
     private static String getControllerName(FileObject fo) {
         String controller = fo.getName().replace(ACTION_FILE_SUFIX, ""); // NOI18N
         return controller.substring(0, 1).toLowerCase() + controller.substring(1);
+    }
+
+    public static String getActionName(FileObject view) {
+        return view.getName() + ACTION_METHOD_SUFIX;
     }
 }
