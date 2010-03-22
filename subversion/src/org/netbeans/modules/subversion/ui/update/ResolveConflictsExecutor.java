@@ -224,6 +224,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             StringBuilder text2 = new StringBuilder();
             int i = 1, j = 1;
             while ((line = r.readLine()) != null) {
+                int pos;
                 if (line.startsWith(CHANGE_LEFT)) {
                     if (isChangeLeft || isChangeRight) {
                         // nested conflicts are not supported
@@ -334,7 +335,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                         f1l1 = i;
                         continue;
                     }
-                } else if (line.endsWith(CHANGE_DELIMETER)) {
+                } else if (line.endsWith(CHANGE_DELIMETER) && !line.endsWith(CHANGE_DELIMETER + CHANGE_DELIMETER.charAt(0))) {
                     String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);
