@@ -111,6 +111,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,7 +126,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -266,7 +266,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
-                    new ProjectOpenedHookImpl(),
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
                     new AntProjectHelperProvider(),
