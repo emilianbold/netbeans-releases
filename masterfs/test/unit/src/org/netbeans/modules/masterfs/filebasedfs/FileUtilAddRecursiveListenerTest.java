@@ -246,7 +246,11 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
         LOG.log(Level.INFO, "Touched {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         FileUtil.refreshAll();
-        assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
+        final int expect = fcl.check(EventType.CHANGED);
+        if (expect != 3) {
+            fcl.printAll(LOG);
+            assertEquals("Wrong number of events when file was modified.", 3, expect);
+        }
         assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
 
         assertTrue(subsubfileF.delete());
