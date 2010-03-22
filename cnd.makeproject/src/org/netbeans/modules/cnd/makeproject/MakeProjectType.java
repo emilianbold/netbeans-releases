@@ -121,7 +121,7 @@ public final class MakeProjectType implements AntBasedProjectType {
     }
 
     /**
-     * System fs path for other modules to add customizer panels
+     * System fs path for other modules to add make project specific actions
      * @return A path
      */
     public String actionsPath() {
