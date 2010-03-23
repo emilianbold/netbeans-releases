@@ -148,7 +148,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 // Check if the factories fired any changes
-                int rStartOffset = rebuildStartOffset;;
+                int rStartOffset = rebuildStartOffset;
                 int rEndOffset = rebuildEndOffset;
                 boolean rebuildNecessary = isRebuildNecessary();
                 int insertOffset = evt.getOffset();
@@ -190,10 +190,16 @@ public final class ViewUpdates implements DocumentListener {
                     rebuildNecessary |= (addedLines.length > 0);
                 }
                 int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
-                assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-                ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+// XXX: #182559, temporary workaround, please fix properly!
+//                assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                ParagraphView paragraphView;
+                if (paragraphViewIndex >= 0) {
+                    paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                } else {
+                    paragraphView = null;
+                }
 
-                if (!rebuildNecessary) { // Attempt to update just a single view locally
+                if (paragraphView != null && !rebuildNecessary) { // Attempt to update just a single view locally
                     // Just inform the view at the offset to contain more data
                     // Use rebuildEndOffset if there was a move inside views
                     int childViewIndex = paragraphView.getViewIndex(rEndOffset);
@@ -219,7 +225,7 @@ public final class ViewUpdates implements DocumentListener {
                     }
                 }
 
-                if (rebuildNecessary) {
+                if (paragraphView != null && rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset, insertLength);
                     try {
