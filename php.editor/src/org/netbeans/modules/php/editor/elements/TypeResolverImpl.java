@@ -76,7 +76,14 @@ public final class TypeResolverImpl implements TypeResolver {
     public static Set<TypeResolver> forNames(final Collection<QualifiedName> names) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         for (QualifiedName qualifiedName : names) {
-            retval.add(new TypeResolverImpl(qualifiedName.toString()));
+            final String typeName = qualifiedName.toString();
+                if (typeName.equals(ParameterElementImpl.encode(typeName))) {
+                    retval.add(new TypeResolverImpl(typeName));
+                } else {
+                    log(String.format("wrong typename: \"%s\"", typeName), Level.FINE);//NOI18N
+                }
+
+
         }
         return retval;
     }
