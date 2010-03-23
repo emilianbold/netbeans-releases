@@ -264,7 +264,6 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         externalSheetRB.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
 
         existingEmbeddedSectionsComboBox.setModel(createEmbeddedCssSectionsModel());
-        existingEmbeddedSectionsComboBox.setEnabled(!context.getExistingEmbeddedCssSections().isEmpty());
         existingEmbeddedSectionsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 existingEmbeddedSectionsComboBoxActionPerformed(evt);
@@ -272,7 +271,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         });
 
         externalSheetsComboBox.setModel(createExternalStylesheetsModel());
-        externalSheetsComboBox.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
+        externalSheetsComboBox.setEnabled(!allStylesheets.isEmpty());
         externalSheetsComboBox.setRenderer(new ExternalStylesheetsListCellRenderer(externalSheetsComboBox.getRenderer()));
         externalSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

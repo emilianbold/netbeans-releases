@@ -123,9 +123,6 @@
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="createEmbeddedCssSectionsModel()" type="code"/>
         </Property>
-        <Property name="enabled" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="!context.getExistingEmbeddedCssSections().isEmpty()" type="code"/>
-        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="existingEmbeddedSectionsComboBoxActionPerformed"/>
@@ -137,7 +134,7 @@
           <Connection code="createExternalStylesheetsModel()" type="code"/>
         </Property>
         <Property name="enabled" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="!context.getLinkedExternalStylesheets().isEmpty()" type="code"/>
+          <Connection code="!allStylesheets.isEmpty()" type="code"/>
         </Property>
         <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="new ExternalStylesheetsListCellRenderer(externalSheetsComboBox.getRenderer())" type="code"/>
