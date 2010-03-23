@@ -62,6 +62,7 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -212,11 +213,14 @@ public final class WebServiceManager {
 
         WsdlModelProvider wsdlModelProvider = null;
         Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        boolean notAccepted = false;
         if (providers != null) {
             for (WsdlModelProvider provider : providers) {
                 if (provider.canAccept(wsdlUrl)) {
                     wsdlModelProvider = provider;
                     break;
+                } else {
+                    notAccepted = true;
                 }
             }
         }
@@ -249,8 +253,19 @@ public final class WebServiceManager {
 
                 Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
             } else {
-                exc = new IllegalStateException(message);
-                Exceptions.printStackTrace(exc);
+                if (wsdlModelProvider == null && notAccepted) {
+                    DialogDisplayer.getDefault().notify(
+                        new DialogDescriptor.Message(NbBundle.getMessage(WebServiceManager.class, "JAX_RPC_MODELER_ERROR")));
+                } else {
+                    Throwable ex = wsdlModelProvider.getCreationException();
+                    if (ex != null) {
+                        Logger.getLogger(WebServiceManager.class.getName()).log(Level.WARNING,
+                            NbBundle.getMessage(WebServiceManager.class, "JAX_WS_MODELER_ERROR"), ex);
+                    } else {
+                        exc = new IllegalStateException(message);
+                        Exceptions.printStackTrace(exc);
+                    }
+                }
             }
         }
         
