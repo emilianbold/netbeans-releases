@@ -68,7 +68,7 @@ import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
@@ -118,18 +118,18 @@ public class SchemaABEViewMultiViewElement extends TopComponent
     
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();        
-        if(!AXIModel.STATE_PROPERTY.equals(property)) {
+        if(!Model.STATE_PROPERTY.equals(property)) {
             return;
         }
         //
         assert SwingUtilities.isEventDispatchThread();
         //
-        State newState = (State)evt.getNewValue();
+        Model.State newState = (Model.State)evt.getNewValue();
         if(newState == AXIModel.State.VALID) {
-            errorMessage = null;
-            recreateUI();
-            return;
-        }
+                errorMessage = null;
+                    recreateUI();
+                return;
+            }
 
         if(errorMessage == null)
             errorMessage = NbBundle.getMessage(
@@ -228,7 +228,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         }
         
         AXIModel model = getAXIModel();
-        if( (model != null) &&
+        if( (model != null) && model.getRoot() != null && 
                 (model.getState() == AXIModel.State.VALID) ) {
             recreateUI();
             return;
@@ -272,13 +272,14 @@ public class SchemaABEViewMultiViewElement extends TopComponent
      */
     
     private void emptyUI(String errorMessage) {
-        if(abeDesigner != null)
+        if(abeDesigner != null) {
             abeDesigner.setVisible(false);
+        }
         errorLabel.setText("<" + errorMessage + ">");
         if(!isChild(errorLabel))
             add(errorLabel, BorderLayout.NORTH);
-        if(propChangeListenerAdded){
-            abeDesigner.addPropertyChangeListener(this);
+        if(propChangeListenerAdded && abeDesigner != null){
+            abeDesigner.removePropertyChangeListener(this);
             propChangeListenerAdded = false;
         }
         errorLabel.setVisible(true);
@@ -484,6 +485,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
                     getSchemaEditorSupport().getModel();
             axiModel = AXIModelFactory.getDefault().getModel(sModel);
             if (axiModel != null) {
+                // start listening axi model
                 PropertyChangeListener pcl = WeakListeners.
                         create(PropertyChangeListener.class, awtPCL, axiModel);
                 axiModel.addPropertyChangeListener(pcl);
