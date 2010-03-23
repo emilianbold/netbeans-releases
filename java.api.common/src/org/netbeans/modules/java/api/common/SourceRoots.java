@@ -262,8 +262,8 @@ public final class SourceRoots {
                         }
                         sourceRootURLs = Collections.unmodifiableList(result);
                     }
+                    return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
                 }
-                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
         });
     }
