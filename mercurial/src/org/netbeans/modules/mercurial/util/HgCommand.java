@@ -324,6 +324,8 @@ public class HgCommand {
     public static final String COMMIT_AFTER_MERGE = "commitAfterMerge"; //NOI18N
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
+    private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
+    private static final String UTF8 = "UTF-8"; //NOI18N
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -1849,7 +1851,7 @@ public class HgCommand {
             tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
 
             // Write to temp file
-            BufferedWriter out = new BufferedWriter(new FileWriter(tempfile));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempfile), UTF8));
             out.write(commitMessage);
             out.close();
 
@@ -2832,6 +2834,7 @@ public class HgCommand {
 
     private static void setGlobalEnvVariables (Map<String, String> environment) {
         environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        environment.put(ENV_HGENCODING, UTF8);
     }
 
     /**
@@ -2862,8 +2865,8 @@ public class HgCommand {
         try{
             proc = pb.start();
 
-            input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            input = new BufferedReader(new InputStreamReader(proc.getInputStream(), UTF8));
+            error = new BufferedReader(new InputStreamReader(proc.getErrorStream(), UTF8));
             final BufferedReader errorReader = error;
             final LinkedList<String> errorOutput = new LinkedList<String>();
             Thread errorThread = new Thread(new Runnable () {
@@ -2983,7 +2986,7 @@ public class HgCommand {
                                                 null);    //extension (default)
                     Writer writer = new OutputStreamWriter(
                                                 new FileOutputStream(tempFile),
-                                                "ISO-8859-1");          //NOI18N
+                                                UTF8);
                     try {
                         writer.append("changeset = ")                   //NOI18N
                               .append('"').append(template).append('"');
