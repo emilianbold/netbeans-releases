@@ -145,18 +145,18 @@ public class RPMPackager implements PackagerDescriptor {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
                     }
-                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = CndPathUtilitities.getDirName(elem.getTo());
                     String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
@@ -190,11 +190,11 @@ public class RPMPackager implements PackagerDescriptor {
 
             bw.write("# Create spec file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("SPEC_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.spec\n"); // NOI18N
+            bw.write("SPEC_FILE=${NBTMPDIR}/../${OUTPUT_BASENAME}.spec\n"); // NOI18N
             bw.write("rm -f ${SPEC_FILE}\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
+            bw.write("echo " + "BuildRoot: ${TOP}/${NBTMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
             for (PackagerInfoElement elem : infoList) {
                 if (elem.getName().startsWith("%")) { // NOI18N
@@ -231,7 +231,7 @@ public class RPMPackager implements PackagerDescriptor {
             bw.write("\n"); // NOI18N
             bw.write("# Create RPM Package\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("LOG_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
+            bw.write("LOG_FILE=${NBTMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("cat ${LOG_FILE}\n"); // NOI18N

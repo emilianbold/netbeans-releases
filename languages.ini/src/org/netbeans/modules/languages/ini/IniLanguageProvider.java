@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,44 +37,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support.hostinfo;
+package org.netbeans.modules.languages.ini;
 
-import org.netbeans.modules.nativeexecution.support.*;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.openide.util.Lookup;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.util.lookup.ServiceProvider;
 
-public final class FetchHostInfoTask implements Computable<ExecutionEnvironment, HostInfo> {
+@ServiceProvider(service = LanguageProvider.class)
+public class IniLanguageProvider extends LanguageProvider {
 
-    private static final java.util.logging.Logger log = Logger.getInstance();
+    public static final String MIME_TYPE = "text/x-ini"; // NOI18N
 
     @Override
-    public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
-        final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
-        HostInfo result = null;
-
-        for (HostInfoProvider provider : providers) {
-            try {
-                result = provider.getHostInfo(execEnv);
-            } catch (IOException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
-                    log.log(Level.FINE, msg, ex);
-                }
-            }
-            if (result != null) {
-                break;
-            }
+    public Language<IniTokenId> findLanguage(String mimeType) {
+        if (MIME_TYPE.equals(mimeType)) {
+            return new IniLanguageHierarchy().language();
         }
+        return null;
+    }
 
-        return result;
+    @Override
+    public LanguageEmbedding<?> findLanguageEmbedding(Token<?> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        return null;
     }
 }

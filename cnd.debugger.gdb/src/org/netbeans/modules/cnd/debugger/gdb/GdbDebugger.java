@@ -1920,9 +1920,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.stack_list_frames();
                 setStopped();
                 return;
-            } else if ("SIGTRAP".equals(signal) && 
+            } else if ("SIGTRAP".equals(signal) && // NOI18N
                     (platform == PlatformTypes.PLATFORM_WINDOWS ||
-                    platform == PlatformTypes.PLATFORM_MACOSX)) { // NOI18N
+                    platform == PlatformTypes.PLATFORM_MACOSX)) {
                 // see IZ 172855 (On windows we need to skip SIGTRAP)
                 skipSignal = false;
                 gdb.stack_list_frames();
