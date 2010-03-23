@@ -141,7 +141,7 @@ public final class OpenProjectList {
     // number of templates in LRU list
     private static final int NUM_TEMPLATES = 15;
     
-    static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
+    public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static StringBuffer details;
