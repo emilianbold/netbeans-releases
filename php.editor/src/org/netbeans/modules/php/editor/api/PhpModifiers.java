@@ -116,7 +116,7 @@ public final class PhpModifiers extends Modifier {
     }
 
     public boolean isPublic() {
-        return Modifier.isPublic(mod);
+        return Modifier.isPublic(mod) || (!Modifier.isPrivate(mod) && !Modifier.isProtected(mod));
     }
 
     public boolean isPrivate(){
