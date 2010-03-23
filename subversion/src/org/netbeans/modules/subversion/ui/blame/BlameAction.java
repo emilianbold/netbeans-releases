@@ -60,6 +60,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.openide.text.NbDocument;
 import org.openide.windows.TopComponent;
 
 /**
@@ -251,10 +252,7 @@ public class BlameAction extends ContextAction {
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);        
         if (ec != null && SwingUtilities.isEventDispatchThread()) {              
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
+            return NbDocument.findRecentEditorPane(ec);
         }
         return null;
     }
