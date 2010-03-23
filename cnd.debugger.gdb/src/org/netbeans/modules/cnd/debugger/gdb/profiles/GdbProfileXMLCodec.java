@@ -91,14 +91,14 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
-    	if (element.equals(GDB_COMMAND_ELEMENT)) {
-	    profile.setGdbCommand(currentText);
-	} else if (element.equals(ARRAY_REPEAT_THRESHOLD_ELEMENT)) {
-            try {
-                profile.setArrayRepeatThreshold(Integer.parseInt(currentText));
-            } catch (NumberFormatException ex) {
-            }
-        }
+//    	if (element.equals(GDB_COMMAND_ELEMENT)) {
+//	    profile.setGdbCommand(currentText);
+//	} else if (element.equals(ARRAY_REPEAT_THRESHOLD_ELEMENT)) {
+//            try {
+//                profile.setArrayRepeatThreshold(Integer.parseInt(currentText));
+//            } catch (NumberFormatException ex) {
+//            }
+//        }
     }
 
     // intrface XMLEncoder
@@ -107,9 +107,9 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     }
     
     private static void encode(XMLEncoderStream xes, GdbProfile profile) {
-	xes.elementOpen(GdbProfile.GDB_PROFILE_ID, getVersion());
-	xes.element(GDB_COMMAND_ELEMENT, profile.getGdbCommand());
-        xes.element(ARRAY_REPEAT_THRESHOLD_ELEMENT, Integer.toString(profile.getArrayRepeatThreshold()));
-	xes.elementClose(GdbProfile.GDB_PROFILE_ID);
+//	xes.elementOpen(GdbProfile.GDB_PROFILE_ID, getVersion());
+//	xes.element(GDB_COMMAND_ELEMENT, profile.getGdbCommand());
+//        xes.element(ARRAY_REPEAT_THRESHOLD_ELEMENT, Integer.toString(profile.getArrayRepeatThreshold()));
+//	xes.elementClose(GdbProfile.GDB_PROFILE_ID);
     }
 }

@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -83,7 +82,7 @@ public final class GdbProfile implements ConfigurationAuxObject {
 
     private boolean needSave = false;
     
-    private String gdb_command;
+    private String gdb_command = ""; // NOI18N
 
 
     /**
@@ -105,8 +104,6 @@ public final class GdbProfile implements ConfigurationAuxObject {
         if (gdb_command == null) {
             if (GdbDebugger.isUnitTest()) {
                 gdb_command = "gdb"; // NOI18N
-            } else {
-                gdb_command = CppSettings.getDefault().getGdbName();
             }
         }
     }
@@ -271,14 +268,6 @@ public final class GdbProfile implements ConfigurationAuxObject {
 //        }
 //    }
     
-    public int getArrayRepeatThreshold() {
-        return CppSettings.getDefault().getArrayRepeatThreshold(); 
-    }
-    
-    public void setArrayRepeatThreshold(int arrayRepeatThreshold) {
-        CppSettings.getDefault().setArrayRepeatThreshold(arrayRepeatThreshold);
-    }
-    
     /**
      *  Adds property change listener.
      *  @param l new listener.
@@ -363,7 +352,6 @@ public final class GdbProfile implements ConfigurationAuxObject {
 	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "LBL_GENERAL")); // NOI18N
 	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "HINT_GENERAL")); // NOI18N
 	set.put(new GdbCommandNodeProp());
-        set.put(new ArrayRepeatThresholdNodeProp());
 	sheet.put(set);
 	return sheet;
     }
@@ -385,28 +373,6 @@ public final class GdbProfile implements ConfigurationAuxObject {
         public void setValue(String v) {
             // TODO: shouldn't we check for null here?
             setGdbCommand(v);
-        }
-    }
-    
-    private class ArrayRepeatThresholdNodeProp extends PropertySupport<Integer> {
-        public ArrayRepeatThresholdNodeProp() {
-            super(PROP_ARRAY_REPEAT_THRESHOLD, Integer.class,
-                    NbBundle.getMessage(GdbProfile.class, "LBL_ArrayRepeatThreshold"), // NOI18N
-                    NbBundle.getMessage(GdbProfile.class, "HINT_ArrayRepeatThreshold"), // NOI18N
-                    true, true);
-        }
-        
-        @Override
-        public Integer getValue() {
-            return getArrayRepeatThreshold();
-        }
-        
-        @Override
-        public void setValue(Integer v) {
-            // TODO: why do we need to check it here?
-            if (v != null) {
-                setArrayRepeatThreshold(v);
-            }
         }
     }
 }
