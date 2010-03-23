@@ -208,8 +208,9 @@ public abstract class JPDADebugger {
      * @param connector The listening connector
      * @param args The arguments
      * @param services The additional services
+     * @return A non-empty array of started engines.
      */
-    public static void startListening (
+    public static DebuggerEngine[] startListening (
         ListeningConnector        connector,
         Map<String, ? extends Argument>  args,
         Object[]                  services
@@ -231,6 +232,7 @@ public abstract class JPDADebugger {
             throw new DebuggerStartException(
                     NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
         }
+        return es;
     }
     
     /**
