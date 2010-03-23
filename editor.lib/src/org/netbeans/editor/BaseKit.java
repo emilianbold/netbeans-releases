@@ -559,8 +559,8 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        return ((false || Boolean.getBoolean("org.netbeans.editor.linewrap")) &&
-                !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"))
+        //Boolean.getBoolean("org.netbeans.editor.linewrap")
+        return  !Boolean.getBoolean("org.netbeans.editor.linewrap.disable")
                 ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
                 : null;
     }

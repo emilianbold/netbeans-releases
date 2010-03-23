@@ -76,6 +76,7 @@ import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.MylynUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -425,19 +426,7 @@ public class JiraRepository extends Repository {
     }
 
     public void setCredentials(String user, String password, String httpUser, String httpPassword) {
-        setCredentials(taskRepository, user, password, httpUser, httpPassword);
-    }
-
-    protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-
-        if(httpUser != null || httpPassword != null) {
-            httpUser = httpUser != null ? httpUser : "";                        // NOI18N
-            httpPassword = httpPassword != null ? httpPassword : "";            // NOI18N
-            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
-            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-        }
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
@@ -445,9 +434,7 @@ public class JiraRepository extends Repository {
                 new TaskRepository(
                     Jira.getInstance().getRepositoryConnector().getConnectorKind(),
                     url);
-        setCredentials(repository, user, password, httpUser, httpPassword);
-        // XXX need proxy settings from the IDE
-
+        MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
         return repository;
     }
 

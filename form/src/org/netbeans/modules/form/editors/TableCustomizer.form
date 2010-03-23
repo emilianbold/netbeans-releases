@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -28,6 +28,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -39,12 +40,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tabbedPane" alignment="0" max="32767" attributes="0"/>
+          <Component id="tabbedPane" alignment="0" pref="433" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tabbedPane" alignment="0" max="32767" attributes="0"/>
+          <Component id="tabbedPane" alignment="0" pref="487" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -110,7 +111,7 @@
                       <Component id="modelCustomChoice" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="modelCustomPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="58" max="32767" attributes="0"/>
+                      <EmptySpace pref="55" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -180,7 +181,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="535" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="408" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -224,7 +225,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="535" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="408" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -268,7 +269,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="535" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="408" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -294,19 +295,20 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="separator" alignment="0" pref="535" max="32767" attributes="0"/>
+                          <Component id="columnErrorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="separator" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="columnsScrollPane" pref="438" max="32767" attributes="0"/>
+                              <Component id="columnsScrollPane" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="insertColumnButton" alignment="1" max="32767" attributes="1"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="columnCountLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="columnCountSpinner" pref="37" max="32767" attributes="0"/>
+                                      <Component id="columnCountSpinner" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="deleteColumnButton" alignment="1" max="32767" attributes="1"/>
                                   <Component id="moveUpColumnButton" alignment="1" max="32767" attributes="1"/>
@@ -333,7 +335,7 @@
                                   <Component id="columnTitlePanel" alignment="0" max="32767" attributes="1"/>
                                   <Component id="columnRendererPanel" alignment="0" max="32767" attributes="1"/>
                                   <Component id="columnEditorPanel" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="columnTypeCombo" alignment="0" pref="230" max="32767" attributes="1"/>
+                                  <Component id="columnTypeCombo" alignment="0" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -350,7 +352,7 @@
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="widthPrefCombo" alignment="0" pref="79" max="32767" attributes="1"/>
+                                          <Component id="widthPrefCombo" alignment="0" max="32767" attributes="1"/>
                                           <Component id="widthMinCombo" alignment="0" max="32767" attributes="1"/>
                                           <Component id="widthMaxCombo" alignment="0" max="32767" attributes="1"/>
                                       </Group>
@@ -366,9 +368,9 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="columnsScrollPane" alignment="0" min="-2" pref="250" max="-2" attributes="0"/>
+                          <Component id="columnsScrollPane" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="columnCountLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -384,7 +386,7 @@
                               <Component id="moveDownColumnButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="columnTitlePanel" min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -393,14 +395,14 @@
                               <Component id="columnTitleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="columnTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="widthPrefLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="widthPrefCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="columnTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="columnEditorPanel" min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -425,14 +427,16 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="separator" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="selectionModelLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="selectionModelCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="reorderingAllowedChoice" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="25" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                      <Component id="columnErrorLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -650,7 +654,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="230" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="103" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -686,7 +690,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="230" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="103" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -709,7 +713,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="230" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="103" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -920,6 +924,13 @@
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="placeHolder2.setVisible(false);"/>
               </AuxValues>
             </Component>
+            <Component class="javax.swing.JLabel" name="columnErrorLabel">
+              <Properties>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="cc" type="rgb"/>
+                </Property>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="rowsTab">
@@ -937,19 +948,24 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="rowsScrollPane" pref="437" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <Component id="rowCountLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="rowErrorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="rowsScrollPane" pref="311" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="rowCountSpinner" pref="55" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="1">
+                                      <Component id="rowCountLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="rowCountSpinner" pref="54" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="insertRowButton" pref="91" max="32767" attributes="1"/>
+                                  <Component id="deleteRowButton" pref="91" max="32767" attributes="1"/>
+                                  <Component id="moveUpRowButton" pref="91" max="32767" attributes="1"/>
+                                  <Component id="moveDownRowButton" max="32767" attributes="1"/>
+                              </Group>
                           </Group>
-                          <Component id="insertRowButton" pref="92" max="32767" attributes="1"/>
-                          <Component id="deleteRowButton" pref="92" max="32767" attributes="1"/>
-                          <Component id="moveUpRowButton" pref="92" max="32767" attributes="1"/>
-                          <Component id="moveDownRowButton" pref="92" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -960,7 +976,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rowsScrollPane" alignment="0" pref="443" max="32767" attributes="0"/>
+                          <Component id="rowsScrollPane" alignment="0" pref="434" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="rowCountLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -976,7 +992,9 @@
                               <Component id="moveDownRowButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="rowErrorLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1105,6 +1123,13 @@
               <AuxValues>
                 <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
               </AuxValues>
+            </Component>
+            <Component class="javax.swing.JLabel" name="rowErrorLabel">
+              <Properties>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="cc" type="rgb"/>
+                </Property>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

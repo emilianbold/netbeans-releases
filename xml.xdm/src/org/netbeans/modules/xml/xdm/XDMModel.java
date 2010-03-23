@@ -215,11 +215,13 @@ public class XDMModel {
                     return;
                 }
                 List<Difference> diffs = preparation.getDifferences();
-                mergeDiff(diffs);
-                //diffs = DiffFinder.filterWhitespace(diffs);
-                fireDiffEvents(diffs);
-                if (getCurrentDocument() != oldDoc) {
-                    fireUndoableEditEvent(getCurrentDocument(), oldDoc);
+                if (diffs != null && diffs.size() != 0) {
+                    mergeDiff(diffs);
+                    //diffs = DiffFinder.filterWhitespace(diffs);
+                    fireDiffEvents(diffs);
+                    if (getCurrentDocument() != oldDoc) {
+                        fireUndoableEditEvent(getCurrentDocument(), oldDoc);
+                    }
                 }
             }
             setStatus(Status.STABLE);
@@ -843,6 +845,7 @@ public class XDMModel {
             List<Difference> filtered = DiffFinder.filterWhitespace(diffs);
             //flushDocument(newDoc);
             setDocument(newDoc);
+            setStatus(Status.STABLE);
             if ( filtered != null && !filtered.isEmpty() ) {
                 fireDiffEvents(filtered);
             }

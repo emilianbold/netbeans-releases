@@ -56,7 +56,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,10 +70,6 @@ public final class CppSettings extends SharedClassObject {
     static final long serialVersionUID = -2942467713237077336L;
 
     private static final String PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable"; //NOI18N
-    private static final String PROP_GDB_NAME = "gdbName"; // NOI18N
-    private static final String PROP_GDB_PATH = "gdbPath"; // NOI18N
-    private static final String PROP_GDB_REQUIRED = "gdbRequired"; // NOI18N
-    private static final String PROP_ARRAY_REPEAT_THRESHOLD = "arrayRepeatThreshold"; // NOI18N
     
     /** The resource bundle for the form editor */
     private static ResourceBundle bundle;
@@ -96,45 +91,6 @@ public final class CppSettings extends SharedClassObject {
             cppSettings = findObject(CppSettings.class, true);
         }
         return cppSettings;
-    }
-    
-    
-    public String getGdbName() {
-        String name = getPreferences().get(PROP_GDB_NAME, null);
-        if (name == null) {
-            return "gdb"; // NOI18N
-        } else {
-            return name;
-        }
-    }
-    
-    public void setGdbName(String name) {
-        String n = getGdbName();
-        if (!n.equals(name)) {
-            getPreferences().put(PROP_GDB_NAME, name);
-            firePropertyChange(PROP_GDB_NAME, n, name);
-        }
-    }
-    
-    public String getGdbPath() {
-        String p = getPreferences().get(PROP_GDB_PATH, null);
-        if (p == null) {
-            if (Utilities.isWindows()) {
-                return "C:\\Cygwin\\bin\\gdb.exe"; // NOI18N
-            } else {
-                return "/usr/bin/gdb"; // NOI18N
-            }
-        } else {
-            return p;
-        }
-    }
-    
-    public void setGdbPath(String path) {
-        String p = getGdbPath();
-        if (!p.equals(path)) {
-            getPreferences().put(PROP_GDB_PATH, path);
-            firePropertyChange(PROP_GDB_PATH, p, path);
-        }
     }
     
     /**
@@ -177,28 +133,6 @@ public final class CppSettings extends SharedClassObject {
         catch (IOException e) {
         }
         return props;
-    }
-    
-    public boolean isGdbRequired() {
-        return getPreferences().getBoolean(PROP_GDB_REQUIRED, false);
-    }
-    
-    public void setGdbRequired(boolean enabled) {
-        boolean oldValue = isGdbRequired();
-        getPreferences().putBoolean(PROP_GDB_REQUIRED, enabled);
-        firePropertyChange(PROP_GDB_REQUIRED, Boolean.valueOf(oldValue), Boolean.valueOf(enabled));
-    }
-    
-    public int getArrayRepeatThreshold() {
-        return getPreferences().getInt(PROP_ARRAY_REPEAT_THRESHOLD, 10);
-    }
-    
-    public void setArrayRepeatThreshold(int arrayRepeatThreshold) {
-        int art = getArrayRepeatThreshold();
-        if (art != arrayRepeatThreshold) {
-            getPreferences().putInt(PROP_ARRAY_REPEAT_THRESHOLD, arrayRepeatThreshold);
-            firePropertyChange(PROP_ARRAY_REPEAT_THRESHOLD, art, arrayRepeatThreshold);
-        }
     }
 
     /**

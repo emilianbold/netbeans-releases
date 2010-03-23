@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -358,8 +359,23 @@ public class JavaProjectGenerator {
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
-    
-    
+
+    /**
+     * Returns {@link Element} for {@link JavaCompilationUnit}.
+     * @param aux AuxiliaryConfiguration instance
+     * @return {@link Element} representing JavaCompilationUnit instances or null
+     */
+    public static Element getJavaCompilationUnits (final AuxiliaryConfiguration aux) {
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+        if (data == null) {
+            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        }
+        if (data == null) {
+            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+        }
+        return data;
+    }
+
     /**
      * Read Java compilation units from the project.
      * @param helper AntProjectHelper instance
@@ -370,10 +386,7 @@ public class JavaProjectGenerator {
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<JavaCompilationUnit> list = new ArrayList<JavaCompilationUnit>();
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        if (data == null) {
-            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-        }
+        final Element data = getJavaCompilationUnits(aux);
         if (data == null) {
             return list;
         }
@@ -431,7 +444,15 @@ public class JavaProjectGenerator {
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List<JavaCompilationUnit> compUnits) {
         //assert ProjectManager.mutex().isWriteAccess();
-        // First check whether we need /2 data.
+        // First check if we need /3 data.
+        boolean need3 = false;
+        for (JavaCompilationUnit unit : compUnits) {
+            if (needsNS3(unit)) {
+                need3 = true;
+                break;
+            }
+        }
+        // Second check whether we need /2 data.
         boolean need2 = false;
         for (JavaCompilationUnit unit : compUnits) {
             if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
@@ -440,26 +461,45 @@ public class JavaProjectGenerator {
             }
         }
         String namespace;
-        // Look for existing /2 data.
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        // Look for existing /3 data.
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (data != null) {
-            // Fine, use it as is.
-            namespace = JavaProjectNature.NS_JAVA_2;
-        } else {
-            // Or, for existing /1 data.
-            namespace = need2 ? JavaProjectNature.NS_JAVA_2 : JavaProjectNature.NS_JAVA_1;
-            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+            namespace = JavaProjectNature.NS_JAVA_3;
+        }
+        else {
+            // Look for existing /2 data and possibly update to /3
+            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
             if (data != null) {
-                if (need2) {
-                    // Have to upgrade.
-                    aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                namespace = need3 ? JavaProjectNature.NS_JAVA_3 : JavaProjectNature.NS_JAVA_2;
+                if (need3) {
+                    // Have to upgrade to /3
+                    aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
                     data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                        createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
-                } // else can use it as is
+                        createElementNS(JavaProjectNature.NS_JAVA_3, JavaProjectNature.EL_JAVA);
+                }
             } else {
-                // Create /1 or /2 data acc. to need.
-                data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                    createElementNS(namespace, JavaProjectNature.EL_JAVA);
+                //Look for existing /1 and possibly update to /2 or /3 as needed
+                data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                namespace = need3 ? JavaProjectNature.NS_JAVA_3 : need2 ? JavaProjectNature.NS_JAVA_2 : JavaProjectNature.NS_JAVA_1;
+                if (data != null) {
+
+                    if (need3) {
+                        // Have to upgrade to /3
+                        aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                        data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
+                            createElementNS(JavaProjectNature.NS_JAVA_3, JavaProjectNature.EL_JAVA);
+                    }
+                    else if (need2) {
+                        // Have to upgrade to /2
+                        aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                        data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
+                            createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
+                    } // else can use it as is
+                } else {
+                    // Create a new /1, /2 or /3 data acc. to need.
+                    data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
+                        createElementNS(namespace, JavaProjectNature.EL_JAVA);
+                }
             }
         }
         Document doc = data.getOwnerDocument();
@@ -478,7 +518,7 @@ public class JavaProjectGenerator {
                 }
             }
             if (cu.isTests) {
-                assert namespace.equals(JavaProjectNature.NS_JAVA_2);
+                assert namespace.equals(JavaProjectNature.NS_JAVA_2) || namespace.equals(JavaProjectNature.NS_JAVA_3);
                 cuEl.appendChild(doc.createElementNS(namespace, "unit-tests")); // NOI18N
             }
             if (cu.classpath != null) {
@@ -502,7 +542,7 @@ public class JavaProjectGenerator {
                 Iterator it3 = cu.javadoc.iterator();
                 while (it3.hasNext()) {
                     String javadoc = (String) it3.next();
-                    assert namespace.equals(JavaProjectNature.NS_JAVA_2);
+                    assert namespace.equals(JavaProjectNature.NS_JAVA_2) || namespace.equals(JavaProjectNature.NS_JAVA_3);
                     el = doc.createElementNS(namespace, "javadoc-built-to"); // NOI18N
                     el.appendChild(doc.createTextNode(javadoc));
                     cuEl.appendChild(el);
@@ -517,7 +557,6 @@ public class JavaProjectGenerator {
         aux.putConfigurationFragment(data, true);
     }
 
-    
     /**
      * Structure describing compilation unit.
      * Data in the struct are in the same format as they are stored in XML.
@@ -957,6 +996,25 @@ public class JavaProjectGenerator {
         String key = propertyElement.getAttribute("name"); // NOI18N
         String value = Util.findText(propertyElement);
         props.setProperty(key, value);
+    }
+
+    private static boolean needsNS3(final JavaCompilationUnit unit) {
+        if (unit.classpath != null) {
+            for (JavaCompilationUnit.CP cp : unit.classpath) {
+                if ("processor".equals(cp.mode)) {  //NOI18N
+                    return true;
+                }
+            }
+        }
+        if (unit.sourceLevel != null) {
+            final SpecificationVersion JAVA_6 = new SpecificationVersion("1.6");  //NOI18N
+            final SpecificationVersion JAvA_7 = new SpecificationVersion("1.7");  //NOI18N
+            final SpecificationVersion current = new SpecificationVersion(unit.sourceLevel);
+            if (JAVA_6.equals(current) || JAvA_7.equals(current)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

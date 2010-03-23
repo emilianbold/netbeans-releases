@@ -356,7 +356,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
     
-    @Hint(category="thread", suppressWarnings="")
+    @Hint(category="thread", suppressWarnings="CallToNativeMethodWhileLocked")
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
@@ -374,7 +374,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="")
+    @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock")
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
