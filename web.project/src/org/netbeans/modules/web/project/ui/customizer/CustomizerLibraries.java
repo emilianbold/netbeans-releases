@@ -935,6 +935,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
         libs.add("CopyLibs"); // NOI18N
+
+        // make jsp compilation libraries sharable if jsp compilation is ticked on
+        if (uiProperties.COMPILE_JSP_MODEL.isSelected()) {
+            libs.add("jsp-compilation"); // NOI18N
+            libs.add("jsp-compiler"); // NOI18N
+        }
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
         if (res) {
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
