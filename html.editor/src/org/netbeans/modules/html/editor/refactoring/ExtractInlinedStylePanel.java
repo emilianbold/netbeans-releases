@@ -367,7 +367,9 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         //existing sections
         for (int i = 0; i < values.length - 1; i++) {
-            OffsetRange range = ranges.get(i);
+            OffsetRange astRange = ranges.get(i);
+            //recompute to document offset range
+            OffsetRange range = context.getDocumentRange(astRange);
             values[i + 1] = new EmbeddedSectionItem(range,
                     getRenderStringFromOffsetRange(range));
         }
@@ -407,6 +409,9 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     }
 
     String getRenderStringFromOffsetRange(final OffsetRange range) {
+        if(range == null) {
+            return NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_SectionCannotDetermineLines"); //NOI18N
+        }
         //compute lines for each offset
         final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
         context.getDocument().render(new Runnable() {
@@ -425,11 +430,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         OffsetRange line = ret.get();
 
-        return new StringBuilder().append("Section from line ").
-                append(line.getStart() + 1). //lines in editor are counted from 1
-                append(" to ").
-                append(line.getEnd() + 1). //lines in editor are counted from 1
-                toString();
+        return NbBundle.getMessage(ExtractInlinedStylePanel.class,
+                "MSG_SectionFromTo",  //NOI18N
+                line.getStart() + 1,
+                line.getEnd() + 1);
+
     }
 
     @Override

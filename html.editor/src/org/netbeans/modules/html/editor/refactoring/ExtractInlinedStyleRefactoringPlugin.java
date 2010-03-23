@@ -121,8 +121,12 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
         switch (refactoring.getMode()) {
             case refactorToExistingEmbeddedSection:
-                int embeddedSectionEnd = refactoring.getExistingEmbeddedCssSection().getEnd();
-                refactorToEmbeddedSection(modificationResult, context, embeddedSectionEnd);
+                OffsetRange sectionRange = refactoring.getExistingEmbeddedCssSection();
+                if(sectionRange == null) {
+                    return new Problem(true, NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ErrorCannotDetermineEmbeddedSectionEnd"));
+                } else {
+                    refactorToEmbeddedSection(modificationResult, context, sectionRange.getEnd());
+                }
                 break;
             case refactorToNewEmbeddedSection:
                 refactorToNewEmbeddedSection(modificationResult, context);
