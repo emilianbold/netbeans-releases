@@ -265,7 +265,10 @@ public class RefactoringContext {
                 Map<FileObject, Collection<EntryHandle>> declarations =
                         CssRefactoring.findAllOccurances(element, type, file, true);
 
-                toResolve.put(si, new ResolveDeclarationItemImpl(si, declarations));
+                ResolveDeclarationItem item = new ResolveDeclarationItemImpl(si, declarations);
+                if(!item.getPossibleDeclarations().isEmpty()) {
+                    toResolve.put(si, item);
+                }
             }
 
         }
