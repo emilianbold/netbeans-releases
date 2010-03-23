@@ -63,6 +63,7 @@ import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import org.openide.text.NbDocument;
 
 /**
  * Show/Hide Annotations action. It's enabled for single
@@ -178,10 +179,7 @@ public class AnnotationsAction extends AbstractSystemAction {
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);
         if (ec != null && SwingUtilities.isEventDispatchThread()) {
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
+            return NbDocument.findRecentEditorPane(ec);
         }
         return null;
     }
