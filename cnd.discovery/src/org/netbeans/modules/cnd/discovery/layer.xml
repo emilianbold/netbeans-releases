@@ -57,7 +57,7 @@ Contributor(s):
                 <attr name="position" intvalue="200"/>
             </file>
             <file name="ReconfigureProjectAction.shadow">
-                <attr name="instanceCreate" methodvalue="Actions/NativeProjectCodeAssistance/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
                 <attr name="position" intvalue="250"/>
             </file>
         </folder>
