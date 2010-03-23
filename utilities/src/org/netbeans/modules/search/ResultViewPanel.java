@@ -381,7 +381,7 @@ class ResultViewPanel extends JPanel{
     public void fillOutput() {
         btnShowDetails.setEnabled(false);
         Manager.getInstance().schedulePrintTask(
-                new PrintDetailsTask((List)resultModel.getMatchingObjects(),
+                new PrintDetailsTask(resultModel.getMatchingObjects(),
                                      basicSearchCriteria,
                                      searchTypes));
     }
