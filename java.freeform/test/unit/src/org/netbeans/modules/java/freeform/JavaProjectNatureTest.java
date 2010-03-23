@@ -59,19 +59,31 @@ public class JavaProjectNatureTest extends NbTestCase {
         super(name);
     }
 
-    public void testUpgradeSchema() throws Exception {
+    public void testUpgradeSchema1to2() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_1, JavaProjectNature.NS_JAVA_2);
+    }
+
+    public void testUpgradeSchema2to3() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_2, JavaProjectNature.NS_JAVA_3);
+    }
+
+    public void testUpgradeSchema1to3() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_1, JavaProjectNature.NS_JAVA_3);
+    }
+
+    private void upgradeSchemaTestImpl(String from, String to) throws Exception {
         // Formatting has to be the same as Xerces' formatter produces for this test to pass:
         String xml1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                      "<java-data xmlns=\"http://www.netbeans.org/ns/freeform-project-java/1\">\n" +
+                      "<java-data xmlns=\""+from+"\">\n" +
                       "    <!-- Hello there. -->\n" +
                       "    <foo bar=\"baz\" quux=\"whatever\">hello</foo>\n" +
                       "    <x>OK</x>\n" +
                       "</java-data>\n";
-        String xml2expected = xml1.replaceAll("/1", "/2");
+        String xml2expected = xml1.replaceAll(from, to);
         Document doc1 = XMLUtil.parse(new InputSource(new StringReader(xml1)), false, true, null, null);
         Element el1 = doc1.getDocumentElement();
-        Element el2 = LookupProviderImpl.upgradeSchema(el1);
-        Document doc2 = XMLUtil.createDocument(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, null, null);
+        Element el2 = LookupProviderImpl.upgradeSchema(el1,to);
+        Document doc2 = XMLUtil.createDocument(JavaProjectNature.EL_JAVA, to, null, null);
         doc2.removeChild(doc2.getDocumentElement());
         doc2.appendChild(doc2.importNode(el2, true));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -79,5 +91,4 @@ public class JavaProjectNatureTest extends NbTestCase {
         String xml2actual = baos.toString("UTF-8").replaceAll(System.getProperty("line.separator"), "\n");
         assertEquals("Correct upgrade result", xml2expected, xml2actual);
     }
-    
 }

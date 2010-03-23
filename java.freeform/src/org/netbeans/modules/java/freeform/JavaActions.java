@@ -611,7 +611,7 @@ final class JavaActions implements ActionProvider {
     }
     
     private List<Element> compilationUnits() {
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (java == null) {
             return Collections.emptyList();
         }
@@ -745,7 +745,7 @@ final class JavaActions implements ActionProvider {
     String findSourceLevel(String sources) {
         Element compilationUnitEl = findCompilationUnit(sources);
         if (compilationUnitEl != null) {
-            Element sourceLevel = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_2);
+            Element sourceLevel = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
             if (sourceLevel != null) {
                 return Util.findText(sourceLevel);
             }

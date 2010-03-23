@@ -3263,14 +3263,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public boolean canUndoOrRedo() {
             final StyledDocument myDoc = support.getDocument();
 
-            return new RenderUndo(7, myDoc).booleanResult;
+            return new RenderUndo(7, myDoc, 0, true).booleanResult;
         }
 
         @Override
         public java.lang.String getUndoOrRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(8, myDoc).stringResult;
+                return new RenderUndo(8, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
@@ -3280,7 +3280,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public java.lang.String getRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(9, myDoc).stringResult;
+                return new RenderUndo(9, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
@@ -3290,7 +3290,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public java.lang.String getUndoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
-                return new RenderUndo(10, myDoc).stringResult;
+                return new RenderUndo(10, myDoc, 0, true).stringResult;
             } else {
                 return "";
             }
