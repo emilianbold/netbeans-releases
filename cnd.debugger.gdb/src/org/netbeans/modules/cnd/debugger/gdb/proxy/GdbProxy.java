@@ -587,7 +587,7 @@ public class GdbProxy {
         return engine.sendCommandEx("-stack-list-frames "); // NOI18N
     }
     
-    public void gdb_set(String command, String value) {
+    public void gdb_set(String command, Object value) {
         StringBuilder sb = new StringBuilder();
         sb.append("-gdb-set "); // NOI18N
         sb.append(command);
