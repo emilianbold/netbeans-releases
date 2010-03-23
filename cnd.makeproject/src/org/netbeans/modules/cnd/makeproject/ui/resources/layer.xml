@@ -601,6 +601,7 @@ made subject to such option by the copyright holder.
             <folder name="Nodes"/>
             <folder name="ImportantFiles"/>
             <folder name="Customizer"/>
+            <folder name="Actions"/>
             <folder name="Lookup">
                 <!-- put org.netbeans.spi.project.LookupProvider here
                     or use @LookupProvider.Registration in code
