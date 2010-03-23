@@ -494,7 +494,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             }
             
             diffView = null;
-            boolean focus = false;
             if (view != null) {
                 if (showingFileTable()) {
                     fileTableSetSelectedIndexContext = true;
@@ -510,10 +509,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 }
                 if (location >=0 && location < view.getDifferenceCount()) {
                     view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, location);
-                }
-                Component toc = WindowManager.getDefault().getRegistry().getActivated();
-                if (SwingUtilities.isDescendingFrom(this, toc)) {
-                //                focus = true;
                 }
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
@@ -547,6 +542,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         } else {
             diffViewPanel.setComponent(diffView);
         }
+        diffView.requestFocusInWindow(); // #181451 HACK
     }
 
     public void actionPerformed(ActionEvent e) {
