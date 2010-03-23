@@ -50,10 +50,11 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.TypedInstanceElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
-import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -90,10 +91,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     };
     private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
     private boolean globallyVisible;
-    VariableNameImpl(IndexScope inScope, VariableElement indexedVariable) {
+    VariableNameImpl(Scope inScope, VariableElement indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
+        indexedElement = indexedVariable;
     }
     VarAssignmentImpl createAssignment(Scope scope, boolean conditionalBlock,OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
         VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange,assignment, allAssignments);
@@ -264,11 +266,22 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return getTypesImpl(offset, false);
     }
     private Collection<? extends String> getTypeNamesImpl(int offset, boolean arrayAccess) {
+        Collection<String> retval = new ArrayList<String>();
+        if (!arrayAccess && indexedElement instanceof TypedInstanceElement /*&& indexedElement.getFileObject() != getFileObject()*/) {
+            TypedInstanceElement typedInstanceElement = (TypedInstanceElement)indexedElement;
+            Set<TypeResolver> instanceTypes = typedInstanceElement.getInstanceTypes();
+            for (TypeResolver typeResolver : instanceTypes) {
+                if (typeResolver.isResolved()) {
+                    retval.add(typeResolver.getTypeName(false).toString());
+                }
+            }
+            return retval;
+        }
+
         if (representsThis()) {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
-        Collection<String> retval = new ArrayList<String>();
         TypeResolutionKind useTypeResolutionKind = arrayAccess ?
             TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
@@ -336,6 +349,15 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             }
         } else {
             return getMergedTypes();
+        }
+        if (indexedElement instanceof TypedInstanceElement) {
+            Collection<TypeScope> retval = new HashSet<TypeScope>();
+            Collection<? extends String> typeNamesImpl = getTypeNamesImpl(offset, arrayAccess);
+            for (String tName : typeNamesImpl) {
+                retval.addAll(CachingSupport.getTypes(tName, getInScope()));
+
+            }
+            return retval;
         }
         return Collections.emptyList();
     }

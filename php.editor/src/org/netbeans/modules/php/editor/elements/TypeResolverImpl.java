@@ -58,7 +58,7 @@ public final class TypeResolverImpl implements TypeResolver {
 
     private final String typeName;
 
-    static Set<TypeResolver> parseTypes(final String typeSignature) {
+    public static Set<TypeResolver> parseTypes(final String typeSignature) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         if (typeSignature != null && typeSignature.length() > 0) {
             final String regexp = String.format("\\%s", SEPARATOR.PIPE.toString());//NOI18N

@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -172,29 +173,30 @@ public class SymfonyEditorExtender extends EditorExtender {
             super.visit(node);
         }
 
-        @Override
-        public void visit(FieldAccess node) {
-            super.visit(node);
+        public void visit(Assignment assignment) {
+            super.visit(assignment);
+            if (assignment.getLeftHandSide() instanceof FieldAccess) {
+                final FieldAccess node = (FieldAccess)assignment.getLeftHandSide();
+                if (action != null
+                        && className != null
+                        && methodName != null
+                        && className.endsWith(SymfonyUtils.ACTION_CLASS_SUFFIX)
+                        && methodName.equals(actionName)) {
+                    if (node.getDispatcher() instanceof Variable
+                            && "$this".equals(CodeUtils.extractVariableName((Variable) node.getDispatcher()))) { // NOI18N
 
-            if (action != null
-                    && className != null
-                    && methodName != null
-                    && className.endsWith(SymfonyUtils.ACTION_CLASS_SUFFIX)
-                    && methodName.equals(actionName)) {
-                if (node.getDispatcher() instanceof Variable
-                        && "$this".equals(CodeUtils.extractVariableName((Variable) node.getDispatcher()))) { // NOI18N
-
-                    String fqn = null;
-                    for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), node)) {
-                        // XXX
-                        fqn = typeScope.getFullyQualifiedName().toString();
-                        break;
-                    }
-                    synchronized (fields) {
-                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                        String fqn = null;
+                        for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), assignment)) {
+                            // XXX
+                            fqn = typeScope.getFullyQualifiedName().toString();
+                            break;
+                        }
+                        synchronized (fields) {
+                            fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                        }
                     }
                 }
-            }
+            }            
         }
 
         public Set<PhpVariable> getPhpVariables() {
