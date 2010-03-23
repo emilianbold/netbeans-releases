@@ -1307,7 +1307,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
         bw.write("CND_CONF=" + conf.getName() + "\n"); // NOI18N
         bw.write("CND_DISTDIR=" + MakeConfiguration.DIST_FOLDER + "\n"); // NOI18N
-        bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        bw.write("NBTMPDIR=" + tmpdir + "\n"); // NOI18N
         bw.write("TMPDIRNAME=" + tmpDirName + "\n"); // NOI18N
         String projectOutput = conf.getOutputValue();
         if (projectOutput == null || projectOutput.length() == 0) {
@@ -1362,15 +1362,15 @@ public class ConfigurationMakefileWriter {
         } else {
             bw.write("mkdir -p " + CndPathUtilitities.getDirName(output) + "\n"); // NOI18N
         }
-        bw.write("rm -rf ${TMPDIR}\n"); // NOI18N
-        bw.write("mkdir -p ${TMPDIR}\n"); // NOI18N
+        bw.write("rm -rf ${NBTMPDIR}\n"); // NOI18N
+        bw.write("mkdir -p ${NBTMPDIR}\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         packager.getShellFileWriter().writeShellScript(bw, conf, packagingConfiguration);
 
         bw.write("# Cleanup\n"); // NOI18N
         bw.write("cd \"${TOP}\"\n"); // NOI18N
-        bw.write("rm -rf ${TMPDIR}\n"); // NOI18N
+        bw.write("rm -rf ${NBTMPDIR}\n"); // NOI18N
     }
 
     private static boolean hasTests(MakeConfigurationDescriptor projectDescriptor) {
