@@ -8,6 +8,7 @@
     <property name="test.timeout" value="4800000"/>
     <property environment="env"/>
     <property name="hudson.buildnumber" value="${env.BUILD_NUMBER}"/>
+    <property name="hudson.jobname" value="${env.JOB_NAME}"/>
 
     <loadfile property="perftestrun.buildnumber"
       srcFile="../../../build.number"
