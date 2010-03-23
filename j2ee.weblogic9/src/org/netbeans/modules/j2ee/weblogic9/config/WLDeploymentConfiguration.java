@@ -39,72 +39,61 @@
 
 package org.netbeans.modules.j2ee.weblogic9.config;
 
+import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
 
 /**
  *
  * @author Petr Hejl
  */
-public class WLDatasource implements Datasource {
+public class WLDeploymentConfiguration implements DatasourceConfiguration {
 
-    private final String name;
+    private final WLDatasourceSupport support;
 
-    private final String url;
-
-    private final String jndi;
-
-    private final String user;
-
-    private final String password;
-
-    private final String driver;
-
-    private final FileObject origin;
-
-    public WLDatasource(String name, String url, String jndi, String user,
-            String password, String driver, FileObject origin) {
-        this.name = name;
-        this.url = url;
-        this.jndi = jndi;
-        this.user = user;
-        this.password = password;
-        this.driver = driver;
-        this.origin = origin;
+    public WLDeploymentConfiguration(J2eeModule module) {
+        this.support = new WLDatasourceSupport(module.getResourceDirectory());
     }
 
     @Override
-    public String getDisplayName() {
-        return name;
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+        // TODO
     }
 
     @Override
-    public String getDriverClassName() {
-        return driver;
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
+        // TODO
     }
 
     @Override
-    public String getJndiName() {
-        return jndi;
+    public Datasource createDatasource(String jndiName, String url, String username, String password, String driver) throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
+        return support.createDatasource(jndiName, url, username, password, driver);
     }
 
     @Override
-    public String getPassword() {
-        return password;
+    public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
+        // TODO
+        return null;
     }
 
     @Override
-    public String getUrl() {
-        return url;
+    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
+        // TODO
+        return null;
     }
 
     @Override
-    public String getUsername() {
-        return user;
+    public Set<Datasource> getDatasources() throws ConfigurationException {
+        return support.getDatasources();
     }
 
-    public FileObject getOrigin() {
-        return origin;
+    @Override
+    public boolean supportsCreateDatasource() {
+        // TODO
+        return false;
     }
 
 }
