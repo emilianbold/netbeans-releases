@@ -76,7 +76,7 @@ Resolv:CLASS:[]:ESCAPED{Resolv}:
       each_answer:METHOD:[PUBLIC]:ESCAPED{each_answer}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_authority:METHOD:[PUBLIC]:ESCAPED{each_authority}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
       each_question:METHOD:[PUBLIC]:ESCAPED{each_question}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
-      each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}<font color='#777777'> : ESCAPED{Array, Unknown}</font>:
+      each_resource:METHOD:[PUBLIC]:ESCAPED{each_resource}:
       encode:METHOD:[PUBLIC]:ESCAPED{encode}<font color='#777777'> : ESCAPED{String}</font>:
       id:ATTRIBUTE:[PUBLIC]:ESCAPED{id}:
       identifier:FIELD:[STATIC]:ESCAPED{identifier}:
