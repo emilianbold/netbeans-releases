@@ -169,6 +169,7 @@ public class APTMacroParamExpansion implements APTToken {
 
     @Override
     public void setText(String t) {
+        id = null;
         original.setText(t);
     }
 
