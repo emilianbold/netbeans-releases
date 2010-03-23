@@ -109,6 +109,7 @@ public class AnnotateAction extends ContextAction {
         } 
     } 
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return visible(nodes) ? "CTL_MenuItem_HideAnnotations" : "CTL_MenuItem_ShowAnnotations"; //NOI18N
     }
@@ -155,6 +156,7 @@ public class AnnotateAction extends ContextAction {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 if (revision != null) {
                     // showing annotations from past, the referenced file differs from the one being displayed
