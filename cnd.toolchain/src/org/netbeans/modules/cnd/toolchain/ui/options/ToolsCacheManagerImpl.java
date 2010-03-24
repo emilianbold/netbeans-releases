@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -52,8 +54,11 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -96,7 +101,6 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     @Override
     public void applyChanges() {
         applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
-        fireChange(this);
     }
     
     @Override
@@ -117,21 +121,39 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 
-    public void applyChanges(ServerRecord selectedRecord) {
-        List<ExecutionEnvironment> liveServers = null;
-        if (serverUpdateCache != null) {
-            liveServers = new ArrayList<ExecutionEnvironment>();
-            ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
-            for (ServerRecord rec : serverUpdateCache.getHosts()) {
-                liveServers.add(rec.getExecutionEnvironment());
-            }
-            serverUpdateCache = null;
-        } else {
-            ServerList.setDefaultRecord(selectedRecord);
-        }
+    public void applyChanges(final ServerRecord selectedRecord) {
 
-        saveCompileSetManagers(liveServers);
-        fireChange(this);
+        final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+            @Override
+            public void doWork() {
+                List<ExecutionEnvironment> liveServers = null;
+                if (serverUpdateCache != null) {
+                    liveServers = new ArrayList<ExecutionEnvironment>();
+                    ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
+                    for (ServerRecord rec : serverUpdateCache.getHosts()) {
+                        liveServers.add(rec.getExecutionEnvironment());
+                    }
+                    serverUpdateCache = null;
+                } else {
+                    ServerList.setDefaultRecord(selectedRecord);
+                }
+
+                saveCompileSetManagers(liveServers);
+            }
+            @Override
+            public void doPostRunInEDT() {
+                fireChange(ToolsCacheManagerImpl.this);
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = NbBundle.getMessage(ToolsCacheManagerImpl.class, "DLG_TITLE_ApplyChanges"); // NOI18N
+            String msg = NbBundle.getMessage(ToolsCacheManagerImpl.class, "MSG_TITLE_ApplyChanges"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
+        } else {
+            runner.doWork();
+            runner.doPostRunInEDT();
+        }
     }
 
     public Collection<? extends ServerRecord> getHosts() {

@@ -48,20 +48,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
-    private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();
-    private Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
-
-    private boolean caseInsensitive = false;
+    private final Map<CharSequence,Integer/*ttype*/> filter;
+    private final Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
 
     // uncomment to use reduced memory
 //    private static final int BUFFERED_COUNT = 256;
@@ -76,15 +75,17 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    protected APTBaseLanguageFilter() {
+    protected APTBaseLanguageFilter(boolean caseInsensitive) {
+        if (caseInsensitive) {
+            filter = new TreeMap<CharSequence,Integer>(CharSequenceKey.ComparatorIgnoreCase);
+        } else {
+            filter = new HashMap<CharSequence,Integer>();
+        }
     }
 
+    @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
         return new FilterStream(origStream);
-    }
-
-    protected void setCaseInsensitive(boolean caseInsensitive) {
-        this.caseInsensitive = caseInsensitive;
     }
 
 //    // do necessary initializations in derived classes by calling
@@ -98,10 +99,6 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      * if original token has the filtered textKey value
      */
     protected void filter(String text, int ttype) {
-        if(caseInsensitive) {
-            text = text.toLowerCase();
-        }
-        Object textKey = APTUtils.getTextKey(text);
         // uncomment to use reduced memory
 //        if (ttype < BUFFERED_COUNT) {
 //            if (int2Int[ttype] == null) {
@@ -111,16 +108,12 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
 //        assert(val != null);
 //        filter.put(textKey, val);
-        filter.put(textKey, Integer.valueOf(ttype));
+        filter.put(CharSequenceKey.create(text), Integer.valueOf(ttype));
         keywords.add(Integer.valueOf(ttype));
     }
 
     protected Token onID(Token token) {
-        String text = token.getText();
-        if(caseInsensitive) {
-            text = text.toLowerCase();
-        }
-        Integer newType = filter.get(text);
+        Integer newType = filter.get(((APTToken)token).getTextID());
         if (newType != null) {
             int ttype = newType.intValue();
             token = new FilterToken((APTToken)token, ttype);
@@ -141,6 +134,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             this.orig = orig;
         }
 
+        @Override
         public Token nextToken() throws TokenStreamException {
             Token token = orig.nextToken();
             token = onToken(token);
@@ -150,11 +144,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 
     public boolean isKeyword(Token token) {
         if (token.getType() == APTTokenTypes.ID) {
-            String text = token.getText();
-            if (caseInsensitive) {
-                text = text.toLowerCase();
-            }
-            Integer newType = filter.get(text);
+            Integer newType = filter.get(((APTToken)token).getTextID());
             if (newType != null) {
                 return true;
             }
@@ -183,82 +173,102 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
             return origToken;
         }
 
+        @Override
         public int getOffset() {
             return origToken.getOffset();
         }
 
+        @Override
         public void setOffset(int o) {
             origToken.setOffset(o);
         }
 
+        @Override
         public int getEndColumn() {
             return origToken.getEndColumn();
         }
 
+        @Override
         public void setEndColumn(int c) {
             origToken.setEndColumn(c);
         }
 
+        @Override
         public int getEndLine() {
             return origToken.getEndLine();
         }
 
+        @Override
         public void setEndLine(int l) {
             origToken.setEndLine(l);
         }
 
+        @Override
         public int getEndOffset() {
             return origToken.getEndOffset();
         }
 
+        @Override
         public void setEndOffset(int o) {
             origToken.setEndOffset(o);
         }
 
+        @Override
         public CharSequence getTextID() {
             return origToken.getTextID();
         }
 
+        @Override
         public void setTextID(CharSequence id) {
             origToken.setTextID(id);
         }
 
+        @Override
         public int getColumn() {
             return origToken.getColumn();
         }
 
+        @Override
         public void setColumn(int c) {
             origToken.setColumn(c);
         }
 
+        @Override
         public int getLine() {
             return origToken.getLine();
         }
 
+        @Override
         public void setLine(int l) {
             origToken.setLine(l);
         }
 
+        @Override
         public String getFilename() {
             return origToken.getFilename();
         }
 
+        @Override
         public void setFilename(String name) {
             origToken.setFilename(name);
         }
 
+        @Override
         public String getText() {
             return origToken.getText();
         }
 
+        @Override
         public void setText(String t) {
             origToken.setText(t);
         }
 
+        @Override
         public int getType() {
             return type;
         }
 
+        @Override
         public void setType(int t) {
             this.type = t;
         }

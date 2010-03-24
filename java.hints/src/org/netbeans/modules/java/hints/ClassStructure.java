@@ -49,9 +49,12 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -64,6 +67,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
+import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -179,6 +184,22 @@ public class ClassStructure {
             if (tree.getKind() == Kind.METHOD) {
                 final MethodTree mth = (MethodTree) tree;
                 if (mth.getModifiers().getFlags().contains(Modifier.PROTECTED) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
+                    Element el = context.getInfo().getTrees().getElement(context.getPath());
+                    if (el == null || el.getKind() != ElementKind.METHOD) {
+                        return null;
+                    }
+                    List<ElementDescription> overrides = new LinkedList<ElementDescription>();
+                    ComputeOverriding.detectOverrides(context.getInfo(), (TypeElement) el.getEnclosingElement(), (ExecutableElement) el, overrides);
+                    for (ElementDescription ed : overrides) {
+                        Element res = ed.getHandle().resolve(context.getInfo());
+                        if (res == null) {
+                            continue; //XXX: log
+                        }
+                        if (   res.getModifiers().contains(Modifier.PROTECTED)
+                            || /*to prevent reports for broken sources:*/ res.getModifiers().contains(Modifier.PUBLIC)) {
+                            return null;
+                        }
+                    }
                     return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_ProtectedMethodInFinalClass", mth.getName()), //NOI18N
                             FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PROTECTED), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveProtectedFromMethod", mth.getName())), //NOI18N
                             FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ProtectedMemberInFinalClass")); //NOI18N

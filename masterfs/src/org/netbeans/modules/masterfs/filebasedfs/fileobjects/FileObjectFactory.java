@@ -78,6 +78,7 @@ public final class FileObjectFactory {
     public static boolean WARNINGS = true;
     final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
     private BaseFileObj root;
+    private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
     public static enum Caller {
         ToFileObject, GetFileObject, GetChildern, GetParent, Others
     }
@@ -467,8 +468,13 @@ public final class FileObjectFactory {
     }    
     
     private void refresh(final Set<BaseFileObj> all2Refresh, final boolean expected) {
+        if (all2Refresh == null) {
+            return;
+        }
         for (final BaseFileObj fo : all2Refresh) {
-            fo.refresh(expected);
+            if (fo != null) {
+                fo.refresh(expected);
+            }
         }
     }
 
@@ -655,7 +661,7 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
+        LOG_REFRESH.fine(
                 "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
                 Statistics.REFRESH_FS.toString() + "\n  " +
                 Statistics.LISTENERS_CALLS.toString() + "\n  " +
@@ -673,6 +679,12 @@ public final class FileObjectFactory {
         final Runnable r = new Runnable() {
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
+                if (LOG_REFRESH.isLoggable(Level.FINER)) {
+                    LOG_REFRESH.log(Level.FINER, "Refresh for {0} objects", all2Refresh.size());
+                    for (BaseFileObj baseFileObj : all2Refresh) {
+                        LOG_REFRESH.log(Level.FINER, "  {0}", baseFileObj);
+                    }
+                }
                 refresh(all2Refresh, files);
             }            
         };        
@@ -689,7 +701,7 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
+        LOG_REFRESH.fine(
                 "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
                 Statistics.REFRESH_FS.toString() + "\n  " +
                 Statistics.LISTENERS_CALLS.toString() + "\n  " +

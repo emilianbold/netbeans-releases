@@ -4,12 +4,9 @@
     try {
         javax.servlet.http.HttpSession session = request.getSession(false);
         String frob = request.getParameter("frob");
-        session.setAttribute("flickr_frob", frob);
-        dispatch(request, response);
-        String returnUrl = (String) session.getAttribute("flickr_return_url");
-        if (returnUrl != null) {
-            session.removeAttribute("flickr_return_url");
-            response.sendRedirect(returnUrl);
+        if (frob != null) {
+            session.setAttribute("flickr_frob", frob);
+            dispatch(request, response);
         }
         out.println("<html>");
         out.println("<head>");

@@ -139,7 +139,7 @@ Contributor(s):
     </folder>
     
     <folder name="NativeProjects">
-        <folder name="Actions">
+        <folder name="CodeAssistanceActions">
             <file name="org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.highlight.error.includes.FailedIncludesAction.instance"/>
                 <attr name="position" intvalue="300"/>

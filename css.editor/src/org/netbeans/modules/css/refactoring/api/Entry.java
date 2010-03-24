@@ -5,13 +5,14 @@ import org.netbeans.modules.csl.api.OffsetRange;
 public class Entry {
 
     private String name;
-    private OffsetRange astRange;
-    private OffsetRange documentRange;
+    private OffsetRange astRange,  documentRange, bodyRange, documentBodyRange;
     private boolean isVirtual;
     private String elementText, elementLineText;
     private int lineOffset;
 
-    public Entry(String name, OffsetRange astRange, OffsetRange documentRange, int lineOffset, String elementText, String elementLineText, boolean isVirtual) {
+    public Entry(String name, OffsetRange astRange, OffsetRange documentRange, 
+            OffsetRange bodyRange, OffsetRange documentBodyRange,
+            int lineOffset, String elementText, String elementLineText, boolean isVirtual) {
         this.name = name;
         this.astRange = astRange;
         this.documentRange = documentRange;
@@ -19,6 +20,8 @@ public class Entry {
         this.elementText = elementText;
         this.elementLineText = elementLineText;
         this.lineOffset = lineOffset;
+        this.bodyRange = bodyRange;
+        this.documentBodyRange = documentBodyRange;
     }
 
     /**
@@ -64,6 +67,14 @@ public class Entry {
 
     public OffsetRange getRange() {
         return astRange;
+    }
+
+    public OffsetRange getBodyRange() {
+        return bodyRange;
+    }
+
+    public OffsetRange getDocumentBodyRange() {
+        return documentBodyRange;
     }
 
     @Override

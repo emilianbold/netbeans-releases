@@ -25,12 +25,6 @@ ant -Dtest.fail.on.error=false build-test-dist
 
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -Dold.updates=${JOB_URL}lastStableBuild/artifact/nbbuild/nbms/updates.xml generate-uc-catalog verify-update-descriptor || exit
-ant -Djnlp.codebase=${BUILD_URL}artifact/nbbuild/build/jnlp/ \
-    -Djnlp.signjar.keystore=$keystore \
-    -Djnlp.signjar.alias=nb_ide \
-    -Djnlp.signjar.password=$storepass \
-    -Djnlp.fail.on.error=false \
-    build-jnlp || exit
 
 ant clean-untracked-files
 

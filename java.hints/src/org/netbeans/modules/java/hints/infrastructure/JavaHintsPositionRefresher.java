@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask;
 import org.netbeans.spi.editor.hints.Context;
@@ -113,6 +114,14 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
 
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.RESOLVED);
+
+            Document doc = controller.getDocument();
+
+            if (doc == null) {
+                return;
+            }
+            
+            long version = DocumentUtilities.getDocumentVersion(doc);
             int position = ctx.getPosition();
 
             //TODO: better cancel handling (propagate into tasks?)
@@ -120,33 +129,95 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
                 return;
             }
 
+            LastUpdatedHolder holder = getHolder(doc);
+
             //SuggestionsTask
-            eds.put(HintsTask.KEY_SUGGESTIONS, new HintsInvoker(controller, position, new AtomicBoolean()).computeHints(controller));
+            if ((version > 0 && holder.suggestions < version) || holder.suggestionsCaret != position) {
+                LOG.fine("Computing suggestions");
+                eds.put(HintsTask.KEY_SUGGESTIONS, new HintsInvoker(controller, position, new AtomicBoolean()).computeHints(controller));
+            } else {
+                LOG.fine("Suggestions already computed");
+            }
 
             if (ctx.isCanceled()) {
                 return;
             }
 
             //HintsTask
-            int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
-            int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
+            if (version > 0 && holder.hints < version) {
+                LOG.fine("Computing hints");
+                
+                int rowStart = Utilities.getRowStart((BaseDocument) doc, position);
+                int rowEnd = Utilities.getRowEnd((BaseDocument) doc, position);
 
-            eds.put(HintsTask.KEY_HINTS, new HintsInvoker(controller, rowStart, rowEnd, new AtomicBoolean()).computeHints(controller));
+                eds.put(HintsTask.KEY_HINTS, new HintsInvoker(controller, rowStart, rowEnd, new AtomicBoolean()).computeHints(controller));
+            } else {
+                LOG.fine("Hints already computed");
+            }
 
             if (ctx.isCanceled()) {
                 return;
             }
 
             //ErrorHints
-            final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position, org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE);
-            for (ErrorDescription ed : errors) {
-                LazyFixList fixes = ed.getFixes();
-                if (fixes instanceof CreatorBasedLazyFixList) { //compute fixes, since they're lazy computed
-                    ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+            if (version > 0 && holder.errors < version) {
+                LOG.fine("Computing errors");
+
+                final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position, org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE);
+                for (ErrorDescription ed : errors) {
+                    LazyFixList fixes = ed.getFixes();
+                    if (fixes instanceof CreatorBasedLazyFixList) { //compute fixes, since they're lazy computed
+                        ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+                    }
+                }
+                eds.put(ErrorHintsProvider.class.getName(), errors);
+            } else {
+                LOG.fine("Errors already computed, computing fixes");
+                
+                for (ErrorDescription ed : holder.errorsContent) {
+                    if (ed.getRange().getBegin().getOffset() <= position && position <= ed.getRange().getEnd().getOffset()) {
+                        if (!ed.getFixes().isComputed()) {
+                            ((CreatorBasedLazyFixList) ed.getFixes()).compute(controller, ctx.getCancel());
+                        }
+                    }
                 }
             }
-            eds.put(ErrorHintsProvider.class.getName(), errors);
         }
         
+    }
+
+    public static void hintsUpdated(Document doc, long version) {
+        if (doc == null) return;
+        getHolder(doc).hints = version;
+    }
+
+    public static void suggestionsUpdated(Document doc, long version, int caret) {
+        if (doc == null) return;
+        getHolder(doc).suggestions = version;
+        getHolder(doc).suggestionsCaret = caret;
+    }
+
+    public static void errorsUpdated(Document doc, long version, List<ErrorDescription> errors) {
+        if (doc == null) return;
+        getHolder(doc).errors = version;
+        getHolder(doc).errorsContent = errors;
+    }
+
+    private static LastUpdatedHolder getHolder(Document doc) {
+        LastUpdatedHolder holder = (LastUpdatedHolder) doc.getProperty(LastUpdatedHolder.class);
+
+        if (holder == null) {
+            doc.putProperty(LastUpdatedHolder.class, holder = new LastUpdatedHolder());
+        }
+
+        return holder;
+    }
+
+    private static final class LastUpdatedHolder {
+        private long suggestions;
+        private int suggestionsCaret;
+        private long hints;
+        private long errors;
+        private List<ErrorDescription> errorsContent;
     }
 }

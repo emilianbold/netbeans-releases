@@ -100,7 +100,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     /**
      * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
      */
-    public void replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
+    public EditorBoxView.ReplaceResult replace(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
             int index, int removeCount, EditorView[] addedViews,
             int offsetDelta, Shape alloc)
     {
@@ -175,7 +175,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         boolean majorAxisChildrenSpanChange = (addedSpan != removedSpan);
         if (majorAxisChildrenSpanChange || offsetDelta != 0) {
             // Fix both visual and textual offsets in one iteration through children
-            fixOffsetsAndSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
+            fixOffsetsAndMajorSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
         }
         if (minorAxisChildrenSpanChange) {
             setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
@@ -187,6 +187,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                     minorAxisChildrenSpanChange, alloc
             );
         } // Otherwise the repaint bounds and other vars in result stay unfilled
+        return result;
     }
 
     protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
@@ -256,14 +257,14 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
     }
 
-    public int getViewIndex(int offset, Position.Bias bias) {
+    int getViewIndex(int offset, Position.Bias bias) {
 	if(bias == Position.Bias.Backward) {
 	    offset -= 1;
 	}
         return getViewIndex(offset);
     }
 
-    public int getViewIndex(int offset) {
+    int getViewIndex(int offset) {
         int high = size() - 1;
         if (high == -1) {
             return -1;
@@ -293,6 +294,16 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         return (gapStorage == null || offset < gapStorage.offsetGapStart)
                 ? offset
                 : offset + gapStorage.offsetGapLength;
+    }
+
+    int getLength() { // Total length of contained child views
+        int size = size();
+        if (size > 0) {
+            EditorView lastChildView = get(size - 1);
+            return raw2RelOffset(lastChildView.getRawOffset()) + lastChildView.getLength();
+        } else {
+            return 0;
+        }
     }
 
     private double raw2VisualOffset(double rawVisualOffset) {
@@ -348,7 +359,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
      *  If there are multiple items with the same offset then the first one of them
      *  will be returned.
      */
-    private int getViewIndexFirst(int offset) {
+    int getViewIndexFirst(int offset) {
         int high = size() - 1;
         if (high == -1) {
             return -1; // No items
@@ -417,7 +428,7 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
         }
     }
 
-    final void fixOffsetsAndSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
+    final void fixOffsetsAndMajorSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
         // Expects moveGap(index) was called already before calling of this method
         boolean visualUpdate = (visualDelta != 0d);
         if (gapStorage != null) {

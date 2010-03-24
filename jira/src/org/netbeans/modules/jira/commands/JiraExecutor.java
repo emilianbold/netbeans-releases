@@ -51,6 +51,7 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraServiceUnavailableExcept
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
@@ -102,6 +103,8 @@ public class JiraExecutor {
                 if(checkVersion) {
                     checkAutoupdate();
                 }
+
+                ensureCredentials();
 
                 cmd.execute();
 
@@ -161,6 +164,10 @@ public class JiraExecutor {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
         }
+    }
+
+    private void ensureCredentials() {
+        JiraConfig.getInstance().setupCredentials(repository);
     }
 
     public boolean handleIOException(IOException io) {

@@ -63,8 +63,8 @@ public class ChildrenSupport {
     private Set<FileNaming> notExistingChildren;
     private Set<FileNaming> existingChildren;
     private int status = ChildrenSupport.NO_CHILDREN_CACHED;
-    private final Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
-    private final Mutex mutex = new Mutex(mutexPrivileged);
+    private static Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
+    private static Mutex mutex = new Mutex(mutexPrivileged);
 
     public ChildrenSupport() {
     }

@@ -51,44 +51,54 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public final class ParameterElementImpl implements ParameterElement {
-
     private final String name;
     private final String defaultValue;
     private final Set<TypeResolver> types;
     private final int offset;
     private boolean isRawType;
     private boolean isMandatory;
+    private boolean isReference;
 
     public ParameterElementImpl(
             final String name,
             final String defaultValue,
             final int offset,
             final Set<TypeResolver> types,
-            final boolean isRawType) {
+            final boolean isMandatory,
+            final boolean isRawType,
+            final boolean isReference) {
         this.name = name;
-        this.isMandatory = defaultValue == null;
-        this.defaultValue = defaultValue != null ? decode(defaultValue) : null;//NOI18N
+        this.isMandatory = isMandatory;
+        this.defaultValue = (!isMandatory && defaultValue != null) ? decode(defaultValue) : "";//NOI18N
         this.offset = offset;
         this.types = types;
         this.isRawType = isRawType;
+        this.isReference = isReference;
 
     }
 
-    static List<ParameterElement> parseParameters(String signature) {
+    static List<ParameterElement> parseParameters(final String signature) {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         if (signature != null && signature.length() > 0) {
             final String regexp = String.format("\\%s", SEPARATOR.COMMA.toString());//NOI18N
             for (String sign : signature.split(regexp)) {
-                final ParameterElement param = parseParameter(sign);
-                if (param != null) {
-                    retval.add(param);
+                try {
+                    final ParameterElement param = parseOneParameter(sign);
+                    if (param != null) {
+                        retval.add(param);
+                    }
+                } catch(NumberFormatException originalException) {
+                    final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                    final NumberFormatException formatException = new NumberFormatException(message);
+                    formatException.initCause(originalException);
+                    throw formatException;
                 }
             }
         }
         return retval;
     }
 
-    private static ParameterElement parseParameter(String sig) throws NumberFormatException {
+    private static ParameterElement parseOneParameter(String sig) throws NumberFormatException {
         ParameterElement retval = null;
         final String regexp = String.format("\\%s", SEPARATOR.COLON.toString());//NOI18N
         String[] parts = sig.split(regexp);
@@ -96,22 +106,30 @@ public final class ParameterElementImpl implements ParameterElement {
             String paramName = parts[0];
             Set<TypeResolver> types = TypeResolverImpl.parseTypes(parts[1]);
             boolean isRawType = Integer.parseInt(parts[2]) > 0;
+            boolean isMandatory = Integer.parseInt(parts[4]) > 0;
+            boolean isReference = Integer.parseInt(parts[5]) > 0;
             String defValue = parts.length > 3 ? parts[3] : null;
             retval = new ParameterElementImpl(
-                    paramName, defValue, -1, types, isRawType);
+                    paramName, defValue, -1, types, isMandatory, isRawType, isReference);
         }
         return retval;
     }
 
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append(SEPARATOR.COLON);
+        final String parameterName = getName().trim();
+        assert parameterName.equals(encode(parameterName)) : parameterName;
+        sb.append(parameterName).append(SEPARATOR.COLON);
         StringBuilder typeBuilder = new StringBuilder();
         for (TypeResolver typeResolver : getTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
+            if (typeBuilder.length() > 0) {
+                typeBuilder.append(SEPARATOR.PIPE);
+            }
             typeBuilder.append(resolverImpl.getSignature());
         }
-        sb.append(typeBuilder);
+        String typeSignatures = typeBuilder.toString().trim();
+        sb.append(typeSignatures);
         sb.append(SEPARATOR.COLON);//NOI18N
         sb.append(isRawType ? 1 : 0);
         sb.append(SEPARATOR.COLON);//NOI18N
@@ -119,6 +137,10 @@ public final class ParameterElementImpl implements ParameterElement {
             final String defVal = getDefaultValue();
             sb.append(encode(defVal));
         }
+        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(isMandatory ? 1 : 0);
+        sb.append(SEPARATOR.COLON);//NOI18N
+        sb.append(isReference ? 1 : 0);
         checkSignature(sb);
         return sb.toString();
     }
@@ -153,7 +175,7 @@ public final class ParameterElementImpl implements ParameterElement {
         return isMandatory;
     }
 
-    private static String encode(String inStr) {
+    static String encode(String inStr) {
         StringBuffer outStr = new StringBuffer(6 * inStr.length());
 
         for (int i = 0; i < inStr.length(); i++) {
@@ -228,14 +250,22 @@ public final class ParameterElementImpl implements ParameterElement {
         boolean checkEnabled = false;
         assert checkEnabled = true;
         if (checkEnabled) {
-            String retval = sb.toString();
-            ParameterElement parsedParameter = parseParameter(retval);
-            assert getName().equals(parsedParameter.getName());
-            assert hasDeclaredType() == parsedParameter.hasDeclaredType();
-//            assert (getDefaultValue() == null ?
-//                parsedParameter.getDefaultValue() == null :
-//                getDefaultValue().equals(parsedParameter.getDefaultValue()));
-//            assert isMandatory() == parsedParameter.isMandatory();
+            String signature = sb.toString();
+            try {
+                ParameterElement parsedParameter = parseOneParameter(signature);
+                assert getName().equals(parsedParameter.getName()) : signature;
+                assert hasDeclaredType() == parsedParameter.hasDeclaredType() : signature;
+                if (getDefaultValue() != null) {
+                    assert getDefaultValue().equals(parsedParameter.getDefaultValue()) : signature;
+                }
+                assert isMandatory() == parsedParameter.isMandatory() : signature;
+                assert isReference() == parsedParameter.isReference() : signature;
+            } catch (NumberFormatException originalException) {
+                final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                final NumberFormatException formatException = new NumberFormatException(message);
+                formatException.initCause(originalException);
+                throw formatException;
+            }
         }
     }
 
@@ -246,7 +276,7 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     @Override
-    public String asString() {
+    public String asString(boolean forDeclaration) {
         StringBuilder sb = new StringBuilder();
         Set<TypeResolver> typesResolvers = getTypes();
         if (hasDeclaredType()) {
@@ -261,15 +291,25 @@ public final class ParameterElementImpl implements ParameterElement {
                 }
             }
         }
+        if (forDeclaration && isReference()) {
+            sb.append(VariableElementImpl.REFERENCE_PREFIX);
+        }
         sb.append(getName());
-        String defVal = getDefaultValue();
-        if (!isMandatory()) {
-            sb.append(" = ");//NOI18N
-            if (defVal != null) {
-                sb.append(defVal.length() > 10 ?
-                            "..." : defVal); //NOI18N
+        if (forDeclaration) {
+            String defVal = getDefaultValue();
+            if (!isMandatory()) {
+                sb.append(" = ");//NOI18N
+                if (defVal != null) {
+                    sb.append(defVal.length() > 10 ?
+                                "..." : defVal); //NOI18N
+                }
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean isReference() {
+        return isReference;
     }
 }

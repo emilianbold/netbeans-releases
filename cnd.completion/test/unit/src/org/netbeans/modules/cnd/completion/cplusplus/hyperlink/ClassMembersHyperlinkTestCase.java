@@ -909,6 +909,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz179373.cc", 17, 13, "iz179373.cc", 3, 5);
     }
 
+    public void testIZ142674() throws Exception {
+        // Bug 142674 - Function-try-catch (C++) in editor shows error
+        performTest("iz142674.cc", 6, 9, "iz142674.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

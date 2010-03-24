@@ -2212,7 +2212,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         return html;
     }
 
+    @Override
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        if (elementHandle == null) {
+            return null;
+        }
         if (link.indexOf('#') != -1 && elementHandle.getMimeType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary

@@ -85,13 +85,13 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
 
     @Override
     protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
-        return (wrapInfo != null) ? wrapInfo.majorAxisChildrenSpan : super.getMajorAxisChildrenSpan(boxView);
+        return (wrapInfo != null) ? wrapInfo.childrenWidth : super.getMajorAxisChildrenSpan(boxView);
     }
 
     @Override
     protected void setMajorAxisChildrenSpan(EditorBoxView boxView, double majorAxisSpan) {
         if (wrapInfo != null) {
-            wrapInfo.majorAxisChildrenSpan = majorAxisSpan;
+            wrapInfo.childrenWidth = majorAxisSpan;
         } else {
             super.setMajorAxisChildrenSpan(boxView, majorAxisSpan);
         }
@@ -99,13 +99,13 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
 
     @Override
     protected float getMinorAxisChildrenSpan(EditorBoxView boxView) {
-        return (wrapInfo != null) ? wrapInfo.minorAxisChildrenSpan : super.getMinorAxisChildrenSpan(boxView);
+        return (wrapInfo != null) ? wrapInfo.childrenHeight : super.getMinorAxisChildrenSpan(boxView);
     }
 
     @Override
     protected void setMinorAxisChildrenSpan(EditorBoxView boxView, float minorAxisSpan) {
         if (wrapInfo != null) {
-            wrapInfo.minorAxisChildrenSpan = minorAxisSpan;
+            wrapInfo.childrenHeight = minorAxisSpan;
         } else {
             super.setMinorAxisChildrenSpan(boxView, minorAxisSpan);
         }
@@ -118,75 +118,77 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             double addedVisualSpan, double removedVisualSpan, boolean removedTillEnd,
             boolean minorAxisSpanChange, Shape alloc)
     {
+        double origWidth = boxView.getMajorAxisSpan();
+        float origHeight = boxView.getMinorAxisSpan();
+        recomputeSpans(boxView);
+        double width = boxView.getMajorAxisSpan();
+        float height = boxView.getMinorAxisSpan();
+        majorAxisSpanChange |= (origWidth != width);
+        minorAxisSpanChange |= (origHeight != height);
+
+        if (alloc != null) {
+            Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
+            if (wrapInfo == null) {
+                repaintBounds.x += visualOffset;
+                repaintBounds.width -= visualOffset;
+            } else {
+                // Possibly improve by computing exact bounds
+            }
+            if (majorAxisSpanChange || removedTillEnd) {
+                result.widthChanged = true;
+                repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+            } else { // Just repaint the modified area (of the same size)
+                // Leave the whole visible width for repaint
+                //repaintBounds.width = removedSpan;
+            }
+            if (minorAxisSpanChange) {
+                result.heightChanged = true;
+                repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+            } // else: leave the repaintBounds.height set to alloc's height
+            result.repaintBounds = ViewUtils.toRect(repaintBounds);
+
+        } else { // Null alloc => compatible operation
+            if (majorAxisSpanChange || minorAxisSpanChange) {
+                boxView.preferenceChanged(null, majorAxisSpanChange, minorAxisSpanChange);
+            }
+        }
+    }
+
+    /**
+     * Recompute spans and possibly do wrap or vice versa (remove wrap).
+     * This is used once a component's width gets changed.
+     *
+     * @param boxView non-null box view.
+     */
+    void recomputeSpans(EditorBoxView boxView) {
         ParagraphView paragraphView = (ParagraphView) boxView;
         DocumentView docView = paragraphView.getDocumentView();
         if (docView != null) {
-            boolean regular = true;
-            switch (docView.getLineWrapType()) {
-                case NONE:
-                    break;
-                    
-                case CHARACTER_BOUND:
-                case WORD_BOUND:
-                    double origWidth = boxView.getMajorAxisSpan();
-                    float origHeight = boxView.getMinorAxisSpan();
-                    if (wrapInfo != null) {
-                        boxView.setMajorAxisSpan(wrapInfo.majorAxisChildrenSpan);
-                        boxView.setMinorAxisSpan(wrapInfo.minorAxisChildrenSpan);
-                        wrapInfo = null; // Currently always recreate wrapInfo [TODO] also allow update of existing
+            boolean wrapDone = false;
+            double childrenWidth = getMajorAxisChildrenSpan(boxView);
+            float childrenHeight = getMinorAxisChildrenSpan(boxView);
+            if (docView.getLineWrapType() != DocumentView.LineWrapType.NONE) {
+                wrapInfo = null;
+                float visibleWidth = docView.getVisibleWidth();
+                // Check if major axis span (should already be updated) exceeds scrollpane width.
+                if (visibleWidth > docView.getDefaultCharWidth() && childrenWidth > visibleWidth) {
+                    wrapDone = true;
+                    // Get current minor axis span before wrapInfo gets inited
+                    // since the method behavior would get modified.
+                    wrapInfo = new WrapInfo(childrenWidth, childrenHeight);
+                    float prefWidth = new WrapInfoUpdater(wrapInfo, this, paragraphView).initWrapInfo();
+                    float prefHeight = wrapInfo.preferredHeight();
+                    boxView.setMajorAxisSpan(prefWidth);
+                    boxView.setMinorAxisSpan(prefHeight);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("WrapInfo.init(): pref[" + prefWidth + "," + prefHeight + "] "
+                                + wrapInfo.toString(paragraphView));
                     }
-                    float visibleWidth = docView.getVisibleWidth();
-                    // Check if major axis span (should already be updated) exceeds scrollpane width.
-                    double majorAxisChildrenSpan = getMajorAxisChildrenSpan(boxView);
-                    if (visibleWidth > docView.getDefaultCharWidth() && majorAxisChildrenSpan > visibleWidth) {
-                        regular = false;
-                        // Get current minor axis span before wrapInfo gets inited
-                        // since the method behavior would get modified.
-                        float minorAxisChildrenSpan = getMinorAxisChildrenSpan(boxView);
-                        wrapInfo = new WrapInfo(majorAxisChildrenSpan, minorAxisChildrenSpan);
-                        float prefWidth = new WrapInfoUpdater(wrapInfo, this, paragraphView).initWrapInfo();
-                        float prefHeight = wrapInfo.preferredHeight();
-                        boxView.setMajorAxisSpan(prefWidth);
-                        boxView.setMinorAxisSpan(prefHeight);
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("WrapInfo.init(): pref[" + prefWidth + "," + prefHeight + "] "
-                                    + wrapInfo.toString(paragraphView));
-                        }
-
-                        majorAxisSpanChange = (origWidth != boxView.getMajorAxisSpan());
-                        minorAxisSpanChange = (origHeight != boxView.getMinorAxisSpan());
-                        if (alloc != null) {
-                            Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
-                            repaintBounds.x += visualOffset;
-                            if (majorAxisSpanChange || removedTillEnd) {
-                                result.widthChanged = true;
-                                repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
-                            } else { // Just repaint the modified area (of the same size)
-                                // Leave the whole visible width for repaint
-                                //repaintBounds.width = removedSpan;
-                            }
-                            if (minorAxisSpanChange) {
-                                result.heightChanged = true;
-                                repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
-                            } // else: leave the repaintBounds.height set to alloc's height
-                            result.repaintBounds = ViewUtils.toRect(repaintBounds);
-
-                        } else { // Null alloc => compatible operation
-                            if (majorAxisSpanChange || minorAxisSpanChange) {
-                                boxView.preferenceChanged(null, majorAxisSpanChange, minorAxisSpanChange);
-                            }
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new AssertionError();
+                }
             }
-
-            if (regular) {
-                super.updateSpans(boxView, result, index, removedCount, addedCount,
-                        majorAxisSpanChange, visualOffset, addedVisualSpan, removedVisualSpan, removedTillEnd,
-                        minorAxisSpanChange, alloc);
+            if (!wrapDone) {
+                boxView.setMajorAxisSpan(childrenWidth);
+                boxView.setMinorAxisSpan(childrenHeight);
             }
         }
     }
@@ -198,7 +200,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             int startWrapLineIndex;
             int endWrapLineIndex;
             double relY = clipBounds.y - allocBounds.y;
-            float wrapLineHeight = wrapInfo.minorAxisChildrenSpan;
+            float wrapLineHeight = wrapInfo.childrenHeight;
             if (relY < wrapLineHeight) {
                 startWrapLineIndex = 0;
             } else {
@@ -233,8 +235,8 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             }
             wrapLineIndex--;
             wrapLine = wrapInfo.get(wrapLineIndex);
-            allocBounds.y += wrapLineIndex * wrapInfo.minorAxisChildrenSpan;
-            allocBounds.height = wrapInfo.minorAxisChildrenSpan;
+            allocBounds.y += wrapLineIndex * wrapInfo.childrenHeight;
+            allocBounds.height = wrapInfo.childrenHeight;
             Shape ret = null;
 
             if (wrapLine.startViewPart != null && offset < wrapLine.startViewPart.getEndOffset()) {
@@ -289,14 +291,18 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
             int wrapLineIndex;
             double relY = y - allocBounds.y;
-            float wrapLineHeight = wrapInfo.minorAxisChildrenSpan;
+            float wrapLineHeight = wrapInfo.childrenHeight;
             if (relY < wrapLineHeight) {
                 wrapLineIndex = 0;
             } else {
                 wrapLineIndex = (int) (relY / wrapLineHeight);
+                int wrapLineCount = wrapInfo.size();
+                if (wrapLineIndex >= wrapLineCount) {
+                    wrapLineIndex = wrapLineCount - 1;
+                }
             }
             allocBounds.y += relY;
-            allocBounds.height = wrapInfo.minorAxisChildrenSpan;
+            allocBounds.height = wrapInfo.childrenHeight;
             WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
             if (wrapLine.startViewPart != null && (x < wrapLine.startViewX ||
                     (!wrapLine.hasFullViews() && wrapLine.endViewPart == null)))

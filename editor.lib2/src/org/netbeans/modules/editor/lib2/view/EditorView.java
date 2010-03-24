@@ -57,7 +57,21 @@ import javax.swing.text.View;
 /**
  * Base class for views in editor view hierarchy.
  * <br/>
- * Box views should also implement {@link Parent}.
+ * In general there are three types of views:<ul>
+ * <li>Document view</li>
+ * <li>Paragraph views</li>
+ * <li>Children of paragraph views which include highlights view, newline view and others.</li>
+ * </ul>
+ * <br/>
+ * Paragraph views have their start offset based over a swing text position. Their end offset
+ * is based on last child's end offset.
+ * <br/>
+ * Children of paragraph views have their start offset based over a relative distance
+ * to their parent's paragraph view's start offset. Therefore their start offset does not mutate
+ * upon modification unless the whole paragraph's start offset mutates.
+ * Their {@link #getLength()} method should remain stable upon document mutations
+ * (this way the view builder can iterate over them when calculating last affected view
+ * once the new views become created).
  *
  * @author Miloslav Metelka
  */
@@ -381,8 +395,8 @@ public abstract class EditorView extends View {
         if (LOG.isLoggable(Level.FINER)) {
             String err = findTreeIntegrityError(); // Check integrity of the document view
             if (err != null) {
-                String msg = "View hierarchy INTEGRITY ERROR!";
-                LOG.finer(msg + "\n" + err + "Errorneous view hierarchy:\n");
+                String msg = "View hierarchy INTEGRITY ERROR! - " + err;
+                LOG.finer(msg + "\nErrorneous view hierarchy:\n");
                 StringBuilder sb = new StringBuilder(200);
                 appendViewInfo(sb, 0, -2); // -2 means detailed info
                 LOG.finer(sb.toString());
@@ -431,7 +445,7 @@ public abstract class EditorView extends View {
                     } else if (childStartOffset > childEndOffset) {
                         err = "childStartOffset=" + childStartOffset + " > childEndOffset=" + childEndOffset; // NOI18N
                     } else if (childEndOffset > endOffset) {
-                        err = "childEndOffset=" + childEndOffset + " > endOffset=" + endOffset; // NOI18N
+                        err = "childEndOffset=" + childEndOffset + " > parentEndOffset=" + endOffset; // NOI18N
                     } else {
                         err = child.findTreeIntegrityError();
                         noChildInfo = true;

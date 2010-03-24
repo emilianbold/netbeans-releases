@@ -150,6 +150,10 @@ public class TypeFactory {
     }
 
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(ast, null, file, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }
+
+    public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -211,10 +215,13 @@ public class TypeFactory {
             tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID )*/ {
             //return null;
         } else {
-            if( typeStart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-                CsmClassifier classifier = BuiltinTypes.getBuiltIn(typeStart);
+            if(classifier != null) {
                 type._setClassifier(classifier);
                 type.classifierText = classifier.getName();
+            } else if( typeStart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+                CsmClassifier cls = BuiltinTypes.getBuiltIn(typeStart);
+                type._setClassifier(cls);
+                type.classifierText = cls.getName();
             } else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                 AST tokFirstId;
                 try {

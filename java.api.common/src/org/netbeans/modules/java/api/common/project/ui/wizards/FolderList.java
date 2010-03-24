@@ -50,8 +50,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -308,7 +308,10 @@ public final class FolderList extends javax.swing.JPanel {
             ProgressUtils.showProgressDialogAndRun(task, NbBundle.getMessage(FolderList.class, "TXT_SearchingSourceRoots"), false);
             final List<File> toAdd = toAddRef.get();
             final List<File> related = new LinkedList<File>();
-            if (relatedFolderList != null && relatedFolderFilter != null) {
+            if (relatedFolderList != null && relatedFolderFilter != null && toAdd != null) {
+                if (relatedFolderFilter instanceof ContextFileFilter) {
+                    ((ContextFileFilter)relatedFolderFilter).setContext(files);
+                }
                 for (Iterator<File> it = toAdd.iterator(); it.hasNext(); ) {
                     File f = it.next();
                     if (relatedFolderFilter.accept(f)) {
@@ -402,11 +405,33 @@ public final class FolderList extends javax.swing.JPanel {
         return true;
     }
 
+    /**
+     * Returns a {@link FileFilter} accepting all files for which any
+     * of its path elements starting from selectedFolder (exclusive) to the end is maching
+     * ".*test.* case insensitive regular expression
+     * @param selectedFolder
+     * @return the {@link FileFilter}
+     */
     public static FileFilter testRootsFilter () {
-        return new FileFilter() {
+        return new ContextFileFilter() {
+            private Set<File> selectedFiles;
+
             @Override
             public boolean accept(File pathname) {
-                return TESTS_RE.matcher(pathname.getName()).matches();
+                boolean pathCheck = selectedFiles != null && !selectedFiles.contains(pathname);
+                do {
+                    String toTest = pathname.getName();
+                    if (TESTS_RE.matcher(toTest).matches()) {
+                        return true;
+                    }
+                    pathname = pathname.getParentFile();
+                } while (pathCheck && pathname != null && !selectedFiles.contains(pathname));
+                return false;
+            }
+
+            @Override
+            public void setContext(File[] selectedFiles) {
+                this.selectedFiles = new HashSet<File>(Arrays.asList(selectedFiles));
             }
         };
     }
@@ -559,6 +584,10 @@ public final class FolderList extends javax.swing.JPanel {
             }
         }
 
+    }
+
+    private static interface ContextFileFilter extends FileFilter {
+        void setContext(final File[] selectedFiles);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

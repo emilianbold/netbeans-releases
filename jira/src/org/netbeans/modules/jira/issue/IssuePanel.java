@@ -127,6 +127,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -172,6 +173,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         initIssueLinksPanel();
+        initSpellChecker();
         attachFieldStatusListeners();
         attachHideStatusListener();
     }
@@ -331,6 +333,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentPanel, commentsPanel);
+    }
+
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
     }
 
     private Map<String,JLabel> customFieldLabels = new HashMap<String,JLabel>();

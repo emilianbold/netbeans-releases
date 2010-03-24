@@ -113,14 +113,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //    private static final boolean logEmptyTokenStream = Boolean.getBoolean("parser.log.empty");
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
-    public static enum FileType {
-        UNDEFINED_FILE,
-        SOURCE_FILE,
-        SOURCE_C_FILE,
-        SOURCE_CPP_FILE,
-        SOURCE_FORTRAN_FILE,
-        HEADER_FILE,
-    };
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
     public static final int SOURCE_C_FILE = 2;
@@ -340,6 +332,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public boolean isHeaderFile() {
         return fileType == FileType.HEADER_FILE;
     }
+
+    @Override
+    public FileType getFileType() {
+        return fileType;
+    }
+
 
     /*package local*/ void setHeaderFile() {
         if (fileType == FileType.UNDEFINED_FILE) {
@@ -1963,10 +1961,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
                 System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-                if (CndUtils.isDebugMode() && !firstDump) {
-                    firstDump = true;
-                    CndUtils.threadsDump();
-                }
+                //if (CndUtils.isDebugMode() && !firstDump) {
+                //    firstDump = true;
+                //    CndUtils.threadsDump();
+                //}
             }
             curState = State.PARSED;
         }
@@ -1979,8 +1977,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             staticLock.readLock().unlock();
         }
     }
-    private static boolean firstDump = false;
-
+    //private static boolean firstDump = false;
 
     public FileImpl(DataInput input) throws IOException {
         this.fileBuffer = PersistentUtils.readBuffer(input);

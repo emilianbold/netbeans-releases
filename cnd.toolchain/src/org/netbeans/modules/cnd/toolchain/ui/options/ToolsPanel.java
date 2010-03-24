@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -78,10 +80,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -126,17 +130,23 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         cbDevHost.setEnabled(true);
 
         lstDirlist.setCellRenderer(new MyCellRenderer());
+        cbDevHost.setRenderer(new MyDevHostListCellRenderer());
 
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
             setOpaque(false);
         }
-
+        // clean up previous caches
+        tcm.clear();
         HelpCtx.setHelpIDString(ToolsPanel.this, "ResolveBuildTools"); // NOI18N
     }
 
     public ToolsPanel(ToolsPanelModel model) {
         this();
         this.model = model;
+        ExecutionEnvironment env = model.getSelectedDevelopmentHost();
+        if (env != null) {
+            execEnv = env;
+        }
     }
 
     private void initializeLong() {
@@ -151,11 +161,24 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         return execEnv;
     }
 
+    private void showHideToolchainInitialization(boolean show) {
+        if (show) {
+            this.cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
+        } else {
+            this.cbDevHost.setEnabled(false);
+        }
+        buttomPanel.setVisible(show);
+        buttonPanel.setVisible(show);
+        toolCollectionPanel.setVisible(show);
+        loadingToolCollectionPanel.setVisible(!show);
+    }
+    
     private void initializeUI() {
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
         }
+        showHideToolchainInitialization(true);
         cbDevHost.removeItemListener(this);
 
         ExecutionEnvironment selectedEnv = model.getSelectedDevelopmentHost();
@@ -180,7 +203,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             cbDevHost.setSelectedItem(tcm.getDefaultHostRecord());
         }
 
-        cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
@@ -338,18 +360,22 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         updating = true;
         if (!initialized || doInitialize) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            showHideToolchainInitialization(false);
             RequestProcessor.getDefault().post(new Runnable(){
                 @Override
                 public void run() {
+                    try {
                      initializeLong();
-                     SwingUtilities.invokeLater(new Runnable(){
-                        @Override
-                        public void run() {
-                            initializeUI();
-                            updateUI(doInitialize, selectedCS, errs);
-                            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                        }
-                     });
+                    } finally {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                initializeUI();
+                                updateUI(doInitialize, selectedCS, errs);
+                                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                            }
+                        });
+                    }
                 }
             });
         } else {
@@ -450,6 +476,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         currentCompilerSet = cs;
         fireCompilerSetChange();
         dataValid();
+    }
+
+    public String getSelectedToolchain() {
+        return currentCompilerSet != null ? currentCompilerSet.getName() : "";
     }
 
     public void applyChanges(boolean force) {
@@ -689,8 +719,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         btEditDevHost = new javax.swing.JButton();
         btEditDevHost.addActionListener(this);
         toolCollectionPanel = new ToolCollectionPanel(this);
+        loadingToolCollectionPanel = new javax.swing.JPanel();
+        lblLoadToolsProgress = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
+        setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
         lbToolCollections.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));
@@ -704,9 +737,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         add(lbToolCollections, gridBagConstraints);
-        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
-        lbToolCollections.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_DirlistLabel")); // NOI18N
-        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_DirlistLabel")); // NOI18N
+        lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
+        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
 
         buttomPanel.setOpaque(false);
         buttomPanel.setLayout(new java.awt.GridBagLayout());
@@ -796,8 +828,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(btAdd, gridBagConstraints);
-        btAdd.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_AddButton")); // NOI18N
-        btAdd.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_AddButton")); // NOI18N
+        btAdd.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_AddButton")); // NOI18N
+        btAdd.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddButton")); // NOI18N
 
         btRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_RemoveButton").charAt(0));
         btRemove.setText(bundle.getString("LBL_RemoveButton")); // NOI18N
@@ -810,8 +842,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(btRemove, gridBagConstraints);
-        btRemove.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_RemoveButton")); // NOI18N
-        btRemove.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_RemoveButton")); // NOI18N
+        btRemove.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_RemoveButton")); // NOI18N
+        btRemove.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RemoveButton")); // NOI18N
 
         btDuplicate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_UpButton").charAt(0));
         btDuplicate.setText(bundle.getString("LBL_UpButton")); // NOI18N
@@ -824,8 +856,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         buttonPanel.add(btDuplicate, gridBagConstraints);
-        btDuplicate.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_UpButton")); // NOI18N
-        btDuplicate.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_UpButton")); // NOI18N
+        btDuplicate.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_UpButton")); // NOI18N
+        btDuplicate.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UpButton")); // NOI18N
 
         btDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DownButton").charAt(0));
         btDefault.setText(bundle.getString("LBL_DownButton")); // NOI18N
@@ -838,8 +870,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         buttonPanel.add(btDefault, gridBagConstraints);
-        btDefault.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_DownButton")); // NOI18N
-        btDefault.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_DownButton")); // NOI18N
+        btDefault.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DownButton")); // NOI18N
+        btDefault.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DownButton")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -897,6 +929,26 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(toolCollectionPanel, gridBagConstraints);
+
+        loadingToolCollectionPanel.setEnabled(false);
+        loadingToolCollectionPanel.setFocusable(false);
+        loadingToolCollectionPanel.setRequestFocusEnabled(false);
+        loadingToolCollectionPanel.setVerifyInputWhenFocusTarget(false);
+        loadingToolCollectionPanel.setLayout(new java.awt.BorderLayout());
+
+        lblLoadToolsProgress.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblLoadToolsProgress.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblLoadToolsProgress.text")); // NOI18N
+        loadingToolCollectionPanel.add(lblLoadToolsProgress, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(loadingToolCollectionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
@@ -911,7 +963,19 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
             @Override
         public void run() {
-            String versions = getToolCollectionPanel().getVersion(set);
+            if (!ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
+                try {
+                    ConnectionManager.getInstance().connectTo(getSelectedRecord().getExecutionEnvironment());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            String versions = null;
+            if (ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
+                versions = getToolCollectionPanel().getVersion(set);
+            }
             SwingUtilities.invokeLater(new Runnable() {
                     @Override
                 public void run() {
@@ -919,9 +983,11 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             });
-            NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
-            nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
-            DialogDisplayer.getDefault().notify(nd);
+            if (versions != null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(versions);
+                nd.setTitle(getString("LBL_VersionInfo_Title")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+            }
         }
     });
 }//GEN-LAST:event_btVersionsActionPerformed
@@ -954,9 +1020,11 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
-            label.setText(rec.getDisplayName());
-            if (value != null && value.equals(tcm.getDefaultHostRecord())) {
-                label.setFont(label.getFont().deriveFont(Font.BOLD));
+            if (rec != null) {
+                label.setText(rec.getDisplayName());
+                if (rec.equals(tcm.getDefaultHostRecord())) {
+                    label.setFont(label.getFont().deriveFont(Font.BOLD));
+                }
             }
             return label;
         }
@@ -1099,6 +1167,8 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel lbDevHost;
     private javax.swing.JLabel lbToolCollections;
     private javax.swing.JLabel lblErrors;
+    private javax.swing.JLabel lblLoadToolsProgress;
+    private javax.swing.JPanel loadingToolCollectionPanel;
     private javax.swing.JList lstDirlist;
     private javax.swing.JScrollPane spDirlist;
     private javax.swing.JPanel toolCollectionPanel;

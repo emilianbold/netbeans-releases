@@ -58,6 +58,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class CreateViewAction extends BaseAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -78,10 +79,12 @@ public class CreateViewAction extends BaseAction {
         return new HelpCtx(CreateViewAction.class);
     }
 
+    @Override
     public void performAction (Node[] activatedNodes) {
         final BaseNode node = activatedNodes[0].getLookup().lookup(BaseNode.class);
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     perform(node);
                 }

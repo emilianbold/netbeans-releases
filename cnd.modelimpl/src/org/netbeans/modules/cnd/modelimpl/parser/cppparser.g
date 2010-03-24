@@ -1518,7 +1518,7 @@ function_definition
         {in_parameter_list = false;}
     )?
     (   compound_statement
-    |   function_try_block
+    |   function_try_block[false]
     )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
     //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
@@ -2298,9 +2298,8 @@ qualified_ctor_id returns [String q = ""]
 
 ctor_body
     :
-    (ctor_initializer)?
-    (   compound_statement
-    |   function_try_block)
+    (  (ctor_initializer)? compound_statement
+    |  function_try_block[true])
     ;
 
 ctor_initializer
@@ -2858,7 +2857,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_11[%d]: try_block\n", LT(1).getLine());
 		}	
-                try_block
+                try_block[false]
 	|
                 {if (statementTrace>=1) 
 			printf("statement_12[%d]: throw_statement\n", LT(1).getLine());
@@ -2927,17 +2926,19 @@ compound_statement
             )                      
 	;
 
-function_try_block
+function_try_block[boolean constructor]
     :
         {isLazyCompound()}?
-        LITERAL_try balanceCurlies 
+        LITERAL_try
+        ({(constructor)}?((COLON) => ctor_initializer)?)?
+        balanceCurlies
         (options {greedy=true;} : LITERAL_catch
         LPAREN exception_declaration RPAREN
         balanceCurlies)*
         {#function_try_block = #(#[CSM_TRY_CATCH_STATEMENT_LAZY, "CSM_TRY_CATCH_STATEMENT_LAZY"], #function_try_block);}
     |
         {!isLazyCompound()}?
-        try_block
+        try_block[constructor]
         {#function_try_block = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #function_try_block);}
     ;
 
@@ -3073,9 +3074,11 @@ jump_statement
 	)
 	;
 
-try_block
+try_block[boolean constructor]
     :
-    LITERAL_try compound_statement (options {greedy=true;} : handler)*
+    LITERAL_try
+    ({(constructor)}?((COLON) => ctor_initializer)?)?
+    compound_statement (options {greedy=true;} : handler)*
     {#try_block = #(#[CSM_TRY_STATEMENT, "CSM_TRY_STATEMENT"], #try_block);}
     ;
 

@@ -62,7 +62,7 @@ public class PathUtils {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("/bin/ls").setArguments("-l", path).redirectError(); // NOI18N
             final NativeProcess process = npb.call();
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader br = ProcessUtils.getReader(process.getInputStream(), execEnv.isRemote());
             String line = br.readLine(); // just read 1st line...
             br.close();
             if (line != null) {
@@ -80,11 +80,9 @@ public class PathUtils {
     public static String getExePath(long pid, ExecutionEnvironment execEnv) {
         if (pid > 0) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
-            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
-            String path = PathUtils.getPathFromSymlink(pathfile.getAbsolutePath(), execEnv);
+            String path = PathUtils.getPathFromSymlink(procdir + "/path/a.out", execEnv); // NOI18N - Solaris only?
             if (path == null) {
-                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
-                path = PathUtils.getPathFromSymlink(pathfile.getAbsolutePath(), execEnv);
+                path = PathUtils.getPathFromSymlink(procdir + "/exe", execEnv); // NOI18N - Linux?
             }
             if (path != null && path.length() > 0) {
                 return path;

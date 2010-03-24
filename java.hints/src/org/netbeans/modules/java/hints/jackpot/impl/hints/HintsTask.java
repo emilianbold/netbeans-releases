@@ -50,12 +50,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -83,9 +86,12 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     public void run(CompilationInfo info) {
         cancel.set(false);
 
+        Document doc = info.getSnapshot().getSource().getDocument(false);
+        long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
         long startTime = System.currentTimeMillis();
 
-        HintsInvoker inv = caretAware ? new HintsInvoker(info, CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject()), cancel) : new HintsInvoker(info, cancel);
+        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
+        HintsInvoker inv = caretAware ? new HintsInvoker(info, caret, cancel) : new HintsInvoker(info, cancel);
         List<ErrorDescription> result = inv.computeHints(info);
 
         if (cancel.get()) {
@@ -93,6 +99,12 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
         }
 
         HintsController.setErrors(info.getFileObject(), caretAware ? KEY_SUGGESTIONS : KEY_HINTS, result);
+
+        if (caretAware) {
+            JavaHintsPositionRefresher.suggestionsUpdated(doc, version, caret);
+        } else {
+            JavaHintsPositionRefresher.hintsUpdated(doc, version);
+        }
 
         long endTime = System.currentTimeMillis();
         

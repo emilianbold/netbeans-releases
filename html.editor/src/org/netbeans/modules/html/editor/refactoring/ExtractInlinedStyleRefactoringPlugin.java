@@ -41,8 +41,10 @@ package org.netbeans.modules.html.editor.refactoring;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.BadLocationException;
@@ -53,13 +55,16 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.css.refactoring.api.Entry;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.SelectorType;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -71,6 +76,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * @todo Define some pattern for the generation the class and id selector in the css options.
+ * 
  * @author marekfukala
  */
 public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
@@ -83,7 +90,6 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
     }
 
     //TODO implement the checks!
-
     @Override
     public Problem preCheck() {
         return null;
@@ -106,14 +112,14 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        if(cancelled) {
+        if (cancelled) {
             return null;
         }
         ModificationResult modificationResult = new ModificationResult();
         RefactoringContext context = refactoring.getRefactoringSource().lookup(RefactoringContext.class);
         assert context != null;
 
-        switch(refactoring.getMode()) {
+        switch (refactoring.getMode()) {
             case refactorToExistingEmbeddedSection:
                 int embeddedSectionEnd = refactoring.getExistingEmbeddedCssSection().getEnd();
                 refactorToEmbeddedSection(modificationResult, context, embeddedSectionEnd);
@@ -125,8 +131,9 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 refactorToStyleSheet(modificationResult, context);
                 break;
             case refactorToExistingExternalSheet:
-                importStyleSheet(modificationResult, context);
-                refactorToStyleSheet(modificationResult, context);
+                if (refactorToStyleSheet(modificationResult, context)) {
+                    importStyleSheet(modificationResult, context);
+                }
                 break;
         }
 
@@ -176,6 +183,10 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 return false; //cannot properly map back
             }
             int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
+            if (baseIndent == -1) {
+                //in case of empty line
+                baseIndent = 0;
+            }
             if (increaseIndent.get()) {
                 //add one indent level (after HEAD open tag)
                 baseIndent += IndentUtils.indentLevelSize(context.getDocument());
@@ -192,11 +203,11 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
             CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFile());
             Difference diff = new Difference(Difference.Kind.INSERT,
-                        editor.createPositionRef(insertOffset, Bias.Forward),
-                        editor.createPositionRef(insertOffset, Bias.Backward),
-                        null,
-                        linkText,
-                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_InsertStylesheetLink")); //NOI18N
+                    editor.createPositionRef(insertOffset, Bias.Forward),
+                    editor.createPositionRef(insertOffset, Bias.Backward),
+                    null,
+                    linkText,
+                    NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_InsertStylesheetLink")); //NOI18N
 
             modificationResult.addDifferences(context.getFile(), Collections.singletonList(diff));
 
@@ -209,18 +220,17 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
     }
 
-    private void refactorToStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
+    private boolean refactorToStyleSheet(ModificationResult modificationResult, RefactoringContext context) {
         Document extSheetDoc = GsfUtilities.getDocument(refactoring.getExternalSheet(), true);
 
         int insertOffset = extSheetDoc.getLength();
         int baseIndent = getPreviousLineIndent(extSheetDoc, insertOffset);
 
-        refactorToEmbeddedSection(modificationResult, context, refactoring.getExternalSheet(),
+        return refactorToEmbeddedSection(modificationResult, context, refactoring.getExternalSheet(),
                 insertOffset, baseIndent, null, null);
     }
 
-
-    private void refactorToNewEmbeddedSection(ModificationResult modifications, RefactoringContext context) {
+    private boolean refactorToNewEmbeddedSection(ModificationResult modifications, RefactoringContext context) {
         try {
             //create a new embedded css section
             AstNode root = context.getModel().getParserResult().root();
@@ -248,14 +258,18 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             int embeddedInsertOffset = insertPositionRef.get();
             if (embeddedInsertOffset == -1) {
                 //TODO probably missing head tag? - generate? html tag may be missing as well
-                return;
+                return false;
             }
             int insertOffset = context.getModel().getSnapshot().getOriginalOffset(embeddedInsertOffset);
             if (insertOffset == -1) {
-                return; //cannot properly map back
+                return false; //cannot properly map back
             }
             int baseIndent = Utilities.getRowIndent((BaseDocument) context.getDocument(), insertOffset);
-            if(increaseIndent.get()) {
+            if (baseIndent == -1) {
+                //in case of empty line
+                baseIndent = 0;
+            }
+            if (increaseIndent.get()) {
                 //add one indent level (after HEAD open tag)
                 baseIndent += IndentUtils.indentLevelSize(context.getDocument());
             }
@@ -271,105 +285,215 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     append(baseIndentString).
                     append("</style>").toString(); //NOI18N
 
-            refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, prefix, postfix);
+            return refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, prefix, postfix);
 
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
 
+        return false;
     }
 
-    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, final int insertOffset) {
+    private boolean refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, final int insertOffset) {
         int baseIndent = getPreviousLineIndent(context.getDocument(), insertOffset);
-        refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, null, null);
+        return refactorToEmbeddedSection(modifications, context, context.getFile(), insertOffset, baseIndent, null, null);
     }
 
-    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, 
+    private boolean refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context,
             FileObject targetStylesheet,
             int insertOffset, int baseIndent, String prefix, String postfix) {
         List<InlinedStyleInfo> inlinedStyles = context.getInlinedStyles();
         CloneableEditorSupport currentFileEditor = GsfUtilities.findCloneableEditorSupport(context.getFile());
         List<Difference> diffs = new LinkedList<Difference>();
 
-        //get existing id selectors
-        //XXX clarify the parsing of embedded source model - this call parses the file again!
-        //should be likely done in different way
-        Collection<Entry> existingIdsInEditedFile = CssRefactoring.getAllIdSelectors(context.getFile());
-        Collection<Entry> existingIdsInTargetFile = CssRefactoring.getAllIdSelectors(targetStylesheet);
-
-        Collection<String> allIds = new LinkedList<String>();
-        for(Entry e : existingIdsInEditedFile) {
-            allIds.add(e.getName());
-        }
-        for(Entry e : existingIdsInTargetFile) {
-            allIds.add(e.getName());
+        StringBuilder generatedSelectorsSection = new StringBuilder();
+        if (prefix != null) {
+            generatedSelectorsSection.append(prefix);
         }
 
-        StringBuilder generatedIdSelectorsSection = new StringBuilder();
-        if(prefix != null) {
-            generatedIdSelectorsSection.append(prefix);
-        }
+        //TODO consolidate the SelectorType and RefactoringElementType
+        SelectorType selectorType = refactoring.getSelectorType();
+        RefactoringElementType cssElementType = getCssElementType(selectorType);
 
-        for(InlinedStyleInfo si : inlinedStyles) {
+        Map<InlinedStyleInfo, ResolveDeclarationItem> resolvedDeclarations =
+                selectorType == SelectorType.CLASS ? context.getClassSelectorsToResolve() : context.getIdSelectorsToResolve();
+
+        boolean atLeastOneRefactorToDefaultLocation = false;
+
+        //we need to remember all used (and possibly generated) class or id selector names so we can avoid clashes
+        //remember such list per each file
+        Map<SelectorType, Map<FileObject, Collection<String>>> usedNames = new HashMap<SelectorType, Map<FileObject, Collection<String>>>();
+        usedNames.put(SelectorType.CLASS, new HashMap<FileObject, Collection<String>>());
+        usedNames.put(SelectorType.ID, new HashMap<FileObject, Collection<String>>());
+
+        usedNames.get(selectorType).put(context.getFile(), getAllSelectorNames(context.getFile(), cssElementType));
+        usedNames.get(selectorType).put(targetStylesheet, getAllSelectorNames(targetStylesheet, cssElementType));
+
+        for (InlinedStyleInfo si : inlinedStyles) {
             try {
-                //TODO define some pattern for the generation in the css options!
 
-                //find first free id selector name
-                String idSelectorNameBase = si.getTag() + "id";
-                String idSelectorName;
-                int counter = 0;
-                while(allIds.contains(idSelectorName = idSelectorNameBase + (counter++ == 0 ? "" : counter))) {
-                }
-                allIds.add(idSelectorName);
+                ResolveDeclarationItem declaration = resolvedDeclarations.get(si);
+                if (declaration != null) {
+                    //the css code is inlined in a tag with ID/CLASS attribute already defined
+                    DeclarationItem resolvedDeclaration = declaration.getResolvedTarget();
+                    FileObject file = resolvedDeclaration.getSource();
+                    Entry entry = resolvedDeclaration.getDeclaration().entry();
 
-                //delete the inlined style - attribute name, equal sign, whitespaces and the value
-                //and replace with id selector reference
-                int deleteFrom = si.getAttributeStartOffset();
-                int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
-                String idSelectorUsageText = "id=\""+ idSelectorName + "\""; //NOI18N
-                String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
+                    if (selectorType == SelectorType.ID) {
+                        //In case of id selector, just add the code to the refered selector body and remove the inlined style
 
-                Difference diff;
-                if(si.getRange().isEmpty()) {
-                    //empty value of the style attribute - just delete
-                    diff = new Difference(Difference.Kind.REMOVE,
-                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
-                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
-                        originalText,
-                        null,
-                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveEmptyStyleAttribute")); //NOI18N
-                } else {
-                    diff = new Difference(Difference.Kind.CHANGE,
-                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
-                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
-                        originalText,
-                        idSelectorUsageText,
-                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
-
-                    List<String> lines = new ArrayList<String>();
-                    lines.add(""); //empty line = will add new line
-
-                    lines.add(new StringBuilder().append('#').append(idSelectorName).append('{').toString()); //NOI18N
-
-                    //parse the inlined code and put each declaration on separate line, possibly add semicolon if missing
-                    for (String declaration : si.getParsedDeclarations()) {
-                        StringBuilder b = new StringBuilder();
-                        b.append('\t'); //NOI18N
-                        b.append(declaration);
-                        if (!declaration.endsWith(";")) { //NOI18N
-                            b.append(';'); //NOI18N
+                        //get the selector's body range { ... }
+                        OffsetRange docBodyRange = entry.getDocumentBodyRange();
+                        if (docBodyRange == null) {
+                            //cannot refactor this inlined style
+                            continue;
                         }
-                        lines.add(b.toString());
+
+                        //where to put the moved code
+                        int appendOffset = docBodyRange.getStart();
+
+                        //get the indentation from the selector's line indent + base indent
+                        int prevLineIndent = getPreviousLineIndent(resolvedDeclaration.getDocument(), appendOffset);
+                        List<String> lines = new LinkedList<String>();
+                        lines.add(""); //empty line = will add new line
+                        appendConvertedInlinedCodeLines(lines, si);
+
+                        String addedCode = formatCssCode(context.getDocument(), prevLineIndent, 0, lines.toArray(new String[]{}));
+
+                        //append the code to the existing selector
+                        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+                        Difference appendDiff = new Difference(Difference.Kind.INSERT,
+                                editor.createPositionRef(appendOffset, Bias.Forward),
+                                editor.createPositionRef(appendOffset, Bias.Backward),
+                                null,
+                                addedCode,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_AppendCssCodeToExistingSelector")); //NOI18N
+
+                        modifications.addDifferences(file, Collections.singletonList(appendDiff));
+
+                        //remove the inlined code
+                        int deleteFrom = si.getAttributeStartOffset();
+                        int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
+                        String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
+                        Difference removeDiff = new Difference(Difference.Kind.REMOVE,
+                                currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                                currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                                originalText,
+                                null,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveInlinedCode")); //NOI18N
+
+                        //modification of the edited file, will be added to the modification result later
+                        diffs.add(removeDiff);
+
+                    } else if (selectorType == SelectorType.CLASS) {
+                        //In case of class selector type we need to create a new one and add it to the existing class reference
+                        //  <div class="original newclass" ... />
+
+                        //XXX Reconsider - The newly generated classes are not be added to the same location as the already
+                        //existing, but to the default target selected by the user
+
+                        //find first free selector name
+                        Collection<String> editedFileElements = usedNames.get(selectorType).get(context.getFile());
+                        Collection<String> targetFileElements = usedNames.get(selectorType).get(targetStylesheet);
+                        //the call to getFirstFreeSelectorName also updates the given collections -
+                        //adds the new free element name into all of them
+                        String generatedSelectorName = getFirstFreeSelectorName(
+                                selectorType, si.getTag(), editedFileElements, targetFileElements);
+
+                        //add the new generated class to the default css code section
+                        String selectorNamePrefix = (selectorType == SelectorType.CLASS ? "." : "#");
+                        List<String> lines = new ArrayList<String>();
+                        lines.add(""); //empty line = will add new line
+                        lines.add(new StringBuilder().append(selectorNamePrefix).append(generatedSelectorName).append('{').toString()); //NOI18N
+                        appendConvertedInlinedCodeLines(lines, si);
+                        lines.add("}"); //NOI18N
+
+                        //if prefix is set indent the content by one level
+                        String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
+                        generatedSelectorsSection.append(idSelectorText);
+                        atLeastOneRefactorToDefaultLocation = true;
+
+                        //remove the inlined code
+                        int deleteFrom = si.getAttributeStartOffset();
+                        int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
+                        String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
+                        Difference removeDiff = new Difference(Difference.Kind.REMOVE,
+                                currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                                currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                                originalText,
+                                null,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveInlinedCode")); //NOI18N
+
+                        int appendToPosition = si.getClassValueAppendOffset();
+                        String toAdd = " " + generatedSelectorName;
+
+                        //append the new class name behind the existing one
+                        Difference appendDiff = new Difference(Difference.Kind.INSERT,
+                                currentFileEditor.createPositionRef(appendToPosition, Bias.Forward),
+                                currentFileEditor.createPositionRef(appendToPosition, Bias.Backward),
+                                null,
+                                toAdd,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_AddClassSelectorReference")); //NOI18N
+
+                        //modification of the edited file, will be added to the modification result later
+                        diffs.add(removeDiff);
+                        diffs.add(appendDiff);
+
                     }
 
-                    lines.add("}"); //NOI18N
+                } else {
+                    //find first free selector name
+                    Collection<String> editedFileElements = usedNames.get(selectorType).get(context.getFile());
+                    Collection<String> targetFileElements = usedNames.get(selectorType).get(targetStylesheet);
+                    //the call to getFirstFreeSelectorName also updates the given collections -
+                    //adds the new free element name into all of them
+                    String generatedSelectorName = getFirstFreeSelectorName(
+                            selectorType, si.getTag(), editedFileElements, targetFileElements);
 
-                    //if prefix is set indent the content by one level
-                    String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
-                    generatedIdSelectorsSection.append(idSelectorText);
+                    //delete the inlined style - attribute name, equal sign, whitespaces and the value
+                    //and replace with id selector reference
+                    int deleteFrom = si.getAttributeStartOffset();
+                    int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
+                    String selectorName = (selectorType == SelectorType.CLASS ? "class" : "id");
+                    String idSelectorUsageText = selectorName + "=\"" + generatedSelectorName + "\""; //NOI18N
+                    String originalText = context.getDocument().getText(deleteFrom, deleteTo - deleteFrom);
+
+                    Difference diff;
+                    if (si.getRange().isEmpty()) {
+                        //empty value of the style attribute - just delete
+                        diff = new Difference(Difference.Kind.REMOVE,
+                                currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                                currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                                originalText,
+                                null,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_RemoveEmptyStyleAttribute")); //NOI18N
+                    } else {
+                        diff = new Difference(Difference.Kind.CHANGE,
+                                currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                                currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                                originalText,
+                                idSelectorUsageText,
+                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
+
+                        List<String> lines = new ArrayList<String>();
+                        lines.add(""); //empty line = will add new line
+
+                        String selectorNamePrefix = (selectorType == SelectorType.CLASS ? "." : "#");
+                        lines.add(new StringBuilder().append(selectorNamePrefix).append(generatedSelectorName).append('{').toString()); //NOI18N
+
+                        appendConvertedInlinedCodeLines(lines, si);
+
+                        lines.add("}"); //NOI18N
+
+                        //if prefix is set indent the content by one level
+                        String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
+                        generatedSelectorsSection.append(idSelectorText);
+                    }
+
+                    diffs.add(diff);
+
+                    atLeastOneRefactorToDefaultLocation = true;
                 }
-
-                diffs.add(diff);
 
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -378,45 +502,53 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
         modifications.addDifferences(context.getFile(), diffs);
 
-        if(postfix != null) {
-            generatedIdSelectorsSection.append(postfix);
-        }
-        //generate the cumulated embedded id selector section
-        CloneableEditorSupport targetStylesheetEditor = GsfUtilities.findCloneableEditorSupport(targetStylesheet);
-        modifications.addDifferences(targetStylesheet, Collections.singletonList(new Difference(Difference.Kind.INSERT,
-                targetStylesheetEditor.createPositionRef(insertOffset, Bias.Forward),
-                targetStylesheetEditor.createPositionRef(insertOffset, Bias.Backward),
-                null,
-                generatedIdSelectorsSection.toString(),
-                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_GenerateIDSelectors")))); //NOI18N
+        if (atLeastOneRefactorToDefaultLocation) {
+            //not only inlined code moves to already existing class/id have been performed
+            if (postfix != null) {
+                generatedSelectorsSection.append(postfix);
+            }
+            //generate the cumulated embedded id selector section
+            CloneableEditorSupport targetStylesheetEditor = GsfUtilities.findCloneableEditorSupport(targetStylesheet);
+            modifications.addDifferences(targetStylesheet, Collections.singletonList(new Difference(Difference.Kind.INSERT,
+                    targetStylesheetEditor.createPositionRef(insertOffset, Bias.Forward),
+                    targetStylesheetEditor.createPositionRef(insertOffset, Bias.Backward),
+                    null,
+                    generatedSelectorsSection.toString(),
+                    NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_GenerateIDSelectors")))); //NOI18N
 
+            return true; //signal that some of the defaumt moves have been done
+        } else {
+            return false;
+        }
     }
 
     //TODO there should be a generic facility allowing to reformat a piece of code
     //according to the css formatter options. I could possibly invoke the formatter
     //on an artificial document with the new code content, but since we do not have the
     //pretty printer it would not help much.
-    private String formatCssCode(Document doc, int baseIndent, int additionalIndent, String... lines ) {
+    private String formatCssCode(Document doc, int baseIndent, int additionalIndent, String... lines) {
         StringBuilder b = new StringBuilder();
 
         int indentLevelSize = IndentUtils.indentLevelSize(doc);
 
-        for(String line : lines) {
+        for (String line : lines) {
             //add base indent
             b.append(IndentUtils.createIndentString(doc, baseIndent));
 
             String indentString = IndentUtils.createIndentString(doc, indentLevelSize);
             //append additional indents
-            for(int i = 0; i < additionalIndent; i++) {
+            for (int i = 0; i < additionalIndent; i++) {
                 b.append(indentString);
             }
-            
+
             //replace each \t by proper indentation level size
             //and copy the line to the buffer
-            for(int i = 0; i < line.length(); i++) {
+            for (int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
-                if(c == '\t') { //NOI18N
+                if (c == '\t') { //NOI18N
                     b.append(indentString);
+                } else if (c == '\n') {
+                    //swallow the new lines if they were possibly present in the inlined css code
                 } else {
                     b.append(c);
                 }
@@ -440,16 +572,77 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                     //find last nonwhite line indent
                     int firstNonWhiteBw = Utilities.getFirstNonWhiteBwd((BaseDocument) doc, insertOffset);
                     //get the line indent
-                    ret.set(Utilities.getRowIndent((BaseDocument)doc, firstNonWhiteBw));
+                    ret.set(firstNonWhiteBw == -1 ? 0 : Utilities.getRowIndent((BaseDocument) doc, firstNonWhiteBw));
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
 
             }
-
         });
 
-        return ret.get();
+        int indent = ret.get();
+        return indent == -1 ? 0 : indent; //the Utilities.getRowIndent() returns -1 for blank line
     }
 
+    private static RefactoringElementType getCssElementType(SelectorType selectorType) {
+        switch (selectorType) {
+            case CLASS:
+                return RefactoringElementType.CLASS;
+            case ID:
+                return RefactoringElementType.ID;
+            default:
+                return null;
+        }
+    }
+
+    private static Collection<String> getSelectorNames(Collection<Entry> entries) {
+        Collection<String> names = new ArrayList<String>(entries.size());
+        for (Entry e : entries) {
+            names.add(e.getName());
+        }
+        return names;
+    }
+
+    private static Collection<String> getAllSelectorNames(FileObject file, RefactoringElementType type) {
+        return getSelectorNames(CssRefactoring.getAllSelectors(file, type));
+    }
+
+    //find first free selector name
+    private static String getFirstFreeSelectorName(
+            SelectorType selectorType, String tagName, Collection<String>... names) {
+
+        String selectorName = (selectorType == SelectorType.CLASS ? "class" : "id"); //NOI18N
+        String selectorNameBase = tagName + selectorName;
+        String generatedSelectorName;
+
+        //merge all collections
+        Collection<String> allElements = new ArrayList<String>();
+        for (Collection<String> namesCol : names) {
+            allElements.addAll(namesCol);
+        }
+
+        //find first free name
+        int counter = 0;
+        while (allElements.contains(generatedSelectorName = selectorNameBase + (counter++ == 0 ? "" : counter))) {
+        }
+
+        //store the name back to all the names collections
+        for (Collection<String> namesCol : names) {
+            namesCol.add(generatedSelectorName);
+        }
+
+        return generatedSelectorName;
+    }
+
+    private static void appendConvertedInlinedCodeLines(List<String> lines, InlinedStyleInfo si) {
+        for (String parsedDeclaration : si.getParsedDeclarations()) {
+            StringBuilder b = new StringBuilder();
+            b.append('\t'); //NOI18N
+            b.append(parsedDeclaration);
+            if (!parsedDeclaration.endsWith(";")) { //NOI18N
+                b.append(';'); //NOI18N
+            }
+            lines.add(b.toString());
+        }
+    }
 }

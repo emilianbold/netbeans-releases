@@ -73,6 +73,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.MylynUtils;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -406,16 +407,8 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
-    public void setAuthentication(String user, String password, String httpUser, String httpPassword) {
-        String shortLoginEnabled = taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN);
-        setTaskRepository(
-                name,
-                taskRepository.getUrl(),
-                user != null ? user : "",                                       // NOI18N
-                password != null ? password : "",                               // NOI18N
-                httpUser != null ? httpUser : "",                               // NOI18N
-                httpPassword != null ? httpPassword : "",                       // NOI18N
-                "true".equals(shortLoginEnabled));                              // NOI18N
+    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
     }
 
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
@@ -430,20 +423,13 @@ public class BugzillaRepository extends Repository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
-        TaskRepository repository = new TaskRepository(Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        
-        if(httpUser != null || httpPassword != null) {
-            httpUser = httpUser != null ? httpUser : "";                        // NOI18N
-            httpPassword = httpPassword != null ? httpPassword : "";            // NOI18N
-            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
-            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-        }
+        TaskRepository repository = MylynUtils.createTaskRepository(
+                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(),
+                name,
+                url,
+                user, password,
+                httpUser, httpPassword);
         repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
-
-        // XXX need proxy settings from the IDE
-        
         return repository;
     }
 

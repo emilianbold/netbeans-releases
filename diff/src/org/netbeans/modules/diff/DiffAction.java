@@ -252,7 +252,13 @@ public class DiffAction extends NodeAction {
             final SingleDiffPanel fsdp = sdp;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp);
+                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp) {
+                        @Override
+                        protected void componentActivated() {
+                            super.componentActivated();
+                            fsdp.requestActive();
+                        }
+                    };
                     dtc.open();
                     dtc.requestActive();
                 }

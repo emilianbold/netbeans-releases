@@ -66,6 +66,8 @@ public class DeleteCompletionQueryTest extends SelectCompletionQueryTest {
         suite.addTest(new DeleteCompletionQueryTest("deleteSubquery"));
         suite.addTest(new DeleteCompletionQueryTest("deleteSimple"));
         suite.addTest(new DeleteCompletionQueryTest("deleteWhere"));
+
+        suite.addTest(new DeleteCompletionQueryTest("deleteView"));
         return suite;
     }
 }

@@ -46,18 +46,26 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -307,8 +315,7 @@ public class WatchesColumnModels {
                 null);
     }
 
-    static class WatchesTableCellEditor implements TableCellEditor, KeyListener,
-            FocusListener {
+    static class WatchesTableCellEditor implements TableCellEditor, FocusListener {
 
         private JEditorPane editorPane;
         private final List<CellEditorListener> listeners = new ArrayList<CellEditorListener>();
@@ -321,9 +328,18 @@ public class WatchesColumnModels {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             this.value = value;
-            editorPane = new JEditorPane("text/x-java", "");
-            editorPane.addKeyListener(this);
+            editorPane = new WatchesEditorPane("text/x-java", "");
             editorPane.addFocusListener(this);
+            HashSet<KeyStroke> strokes = new HashSet<KeyStroke>();
+            strokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+            strokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+            // Remove control keys:
+            KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+            KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+            InputMap im = editorPane.getInputMap();
+            im.put(enterKs, "none");
+            im.put(escKs, "none");
+
             WatchPanel.setupContext(editorPane, null);
             try {
                 // [TODO] remove reflection after value is instance of Node instead of VisualizerNode
@@ -388,36 +404,6 @@ public class WatchesColumnModels {
         }
 
         @Override
-        public void keyTyped(KeyEvent e) {
-        }
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER && !e.isShiftDown()) {
-                e.consume();
-                synchronized(listeners) {
-                    List<CellEditorListener> list = new ArrayList<CellEditorListener>(listeners);
-                    for (CellEditorListener listener : list) {
-                        listener.editingStopped(new ChangeEvent(this));
-                    }
-                }
-
-            } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                e.consume();
-                synchronized(listeners) {
-                    List<CellEditorListener> list = new ArrayList<CellEditorListener>(listeners);
-                    for (CellEditorListener listener : list) {
-                        listener.editingCanceled(new ChangeEvent(this));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-        }
-
-        @Override
         public void focusGained(FocusEvent e) {
         }
 
@@ -430,7 +416,50 @@ public class WatchesColumnModels {
                 }
             }
         }
+
+        class WatchesEditorPane extends JEditorPane {
+
+            KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+
+            WatchesEditorPane(String type, String text) {
+                super(type, text);
+            }
+
+            @Override
+            protected void processKeyEvent(KeyEvent e) {
+                KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+                if (enter.equals(ks)) {
+                    // Prevent JComponent.processKeyBindings() to be called (it is called from
+                    // JComponent.processKeyEvent() ), notify only registered key listeners
+                    int id = e.getID();
+                    for (KeyListener keyListener : getKeyListeners()) {
+                        switch(id) {
+                          case KeyEvent.KEY_TYPED:
+                              keyListener.keyTyped(e);
+                              break;
+                          case KeyEvent.KEY_PRESSED:
+                              keyListener.keyPressed(e);
+                              break;
+                          case KeyEvent.KEY_RELEASED:
+                              keyListener.keyReleased(e);
+                              break;
+                        }
+                    }
+                    if (!e.isConsumed() && id == KeyEvent.KEY_PRESSED) {
+                        synchronized(listeners) {
+                            List<CellEditorListener> list = new ArrayList<CellEditorListener>(listeners);
+                            for (CellEditorListener listener : list) {
+                                listener.editingStopped(new ChangeEvent(this));
+                            }
+                        }
+                    }
+                    e.consume();
+                } else {
+                    super.processKeyEvent(e);
+                }
+            }
+
+        }
         
     }
-
 }

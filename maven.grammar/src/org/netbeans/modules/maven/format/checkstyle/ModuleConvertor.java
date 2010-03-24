@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -96,10 +97,28 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
         Properties props = new Properties();
         SAXBuilder bldr = new SAXBuilder();
         bldr.setValidation(false);
-        //don't resolve anything across networks.
         bldr.setEntityResolver(new EntityResolver() {
+           @Override
             public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                return null;
+               InputSource is = null;
+               if ("-//Puppy Crawl//DTD Check Configuration 1.0//EN".equals(publicId)) { //NOI18N
+                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_0.xml"));
+               }
+               if ("-//Puppy Crawl//DTD Check Configuration 1.1//EN".equals(publicId)) {//NOI18N
+                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_1.xml"));
+               }
+               if ("-//Puppy Crawl//DTD Check Configuration 1.2//EN".equals(publicId)) {//NOI18N
+                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_2.xml"));
+               }
+               if ("-//Puppy Crawl//DTD Check Configuration 1.3//EN".equals(publicId)) {//NOI18N
+                    is = new InputSource(getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/maven/format/checkstyle/config/configuration_1_3.xml"));
+               }
+               if (is != null) {
+                    is.setPublicId(publicId);
+                    is.setSystemId(systemId);
+               }
+               Logger.getLogger(ModuleConvertor.class.getName()).info("unknown entity publicid=" + publicId + " systemId=" + systemId);
+               return is;
             }
         });
         try {

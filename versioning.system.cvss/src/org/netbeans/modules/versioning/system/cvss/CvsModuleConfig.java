@@ -75,7 +75,6 @@ public class CvsModuleConfig {
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
     public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
-    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -84,6 +83,7 @@ public class CvsModuleConfig {
     private FileCollection excludedFiles;
     
     private Map<String, RootSettings> rootsMap;
+    private String lastCanceledCommitMessage;
 
 
     public CvsModuleConfig() {
@@ -205,12 +205,12 @@ public class CvsModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCommitMessage() {
-        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCommitMessage(String message) {
-        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
     }
 
     private Map<String, RootSettings> getRootsMap() {

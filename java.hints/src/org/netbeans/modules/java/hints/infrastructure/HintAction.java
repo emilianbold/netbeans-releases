@@ -37,6 +37,7 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -44,6 +45,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
@@ -53,7 +56,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         
         TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (!SwingUtilities.isEventDispatchThread()) {
             setEnabled(false);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -105,13 +108,10 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     
     private FileObject getCurrentFile(int[] span) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
-        JTextComponent pane = null;
-
-        //XXX check if inside AWT?
-        if (SwingUtilities.isEventDispatchThread() && (tc instanceof CloneableEditorSupport.Pane)) {
-            pane = ((CloneableEditorSupport.Pane) tc).getEditorPane();
-        }
-
+        Lookup l = tc != null ? tc.getLookup() : null;
+        EditorCookie ec = l != null ? l.lookup(EditorCookie.class) : null;
+        JTextComponent pane = ec != null ? NbDocument.findRecentEditorPane(ec) : null;
+        
         if(pane == null)
             return null;
         if (span != null) {

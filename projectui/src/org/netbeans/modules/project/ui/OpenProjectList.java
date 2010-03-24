@@ -141,7 +141,7 @@ public final class OpenProjectList {
     // number of templates in LRU list
     private static final int NUM_TEMPLATES = 15;
     
-    static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
+    public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static StringBuffer details;
@@ -1345,9 +1345,7 @@ public final class OpenProjectList {
                 }
             }
             else {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "re-add recent project: " + p);
-                }
+                LOGGER.log(Level.FINE, "re-add recent project: {0} @{1}", new Object[] {p, index});
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
                 recentProjects.add( 0, new ProjectReference( p ) );
@@ -1366,9 +1364,7 @@ public final class OpenProjectList {
         public synchronized boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    log(Level.FINE, "remove recent project: " + p);
-                }
+                LOGGER.log(Level.FINE, "remove recent project: {0} @{1}", new Object[] {p, index});
                 recentProjects.remove( index );
                 recentProjectsInfos.remove(index);
                 return true;
@@ -1498,9 +1494,8 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                log(Level.FINE, "recent project list save: " + URLs);
-            }
+            LOGGER.log(Level.FINE, "save recent project list: recentProjects={0} recentProjectsInfos={1} URLs={2}",
+                    new Object[] {recentProjects, recentProjectsInfos, URLs});
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
             int listSize = recentProjectsInfos.size();
             List<String> names = new ArrayList<String>(listSize);
@@ -1534,6 +1529,8 @@ public final class OpenProjectList {
                 URL p2URL = pRef.getURL();
                 if ( pURL.equals( p2URL ) ) {
                     return i;
+                } else {
+                    i++;
                 }
             }
             
@@ -1615,6 +1612,10 @@ public final class OpenProjectList {
             
             public URL getURL() {
                 return projectURL;
+            }
+
+            public @Override String toString() {
+                return projectURL.toString();
             }
             
         }
