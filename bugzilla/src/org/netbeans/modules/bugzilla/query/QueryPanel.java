@@ -734,6 +734,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         tableFieldsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
         tablePanel.setBackground(new java.awt.Color(224, 224, 224));
+        tablePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         tablePanel.setMinimumSize(new java.awt.Dimension(100, 350));
         tablePanel.setLayout(new java.awt.BorderLayout());
 
