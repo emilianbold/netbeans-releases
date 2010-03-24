@@ -349,7 +349,9 @@ public class VariablesModel extends ViewModelSupport
         if ( node instanceof AbstractVariableNode ){
             AbstractVariableNode var = (AbstractVariableNode)node;
             String name = var.getFullName();
-            if ( property.getFullName().equals( name )){
+            final String propertyFullName = property.getFullName();
+            String propertyName = property.getName();
+            if ((propertyFullName != null  && propertyFullName.equals(name)) || propertyName.equals(name)){
                 Collection<ModelEvent> events = new ArrayList<ModelEvent>();
                 var.collectUpdates( this , AbstractModelNode.
                         createVariable( property , var.getParent()), events);
