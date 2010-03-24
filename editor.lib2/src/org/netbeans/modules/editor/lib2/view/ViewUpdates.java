@@ -410,7 +410,7 @@ public final class ViewUpdates implements DocumentListener {
 
     /*private*/ void checkRebuild() {
         synchronized (documentView.getMonitor()) {
-            if (!incomingModification) {
+            if (documentView.isActive() && !incomingModification) {
                 if (isRebuildNecessary()) {
                     int rStartOffset = rebuildStartOffset;
                     int rEndOffset = rebuildEndOffset;
