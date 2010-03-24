@@ -538,9 +538,9 @@ public final class DocumentView extends EditorBoxView
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     // Use rendering hints (antialiasing etc.)
@@ -564,9 +564,8 @@ public final class DocumentView extends EditorBoxView
     {
         synchronized (getMonitor()) {
             checkDocumentLocked();
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
@@ -584,9 +583,9 @@ public final class DocumentView extends EditorBoxView
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     alloc = super.modelToViewChecked(offset, alloc, bias);
@@ -604,9 +603,9 @@ public final class DocumentView extends EditorBoxView
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     int offset = super.viewToModelChecked(x, y, alloc, biasReturn);
