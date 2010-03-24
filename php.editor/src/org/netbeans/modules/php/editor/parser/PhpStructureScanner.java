@@ -215,7 +215,10 @@ public class PhpStructureScanner implements StructureScanner {
                 if (scope instanceof TypeScope) {
                     getRanges(folds, FOLD_CLASS).add(offsetRange);
                 } else {
-                    getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    //NamespaceScope excluded until getBlockRange() return proper vaalues
+                    if (scope instanceof FunctionScope || scope instanceof MethodScope /*|| scope instanceof NamespaceScope*/) {
+                        getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+                    } 
                 }
             }
             Source source = info.getSnapshot().getSource();
