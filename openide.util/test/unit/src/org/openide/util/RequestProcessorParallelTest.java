@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.SessionManager;
-import org.w3c.dom.Node;
+package org.openide.util;
 
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author ads
  *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class PropertyGetResponse extends DbgpResponse {
-
-    PropertyGetResponse( Node node ) {
-        super(node);
-    }
-    
-    public Property getProperty(){
-        Node node = getChild( getNode() , Property.PROPERTY );
-        if ( node != null ){
-            return new Property( node );
-        }
-        return null;
+public class RequestProcessorParallelTest extends NbTestCase {
+    public RequestProcessorParallelTest(String s) {
+        super(s);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
-    @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof PropertyGetCommand) ){
-            return;
+    public void testParallelExecutionOnDefaultRequestProcessorReported() {
+        final RequestProcessor rp = RequestProcessor.getDefault();
+        Para p = new Para(rp, 3);
+
+        CharSequence log = Log.enable("org.openide.util.RequestProcessor", Level.WARNING);
+        rp.post(p).waitFinished();
+        if (log.length() == 0) {
+            fail("There shall be a warning about parallel execution");
         }
-        DebugSession currentSession = SessionManager.getInstance().
-            getSession( session.getSessionId() );
-        if ( currentSession == session ){
-         // perform update local view only if response appears in current session
-            PropertyGetCommand propertyCommand = (PropertyGetCommand) command;
-            Property property = getProperty();
-            /*
-             * TODO
-             */
-            if ( property != null  ) {
-                session.getBridge().getVariablesModel().updateProperty( getProperty() );
-                propertyCommand.firePropertyChangeEvent(property.getName(), property);
+    }
+
+    public void testParallelExecutionOnOwnRequestProcessorAllowed() {
+        final RequestProcessor rp = new RequestProcessor("Mine", 32);
+        Para p = new Para(rp, 28);
+
+        CharSequence log = Log.enable("org.openide.util.RequestProcessor", Level.WARNING);
+        rp.post(p).waitFinished();
+        if (log.length() > 0) {
+            fail("There shall be no warnings:\n" + log);
+        }
+    }
+
+    private static final class Para implements Runnable {
+        final RequestProcessor rp;
+        final int cnt;
+
+        public Para(RequestProcessor rp, int cnt) {
+            this.rp = rp;
+            this.cnt = cnt;
+        }
+
+        @Override
+        public void run() {
+            if (cnt > 0) {
+                RequestProcessor.Task t = rp.post(new Para(rp, cnt - 1));
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                t.waitFinished();
             }
         }
     }
-
 }
