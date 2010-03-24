@@ -178,6 +178,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
+        panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -700,6 +701,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onReloadAttributes();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
+        } else if (e.getSource() == panel.findIssuesButton) {
+            onFindIssues();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -1117,6 +1120,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(modifiable) {
             postPopulate(getFilterDefinition(), true);
         }
+    }
+
+    private void onFindIssues() {
+        Query.openNew(repository);
     }
 
     private void onCloneQuery() {
