@@ -86,7 +86,7 @@ public class ViewAction extends ContextAction {
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
         String repository = root.getAbsolutePath();
-        RequestProcessor rp = RequestProcessor.getDefault();
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
         rp.post(new Runnable() {
             public void run() {
                 performView(root);
