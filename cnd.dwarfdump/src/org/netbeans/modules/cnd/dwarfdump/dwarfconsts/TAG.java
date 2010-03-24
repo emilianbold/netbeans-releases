@@ -143,7 +143,7 @@ public enum TAG {
     DW_TAG_hi_user(0xffff);
     
     private final int value;
-    static HashMap<Integer, TAG> hashmap = new HashMap<Integer, TAG>();
+    private static final HashMap<Integer, TAG> hashmap = new HashMap<Integer, TAG>();
  
     static {
         for (TAG elem : values()) {
