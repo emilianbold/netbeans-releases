@@ -412,6 +412,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
                 float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
+                int y = (int)(allocBounds.getY() + underlineOffset + 0.5);
                 int wavePixelCount = (int) allocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
                     int[] waveForm = {0, 0, -1, -1};
@@ -421,7 +422,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                     int waveFormIndex = xInt % 4;
                     for (int i = 0; i < wavePixelCount; i++) {
                         xArray[i] = xInt + i;
-                        yArray[i] = yInt + waveForm[waveFormIndex];
+                        yArray[i] = y + waveForm[waveFormIndex];
                         waveFormIndex = (++waveFormIndex) & 3;
                     }
                     g.drawPolyline(xArray, yArray, wavePixelCount - 1);

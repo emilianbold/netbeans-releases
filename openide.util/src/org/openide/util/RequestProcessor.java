@@ -2032,7 +2032,12 @@ outer:  do {
             }
             if (number[0] >= rp.warnParallel) {
                 final String msg = "Too many " + c.getName() + " in non-private processor. Use own static final RequestProcessor RP = new RequestProcessor(...)!"; // NOI18N
-                logger().log(Level.WARNING, msg, todo.item);
+                Exception ex = null;
+                if (todo.item != null) {
+                    ex = new IllegalStateException(msg);
+                    ex.setStackTrace(todo.item.getStackTrace());
+                }
+                logger().log(Level.WARNING, msg, ex);
             }
         }
 

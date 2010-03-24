@@ -114,6 +114,7 @@ public final class Terminal extends JComponent {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
+    private final TerminalInputOutput tio;	// back pointer
     private final Action[] actions;
     private final String name;
 
@@ -132,6 +133,13 @@ public final class Terminal extends JComponent {
     private boolean closing;
     private boolean closed;
 
+    private boolean visibleInContainer;		// AKA ! weak closed
+
+    // AKA ! stream closed
+    private boolean outConnected;
+    private boolean errConnected;
+    private boolean extConnected;
+
     private class TermOptionsPCL implements PropertyChangeListener {
 	@Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -149,6 +157,7 @@ public final class Terminal extends JComponent {
             // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
+	    setVisibleInContainer(false);
         }
 
 	@Override
@@ -167,11 +176,12 @@ public final class Terminal extends JComponent {
         }
     }
 
-    /* package */ Terminal(IOContainer ioContainer, Action[] actions, String name) {
+    /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, Action[] actions, String name) {
 	if (ioContainer == null)
 	    throw new IllegalArgumentException("ioContainer cannot be null");	// NOI18N
 
         this.ioContainer = ioContainer;
+	this.tio = tio;
         this.actions = (actions == null)? new Action[0]: actions;
 	this.name = name;
 
@@ -219,6 +229,12 @@ public final class Terminal extends JComponent {
         add(term, BorderLayout.CENTER);
 	setFocusable(false);
 	// OLD setActions(actions);
+    }
+
+    void dispose() {
+        termOptions.removePropertyChangeListener(termOptionsPCL);
+	tio.dispose();
+	TerminalIOProvider.dispose(tio);
     }
 
     public IOContainer.CallBacks callBacks() {
@@ -298,7 +314,7 @@ public final class Terminal extends JComponent {
 
     public void setTitle(String title) {
         this.title = title;
-	ioContainer.setTitle(this, title);
+	updateName();
     }
 
     public String getTitle() {
@@ -439,7 +455,6 @@ public final class Terminal extends JComponent {
             return;
 	closed = true;
 	ioContainer.remove(this);
-        termOptions.removePropertyChangeListener(termOptionsPCL);
     }
 
     public void close() {
@@ -460,6 +475,49 @@ public final class Terminal extends JComponent {
 
     public boolean isClosed() {
         return closed;
+    }
+
+    public void setVisibleInContainer(boolean visible) {
+	this.visibleInContainer = visible;
+    }
+
+    public boolean isVisibleInContainer() {
+	return visibleInContainer;
+    }
+
+    public void setOutConnected(boolean outConnected) {
+	boolean wasConnected = isConnected();
+	this.outConnected = outConnected;
+
+	// closing out implies closing err.
+	if (outConnected == false)
+	    this.errConnected = false;
+
+	if (isConnected() != wasConnected)
+	    updateName();
+    }
+
+    public void setErrConnected(boolean errConnected) {
+	boolean wasConnected = isConnected();
+	this.errConnected = errConnected;
+	if (isConnected() != wasConnected)
+	    updateName();
+    }
+
+    public void setExtConnected(boolean extConnected) {
+	boolean wasConnected = isConnected();
+	this.extConnected = extConnected;
+	if (isConnected() != wasConnected)
+	    updateName();
+    }
+
+    public boolean isConnected() {
+	return outConnected || errConnected || extConnected;
+    }
+
+    private void updateName() {
+	Task task = new Task.UpdateName(ioContainer, this);
+	task.dispatch();
     }
 
     private boolean isBooleanStateAction(Action a) {
