@@ -182,6 +182,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args}"/>
             <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
+            <arg line="-J-Xdock:name=${app.name}"/>
         </exec>
         <fail>
 The application is already running within the test user directory.

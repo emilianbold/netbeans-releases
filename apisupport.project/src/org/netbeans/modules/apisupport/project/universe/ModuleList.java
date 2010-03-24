@@ -909,12 +909,15 @@ public final class ModuleList {
             }
             scanJars(dir, ci, nbDestDir, cluster, entries, registerEntry, jars);
         }
-        File configs = new File(new File(cluster, "config"), "Modules");
+        File configs = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File[] xmls = configs.listFiles();
         if (xmls != null) {
             XPathExpression xpe = null;
             for (File xml : xmls) {
                 String n = xml.getName();
+                if (!n.endsWith(".xml")) { // NOI18N
+                    continue;
+                }
                 n = n.substring(0, n.length() - 4).replace('-', '.');
                 if (entries.get(n) != null) {
                     continue;
