@@ -188,7 +188,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private FileCompletionPopup completionPopup;
     
-    private RequestProcessor.Task updateWorkerTask;
+    private UpdateWorker updateWorker;
     
     private boolean useShellFolder = false;
     
@@ -201,7 +201,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
     }
-    private LinkedBlockingDeque<File> updateQueue;
 
     public DirectoryChooserUI(JFileChooser filechooser) {
         super(filechooser);
@@ -1096,24 +1095,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         if (curDir == null) {
             curDir = fc.getFileSystemView().getRoots()[0];
         }
-        updateTree(curDir);
+        updateWorker.updateTree(curDir);
     }
 
     private void initUpdateWorker () {
-        updateQueue = new LinkedBlockingDeque<File>();
-        UpdateWorker updateWorker = new UpdateWorker();
-        updateWorkerTask = RequestProcessor.getDefault().post(updateWorker);
+        updateWorker = new UpdateWorker();
+        RequestProcessor.getDefault().post(updateWorker);
         fileChooser.addActionListener(updateWorker);
     }
     
-    private void updateTree(final File file) {
-        try {
-            updateQueue.put(file);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
     private void markStartTime () {
         if (fileChooser.getClientProperty(DelegatingChooserUI.START_TIME) == null) {
             fileChooser.putClientProperty(DelegatingChooserUI.START_TIME,
@@ -1344,7 +1334,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             directoryComboBoxModel.addItem(currentDirectory);
             newFolderAction.setEnabled(currentDirectory.canWrite());
             getChangeToParentDirectoryAction().setEnabled(!fsv.isRoot(currentDirectory));
-            updateTree(currentDirectory);
+            updateWorker.updateTree(currentDirectory);
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
                 if (fsv.isFileSystem(currentDirectory)) {
                     setFileName(getStringOfFileName(currentDirectory));
@@ -2471,6 +2461,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private class UpdateWorker implements Runnable, ActionListener {
         private String lastUpdatePathName = null;
         private boolean workerShouldStop = false;
+        private LinkedBlockingDeque<File> updateQueue = new LinkedBlockingDeque<File>();
+
+        public void updateTree(final File file) {
+            try {
+                updateQueue.put(file);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         @Override
         public void run() {
@@ -2481,12 +2480,16 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     file = updateQueue.take();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
+                    restoreCursor();
                     continue;
                 }
                 if (workerShouldStop) {
+                    // restoreCursor maybe redundant here
+                    restoreCursor();
                     return;
                 }
                 if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
+                    restoreCursor();
                     continue;
                 }
                 lastUpdatePathName = file.getPath();
@@ -2502,10 +2505,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         model = new DirectoryTreeModel(node);
                         tree.setModel(model);
                         tree.repaint();
-                        if (updateQueue.isEmpty()) {
-                            setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
-                        }
                         checkUpdate();
+                        restoreCursor();
                     }
                 });
             }
@@ -2519,6 +2520,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 updateQueue.put(new File("dummy")); //NOI18N
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private void restoreCursor () {
+            if (updateQueue.isEmpty()) {
+                setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
             }
         }
 
