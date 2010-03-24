@@ -94,9 +94,12 @@ import org.netbeans.spi.diff.DiffControllerImpl;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
 
 /**
@@ -165,6 +168,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     
     private Document baseDocument;
     private Document modifiedDocument;
+    private Boolean skipFile;
     
     /**
      * The right pane is editable IFF editableCookie is not null.
@@ -950,24 +954,26 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         Document sdoc = getSourceDocument(ss);
         baseDocument = sdoc;
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (jEditorPane1.getEditorPane().getUI() instanceof BaseTextUI) {
-            if (sdoc == null) {
-                Reader r = ss.createReader();
-                if (r != null) {
-                    firstSourceAvailable = true;
-                    try {
-                        kit.read(r, doc, 0);
-                    } catch (javax.swing.text.BadLocationException e) {
-                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                    } finally {
-                        r.close();
+        if (!Boolean.TRUE.equals(skipFile)) {
+            if (jEditorPane1.getEditorPane().getUI() instanceof BaseTextUI) {
+                if (sdoc == null) {
+                    Reader r = ss.createReader();
+                    if (r != null) {
+                        firstSourceAvailable = true;
+                        try {
+                            kit.read(r, doc, 0);
+                        } catch (javax.swing.text.BadLocationException e) {
+                            throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                        } finally {
+                            r.close();
+                        }
                     }
+                } else {
+                    firstSourceAvailable = true;
                 }
             } else {
-                firstSourceAvailable = true;
+                firstSourceUnsupportedTextUI = true;
             }
-        } else {
-            firstSourceUnsupportedTextUI = true;
         }
         jEditorPane1.initActions();        
         jEditorPane1.getEditorPane().setDocument(doc);
@@ -983,7 +989,23 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (dao.getPrimaryFile() == fo) {
                     EditorCookie ec = dao.getCookie(EditorCookie.class);
                     if (ec != null) {
-                        sdoc = ec.openDocument();
+                        try {
+                            sdoc = ec.openDocument();
+                        } catch (UserQuestionException ex) {
+                            boolean open = !Boolean.TRUE.equals(skipFile);
+                            if (skipFile == null) {
+                                NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                                    NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.ConfirmOpenningTitle"), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION); //NOI18N
+                                open = DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
+                            }
+                            if (open) {
+                                ex.confirmed();
+                                sdoc = ec.openDocument();
+                            } else {
+                                sdoc = null;
+                                this.skipFile = true;
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -1031,24 +1053,26 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (jEditorPane2.getEditorPane().getUI() instanceof BaseTextUI) {
-            if (sdoc == null) {
-                Reader r = ss.createReader();
-                if (r != null) {
-                    secondSourceAvailable = true;
-                    try {
-                        kit.read(r, doc, 0);
-                    } catch (javax.swing.text.BadLocationException e) {
-                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                    } finally {
-                        r.close();
+        if (sdoc != null || !Boolean.TRUE.equals(skipFile)) {
+            if (jEditorPane2.getEditorPane().getUI() instanceof BaseTextUI) {
+                if (sdoc == null) {
+                    Reader r = ss.createReader();
+                    if (r != null) {
+                        secondSourceAvailable = true;
+                        try {
+                            kit.read(r, doc, 0);
+                        } catch (javax.swing.text.BadLocationException e) {
+                            throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                        } finally {
+                            r.close();
+                        }
                     }
+                } else {
+                    secondSourceAvailable = true;
                 }
             } else {
-                secondSourceAvailable = true;
+                secondSourceUnsupportedTextUI = true;
             }
-        } else {
-            secondSourceUnsupportedTextUI = true;
         }
         jEditorPane2.initActions();
         view.putClientProperty(UndoRedo.class, editorUndoRedo);
