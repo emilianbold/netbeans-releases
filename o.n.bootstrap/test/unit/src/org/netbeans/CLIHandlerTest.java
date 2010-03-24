@@ -58,7 +58,7 @@ public class CLIHandlerTest extends NbTestCase {
     private static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
     
     private Logger LOG;
-    
+
     public CLIHandlerTest(String name) {
         super(name);
     }
@@ -633,23 +633,27 @@ public class CLIHandlerTest extends NbTestCase {
         
         class H extends CLIHandler {
             private byte[] arr;
+            Exception error;
             
             public H() {
                 super(WHEN_INIT);
             }
             
+            @Override
             protected int cli(Args args) {
                 try {
                     InputStream is = args.getInputStream();
                     arr = new byte[8];
                     assertEquals("Read amount is the maximum of template", template.length, is.read(arr));
+                    assertEquals("EOF", -1, is.read());
                     is.close();
-                } catch (IOException ex) {
-                    fail("There is an exception: " + ex);
+                } catch (Exception ex) {
+                    error = ex;
                 }
                 return 0;
             }
             
+            @Override
             protected void usage(PrintWriter w) {}
         }
         H h1 = new H();
@@ -666,6 +670,9 @@ public class CLIHandlerTest extends NbTestCase {
             assertEquals("Attempt " + i + ": " + "4th is same", template[3], h1.arr[3]);
             
             h1.arr = null;
+        }
+        if (h1.error != null) {
+            throw h1.error;
         }
     }
     
