@@ -145,17 +145,18 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             retval = new HashSet<TypeScope>();
             for (String typeName : types.split("\\|")) {//NOI18N
                 if (typeName.trim().length() > 0) {
-                    if (resolve && typeName.contains("@")) {//NOI18N
-                        try {
-                            recursionDetection.add(typeName);
-                            if (recursionDetection.size() < 30) {
+                    try {
+                        recursionDetection.add(typeName);
+                        if (recursionDetection.size() < 30) {
+                            if (resolve && typeName.contains("@")) {//NOI18N
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+
+                            } else {
+                                retval.addAll(CachingSupport.getTypes(typeName, this));
                             }
-                        } finally {
-                            recursionDetection.remove(typeName);
                         }
-                    } else {
-                        retval.addAll(CachingSupport.getTypes(typeName, this));
+                    } finally {
+                        recursionDetection.remove(typeName);
                     }
                 }
             }

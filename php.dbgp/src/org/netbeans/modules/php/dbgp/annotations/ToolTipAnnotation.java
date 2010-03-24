@@ -42,7 +42,6 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,9 +61,10 @@ import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.EvalCommand;
 import org.netbeans.modules.php.dbgp.packets.Property;
+import org.netbeans.modules.php.dbgp.packets.PropertyGetCommand;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
@@ -120,11 +120,15 @@ public class ToolTipAnnotation extends Annotation
      */
     @Override
     public void propertyChange( PropertyChangeEvent event ) {
-        if ( event.getSource() instanceof EvalCommand ){
-            Property value = (Property)event.getNewValue();
-            firePropertyChange(PROP_SHORT_DESCRIPTION, null,
-                    getFormattedValue( value ) );
-        }
+        if ((event.getSource() instanceof EvalCommand) ||
+                (event.getSource() instanceof PropertyGetCommand)) {
+            Object newValue = event.getNewValue();
+            if (newValue instanceof Property) {
+                Property value = (Property) event.getNewValue();
+                firePropertyChange(PROP_SHORT_DESCRIPTION, null,
+                        getFormattedValue(value));
+            } 
+        } 
     }
 
     private String getFormattedValue( Property value ) {
@@ -146,7 +150,6 @@ public class ToolTipAnnotation extends Annotation
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
-        final FileObject fileObject = dataObject.getPrimaryFile();
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
@@ -159,14 +162,17 @@ public class ToolTipAnnotation extends Annotation
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
         String selectedText = getSelectedText( ep, offset);
         if ( selectedText != null ){
-            sendEvalCommand( selectedText );
+            if (isPHPIdentifier(selectedText)) {
+                sendPropertyGetCommand(selectedText);
+            } else if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+                sendEvalCommand( selectedText );
+            }
         } else {
             final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;
-            if (identifier != null && isDollarMark(identifier.charAt(0))) {
+            if (identifier != null) {
                 Runnable runnable = new Runnable(){
                     public void run() {
-                        //TODO: should have been changed to PropertCommand
-                        sendEvalCommand(identifier);
+                        sendPropertyGetCommand(identifier);
                     }
                 };
                 RequestProcessor.getDefault().post(runnable);
@@ -218,6 +224,15 @@ public class ToolTipAnnotation extends Annotation
         return isDollarMark(ch) || Character.isJavaIdentifierPart(ch);
     }
 
+    static boolean isPHPIdentifier(String text) {        
+        for (int i = 0; i < text.length(); i++) {
+            if (!isPHPIdentifier(text.charAt(i))) {
+                return false;
+            }            
+        }
+        return text.length() > 0;
+    }
+
     private static boolean isDollarMark(char ch) {
         return ch == '$';//NOI18N
     }
@@ -262,6 +277,16 @@ public class ToolTipAnnotation extends Annotation
         }
         EvalCommand command = new EvalCommand( session.getTransactionId() );
         command.setData( str );
+        command.addPropertyChangeListener( this );
+        session.sendCommandLater(command);
+    }
+    private void sendPropertyGetCommand( String str ){
+        DebugSession session = getSession();
+        if ( session == null ){
+            return;
+        }
+        PropertyGetCommand command = new PropertyGetCommand( session.getTransactionId() );
+        command.setName( str );
         command.addPropertyChangeListener( this );
         session.sendCommandLater(command);
     }
