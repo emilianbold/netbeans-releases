@@ -43,7 +43,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -53,7 +52,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -64,7 +62,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -154,11 +151,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         changedList.setCellRenderer(new ParameterValueCellRenderer());
         tmList.setCellRenderer(new ParameterValueCellRenderer());
 
-        saveErrorLabel.setForeground(ERROR_COLOR);
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"); //NOI18N
-        saveErrorLabel.setIcon( new ImageIcon(img) );
-        saveErrorLabel.setVisible(false);
-
         filterComboBox.setRenderer(new FilterCellRenderer());
 
         bugAssigneeCheckBox.addFocusListener(this);
@@ -185,7 +177,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         peopleTextField.addFocusListener(this);
         priorityList.addFocusListener(this);
         productList.addFocusListener(this);
-        queryNameTextField.addFocusListener(this);
         seenButton.addFocusListener(this);
         refreshCheckBox.addFocusListener(this);
         removeButton.addFocusListener(this);
@@ -239,7 +230,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         changedBlaBlaLabel = new javax.swing.JLabel();
         byPeoplePanel = new javax.swing.JPanel();
         byTextPanel = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
         tableFieldsPanel = new javax.swing.JPanel();
         tableHeaderPanel = new javax.swing.JPanel();
         filterLabel = new javax.swing.JLabel();
@@ -738,42 +728,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         keywordsTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.AccessibleContext.accessibleName")); // NOI18N
         keywordsTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.AccessibleContext.accessibleDescription")); // NOI18N
         keywordsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        jLabel3.setLabelFor(queryNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel3.text")); // NOI18N
-
-        queryNameTextField.setColumns(18);
-
-        org.openide.awt.Mnemonics.setLocalizedText(saveErrorLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveErrorLabel.text")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout savePanelLayout = new org.jdesktop.layout.GroupLayout(savePanel);
-        savePanel.setLayout(savePanelLayout);
-        savePanelLayout.setHorizontalGroup(
-            savePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(savePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(savePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(saveErrorLabel)
-                    .add(savePanelLayout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(queryNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        savePanelLayout.setVerticalGroup(
-            savePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(savePanelLayout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
-                .add(saveErrorLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(savePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(queryNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-        );
-
-        queryNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.queryNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
-
-        savePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.savePanel.AccessibleContext.accessibleDescription")); // NOI18N
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -1327,7 +1281,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JScrollPane issueTypeScrollPane = new HackedScrollPane();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -1359,7 +1312,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel productLabel = new javax.swing.JLabel();
     final javax.swing.JList productList = new javax.swing.JList();
     private javax.swing.JPanel queryHeaderPanel;
-    final javax.swing.JTextField queryNameTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1369,8 +1321,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JList resolutionList = new javax.swing.JList();
     final org.netbeans.modules.bugtracking.util.LinkButton saveButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
-    final javax.swing.JLabel saveErrorLabel = new javax.swing.JLabel();
-    final javax.swing.JPanel savePanel = new javax.swing.JPanel();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
