@@ -5,8 +5,10 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.Action;
 
@@ -34,8 +36,8 @@ import org.openide.windows.OutputWriter;
 
 public final class TerminalIOProvider extends IOProvider {
 
-    private static final Map<String, InputOutput> map =
-	    new HashMap<String, InputOutput>();
+    private static final List<TerminalInputOutput> list =
+	    new ArrayList<TerminalInputOutput>();
 
     @Override
     public String getName() {
@@ -62,18 +64,37 @@ public final class TerminalIOProvider extends IOProvider {
 	                      boolean newIO,
 			      Action[] actions,
 			      IOContainer ioContainer) {
-	InputOutput io = map.get(name);
-	if (io == null || newIO) {
+
+	Set<TerminalInputOutput> candidates = new HashSet<TerminalInputOutput>();
+
+	if (!newIO) {
+	    // find candidates for reuse
+	    for (TerminalInputOutput tio : list) {
+		if (tio.name().equals(name) && !tio.terminal().isConnected())
+		    candidates.add(tio);
+	    }
+	}
+
+	TerminalInputOutput tio = null;
+	if (candidates.isEmpty()) {
+	    // newIO == true || nothing found to reuse
 	    if (ioContainer == null)
 		ioContainer = IOContainer.getDefault();
-	    io = new TerminalInputOutput(name, actions, ioContainer);
-	    map.put(name, io);
+	    tio = new TerminalInputOutput(name, actions, ioContainer);
+	    list.add(tio);
+	} else {
+	    for (TerminalInputOutput candidate : candidates) {
+		if (tio == null)
+		    tio = candidate;
+		else
+		    candidate.closeInputOutput();
+	    }
 	}
-	return io;
+	return tio;
     }
 
     /**
-     * This operation is not supported because standard Netbeans output are
+     * This operation is not supported because standard NetBeans output are
      * is not Term based.
      * @return nothing. Always throws UnsupportedOperationException.
      */
@@ -82,8 +103,8 @@ public final class TerminalIOProvider extends IOProvider {
         throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
-    static void remove(TerminalInputOutput io) {
-	map.remove(io);
+    static void dispose(TerminalInputOutput io) {
+	list.remove(io);
     }
 
 }

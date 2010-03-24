@@ -398,10 +398,26 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     private void updateWindowName(String title) {
 	if (owner == null)
 	    return;
-	if (title == null)
-	    owner.setName(originalName);
-	else
-	    owner.setName(originalName + " - " + title);	// NOI18N
+
+	if (title == null) {
+	    // sole or no component
+	    owner.setDisplayName(originalName);
+	    owner.setToolTipText(originalName);
+	    owner.setHtmlDisplayName(null);
+
+	} else {
+	    String composite  = originalName + " - ";	// NOI18N
+	    if (title.contains("<html>")) {		// NOI18N
+		// pull the "<html>" to the beginning of the string
+		title.replace("<html>", "");		// NOI18N
+		composite = "<html> " + composite + title;// NOI18N
+		owner.setHtmlDisplayName(composite);
+	    } else {
+		owner.setDisplayName(composite);
+		owner.setHtmlDisplayName(null);
+	    }
+	    owner.setToolTipText(composite);
+	}
     }
 
     @Override

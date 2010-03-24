@@ -95,15 +95,17 @@ Not sure if it refers to weak or strong closing.
 Not sure what determines the value ... there's no setter.
 Existing implementation always returns true.
 
+
+
 state		to set true		to set false	predicate
 ------------------------------------------------------------------------
-weak close	IOContainer.remove()    select() [1]    IO.isClosed()
+weak close	IOContainer.remove()    select() [1][6]	IO.isClosed()
 		Close menu action	IOVisibility.setVisible(false)
 		Close tab action
 		IOVisibility.setVisible(true)
 
 stream close[4]	OutputWriter.close() [5]
-					OutputWriter.reset()
+					OutputWriter.reset() [7]
 							<none>
 
 strong close    IO.closeInputOutput() [2]
@@ -126,3 +128,12 @@ strong close    IO.closeInputOutput() [2]
     OutputWriter.close() and internal streamClosed().
 
 [5] A stream closed IO is recoverable using reuseable getIO.
+
+[6] select() does two things. Put an IO back into an IOContainer and 
+    make the TC containing the container be visible.
+    getIO() variations don't _exactly_ do select(). They do put 
+    the IO into it's container but don't bring up the containing TC if
+    it's not visible.
+
+[7] A reset() by itself is not enough to move the stream state to open.
+    One apparently has to actually write to the stream to reopen it.

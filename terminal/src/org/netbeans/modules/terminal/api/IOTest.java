@@ -43,36 +43,34 @@ import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
- * Capability of an InputOutput which controls whether it is visible
- * as a tab or not.
- * setVisible(true) is equivalent to select().
- * setVisible(false) is equivalent to X'ing the tab or Closing from
- * the context menu. setVisible() may fail silently if the IO is not
- * closable. (See IOContainer.isClosable()).
+ * Access to internal state for testing purposes so that unit tests can
+ * become generic.
  * @author ivan
  */
-public abstract class IOVisibility {
+public abstract class IOTest {
 
-    private static IOVisibility find(InputOutput io) {
+    private static IOTest find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOVisibility.class);
+            return p.getLookup().lookup(IOTest.class);
         }
         return null;
     }
 
     /**
-     * Control the visibility of this I/O.
-     * setVisible(true) is equivalent to select().
-     * setVisible(false) is equivalent to X'ing the tab or Closing from
-     * the context menu. setVisible() may fail silently if the IO is not
-     * closable. (See IOContainer.isClosable()).
-     * @param visible
+     * An IO is "stream connected" if any of getOut(), getErr() or
+     * IOTerm.connect() are called.
+     * It is "stream closed" after all of getIn().close(), getErr().close() and
+     * IOTerm.disconnect() are closed.
+     * @param io
+     * @return
      */
-    public static void setVisible(InputOutput io, boolean visible) {
-	IOVisibility iov = find(io);
-	if (iov != null)
-	    iov.setVisible(visible);
+    public static boolean isStreamConnected(InputOutput io) {
+	IOTest iot = find(io);
+	if (iot != null)
+	    return iot.isStreamConnected();
+	else
+	    return false;
     }
 
     /**
@@ -84,5 +82,5 @@ public abstract class IOVisibility {
         return find(io) != null;
     }
 
-    abstract protected void setVisible(boolean visible);
+    abstract protected boolean isStreamConnected();
 }

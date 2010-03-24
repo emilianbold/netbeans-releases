@@ -40,6 +40,7 @@
 package org.netbeans.modules.terminal;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,6 +48,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOTest;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.Exceptions;
@@ -61,11 +64,15 @@ import org.openide.windows.InputOutput;
 public class FirstTest extends NbTestCase {
 
     private JFrame frame;
-    // OLD private TerminalContainer tc;
     private JComponent actualContainer;
     private IOContainer ioContainer;
     private IOProvider ioProvider;
     private InputOutput io;
+
+    boolean defaultContainer = false;
+    // LATER: my IOContainer doesn't do well with output2 IOProvider
+    boolean defaultProvider = false;
+
 
     public FirstTest(String testName) {
 	super(testName);
@@ -82,8 +89,6 @@ public class FirstTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
 	System.out.printf("setUp()\n");
-
-	boolean defaultContainer = false;
 
 	if (defaultContainer) {
 	    ioContainer = IOContainer.getDefault();
@@ -107,9 +112,7 @@ public class FirstTest extends NbTestCase {
 	    }
 	});
 
-	// LATER: my IOContainer doesn't do well with output2 IOProvider
-	boolean useDefault = false;
-	if (useDefault) {
+	if (defaultProvider) {
 	    ioProvider = IOProvider.getDefault();
 	    assertNotNull ("Could not find IOProvider", ioProvider);
 	} else {
@@ -125,24 +128,20 @@ public class FirstTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
 	System.out.printf("tearDown()\n");
+
+	io.closeInputOutput();
+	io = null;
+	ioProvider = null;
+	ioContainer = null;
+	actualContainer = null;
+
         SwingUtilities.invokeAndWait(new Runnable() {
 	    @Override
             public void run() {
-		// SHOULD not have to do this on EDT
-		io.closeInputOutput();
-
-		io = null;
-		ioProvider = null;
-		ioContainer = null;
-		actualContainer = null;
 		frame.dispose();
 		frame = null;
 	    }
 	});
-    }
-
-    public void testNull() {
-	System.out.printf("testNull()\n");
     }
 
     public void testHello() {
@@ -153,8 +152,140 @@ public class FirstTest extends NbTestCase {
 	sleep(4);
     }
 
-    public void testMultiple() {
-	System.out.printf("testHello()\n");
+    public void testStreamClose() {
+	// getIO(String, boolean newIO=false) reuses an IO
+	// that is not stream-open (i.e. streams never started
+	// or all closed.
+	System.out.printf("testStreamClose()\n");
+
+	InputOutput io1 = ioProvider.getIO("io1", null, ioContainer);
+
+	InputOutput io2;
+	InputOutput io3;
+
+	// until we open any streams reusing getIO should find it
+	io2 = ioProvider.getIO("io1", false);
+	assertTrue("reusing getIO() didn't find unopened IO", io2 == io1);
+
+	// after opening an io stream reusing getIO should create a new one.
+	io1.select();		// so we can check the output
+	io1.getOut().println("Hello to io1\r");
+	sleep(4);
+	io2 = ioProvider.getIO("io1", false);
+	if (defaultProvider) {
+	    // doesn't work as advertised
+	    // the following will appear in "io1".
+	    io2.getOut().println("Hello to io2\r");
+	} else {
+	    assertFalse("reusing getIO() found opened IO", io2 == io1);
+	    // This will appear in a separate window, IOContainer.default().
+	    // See BZ #182538().
+	    // See BZ #
+	    io2.select();
+	    io2.getOut().println("Hello to io2\r");
+	}
+	sleep(2);
+
+	// after closing io stream reusing getIO should find it
+	io1.getOut().close();
+	io3 = ioProvider.getIO("io1", false);
+	assertTrue("reusing getIO() didn't find stream closed IO", io3 == io1);
+
+	// at this point io1 and io3 point to the same io.
+
+	// but we can't write to it because we've closed it
+	io1.select();		// so we can check the output
+	io1.getOut().println("Should not appear\r");
+	sleep(3);
+
+	// until we reset it
+	try {
+	    io1.getOut().reset();
+	} catch (IOException ex) {
+	    Exceptions.printStackTrace(ex);
+	    fail("reset() failed");
+	}
+	io1.select();		// so we can check the output
+	io1.getOut().println("Hello to io1 after reset\r");
+	sleep(4);
+    }
+
+    public void testMultiStreamClose() {
+	// One of getOut() or getErr() or IOTerm.connect()
+	// will mark the stream as open.
+	// Both getOut() and getErr() must be closed and
+	// IOTerm must be disconnecetd for stream to be
+	// considered closed.
+	if (defaultProvider) {
+	    System.out.printf("Skipped\n");
+	    return;
+	}
+
+	// just with out
+	assertTrue("IO not initially stream-closed",
+		   ! IOTest.isStreamConnected(io));
+	io.getOut().println("Hello to io1\r");
+	assertTrue("IO still stream-closed after getOut()",
+		   IOTest.isStreamConnected(io));
+	io.getOut().close();
+	sleep(1);
+	assertTrue("IO not stream-closed after out close",
+		   ! IOTest.isStreamConnected(io));
+
+	// just with err
+
+	// LATER
+	// VV's fix for missing getErr() uses IOColorLines to
+	// implement println() and IOColorLines uses getOut() !
+	// io.getErr().println("Hello to io1\r");
+	io.getErr();
+	assertTrue("IO still stream-closed after getErr()",
+		   IOTest.isStreamConnected(io));
+	io.getErr().close();
+	sleep(1);
+	assertTrue("IO not stream-closed after err close",
+		   ! IOTest.isStreamConnected(io));
+
+	// using connect
+	if (IOTerm.isSupported(io)) {
+	    // just with IOTerm.connect()
+	    IOTerm.connect(io, null, null, null);
+	    assertTrue("IO still stream-closed after connect()",
+		       IOTest.isStreamConnected(io));
+	    IOTerm.disconnect(io, null);
+	    sleep(1);
+	    assertTrue("IO not stream-closed after disconnect",
+		       ! IOTest.isStreamConnected(io));
+	}
+
+
+	// using all three
+	assertTrue("IO should be stream-closed before \"all three\" test",
+		   ! IOTest.isStreamConnected(io));
+	io.getOut().println("Hello to io1\r");
+	io.getErr();		// see above for why no print
+	if (IOTerm.isSupported(io))
+	    IOTerm.connect(io, null, null, null);
+	assertTrue("IO should be stream-open after all 3 streams are open",
+		   IOTest.isStreamConnected(io));
+
+	if (IOTerm.isSupported(io))
+	    IOTerm.disconnect(io, null);
+	assertTrue("IO should still be stream-open after disconnect",
+		   IOTest.isStreamConnected(io));
+	io.getErr().close();
+	assertTrue("IO should still be stream-open after closing err",
+		   IOTest.isStreamConnected(io));
+	io.getOut().close();
+	assertTrue("IO should be stream-closed after closing out",
+		   ! IOTest.isStreamConnected(io));
+    }
+
+    public void testWeakClose() {
+	// weak closing removes IO from container
+	// select() reinstalls it.
+
+	System.out.printf("testWeakClose()\n");
 	InputOutput ios[] = new InputOutput[4];
 	ios[0] = io;
 	sleep(1);
@@ -174,7 +305,7 @@ public class FirstTest extends NbTestCase {
 	sleep(1);
 	IOVisibility.setVisible(ios[1], false);
 	// LATER ... who knows what wil happen:
-	// IOVisibility.setVisible(ios[0], false);
+	// IOTest.setVisible(ios[0], false);
 
 	sleep(4);
 

@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import java.io.CharConversionException;
+
 import javax.swing.SwingUtilities;
+
 import org.openide.windows.IOContainer;
+import org.openide.xml.XMLUtil;
 
 /**
  * Perform a Task on the EDT.
@@ -130,4 +134,39 @@ import org.openide.windows.IOContainer;
 	}
     }
 
+    static class StrongClose extends Task {
+
+	public StrongClose(IOContainer container, Terminal terminal) {
+	    super(container, terminal);
+	}
+
+	@Override
+	public void perform() {
+	    terminal().close();
+	    terminal().dispose();
+	}
+    }
+
+    static class UpdateName extends Task {
+
+	public UpdateName(IOContainer container, Terminal terminal) {
+	    super(container, terminal);
+	}
+
+	@Override
+	public void perform() {
+	    String newTitle = terminal().getTitle();
+	    if (terminal().isConnected()) {
+		String escaped;
+		try {
+		    escaped = XMLUtil.toAttributeValue(newTitle);
+		} catch (CharConversionException ex) {
+		    escaped = newTitle;
+		}
+
+		newTitle = "<html><b>" + escaped + "</b></html>";	// NOI18N
+	    }
+	    container().setTitle(terminal(), newTitle);
+	}
+    }
 }

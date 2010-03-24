@@ -44,6 +44,7 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOTest;
 import org.netbeans.modules.terminal.api.IOVisibility;
 
 /**
@@ -81,6 +82,7 @@ import org.netbeans.modules.terminal.api.IOVisibility;
 public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private final IOContainer ioContainer;
+    private final String name;
 
     private final Terminal terminal;
     private final StreamTerm term;
@@ -98,7 +100,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOEmulation(),
 						new MyIOTerm(),
                                                 new MyIOTab(),
-						new MyIOVisibility()
+						new MyIOVisibility(),
+						new MyIOTest()
                                                 );
 
 
@@ -365,6 +368,14 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	}
     }
 
+    private class MyIOTest extends IOTest {
+
+	@Override
+	protected boolean isStreamConnected() {
+	    return terminal.isConnected();
+	}
+    }
+
     private class MyIOTerm extends IOTerm {
 
 	@Override
@@ -375,11 +386,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
 	    term.connect(pin, pout, perr);
+	    terminal.setExtConnected(true);
 	}
 
 	@Override
 	protected void disconnect(Runnable continuation) {
 	    term.disconnect(continuation);
+	    terminal.setExtConnected(false);
 	}
     }
 
@@ -400,8 +413,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      * Delegate prints and writes to a Term via TermWriter.
      */
     private class TermOutputWriter extends OutputWriter {
-        TermOutputWriter() {
+	private final Terminal owner;
+
+        TermOutputWriter(Terminal owner) {
             super(term.getOut());
+	    this.owner = owner;
         }
 
         @Override
@@ -418,15 +434,24 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         public void reset() throws IOException {
             term.clearHistory();
         }
+
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setOutConnected(false);
+	}
     }
 
     /**
      * Delegate prints and writes to a Term via TermWriter.
      */
     private final class TermErrWriter extends OutputWriter {
+	private final Terminal owner;
 
-	TermErrWriter() {
+	TermErrWriter(Terminal owner) {
 	    super(term.getOut());
+	    this.owner = owner;
 	}
 
 	@Override
@@ -449,6 +474,12 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	    // no-op
 	}
 
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setErrConnected(false);
+	}
     }
 
     private static class TerminalOutputEvent extends OutputEvent {
@@ -466,9 +497,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
 
     TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
+	this.name = name;
         this.ioContainer = ioContainer;
 
-        terminal = new Terminal(ioContainer, actions, name);
+        terminal = new Terminal(ioContainer, this, actions, name);
 
 	Task task = new Task.Add(ioContainer, terminal);
 	task.dispatch();
@@ -507,19 +539,39 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         colorMap.put(Color.white, 37);
     }
 
+    void dispose() {
+	if (outputWriter != null) {
+	    // LATER outputWriter.dispose();
+	    outputWriter = null;
+	}
+	// LATER getIn().eof();
+	// LATER focusTaken = null;
+    }
+
+
     public StreamTerm term() {
         return term;
     }
 
+    Terminal terminal() {
+        return terminal;
+    }
+
+    String name() {
+	return name;
+    }
+
+
     /**
-     * Stream to write to stuff being output by the proceess destined for the
+     * Stream to write to stuff being output by the process destined for the
      * terminal.
      * @return the writer.
      */
     @Override
     public OutputWriter getOut() {
         if (outputWriter == null)
-            outputWriter = new TermOutputWriter();
+            outputWriter = new TermOutputWriter(terminal);
+	terminal.setOutConnected(true);
         return outputWriter;
     }
 
@@ -549,15 +601,18 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     public OutputWriter getErr() {
 	// workaround for #182063: -  UnsupportedOperationException
 	if (errWriter == null) {
-	    errWriter = new TermErrWriter();
+	    errWriter = new TermErrWriter(terminal);
 	}
+	terminal.setErrConnected(true);
 	return errWriter;
     }
 
     @Override
     public void closeInputOutput() {
-        terminal.close();
-	TerminalIOProvider.remove(this);
+	if (outputWriter != null)
+	    outputWriter.close();
+	Task task = new Task.StrongClose(ioContainer, terminal);
+	task.dispatch();
     }
 
     @Override

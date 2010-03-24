@@ -184,6 +184,7 @@ public final class TerminalIOProviderSupport {
 				System.out.printf("Disconnected.\n");
 				String exitMsg = String.format("Exited with %d", exitValue);
 				tprintln(exitMsg);
+				io.getOut().close();
 				setState(ExecutionSupport.State.EXITED);
 			    }
 			});
