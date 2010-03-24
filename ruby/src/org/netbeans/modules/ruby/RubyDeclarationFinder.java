@@ -1164,7 +1164,7 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             if (!type.isKnown()) {
                 methods.addAll(index.getMethods(name, QuerySupport.Kind.EXACT));
             } else {
-                methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
+                methods.addAll(index.getMethods(name, type.getRealTypes(), QuerySupport.Kind.EXACT));
             }
             if (methods.size() == 0 && type.isKnown()) {
                 methods = index.getMethods(name, QuerySupport.Kind.EXACT);

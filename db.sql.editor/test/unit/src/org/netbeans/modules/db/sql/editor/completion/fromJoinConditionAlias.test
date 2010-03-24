@@ -8,3 +8,5 @@ select * from invoice inv inner join customer on inv.|
       customer_id
     customer
       customer_id
+    summary[view]
+      summary_id

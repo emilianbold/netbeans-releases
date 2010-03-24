@@ -323,6 +323,7 @@ is divided into following sections:
                     <property name="javac.fork" value="false"/>
                 </xsl:if>
                 <property name="jar.index" value="false"/>
+                <available file="${{meta.inf.dir}}/persistence.xml" property="has.persistence.xml"/>
             </target>
 
             <target name="-post-init">
@@ -1046,7 +1047,7 @@ is divided into following sections:
                 </j2seproject3:depend>
             </target>
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac gensrcdir="${{build.generated.sources.dir}}"/>
                 <copy todir="${{build.classes.dir}}">
@@ -1055,6 +1056,13 @@ is divided into following sections:
                         <!-- XXX should perhaps use ${includes} and ${excludes} -->
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
+                </copy>
+            </target>
+
+            <target name="-copy-persistence-xml" if="has.persistence.xml"><!-- see eclipselink issue https://bugs.eclipse.org/bugs/show_bug.cgi?id=302450, need to copy persistence.xml before build -->
+                <mkdir dir="${{build.classes.dir}}/META-INF"/>
+                <copy todir="${{build.classes.dir}}/META-INF">
+                    <fileset dir="${{meta.inf.dir}}" includes="persistence.xml"/>
                 </copy>
             </target>
             

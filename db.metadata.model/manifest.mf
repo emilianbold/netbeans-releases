@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.db.metadata.model/0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/metadata/model/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.7
+OpenIDE-Module-Specification-Version: 0.8
 AutoUpdate-Show-In-Client: false

@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -105,47 +106,26 @@ public class MakeProjectGenerator {
         return projectName;
     }
 
-    public static MakeProject createBlankProject(boolean open) throws IOException {
-        String projectFolder = getDefaultProjectFolder();
-        String projectName = getValidProjectName(projectFolder);
-        String baseDir = projectFolder + File.separator + projectName;
-        MakeConfiguration conf = new MakeConfiguration(baseDir, java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/Bundle").getString("DefaultProjectName"), MakeConfiguration.TYPE_MAKEFILE); // FIXUP
-        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, new MakeConfiguration[]{conf}, open);
-    }
-
-    public static MakeProject createBlankProject(String projectName, String projectFolder, boolean open) throws IOException {
-        return createBlankProject(projectName, projectFolder, new MakeConfiguration[0], open);
-    }
-
-    public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, boolean open) throws IOException {
-        return createBlankProject(projectName, makefileName, projectFolder, new MakeConfiguration[0], open);
-    }
-
-    public static MakeProject createBlankProject(String projectName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        return createBlankProject(projectName, MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME, projectFolder, confs, open);
-    }
-
-    public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        File projectNameFile = new File(projectFolder, projectName);
-        if (confs == null) {
-            confs = new MakeConfiguration[0];
-        }
+    public static MakeProject createBlankProject(ProjectParameters prjParams) throws IOException {
+        MakeConfiguration[] confs = prjParams.getConfigurations();
+        File projectFolder = prjParams.getProjectFolder();
 
         // work in a copy of confs
         MakeConfiguration[] copyConfs = new MakeConfiguration[confs.length];
         for (int i = 0; i < confs.length; i++) {
             copyConfs[i] = (MakeConfiguration) confs[i].clone();
-            copyConfs[i].setBaseDir(projectNameFile.getPath());
+            copyConfs[i].setBaseDir(projectFolder.getPath());
             RunProfile profile = (RunProfile) copyConfs[i].getAuxObject(RunProfile.PROFILE_ID);
             profile.setBuildFirst(false);
         }
 
-        FileObject dirFO = createProjectDir(projectNameFile);
-        createProject(dirFO, projectName, makefileName, copyConfs, null, null, null, null, true, null);
+        FileObject dirFO = createProjectDir(projectFolder);
+        prjParams.setConfigurations(copyConfs);
+        createProject(dirFO, prjParams, true);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
-        if (open) {
+        if (prjParams.getOpenFlag()) {
             OpenProjects.getDefault().open(new Project[]{p}, false);
             OpenProjects.getDefault().setMainProject(p);
         }
@@ -160,9 +140,9 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<SourceFolderInfo> testFolders, Iterator<String> importantItems, String mainFile) throws IOException {
-        FileObject dirFO = createProjectDir(dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, sourceFoldersFilter, testFolders, importantItems, false, mainFile); //NOI18N
+    public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
+        FileObject dirFO = createProjectDir(prjParams.getProjectFolder());
+        AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -211,7 +191,15 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final String sourceFoldersFilter, final Iterator<SourceFolderInfo> testFolders, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, ProjectParameters prjParams, boolean saveNow) throws IOException {
+        String name = prjParams.getProjectName();
+        String makefileName = prjParams.getMakefileName();
+        Configuration[] confs = prjParams.getConfigurations();
+        final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
+        final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
+        final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
+        final Iterator<String> importantItems = prjParams.getImportantFiles();
+        String mainFile = prjParams.getMainFile();
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -242,7 +230,7 @@ public class MakeProjectGenerator {
         Project project = projectDescriptor.getProject();
         // create main source file
         final String mainFilePath;
-        if (mainFile != null) {
+        if (mainFile.length() > 0) {
             mainFilePath = createMain(mainFile, dirFO);
         } else {
             mainFilePath = null;

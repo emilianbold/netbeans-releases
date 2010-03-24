@@ -1023,7 +1023,7 @@ public abstract class FileObject extends Object implements Serializable {
 
     interface PriorityFileChangeListener extends FileChangeListener {}
 
-    private class ED extends FileSystem.EventDispatcher {
+    private static class ED extends FileSystem.EventDispatcher {
         private FCLSupport.Op op;
         private Enumeration<FileChangeListener> en;
         final private List<FileChangeListener> fsList;
@@ -1044,11 +1044,8 @@ public abstract class FileObject extends Object implements Serializable {
             }
             ListenerList<FileChangeListener> fsll = (fs != null) ? fs.getFCLSupport().listeners : null;
             ListenerList<FileChangeListener> repll = (fs != null && fs.getRepository() != null) ? fs.getRepository().getFCLSupport().listeners : null;
-            fsList = (fsll != null) ? new ArrayList<FileChangeListener>(fsll.getAllListeners()) :
-                new ArrayList<FileChangeListener>();
-            repList = (repll != null) ? new ArrayList<FileChangeListener>(repll.getAllListeners()) :
-                new ArrayList<FileChangeListener>();
-            
+            fsList = (fsll != null) ? new ArrayList<FileChangeListener>(fsll.getAllListeners()) : Collections.<FileChangeListener>emptyList();
+            repList = (repll != null) ? new ArrayList<FileChangeListener>(repll.getAllListeners()) : Collections.<FileChangeListener>emptyList();
         }
 
         public ED(Enumeration<FileChangeListener> en, FileEvent fe) {

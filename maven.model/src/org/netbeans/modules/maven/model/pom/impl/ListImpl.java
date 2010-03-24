@@ -48,7 +48,7 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  * @author mkleint
  */
 public class ListImpl<T extends POMComponent> extends POMComponentImpl implements ModelList<T> {
-    private POMQName childname;
+    protected POMQName childname;
     private Class<T> clazz;
 
     protected ListImpl(POMModel model, Element element, POMQName childs, Class<T> clazz) {

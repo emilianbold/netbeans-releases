@@ -510,7 +510,7 @@ while [ "$restart" ] ; do
     delete_new_clusters_file
     rm -f "${restart_file}"
     eval ${_NB_PROFILE_CMD} "\"${jdkhome}/bin/java\"" -Djdk.home="\"${jdkhome}\"" -classpath "\"$cp\"" \
-        "$jargs" org.netbeans.Main "$args" '&'
+        "$jargs" org.netbeans.Main "$args" '<&0' '&'
     PID=$!
     trap "kill $PID" EXIT
     wait $PID

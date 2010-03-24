@@ -58,7 +58,12 @@ public class ExtractInlinedStyleRefactoring extends AbstractRefactoring {
         refactorToNewExternalSheet,
     }
 
+    public enum SelectorType {
+        CLASS, ID;
+    }
+
     private Mode mode;
+    private SelectorType selectorType;
     private OffsetRange existingEmbeddedCssSection;
     private FileObject externalSheet;
 
@@ -89,5 +94,13 @@ public class ExtractInlinedStyleRefactoring extends AbstractRefactoring {
     public void setMode(Mode mode) {
         this.mode = mode;
     }
-    
+
+    public SelectorType getSelectorType() {
+        return selectorType;
+    }
+
+    public void setSelectorType(SelectorType selectorType) {
+        this.selectorType = selectorType;
+    }
+
 }

@@ -133,18 +133,18 @@ public class ZipPackager implements PackagerDescriptor {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
                     }
-                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = CndPathUtilitities.getDirName(elem.getTo());
                     String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
@@ -158,7 +158,7 @@ public class ZipPackager implements PackagerDescriptor {
             bw.write("# Generate zip file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("rm -f " + output + "\n"); // NOI18N
-            bw.write("cd ${TMPDIR}\n"); // NOI18N
+            bw.write("cd ${NBTMPDIR}\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " -r " + packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("\n"); // NOI18N

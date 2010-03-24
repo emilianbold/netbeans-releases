@@ -102,9 +102,13 @@ public class Hk2DatasourceManager implements DatasourceManager {
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
-        // TODO -- need to account for remote domain here?
-        return readDatasources(domainXml, "/domain/", null);
+        if (null != domainsDir) {
+            File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
+            // TODO -- need to account for remote domain here?
+            return readDatasources(domainXml, "/domain/", null);
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
 
     /**

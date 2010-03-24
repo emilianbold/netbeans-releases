@@ -57,6 +57,8 @@ public final class IOFeaturesAction implements ActionListener {
 
             io = iop.getIO("TermIOProvider hyperlinks", true);
 
+	    io.select();
+
             // Adds a line discipline so newlines etc work correctly
             TerminalIOProviderSupport.setInternal(io, true);
 

@@ -175,6 +175,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return 9*10+0;
     }
 
+    @Override
     public CsmObject getCsmObject() {
         if (CsmKindUtilities.isCsmObject(object)) {
             return (CsmObject) object;
@@ -198,6 +199,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         fireIconChange();
     }
     
+    @Override
     public int compareTo(CppDeclarationNode o) {
         int res = compareToWithoutOffset(o);
         if (res == 0) {
@@ -331,13 +333,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
-            list.add(RefactoringActionsFactory.renameAction());
-            list.add(RefactoringActionsFactory.whereUsedAction());
-            CsmObject obj = this.getCsmObject();
-            if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {
-                list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
-            } else if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isDestructor(obj)) {
-                list.add(CsmRefactoringActionsFactory.changeParametersAction());
+            if (CsmRefactoringActionsFactory.supportRefactoring(file)) {
+                list.add(RefactoringActionsFactory.renameAction());
+                list.add(RefactoringActionsFactory.whereUsedAction());
+                CsmObject obj = this.getCsmObject();
+                if (CsmKindUtilities.isField(obj) || CsmKindUtilities.isClass(obj)) {
+                    list.add(CsmRefactoringActionsFactory.encapsulateFieldsAction());
+                } else if (CsmKindUtilities.isFunction(obj) && !CsmKindUtilities.isDestructor(obj)) {
+                    list.add(CsmRefactoringActionsFactory.changeParametersAction());
+                }
             }
             list.add(null);
             for (Action a : model.getActions()){

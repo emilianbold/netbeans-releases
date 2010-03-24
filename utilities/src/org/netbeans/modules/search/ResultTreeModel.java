@@ -43,8 +43,6 @@ package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -73,9 +71,6 @@ final class ResultTreeModel implements TreeModel {
     private int selectedObjectsCount;
     /** */
     private List<TreeModelListener> treeModelListeners;
-    /** */
-    private List<MatchingObject> sortedMatchingObjects =
-                                                new ArrayList<MatchingObject>();
     
     /**
      * 
@@ -108,7 +103,7 @@ final class ResultTreeModel implements TreeModel {
             } else {
                 try {
                     //PENDING - threading:
-                    ret = getSortedMatchingObjects().get(index);
+                    ret = resultModel.getMatchingObjects().get(index);
                 } catch (ArrayIndexOutOfBoundsException ex) {
                     assert false;
                     ret = null;
@@ -195,7 +190,7 @@ final class ResultTreeModel implements TreeModel {
         int ret;
         if (parent == getRoot()) {
             ret = (child.getClass() == MatchingObject.class)
-                  ? getSortedMatchingObjects().indexOf(child)
+                  ? resultModel.getMatchingObjects().indexOf(child)
                   : -1;
         } else {
             ret = -1;
@@ -278,10 +273,6 @@ final class ResultTreeModel implements TreeModel {
         UPDATE_NAME_TASK.run();                   //fireRootNodeChanged();
     }
     
-    private List<MatchingObject> getSortedMatchingObjects() {
-        return sortedMatchingObjects;
-    }
-
     /**
      */
     boolean isSelected() {
@@ -307,19 +298,19 @@ final class ResultTreeModel implements TreeModel {
      */
     private final class Task implements Runnable {
         private final MatchingObject foundObject;
-        private final int foundObjectResultModelIndex;
+        private final int foundObjectIndex;
         private Task() {
             this.foundObject = null;
-            this.foundObjectResultModelIndex = -1;
+            this.foundObjectIndex = -1;
         }
         private Task(MatchingObject object) {
             this.foundObject = object;
-            this.foundObjectResultModelIndex = -1;
+            this.foundObjectIndex = -1;
         }
         private Task(MatchingObject foundObject, int foundObjectIndex) {
             assert (foundObject != null) && (foundObjectIndex >= 0);
             this.foundObject = foundObject;
-            this.foundObjectResultModelIndex = foundObjectIndex;
+            this.foundObjectIndex = foundObjectIndex;
         }
         public void run() {
             if (!EventQueue.isDispatchThread()) {
@@ -329,22 +320,9 @@ final class ResultTreeModel implements TreeModel {
             
             assert EventQueue.isDispatchThread();
             if (foundObject != null) {
-                if (foundObjectResultModelIndex != -1) {
-                    getSortedMatchingObjects().add(foundObject);
-                    Collections.sort(getSortedMatchingObjects(), 
-                                     new Comparator<MatchingObject>() {
-
-                       @Override public int compare(MatchingObject o1,
-                                                    MatchingObject o2) {
-                          return o1.getName().compareToIgnoreCase(o2.getName());
-                       }
-
-                    });
-
+                if (foundObjectIndex != -1) {
                     objectsCount++;
-                    fireNodeAdded(
-                            getSortedMatchingObjects().indexOf(foundObject),
-                            foundObject);
+                    fireNodeAdded(foundObjectIndex, foundObject);
                     updateRootNodeSelection(true);
                 } else {
                     /* file became invalid */
@@ -410,17 +388,22 @@ final class ResultTreeModel implements TreeModel {
      */
     private void fireNodeAdded(int index, MatchingObject object) {
         assert EventQueue.isDispatchThread();
+        assert object != null;
+        assert index >= 0;
         
         if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
             return;
         }
         
+//        TreeModelEvent event = new TreeModelEvent(this,
+//                                                  rootPath,
+//                                                  new int[] { index },
+//                                                  new Object[] { object });
         TreeModelEvent event = new TreeModelEvent(this,
-                                                  rootPath,
-                                                  new int[] { index },
-                                                  new Object[] { object });
+                                                  rootPath);
         for (TreeModelListener l : treeModelListeners) {
-            l.treeNodesInserted(event);
+//            l.treeNodesInserted(event);
+            l.treeStructureChanged(event);
         }
     }
     
@@ -497,7 +480,7 @@ final class ResultTreeModel implements TreeModel {
             return;
         }
 
-        final int index = getSortedMatchingObjects().indexOf(matchingObj);
+        final int index = resultModel.getMatchingObjects().indexOf(matchingObj);
         
         /* Notify that the file node itself has changed... */
         TreeModelEvent event = new TreeModelEvent(this,

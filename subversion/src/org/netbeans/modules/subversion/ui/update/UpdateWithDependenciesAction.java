@@ -75,14 +75,19 @@ public class UpdateWithDependenciesAction extends ContextAction {
         return "CTL_MenuItem_UpdateWithDependencies";    // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            if (SvnUtils.isVersionedProject(node) == false) {
-                return false;
+        boolean enabled = !running && super.enable(nodes);
+        if (enabled) {
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (!SvnUtils.isVersionedProject(node, false)) {
+                    enabled = false;
+                    break;
+                }
             }
         }
-        return !running && super.enable(nodes);
+        return enabled;
     }
     
     protected void performContextAction(final Node[] nodes) {
@@ -105,13 +110,16 @@ public class UpdateWithDependenciesAction extends ContextAction {
     private void updateWithDependencies(Node[] nodes) {
         Set<Project> projectsToUpdate = new HashSet<Project>(nodes.length * 2);
         for (Node node : nodes) {
+            if (!SvnUtils.isVersionedProject(node, true)) {
+                continue;
+            }
             Project project =  (Project) node.getLookup().lookup(Project.class);
             projectsToUpdate.add(project);
             SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
             if(deps != null) {
                 Set<? extends Project> children = deps.getSubprojects();
                 for (Project child : children) {
-                    if (SvnUtils.isVersionedProject(child)) {
+                    if (SvnUtils.isVersionedProject(child, true)) {
                         projectsToUpdate.add(child);
                     }
                 }

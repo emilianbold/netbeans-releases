@@ -52,6 +52,8 @@ public interface ServerRecord {
     
     public String getUserName();
 
+    public boolean isRememberPassword();
+
     public String getDisplayName();
 
     /**

@@ -69,12 +69,6 @@ final class ViewBuilder {
 
     private int lastCreatedViewEndOffset;
 
-    /**
-     * End offset of view creation. It may be exceeded if it points to a middle
-     * of a created view.
-     */
-    private int creationEndOffset; // View creation end offset
-
     private final int offsetDelta;
 
     private final Element lineRoot;
@@ -85,9 +79,9 @@ final class ViewBuilder {
 
     private int lineEndOffset;
     
-    private int removedParagraphViewEndOffset;
+    private int paragraphViewEndOffset = Integer.MIN_VALUE;
 
-    private int removedViewEndOffset;
+    private int matchOffset = Integer.MIN_VALUE;
 
     private final FactoryState[] factoryStates;
 
@@ -101,29 +95,87 @@ final class ViewBuilder {
 
     private ViewReplace<ParagraphView,EditorView> pReplace;
 
-    /**
-     * Whether currently replacing inside fReplace.
-     */
-    private boolean fReplaceActive;
+    private boolean viewRemovalFinished;
 
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
 
     /**
      * @param viewFactories should be sorted with increasing priority.
      */
-    ViewBuilder(ViewReplace<DocumentView,ParagraphView> dReplace, ViewReplace<ParagraphView,EditorView> fReplace,
+    ViewBuilder(ParagraphView paragraphView, DocumentView documentView, int paragraphViewIndex,
             EditorViewFactory[] viewFactories, int startOffset, int endOffset, int offsetDelta)
     {
-        Document doc = dReplace.view.getDocument();
-        // Ensure the limit offset is at the end of last paragraph at most since otherwise
-        // the factories might have to do extra checks for offset validity.
-        endOffset = Math.min(endOffset, doc.getLength() + 1);
+        Document doc = documentView.getDocument();
+        if (paragraphView != null) {
+            fReplace = new ViewReplace<ParagraphView, EditorView>(
+                    paragraphView, paragraphView.getViewIndex(startOffset));
+            this.pReplace = fReplace;
+            paragraphViewIndex++; // dReplace will start from next paragraph view
+        }
+        dReplace = new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
+        // Search for the views that need to be removed
+        // Map original offsets to after-insert offsets by using both childView.getLength()
+        // and paragraphView.getLength() which return textual span of views
 
-        this.dReplace = dReplace;
-        this.fReplace = fReplace;
-        this.pReplace = fReplace;
+        if (fReplace != null) {
+            int paragraphViewStartOffset = paragraphView.getStartOffset();
+            assert (paragraphViewStartOffset <= startOffset);
+            EditorView childView = fReplace.childViewAtIndex();
+            startOffset = childView.getStartOffset();
+            assert (paragraphViewStartOffset <= startOffset);
+            paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength()
+                    + offsetDelta; // Updated end offset
+            if (paragraphViewEndOffset >= endOffset) { // Rebuild located inside fReplace's paragraph view
+                matchOffset = startOffset + offsetDelta; // childView's start offset + offsetDelta
+                while (matchOffset < endOffset) {
+                    matchOffset += childView.getLength();
+                    fReplace.removeCount++;
+                    int index = fReplace.removeEndIndex();
+                    if (index < paragraphView.getViewCount()) {
+                        childView = paragraphView.getEditorView(index);
+                    } else {
+                        assert (matchOffset >= endOffset);
+                        break;
+                    }
+                }
+            } else {
+                // Leave matchOffset == -1
+                fReplace.removeTillEnd(); // Remove all remaining child views
+            }
+        }
+        if (matchOffset < endOffset) {
+            int paragraphCount = documentView.getViewCount();
+            int index = dReplace.removeEndIndex();
+            if (index < paragraphCount) {
+                EditorView nextParagraphView = documentView.getEditorView(index);
+                // Use startOffset + getLength() to get proper original length and update by offsetDelta
+                // If paragraphViewEndOffset already initialized only update it since for valid fReplace
+                // the nextParagraphView's startOffset could already be above the modification point.
+                if (paragraphViewEndOffset == Integer.MIN_VALUE) {
+                    paragraphViewEndOffset = nextParagraphView.getStartOffset() + offsetDelta;
+                }
+                paragraphViewEndOffset += nextParagraphView.getLength();
+                dReplace.removeCount++;
+                while (matchOffset < endOffset) {
+                    index = dReplace.removeEndIndex();
+                    if (index >= paragraphCount) {
+                        viewRemovalFinished = true;
+                        matchOffset = doc.getLength() + 1;
+                        break;
+                    }
+                    nextParagraphView = dReplace.view.getEditorView(index);
+                    paragraphViewEndOffset += nextParagraphView.getLength();
+                    matchOffset = paragraphViewEndOffset;
+                    dReplace.removeCount++;
+                }
+            } else {
+                viewRemovalFinished = true;
+                matchOffset = paragraphViewEndOffset = doc.getLength() + 1;
+            }
+        }
+        assert (matchOffset != -1);
+
         this.lastCreatedViewEndOffset = startOffset;
-        this.creationEndOffset = endOffset;
         this.offsetDelta = offsetDelta;
 
         lineRoot = doc.getDefaultRootElement();
@@ -132,26 +184,23 @@ final class ViewBuilder {
         lineStartOffset = line.getStartOffset();
         lineEndOffset = line.getEndOffset();
 
-        if (fReplace != null) { // viewReplace should != null too
-            assert (dReplace.view.getView(dReplace.index - 1) == fReplace.view);
-            // removedViewEndOffset is start of the corresponding view in order to increase localReplace.removeCount
-            this.removedViewEndOffset = fReplace.view.getView(fReplace.index).getStartOffset();
-            this.removedParagraphViewEndOffset = fReplace.view.getEndOffset();
-            fReplaceActive = true;
-        } else { // No inline replace
-            this.removedParagraphViewEndOffset = (dReplace.index > 0)
-                    ? dReplace.view.getView(dReplace.index - 1).getEndOffset()
-                    : 0;
-            this.removedViewEndOffset = removedParagraphViewEndOffset;
-        }
-
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("ViewBuilder: <" + startOffset + "," + endOffset + // NOI18N
-                    ">\ndReplace=" + dReplace + // NOI18N
-                    "fReplace=" + ((fReplace != null) ? fReplace : "<NULL>\n") + // NOI18N
-                    "removedViewEndOffset=" + removedViewEndOffset + // NOI18N
-                    ", lineIndex=" + lineIndex + ", lineStartOffset=" + lineStartOffset + // NOI18N
-                    '\n');
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("ViewBuilder: <").append(startOffset).append(",").append(endOffset); // NOI18N
+            if (matchOffset != endOffset) {
+                sb.append("=>").append(matchOffset); // NOI18N
+            }
+            sb.append(">\nfReplace=");
+            if (fReplace != null) {
+                sb.append(fReplace);
+            } else {
+                sb.append("<NULL>\n");
+            }
+            sb.append("dReplace=").append(dReplace);
+            sb.append("lineIndex=").append(lineIndex);
+            sb.append(", lineStartOffset=").append(lineStartOffset).append('\n');
+
+            LOG.fine(sb.toString());
         }
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
@@ -177,7 +226,6 @@ final class ViewBuilder {
             }
             StringBuilder sb = new StringBuilder(200);
             sb.append("ViewBuilder.createViews():\n");
-            int index = 0;
             if (fReplace != null) {
                 sb.append("fReplace:").append(fReplace);
             }
@@ -192,10 +240,104 @@ final class ViewBuilder {
         }
     }
 
+    boolean createNextView() {
+        int limitOffset = matchOffset;
+        for (int i = factoryStates.length - 1; i >= 0; i--) {
+            FactoryState state = factoryStates[i];
+            int cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
+            if (cmp < 0) { // Next view starting below
+                state.nextViewStartOffset = state.factory.nextViewStartOffset(lastCreatedViewEndOffset);
+                cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
+                if (cmp < 0) {
+                    throw new IllegalStateException("EditorViewFactory " + state.factory + // NOI18N
+                            " returned nextViewStartOffset=" + state.nextViewStartOffset + // NOI18N
+                            " for offset=" + lastCreatedViewEndOffset); // NOI18N
+
+                }
+            }
+            if (cmp == 0) { // Candidate for the next view
+                // Create new view. Note that the limitOffset is only a suggestion.
+                // Only the bottommost highlights-view-factory should always respect the the limitOffset.
+                EditorView view = state.factory.createView(lastCreatedViewEndOffset, limitOffset);
+                boolean newlineViewCreated = (view instanceof NewlineView);
+                int createdViewEndOffset = lastCreatedViewEndOffset + view.getLength();
+
+                while (!viewRemovalFinished && createdViewEndOffset > matchOffset) {
+                    if (fReplace != null && dReplace.removeCount == 0) { // Still replacing in fReplace
+                        // Check if remove till end of paragraph
+                        if (createdViewEndOffset > paragraphViewEndOffset || newlineViewCreated) {
+                            fReplace.removeTillEnd();
+                            matchOffset = paragraphViewEndOffset;
+                        } else { // Remove single views and not go beyond paragraph view's end
+                            int viewCount = fReplace.view.getViewCount();
+                            int index;
+                            while ((index = fReplace.removeEndIndex()) < viewCount) {
+                                // Use getLength() instead of getEndOffset() since for intra-line mods
+                                // with offsetDelta != 0 the views do not have updated offsets
+                                matchOffset += pReplace.view.getEditorView(index).getLength();
+                                pReplace.removeCount++;
+                                if (matchOffset >= createdViewEndOffset) {
+                                    break;
+                                }
+                            }
+                        }
+                    } else { // Remove whole paragraph(s)
+                        int pIndex = dReplace.removeEndIndex();
+                        if (pIndex < dReplace.view.getViewCount()) {
+                            ParagraphView removeView = (ParagraphView) dReplace.view.getEditorView(pIndex);
+                            dReplace.removeCount++;
+                            paragraphViewEndOffset = removeView.getEndOffset();
+                            // Do not remove individual views
+                            matchOffset = paragraphViewEndOffset;
+                        } else { // No more views to remove
+                            viewRemovalFinished = true; // Allow to finish the loop
+                        }
+                    }
+                }
+
+                if (pReplace == null) { // Finished a paragraph view previously
+                    updateLine();
+                    assert (lastCreatedViewEndOffset == lineStartOffset) :
+                        "lastCreatedViewEndOffset=" + lastCreatedViewEndOffset + // NOI18N
+                        " != lineStartOffset=" + lineStartOffset; // NOI18N
+                    // TODO Could possibly grab the start pos from line element
+                    Position startPos;
+                    try {
+                        startPos = dReplace.view.getDocument().createPosition(lineStartOffset);
+                    } catch (BadLocationException e) {
+                        throw new IllegalStateException("Cannot create position at offset=" + lineStartOffset);
+                    }
+                    ParagraphView paragraphView = new ParagraphView(startPos);
+                    dReplace.add(paragraphView);
+                    pReplace = new ViewReplace<ParagraphView,EditorView>(paragraphView, 0);
+                    pReplaceList.add(pReplace);
+                }
+                pReplace.add(view);
+
+
+                if (newlineViewCreated) {
+                    pReplace = null;
+                }
+
+                lastCreatedViewEndOffset = createdViewEndOffset;
+                return (lastCreatedViewEndOffset < matchOffset);
+
+            } else { // cmp > 0 => next view starting somewhere above last view's end offset
+                // Remember the nextViewStartOffset as a limit offset for factories
+                // that lay below this factory
+                limitOffset = state.nextViewStartOffset;
+            }
+        }
+        // The code should not get there since the highlights-view-factory (at index 0)
+        // should always provide a view.
+        throw new IllegalStateException("No factory returned view for offset=" + lastCreatedViewEndOffset);
+    }
+
     void repaintAndReplaceViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = dReplace.view;
         JTextComponent textComponent = docView.getTextComponent();
+        assert (textComponent != null) : "Null textComponent"; // NOI18N
         boolean docViewHeightChanged = false;
         boolean docViewWidthChanged = false;
         Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
@@ -283,103 +425,6 @@ final class ViewBuilder {
         }
 
         dReplace.view.checkIntegrity();
-    }
-
-    boolean createNextView() {
-        boolean viewRemovalFinished = false;
-        int limitOffset = creationEndOffset;
-        for (int i = factoryStates.length - 1; i >= 0; i--) {
-            FactoryState state = factoryStates[i];
-            int cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
-            if (cmp < 0) { // Next view starting below
-                state.nextViewStartOffset = state.factory.nextViewStartOffset(lastCreatedViewEndOffset);
-                cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
-                if (cmp < 0) {
-                    throw new IllegalStateException("EditorViewFactory " + state.factory + // NOI18N
-                            " returned nextViewStartOffset=" + state.nextViewStartOffset + // NOI18N
-                            " for offset=" + lastCreatedViewEndOffset); // NOI18N
-
-                }
-            }
-            if (cmp == 0) { // Candidate for the next view
-                // Create new view. Note that the limitOffset is only a suggestion.
-                // Only the bottommost highlights-view-factory should always respect the the limitOffset.
-                EditorView view = state.factory.createView(lastCreatedViewEndOffset, limitOffset);
-                boolean newlineView = (view instanceof NewlineView);
-                int createdViewEndOffset = lastCreatedViewEndOffset + view.getLength();
-
-                while (!viewRemovalFinished && (removedViewEndOffset < createdViewEndOffset ||
-                        (newlineView && fReplaceActive)))
-                {
-                    if (fReplaceActive) {
-                        // Check if remove till end of paragraph
-                        if (removedParagraphViewEndOffset < createdViewEndOffset || newlineView) {
-                            pReplace.removeTillEnd();
-                            removedViewEndOffset = removedParagraphViewEndOffset;
-                            fReplaceActive = false;
-                        } else { // Remove just one view
-                            int index = pReplace.removeEndIndex();
-                            assert (index < pReplace.view.getViewCount());
-                            removedViewEndOffset = pReplace.view.getView(index).getEndOffset();
-                            pReplace.removeCount++;
-                        }
-                    } else { // Remove whole paragraphs
-                        int pIndex = dReplace.removeEndIndex();
-                        if (pIndex < dReplace.view.getViewCount()) {
-                            dReplace.removeCount++;
-                            ParagraphView removeView = (ParagraphView) dReplace.view.getView(pIndex);
-                            removedParagraphViewEndOffset = removeView.getEndOffset();
-                            // Do not remove individual views -> use removedParagraphEndOffset
-                            removedViewEndOffset = removedParagraphViewEndOffset;
-                        } else { // No more views to remove
-                            viewRemovalFinished = true; // Allow to finish the loop
-                        }
-                    }
-                    if (creationEndOffset < removedViewEndOffset) {
-                        creationEndOffset = removedViewEndOffset;
-                    }
-                }
-
-                if (pReplace == null) { // Finished a paragraph view previously
-                    updateLine();
-                    assert (lastCreatedViewEndOffset == lineStartOffset) :
-                        "lastCreatedViewEndOffset=" + lastCreatedViewEndOffset + // NOI18N
-                        " != lineStartOffset=" + lineStartOffset; // NOI18N
-                    // TODO Could possibly grab the start pos from line element
-                    Position startPos;
-                    try {
-                        startPos = dReplace.view.getDocument().createPosition(lineStartOffset);
-                    } catch (BadLocationException e) {
-                        throw new IllegalStateException("Cannot create position at offset=" + lineStartOffset);
-                    }
-                    ParagraphView paragraphView = new ParagraphView(startPos);
-                    dReplace.add(paragraphView);
-                    pReplace = new ViewReplace<ParagraphView,EditorView>(paragraphView, 0);
-                    pReplaceList.add(pReplace);
-                }
-                pReplace.add(view);
-
-
-                if (newlineView) {
-                    if (fReplaceActive) {
-                        fReplaceActive = false;
-                    } else {
-                        pReplace = null;
-                    }
-                }
-
-                lastCreatedViewEndOffset = createdViewEndOffset;
-                return (lastCreatedViewEndOffset < creationEndOffset);
-
-            } else { // cmp > 0 => next view starting somewhere above last view's end offset
-                // Remember the nextViewStartOffset as a limit offset for factories
-                // that lay below this factory
-                limitOffset = state.nextViewStartOffset;
-            }
-        }
-        // The code should not get there since the highlights-view-factory (at index 0)
-        // should always provide a view.
-        throw new IllegalStateException("No factory returned view for offset=" + lastCreatedViewEndOffset);
     }
 
     void updateLine() {

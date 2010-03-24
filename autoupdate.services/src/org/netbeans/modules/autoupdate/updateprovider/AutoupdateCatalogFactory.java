@@ -119,6 +119,9 @@ public class AutoupdateCatalogFactory {
             }
             name = fo.getName();
         }
+        if (url == null) {
+            return null;
+        }
         url = modifyURL (url);
         String categoryName = (String) fo.getAttribute ("category"); // NOI18N    
         CATEGORY category = (categoryName != null) ? CATEGORY.valueOf(categoryName) : CATEGORY.COMMUNITY;
@@ -140,7 +143,7 @@ public class AutoupdateCatalogFactory {
     public static Object createXMLAutoupdateType (FileObject fo) throws IOException {
         return createUpdateProvider (fo);
     }
-    
+
     // helper methods
     private static String displayName (FileObject fo) {
         String displayName = null;

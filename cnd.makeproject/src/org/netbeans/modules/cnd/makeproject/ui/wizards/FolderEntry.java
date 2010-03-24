@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -46,47 +45,57 @@ import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
 public class FolderEntry implements SourceFolderInfo {
-    private File file;
-    private String folderName;
-    private boolean addSubfolders;
-    private FileFilter fileFilter;
+
+    private final File file;
+    private final String folderName;
+    private final boolean addSubfolders;
+    private final FileFilter fileFilter;
 
     public FolderEntry(File file, String folderName) {
         this.file = file;
         this.folderName = folderName;
         addSubfolders = true;
+        fileFilter = null;
     }
 
+    @Override
     public String getFolderName() {
         return folderName;
     }
 
-    public void setFolderName(String file) {
-        this.folderName = file;
-    }
-    
+//    public void setFolderName(String file) {
+//        this.folderName = file;
+//    }
+
+    @Override
     public boolean isAddSubfoldersSelected() {
         return addSubfolders;
     }
-    
-    public void setAddSubfoldersSelected(boolean selected) {
-        this.addSubfolders = selected;
-    }
-    
+
+//    public void setAddSubfoldersSelected(boolean selected) {
+//        this.addSubfolders = selected;
+//    }
+
+    @Override
     public File getFile() {
         return file;
     }
-    
-    public void setFile(File file) {
-        this.file = file;
-    }
-    
+
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
+
+    @Override
     public FileFilter getFileFilter() {
         return fileFilter;
     }
-    
-    public void setFileFilter(FileFilter ff) {
-        fileFilter = ff;
-    }
 
+//    public void setFileFilter(FileFilter ff) {
+//        fileFilter = ff;
+//    }
+
+    @Override
+    public String toString() {
+        return folderName;
+    }
 }

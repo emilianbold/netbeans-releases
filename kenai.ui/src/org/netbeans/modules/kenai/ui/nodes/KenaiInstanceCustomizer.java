@@ -43,6 +43,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -61,9 +62,11 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
     private Object bean;
     private NotificationLineSupport ns;
     private DialogDescriptor dd;
+    private JButton addButton;
 
     /** Creates new customizer KenaiInstanceCustomizer */
-    public KenaiInstanceCustomizer() {
+    public KenaiInstanceCustomizer(JButton addButton) {
+        this.addButton = addButton;
         initComponents();
         progress.setVisible(false);
         txtDisplayName.getDocument().addDocumentListener(this);
@@ -197,11 +200,13 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
+        addButton.setEnabled(false);
     }
 
     void clearError() {
         ns.clearMessages();
         dd.setValid(true);
+        addButton.setEnabled(true);
     }
 
     void startProgress() {

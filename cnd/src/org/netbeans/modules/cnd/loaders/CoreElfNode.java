@@ -41,20 +41,17 @@
 package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
-import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 
 /** A node to represent an Elf core object */
 public class CoreElfNode extends CndDataNode {
 
     public CoreElfNode(CoreElfObject obj) {
-        this(obj, Children.LEAF);
-    }
-
-    public CoreElfNode(CoreElfObject obj, Children ch) {
-        super(obj, ch);
+        super(obj, Children.LEAF, obj.getLookup());
         setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CoreElfIcon.gif"); // NOI18N
     }
 

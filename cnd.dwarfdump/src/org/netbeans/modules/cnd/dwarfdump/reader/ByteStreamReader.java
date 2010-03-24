@@ -138,10 +138,12 @@ public class ByteStreamReader implements DataInput {
         return n;
     }
     
+    @Override
     public short readShort() throws IOException {
         return (short)readNumber(2);
     }
     
+    @Override
     public int readInt() throws IOException {
         return (int)readNumber(4);
     }
@@ -162,6 +164,7 @@ public class ByteStreamReader implements DataInput {
         return res;
     }
     
+    @Override
     public long readLong() throws IOException {
         return readNumber(8);
     }
@@ -171,50 +174,62 @@ public class ByteStreamReader implements DataInput {
         return b;
     }
     
+    @Override
     public void readFully(byte[] b) throws IOException {
         file.readFully(b);
     }
     
+    @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
         file.readFully(b, off, len);
     }
     
+    @Override
     public int skipBytes(int n) throws IOException {
         return file.skipBytes(n);
     }
     
+    @Override
     public boolean readBoolean() throws IOException {
         return file.readBoolean();
     }
     
+    @Override
     public byte readByte() throws IOException {
         return file.readByte();
     }
     
+    @Override
     public int readUnsignedByte() throws IOException {
         return file.readUnsignedByte();
     }
     
+    @Override
     public int readUnsignedShort() throws IOException {
         return file.readUnsignedShort();
     }
     
+    @Override
     public char readChar() throws IOException {
         return file.readChar();
     }
     
+    @Override
     public float readFloat() throws IOException {
         return file.readFloat();
     }
     
+    @Override
     public double readDouble() throws IOException {
         return file.readDouble();
     }
     
+    @Override
     public String readLine() throws IOException {
         return file.readLine();
     }
     
+    @Override
     public String readUTF() throws IOException {
         return file.readUTF();
     }

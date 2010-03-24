@@ -273,25 +273,29 @@ public class SvnUtils {
      * @return <code>true</code> if
      * <ul>
      *  <li> the node contains a project in its lookup and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = (Project) lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
      * @return <code>true</code> if
      * <ul>
      *  <li> the project != null and
-     *  <li> the project contains at least one CVS versioned source group
+     *  <li> the project contains at least one SVN versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param project
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -299,7 +303,13 @@ public class SvnUtils {
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
-                if (f != null && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                if (f != null) {
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && SvnUtils.isManaged(f)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -1204,6 +1214,27 @@ public class SvnUtils {
                     } else {
                         ret.add(file);
                     }
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Lists all children of a given dir with the exception of metadata files or folders
+     * @param root given folder
+     * @return list of all direct children
+     */
+    public static List<File> listChildren (File root) {
+        List<File> ret = new ArrayList<File>();
+        if(root == null) {
+            return ret;
+        }
+        File[] files = root.listFiles();
+        if(files != null) {
+            for (File file : files) {
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {
+                    ret.add(file);
                 }
             }
         }

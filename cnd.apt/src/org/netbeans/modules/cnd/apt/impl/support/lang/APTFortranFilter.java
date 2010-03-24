@@ -57,7 +57,7 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
     public APTFortranFilter() {
-        setCaseInsensitive(true);
+        super(true);
         initialize();
     }
 

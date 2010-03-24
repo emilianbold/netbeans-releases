@@ -74,6 +74,7 @@ public class HostPropertiesDialog extends JPanel {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            record.setRememberPassword(pane.rememberPassword.isSelected());
             String displayName = pane.tfName.getText();
             boolean changed = false;
             if (!displayName.equals(record.getDisplayName())) {
@@ -112,6 +113,7 @@ public class HostPropertiesDialog extends JPanel {
         tfName.setText(serverRecord.getDisplayName());
         tfHost.setText(serverRecord.getServerName());
         tfUser.setText(serverRecord.getUserName());
+        rememberPassword.setSelected(serverRecord.isRememberPassword());
         tfPort.setText("" + serverRecord.getExecutionEnvironment().getSSHPort());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
@@ -120,10 +122,13 @@ public class HostPropertiesDialog extends JPanel {
 //        // we should at least allow switching it off => || serverRecord.getX11Forwarding()
 //        cbX11.setEnabled(serverRecord.isX11forwardingPossible() || serverRecord.getX11Forwarding());
         addAncestorListener(new AncestorListener() {
+            @Override
             public void ancestorAdded(AncestorEvent event) {
                 tfName.requestFocus();
             }
+            @Override
             public void ancestorRemoved(AncestorEvent event) {}
+            @Override
             public void ancestorMoved(AncestorEvent event) {}
         });
     }
@@ -148,6 +153,7 @@ public class HostPropertiesDialog extends JPanel {
         lblSync = new javax.swing.JLabel();
         cbSync = new javax.swing.JComboBox();
         cbX11 = new javax.swing.JCheckBox();
+        rememberPassword = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setFocusCycleRoot(true);
@@ -181,6 +187,8 @@ public class HostPropertiesDialog extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbX11, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
         cbX11.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        org.openide.awt.Mnemonics.setLocalizedText(rememberPassword, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.rememberPassword.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -188,22 +196,29 @@ public class HostPropertiesDialog extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblName)
-                    .addComponent(lblUser)
-                    .addComponent(lblHost)
-                    .addComponent(lblSync))
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbX11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblPort)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                    .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                    .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 281, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblUser)
+                            .addComponent(lblHost))
+                        .addGap(76, 76, 76)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lblPort)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(lblName, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblSync, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbX11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                            .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                            .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 288, Short.MAX_VALUE)
+                            .addComponent(rememberPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -219,7 +234,9 @@ public class HostPropertiesDialog extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblUser)
                     .addComponent(tfUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(rememberPassword)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblName)
                     .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -228,8 +245,7 @@ public class HostPropertiesDialog extends JPanel {
                     .addComponent(lblSync)
                     .addComponent(cbSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(cbX11)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(cbX11))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -242,6 +258,7 @@ public class HostPropertiesDialog extends JPanel {
     private javax.swing.JLabel lblPort;
     private javax.swing.JLabel lblSync;
     private javax.swing.JLabel lblUser;
+    private javax.swing.JCheckBox rememberPassword;
     private javax.swing.JTextField tfHost;
     private javax.swing.JTextField tfName;
     private javax.swing.JTextField tfPort;
