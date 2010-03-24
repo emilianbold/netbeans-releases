@@ -93,6 +93,8 @@ made subject to such option by the copyright holder.
             <property name="cluster.config" value="cnd"/>
             <property name="test.fail.on.error" value="true"/>
         </subant>
+        <zip destfile="${nbroot}/nbbuild/build/testdist.zip" update="true"
+                basedir="${nbroot}/cnd.kit" includes="testdist-runner.sh"/>
     </target>
 
     <target name="test-build" depends="-init-modules">
