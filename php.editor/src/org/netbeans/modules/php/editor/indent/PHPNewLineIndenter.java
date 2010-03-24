@@ -110,9 +110,12 @@ public class PHPNewLineIndenter {
                     ts.moveNext();
 
                     boolean indentStartComment = false;
-
+                    
 
                    boolean movePrevious = false;
+                   if (ts.token() == null) {
+                        return;
+                    }
                    if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
                         movePrevious = true;
                    }

@@ -80,7 +80,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             @Override
             public void run() {
                 //create outside of AWT
-                final XHTMLPanel panel = new XHTMLPanel();
+                final XHTMLPanel panel = new PatchedXHTMLPanel();
                 //and set the panel to this component in AWT
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

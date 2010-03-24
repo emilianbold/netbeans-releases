@@ -105,7 +105,7 @@ public class WebUtils {
 
             if (file != null) {
 
-                if (!file.isAbsolute()) {
+                if (!isAbsoluteFile(file)) {
                     //relative to the current file's folder - let's resolve
                     FileObject parent = source.getParent();
                     if(parent != null) {
@@ -148,6 +148,16 @@ public class WebUtils {
             Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
         }
         return null;
+    }
+
+    //windows File.isAbsolute() workaround
+    private static boolean isAbsoluteFile(File file) {
+        String filePath = file.getPath();
+        if(filePath.startsWith("/")) { //NOI18N
+            return true;
+        }
+
+        return file.isAbsolute();
     }
 
     private static FileObject findRelativeLinkBase(FileObject source, String link) {

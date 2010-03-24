@@ -16,6 +16,8 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.lib.terminalemulator</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.11</specification-version>
                     </run-dependency>
