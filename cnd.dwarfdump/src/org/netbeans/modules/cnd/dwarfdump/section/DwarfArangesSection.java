@@ -59,7 +59,7 @@ import java.util.ArrayList;
  * @author ak119685
  */
 public class DwarfArangesSection extends ElfSection {
-    ArrayList<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();
+    private final ArrayList<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();
     
     /** Creates a new instance of DwarfArangesSection */
     public DwarfArangesSection(DwarfReader reader, int sectionIdx) {
@@ -71,7 +71,7 @@ public class DwarfArangesSection extends ElfSection {
     }
     
     public ArrayList<AddressRangeSet> getAddressRangeSets() {
-        if (addressRangeSets.size() == 0) {
+        if (addressRangeSets.isEmpty()) {
             try {
                 read();
             } catch (IOException ex) {

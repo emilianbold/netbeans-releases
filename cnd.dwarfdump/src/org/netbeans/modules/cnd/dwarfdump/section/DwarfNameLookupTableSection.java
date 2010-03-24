@@ -63,7 +63,7 @@ import java.util.ArrayList;
  * @author ak119685
  */
 public class DwarfNameLookupTableSection extends ElfSection {
-    ArrayList<DwarfNameLookupTable> tables = null;
+    private ArrayList<DwarfNameLookupTable> tables = null;
     
     public DwarfNameLookupTableSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
