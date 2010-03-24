@@ -84,6 +84,9 @@ import org.openide.util.Task;
 public abstract class CLIHandler extends Object {
     /** lenght of the key used for connecting */
     private static final int KEY_LENGTH = 10;
+    private static final byte[] VERSION = {
+        'N', 'B', 'C', 'L', 'I', 0, 0, 0, 0, 1
+    };
     /** ok reply */
     private static final int REPLY_OK = 1;
     /** sends exit code */
@@ -101,6 +104,8 @@ public abstract class CLIHandler extends Object {
     private static final int REPLY_AVAILABLE = 12;
     /** request to write to stderr */
     private static final int REPLY_ERROR = 13;
+    /** returns version of the protocol */
+    private static final int REPLY_VERSION = 14;
     
     /**
      * Used during bootstrap sequence. Should only be used by core, not modules.
@@ -651,14 +656,20 @@ public abstract class CLIHandler extends Object {
                 }
                 
                 if (key != null && port != -1) {
-                    try {
+                    int version = -1;
+                    RESTART: for (;;) try {
                         // ok, try to connect
                         enterState(28, block);
                         Socket socket = new Socket(localHostAddress (), port);
                         // wait max of 1s for reply
                         socket.setSoTimeout(5000);
                         DataOutputStream os = new DataOutputStream(socket.getOutputStream());
-                        os.write(key);
+                        if (version == -1) {
+                            os.write(VERSION);
+                        } else {
+                            os.write(key);
+                        }
+                        assert VERSION.length == key.length;
                         os.flush();
                         
                         enterState(30, block);
@@ -673,7 +684,19 @@ public abstract class CLIHandler extends Object {
                             enterState(34, block);
                             
                             switch (reply) {
+                                case REPLY_VERSION:
+                                    version = replyStream.readInt();
+                                    os.write(key);
+                                    os.flush();
+                                    break;
                                 case REPLY_FAIL:
+                                    if (version == -1) {
+                                        os.close();
+                                        replyStream.close();
+                                        socket.close();
+                                        version = 0;
+                                        continue RESTART;
+                                    }
                                     enterState(36, block);
                                     break COMMUNICATION;
                                 case REPLY_OK:
@@ -754,16 +777,20 @@ public abstract class CLIHandler extends Object {
                         
                         // connection ok, butlockFile secret key not recognized
                         // delete the lock file
+                        break RESTART;
                     } catch (java.net.SocketTimeoutException ex2) {
                         // connection failed, the port is dead
                         enterState(33, block);
+                        break RESTART;
                     } catch (java.net.ConnectException ex2) {
                         // connection failed, the port is dead
                         enterState(33, block);
+                        break RESTART;
                     } catch (IOException ex2) {
                         // some strange exception
                         ex2.printStackTrace();
                         enterState(33, block);
+                        break RESTART;
                     }
                     
                     boolean isSameHost = true;
@@ -1002,17 +1029,33 @@ public abstract class CLIHandler extends Object {
         }
         
         private void handleConnect(Socket s) throws IOException {
-            
+            int requestedVersion;
             byte[] check = new byte[key.length];
             DataInputStream is = new DataInputStream(s.getInputStream());
             
             enterState(70, block);
-            
+
             is.readFully(check);
+
+            final DataOutputStream os = new DataOutputStream(s.getOutputStream());
+
+            boolean match = true;
+            for (int i = 0; i < VERSION.length - 1; i++) {
+                if (VERSION[i] != check[i]) {
+                    match = false;
+                }
+            }
+            if (match) {
+                requestedVersion = check[VERSION.length - 1];
+                os.write(REPLY_VERSION);
+                os.writeInt(VERSION[VERSION.length - 1]);
+                os.flush();
+                is.readFully(check);
+            } else {
+                requestedVersion = 0;
+            }
             
             enterState(90, block);
-            
-            final DataOutputStream os = new DataOutputStream(s.getOutputStream());
             
             if (Arrays.equals(check, key)) {
                 while (!waitFinishInstallationIsOver (2000)) {
