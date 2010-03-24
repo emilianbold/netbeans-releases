@@ -409,7 +409,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    String composite  = originalName + " - ";	// NOI18N
 	    if (title.contains("<html>")) {		// NOI18N
 		// pull the "<html>" to the beginning of the string
-		title.replace("<html>", "");		// NOI18N
+		title = title.replace("<html>", "");		// NOI18N
 		composite = "<html> " + composite + title;// NOI18N
 		owner.setHtmlDisplayName(composite);
 	    } else {
