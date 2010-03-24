@@ -1032,6 +1032,9 @@ class LuceneIndex extends Index implements Evictable {
     private synchronized IndexReader getReader () throws IOException {
         _hit();
         if (this.reader == null) {
+            if (validCache == Boolean.FALSE) {
+                return null;
+            }
             //Issue #149757 - logging
             try {
                 //It's important that no Query will get access to original IndexReader
