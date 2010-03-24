@@ -1,4 +1,4 @@
 Code completion result for source line:
 A135618::|AAA;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CONSTANT   ? AAA                                      A135618
+CONSTANT   ? AAA                           [PUBLIC]   A135618
