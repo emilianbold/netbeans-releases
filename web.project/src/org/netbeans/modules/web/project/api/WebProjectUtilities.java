@@ -749,8 +749,6 @@ public class WebProjectUtilities {
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
         
-        ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
-        
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         
         ep.setProperty(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".war"); // NOI18N

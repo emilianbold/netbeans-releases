@@ -1,5 +1,5 @@
 Code completion result for source line:
 case self::V|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CONSTANT   ? VARNAME_ADD                              blog_Application147191
-CONSTANT   ? VARNAME_VIEW                             blog_Application147191
+CONSTANT   ? VARNAME_ADD                   [PUBLIC]   blog_Application147191
+CONSTANT   ? VARNAME_VIEW                  [PUBLIC]   blog_Application147191

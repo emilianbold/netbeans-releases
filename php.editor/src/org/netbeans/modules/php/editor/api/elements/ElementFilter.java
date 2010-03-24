@@ -184,6 +184,8 @@ public abstract class ElementFilter {
             public boolean isAccepted(PhpElement element) {
                 boolean retval = true;
                 for (FileObject fileObject : files) {
+                    //if file is deleted
+                    if (fileObject == null) continue;
                     String nameExt = fileObject.getNameExt();
                     String elementURL = element.getFilenameUrl();
                     if ((elementURL != null && elementURL.indexOf(nameExt) < 0) || element.getFileObject() != fileObject) {

@@ -257,14 +257,12 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         refactorToTypeButtonGroup.add(embeddedSectionRB);
         org.openide.awt.Mnemonics.setLocalizedText(embeddedSectionRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExtractToEmbeddedSection")); // NOI18N
-        embeddedSectionRB.setEnabled(!context.getExistingEmbeddedCssSections().isEmpty());
 
         refactorToTypeButtonGroup.add(externalSheetRB);
         org.openide.awt.Mnemonics.setLocalizedText(externalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExternalStyleSheet")); // NOI18N
-        externalSheetRB.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
+        externalSheetRB.setEnabled(!allStylesheets.isEmpty());
 
         existingEmbeddedSectionsComboBox.setModel(createEmbeddedCssSectionsModel());
-        existingEmbeddedSectionsComboBox.setEnabled(!context.getExistingEmbeddedCssSections().isEmpty());
         existingEmbeddedSectionsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 existingEmbeddedSectionsComboBoxActionPerformed(evt);
@@ -272,7 +270,7 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         });
 
         externalSheetsComboBox.setModel(createExternalStylesheetsModel());
-        externalSheetsComboBox.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
+        externalSheetsComboBox.setEnabled(!allStylesheets.isEmpty());
         externalSheetsComboBox.setRenderer(new ExternalStylesheetsListCellRenderer(externalSheetsComboBox.getRenderer()));
         externalSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -369,7 +367,9 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         //existing sections
         for (int i = 0; i < values.length - 1; i++) {
-            OffsetRange range = ranges.get(i);
+            OffsetRange astRange = ranges.get(i);
+            //recompute to document offset range
+            OffsetRange range = context.getDocumentRange(astRange);
             values[i + 1] = new EmbeddedSectionItem(range,
                     getRenderStringFromOffsetRange(range));
         }
@@ -409,6 +409,9 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     }
 
     String getRenderStringFromOffsetRange(final OffsetRange range) {
+        if(range == null) {
+            return NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_SectionCannotDetermineLines"); //NOI18N
+        }
         //compute lines for each offset
         final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
         context.getDocument().render(new Runnable() {
@@ -427,11 +430,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         OffsetRange line = ret.get();
 
-        return new StringBuilder().append("Section from line ").
-                append(line.getStart() + 1). //lines in editor are counted from 1
-                append(" to ").
-                append(line.getEnd() + 1). //lines in editor are counted from 1
-                toString();
+        return NbBundle.getMessage(ExtractInlinedStylePanel.class,
+                "MSG_SectionFromTo",  //NOI18N
+                line.getStart() + 1,
+                line.getEnd() + 1);
+
     }
 
     @Override

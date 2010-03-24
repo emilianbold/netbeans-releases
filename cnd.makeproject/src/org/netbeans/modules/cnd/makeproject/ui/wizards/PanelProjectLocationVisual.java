@@ -249,7 +249,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         browseButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_browseButton")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_browseButton")); // NOI18N
 
-        createdFolderLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MN_NWP1_CreatedProjectFolder_Lablel").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
         createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
