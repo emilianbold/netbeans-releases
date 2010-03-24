@@ -102,6 +102,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private Map<String, KenaiUser> kenaiUsersMap = null;
     private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
+    private final RequestProcessor rp = new RequestProcessor("Mercurial.History", 1, true); //NOI18N
     
     public SummaryView(SearchHistoryPanel master, List<RepositoryRevision> results) {
         this.master = master;
@@ -375,7 +376,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    rp.post(new Runnable() {
                         public void run() {
                             view(selection[0], false);
                         }
@@ -387,7 +388,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(annotationsEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    rp.post(new Runnable() {
                         public void run() {
                             view(selection[0], true);
                         }
