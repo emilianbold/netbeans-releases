@@ -47,7 +47,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Action for removing project from the open projects tab
  */
@@ -70,7 +69,7 @@ public class CloseProject extends ProjectAction {
     @Override
     protected void actionPerformed( final Lookup context ) {
         if (EventQueue.isDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            OpenProjectList.OPENING_RP.post(new Runnable() {
                 @Override
                 public void run() {
                     actionPerformed(context);
@@ -101,6 +100,7 @@ public class CloseProject extends ProjectAction {
     private void enable(final boolean enable) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setEnabled(enable);
                 }

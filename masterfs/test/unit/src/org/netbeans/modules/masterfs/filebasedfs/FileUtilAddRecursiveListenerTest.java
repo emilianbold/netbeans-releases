@@ -227,10 +227,14 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         assertTrue(fileF.createNewFile());
         assertTrue(subfileF.createNewFile());
         assertTrue(subsubfileF.createNewFile());
+        TestFileUtils.touch(subsubfileF, null);
+        TestFileUtils.touch(subfileF, null);
+        TestFileUtils.touch(fileF, null);
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subsubfileF, subsubfileF.lastModified()});
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{subfileF, subfileF.lastModified()});
         LOG.log(Level.INFO, "After refresh {0} to {1}", new Object[]{fileF, fileF.lastModified()});
         FileUtil.refreshAll();
+        fcl.printAll(LOG);
         // TODO - should be 3
         assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
         // TODO - should be 2
