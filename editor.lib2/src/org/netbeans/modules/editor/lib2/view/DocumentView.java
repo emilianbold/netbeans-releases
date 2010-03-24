@@ -56,6 +56,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -76,6 +77,7 @@ import javax.swing.text.TabExpander;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -218,6 +220,8 @@ public final class DocumentView extends EditorBoxView
     private Preferences prefs;
 
     private PreferenceChangeListener prefsListener;
+
+    private Map<?, ?> renderingHints;
 
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
@@ -476,6 +480,7 @@ public final class DocumentView extends EditorBoxView
                 if (c != null) {
                     backColor = c;
                 }
+                renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
             }
         }
 
@@ -538,6 +543,10 @@ public final class DocumentView extends EditorBoxView
                 checkViewsInited();
                 boolean ok = false;
                 try {
+                    // Use rendering hints (antialiasing etc.)
+                    if (renderingHints != null) {
+                        g.setRenderingHints(renderingHints);
+                    }
                     super.paint(g, alloc, clipBounds);
                     ok = true;
                 } finally {
