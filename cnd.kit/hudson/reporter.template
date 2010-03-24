@@ -97,7 +97,7 @@ upBuild.downstreamBuilds.each {
    }
 
     if (currFailedTests.size > 10) {
-       %><tr><td><a href="${rootUrl}${currBuild.url}">${it.key.displayName}</a></td><td>${currTotal}</td><td>${currFail}</td><td><a class="FAILURE" href="${rootUrl}${currBuild.url}">more than 10...</a></td><td></td><%
+       %><tr><td><a href="${rootUrl}${currBuild.url}">${it.key.displayName}</a></td><td>${currTotal}</td><td>${currFail}</td><td><a class="FAILURE" href="${rootUrl}${currBuild.url}${currTestResult.urlName}">MORE THAN 10!!!</a></td><td></td><%
     } else {
       %><tr><td rowspan=${currFailedTests.size}><a href="${rootUrl}${currBuild.url}">${it.key.displayName}</a></td><td rowspan=${currFailedTests.size}>${currTotal}</td><td rowspan=${currFailedTests.size}>${currFail}</td><%
     if (currFailedTests) {
