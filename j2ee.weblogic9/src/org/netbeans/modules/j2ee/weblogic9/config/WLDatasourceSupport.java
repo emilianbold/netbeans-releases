@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.j2ee.weblogic9.config;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -52,6 +55,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -63,6 +70,10 @@ import org.netbeans.modules.j2ee.weblogic9.config.gen.JdbcPropertyType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -81,30 +92,82 @@ public class WLDatasourceSupport {
         this.resourceDir = FileUtil.normalizeFile(resourceDir);
     }
 
-    public static Set<Datasource> getDatasources(FileObject dir) throws ConfigurationException {
-        if (dir == null || !dir.isValid() || !dir.isFolder() || !dir.canRead()) {
+    public static Set<WLDatasource> getDatasources(FileObject inputFile) throws ConfigurationException {
+        if (inputFile == null || !inputFile.isValid() || !inputFile.canRead()) {
             LOGGER.log(Level.WARNING, NbBundle.getMessage(WLDatasourceManager.class, "ERR_WRONG_CONFIG_DIR"));
             return Collections.emptySet();
         }
+        if (inputFile.isData() && inputFile.hasExt("xml")) {
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                JdbcSystemResourceHandler handler = new JdbcSystemResourceHandler();
+                parser.parse(new BufferedInputStream(inputFile.getInputStream()), handler);
 
-        Enumeration files = dir.getChildren(true);
-        List<FileObject> confs = new LinkedList<FileObject>();
-        while (files.hasMoreElements()) { // searching for config files with DS
-            FileObject file = (FileObject) files.nextElement();
-            if (!file.isFolder() && file.getNameExt().endsWith(JDBCdotXML) && file.canRead()) {
-                confs.add(file);
+                File folder = FileUtil.toFile(inputFile.getParent());
+                List<File> confs = new ArrayList<File>();
+                Set<String> nameOnly = new HashSet<String>();
+
+                // load by path in config.xml
+                for (JdbcSystemResource resource : handler.getResources()) {
+                    // FIXME check target
+                    if (resource.getFile() != null) {
+                        File config = new File(resource.getFile());
+                        if (!config.isAbsolute()) {
+                            config = new File(folder, resource.getFile());
+                        }
+                        if (config.exists() && config.isFile() && config.canRead()) {
+                            confs.add(config);
+                        }
+                    } else if (resource.getName() != null) {
+                        nameOnly.add(resource.getName());
+                    }
+                }
+
+                Set<WLDatasource> result = new HashSet<WLDatasource>();
+                result.addAll(getDatasources(confs));
+
+                // load those in config/jdbc by name
+                if (!nameOnly.isEmpty()) {
+                    Set<WLDatasource> configDatasources = getDatasources(inputFile.getParent().getFileObject("jdbc")); // NOI18N
+                    for (WLDatasource ds : configDatasources) {
+                        if (nameOnly.contains(ds.getName())) {
+                            result.add(ds);
+                        }
+                    }
+                }
+
+                return result;
+            } catch (IOException ex) {
+                return Collections.emptySet();
+            } catch (ParserConfigurationException ex) {
+                return Collections.emptySet();
+            } catch (SAXException ex) {
+                return Collections.emptySet();
             }
-        }
+        } else if (inputFile.isFolder()) {
+            File file = FileUtil.toFile(inputFile);
+            List<File> confs = new ArrayList<File>();
+            for (File child : file.listFiles()) {
+                if (!file.isDirectory() && file.canRead() && file.getName().endsWith(JDBCdotXML)) {
+                    confs.add(child);
+                }
+            }
 
-        if (confs.isEmpty()) { // nowhere to search
-            return Collections.emptySet();
-        }
+            if (confs.isEmpty()) { // nowhere to search
+                return Collections.emptySet();
+            }
 
-        Set<Datasource> datasources = new HashSet<Datasource>();
+            return getDatasources(confs);
+        }
+        return Collections.emptySet();
+    }
+
+    public static Set<WLDatasource> getDatasources(Collection<File> confs) throws ConfigurationException {
+        Set<WLDatasource> datasources = new HashSet<WLDatasource>();
 
         for (Iterator it = confs.iterator(); it.hasNext();) {
-            FileObject dsFO = (FileObject) it.next();
-            File dsFile = FileUtil.toFile(dsFO);
+            File dsFile = (File) it.next();
             try {
                 JdbcDataSource ds = null;
                 try {
@@ -125,7 +188,7 @@ public class WLDatasourceSupport {
                     String driverClass = getDriverClass(ds);
                     for (String jndiName : names) {
                         datasources.add(new WLDatasource(name, connectionURl,
-                                jndiName, userName, "", driverClass, dsFO));
+                                jndiName, userName, "", driverClass, dsFile));
                     }
                 }
             } catch (IOException ioe) {
@@ -140,10 +203,9 @@ public class WLDatasourceSupport {
         }
 
         return datasources;
-
     }
 
-    public Set<Datasource> getDatasources() throws ConfigurationException {
+    public Set<WLDatasource> getDatasources() throws ConfigurationException {
         FileObject resource = FileUtil.toFileObject(resourceDir);
 
         return getDatasources(resource);
@@ -197,4 +259,86 @@ public class WLDatasourceSupport {
         return null;
     }
 
+    private static class JdbcSystemResourceHandler extends DefaultHandler {
+
+        private final List<JdbcSystemResource> resources = new ArrayList<JdbcSystemResource>();
+
+        private JdbcSystemResource resource;
+
+        private String value;
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            value = null;
+            if ("jdbc-system-resource".equals(qName)) { // NOI18N
+                resource = new JdbcSystemResource();
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (resource == null) {
+                return;
+            }
+
+            if ("jdbc-system-resource".equals(qName)) { // NOI18N
+                resources.add(resource);
+                resource = null;
+            } else if("name".equals(qName)) { // NOI18N
+                resource.setName(value);
+            } else if ("taget".equals(qName)) { // NOI18N
+                resource.setTarget(value);
+            } else if ("descriptor-file-name".equals(qName)) { // NOI18N
+                resource.setFile(value);
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            value = new String(ch, start, length);
+        }
+
+        public List<JdbcSystemResource> getResources() {
+            return resources;
+        }
+        
+    }
+
+    private static class JdbcSystemResource {
+
+        private String name;
+
+        private String target;
+
+        private String file;
+
+        public JdbcSystemResource() {
+            super();
+        }
+
+        public String getFile() {
+            return file;
+        }
+
+        public void setFile(String file) {
+            this.file = file;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public void setTarget(String target) {
+            this.target = target;
+        }
+        
+    }
 }
