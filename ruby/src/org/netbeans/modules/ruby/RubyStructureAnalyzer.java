@@ -592,9 +592,6 @@ public class RubyStructureAnalyzer implements StructureScanner {
             String clzFqn = AstUtilities.getFqnName(path);
             co.setIn(clzFqn);
 
-            if ("each_resource".equals(AstUtilities.getName(node))) {
-                System.out.println("huh");
-            }
             // "initialize" methods are private
             if ((node instanceof DefnNode) && "initialize".equals(AstUtilities.getName(node))) {
                 co.setAccess(Modifier.PRIVATE);
