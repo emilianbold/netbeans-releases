@@ -60,6 +60,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 
@@ -88,7 +89,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private AbstractAction nextAction;
     private AbstractAction prevAction;
     private SearchHistoryTopComponent.DiffResultsViewFactory diffViewFactory;
-    private final RequestProcessor rp = new RequestProcessor("Mercurial.SearchHistory", 1, true); //NOI18N
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -324,7 +324,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
         setResults(null, true);
         currentSearch = new SearchExecutor(this);
-        currentSearchTask = rp.create(currentSearch);
+        currentSearchTask = Mercurial.getInstance().getParallelRequestProcessor().create(currentSearch);
         currentSearchTask.schedule(0);
     }
     

@@ -152,7 +152,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private JComponent infoPanelLoadingFromRepo;
 
     private HgProgressSupport executeStatusSupport;
-    private final RequestProcessor rp = new RequestProcessor("Mercurial.Diff", 1, true); //NOI18N
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -192,7 +191,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         setSetups(new Setup(file, rev1, rev2, forceNonEditable));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = rp.post(dpt);
+        prepareTask = Mercurial.getInstance().getParallelRequestProcessor().post(dpt);
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -693,7 +692,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     setDiffIndex(0, 0);
                     commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
-                    prepareTask = rp.post(dpt);
+                    prepareTask = Mercurial.getInstance().getParallelRequestProcessor().post(dpt);
                 }
             }
         };
