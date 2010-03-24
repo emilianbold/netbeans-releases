@@ -1102,11 +1102,13 @@ class LuceneIndex extends Index implements Evictable {
     }
 
     private Collection<? extends String> getOrphanLock () {
-        final String[] content = refCacheRoot.list();
         final List<String> locks = new LinkedList<String>();
-        for (String name : content) {
-            if (name.startsWith(CACHE_LOCK_PREFIX)) {
-                locks.add(name);
+        final String[] content = refCacheRoot.list();
+        if (content != null) {
+            for (String name : content) {
+                if (name.startsWith(CACHE_LOCK_PREFIX)) {
+                    locks.add(name);
+                }
             }
         }
         return locks;
