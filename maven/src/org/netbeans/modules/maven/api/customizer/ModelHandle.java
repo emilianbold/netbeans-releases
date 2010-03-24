@@ -123,12 +123,8 @@ public final class ModelHandle {
                         List<Configuration> configs, Configuration active,
                         MavenProjectPropsImpl auxProps) {
         model = mdl;
-        model.startTransaction();
-        //TODO when and how to do transaction rollback?
         project = proj;
         this.profiles = profile;
-        //TODO when and how to do transaction rollback?
-        profiles.startTransaction();
         this.mappings = mappings;
         this.modMappings = new HashMap<ActionToGoalMapping, Boolean>();
         for (ActionToGoalMapping map : mappings.values()) {

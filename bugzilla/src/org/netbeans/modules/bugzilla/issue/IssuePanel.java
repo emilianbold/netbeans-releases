@@ -1538,6 +1538,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         addCommentArea.setLineWrap(true);
+        addCommentArea.setWrapStyleWord(true);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 

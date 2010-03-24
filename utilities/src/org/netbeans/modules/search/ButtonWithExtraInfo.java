@@ -39,16 +39,7 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Shape;
-import javax.swing.JLabel;
 import javax.swing.JRadioButton;
-import javax.swing.LayoutStyle;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingConstants;
 
 /**
  * A radio-button with an extra information displayed by the main text.
@@ -57,126 +48,47 @@ import javax.swing.SwingConstants;
  */
 class ButtonWithExtraInfo extends JRadioButton {
 
+    private static final String START = "("; // NOI18N
+    private static final String END = ")"; // NOI18N
+    private static final String SP = " "; // NOI18N
+    private static final String ELLIPSIS = "..."; // NOI18N
+
+    private static final int MAX_EXTRA_INFO_LEN = 10;
+
     private String extraInfo;
-    private JLabel lblInfo;
-    private JLabel lblStart, lblEnd;
-    private boolean infoVisible;
-    private Dimension infoPrefSize;
-    private int infoBaseline = -1;
-    private int infoGap = -1;
-    private int startWidth = 0, endWidth = 0;
 
     public ButtonWithExtraInfo(String extraInfo) {
         this.extraInfo = extraInfo;
     }
 
-    private void checkInfoLabel() {
-        if ((lblInfo == null) && (extraInfo != null)) {
-            lblInfo = new JLabel(extraInfo);
-            lblStart = new JLabel("(");                                 //NOI18N
-            lblEnd = new JLabel(")");                                   //NOI18N
-
-            final boolean enabled = isEnabled();
-            lblInfo.setEnabled(enabled);
-            lblStart.setEnabled(enabled);
-            lblEnd.setEnabled(enabled);
-        }
-    }
-
-    private void checkInfoGap() {
-        if (infoGap == -1) {
-            checkInfoLabel();
-            infoGap = LayoutStyle.getInstance()
-                      .getPreferredGap(this,
-                                       lblInfo,
-                                       ComponentPlacement.RELATED,
-                                       SwingConstants.EAST,
-                                       getParent());
-            startWidth = lblStart.getPreferredSize().width;
-            endWidth = lblEnd.getPreferredSize().width;
-        }
-    }
-
-    private void checkInfoPrefSize() {
-        if (infoPrefSize == null) {
-            infoPrefSize = lblInfo.getPreferredSize();
-            infoBaseline = lblInfo.getBaseline(infoPrefSize.width,
-                                                         infoPrefSize.height);
-        }
-    }
-
     @Override
-    public void doLayout() {
-        super.doLayout();
-        if (extraInfo == null) {
-            return;
+    public void setText(String text) {
+        if(isExtraInfoExists()) {
+            setToolTipText(getFullText(text, extraInfo));
+            super.setText(getTextForLabel(text));
         }
+        else {
+            super.setText(text);
+        }
+    }
 
-        infoVisible = false;
+    private boolean isExtraInfoExists() {
+        return extraInfo != null && extraInfo.length() > 0;
+    }
 
-        Dimension size = getSize();
-        Dimension prefSize = getPreferredSize();
-        if (size.width > prefSize.width) {
-            int widthDelta = size.width - prefSize.width;
-            checkInfoGap();
-            if (widthDelta > (infoGap + startWidth + endWidth)) {
-                infoVisible = true;
-                Insets insets = getInsets();
-                checkInfoPrefSize();
-                assert infoBaseline != -1;
-                int infoX = prefSize.width - insets.right + infoGap;
-                int infoY = getBaseline(size.width,
-                                                       size.height)
-                            - infoBaseline;
-                int infoWidth = Math.min(widthDelta - infoGap - (startWidth + endWidth),
-                                         infoPrefSize.width);
-                int infoHeight = infoPrefSize.height;
-                lblInfo.setBounds(infoX,
-                                  infoY,
-                                  infoWidth,
-                                  infoHeight);
-                lblStart.setSize(startWidth, infoHeight);
-                lblEnd.setSize(endWidth, infoHeight);
+    private String getTextForLabel(String text) {
+        String extraText = extraInfo;
+        if(extraInfo.length() > MAX_EXTRA_INFO_LEN) {
+            extraText = extraInfo.substring(0, MAX_EXTRA_INFO_LEN) + ELLIPSIS;
+            if(extraText.length() >= extraInfo.length()) {
+                extraText = extraInfo;
             }
         }
+        return getFullText(text, extraText);
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (!infoVisible) {
-            return;
-        }
-
-        Point infoLocation = lblInfo.getLocation();
-
-        /* Paint the opening bracket: */
-        g.translate(infoLocation.x, infoLocation.y);
-        lblStart.paint(g);
-
-        /* Paint the additional information: */
-        g.translate(startWidth, 0);
-        /*
-         * If the label's text does not fit the reserved space, the text is
-         * truncated and an ellipsis is painted at the end of the truncated
-         * text. If no text fits, just the ellipsis is painted. If the label
-         * is so narrow that even the ellipsis does not fit, the whole ellipsis
-         * is still painted, thus leaking from the label's bounds. In this case,
-         * the ellipsis may overlap the closing bracket. To prevent this
-         * overlapping, a clip region is set to the label's area such that
-         * nothing is painted over the label's bounds.
-         */
-        Shape originalClipShape = g.getClip();
-        g.setClip(0, 0, lblInfo.getWidth(), lblInfo.getHeight());
-        lblInfo.paint(g);
-        g.setClip(originalClipShape);
-
-        /* Paint the closing bracket: */
-        g.translate(lblInfo.getWidth(), 0);
-        lblEnd.paint(g);
-
-        g.translate(-(infoLocation.x + startWidth + lblInfo.getWidth()),
-                    -infoLocation.y);
+    private String getFullText(String text, String extraText) {
+        return text + SP + START + SP + extraText + SP + END;
     }
 
 }

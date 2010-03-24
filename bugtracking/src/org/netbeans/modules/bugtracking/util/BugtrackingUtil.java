@@ -817,6 +817,10 @@ public class BugtrackingUtil {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
+    public static void openIssue(File file, String issueId) {
+        IssueAction.openIssue(file, issueId);
+    }
+
     public static Map<String, List<RecentIssue>> getAllRecentIssues() {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }

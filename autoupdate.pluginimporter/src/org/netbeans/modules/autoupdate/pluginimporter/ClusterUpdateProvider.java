@@ -93,6 +93,9 @@ public class ClusterUpdateProvider implements UpdateProvider {
     }
 
     public String getDisplayName () {
+        if (cluster == null) { // netbeans.full.hack etc.
+            return NbBundle.getMessage(ClusterUpdateProvider.class, "ClusterUpdateProvider_DisplayName_disabled");
+        }
         return NbBundle.getMessage (ClusterUpdateProvider.class, "ClusterUpdateProvider_DisplayName", cluster); // NOI18N
     }
 

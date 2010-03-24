@@ -96,10 +96,6 @@ public final class RubyTypeInferencer {
             type = knowledge.getType(getLocalVarPath(new AstPath(knowledge.getRoot(), knowledge.getTarget()), symbol));
         }
 
-        if (type == null) {
-            type = RubyType.unknown();
-        }
-
         // Special cases
         if (!type.isKnown()) {
             // Handle migrations. This needs better flow analysis of block
@@ -151,11 +147,10 @@ public final class RubyTypeInferencer {
     
     private static String getLocalVarPath(AstPath path, String varName) {
         Node methodNode = AstUtilities.findMethod(path);
-        String methodName = null;
         if (methodNode != null) {
-            methodName = AstUtilities.getName(methodNode);
+            return AstUtilities.getName(methodNode) + "/" + varName;
         }
-        return methodName + "/" + varName;
+        return varName;
     }
 
     /** Called on AsgnNodes to compute RHS. */
