@@ -729,7 +729,11 @@ public abstract class CLIHandler extends Object {
                                         outputArr = new byte[howMuch];
                                     }
                                     int really = args.getInputStream().read(outputArr, 0, howMuch);
-                                    os.write(really);
+                                    if (version >= 1) {
+                                        os.writeInt(really);
+                                    } else {
+                                        os.write(really);
+                                    }
                                     if (really > 0) {
                                         os.write(outputArr, 0, really);
                                     }
@@ -1077,7 +1081,7 @@ public abstract class CLIHandler extends Object {
                 
                 final Args arguments = new Args(
                     args, 
-                    new IS(is, os), 
+                    new IS(is, os, requestedVersion),
                     new OS(os, REPLY_WRITE), 
                     new OS(os, REPLY_ERROR), 
                     currentDir
@@ -1192,12 +1196,14 @@ public abstract class CLIHandler extends Object {
         }
         
         private static final class IS extends InputStream {
-            private DataInputStream is;
-            private DataOutputStream os;
+            private final DataInputStream is;
+            private final DataOutputStream os;
+            private final int requestedVersion;
             
-            public IS(DataInputStream is, DataOutputStream os) {
+            public IS(DataInputStream is, DataOutputStream os, int version) {
                 this.is = is;
                 this.os = os;
+                this.requestedVersion = version;
             }
             
             public int read() throws IOException {
@@ -1231,7 +1237,7 @@ public abstract class CLIHandler extends Object {
                 os.writeInt(len);
                 os.flush();
                 // read provided data
-                int really = is.read ();
+                int really = requestedVersion >= 1 ? is.readInt() : is.read ();
                 if (really > 0) {
                     return is.read(b, off, really);
                 } else {
