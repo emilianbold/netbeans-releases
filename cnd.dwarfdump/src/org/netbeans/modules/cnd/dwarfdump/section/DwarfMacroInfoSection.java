@@ -66,7 +66,7 @@ import java.util.Stack;
  * @author ak119685
  */
 public class DwarfMacroInfoSection extends ElfSection {
-    HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();
+    private final HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();
     
     public DwarfMacroInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);

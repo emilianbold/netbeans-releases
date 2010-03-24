@@ -22,7 +22,7 @@ if [ "${OS}" = "SunOS" ]; then
    CPUNUM=`/usr/sbin/psrinfo -v | grep "^Status of" | wc -l | sed 's/^ *//'`
 else
    if [ "${OS}" = "Darwin" ]; then
-      sysctl hw.cpu64bit_capable >/dev/null
+      sysctl hw.cpu64bit_capable | grep -q "1$"
       if [ $? -eq 0 ]; then
          BITNESS=64
       fi

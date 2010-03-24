@@ -57,12 +57,12 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
  * @author ak119685
  */
 public class DwarfEntry {
-    private CompilationUnit compilationUnit;
-    private DwarfAbbriviationTableEntry abbriviationTableEntry;
-    private ArrayList<Object> values = new ArrayList<Object>();
-    private ArrayList<DwarfEntry> children = new ArrayList<DwarfEntry>();
-    private long refference;
-    private int hierarchyLevel;
+    private final CompilationUnit compilationUnit;
+    private final DwarfAbbriviationTableEntry abbriviationTableEntry;
+    private final ArrayList<Object> values = new ArrayList<Object>();
+    private final ArrayList<DwarfEntry> children = new ArrayList<DwarfEntry>();
+    private final long refference;
+    private final int hierarchyLevel;
     private String qualifiedName = null;
     private String name = null;
     private DwarfEntry parent;
