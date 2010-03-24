@@ -89,7 +89,7 @@ public class ToolchainListRootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { new ShowToolchainsAction(env) };
+        return new Action[] { new ShowToolchainsAction(env, null) };
     }
 
     private static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
@@ -150,6 +150,11 @@ public class ToolchainListRootNode extends AbstractNode {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] { new ShowToolchainsAction(env, compilerSet) };
         }
     }
 

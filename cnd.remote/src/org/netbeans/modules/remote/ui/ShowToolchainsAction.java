@@ -46,6 +46,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -60,16 +61,18 @@ import org.openide.util.NbBundle;
 public class ShowToolchainsAction extends AbstractAction {
 
     private final ExecutionEnvironment env;
+    private final CompilerSet compilerSet;
 
-    public ShowToolchainsAction(ExecutionEnvironment env) {
+    public ShowToolchainsAction(ExecutionEnvironment env, CompilerSet compilerSet) {
         super(NbBundle.getMessage(ToolchainListRootNode.class, "PropertirsMenuItem"));
         this.env = env;
+        this.compilerSet = compilerSet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         //OptionsDisplayer.getDefault().open(CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_PATH);
-        JComponent tpc = ToolsPanelSupport.getToolsPanelComponent(env);
+        JComponent tpc = ToolsPanelSupport.getToolsPanelComponent(env, compilerSet == null ? null : compilerSet.getName());
         String title = NbBundle.getMessage(ToolchainListRootNode.class, "CompilerSetPropertieesDlgTitile",
                 ServerList.get(env).getDisplayName());
         tpc.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));

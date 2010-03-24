@@ -155,7 +155,24 @@ public class ToolsPanelSupport {
      *  SELECTED_TOOLCHAIN_KEY (String name of toolchain)
      */
     public static JComponent getToolsPanelComponent(ExecutionEnvironment env) {
+        return getToolsPanelComponent(env, null);
+    }
+
+    /**
+     * returns toolchain manager component to be embedded in other containers
+     * @param env execution environment for which manager is created
+     * @param selectedCompilerSetName the name of the compiler set to select
+     * @return toolchain manager component for specified execution environmen
+     *  reference to listener to be used by containers to notify about OK is in component
+     *  property OK_LISTENER_KEY (VetoableChangeListener)
+     *  client can find selected toolchain after OK in property
+     *  SELECTED_TOOLCHAIN_KEY (String name of toolchain)
+     */
+    public static JComponent getToolsPanelComponent(ExecutionEnvironment env, String selectedCompilerSetName) {
         HostToolsPanelModel model = new HostToolsPanelModel(env);
+        if (selectedCompilerSetName != null && selectedCompilerSetName.length() > 0) {
+            model.setSelectedCompilerSetName(selectedCompilerSetName);
+        }
         final ToolsPanel tp = new ToolsPanel(model);
         tp.update();
         VetoableChangeListener okL = new VetoableChangeListener() {
