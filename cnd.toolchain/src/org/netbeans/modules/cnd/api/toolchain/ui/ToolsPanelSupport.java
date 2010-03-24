@@ -154,7 +154,7 @@ public class ToolsPanelSupport {
      *  client can find selected toolchain after OK in property
      *  SELECTED_TOOLCHAIN_KEY (String name of toolchain)
      */
-    public static JComponent getToolsPanelComonent(ExecutionEnvironment env) {
+    public static JComponent getToolsPanelComponent(ExecutionEnvironment env) {
         HostToolsPanelModel model = new HostToolsPanelModel(env);
         final ToolsPanel tp = new ToolsPanel(model);
         tp.update();
