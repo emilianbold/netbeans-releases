@@ -49,7 +49,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOTest;
+import org.netbeans.modules.terminal.test.IOTest;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.Exceptions;

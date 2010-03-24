@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.api;
+package org.netbeans.modules.terminal.test;
 
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;

@@ -44,7 +44,7 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.IOTest;
+import org.netbeans.modules.terminal.test.IOTest;
 import org.netbeans.modules.terminal.api.IOVisibility;
 
 /**
