@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 
+import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
@@ -65,4 +66,32 @@ public class ExpressionStatementImpl extends StatementBase implements CsmExpress
     public CsmExpression getExpression() {
         return null;
     }
+
+    @Override
+    public CharSequence getText() {
+        AST ast = getAst();
+        if(ast != null) {
+            final StringBuilder sb = new StringBuilder();
+            ASTVisitor impl = new ASTVisitor() {
+                @Override
+                public void visit(AST node) {
+                    for( AST node2 = node; node2 != null; node2 = node2.getNextSibling() ) {
+                        if (node2.getFirstChild() != null) {
+                            visit(node2.getFirstChild());
+                        } else {
+                            sb.append(node2.getText());
+                        }
+                    }
+                }
+            };
+            AST firstChild = ast.getFirstChild();
+            if(firstChild != null) {
+                impl.visit(firstChild);
+            }
+            return sb.toString();
+        }
+        return super.getText();
+    }
+
+
 }
