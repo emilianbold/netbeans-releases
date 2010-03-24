@@ -723,6 +723,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         lblLoadToolsProgress = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(600, 400));
+        setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
         lbToolCollections.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));

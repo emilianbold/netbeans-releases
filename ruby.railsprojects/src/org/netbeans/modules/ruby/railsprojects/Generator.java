@@ -216,18 +216,23 @@ public class Generator {
         }
 
         File usageFile = new File(generatorDir, "USAGE"); // NOI18N
-
+        // At least the "resource" generator on railties seems to live
+        // in the "wrong" place; check the additional location
         if (!usageFile.exists()) {
-            // At least the "resource" generator on railties seems to live
-            // in the "wrong" place; check the additional location
             usageFile = new File(generatorDir, "templates" + File.separator + "USAGE"); // NOI18N
-            if (!usageFile.exists()) {
-                return null;
-            }
+        }
+        // e.g. haml_scaffold doesn't ship with a usage file, try README.rdoc instead
+        if (!usageFile.exists()) {
+            usageFile = new File(generatorDir, "README.rdoc"); // NOI18N
+        }
+        // finally try just README
+        if (!usageFile.exists()) {
+            usageFile = new File(generatorDir, "README"); // NOI18N
         }
 
-        return RailsProjectUtil.asText(usageFile);
+        return usageFile.exists() ? RailsProjectUtil.asText(usageFile) : null;
     }
+
 
     String getNameLabel() {
         if (nameKey != null) {

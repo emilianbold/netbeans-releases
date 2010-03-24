@@ -105,10 +105,7 @@ class UsageLogger {
         int compilationUnitsMissingBuiltTo = 0;
         int compilationUnitsMultipleRoots = 0;
         Set<String> classpathEntries = new HashSet<String>();
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        if (java == null) {
-            java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-        }
+        Element java = JavaProjectGenerator.getJavaCompilationUnits(aux);
         if (java != null) {
             for (Element compilationUnitEl : Util.findSubElements(java)) {
                 compilationUnits++;

@@ -224,6 +224,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean skipSignal = false;
     private Pty pty = null;
 
+    private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
+
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
@@ -331,7 +333,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
-            gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
+            gdb.gdb_set("print repeat", PRINT_REPEAT); // NOI18N
             // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;

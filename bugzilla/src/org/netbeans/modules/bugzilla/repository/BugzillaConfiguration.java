@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
@@ -75,6 +76,7 @@ public class BugzillaConfiguration {
                 if("true".equals(b)) {
                     refresh = true;
                 }
+                Bugzilla.LOG.log(Level.FINE, " Refresh bugzilla configuration [{0}, forceRefresh={1}]", new Object[]{repository.getUrl(), refresh});
                 conf[0] = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
             }
         };

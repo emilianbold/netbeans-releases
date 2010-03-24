@@ -42,9 +42,46 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.File;
+import java.lang.ref.Reference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.AssertionFailedError;
+import org.netbeans.junit.NbTestCase;
 
 public class TestUtils {
+    private static final Logger LOG = Logger.getLogger(TestUtils.class.getName());
+    
     public static String getFileObjectPath (File f) {
         return f.getAbsolutePath().replace('\\','/');//NOI18N
     }
+
+    public static void gcAll() {
+        LOG.info("doing gcAll");
+        List<Reference<Object>> refs = new ArrayList<Reference<Object>>();
+        for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
+            for (Object obj : fbs.allIBaseFileObjects.values()) {
+                if (obj instanceof Reference<?>) {
+                    refs.add((Reference<Object>)obj);
+                } else {
+                    refs.addAll((List<Reference<Object>>) obj);
+                }
+            }
+        }
+
+        for (Reference<Object> ref : refs) {
+            Object obj = ref.get();
+            String s = obj == null ? "null" : obj.toString();
+            obj = null;
+            try {
+                NbTestCase.assertGC("GCing " + s, ref);
+                LOG.log(Level.INFO, "GCed {0}", s);
+            } catch (AssertionFailedError afe) {
+                LOG.log(Level.INFO, "Not GCed {0}", s);
+            }
+        }
+        LOG.info("done gcAll");
+    }
+
 }

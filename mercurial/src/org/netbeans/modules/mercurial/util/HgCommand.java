@@ -107,7 +107,7 @@ public class HgCommand {
             HG_COMMAND + HG_WINDOWS_BAT,
             HG_COMMAND + HG_WINDOWS_CMD,
     };
-    public static final String HG_COMMAND_PLACEHOLDER = new String(HG_COMMAND);
+    public static final String HG_COMMAND_PLACEHOLDER = HG_COMMAND;
     public static final String HGK_COMMAND = "hgk";  // NOI18N
 
     private static final String HG_STATUS_CMD = "status";  // NOI18N // need -A to see ignored files, specified in .hgignore, see man hgignore for details
@@ -324,6 +324,8 @@ public class HgCommand {
     public static final String COMMIT_AFTER_MERGE = "commitAfterMerge"; //NOI18N
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
+    private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
+    private static final String UTF8 = "UTF-8"; //NOI18N
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -1150,7 +1152,7 @@ public class HgCommand {
             Mercurial.LOG.log(Level.INFO, null, ex);
             throw new HgException(ex.getMessage());
         } catch (HgException e) {
-            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "command: {0}", HgUtils.replaceHttpPassword(command)); // NOI18N
             Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         } finally {
@@ -1608,7 +1610,7 @@ public class HgCommand {
             // abort: /path/file not under root
             command.add(file.getCanonicalPath());
         } catch (IOException e) {
-            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "command: {0}", HgUtils.replaceHttpPassword(command)); // NOI18N
             Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         }
@@ -1732,12 +1734,12 @@ public class HgCommand {
         try {
             if (!parentTarget.mkdirs()) {
                 if (!parentTarget.isDirectory()) {
-                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : {0}", parentTarget.getAbsolutePath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
                 }
             }
         } catch (SecurityException e) {
-            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : " + parentTarget.getAbsolutePath() + " threw SecurityException " + e.getMessage()); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : {0} threw SecurityException {1}", new Object[]{parentTarget.getAbsolutePath(), e.getMessage()}); // NOI18N
             throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
         }
 
@@ -1849,7 +1851,7 @@ public class HgCommand {
             tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
 
             // Write to temp file
-            BufferedWriter out = new BufferedWriter(new FileWriter(tempfile));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempfile), UTF8));
             out.write(commitMessage);
             out.close();
 
@@ -1962,7 +1964,7 @@ public class HgCommand {
      */
     public static void doAdd(File repository, List<File> addFiles, OutputLogger logger)  throws HgException {
         if (repository == null) return;
-        if (addFiles.size() == 0) return;
+        if (addFiles.isEmpty()) return;
         List<String> basicCommand = new ArrayList<String>();
         basicCommand.add(getHgCommand());
         basicCommand.add(HG_ADD_CMD);
@@ -1995,7 +1997,7 @@ public class HgCommand {
     public static void doRevert(File repository, List<File> revertFiles,
             String revision, boolean doBackup, OutputLogger logger)  throws HgException {
         if (repository == null) return;
-        if (revertFiles.size() == 0) return;
+        if (revertFiles.isEmpty()) return;
 
         final List<String> command = new ArrayList<String>();
 
@@ -2016,6 +2018,7 @@ public class HgCommand {
         }
         List<String> list;
         Callable<List<String>> callable = new Callable<List<String>>() {
+            @Override
             public List<String> call() throws Exception {
                 return exec(command);
             }
@@ -2348,7 +2351,7 @@ public class HgCommand {
      */
     public static void doRemove(File repository, List<File> removeFiles, OutputLogger logger)  throws HgException {
         if (repository == null) return;
-        if (removeFiles.size() == 0) return;
+        if (removeFiles.isEmpty()) return;
         List<String> basicCommand = new ArrayList<String>();
         basicCommand.add(getHgCommand());
         basicCommand.add(HG_REMOVE_CMD);
@@ -2411,12 +2414,12 @@ public class HgCommand {
         try {
             if (!parentTarget.mkdir()) {
                 if (!parentTarget.isDirectory()) {
-                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : {0}", parentTarget.getAbsolutePath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
                 }
             }
         } catch (SecurityException e) {
-            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : " + parentTarget.getAbsolutePath() + " threw SecurityException " + e.getMessage()); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : {0} threw SecurityException {1}", new Object[]{parentTarget.getAbsolutePath(), e.getMessage()}); // NOI18N
             throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
         }
         List<String> command = new ArrayList<String>();
@@ -2502,12 +2505,12 @@ public class HgCommand {
         try {
             if (!parentTarget.mkdir()) {
                 if (!parentTarget.isDirectory()) {
-                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : {0}", parentTarget.getAbsolutePath()); // NOI18N
                     throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
                 }
             }
         } catch (SecurityException e) {
-            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : " + parentTarget.getAbsolutePath() + " threw SecurityException " + e.getMessage()); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : {0} threw SecurityException {1}", new Object[]{parentTarget.getAbsolutePath(), e.getMessage()}); // NOI18N
             throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
         }
         List<String> command = new ArrayList<String>();
@@ -2579,7 +2582,7 @@ public class HgCommand {
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getStatusWithFlags: starting for " + dirs); //NOI18N
+            Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags: starting for {0}", dirs); //NOI18N
             startTime = System.currentTimeMillis();
         }
         FileInformation prev_info = null;
@@ -2614,7 +2617,7 @@ public class HgCommand {
             }else{
                 if(info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
             }
-            StringBuffer sb = new StringBuffer(statusLine);
+            StringBuilder sb = new StringBuilder(statusLine);
             sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
             if(Utilities.isWindows() && sb.toString().startsWith(repository.getAbsolutePath())) {
                 file = new File(sb.toString());  // prevent bogus paths (C:\tmp\hg\C:\tmp\hg\whatever) - see issue #139500
@@ -2646,7 +2649,7 @@ public class HgCommand {
         }
 
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getStatusWithFlags for " + dirs + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
+            Mercurial.STATUS_LOG.log(Level.FINER, "getStatusWithFlags for {0} lasted {1}", new Object[]{dirs, System.currentTimeMillis() - startTime}); //NOI18N
         }
         return repositoryFiles;
     }
@@ -2808,6 +2811,7 @@ public class HgCommand {
             if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
                 // indexing is supposed to be disabled for the time the command is running
                 return runWithoutIndexing(new Callable<List<String>>() {
+                    @Override
                     public List<String> call() throws Exception {
                         return exec(command, pb);
                     }
@@ -2832,6 +2836,7 @@ public class HgCommand {
 
     private static void setGlobalEnvVariables (Map<String, String> environment) {
         environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        environment.put(ENV_HGENCODING, UTF8);
     }
 
     /**
@@ -2847,9 +2852,9 @@ public class HgCommand {
                     smallCommand.add((String)i.next());
                     if (count++ > 10) break;
                 }
-                Mercurial.LOG.log(Level.FINE, "execEnv(): " + smallCommand); // NOI18N
+                Mercurial.LOG.log(Level.FINE, "execEnv(): {0}", smallCommand); // NOI18N
             } else {
-                Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
+                Mercurial.LOG.log(Level.FINE, "execEnv(): {0}", command); // NOI18N
             }
         }
     }
@@ -2862,11 +2867,12 @@ public class HgCommand {
         try{
             proc = pb.start();
 
-            input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            input = new BufferedReader(new InputStreamReader(proc.getInputStream(), UTF8));
+            error = new BufferedReader(new InputStreamReader(proc.getErrorStream(), UTF8));
             final BufferedReader errorReader = error;
             final LinkedList<String> errorOutput = new LinkedList<String>();
             Thread errorThread = new Thread(new Runnable () {
+                @Override
                 public void run() {
                     try {
                         String line;
@@ -2900,16 +2906,16 @@ public class HgCommand {
                 if (proc.exitValue() == 255) {
                     Mercurial.LOG.log(Level.FINE, "execEnv():  process returned 255"); // NOI18N
                     if (list.isEmpty()) {
-                        Mercurial.LOG.log(Level.SEVERE, "command: " + command); // NOI18N
+                        Mercurial.LOG.log(Level.SEVERE, "command: {0}", command); // NOI18N
                         throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
                     }
                 }
             } catch (InterruptedException e) {
-                Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted " + e); // NOI18N
+                Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted {0}", e); // NOI18N
             }
         }catch(InterruptedIOException e){
             // We get here is we try to cancel so kill the process
-            Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): InterruptedIOException " + e); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): InterruptedIOException {0}", e); // NOI18N
             if (proc != null)  {
                 try {
                     proc.getInputStream().close();
@@ -2926,8 +2932,7 @@ public class HgCommand {
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
-            Mercurial.LOG.log(command.contains(HG_VERSION_CMD) ? Level.INFO : Level.WARNING,
-                    "execEnv():  execEnv(): IOException " + e); // NOI18N
+            Mercurial.LOG.log(command.contains(HG_VERSION_CMD) ? Level.INFO : Level.WARNING, "execEnv():  execEnv(): IOException {0}", e); // NOI18N
 
             // Handle low level Mercurial failures
             if (isErrorArgsTooLong(e.getMessage())){
@@ -2983,7 +2988,7 @@ public class HgCommand {
                                                 null);    //extension (default)
                     Writer writer = new OutputStreamWriter(
                                                 new FileOutputStream(tempFile),
-                                                "ISO-8859-1");          //NOI18N
+                                                UTF8);
                     try {
                         writer.append("changeset = ")                   //NOI18N
                               .append('"').append(template).append('"');
@@ -3119,8 +3124,8 @@ public class HgCommand {
 
     private static void handleError(List<? extends Object> command, List<String> cmdOutput, String message, OutputLogger logger) throws HgException{
         if (command != null && cmdOutput != null && logger != null){
-            Mercurial.LOG.log(Level.WARNING, "command: " + command); // NOI18N
-            Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(cmdOutput)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "command: {0}", command); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "output: {0}", HgUtils.replaceHttpPassword(cmdOutput)); // NOI18N
             logger.outputInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
             logger.output(NbBundle.getMessage(
                                 HgCommand.class,
@@ -3441,13 +3446,14 @@ public class HgCommand {
 
         Process proc = null;
         try{
-            Mercurial.LOG.log(Level.FINE, "execCheckClone(): " + command); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "execCheckClone(): {0}", command); // NOI18N
             ProcessBuilder b = new ProcessBuilder(command);
             b.redirectErrorStream(true);
             // start the clone
             proc = b.start();
             final Process procf = proc;
             final Thread t1 = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     BufferedReader in = new BufferedReader(new InputStreamReader(procf.getInputStream()));
                     String line;
@@ -3492,7 +3498,7 @@ public class HgCommand {
             }
         } catch(InterruptedIOException e){
             // We get here is we try to cancel so kill the process
-            Mercurial.LOG.log(Level.FINE, "execCheckClone():  InterruptedIOException " + e); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "execCheckClone():  InterruptedIOException {0}", e); // NOI18N
             if (proc != null)  {
                 try {
                     proc.getInputStream().close();

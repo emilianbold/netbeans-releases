@@ -207,6 +207,18 @@ public class ChatPanel extends javax.swing.JPanel {
         jCheckBoxMenuItem.addActionListener(bubbleEnabled);
         menu.add(jCheckBoxMenuItem);
     }
+
+    private void insertLink() {
+        Mode editor = WindowManager.getDefault().findMode("editor"); //NOI18N
+        TopComponent tc = editor.getSelectedTopComponent();
+        if (getTopComponent(EditorRegistry.lastFocusedComponent()) == tc) {
+            insertLinkToEditor();
+        } else if (tc != null && isIssueRelated(tc)) {
+            insertLinkToIssue();
+        } else {
+            insertLinkToEditor();
+        }
+    }
     private void insertLinkToEditor() {
         if (EditorRegistry.lastFocusedComponent() != null) {
             new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true, false).actionPerformed(null);
@@ -891,18 +903,18 @@ public class ChatPanel extends javax.swing.JPanel {
         if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
             Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
             TopComponent tc = editor.getSelectedTopComponent();
-                if (getTopComponent(EditorRegistry.lastFocusedComponent()) == tc) {
-                    insertLinkToEditor();
-                } else if (tc!=null && isIssueRelated(tc)) {
-                    insertLinkToIssue();
-                } else {
-                   Point magicCaretPosition = outbox.getCaret().getMagicCaretPosition();
-                   if (magicCaretPosition==null) {
-                       magicCaretPosition = new Point(0,0);
-                   }
-                   outbox.getComponentPopupMenu().show(outbox, magicCaretPosition.x, magicCaretPosition.y);
+            if (getTopComponent(EditorRegistry.lastFocusedComponent()) == tc) {
+                insertLinkToEditor();
+            } else if (tc != null && isIssueRelated(tc)) {
+                insertLinkToIssue();
+            } else {
+                Point magicCaretPosition = outbox.getCaret().getMagicCaretPosition();
+                if (magicCaretPosition == null) {
+                    magicCaretPosition = new Point(0, 0);
                 }
+                outbox.getComponentPopupMenu().show(outbox, magicCaretPosition.x, magicCaretPosition.y);
             }
+        }
     }//GEN-LAST:event_outboxKeyPressed
 
     private boolean isIssueRelated(TopComponent tc) {
@@ -967,7 +979,8 @@ public class ChatPanel extends javax.swing.JPanel {
         HashSet<FileObject> fos = new HashSet();
         for (JTextComponent comp:EditorRegistry.componentList()) {
             //ugly fix of #181134
-            if (getTopComponent(comp).getClass().getName().endsWith("DiffTopComponent")) //NOI18N
+            TopComponent tc = getTopComponent(comp);
+            if (tc != null && tc.getClass().getName().endsWith("DiffTopComponent")) //NOI18N
                 continue;
             dropDownMenu.add(new InsertLinkAction(comp, outbox, false, false));
         }
@@ -1006,7 +1019,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_dropDownMenuPopupMenuWillBecomeInvisible
 
     private void sendLinkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendLinkButtonActionPerformed
-        insertLinkToEditor();
+        insertLink();
         outbox.requestFocus();
 }//GEN-LAST:event_sendLinkButtonActionPerformed
 
