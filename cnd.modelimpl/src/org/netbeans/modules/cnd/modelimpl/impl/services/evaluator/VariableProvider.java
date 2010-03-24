@@ -136,19 +136,19 @@ public class VariableProvider {
                     }
                 }
             }
+            Resolver3 r = new Resolver3(decl.getContainingFile(), decl.getStartOffset(), null);
+            CsmObject o = r.resolve(variableName.replaceAll("(.*)::.*", "$1"), Resolver3.ALL); // NOI18N
+            if (CsmKindUtilities.isClassifier(o)) {
+                CsmClassifier cls = (CsmClassifier) o;
+                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, decl.getContainingFile());
+                if(CsmKindUtilities.isInstantiation(originalClassifier)) {
+                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
+                    if (eval instanceof Integer) {
+                        return (Integer) eval;
+                    }
+                }
+            }
             // it works but does it too slow
-//            Resolver3 r = new Resolver3(decl.getContainingFile(), decl.getStartOffset(), null);
-//            CsmObject o = r.resolve(variableName.replaceAll("(.*)::.*", "$1"), Resolver3.ALL); // NOI18N
-//            if (CsmKindUtilities.isClassifier(o)) {
-//                CsmClassifier cls = (CsmClassifier) o;
-//                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, decl.getContainingFile());
-//                if(CsmKindUtilities.isInstantiation(originalClassifier)) {
-//                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
-//                    if (eval instanceof Integer) {
-//                        return (Integer) eval;
-//                    }
-//                }
-//            }
 //            {
 //                TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1")); // NOI18N
 //
