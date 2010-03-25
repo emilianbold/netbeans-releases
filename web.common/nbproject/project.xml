@@ -131,6 +131,7 @@
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.common.api</package>
