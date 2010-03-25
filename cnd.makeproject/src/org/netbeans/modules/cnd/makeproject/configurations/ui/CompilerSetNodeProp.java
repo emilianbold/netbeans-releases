@@ -213,7 +213,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
             this.setLayout(new BorderLayout());
             this.setBorder(new EmptyBorder(6,6,0,6));
-            tpc = ToolsPanelSupport.getToolsPanelComponent(hostConfiguration.getExecutionEnvironment());
+            tpc = ToolsPanelSupport.getToolsPanelComponent(hostConfiguration.getExecutionEnvironment(), getValue());
             delegate = (VetoableChangeListener) tpc.getClientProperty(ToolsPanelSupport.OK_LISTENER_KEY);
             add(tpc, BorderLayout.CENTER);
             this.putClientProperty("title", NbBundle.getMessage(CompilerSetNodeProp.class, "CompilerSetEditorCustomizerTitile", hostConfiguration.getExecutionEnvironment().getDisplayName()));
