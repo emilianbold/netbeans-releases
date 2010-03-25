@@ -334,13 +334,14 @@ public class StreamTerm extends Term {
 	if (stdinMonitor != null)
 	    removeInputListener(stdinMonitor);
 
-	// Wait until the outputmonitors exit and then pass on control
+	// Wait until the output monitors exit and then pass on control
 	// to the continuation.
 	Thread drainer = new Thread() {
 	    @Override
 	    public void run() {
 		disconnectWork();
-		SwingUtilities.invokeLater(continuation);
+		if (continuation != null)
+		    SwingUtilities.invokeLater(continuation);
 	    }
 	};
 	drainer.start();
