@@ -420,7 +420,7 @@ public class PhpProject implements Project {
     }
 
     private void informUser(String title, String message, int type) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
                 message,
                 title,
                 NotifyDescriptor.DEFAULT_OPTION,
