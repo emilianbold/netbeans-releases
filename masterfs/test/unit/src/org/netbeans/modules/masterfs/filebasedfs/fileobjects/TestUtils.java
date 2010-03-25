@@ -84,4 +84,26 @@ public class TestUtils {
         LOG.info("done gcAll");
     }
 
+    public static void logAll() {
+        LOG.info("all existing file objects");
+        List<Reference<Object>> refs = new ArrayList<Reference<Object>>();
+        for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
+            for (Object obj : fbs.allIBaseFileObjects.values()) {
+                if (obj instanceof Reference<?>) {
+                    refs.add((Reference<Object>)obj);
+                } else {
+                    refs.addAll((List<Reference<Object>>) obj);
+                }
+            }
+        }
+
+        for (Reference<Object> ref : refs) {
+            Object obj = ref.get();
+            if (obj != null) {
+                LOG.log(Level.INFO, "Existing {0}", obj);
+            }
+        }
+        LOG.info("end of file objects");
+    }
+
 }
