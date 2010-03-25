@@ -453,6 +453,7 @@ public final class FileObjectFactory {
                 }
             }
         }
+        all2Refresh.remove(root); // #182793
         return all2Refresh;
     }
 
