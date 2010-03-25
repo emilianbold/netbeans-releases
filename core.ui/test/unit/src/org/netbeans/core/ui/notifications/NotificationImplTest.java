@@ -53,8 +53,8 @@ public class NotificationImplTest extends TestCase {
     }
 
     public void testSilentMeansNoBalloon() {
-        NotificationImpl instance = new NotificationImpl();
-        instance.init("Title", null, Priority.SILENT, null, null);
+        NotificationImpl instance = new NotificationImpl("Title", null, Priority.SILENT);
+        instance.initDecorations();
         assertFalse("No balloon", instance.showBallon());
     }
 
