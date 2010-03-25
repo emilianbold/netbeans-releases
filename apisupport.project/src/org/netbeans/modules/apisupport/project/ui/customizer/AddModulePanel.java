@@ -86,6 +86,7 @@ import org.openide.util.RequestProcessor;
 public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
+    private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 1, true);
     private static Rectangle lastSize;
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
@@ -195,7 +196,7 @@ public final class AddModulePanel extends JPanel {
             }
         }
     }
-    
+
     private void fillUpUniverseModules() {
         filterValue.setEnabled(false);
         moduleList.setEnabled(false);
@@ -292,12 +293,22 @@ public final class AddModulePanel extends JPanel {
         }
         return deps;
     }
+
+    public @Override void removeNotify() {
+        super.removeNotify();
+        cancelFilterTask();
+    }
     
-    private void search() {
+    private synchronized void cancelFilterTask() {
         if (filterTask != null) {
             filterTask.cancel();
             filterTask = null;
+            filterer = null;
         }
+    }
+
+    private void search() {
+        cancelFilterTask();
         final String text = filterValue.getText();
         if (text.length() == 0) {
             moduleList.setModel(universeModules);
@@ -305,11 +316,16 @@ public final class AddModulePanel extends JPanel {
             moduleList.ensureIndexIsVisible(0);
         } else {
             final Runnable compute = new Runnable() {
-                public void run() {
+                public @Override void run() {
+                    if (filterer == null) {
+                        return;
+                    }
                     final Set<ModuleDependency> matches = filterer.getMatches(text);
-                    filterTask = null;
+                    synchronized (AddModulePanel.this) {
+                        filterTask = null;
+                    }
                     Mutex.EVENT.readAccess(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             // XXX would be better to have more fine-grained control over the thread
                             if (!text.equals(filterValue.getText())) {
                                 return; // no longer valid, don't apply
@@ -325,14 +341,16 @@ public final class AddModulePanel extends JPanel {
             if (filterer == null) {
                 // Slow to create it, so show Please wait...
                 moduleList.setModel(CustomizerComponentFactory.createListWaitModel());
-                filterTask = RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        if (filterer == null) {
-                            filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
-                            compute.run();
+                synchronized (this) {
+                    filterTask = RP.post(new Runnable() {
+                        public @Override void run() {
+                            if (filterer == null) {
+                                filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
+                                compute.run();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
                 // Pretty fast once we have it, so do right now and avoid flickering.
                 compute.run();
