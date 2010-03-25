@@ -16,10 +16,13 @@ import org.openide.windows.IOContainer;
 
 import org.netbeans.terminal.example.TerminalIOProviderSupport;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 public final class CommandTerminalAction implements ActionListener {
 
     private final TerminalPanel terminalPanel = new TerminalPanel();
+
+    public static InputOutput lastIO;
 
     public void actionPerformed(ActionEvent e) {
 
@@ -94,16 +97,21 @@ public final class CommandTerminalAction implements ActionListener {
 
 	final Runnable runnable = new Runnable() {
 	    public void run() {
+		final InputOutput io;
 		switch (terminalPanel.getExecution()) {
 		    case RICH:
-			support.executeRichCommand(iop, container, cmd,
+			io = support.executeRichCommand(iop, container, cmd,
 				                   restartable, useInternalIOShuttle);
 			break;
 		    case NATIVE:
-			support.executeNativeCommand(iop, container, cmd,
+			io = support.executeNativeCommand(iop, container, cmd,
 				                     restartable, useInternalIOShuttle);
 			break;
+		    default:
+			io = null;
+			break;
 		}
+		lastIO = io;
 	    }
 	};
 

@@ -37,78 +37,52 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.config;
+package org.netbeans.modules.terminal.api;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
 /**
- *
- * @author Petr Hejl
+ * Capability of an InputOutput which controls whether it is visible
+ * as a tab or not.
+ * setVisible(true) is equivalent to select().
+ * setVisible(false) is equivalent to X'ing the tab or Closing from
+ * the context menu. setVisible() may fail silently if the IO is not
+ * closable. (See IOContainer.isClosable()).
+ * @author ivan
  */
-public class WLDatasource implements Datasource {
+public abstract class IOVisibility {
 
-    private final String name;
-
-    private final String url;
-
-    private final String jndi;
-
-    private final String user;
-
-    private final String password;
-
-    private final String driver;
-
-    private final File origin;
-
-    public WLDatasource(String name, String url, String jndi, String user,
-            String password, String driver, File origin) {
-        this.name = name;
-        this.url = url;
-        this.jndi = jndi;
-        this.user = user;
-        this.password = password;
-        this.driver = driver;
-        this.origin = origin;
+    private static IOVisibility find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOVisibility.class);
+        }
+        return null;
     }
 
-    public String getName() {
-        return name;
+    /**
+     * Control the visibility of this I/O.
+     * setVisible(true) is equivalent to select().
+     * setVisible(false) is equivalent to X'ing the tab or Closing from
+     * the context menu. setVisible() may fail silently if the IO is not
+     * closable. (See IOContainer.isClosable()).
+     * @param visible
+     */
+    public static void setVisible(InputOutput io, boolean visible) {
+	IOVisibility iov = find(io);
+	if (iov != null)
+	    iov.setVisible(visible);
     }
 
-    @Override
-    public String getDisplayName() {
-        return name;
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
     }
 
-    @Override
-    public String getDriverClassName() {
-        return driver;
-    }
-
-    @Override
-    public String getJndiName() {
-        return jndi;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUrl() {
-        return url;
-    }
-
-    @Override
-    public String getUsername() {
-        return user;
-    }
-
-    public File getOrigin() {
-        return origin;
-    }
-
+    abstract protected void setVisible(boolean visible);
 }
