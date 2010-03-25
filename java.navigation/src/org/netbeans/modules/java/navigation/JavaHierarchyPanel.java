@@ -88,6 +88,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         root.add (new DefaultMutableTreeNode (NbBundle.getMessage (JavaHierarchyPanel.class, "LBL_WaitNode"))); // NOI18N
         pleaseWaitTreeModel = new DefaultTreeModel (root);
     }
+    private static final RequestProcessor RP = new RequestProcessor(JavaHierarchyPanel.class.getName(), 1, false, false);
     private JavaHierarchyModel javaHierarchyModel;
 
     /**
@@ -561,7 +562,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         JavaMembersAndHierarchyOptions.setShowFQN (showFQNToggleButton.isSelected ());
         JavaMembersAndHierarchyOptions.setShowInner (showInnerToggleButton.isSelected ());
 
-        RequestProcessor.getDefault ().post (
+        RP.post (
             new Runnable () {
 
             @Override
