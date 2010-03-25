@@ -161,7 +161,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static final String MASK = "mask"; // NOI18N
     private static StandardNodeAction renameAction = null;
     private static StandardNodeAction deleteAction = null;
-    private final static RequestProcessor RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
+    private final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
     private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 10); // NOI18N
 
     public MakeLogicalViewProvider(MakeProject project) {
@@ -515,7 +515,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
                         folder,
                         provider.getProject(),
-                        new FolderSearchInfo(folder),}));
+                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
@@ -1025,7 +1025,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
                         folder,
                         provider.getProject(),
-                        new FolderSearchInfo(folder),}));
+                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setForceAnnotation(true);
@@ -1033,7 +1033,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void updateAnnotationFiles() {
-            RP.post(new FileAnnotationUpdater(this));
+            ANNOTATION_RP.post(new FileAnnotationUpdater(this));
         }
         
         private final class FileAnnotationUpdater implements Runnable {

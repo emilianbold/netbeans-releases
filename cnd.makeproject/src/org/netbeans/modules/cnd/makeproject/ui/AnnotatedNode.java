@@ -60,19 +60,17 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
 
     private Set<FileObject> files;
     private RequestProcessor.Task task;
+    private final RequestProcessor rp;
     private volatile boolean iconChange;
     private volatile boolean nameChange;
     private boolean forceAnnotation;
     private FileStatusListener fsl = null;
-    ;
     private FileSystem fs = null;
 
-    protected AnnotatedNode(Children children) {
-        super(children, null);
-    }
-
-    protected AnnotatedNode(Children children, Lookup lookup) {
+    protected AnnotatedNode(Children children, Lookup lookup, RequestProcessor rp) {
         super(children, lookup);
+        assert rp != null;
+        this.rp = rp;
     }
 
     protected final void setFiles(final Set<FileObject> files) {
@@ -148,7 +146,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
             return;
         }
         if (task == null) {
-            task = RequestProcessor.getDefault().create(this);
+            task = this.rp.create(this);
         }
         boolean changed = false;
         if (forceAnnotation || ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange()))) {
