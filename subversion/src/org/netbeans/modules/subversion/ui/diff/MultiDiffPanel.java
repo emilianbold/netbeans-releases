@@ -200,7 +200,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         replaceVerticalSplitPane(diffViewPanel);
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2, forceNonEditable));
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, forceNonEditable)};
+        setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = Subversion.getInstance().getParallelRequestProcessor().post(dpt);
@@ -228,7 +229,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshButton.setVisible(false);
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, status));
+        Setup[] localSetups = new Setup[] {new Setup(file, status)};
+        setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = Subversion.getInstance().getParallelRequestProcessor().post(dpt);
@@ -243,11 +245,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         add(replacement, BorderLayout.CENTER);
     }
 
-    private void setSetups(Setup... setups) {
+    private void setSetups(Setup[] setups, EditorCookie[] cookies) {
         this.setups = setups;
-        this.editorCookies = (setups != null)
-                             ? DiffUtils.setupsToEditorCookies(setups)
-                             : null;
+        this.editorCookies = cookies;
     }
 
     private boolean fileTableSetSelectedIndexContext;
@@ -349,7 +349,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Called by the enclosing TopComponent to interrupt the fetching task.
      */
     void componentClosed() {
-        setSetups((Setup[]) null);
+        setSetups((Setup[]) null, null);
         /**
          * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
          * see #159266
@@ -750,11 +750,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             if (localSetups == null) {
                 return;
             }
+            final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     displayStatuses = localDisplayStatuses;
-                    setSetups(localSetups);
+                    setSetups(localSetups, cookies);
                     boolean propertyColumnVisible = false;
                     for (Setup setup : setups) {
                         if (setup.getPropertyName() != null) {
@@ -780,7 +781,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                             default:
                                 throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
                         }
-                        setSetups((Setup[]) null);
+                        setSetups((Setup[]) null, null);
                         fileTable.getComponent().setEnabled(false);
                         fileTable.getComponent().setPreferredSize(null);
                         Dimension dim = fileTable.getComponent().getPreferredSize();

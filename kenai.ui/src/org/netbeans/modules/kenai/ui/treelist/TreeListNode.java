@@ -86,6 +86,12 @@ public abstract class TreeListNode {
 
     private ChildrenLoader loader;
 
+    private static RequestProcessor rp = new RequestProcessor("Asynchronous Tree List Node", 5);
+
+    protected static void post(Runnable run) {
+        rp.post(run);
+    }
+
     /**
      * C'tor
      * @param expandable True if the node provides some children
@@ -290,7 +296,7 @@ public abstract class TreeListNode {
         if( null != loader )
             loader.cancel();
         loader = new ChildrenLoader();
-        RequestProcessor.getDefault().post(loader);
+        post(loader);
     }
 
     private class ChildrenLoader implements Runnable, Cancellable {
