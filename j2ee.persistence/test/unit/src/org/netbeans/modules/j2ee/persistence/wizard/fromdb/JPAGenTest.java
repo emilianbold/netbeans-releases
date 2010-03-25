@@ -103,7 +103,7 @@ public class JPAGenTest extends SourceTestSupport{
         EntityClass user = getUserEntity();
         
         EntityClass product = new EntityClass( null, null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", UpdateType.NEW.toString(), null);
+                getWorkDirFO(), packageName, "Product", UpdateType.NEW, null);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -204,7 +204,7 @@ public class JPAGenTest extends SourceTestSupport{
     
     private EntityClass getUserEntity() throws IOException{
         EntityClass user = new EntityClass( null, null, 
-                "USER", getWorkDirFO(), packageName, "User", UpdateType.NEW.toString(), null);
+                "USER", getWorkDirFO(), packageName, "User", UpdateType.NEW, null);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();
@@ -366,8 +366,8 @@ public class JPAGenTest extends SourceTestSupport{
         }
 
         @Override
-        public String getUpdateType(String tableName) {
-            return UpdateType.NEW.toString();
+        public UpdateType getUpdateType(String tableName) {
+            return UpdateType.NEW;
         }
     }
     

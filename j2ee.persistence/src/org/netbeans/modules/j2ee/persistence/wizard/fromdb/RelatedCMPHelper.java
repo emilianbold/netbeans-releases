@@ -299,7 +299,7 @@ public class RelatedCMPHelper {
 
         for (Table table : selectedTables.getTables()) {
             genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
-                    selectedTables.getClassName(table), selectedTables.getUpdateType(table).toString(), table.getUniqueConstraints());
+                    selectedTables.getClassName(table), selectedTables.getUpdateType(table), table.getUniqueConstraints());
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly
@@ -337,7 +337,7 @@ public class RelatedCMPHelper {
         private final Map<String, FileObject> rootFolders = new HashMap<String, FileObject>();
         private final Map<String, String> packageNames = new HashMap<String, String>();
         private final Map<String, String> classNames = new HashMap<String, String>();
-        private final Map<String, String> updateTypes = new HashMap<String, String>();
+        private final Map<String, UpdateType> updateTypes = new HashMap<String, UpdateType>();
         private final Map<String, Set<List<String>>> allUniqueConstraints = new HashMap<String, Set<List<String>>>();
         
         public Set<String> getTableNames() {
@@ -345,7 +345,7 @@ public class RelatedCMPHelper {
         }
         
         private void addTable(String catalogName, String schemaName, String tableName, 
-                FileObject rootFolder, String packageName, String className, String updateType,
+                FileObject rootFolder, String packageName, String className, UpdateType updateType,
                 Set<List<String>> uniqueConstraints) {
             tableNames.add(tableName);
             catalog = catalogName;
@@ -377,7 +377,7 @@ public class RelatedCMPHelper {
             return classNames.get(tableName);
         }
 
-        public String getUpdateType(String tableName){
+        public UpdateType getUpdateType(String tableName){
             return updateTypes.get(tableName);
         }
 
