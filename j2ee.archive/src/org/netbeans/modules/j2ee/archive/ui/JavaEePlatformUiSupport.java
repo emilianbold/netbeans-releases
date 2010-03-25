@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -44,10 +44,14 @@ package org.netbeans.modules.j2ee.archive.ui;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 
@@ -72,7 +76,12 @@ public class JavaEePlatformUiSupport {
             J2eePlatform j2eePlatform = ((JavaEePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
             String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
             for (int i = 0; retVal == null && i < serverInstanceIDs.length; i++) {
-                J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
+                J2eePlatform platform = null;
+                try {
+                    platform = Deployment.getDefault().getServerInstance(serverInstanceIDs[i]).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger("global").log(Level.INFO, serverInstanceIDs[i], ex);
+                }
                 if (platform != null && platform.getDisplayName().equals(j2eePlatform.getDisplayName())) {
                     retVal = serverInstanceIDs[i];
                 }
@@ -89,7 +98,12 @@ public class JavaEePlatformUiSupport {
             JavaEePlatformComboBoxModel jeepcbm = new JavaEePlatformComboBoxModel(null);
             JavaEePlatformAdapter[] jeepas = jeepcbm.getJavaEePlatforms();
             for (int i = 0; retVal == null && i < jeepas.length; i++) {
-                J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(id);
+                J2eePlatform platform = null;
+                try {
+                    platform = Deployment.getDefault().getServerInstance(id).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger("global").log(Level.INFO, id, ex);
+                }
                 if (platform != null && platform.getDisplayName().equals(jeepas[i].getJ2eePlatform().getDisplayName())) {
                     retVal = jeepas[i];
                 }
@@ -110,18 +124,22 @@ public class JavaEePlatformUiSupport {
             getJavaEePlatforms();
         }
         
+        @Override
         public Object getElementAt(int index) {
             return getJavaEePlatforms()[index];
         }
         
+        @Override
         public int getSize() {
             return getJavaEePlatforms().length;
         }
         
+        @Override
         public synchronized Object getSelectedItem() {
             return selectedJ2eePlatform;
         }
         
+        @Override
         public synchronized void setSelectedItem(Object obj) {
             selectedJ2eePlatform = (JavaEePlatformAdapter)obj;
         }
@@ -135,7 +153,12 @@ public class JavaEePlatformUiSupport {
                 
                 boolean sjasFound = false;
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
-                    J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
+                    J2eePlatform j2eePlatform = null;
+                    try {
+                        j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceIDs[i]).getJ2eePlatform();
+                    } catch (InstanceRemovedException ex) {
+                        Logger.getLogger("global").log(Level.INFO, serverInstanceIDs[i], ex);
+                    }
                     if (j2eePlatform != null) {
                         JavaEePlatformAdapter adapter = new JavaEePlatformAdapter(j2eePlatform);
                         orderedNames.add(adapter);
@@ -148,9 +171,14 @@ public class JavaEePlatformUiSupport {
                         }
                         if (firstAdapter == null || !sjasFound) {
                             // try to pick a glassfish instance
-                            if (j2eePlatform.getSupportedSpecVersions().contains(J2eeModule.JAVA_EE_5) &&
+                            if (j2eePlatform.getSupportedProfiles().contains(Profile.JAVA_EE_5) &&
                                     j2eePlatform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
-                                String shortName = Deployment.getDefault().getServerID(serverInstanceIDs[i]);
+                                String shortName = null;
+                                try {
+                                    shortName = Deployment.getDefault().getServerInstance(serverInstanceIDs[i]).getServerID();
+                                } catch (InstanceRemovedException ex) {
+                                    Logger.getLogger("global").log(Level.INFO, serverInstanceIDs[i], ex);
+                                }
                                 if ("J2EE".equals(shortName)) { // NOI18N
                                     firstAdapter = adapter;
                                     sjasFound = true;
@@ -176,9 +204,11 @@ public class JavaEePlatformUiSupport {
             return j2eePlatforms;
         }
         
+        @Override
         public void addListDataListener(ListDataListener l) {
         }
         
+        @Override
         public void removeListDataListener(ListDataListener l) {
         }
     }
@@ -204,10 +234,12 @@ public class JavaEePlatformUiSupport {
             return platform;
         }
         
+        @Override
         public String toString() {
             return platform.getDisplayName();
         }
         
+        @Override
         public int compareTo(Object o) {
             JavaEePlatformAdapter oa = (JavaEePlatformAdapter)o;
             return toString().compareTo(oa.toString());

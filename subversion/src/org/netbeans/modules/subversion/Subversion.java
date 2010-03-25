@@ -62,7 +62,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
-import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -130,6 +129,7 @@ public class Subversion {
         }
         return instance;
     }
+    private RequestProcessor parallelRP;
 
     private Subversion() {
     }
@@ -151,6 +151,7 @@ public class Subversion {
 
     private void asyncInit() {
         getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 SvnKenaiAccessor.getInstance().registerVCSNoficationListener();
             }
@@ -161,6 +162,7 @@ public class Subversion {
     
     private void prepareCache() {
         cleanupTask = getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 if (DelayScanRegistry.getInstance().isDelayed(cleanupTask, LOG, "Subversion.cleanupTask")) { //NOI18N
                     return;
@@ -279,7 +281,7 @@ public class Subversion {
         for (File root : roots) {
             // XXX #168094 logging
             if (!SvnUtils.isManaged(root)) {
-                Subversion.LOG.warning("getClient: unmanaged file in context: " + root.getAbsoluteFile()); //NOI18N
+                Subversion.LOG.log(Level.WARNING, "getClient: unmanaged file in context: {0}", root.getAbsoluteFile()); //NOI18N
             }
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
@@ -449,6 +451,13 @@ public class Subversion {
         return getRequestProcessor(null);
     }
 
+    public RequestProcessor getParallelRequestProcessor () {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Subversion.ParallelTasks", 5, true); //NOI18N
+        }
+        return parallelRP;
+    }
+
     /**
      * Serializes all SVN requests (moves them out of AWT).
      */
@@ -509,10 +518,7 @@ public class Subversion {
      * @param files files to chage the annotations for
      */
     public void refreshAnnotations(File... files) {
-        Set<File> s = new HashSet<File>();
-        for (File file : files) {
-            s.add(file);
-        }
+        Set<File> s = new HashSet<File>(Arrays.asList(files));
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
     }
 
@@ -522,10 +528,7 @@ public class Subversion {
      * @param files files to chage the annotations and sidebars for
      */
     public void refreshAnnotationsAndSidebars (File... files) {
-        Set<File> s = new HashSet<File>();
-        for (File file : files) {
-            s.add(file);
-        }
+        Set<File> s = new HashSet<File>(Arrays.asList(files));
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
@@ -568,7 +571,7 @@ public class Subversion {
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file " + workingCopy.getAbsolutePath() + ")"); //NOI18N
+            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file {0})", workingCopy.getAbsolutePath()); //NOI18N
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.log(Level.FINE, null, ex);
             }
@@ -578,8 +581,7 @@ public class Subversion {
                     original.delete();
                 } catch (Exception ex) {
                     if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.warning("Failed to delete temporary file "  //NOI18N
-                                    + original.getAbsolutePath());
+                        LOG.log(Level.WARNING, "Failed to delete temporary file {0}", original.getAbsolutePath());
                     }
                     //otherwise ignore the exception - leave the file as it is
                 }
