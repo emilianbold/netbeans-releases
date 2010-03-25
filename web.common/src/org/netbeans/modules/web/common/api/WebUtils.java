@@ -88,6 +88,7 @@ public class WebUtils {
             URI u = new URI(importedFileName);
             File file = null;
 
+            //does the uri have a scheme component?
             if (u.isAbsolute()) {
                 //do refactor only file resources
                 if ("file".equals(u.getScheme())) { //NOI18N
@@ -104,8 +105,7 @@ public class WebUtils {
             }
 
             if (file != null) {
-
-                if (!isAbsoluteFile(file)) {
+                if (!isAbsolute(file, importedFileName)) {
                     //relative to the current file's folder - let's resolve
                     FileObject parent = source.getParent();
                     if(parent != null) {
@@ -151,13 +151,12 @@ public class WebUtils {
     }
 
     //windows File.isAbsolute() workaround
-    private static boolean isAbsoluteFile(File file) {
-        String filePath = file.getPath();
-        if(filePath.startsWith("/")) { //NOI18N
-            return true;
+    private static boolean isAbsolute(File file, String link) {
+        if(file.isAbsolute()) {
+            return true; //will not be true on windows
+        } else {
+            return link.startsWith("/"); //NOI18N
         }
-
-        return file.isAbsolute();
     }
 
     private static FileObject findRelativeLinkBase(FileObject source, String link) {

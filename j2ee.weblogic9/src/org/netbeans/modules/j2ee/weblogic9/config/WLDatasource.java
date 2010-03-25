@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.j2ee.weblogic9.config;
 
+import java.io.File;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -60,10 +60,10 @@ public class WLDatasource implements Datasource {
 
     private final String driver;
 
-    private final FileObject origin;
+    private final File origin;
 
     public WLDatasource(String name, String url, String jndi, String user,
-            String password, String driver, FileObject origin) {
+            String password, String driver, File origin) {
         this.name = name;
         this.url = url;
         this.jndi = jndi;
@@ -71,6 +71,10 @@ public class WLDatasource implements Datasource {
         this.password = password;
         this.driver = driver;
         this.origin = origin;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -103,7 +107,7 @@ public class WLDatasource implements Datasource {
         return user;
     }
 
-    public FileObject getOrigin() {
+    public File getOrigin() {
         return origin;
     }
 

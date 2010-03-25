@@ -72,16 +72,14 @@ public class WLDatasourceManager implements DatasourceManager {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        Set<Datasource> datasources = new HashSet<Datasource>();
-
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         FileObject domain = FileUtil.toFileObject(FileUtil.normalizeFile(new File(domainDir)));
-        FileObject jdbcConfig = null;
+        FileObject domainConfig = null;
         if (domain != null) {
-            jdbcConfig = domain.getFileObject("config/jdbc"); // NOI18N
+            domainConfig = domain.getFileObject("config/config.xml"); // NOI18N
         }
 
-        return WLDatasourceSupport.getDatasources(jdbcConfig);
+        return new HashSet<Datasource>(WLDatasourceSupport.getDatasources(domainConfig));
     }
 
 }
