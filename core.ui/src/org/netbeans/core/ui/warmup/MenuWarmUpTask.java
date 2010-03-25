@@ -65,10 +65,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -84,9 +85,11 @@ public final class MenuWarmUpTask implements Runnable {
     
     /** Actually performs pre-heat.
      */
+    @Override
     public void run() {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     Frame main = WindowManager.getDefault().getMainWindow();
                     
@@ -167,6 +170,7 @@ public final class MenuWarmUpTask implements Runnable {
             }
         }
 
+        @Override
         public void run() {
             if (Boolean.getBoolean("netbeans.indexing.noFileRefresh") == true) { // NOI18N
                 return; // no file refresh
@@ -237,6 +241,7 @@ public final class MenuWarmUpTask implements Runnable {
             LOG.log(r);
         }
         private int counter;
+        @Override
         public boolean cancel() {
             synchronized(rp) {
                 if (task != null) {
