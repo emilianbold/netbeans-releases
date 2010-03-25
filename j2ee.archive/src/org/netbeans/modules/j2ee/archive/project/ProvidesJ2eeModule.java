@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
@@ -91,11 +94,13 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         return project.getName();
     }
     
+    @Override
     public J2eeModule getJ2eeModule() {
         return innerModule;
         
     }
     
+    @Override
     public ModuleChangeReporter getModuleChangeReporter() {
         ModuleChangeReporter retVal = null;
         if (null != inner) {
@@ -185,6 +190,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             this.name = name;
             this.parent = parent;
         }
+        @Override
         public void run() throws IOException {
             FileLock flock = null;
             OutputStream os = null;
@@ -221,12 +227,14 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         }
     }
     
+    @Override
     public void setServerInstanceID(String severInstanceID) {
         if (null != inner) {
             inner.setServerInstanceID(severInstanceID);
         }
     }
     
+    @Override
     public String getServerInstanceID() {
         String retVal;// = super.getServerInstanceID();
         if (null != inner) {
@@ -237,11 +245,17 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         return retVal;
     }
     
+    @Override
     public String getServerID() {
         String inst = getServerInstanceID();
         String retVal = null;
         if (inst != null) {
-            String id = Deployment.getDefault().getServerID(inst);
+            String id = null;
+            try {
+                id = Deployment.getDefault().getServerInstance(inst).getServerID();
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger("global").log(Level.INFO, inst, ex);
+            }
             if (id != null) {
                 retVal = id;
             }
@@ -289,48 +303,59 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             this.inner = inner;
         }
         
+        @Override
         public String getModuleVersion() {
             return inner.getModuleVersion();
         }
         
+        @Override
         public J2eeModule.Type getModuleType() {
             return inner.getType();
         }
         
+        @Override
         public String getUrl() {
             return inner.getUrl();
         }
         
+        @Override
         public FileObject getArchive() throws IOException {
             return getFileObject("dist.archive");           // NOI18N
         }
         
         // TODO - this is not correct. But it works. Investigate.
+        @Override
         public Iterator getArchiveContents() throws IOException {
             return inner.getArchiveContents();
         }
         
+        @Override
         public FileObject getContentDirectory() throws IOException {
             return null;
         }
         
         // TODO MetadataModel:
+        @Override
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return inner.getMetadataModel(type);
         }
         
+        @Override
         public File getResourceDirectory() {
             return inner.getResourceDirectory();
         }
         
+        @Override
         public File getDeploymentConfigurationFile(String name) {
             return inner.getDeploymentConfigurationFile(name);
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             inner.addPropertyChangeListener(listener);
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             inner.removePropertyChangeListener(listener);
         }
