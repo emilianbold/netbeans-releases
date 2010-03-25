@@ -42,25 +42,17 @@ import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.remote.api.RemoteBinaryService.RemoteBinaryID;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumber;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToLine;
+import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.SourceLineInfo;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapper;
 import org.netbeans.modules.dlight.management.remote.spi.PathMapperProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
@@ -84,6 +76,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
     }
 
+    @Override
     public SourceFileInfo getSourceFileInfo(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         SourceFileInfo info = _fileName(functionQName, lineNumber, offset, serviceInfo);
         if (info != null) {
@@ -138,17 +131,15 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             }
             AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
             if (fl != null) {
+                SourceLineInfo sourceInfo = fl.getLine((int)offset);
                 if (TRACE) {
                     System.err.println("Found:"+fl); // NOI18N
-                }
-                SourceFileInfo sourceInfo = fl.getLine((int)offset, serviceInfo);
-                if (TRACE) {
                     System.err.println("Line:"+sourceInfo); // NOI18N
                 }
                 if (lineNumber > 0 && sourceInfo != null) {
                     return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
                 }
-                return sourceInfo;
+                return new SourceFileInfo(sourceInfo.getFileName(), sourceInfo.getLine(), 0);
             }
         }
         return null;
@@ -158,25 +149,8 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         onePath = new HashMap<String, String>();
         Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
         if (sourceInfoMap == null) {
-            sourceInfoMap = new HashMap<String, AbstractFunctionToLine>();
             try {
-                if (TRACE) {
-                    System.err.println("Process file: "+executable); // NOI18N
-                }
-                Dwarf dwarf = new Dwarf(executable);
-                try {
-                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
-                    while(iterator.hasNext()) {
-                        CompilationUnit compilationUnit = iterator.next();
-                        TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
-                        String filePath = compilationUnit.getSourceFileAbsolutePath();
-                        String compDir = compilationUnit.getCompilationDir();
-                        Set<Long> antiLoop = new HashSet<Long>();
-                        processEntries(compilationUnit, compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                    }
-                } finally {
-                    dwarf.dispose();
-                }
+                sourceInfoMap = Offset2LineService.getOffset2Line(executable);
             } catch (FileNotFoundException ex) {
                 DLightLogger.instance.log(Level.SEVERE, ex.getMessage(), ex);
             } catch (IOException ex) {
@@ -189,208 +163,6 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
         onePath = null;
         return sourceInfoMap;
-    }
-
-    private void processEntries(CompilationUnit compilationUnit, List<DwarfEntry> declarations, String filePath, String compDir,
-            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
-        for (DwarfEntry entry : declarations) {
-            prosessEntry(compilationUnit, entry, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-        }
-    }
-
-    private void prosessEntry(CompilationUnit compilationUnit, DwarfEntry entry, String filePath, String compDir,
-            TreeSet<LineNumber> lineNumbers, Map<String, AbstractFunctionToLine> sourceInfoMap, Set<Long> antiLoop) throws IOException {
-        if (antiLoop.contains(entry.getRefference())) {
-            return;
-        }
-        antiLoop.add(entry.getRefference());
-        switch (entry.getKind()) {
-            case DW_TAG_subprogram:
-            {
-                if (entry.getLine() < 0 || entry.getDeclarationFilePath() == null) {
-                    return;
-                }
-                if (entry.getLowAddress() == 0) {
-                    DeclarationToLine functionToLine = new DeclarationToLine(filePath, compDir, entry, onePath);
-                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                    if (TRACE) {
-                        System.err.println(functionToLine);
-                    }
-                } else {
-                    FunctionToLine functionToLine = new FunctionToLine(filePath, compDir, entry, lineNumbers, onePath);
-                    sourceInfoMap.put(entry.getQualifiedName(), functionToLine);
-                    if (TRACE) {
-                        System.err.println(functionToLine);
-                    }
-                }
-                break;
-            }
-            case DW_TAG_structure_type:
-            case DW_TAG_class_type:
-                processEntries(compilationUnit, entry.getChildren(), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                break;
-            case DW_TAG_typedef:
-            case DW_TAG_const_type:
-            case DW_TAG_pointer_type:
-            case DW_TAG_reference_type:
-            case DW_TAG_array_type:
-            case DW_TAG_ptr_to_member_type:
-            {
-                DwarfEntry type = compilationUnit.getReferencedType(entry);
-                if (type != null) {
-                    prosessEntry(compilationUnit, type, filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
-                }
-                break;
-            }
-        }
-    }
-
-//    private static String toAbsolutePath(Map<String, String> serviceInfo, String path) {
-//        String projectPath = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_FOLDER);
-//        if (projectPath != null) {
-//            path = IpeUtils.toAbsolutePath(projectPath, path);
-//        }
-//        return path;
-//    }
-
-    private static TreeSet<LineNumber> getCompilationUnitLines(CompilationUnit unit) throws IOException{
-        Set<LineNumber> numbers = unit.getLineNumbers();
-        return new TreeSet<LineNumber>(numbers);
-    }
-
-    private static abstract class AbstractFunctionToLine {
-        public abstract SourceFileInfo getLine(int offset, Map<String, String> serviceInfo);
-
-        protected String initPath(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException{
-            String res = _initPath(filePath, compDir, entry);
-            String cached = onePath.get(res);
-            if (cached == null) {
-                onePath.put(res, res);
-                cached = res;
-            }
-            return cached;
-        }
-
-        private String _initPath(String filePath, String compDir, DwarfEntry entry) throws IOException{
-            String entyFilePath = entry.getDeclarationFilePath();
-            if (entyFilePath != null && filePath.endsWith(entyFilePath)) {
-                return filePath;
-            } else {
-                if (entyFilePath != null &&
-                        (entyFilePath.startsWith("/") || // NOI18N
-                         entyFilePath.length()>2 && entyFilePath.charAt(1) == ':')){ // NOI18N
-                    return entyFilePath;
-                } else {
-                    if (compDir.endsWith("/") || compDir.endsWith("\\")) { // NOI18N
-                        return compDir+entyFilePath;
-                    } else {
-                        return compDir+"/"+entyFilePath; // NOI18N
-                    }
-                }
-            }
-        }
-    }
-
-    private static final class DeclarationToLine extends AbstractFunctionToLine {
-        private final String functionName;
-        private final int baseLine;
-        private final String filePath;
-
-        public DeclarationToLine(String filePath, String compDir, DwarfEntry entry, Map<String, String> onePath) throws IOException {
-            assert entry.getKind() == TAG.DW_TAG_subprogram;
-            functionName = entry.getQualifiedName();
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
-        }
-
-        public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
-            return new SourceFileInfo(filePath, baseLine, 0);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder("File: "+filePath); // NOI18N
-            buf.append("\n\tFunction:   "+functionName); // NOI18N
-            buf.append("\n\tBase Line:  "+baseLine); // NOI18N
-            return buf.toString();
-        }
-    }
-
-    private static final class FunctionToLine extends AbstractFunctionToLine {
-        private final String functionName;
-        private final int[] lineStorage;
-        private final int[] offsetStorage;
-        private final int baseLine;
-        private final String filePath;
-
-        public FunctionToLine(String filePath, String compDir, DwarfEntry entry, TreeSet<LineNumber> numbers, Map<String, String> onePath) throws IOException {
-            assert entry.getKind() == TAG.DW_TAG_subprogram;
-            assert entry.getLowAddress() != 0;
-            functionName = entry.getQualifiedName();
-            baseLine = entry.getLine();
-            this.filePath = initPath(filePath, compDir, entry, onePath);
-            long base =entry.getLowAddress();
-            long baseHihg =entry.getHighAddress();
-            //System.err.println(""+entry);
-            List<Integer> lineStorageList = new ArrayList<Integer>();
-            List<Integer> offsetStorageList = new ArrayList<Integer>();
-            for(LineNumber l : numbers) {
-                if (l.endOffset>=base && l.endOffset <= baseHihg) {
-                    //System.err.println(""+l);
-                    lineStorageList.add(l.line);
-                    offsetStorageList.add((int)(l.endOffset - base));
-                }
-            }
-            lineStorage = new int[lineStorageList.size()];
-            offsetStorage = new int[offsetStorageList.size()];
-            for (int i = 0; i < lineStorageList.size(); i++){
-                lineStorage[i] = lineStorageList.get(i);
-                offsetStorage[i] = offsetStorageList.get(i);
-            }
-        }
-
-        public SourceFileInfo getLine(int offset, Map<String, String> serviceInfo){
-            if (offset <= 0) {
-                //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), baseLine, 0);
-                if (baseLine > 0) {
-                    return new SourceFileInfo(filePath, baseLine, 0);
-                } else {
-                    if (lineStorage.length > 0){
-                        return new SourceFileInfo(filePath, lineStorage[0], 0);
-                    }
-                }
-                return null;
-            }
-            int res = -1;
-            int delta = Integer.MAX_VALUE;
-            for (int i = 0; i < offsetStorage.length; i++) {
-                if (offsetStorage[i] > offset) {
-                    int d = offsetStorage[i] - offset;
-                    if (d < delta) {
-                        res = i;
-                        delta = d;
-                    }
-                }
-            }
-            if (res < 0) {
-                return new SourceFileInfo(filePath, baseLine, 0);
-            }
-            //return new SourceFileInfo(toAbsolutePath(serviceInfo, filePath), lineStorage[res], 0);
-            return new SourceFileInfo(filePath, lineStorage[res], 0);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder("File: "+filePath); // NOI18N
-            buf.append("\n\tFunction:   "+functionName); // NOI18N
-            buf.append("\n\tBase Line:  "+baseLine); // NOI18N
-            if (lineStorage.length>0) {
-                buf.append("\n\tStart Line: "+lineStorage[0]+"\t ("+offsetStorage[0]+")"); // NOI18N
-                buf.append("\n\tEnd Line:   "+lineStorage[lineStorage.length-1]+"\t ("+offsetStorage[lineStorage.length-1]+")"); // NOI18N
-            }
-            return buf.toString();
-        }
     }
 
 }
