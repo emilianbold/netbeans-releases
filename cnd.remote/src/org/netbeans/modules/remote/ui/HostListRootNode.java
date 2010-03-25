@@ -109,7 +109,7 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            this.refresh(false);
+            this.refresh(true);
         }
     }
 
