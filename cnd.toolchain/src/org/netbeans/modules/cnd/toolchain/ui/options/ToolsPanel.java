@@ -460,7 +460,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (cs == null) {
             String errorMsg = "";
             if (!ToolsUtils.isDevHostValid(execEnv)) {
-                errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString());
+                String key;
+                if (model.getEnableDevelopmentHostChange()) {
+                    key = "TP_ErrorMessage_BadDevHost"; // NOI18N
+                } else {
+                    key = "TP_ErrorMessage_BadDevHostReadOnly"; // NOI18N
+                }
+                errorMsg = NbBundle.getMessage(ToolsPanel.class, key, execEnv.toString());
             }
             lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
             updateToolsControls(false, false, false, true);
@@ -566,7 +572,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                     errors.addAll(errs);
                 }
                 if (!devhostValid) {
-                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString()));
+                    String key;
+                    if (model.getEnableDevelopmentHostChange()) {
+                        key = "TP_ErrorMessage_BadDevHost"; // NOI18N
+                    } else {
+                        key = "TP_ErrorMessage_BadDevHostReadOnly"; // NOI18N
+                    }
+                    errors.add(NbBundle.getMessage(ToolsPanel.class, key, execEnv.toString()));
                 }
                 getToolCollectionPanel().getErrors(errors);
                 StringBuilder errorString = new StringBuilder();
