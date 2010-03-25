@@ -193,7 +193,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         replaceVerticalSplitPane(diffViewPanel);
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2));
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2)};
+        setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = RequestProcessor.getDefault().post(dpt);
@@ -208,12 +209,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         add(replacement, BorderLayout.CENTER);
     }
 
-    private void setSetups(Setup... setups) {
-        assert EventQueue.isDispatchThread();
+    private void setSetups(Setup[] setups, EditorCookie[] cookies) {
         this.setups = setups;
-        this.editorCookies = (setups != null)
-                             ? DiffUtils.setupsToEditorCookies(setups)
-                             : null;
+        this.editorCookies = cookies;
     }
 
     private boolean fileTableSetSelectedIndexContext;
@@ -286,7 +284,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * Called by the enclosing TopComponent to interrupt the fetching task.
      */
     void componentClosed() {
-        setSetups((Setup[]) null);
+        setSetups((Setup[]) null, null);
         /**
          * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
          * see #159266
@@ -703,10 +701,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             newSetups[i].setNode(new DiffNode(newSetups[i], new CvsFileNode(file)));
         }
         Arrays.sort(newSetups, new SetupsComparator());
+        final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(newSetups);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                setSetups(newSetups);
+                setSetups(newSetups, cookies);
                 fileTable.setTableModel(setups, editorCookies);
 
                 if (setups.length == 0) {
@@ -724,7 +723,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         default:
                             throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
                     }
-                    setSetups((Setup[]) null);
+                    setSetups((Setup[]) null, null);
 //            navigationCombo.setModel(new DefaultComboBoxModel(new Object [] { noContentLabel }));
                     fileTable.getComponent().setEnabled(false);
                     fileTable.getComponent().setPreferredSize(null);
