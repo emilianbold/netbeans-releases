@@ -43,10 +43,8 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -79,7 +77,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -199,7 +196,7 @@ public class ProjectActionSupport {
                     ioTab = getIOTab(tabNameSeq, true);
                     if (mainTabHandler == null) {
                         mainTab = ioTab;
-                        mainTabHandler = this;
+                        mainTabHandler = HandleEvents.this;
                     }
                 }
             } else {
