@@ -50,12 +50,16 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
+import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -118,6 +122,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.project.api.PhpEditorExtender;
+import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -128,17 +134,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private final FileScopeImpl fileScope;
     private Map<VariableNameFactory, Map<String, VariableNameImpl>> vars;
-    private Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
-    private OccurenceBuilder occurencesBuilder;
-    private CodeMarkerBuilder markerBuilder;
-    private ModelBuilder modelBuilder;
-    private ParserResult info;
+    private final Map<String, List<PhpDocTypeTagInfo>> varTypeComments;
+    private volatile OccurenceBuilder occurencesBuilder;
+    private volatile CodeMarkerBuilder markerBuilder;
+    private final ModelBuilder modelBuilder;
+    private final ParserResult info;
+    private boolean  askForEditorExtensions = true;
 
     public ModelVisitor(ParserResult info) {
         this(info, -1);
     }
 
-    public ModelVisitor(ParserResult info, int offset) {
+    public ModelVisitor(final ParserResult info, final int offset) {
         this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
         //var2TypeName = new HashMap<String, String>();
@@ -148,7 +155,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         this.info = info;
     }
 
-    public ModelVisitor(ParserResult info, ModelElement elemnt) {
+    public ModelVisitor(final ParserResult info, final ModelElement elemnt) {
         this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
         //var2TypeName = new HashMap<String, String>();
@@ -165,6 +172,49 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void scan(ASTNode node) {
         super.scan(node);
+        //just temporarily for testing purposes
+//        if (node instanceof Program && fileScope != null) {
+//            extendModel();
+//        }
+    }
+
+    public void extendModel() {
+        synchronized(this) {
+            if (!askForEditorExtensions) {
+                return;
+            }
+            askForEditorExtensions = false;
+        }
+
+        final FileObject fileObject = fileScope.getFileObject();
+        EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
+        final List<PhpBaseElement> elements = editorExtender.getElementsForCodeCompletion(fileObject);
+        if (elements.size() > 0) {
+            for (PhpBaseElement element : elements) {
+                if (element instanceof PhpVariable) {
+                    PhpVariable phpVariable = (PhpVariable) element;
+                    Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+                    for (NamespaceScope namespace : declaredNamespaces) {
+                        NamespaceScopeImpl namespaceScope = (NamespaceScopeImpl) namespace;
+                        if (namespaceScope != null) {
+                            final String varName = phpVariable.getName();
+                            VariableNameImpl variable = findVariable(namespace, varName);
+                            if (variable != null) {
+                                variable.indexedElement = new VariableElementImpl(
+                                         varName, variable.getOffset(), fileScope.getFilenameUrl(),
+                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                            } else {
+                                int offset = namespaceScope.getOffset();
+                                VariableElementImpl var = new VariableElementImpl(
+                                         varName, offset, fileScope.getFilenameUrl(),
+                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                                namespaceScope.createElement(var);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
