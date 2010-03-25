@@ -121,7 +121,7 @@ public enum TplTopTokenId implements TokenId {
                     else if (id == T_SMARTY) {
                         return LanguageEmbedding.create(TplTokenId.language(), 0, 0, false);
                     } else if (id == T_PHP) {
-                        return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
+                        return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, false);
                     }
 
                     return null; // No embedding

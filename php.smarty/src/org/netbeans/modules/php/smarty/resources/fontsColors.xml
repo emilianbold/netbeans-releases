@@ -45,27 +45,27 @@ made subject to such option by the copyright holder.
     
     <!-- colors for TOP-LEVEL lexer -->
     <fontcolor name="smarty" bgColor="FFFEC9" default="default"/>
-    <fontcolor name="smarty_delimiter" foreColor="DAE808">
+    <fontcolor name="smarty_delimiter" foreColor="DAE808" default="smarty">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="comment"  default="smarty" foreColor="969696"/>
 
     <!-- colors for LOW-LEVEL lexer -->
-    <fontcolor name="pipe" foreColor="FF9300">
+    <fontcolor name="pipe" foreColor="FF9300" default="smarty">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="php_variable" foreColor="6D3206"/>
-    <fontcolor name="config_variable" foreColor="FF0000"/>
+    <fontcolor name="php_variable" foreColor="6D3206" default="smarty"/>
+    <fontcolor name="config_variable" foreColor="FF0000" default="smarty"/>
     <fontcolor name="error" default="smarty" waveUnderlined="red"/>
-    <fontcolor name="variable_modifier" foreColor="C6CA34" />
-    <fontcolor name="string" default="string" />
-    <fontcolor name="smarty_operator" default="operator" />
-    <fontcolor name="smarty_function" foreColor="2C9C25">
+    <fontcolor name="variable_modifier" foreColor="C6CA34" default="smarty"/>
+    <fontcolor name="string" foreColor="CE7B00" default="smarty"/>
+    <fontcolor name="smarty_operator" default="smarty"/>
+    <fontcolor name="smarty_function" foreColor="2C9C25" default="smarty">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="argument" foreColor="4757B7" />
-    <fontcolor name="argument_value" foreColor="C67300"/>
-    <fontcolor name="whitespace" default="whitespace" />
-    <fontcolor name="other" />
+    <fontcolor name="argument" foreColor="4757B7" default="smarty"/>
+    <fontcolor name="argument_value" foreColor="C67300" default="smarty"/>
+    <fontcolor name="whitespace" default="smarty"/>
+    <fontcolor name="other" default="smarty"/>
 
 </fontscolors>
