@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -204,11 +204,11 @@ final class KeywordsPanel extends JPanel implements ActionListener, PropertyChan
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(fewerButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(matchAllRadio, javax.swing.GroupLayout.PREFERRED_SIZE, 149, Short.MAX_VALUE)
+                  .addComponent(matchAllRadio)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(matchAnyRadio, javax.swing.GroupLayout.PREFERRED_SIZE, 157, Short.MAX_VALUE)
-                        .addGap(278, 278, 278))
-                    .addComponent(conditionsScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 584, Short.MAX_VALUE))
+                  .addComponent(matchAnyRadio)
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+               .addComponent(conditionsScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
