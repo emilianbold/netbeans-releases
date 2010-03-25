@@ -57,7 +57,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -75,12 +74,14 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
         setEnabled(false);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {            
             setEnabled(isEnabled());   
         }
     }
     
+    @Override
     public boolean isEnabled() {
         Browser browser = getBrowser();
         if(browser == null) {
@@ -100,6 +101,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
     /**
      * Configures this action with the actual browser instance
      */
+    @Override
     public void setBrowser(Browser browser) {        
         Browser oldBrowser = getBrowser();
         if(oldBrowser!=null) {
@@ -109,8 +111,10 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
         super.setBrowser(browser);                
     }    
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {                           
                 Node[] nodes = getSelectedNodes();
                 if(nodes.length > 1) {                        

@@ -53,7 +53,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -105,7 +104,7 @@ public class DownloadPlugin implements ActionListener {
                         if(u.getCodeName().equals(SvnClientFactory.JAVAHL_MODULE_CODE_NAME)) {
 
                             List<UpdateElement> elements = u.getAvailableUpdates();
-                            if(elements.size() == 0) {
+                            if(elements.isEmpty()) {
                                 panel.progressBarPanel.setVisible(false);
                                 panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_AlreadyBeamedDown"));
                                 panel.repaint();
@@ -133,6 +132,7 @@ public class DownloadPlugin implements ActionListener {
         });
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.acceptCheckBox) {
             ok.setEnabled(panel.acceptCheckBox.isSelected());

@@ -47,7 +47,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
@@ -61,16 +60,19 @@ public class UpdateWithDependenciesAction extends ContextAction {
     
     private boolean running;
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_UpdateWithDependencies";    // NOI18N
     }
@@ -90,6 +92,7 @@ public class UpdateWithDependenciesAction extends ContextAction {
         return enabled;
     }
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
@@ -97,6 +100,7 @@ public class UpdateWithDependenciesAction extends ContextAction {
         
         running = true;
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     updateWithDependencies(nodes);

@@ -47,9 +47,6 @@ import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -65,13 +62,16 @@ public class ShowAllChangesAction extends AbstractAllAction {
     public ShowAllChangesAction() {
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ShowAllChangesAction.class, "CTL_MenuItem_ShowAllChanges_Label"); // NOI18N
     }
 
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 async();
             }
@@ -82,6 +82,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
         try {
             setEnabled(false);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
                     stc.setContext(null);
@@ -101,6 +102,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
                 title = NbBundle.getMessage(ShowAllChangesAction.class, "CTL_ShowAllChanges_WindowTitle", Integer.toString(projects.length)); // NOI18N
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
                     stc.setContentTitle(title);
