@@ -44,6 +44,7 @@ package org.openide.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -2013,6 +2014,7 @@ outer:  do {
             return java.security.AccessController.doPrivileged(run);
         }
 
+        private static final Set<Class<? extends Runnable>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<? extends Runnable>>());
         private void registerParallel(Task todo, RequestProcessor rp) {
             if (rp.warnParallel == 0 || todo.run == null) {
                 return;
@@ -2030,7 +2032,7 @@ outer:  do {
                     number[0]++;
                 }
             }
-            if (number[0] >= rp.warnParallel) {
+            if (number[0] >= rp.warnParallel && warnedClasses.add(c)) {
                 final String msg = "Too many " + c.getName() + " in non-private processor. Use own static final RequestProcessor RP = new RequestProcessor(...)!"; // NOI18N
                 Exception ex = null;
                 if (todo.item != null) {
