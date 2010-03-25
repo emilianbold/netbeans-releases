@@ -50,6 +50,18 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="EmptyINI.ini" url="EmptyINI.ini">
+                <attr name="position" intvalue="870"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.ini.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/ini/resources/EmptyINIFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/ini/resources/ini_file_16.png"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-ini">
