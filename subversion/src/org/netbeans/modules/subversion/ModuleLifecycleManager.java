@@ -134,7 +134,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                 }
             }
         };
-        Subversion.getInstance().getParallelRequestProcessor().post(runnable);
+        org.netbeans.modules.versioning.util.Utils.post(runnable);
     }
 
     private Document readModuleDocument(FileObject fo) throws ParserConfigurationException, SAXException, IOException {
