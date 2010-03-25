@@ -1480,7 +1480,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" description="Generate summaries of module dependencies.">
-    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
+    <property name="deps.max.friends" value="20"/>
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
