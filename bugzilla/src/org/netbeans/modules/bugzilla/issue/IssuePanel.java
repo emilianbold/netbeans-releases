@@ -2115,7 +2115,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 try {
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists()) {
+                        if (attachment.file.exists() && attachment.file.isFile()) {
                             if (attachment.description.trim().length() == 0) {
                                 attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
                             }

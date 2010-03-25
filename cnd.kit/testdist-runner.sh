@@ -5,9 +5,9 @@
 
 rm -rf extralibs/ qa-functional/ unit/ README.txt tasks.jar *.xml *.zip
 
-BUILD_NUM=${UPSTREAM_NO:-`wget -qO - ${HUDSON_URL}/job/cnd-build/lastSuccessfulBuild/buildNumber`}
-wget -q "${HUDSON_URL}/job/cnd-build/${BUILD_NUM}/artifact/netbeans.zip"
-wget -q "${HUDSON_URL}/job/cnd-build/${BUILD_NUM}/artifact/testdist.zip"
+BUILD_NUM=${UPSTREAM_NO:-`wget -qO - ${HUDSON_URL}job/cnd-build/lastSuccessfulBuild/buildNumber`}
+wget -q "${HUDSON_URL}job/cnd-build/${BUILD_NUM}/artifact/netbeans.zip"
+wget -q "${HUDSON_URL}job/cnd-build/${BUILD_NUM}/artifact/testdist.zip"
 unzip -qo netbeans.zip
 unzip -qo testdist.zip
 
