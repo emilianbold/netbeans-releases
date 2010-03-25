@@ -1329,16 +1329,17 @@ itor tabs #66700).
     public static String getRemoteRepository(File file) {
         if(file == null) return null;
         String remotePath = HgRepositoryContextCache.getInstance().getPullDefault(file);
-        if(remotePath == null || remotePath.trim().equals("")) {
-            Mercurial.LOG.log(Level.FINE, "No defalt pull available for managed file : [" + file + "]");
+        if (remotePath == null || remotePath.trim().isEmpty()) {
+            Mercurial.LOG.log(Level.FINE, "No default pull available for managed file : [{0}]", file);
             remotePath = HgRepositoryContextCache.getInstance().getPushDefault(file);
-
-            Mercurial.LOG.log(Level.INFO, "No defalt pull or push available for managed file : [" + file + "]");
+            if (remotePath == null || remotePath.trim().isEmpty()) {
+                Mercurial.LOG.log(Level.FINE, "No default pull or push available for managed file : [{0}]", file);
+            }
         }
         if(remotePath != null) {
             remotePath = remotePath.trim();
             remotePath = HgUtils.removeHttpCredentials(remotePath);
-            if(remotePath.equals("")) {
+            if (remotePath.isEmpty()) {
                 // return null if empty
                 remotePath = null;
             }
