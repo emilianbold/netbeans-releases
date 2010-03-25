@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -167,13 +168,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
+        refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         if (CvsModuleConfig.getDefault().getPreferences().getBoolean("autoDiffRefresh", true)) {
             onRefreshButton();
         } else {
-            refreshSetups();
+            refreshTask.schedule(0);
         }
         refreshComponents();
-        refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
     }
 
     /**
@@ -553,7 +554,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
     private void onRefreshButton() {
         LifecycleManager.getDefault().saveAll();
-        refreshSetups();
         executeUpdateCommand(true);
     }
 
@@ -595,9 +595,22 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         cmd.setPruneDirectories(true);
         options.setDoNoChanges(doNoChanges);
 
-        ExecutorGroup group = new ExecutorGroup(msg);
+        final ExecutorGroup group = new ExecutorGroup(msg);
         group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, contextName));
-        group.execute();
+        group.addBarrier(new Runnable() {
+            @Override
+            public void run() {
+                if (!group.isFailed()) {
+                    refreshTask.schedule(0);
+                }
+            }
+        });
+        org.netbeans.modules.versioning.util.Utils.post(new Runnable () {
+            @Override
+            public void run () {
+                group.execute();
+            }
+        });
     }
     
     /** Next that is driven by visibility. It continues to next not yet visible difference. */
@@ -663,7 +676,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
 
     private void refreshSetups() {
-        assert EventQueue.isDispatchThread();
         if (dpt != null) {
             prepareTask.cancel();
         }
@@ -684,55 +696,70 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
         files = DiffExecutor.getModifiedFiles(context, displayStatuses);
         
-        Setup [] newSetups = new Setup[files.length];
+        final Setup [] newSetups = new Setup[files.length];
         for (int i = 0; i < newSetups.length; i++) {
             File file = files[i];
             newSetups[i] = new Setup(file, currentType);
             newSetups[i].setNode(new DiffNode(newSetups[i], new CvsFileNode(file)));
         }
         Arrays.sort(newSetups, new SetupsComparator());
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                setSetups(newSetups);
+                fileTable.setTableModel(setups, editorCookies);
 
-        setSetups(newSetups);
-        fileTable.setTableModel(setups, editorCookies);
-
-        if (setups.length == 0) {
-            String noContentLabel;
-            switch (currentType) {
-            case Setup.DIFFTYPE_LOCAL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
-                break;
-            case Setup.DIFFTYPE_REMOTE:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
-                break;
-            case Setup.DIFFTYPE_ALL:
-                noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
-                break;
-            default:
-                throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
-            }
-            setSetups((Setup[]) null);
+                if (setups.length == 0) {
+                    String noContentLabel;
+                    switch (currentType) {
+                        case Setup.DIFFTYPE_LOCAL:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoLocalChanges");
+                            break;
+                        case Setup.DIFFTYPE_REMOTE:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoRemoteChanges");
+                            break;
+                        case Setup.DIFFTYPE_ALL:
+                            noContentLabel = NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoAllChanges");
+                            break;
+                        default:
+                            throw new IllegalStateException("Unknown DIFF type:" + currentType); // NOI18N
+                    }
+                    setSetups((Setup[]) null);
 //            navigationCombo.setModel(new DefaultComboBoxModel(new Object [] { noContentLabel }));
-            fileTable.getComponent().setEnabled(false);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            diffView = null;
-            diffView = new NoContentPanel(noContentLabel);
-            displayDiffView();
-            nextAction.setEnabled(false);
-            prevAction.setEnabled(false);
-            revalidate();
-            repaint();
-            executed();
+                    fileTable.getComponent().setEnabled(false);
+                    fileTable.getComponent().setPreferredSize(null);
+                    Dimension dim = fileTable.getComponent().getPreferredSize();
+                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    diffView = null;
+                    diffView = new NoContentPanel(noContentLabel);
+                    displayDiffView();
+                    nextAction.setEnabled(false);
+                    prevAction.setEnabled(false);
+                    revalidate();
+                    repaint();
+                    executed();
+                } else {
+                    fileTable.getComponent().setEnabled(true);
+                    fileTable.getComponent().setPreferredSize(null);
+                    Dimension dim = fileTable.getComponent().getPreferredSize();
+                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    setDiffIndex(0, 0);
+                    commitButton.setEnabled(true);
+                    dpt = new DiffPrepareTask(setups);
+                    prepareTask = RequestProcessor.getDefault().post(dpt);
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            runnable.run();
         } else {
-            fileTable.getComponent().setEnabled(true);
-            fileTable.getComponent().setPreferredSize(null);
-            Dimension dim = fileTable.getComponent().getPreferredSize();
-            fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            setDiffIndex(0, 0);
-            commitButton.setEnabled(true);
-            dpt = new DiffPrepareTask(setups);
-            prepareTask = RequestProcessor.getDefault().post(dpt);
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException ex) {
+                //
+            } catch (InvocationTargetException ex) {
+                //
+            }
         }
     }
 
@@ -747,7 +774,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (currentType == Setup.DIFFTYPE_ALL) return;
             currentType = Setup.DIFFTYPE_ALL;
         }
-        refreshSetups();
+        refreshTask.schedule(0);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -829,12 +856,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     private class RefreshViewTask implements Runnable {
+        @Override
         public void run() {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    refreshSetups();
-                }
-            });
+            refreshSetups();
         }
     }
     
