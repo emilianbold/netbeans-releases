@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.io.File;
-import org.openide.modules.InstalledFileLocator;
+package org.netbeans.modules.terminal.test;
 
-public final class InstalledFileLocatorProvider {
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
-    static {
-        String nbjunitWorkdir = System.getProperty("nbjunit.workdir"); // NOI18N
-        if (nbjunitWorkdir != null) {
-            String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-            File junitWorkdir = new File(nbjunitWorkdir); // NOI18N
+/**
+ * Access to internal state for testing purposes so that unit tests can
+ * become generic.
+ * @author ivan
+ */
+public abstract class IOTest {
 
-            while (true) {
-                String dirName = junitWorkdir.getName();
-                junitWorkdir = junitWorkdir.getParentFile();
-                if ("unit".equals(dirName) || "".equals(dirName)) { // NOI18N
-                    break;
-                }
-            }
-
-            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight"); // NOI18N
-
-            if (!dlightDir.exists()) {
-                dlightDir = new File(junitWorkdir, "netbeans/dlight"); // NOI18N
-            }
-
-            File ideDir = new File(junitWorkdir, "../../../nbbuild/netbeans/ide"); // NOI18N
-
-            if (!ideDir.exists()) {
-                ideDir = new File(junitWorkdir, "netbeans/ide"); // NOI18N
-            }
-
-            System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + // NOI18N
-                    ideDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
+    private static IOTest find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOTest.class);
         }
+        return null;
     }
 
-    public static final InstalledFileLocator getDefault() {
-        return InstalledFileLocator.getDefault();
+    /**
+     * An IO is "stream connected" if any of getOut(), getErr() or
+     * IOTerm.connect() are called.
+     * It is "stream closed" after all of getIn().close(), getErr().close() and
+     * IOTerm.disconnect() are closed.
+     * @param io
+     * @return
+     */
+    public static boolean isStreamConnected(InputOutput io) {
+	IOTest iot = find(io);
+	if (iot != null)
+	    return iot.isStreamConnected();
+	else
+	    return false;
     }
+
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
+    }
+
+    abstract protected boolean isStreamConnected();
 }
