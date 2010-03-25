@@ -128,9 +128,6 @@ class NotificationImpl extends Notification implements Comparable<NotificationIm
         if( null != detailsText ) {
             balloonComp = createDetails( detailsText, al );
             popupComponent = createDetails( detailsText, al );
-
-        } else {
-
         }
 
         JComponent titleComp = createTitle(title);
