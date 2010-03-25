@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.modules.javacard.ri.bundle
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javacard/ri/bundle/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.modules.javacard.JavacardPlatform,org.openide.modules.os.Windows
 OpenIDE-Module-Install: org/netbeans/modules/javacard/ri/bundle/Installer.class
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 AutoUpdate-Show-In-Client: true
 
