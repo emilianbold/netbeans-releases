@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.terminal.ioprovider;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -55,45 +58,19 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.lib.terminalemulator.support.FindBar;
 import org.netbeans.lib.terminalemulator.support.FindState;
+
 import org.netbeans.modules.terminal.api.TerminalContainer;
+
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
 import org.openide.windows.TopComponent;
 
 /**
- * Help a TopComponent be a {@link TerminalWindow} and an owner of {@link Terminal}'s.
- * <p>
- * Use {@link TerminalProvider#createTerminalContainer} to get one.
- * <p> 
- * Recipe for enahncing a TopComponent ...
- * <ul>
- * <li>
- * Create a stock TopComponent with the IDE.
- * <li>
- * Change it's Layout to be BorderLayout.
- * <li>
- * Have it <code>implements TerminalWindow</code>.
- * <li>
- * Add the following code to it:
- * <pre>
-    private TerminalContainer tc;
-
-    public TerminalContainer terminalContainer() {
-        return tc;
-    }
-
-    private void initComponents2() {
-        tc = TerminalProvider.createTerminalContainer(this, getName());
-        add(tc);
-    }
- * </pre>
- * <li>
- * Call <code>initComponents2()</code> at the end of the constructor of
- * your top component.
- * </ul>
+ * Corresponds to core.io.ui...IOWindow.
  * @author ivan
  */
 final public class TerminalContainerImpl extends TerminalContainer implements IOContainer.Provider {
@@ -101,15 +78,17 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     private final TopComponent owner;
     private final String originalName;
 
-    private int nTerm;
-    private Terminal component0;
+    private IOContainer ioContainer;
     private JTabbedPane tabbedPane;
+    private JComponent soleComponent;
+
     private JToolBar actionBar;
     private FindBar findBar;
 
     private boolean activated = false;
 
-    private IOContainer ioContainer;
+    private final Map<JComponent, CallBacks> tabToCb =
+	new HashMap<JComponent, CallBacks>();
 
     /**
      * Utility for creating custom {@link Terminal}-based TopComponents.
@@ -131,15 +110,13 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         initComponents();
     }
 
-    int nTerm() {
-        return nTerm;
-    }
-
-    void select(Terminal t) {
-        if (nTerm > 1)
+    void selectTab(JComponent t) {
+        if (soleComponent == null)
             tabbedPane.setSelectedComponent(t);
-        owner.open();
-        owner.requestActive();
+	if (owner != null) {
+	    owner.open();
+	    owner.requestActive();
+	}
     }
 
     TopComponent topComponent() {
@@ -155,11 +132,8 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(TabbedPaneFactory.PROP_CLOSE)) {
-                    Object o = evt.getNewValue();
-                    if (o instanceof Terminal) {
-                        Terminal tt = (Terminal) o;
-                        tt.close();
-                    }
+                    JComponent comp = (JComponent) evt.getNewValue();
+		    removeTab(comp);
                 }
             }
         });
@@ -263,6 +237,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         actionBar.repaint();
     }
 
+    /* OLD
     @Override
     protected void addImpl(Component comp, Object constraints, int index) {
 //        System.out.printf("TermTopComponent.addImpl(%s, %s, %s)\n", comp, constraints, index);
@@ -271,13 +246,14 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
             super.addImpl(comp, BorderLayout.CENTER, index);
         } else if (comp instanceof Terminal) {
             Terminal terminal = (Terminal) comp;
-            nTerm++;
-            if (nTerm == 1) {
+	    setVisible(comp, true);
+            nVisible++;
+            if (nVisible() == 1) {
                 assert component0 == null;
                 component0 = terminal;
                 super.addImpl(terminal, BorderLayout.CENTER, index);
             } else {
-                if (nTerm == 2) {
+                if (nVisible() == 2) {
                     assert component0 != null;
                     super.remove(component0);
                     add(tabbedPane);
@@ -294,11 +270,13 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
             super.addImpl(comp, constraints, index);
         }
     }
+     */
 
     /**
      * Remove who from this.
      * Mostly manages whether we have tabs and the TopComponents title and such
      */
+    /* OLD
     void removeTerminal(final JComponent who) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -310,29 +288,136 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
             });
             return;
         }
-        if (nTerm <= 0) {
+        if (nVisible() <= 0) {
             throw new IllegalStateException("<= 0 Terminals");	// NOI18N
         }
-        nTerm--;
-        if (nTerm >= 1) {
+        if (nVisible() > 1) {
             tabbedPane.remove(who);
         } else {
             assert component0 == who;
             super.remove(who);
             component0 = null;
         }
-        if (nTerm == 1) {
+
+        if (nVisible() == 2) {
             Terminal last = (Terminal) tabbedPane.getComponentAt(0);
             tabbedPane.remove(0);
             super.remove(tabbedPane);
-            nTerm = 0;
+            // OLD nVisible = 0;
             add(last);
             setFindBar(last.getFindState());
             validate();
-        } else if (nTerm == 0) {
+        } else if (nVisible() == 1) {
             setButtons(new Action[0]);
-            owner.close();
+	    if (owner != null)
+		owner.close();
         }
+
+        nVisible--;
+	setVisible(who, false);
+    }
+     */
+
+    private void addTab(JComponent comp, CallBacks cb) {
+	if (cb != null) {
+	    tabToCb.put(comp, cb);
+	}
+	if (soleComponent != null) {
+	    // only single tab, remove it from TopComp. and add it to tabbed pane
+	    assert tabbedPane.getParent() == null;
+	    assert tabbedPane.getTabCount() == 0;
+	    super.remove(soleComponent);
+	    tabbedPane.add(soleComponent);
+	    // LATER set icon
+	    // LATER set tooltip
+	    soleComponent = null;
+	    tabbedPane.add(comp);
+	    super.add(tabbedPane);
+	    updateWindowName(null);
+	} else if (tabbedPane.getTabCount() > 0) {
+	    // already several tabs
+	    assert tabbedPane.getParent() != null;
+	    assert soleComponent == null;
+	    tabbedPane.add(comp);
+	} else {
+	    // nothing yet
+	    assert tabbedPane.getParent() == null;
+	    assert soleComponent == null;
+	    setFocusable(false);
+	    soleComponent = comp;
+	    super.add(comp);
+	    updateWindowName(soleComponent.getName());
+	    // LATER checkTabSelChange();
+	}
+	revalidate();
+    }
+
+    private void removeTab(final JComponent comp) {
+	// TMP
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+		@Override
+                public void run() {
+                    removeTab(comp);
+                }
+            });
+            return;
+        }
+	if (soleComponent != null) {
+	    // removing tha last one
+	    assert soleComponent == comp;
+	    super.remove(soleComponent);
+	    soleComponent = null;
+	    updateWindowName(null);
+	    // LATER checkTabSelChange();
+	    setFocusable(true);
+	    revalidate();
+	    // ?? repaint()
+	} else if (tabbedPane.getParent() == this) {
+	    assert tabbedPane.getTabCount() > 1;
+	    tabbedPane.remove(comp);
+	    if (tabbedPane.getTabCount() == 1) {
+		soleComponent  = (JComponent) tabbedPane.getComponentAt(0);
+		tabbedPane.remove(soleComponent);
+		super.remove(tabbedPane);
+		super.add(soleComponent);
+		updateWindowName(soleComponent.getName());
+	    }
+	    revalidate();
+	}
+	CallBacks cb = tabToCb.remove(comp);
+	if (cb != null)
+	    cb.closed();
+    }
+
+    /**
+     * Update out containing TC's window name.
+     * @param title
+     */
+    private void updateWindowName(String title) {
+	if (owner == null)
+	    return;
+
+	if (title == null) {
+	    // sole or no component
+	    owner.setDisplayName(originalName);
+	    owner.setToolTipText(originalName);
+	    owner.setHtmlDisplayName(null);
+
+	} else {
+	    String composite  = originalName + " - ";	// NOI18N
+	    if (title.contains("<html>")) {		// NOI18N
+		// pull the "<html>" to the beginning of the string
+		title.replace("<html>", "");		// NOI18N
+		composite = "<html> " + composite + title;// NOI18N
+		owner.setHtmlDisplayName(composite);
+	    } else {
+		owner.setDisplayName(composite);
+		owner.setHtmlDisplayName(null);
+	    }
+	    owner.setToolTipText(composite);
+	}
     }
 
     @Override
@@ -340,10 +425,16 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         if (title == null) {
             title = originalName;
         }
-        if (nTerm == 1) {
-            owner.setName(originalName + " - " + title);	// NOI18N
+
+	// Use the name field of the component to remember title
+	who.setName(title);
+
+        if (soleComponent != null) {
+	    assert soleComponent == who;
+	    updateWindowName(title);
         } else {
-            owner.setName(originalName);
+	    assert tabbedPane.getParent() == this;
+	    updateWindowName(null);
             tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
         }
     }
@@ -389,10 +480,11 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     public void componentActivated() {
 	activated = true;
         Component component;
-        if (component0 != null)
-            component = component0;
+        if (soleComponent != null)
+            component = soleComponent;
         else
             component = tabbedPane.getSelectedComponent();
+	// SHOULD use tabToCb
         if (component instanceof Terminal) {
             Terminal terminal = (Terminal) component;
             terminal.callBacks().activated();
@@ -407,10 +499,11 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     public void componentDeactivated() {
 	activated = false;
         Component component;
-        if (component0 != null)
-            component = component0;
+        if (soleComponent != null)
+            component = soleComponent;
         else
             component = tabbedPane.getSelectedComponent();
+	// SHOULD use tabToCb
         if (component instanceof Terminal) {
             Terminal terminal = (Terminal) component;
             terminal.callBacks().deactivated();
@@ -419,17 +512,20 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void open() {
-	owner.open();
+	if (owner != null)
+	    owner.open();
     }
 
     @Override
     public void requestActive() {
-	owner.requestActive();
+	if (owner != null)
+	    owner.requestActive();
     }
 
     @Override
     public void requestVisible() {
-	owner.requestVisible();
+	if (owner != null)
+	    owner.requestVisible();
     }
 
     @Override
@@ -439,30 +535,25 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void add(JComponent comp, CallBacks cb) {
-	super.add(comp);
+	addTab(comp, cb);
     }
 
     @Override
     public void remove(JComponent comp) {
-	removeTerminal(comp);
+	removeTab(comp);
     }
 
     @Override
     public void select(JComponent comp) {
-	if (comp instanceof Terminal) {
-	    select((Terminal) comp);
-	} else {
-	    throw new UnsupportedOperationException("Can't select non-Terminals");	// NOI18N
-	}
-
+	selectTab(comp);
     }
 
     @Override
     public JComponent getSelected() {
-        if (nTerm > 1)
+        if (soleComponent == null)
             return (JComponent) tabbedPane.getSelectedComponent();
 	else
-	    return component0;
+	    return soleComponent;
     }
 
     /* TMP
@@ -484,7 +575,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     @Override
     public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
 	// was: setActions()
-        if (nTerm == 1) {
+        if (soleComponent != null) {
             setButtons(toolbarActions);
         } else {
             if (tabbedPane.getSelectedComponent() == comp) {

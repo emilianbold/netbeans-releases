@@ -64,7 +64,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -85,7 +84,6 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -703,47 +701,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider2 {
                 checkMissingDatabaseConnection();
             }
         }
-    }
-
-
-    /** Factory for project actions.<BR>
-     * XXX This class is a candidate for move to org.netbeans.spi.project.ui.support
-     */
-    public static class Actions {
-
-        private Actions() {} // This is a factory
-
-        public static Action createAction( String key, String name, boolean global ) {
-            return new ActionImpl( key, name, global ? Utilities.actionsGlobalContext() : null );
-        }
-
-        private static class ActionImpl extends AbstractAction implements ContextAwareAction {
-
-            Lookup context;
-            String name;
-            String command;
-
-            public ActionImpl( String command, String name, Lookup context ) {
-                super( name );
-                this.context = context;
-                this.command = command;
-                this.name = name;
-            }
-
-            public void actionPerformed( ActionEvent e ) {
-
-                Project project = (Project)context.lookup( Project.class );
-                ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class);
-
-                ap.invokeAction( command, context );
-
-            }
-
-            public Action createContextAwareInstance( Lookup lookup ) {
-                return new ActionImpl( command, name, lookup );
-            }
-        }
-
     }
 
 }

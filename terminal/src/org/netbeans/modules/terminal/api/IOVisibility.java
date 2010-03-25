@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.io.File;
-import org.openide.modules.InstalledFileLocator;
+package org.netbeans.modules.terminal.api;
 
-public final class InstalledFileLocatorProvider {
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
-    static {
-        String nbjunitWorkdir = System.getProperty("nbjunit.workdir"); // NOI18N
-        if (nbjunitWorkdir != null) {
-            String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-            File junitWorkdir = new File(nbjunitWorkdir); // NOI18N
+/**
+ * Capability of an InputOutput which controls whether it is visible
+ * as a tab or not.
+ * setVisible(true) is equivalent to select().
+ * setVisible(false) is equivalent to X'ing the tab or Closing from
+ * the context menu. setVisible() may fail silently if the IO is not
+ * closable. (See IOContainer.isClosable()).
+ * @author ivan
+ */
+public abstract class IOVisibility {
 
-            while (true) {
-                String dirName = junitWorkdir.getName();
-                junitWorkdir = junitWorkdir.getParentFile();
-                if ("unit".equals(dirName) || "".equals(dirName)) { // NOI18N
-                    break;
-                }
-            }
-
-            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight"); // NOI18N
-
-            if (!dlightDir.exists()) {
-                dlightDir = new File(junitWorkdir, "netbeans/dlight"); // NOI18N
-            }
-
-            File ideDir = new File(junitWorkdir, "../../../nbbuild/netbeans/ide"); // NOI18N
-
-            if (!ideDir.exists()) {
-                ideDir = new File(junitWorkdir, "netbeans/ide"); // NOI18N
-            }
-
-            System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + // NOI18N
-                    ideDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
+    private static IOVisibility find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOVisibility.class);
         }
+        return null;
     }
 
-    public static final InstalledFileLocator getDefault() {
-        return InstalledFileLocator.getDefault();
+    /**
+     * Control the visibility of this I/O.
+     * setVisible(true) is equivalent to select().
+     * setVisible(false) is equivalent to X'ing the tab or Closing from
+     * the context menu. setVisible() may fail silently if the IO is not
+     * closable. (See IOContainer.isClosable()).
+     * @param visible
+     */
+    public static void setVisible(InputOutput io, boolean visible) {
+	IOVisibility iov = find(io);
+	if (iov != null)
+	    iov.setVisible(visible);
     }
+
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
+    }
+
+    abstract protected void setVisible(boolean visible);
 }
