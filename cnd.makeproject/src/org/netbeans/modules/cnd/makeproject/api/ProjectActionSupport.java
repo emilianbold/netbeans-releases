@@ -151,6 +151,7 @@ public class ProjectActionSupport {
 ////////////////////////////////////////////////////////////////////////////////
 
     private InputOutput mainTab = null;
+    private InputOutput runTab = null;
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
     private final Object lock = new Object();
@@ -158,6 +159,7 @@ public class ProjectActionSupport {
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
+        private InputOutput runIoTab = null;
         private final ProjectActionEvent[] paes;
         private String tabName;
         private String tabNameSeq;
@@ -168,17 +170,24 @@ public class ProjectActionSupport {
         private ProgressHandle progressHandle = null;
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
+        private final boolean reuseTabs;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
             currentAction = 0;
-
-            if (MakeOptions.getInstance().getReuse()) {
+            reuseTabs = MakeOptions.getInstance().getReuse();
+            if (reuseTabs) {
                 synchronized (lock) {
-                    if (mainTabHandler == null && mainTab != null /*&& !mainTab.isClosed()*/) {
-                        mainTab.closeInputOutput();
-                        mainTab = null;
+                    if (mainTabHandler == null) {
+                        if (mainTab != null) {
+                            mainTab.closeInputOutput();
+                            mainTab = null;
+                        }
+                        if (runTab != null) {
+                            runTab.closeInputOutput();
+                            runTab = null;
+                        }
                     }
                     tabName = getTabName(paes);
                     tabNameSeq = tabName;
@@ -204,6 +213,25 @@ public class ProjectActionSupport {
                 tabNameSeq = tabName;
                 ioTab = getIOTab(tabName, false);
             }
+        }
+
+        private Action[] getActions(String name) {
+            List<Action> list = new ArrayList<Action>();
+            if (sa == null) {
+                sa = new StopAction(this);
+            }
+            if (ra == null) {
+                ra = new RerunAction(this);
+            }
+            list.add(sa);
+            list.add(ra);
+            if (additional == null) {
+                additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            }
+            // TODO: actions should have acces to output writer. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
+            list.addAll(additional);
+            return list.toArray(new Action[list.size()]);
         }
 
         private String getTabName(ProjectActionEvent[] paes) {
@@ -233,6 +261,10 @@ public class ProjectActionSupport {
 
         private InputOutput getTab() {
             return ioTab;
+        }
+
+        private InputOutput getRunTab() {
+            return runIoTab;
         }
 
         private ProgressHandle createProgressHandle() {
@@ -268,21 +300,13 @@ public class ProjectActionSupport {
         }
         
         private InputOutput getIOTab(String name, boolean reuse) {
-            sa = new StopAction(this);
-            ra = new RerunAction(this);
-            List<Action> list = new ArrayList<Action>();
-            list.add(sa);
-            list.add(ra);
-            additional = BuildActionsProvider.getDefault().getActions(name, paes);
-            // TODO: actions should have acces to output writer. Action should listen output writer.
-            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
-            list.addAll(additional);
+            Action[] actions = getActions(name);
             InputOutput tab;
             if (reuse) {
                 tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
                 tab.closeInputOutput(); // Close it...
             }
-            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
+            tab = IOProvider.getDefault().getIO(name, actions); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -294,20 +318,43 @@ public class ProjectActionSupport {
             return tab;
         }
 
-        private InputOutput getTermIO() {
-            final String TERM_PROVIDER = "Terminal"; // NOI18N
+        private InputOutput getRunIO(ProjectActionEvent pae, boolean reuse) {
             InputOutput io = null;
+            final String TERM_PROVIDER = "Terminal"; // NOI18N
             IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
             if (termProvider != null) {
-                io = termProvider.getIO(TERM_PROVIDER + " - " + tabNameSeq, true); // NOI18N
+                String name = getTabName(new ProjectActionEvent[] {pae});
+                Action[] actions = getActions(pae.getActionName());
+                if (reuse) {
+                    synchronized (lock) {
+                        io = runIoTab;
+                        if (io == null) {
+                            io = termProvider.getIO(name, false);
+                            io.closeInputOutput();
+                        }
+                        io = termProvider.getIO(name, actions);
+                        runIoTab = io;
+                        if (runTab == null && mainTabHandler == this) {
+                            runTab = runIoTab;
+                        }
+                    }
+                } else {
+                    io = termProvider.getIO(name, actions);
+                    runIoTab = io;
+                }
             }
             return io;
         }
+
 
         private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             synchronized (lock) {
+                if (runIoTab != null) {
+                    runIoTab.closeInputOutput();
+                    runIoTab = null;
+                }
                 tabNames.add(tabNameSeq);
             }
             try {
@@ -361,7 +408,7 @@ public class ProjectActionSupport {
             InputOutput io = ioTab;
             int consoleType = pae.getProfile().getConsoleType().getValue();
             if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
-                io = getTermIO();
+                io = getRunIO(pae, reuseTabs);
                 if (io == null) {
                     io = ioTab;
                 }
