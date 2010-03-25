@@ -649,7 +649,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
         // -------------------------------------------------------------------
 
         private final FileSystem fileSystem;
-        private final RequestProcessor.Task refreshCacheTask= RequestProcessor.getDefault().create(this);
+        private final RequestProcessor.Task refreshCacheTask= new RequestProcessor("Editor-Setting-Files-Tracker-" + storageDescription.getId()).create(this); //NOI18N
         private final List<Reference<FileEvent>> recentEvents = new LinkedList<Reference<FileEvent>>();
         private final Pattern controlledFilesPattern;
 
