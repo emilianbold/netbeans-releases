@@ -70,7 +70,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 
@@ -232,15 +231,15 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         tcm.applyChanges();
     }
 
-    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
-            throws InterruptedException, IllegalArgumentException, TimeoutException {
-        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
-    }
+//    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
+//    }
 
-    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
-            throws InterruptedException, IllegalArgumentException, TimeoutException {
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
-    }
+//    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
+//    }
 
     protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException, TimeoutException {
 
