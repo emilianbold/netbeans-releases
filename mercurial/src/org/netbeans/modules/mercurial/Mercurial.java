@@ -484,7 +484,7 @@ public class Mercurial {
      * Request processor for parallel tasks
      * @return
      */
-    public synchronized RequestProcessor getParallelRequestProcessor() {
+    public RequestProcessor getParallelRequestProcessor() {
         if (parallelRP == null) {
             parallelRP = new RequestProcessor("Mercurial.ParallelRP", 5, true); //NOI18N
         }

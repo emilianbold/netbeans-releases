@@ -328,9 +328,13 @@ public final class DocumentView extends EditorBoxView
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateVisibleWidth();
                 checkSettingsInfo();
+                // Use rendering hints (antialiasing etc.)
+                if (renderingHints != null) {
+                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
+                }
+                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
                 reinitViews();
             }

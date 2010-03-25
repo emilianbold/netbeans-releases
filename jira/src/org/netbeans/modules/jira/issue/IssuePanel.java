@@ -1963,7 +1963,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.exists()) {
+                        if (attachment.exists() && attachment.isFile()) {
                             issue.addAttachment(attachment, null, null);
                         } else {
                             // PENDING notify user
