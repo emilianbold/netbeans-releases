@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.languages.ini;
 
+import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -278,22 +279,45 @@ class IniLexer implements Lexer<IniTokenId> {
     private int readTillEndLine(LexerInput input, char... stoppers) {
         int ch = -1;
         int previous = -1;
-        boolean longString = false;
+        LinkedList<Character> longStringsStack = new LinkedList<Character>();
         do {
-            if (ch != -1) {
+            if (previous == ESCAPE && ch == ESCAPE) {
+                // '\\'
+                previous = -1;
+            } else if (ch != -1) {
                 previous = ch;
             }
+
             ch = input.read();
-            if (ch == LONG_STRING_DOUBLE || ch == LONG_STRING_SINGLE) {
-                longString = !longString;
-            } else if (ch == LexerInput.EOF) {
+
+            if (ch == LexerInput.EOF) {
                 // prevent infinite loop
                 break;
             }
-        } while (longString
-                || (!longString && !isEndLine(ch) && !isStopper(stoppers, ch, previous)));
+
+            if (previous != ESCAPE) {
+                handleLongStrings(longStringsStack, (char) ch);
+            }
+        } while (!longStringsStack.isEmpty()
+                || (longStringsStack.isEmpty() && !isEndLine(ch) && !isStopper(stoppers, ch, previous)));
         input.backup(1);
         return ch;
+    }
+
+    private void handleLongStrings(LinkedList<Character> longStringsStack, char ch) {
+        if (ch != LONG_STRING_DOUBLE && ch != LONG_STRING_SINGLE) {
+            return;
+        }
+        if (longStringsStack.isEmpty()) {
+            longStringsStack.push(ch);
+        } else {
+            Character peek = longStringsStack.peek();
+            if (peek == ch) {
+                longStringsStack.pop();
+            } else {
+                longStringsStack.push(ch);
+            }
+        }
     }
 
     private boolean isStopper(char[] stoppers, int ch, int previous) {
@@ -307,7 +331,6 @@ class IniLexer implements Lexer<IniTokenId> {
         }
         return false;
     }
-
 
     private static boolean isWhiteSpace(int ch) {
         return ch == SPACE || ch == TAB || isEndLine(ch);

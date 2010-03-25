@@ -1629,7 +1629,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         } else if (smart.getKind() == TypeKind.ARRAY) {
                                             insideNew = false;
                                             try {
-                                                results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                                TypeMirror tm = smart;
+                                                while(tm.getKind() == TypeKind.ARRAY) {
+                                                    tm = ((ArrayType)tm).getComponentType();
+                                                }
+                                                if (tm.getKind().isPrimitive() && startsWith(env, tm.toString(), prefix)) {
+                                                    results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                                } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString(), prefix)) {
+                                                    results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                                }
                                             } catch (IllegalArgumentException iae) {}
                                         }
                                     }
@@ -1887,7 +1895,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     }
                                 } else if (smart.getKind() == TypeKind.ARRAY) {
                                     try {
-                                        results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                        TypeMirror tm = smart;
+                                        while(tm.getKind() == TypeKind.ARRAY) {
+                                            tm = ((ArrayType)tm).getComponentType();
+                                        }
+                                        String prefix = env.getPrefix();
+                                        if (tm.getKind().isPrimitive() && startsWith(env, tm.toString(), prefix)) {
+                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                        } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString(), prefix)) {
+                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                        }
                                     } catch (IllegalArgumentException iae) {}
                                 }
                             }
