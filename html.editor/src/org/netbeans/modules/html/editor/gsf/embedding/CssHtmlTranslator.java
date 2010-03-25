@@ -203,7 +203,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                 int start = matcher.start();
                                 int end = matcher.end();
                                 if(start != end) {
-                                    String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#";
+                                    String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";
                                     embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
 
                                     //compute the token's document offset
