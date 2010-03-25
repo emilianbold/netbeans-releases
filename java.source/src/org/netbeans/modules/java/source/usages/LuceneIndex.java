@@ -367,7 +367,10 @@ class LuceneIndex extends Index implements Evictable {
             }
             final Document doc = in.document(docNum, DocumentUtil.declaredTypesFieldSelector());
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            result.add (convertor.convert(kindHolder[0],binaryName));
+            final T value = convertor.convert(kindHolder[0],binaryName);
+            if (value != null) {
+                result.add (value);
+            }
         }
     }
 
@@ -504,7 +507,10 @@ class LuceneIndex extends Index implements Evictable {
             }
             final Document doc = in.document(docNum.getKey(), DocumentUtil.declaredTypesFieldSelector());
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
-            result.put (convertor.convert(kindHolder[0],binaryName),docNum.getValue());
+            final T key = convertor.convert(kindHolder[0],binaryName);
+            if (key != null) {
+                result.put (key,docNum.getValue());
+            }
         }
     }
 
@@ -608,7 +614,10 @@ class LuceneIndex extends Index implements Evictable {
                         continue;
                     }
                     else {
-                        result.add (convertor.convert(kindHolder[0],binaryName));
+                        final T value = convertor.convert(kindHolder[0],binaryName);
+                        if (value != null) {
+                            result.add (value);
+                        }
                     }
                 }
             }
