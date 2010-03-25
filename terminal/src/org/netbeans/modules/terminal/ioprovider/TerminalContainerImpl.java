@@ -142,15 +142,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    @Override
             public void stateChanged(ChangeEvent e) {
                 Component component = tabbedPane.getSelectedComponent();
-                if (component instanceof Terminal) {
-                    Terminal terminal = (Terminal) component;
-                    setButtons(terminal.getActions());
-                    setFindBar(terminal.getFindState());
-                    terminal.callBacks().selected();
-                } else {
-                    setButtons(new Action[0]);
-                    setFindBar(null);
-                }
+		updateBars(component);
             }
         });
         actionBar = new JToolBar();
@@ -168,6 +160,18 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
                 validate();
             }
         });
+    }
+
+    private void updateBars(Component component) {
+	if (component instanceof Terminal) {
+	    Terminal terminal = (Terminal) component;
+	    setButtons(terminal.getActions());
+	    setFindBar(terminal.getFindState());
+	    terminal.callBacks().selected();
+	} else {
+	    setButtons(new Action[0]);
+	    setFindBar(null);
+	}
     }
 
     private void fixSize(JToolBar actionBar) {
@@ -346,6 +350,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    setFocusable(false);
 	    soleComponent = comp;
 	    super.add(comp);
+	    updateBars(soleComponent);
 	    updateWindowName(soleComponent.getName());
 	    // LATER checkTabSelChange();
 	}
@@ -382,6 +387,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 		tabbedPane.remove(soleComponent);
 		super.remove(tabbedPane);
 		super.add(soleComponent);
+		updateBars(soleComponent);
 		updateWindowName(soleComponent.getName());
 	    }
 	    revalidate();
