@@ -101,7 +101,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageBadge.gif"); // NOI18N
     static final RequestProcessor PKG_VIEW_RP = new RequestProcessor(PackageRootNode.class.getName(),1);
     private static Action actions[]; 
-
+        
     private SourceGroup group;
 
     private final FileObject file;
