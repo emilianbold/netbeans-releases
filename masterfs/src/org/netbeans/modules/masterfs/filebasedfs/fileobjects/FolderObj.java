@@ -78,6 +78,7 @@ import org.openide.util.Mutex;
  */
 public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
+    private static final Logger LOG = Logger.getLogger(FolderObj.class.getName());
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
@@ -346,6 +347,8 @@ public final class FolderObj extends BaseFileObj {
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
+
+        LOG.log(Level.FINER, "refreshImpl for {0} expected: {1} fire: {2} previous: {3}", new Object[]{this, expected, fire, previous});
 
         oldChildren.removeAll(refreshResult.keySet());
         for (final FileNaming child : oldChildren) {
