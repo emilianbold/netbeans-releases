@@ -171,38 +171,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-php-project">
-            <folder name="Customizer">
-                <file name="Sources.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createSources"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="RunConfig.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createRunConfig"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="PhpIncludePath.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
-                    <attr name="position" intvalue="300"/>
-                </file>
-                <file name="IgnorePath.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createIgnorePath"/>
-                    <attr name="position" intvalue="310"/>
-                </file>
-                <file name="PhpUnit.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpUnit"/>
-                    <attr name="position" intvalue="320"/>
-                </file>
-                <file name="Formatting.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
-                    <attr name="allowedMimeTypes" stringvalue="text/x-php5"/>
-                    <attr name="position" intvalue="1000"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="PHP">
         <folder name="RuntimeLibraries">
             <file name="pdo_mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pdo_mysql.php"/>
