@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.languages.ini;
 
-import java.util.Stack;
+import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -279,7 +279,7 @@ class IniLexer implements Lexer<IniTokenId> {
     private int readTillEndLine(LexerInput input, char... stoppers) {
         int ch = -1;
         int previous = -1;
-        Stack<Character> longStrings = new Stack<Character>();
+        LinkedList<Character> longStringsStack = new LinkedList<Character>();
         do {
             if (previous == ESCAPE && ch == ESCAPE) {
                 // '\\'
@@ -296,26 +296,26 @@ class IniLexer implements Lexer<IniTokenId> {
             }
 
             if (previous != ESCAPE) {
-                handleLongStrings(longStrings, (char) ch);
+                handleLongStrings(longStringsStack, (char) ch);
             }
-        } while (!longStrings.isEmpty()
-                || (longStrings.isEmpty() && !isEndLine(ch) && !isStopper(stoppers, ch, previous)));
+        } while (!longStringsStack.isEmpty()
+                || (longStringsStack.isEmpty() && !isEndLine(ch) && !isStopper(stoppers, ch, previous)));
         input.backup(1);
         return ch;
     }
 
-    private void handleLongStrings(Stack<Character> longStrings, char ch) {
+    private void handleLongStrings(LinkedList<Character> longStringsStack, char ch) {
         if (ch != LONG_STRING_DOUBLE && ch != LONG_STRING_SINGLE) {
             return;
         }
-        if (longStrings.isEmpty()) {
-            longStrings.push(ch);
+        if (longStringsStack.isEmpty()) {
+            longStringsStack.push(ch);
         } else {
-            Character peek = longStrings.peek();
+            Character peek = longStringsStack.peek();
             if (peek == ch) {
-                longStrings.pop();
+                longStringsStack.pop();
             } else {
-                longStrings.push(ch);
+                longStringsStack.push(ch);
             }
         }
     }
