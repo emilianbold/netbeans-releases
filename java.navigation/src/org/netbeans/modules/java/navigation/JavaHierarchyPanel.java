@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
  */
 public class JavaHierarchyPanel extends javax.swing.JPanel {
 
-    private static final RequestProcessor RP = new RequestProcessor (JavaHierarchyPanel.class.getName (), 1);
     private static TreeModel pleaseWaitTreeModel;
 
     static {
