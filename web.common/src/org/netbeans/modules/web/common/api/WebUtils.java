@@ -262,20 +262,6 @@ public class WebUtils {
         if(!target.isData()) {
             throw new IllegalArgumentException("The target file " + target.getPath() + " is not a data file!");
         }
-        if(!UNIT_TESTING) {
-            FileObject root1 = ProjectWebRootQuery.getWebRoot(source);
-            FileObject root2 = ProjectWebRootQuery.getWebRoot(target);
-            if(root1 == null) {
-                throw new IllegalArgumentException("Cannot find web root for source file " + source.getPath()); //NOI18N
-            }
-            if(root2 == null) {
-                throw new IllegalArgumentException("Cannot find web root for target file " + target.getPath()); //NOI18N
-            }
-            if(!root1.equals(root2)) {
-                throw new IllegalArgumentException("Source " + source.getPath() +  "and target " + //NOI18N
-                        target.getPath() + " files have no common web root!"); //NOI18N
-            }
-        }
 
         //link: ../../folder/file.txt
         List<FileObject> targetPathFiles = new ArrayList<FileObject>();
