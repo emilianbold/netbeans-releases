@@ -652,6 +652,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ182152.cc", 3, 66, "IZ182152.cc", 3, 52);
     }
 
+    public void testIZ154779() throws Exception {
+        // Bug 154779 - Completion fails on preprocessor statements
+        performTest("IZ154779.cc", 12, 10, "IZ154779.cc", 2, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
