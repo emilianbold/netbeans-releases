@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -114,24 +115,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     static {
-        log.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
-                }
-            }
-            @Override
-            public void flush() {
-            }
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        log.addHandler(new TestLogHandler(log));
     }
 
 
