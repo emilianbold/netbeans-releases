@@ -45,7 +45,6 @@ import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -80,12 +79,14 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         "org.netbeans.modules.vcs.profiles.teamware" // NOI18N
     };
     
+    @Override
     public void restored() {
         disableOldModules();
     }
 
     private void disableOldModules() {
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 boolean notified = false;
                 outter: for (int i = 0; i < vcsGenericModules.length; i++) {
@@ -133,7 +134,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                 }
             }
         };
-        RequestProcessor.getDefault().post(runnable);
+        Subversion.getInstance().getParallelRequestProcessor().post(runnable);
     }
 
     private Document readModuleDocument(FileObject fo) throws ParserConfigurationException, SAXException, IOException {
@@ -148,22 +149,27 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         return document;
     }
 
+    @Override
     public void uninstalled() {
         Subversion.getInstance().shutdown();
     }
 
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) {
         return new InputSource(new ByteArrayInputStream(new byte[0]));
     }
     
+    @Override
     public void error(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
+    @Override
     public void fatalError(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
+    @Override
     public void warning(SAXParseException exception) {
         Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
