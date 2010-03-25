@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
@@ -133,6 +134,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         nameMap = new HashMap<String,String>(5);
     }
     
+    @Override
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -141,6 +143,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         return helper;
     }
     
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -168,6 +171,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     /** Store configured project name. */
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+            @Override
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -193,6 +197,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            @Override
             public String run() {
                 Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -245,6 +250,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             new ProjectXmlSaved(),            
         }), "Projects/org-netbeans-modules-j2ee-archiveproject/Lookup");
                 
+        @Override
         public <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
             Item<T> retValue;
             
@@ -257,6 +263,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retValue;
         }
     
+        @Override
         public <T> Lookup.Result<T> lookupResult(Class<T> clazz) {
             Result<T> retValue;
             
@@ -269,6 +276,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retValue;
         }
 
+        @Override
         public <T> Collection<? extends T> lookupAll(Class<T> clazz) {
             Collection<? extends T> retValue;
             
@@ -281,6 +289,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retValue;
         }
 
+        @Override
         public <T> T lookup(Class<T> clazz) {
             T ret = inner.lookup(clazz);
             if (verbose && null == ret && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
@@ -291,6 +300,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return ret;
         }
 
+        @Override
         public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
             Lookup.Result<T> ret = inner.lookup(template);
             if (verbose && null == ret && ErrorManager.getDefault().isNotifiable(ErrorManager.EXCEPTION)) {
@@ -316,10 +326,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             }
         }
         
+        @Override
         public String getName() {
             return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
+        @Override
         public String getDisplayName() {
             synchronized (pcs) {
                 if (cachedName != null) {
@@ -336,18 +348,22 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return dn;
         }
         
+        @Override
         public Icon getIcon() {
             return ARCHIVE_PROJECT_ICON;
         }
         
+        @Override
         public Project getProject() {
             return ArchiveProject.this;
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
@@ -355,6 +371,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     private final class MyAntProvider implements AntArtifactProvider {
         // TODO - Need to fix for ejb-jar/app-client/resource-adapter cases
+        @Override
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE,
@@ -368,8 +385,10 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         
         List<ClassPath[]> paths = new ArrayList<ClassPath[]>();
         
+        @Override
         protected void projectOpened() {
             ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+                @Override
                 public Object run() {
                     doRegeneration();
                     FileObject dir = helper.getProjectDirectory();
@@ -532,6 +551,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             }
         }
         
+        @Override
         protected void projectClosed() {
             List<ClassPath[]> tmplist = new ArrayList<ClassPath[]>();
             for (ClassPath[] aofcp : paths) {
@@ -549,6 +569,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     // TODO - implement when there is a customizer for the project.
     class ProjectXmlSaved extends org.netbeans.spi.project.support.ant.ProjectXmlSavedHook {
         
+        @Override
         protected void projectXmlSaved() throws IOException {
             FileObject subDir = getProjectDirectory().getFileObject(ArchiveProjectProperties.TMP_PROJ_DIR_VALUE);
             if (subDir != null) {
@@ -573,6 +594,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     /** Return configured project name. */
     public String getNamedProjectAttribute(final String attr) {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            @Override
             public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -591,6 +613,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     /** Store configured project name. */
     public void setNamedProjectAttribute(final String attr, final String value) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+            @Override
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -622,14 +645,17 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             this.mt = mt;
         }
         
+        @Override
         public String getModuleVersion() {
             return J2eeModule.JAVA_EE_5; // throw new UnsupportedOperationException();
         }
         
+        @Override
         public J2eeModule.Type getModuleType() {
             return mt;
         }
         
+        @Override
         public String getUrl() {
             //throw new UnsupportedOperationException();
             return null;
@@ -639,6 +665,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public FileObject getArchive() throws IOException {
             FileObject distDir = getProjectDirectory().getFileObject("dist");
             FileObject kids[] = distDir.getChildren();
@@ -656,15 +683,18 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retVal;
         }
         
+        @Override
         public Iterator getArchiveContents() throws IOException {
             throw new UnsupportedOperationException();
         }
         
+        @Override
         public FileObject getContentDirectory() throws IOException {
             return null;
         }
         
         // TODO MetadataModel:
+        @Override
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             throw new NotImplementedException();
         }
@@ -688,10 +718,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
 //            return retVal;
 //        }
         
+        @Override
         public File getResourceDirectory() {
             return new File(FileUtil.toFile(getProjectDirectory()),ArchiveProjectProperties.SETUP_DIR_VALUE);
         }
 
+        @Override
         public File getDeploymentConfigurationFile(String name) {
             File retVal;
             
@@ -713,10 +745,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return retVal;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
                 throw new UnsupportedOperationException();
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
                 throw new UnsupportedOperationException();
         }
@@ -745,10 +779,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             "Templates/Persistence/Schema.dbschema", // NOI18N
         };
         
+        @Override
         public String[] getRecommendedTypes() {
             return APPLICATION_TYPES;
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
@@ -794,7 +830,12 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         }
         
         String servInstID = (String) app.get(ArchiveProjectProperties.J2EE_SERVER_INSTANCE);
-        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+        J2eePlatform platform = null;
+        try {
+            platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger("global").log(Level.INFO, servInstID, ex);
+        }
         if (platform != null) {
             // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
             ArchiveProjectProperties.setServerInstance(ArchiveProject.this,
@@ -807,7 +848,11 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
                 String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                 if (servInstIDs.length > 0) {
                     ArchiveProjectProperties.setServerInstance(ArchiveProject.this, ArchiveProject.this.helper, servInstIDs[0]);
-                    platform = Deployment.getDefault().getJ2eePlatform(servInstIDs[0]);
+                    try {
+                        platform = Deployment.getDefault().getServerInstance(servInstIDs[0]).getJ2eePlatform();
+                    } catch (InstanceRemovedException ex) {
+                        Logger.getLogger("global").log(Level.INFO, servInstIDs[0], ex);
+                    }
                 }
             }
             if (platform == null) {
