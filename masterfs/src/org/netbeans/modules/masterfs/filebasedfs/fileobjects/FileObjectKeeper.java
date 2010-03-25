@@ -132,8 +132,15 @@ final class FileObjectKeeper implements FileChangeListener {
     private void listenTo(FileObject fo, boolean add) {
         if (add) {
             fo.addFileChangeListener(this);
+            if (fo instanceof FolderObj) {
+                FolderObj folder = (FolderObj)fo;
+                folder.getKeeper();
+                kept.add(folder);
+            }
+            LOG.log(Level.FINER, "Listening to {0}", fo);
         } else {
             fo.removeFileChangeListener(this);
+            LOG.log(Level.FINER, "Ignoring {0}", fo);
         }
     }
 
@@ -160,8 +167,6 @@ final class FileObjectKeeper implements FileChangeListener {
                     return;
                 }
                 listenTo(obj, true);
-                kept.add(obj);
-                obj.getKeeper();
             }
         }
     }
@@ -185,7 +190,6 @@ final class FileObjectKeeper implements FileChangeListener {
         final FileObject f = fe.getFile();
         if (f instanceof FolderObj) {
             synchronized (this) {
-                kept.add(f);
                 listenTo(f, true);
                 Enumeration<? extends FileObject> en = f.getChildren(true);
                 while (en.hasMoreElements()) {
