@@ -96,7 +96,7 @@ public class UpdateWithDependenciesAction extends ContextAction {
         }
         
         running = true;
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     updateWithDependencies(nodes);

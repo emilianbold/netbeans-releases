@@ -110,7 +110,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
     }    
     
     public void actionPerformed(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {                           
                 Node[] nodes = getSelectedNodes();
                 if(nodes.length > 1) {                        

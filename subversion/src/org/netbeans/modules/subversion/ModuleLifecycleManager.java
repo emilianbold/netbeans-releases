@@ -133,7 +133,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                 }
             }
         };
-        RequestProcessor.getDefault().post(runnable);
+        Subversion.getInstance().getParallelRequestProcessor().post(runnable);
     }
 
     private Document readModuleDocument(FileObject fo) throws ParserConfigurationException, SAXException, IOException {

@@ -172,7 +172,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     private void install(final UpdateElement updateElement) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     InstallCancellable ic = new InstallCancellable();

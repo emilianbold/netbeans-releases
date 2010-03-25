@@ -204,7 +204,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         setSetups(new Setup(file, rev1, rev2, forceNonEditable));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = RequestProcessor.getDefault().post(dpt);
+        prepareTask = Subversion.getInstance().getParallelRequestProcessor().post(dpt);
     }
 
     /**
@@ -232,7 +232,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         setSetups(new Setup(file, status));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = RequestProcessor.getDefault().post(dpt);
+        prepareTask = Subversion.getInstance().getParallelRequestProcessor().post(dpt);
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -791,7 +791,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         setDiffIndex(0, 0);
                         commitButton.setEnabled(true);
                         dpt = new DiffPrepareTask(setups);
-                        prepareTask = RequestProcessor.getDefault().post(dpt);
+                        prepareTask = Subversion.getInstance().getParallelRequestProcessor().post(dpt);
                     }
                 }
             };

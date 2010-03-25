@@ -53,6 +53,7 @@ import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Open the Versioning status view for all projects.
@@ -70,7 +71,7 @@ public class ShowAllChangesAction extends AbstractAllAction {
 
 
     public void actionPerformed(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 async();
             }

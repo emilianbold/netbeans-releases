@@ -461,7 +461,8 @@ public class FileStatusCache {
         if (files == null || files.length == 0) {
             return;
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 synchronized (filesToRefresh) {
                     for (File file : files) {

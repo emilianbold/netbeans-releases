@@ -130,6 +130,7 @@ public class Subversion {
         }
         return instance;
     }
+    private RequestProcessor parallelRP;
 
     private Subversion() {
     }
@@ -447,6 +448,13 @@ public class Subversion {
      */
     public RequestProcessor getRequestProcessor() {
         return getRequestProcessor(null);
+    }
+
+    public RequestProcessor getParallelRequestProcessor () {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Subversion.ParallelTasks", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
 
     /**

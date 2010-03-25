@@ -172,7 +172,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    RequestProcessor requestProcessor = null;
+    static RequestProcessor requestProcessor = null;
     
     /**
      * Latest annotation comment fetching task launched.

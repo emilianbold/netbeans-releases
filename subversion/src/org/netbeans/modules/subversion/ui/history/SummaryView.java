@@ -379,7 +379,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(rollbackToEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             rollback(drev);
                         }
@@ -391,7 +391,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             view(selection[0], false);
                         }
@@ -403,7 +403,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             view(selection[0], true);
                         }

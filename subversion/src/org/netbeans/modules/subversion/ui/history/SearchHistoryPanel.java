@@ -66,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import java.io.FileFilter;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -345,7 +346,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             currentSearchTask.cancel();
         }
         setResults(null, true);
-        currentSearchTask = RequestProcessor.getDefault().post(new SearchExecutor(this));
+        currentSearchTask = Subversion.getInstance().getParallelRequestProcessor().post(new SearchExecutor(this));
     }
     
     void executeSearch() {

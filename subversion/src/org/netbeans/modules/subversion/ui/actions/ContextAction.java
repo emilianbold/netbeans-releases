@@ -368,7 +368,7 @@ public abstract class ContextAction extends NodeAction {
                 progress.switchToDeterminate(100);
                 progress.progress(NbBundle.getMessage(ContextAction.class, "MSG_Progress_Done"), 100); // NOI18N
                 if (System.currentTimeMillis() > progressStamp) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             progress.finish();
                         }

@@ -49,6 +49,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -91,7 +92,7 @@ public class DownloadPlugin implements ActionListener {
     }
 
     private void download() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));
                 panel.progressLabel.setText(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJavahl"));

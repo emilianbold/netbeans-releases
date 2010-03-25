@@ -85,7 +85,7 @@ public class ResolveConflictsAction extends ContextAction {
     }
 
     static void resolveConflicts(final File[] files) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 final List<File> filteredFiles = removeFolders(files);
                 SwingUtilities.invokeLater(new Runnable() {
