@@ -63,6 +63,7 @@ import org.openide.windows.InputOutput;
  */
 @ServiceProvider(service = IOConnector.class)
 public class IOConnectorImpl implements IOConnector {
+    private static final RequestProcessor rp = new RequestProcessor("IOConnectorImpl", 2); // NOI18N
 
     public IOConnectorImpl() {
     }
@@ -129,7 +130,7 @@ public class IOConnectorImpl implements IOConnector {
         private Dimension pixels;
 
         public ResizeListener(final PtyImplementation pty) {
-            this.task = RequestProcessor.getDefault().create(new Runnable() {
+            this.task = rp.create(new Runnable() {
 
                 @Override
                 public void run() {

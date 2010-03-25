@@ -66,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import java.io.FileFilter;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -159,6 +160,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 search();
             }
@@ -179,6 +181,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Next_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onNextButton();
             }
@@ -188,6 +191,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Prev_Tooltip")); // NOI18N
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                 diffView.onPrevButton();
             }
@@ -226,6 +230,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         };
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getID() == Divider.DIVIDER_CLICKED) {
             criteriaVisible = !criteriaVisible;
@@ -240,6 +245,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     private ExplorerManager             explorerManager;
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -248,16 +254,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         explorerManager.addPropertyChangeListener(this);
     }
 
+    @Override
     public void removeNotify() {
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         return explorerManager;
     }
@@ -345,7 +354,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             currentSearchTask.cancel();
         }
         setResults(null, true);
-        currentSearchTask = RequestProcessor.getDefault().post(new SearchExecutor(this));
+        currentSearchTask = Subversion.getInstance().getParallelRequestProcessor().post(new SearchExecutor(this));
     }
     
     void executeSearch() {
@@ -369,6 +378,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * It return empty collection on non-atomic
      * revision ranges. XXX move this logic to clients?
      */
+    @Override
     public Collection getSetups() {
         if (results == null) {
             return Collections.EMPTY_SET;
@@ -415,6 +425,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return setups;
     }
     
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -552,14 +563,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();        
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();        
     }

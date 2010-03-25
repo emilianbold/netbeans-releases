@@ -107,7 +107,6 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -162,6 +161,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private static final String MASK = "mask"; // NOI18N
     private static StandardNodeAction renameAction = null;
     private static StandardNodeAction deleteAction = null;
+    private final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
+    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 10); // NOI18N
 
     public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
@@ -514,7 +515,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
                         folder,
                         provider.getProject(),
-                        new FolderSearchInfo(folder),}));
+                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
@@ -1018,14 +1019,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private static final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
-
         private final Folder folder;
         private final MakeLogicalViewProvider provider;
         public LogicalFolderNode(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
             super(new LogicalViewChildren(folder, provider), Lookups.fixed(new Object[]{
                         folder,
                         provider.getProject(),
-                        new FolderSearchInfo(folder),}));
+                        new FolderSearchInfo(folder),}), ANNOTATION_RP);
             this.folder = folder;
             this.provider = provider;
             setForceAnnotation(true);
@@ -1033,14 +1033,14 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         private void updateAnnotationFiles() {
-            RequestProcessor.getDefault().post(new UpdateAnnotationFilesTHread(this));
+            ANNOTATION_RP.post(new FileAnnotationUpdater(this));
         }
-
-        private final class UpdateAnnotationFilesTHread extends Thread {
+        
+        private final class FileAnnotationUpdater implements Runnable {
 
             private LogicalFolderNode logicalFolderNode;
 
-            UpdateAnnotationFilesTHread(LogicalFolderNode logicalFolderNode) {
+            FileAnnotationUpdater(LogicalFolderNode logicalFolderNode) {
                 this.logicalFolderNode = logicalFolderNode;
             }
 
@@ -1579,7 +1579,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     super.addNotify();
                     setKeys(new Object[]{getWaitNode()});
                     folder.addChangeListener(this);
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    LOAD_NODES_RP.post(new Runnable() {
 
                         @Override
                         public void run() {

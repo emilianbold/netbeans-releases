@@ -40,6 +40,7 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import java.io.CharConversionException;
+import javax.swing.Action;
 
 import javax.swing.SwingUtilities;
 
@@ -96,6 +97,7 @@ import org.openide.xml.XMLUtil;
 	@Override
 	public void perform() {
 	    container().add(terminal(), terminal().callBacks());
+	    container().setToolbarActions(terminal(), terminal().getActions());
 	    terminal().setVisibleInContainer(true);
 	    /* OLD bug #181064
 	    container().open();
@@ -116,6 +118,7 @@ import org.openide.xml.XMLUtil;
 	public void perform() {
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
+		container().setToolbarActions(terminal(), terminal().getActions());
 		terminal().setVisibleInContainer(true);
 	    }
 	    container().select(terminal());
@@ -130,6 +133,7 @@ import org.openide.xml.XMLUtil;
 
 	@Override
 	public void perform() {
+	    container().setToolbarActions(terminal(), new Action[0]);
 	    container().remove(terminal());
 	}
     }

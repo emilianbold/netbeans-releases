@@ -148,20 +148,7 @@ public class ToolsPanelSupport {
     /**
      * returns toolchain manager component to be embedded in other containers
      * @param env execution environment for which manager is created
-     * @return toolchain manager component for specified execution environmen
-     *  reference to listener to be used by containers to notify about OK is in component
-     *  property OK_LISTENER_KEY (VetoableChangeListener)
-     *  client can find selected toolchain after OK in property
-     *  SELECTED_TOOLCHAIN_KEY (String name of toolchain)
-     */
-    public static JComponent getToolsPanelComponent(ExecutionEnvironment env) {
-        return getToolsPanelComponent(env, null);
-    }
-
-    /**
-     * returns toolchain manager component to be embedded in other containers
-     * @param env execution environment for which manager is created
-     * @param selectedCompilerSetName the name of the compiler set to select
+     * @param selectedCompilerSetName the name of the compiler set to select (null is allowed)
      * @return toolchain manager component for specified execution environmen
      *  reference to listener to be used by containers to notify about OK is in component
      *  property OK_LISTENER_KEY (VetoableChangeListener)
