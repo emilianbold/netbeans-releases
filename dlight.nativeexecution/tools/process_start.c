@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     int c;
     int err_flag = 0;
 
-    while ((c = getopt(argc, argv, "p:")) != EOF) {
+    while (pty == NULL && (c = getopt(argc, argv, "p:")) != EOF) {
         switch (c) {
             case 'p':
                 pty = optarg;
