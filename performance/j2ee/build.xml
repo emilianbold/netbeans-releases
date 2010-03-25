@@ -6,6 +6,9 @@
     <description>Builds, tests, and runs the project org.netbeans.performance.j2ee</description>
 
     <property name="test.timeout" value="3600000"/>
+    <property environment="env"/>
+    <property name="hudson.buildnumber" value="${env.BUILD_NUMBER}"/>
+    <property name="hudson.jobname" value="${env.JOB_NAME}"/>
 
     <loadfile property="perftestrun.buildnumber"
       srcFile="../../../build.number"
