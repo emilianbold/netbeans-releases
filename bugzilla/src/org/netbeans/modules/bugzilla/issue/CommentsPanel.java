@@ -521,6 +521,9 @@ public class CommentsPanel extends JPanel {
                     if (attachment != null) {
                         add(new JMenuItem(attachment.new DefaultAttachmentAction()));
                         add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
+                            add(attachment.new ApplyPatchAction());
+                        }
                         super.setVisible(true);
                     }
                 }

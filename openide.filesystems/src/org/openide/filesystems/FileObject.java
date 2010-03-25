@@ -1044,8 +1044,8 @@ public abstract class FileObject extends Object implements Serializable {
             }
             ListenerList<FileChangeListener> fsll = (fs != null) ? fs.getFCLSupport().listeners : null;
             ListenerList<FileChangeListener> repll = (fs != null && fs.getRepository() != null) ? fs.getRepository().getFCLSupport().listeners : null;
-            fsList = (fsll != null) ? new ArrayList<FileChangeListener>(fsll.getAllListeners()) : Collections.<FileChangeListener>emptyList();
-            repList = (repll != null) ? new ArrayList<FileChangeListener>(repll.getAllListeners()) : Collections.<FileChangeListener>emptyList();
+            fsList = ListenerList.allListeners(fsll);
+            repList = ListenerList.allListeners(repll);
         }
 
         public ED(Enumeration<FileChangeListener> en, FileEvent fe) {

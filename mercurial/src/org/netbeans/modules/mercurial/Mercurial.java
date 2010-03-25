@@ -134,6 +134,7 @@ public class Mercurial {
     private boolean gotVersion;
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
+    private RequestProcessor parallelRP;
 
     private Mercurial() {
         mvcs = org.openide.util.Lookup.getDefault().lookup(MercurialVCS.class);
@@ -477,6 +478,17 @@ public class Mercurial {
      */
     public RequestProcessor getRequestProcessor() {
         return getRequestProcessor((HgURL) null);
+    }
+
+    /**
+     * Request processor for parallel tasks
+     * @return
+     */
+    public synchronized RequestProcessor getParallelRequestProcessor() {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Mercurial.ParallelRP", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
 
     /**

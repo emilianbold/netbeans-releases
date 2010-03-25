@@ -47,6 +47,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /** Manage the data for the ToolsPanel */
 public final class HostToolsPanelModel extends ToolsPanelModel {
+
+    private String selectedCompilerSetName;
+
     public HostToolsPanelModel(ExecutionEnvironment env) {
         setSelectedDevelopmentHost(env);
     }
@@ -149,4 +152,15 @@ public final class HostToolsPanelModel extends ToolsPanelModel {
     public boolean getEnableDevelopmentHostChange() {
         return false;
     }
+
+    @Override
+    public void setSelectedCompilerSetName(String name) {
+        selectedCompilerSetName = name;
+    }
+
+    @Override
+    public String getSelectedCompilerSetName() {
+        return selectedCompilerSetName;
+    }
+
 }
