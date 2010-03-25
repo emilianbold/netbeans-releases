@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,51 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="dlight" default="build" basedir=".">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD PDF Document Menu Link 1.0//EN"
+                            "http://www.netbeans.org/dtds/pdf_link-1_0.dtd">
 
-    <property name="nbroot" location=".."/>
-
-    <target name="-init-modules">
-        <loadproperties srcfile="${nbroot}/nbbuild/cluster.properties"/>
-        <pathconvert property="dlight.modules.fullpath">
-            <path>
-                <!-- TODO: include dlight.nativeexecution once its tests are fixed -->
-                <dirset dir="${nbroot}" includes="${nb.cluster.dlight}" excludes="dlight.nativeexecution"/>
-            </path>
-            <mapper type="identity"/>
-        </pathconvert>
-    </target>
-
-    <target name="build">
-        <subant buildpath="${nbroot}" target="build">
-            <property name="cluster.config" value="dlight"/>
-        </subant>
-    </target>
-
-    <target name="test-build" depends="-init-modules">
-        <subant buildpath="${dlight.modules.fullpath}" target="test-build">
-            <property name="cluster.config" value="dlight"/>
-        </subant>
-    </target>
-
-    <target name="build-test-dist">
-        <subant buildpath="${nbroot}" target="build-test-dist">
-            <property name="cluster.config" value="dlight"/>
-            <property name="test.fail.on.error" value="true"/>
-        </subant>
-    </target>
-
-    <target name="test" depends="-init-modules" description="dlight tests">
-        <subant buildpath="${dlight.modules.fullpath}" target="test">
-            <property name="cluster.config" value="dlight"/>
-        </subant>
-    </target>
-
-    <target name="coverage-report" depends="-init-modules">
-        <subant buildpath="${dlight.modules.fullpath}" target="coverage-report">
-            <property name="cluster.config" value="dlight"/>
-            <property name="coverage.report.format" value="xml"/>
-        </subant>
-    </target>
-
-</project>
+<pdfLink>
+    <idefile base="shortcuts_mac"/>
+</pdfLink>

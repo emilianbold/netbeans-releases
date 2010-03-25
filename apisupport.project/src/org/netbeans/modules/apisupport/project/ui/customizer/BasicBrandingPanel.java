@@ -164,13 +164,13 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         add(title, gridBagConstraints);
         title.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_Title")); // NOI18N
 
+        titleValue.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         add(titleValue, gridBagConstraints);
 
