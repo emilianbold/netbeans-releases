@@ -69,7 +69,7 @@ public final class InstalledFileLocatorProvider {
                 ideDir = new File(junitWorkdir, "netbeans/ide"); // NOI18N
             }
 
-            System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator +
+            System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + // NOI18N
                     ideDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
         }
     }
