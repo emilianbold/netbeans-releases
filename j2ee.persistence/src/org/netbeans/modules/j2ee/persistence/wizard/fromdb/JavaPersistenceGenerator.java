@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -381,14 +382,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
 
-                UpdateType ut = UpdateType.valueOf(entityClass.getUpdateType());
                 FileObject entity = packageFileObject.getFileObject(entityClassName, "java"); //NOI18N
-                switch (ut){
+                switch (entityClass.getUpdateType()){
                     case RECREATE:
                         entity.delete();
                         entity = null;
                     case NEW:{
-                        generationPackageFOs.add(packageFileObject);
                         generatedEntityClasses.add(entityClassName);
 
                         // XXX Javadoc
@@ -405,6 +404,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             }
                         }
                     }
+                    case UPDATE:{
+                        generationPackageFOs.add(packageFileObject);
+                    }
                 }
             }
 
@@ -416,8 +418,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 final EntityClass entityClass = entityClasses[i];
                 String entityClassName = entityClass.getClassName();
 
-                if (!generatedEntityClasses.contains(entityClassName)) {
-                    // this entity class already existed, we didn't create it, so we don't want to touch it
+                if (!generatedEntityClasses.contains(entityClassName) && !UpdateType.UPDATE.equals(entityClass.getUpdateType())) {
+                    // this entity class already existed, we didn't create it, so we don't want to touch it except Update type
                     progressContributor.progress(entityClasses.length + i);
                     continue;
                 }
@@ -513,12 +515,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             protected ClassTree newClassTree;
             // the TypeElement corresponding to classTree
             protected TypeElement typeElement;
+            // the generating type like New, Update etc
+            protected UpdateType updateType;
 
             public ClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 this.copy = copy;
                 copy.toPhase(Phase.RESOLVED);
 
                 this.entityClass = entityClass;
+                this.updateType = entityClass.getUpdateType();
                 dbMappings = entityClass.getCMPMapping();
                 // NO PK for views
                 needsPKClass = entityClass.isForTable() && !entityClass.isUsePkField();
@@ -803,6 +808,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // the prefix or all named queries ("select ... ")
             private String namedQueryPrefix;
 
+            private Set<String> existingColumns = new HashSet<String>();
+
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
                 entityClassName = entityClass.getClassName();
@@ -812,59 +819,89 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
-                if (genSerializableEntities) {
+                if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
-                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
-                List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
-                tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
-                if(fullyQualifiedTableNames) {
-                    String schemaName = entityClass.getSchemaName();
-                    String catalogName = entityClass.getCatalogName();
-                    if(catalogName != null) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
-                    }
-                    if(schemaName != null ) {
-                        tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
-                    }
-                }
-                
-                // UniqueConstraint annotations for the table
-                if(regenTablesAttrs && entityClass.getUniqueConstraints() != null &&
-                        entityClass.getUniqueConstraints().size() != 0) {
-                    List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
-                    for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
-
-                        List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
-                        for(String colName : constraintCols) {
-                            colArgs.add(genUtils.createAnnotationArgument(null, colName));
+                if (UpdateType.UPDATE.equals(updateType)){
+                    collectExistingColumns();
+                } else {
+                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
+                    List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
+                    tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    if(fullyQualifiedTableNames) {
+                        String schemaName = entityClass.getSchemaName();
+                        String catalogName = entityClass.getCatalogName();
+                        if(catalogName != null) {
+                            tableAnnArgs.add(genUtils.createAnnotationArgument("catalog", catalogName)); // NOI18N
                         }
-                        ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
-                        uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint", 
-                                Collections.singletonList(columnNamesArg))); //NOI18N
+                        if(schemaName != null ) {
+                            tableAnnArgs.add(genUtils.createAnnotationArgument("schema", schemaName)); // NOI18N
+                        }
                     }
-                    
-                    tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
-                }
                 
-                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    // UniqueConstraint annotations for the table
+                    if(regenTablesAttrs && entityClass.getUniqueConstraints() != null &&
+                            entityClass.getUniqueConstraints().size() != 0) {
+                        List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
+                        for(List<String> constraintCols : entityClass.getUniqueConstraints()) {
 
-                if (needsPKClass) {
-                    String pkFieldName = createFieldName(pkClassName);
-                    pkProperty = new Property(
-                            Modifier.PROTECTED,
-                            Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
-                            pkFQClassName,
-                            pkFieldName);
-                    properties.add(pkProperty);
+                            List<ExpressionTree> colArgs = new ArrayList<ExpressionTree>();
+                            for(String colName : constraintCols) {
+                                colArgs.add(genUtils.createAnnotationArgument(null, colName));
+                            }
+                            ExpressionTree columnNamesArg = genUtils.createAnnotationArgument("columnNames", colArgs); // NOI18N
+                            uniqueConstraintAnnotations.add(genUtils.createAnnotation("javax.persistence.UniqueConstraint",
+                                    Collections.singletonList(columnNamesArg))); //NOI18N
+                        }
+
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
+                    }
+                
+                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+
+                    if (needsPKClass) {
+                        String pkFieldName = createFieldName(pkClassName);
+                        pkProperty = new Property(
+                                Modifier.PROTECTED,
+                                Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
+                                pkFQClassName,
+                                pkFieldName);
+                        properties.add(pkProperty);
+                    }
                 }
-
                 //TODO: javadoc - generate or fake in test mode
                 //        b.setCommentDataAuthor(authorOverride);
                 //        b.setCommentDataDate(dateOverride);
             }
 
+            private void collectExistingColumns(){
+                for (Tree member: originalClassTree.getMembers()){
+                    if (Kind.VARIABLE.equals(member.getKind())){
+                        VariableTree variable = (VariableTree)member;
+                        List<? extends AnnotationTree> annotations = variable.getModifiers().getAnnotations();
+                        for(AnnotationTree annTree: annotations){
+                            if (!((IdentifierTree)annTree.getAnnotationType()).getName().contentEquals("Column")){
+                                continue;
+                            }
+                            for(ExpressionTree exTree: annTree.getArguments()){
+                                AssignmentTree aTree = (AssignmentTree)exTree;
+                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){
+                                        existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
             protected void generateMember(EntityMember m) throws IOException {
+                //skip generating already exist members for UPDATE type
+                if (updateType.UPDATE.equals(updateType) && existingColumns.contains(m.getColumnName())){
+                    return;
+                }
+
                 String memberName = m.getMemberName();
                 boolean isPKMember = m.isPrimaryKey();
                 Property property = null;
@@ -906,7 +943,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     namedQueryAnnotations.add(genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
                 }
             }
-           
+
             protected void addFindAllNamedQueryAnnotation() {
                 // Add NamedQuery findAll here
                 List<ExpressionTree> namedQueryAnnArguments = new ArrayList<ExpressionTree>();
@@ -921,14 +958,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             protected void afterMembersGenerated() {
-                addFindAllNamedQueryAnnotation();
-                
-                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
-                        Collections.singletonList(genUtils.createAnnotationArgument(null, namedQueryAnnotations))));
+                if (!UpdateType.UPDATE.equals(updateType)){
+                    addFindAllNamedQueryAnnotation();
+
+                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
+                            Collections.singletonList(genUtils.createAnnotationArgument(null, namedQueryAnnotations))));
+                }
             }
 
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
+
+                if (existingColumns.contains(memberName)){
+                    return;
+                }
 
                 // XXX getRelationshipFieldType() does not work well when entity classes
                 // are not all generated to the same package - fixed in issue 139804
@@ -1116,7 +1159,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 
                 // add the serialVersionUID field
-                fields.add(createSerialVersionUID());
+                if (!UpdateType.UPDATE.equals(updateType)){
+                    fields.add(createSerialVersionUID());
+                }
             }
 
             private String getRelationshipFieldType(RelationshipRole role, String pkg) {

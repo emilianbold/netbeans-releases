@@ -327,7 +327,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         } else {
             ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
-        if (ocs == null) {
+        if (ocs == null && !CompilerSetManager.get(env).getCompilerSets().isEmpty()) {
             ocs = CompilerSetManager.get(env).getCompilerSets().get(0);
         }
         if (ocs == null) {
