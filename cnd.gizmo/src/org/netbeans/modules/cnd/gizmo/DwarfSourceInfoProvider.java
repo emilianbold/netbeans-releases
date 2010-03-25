@@ -70,7 +70,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     private static final boolean TRACE = false;
     private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
-    private Map<String, String> onePath;
 
     public DwarfSourceInfoProvider() {
         cache = new WeakHashMap<String, Map<String, AbstractFunctionToLine>>();
@@ -146,7 +145,6 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     }
 
     private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
-        onePath = new HashMap<String, String>();
         Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
         if (sourceInfoMap == null) {
             try {
@@ -161,8 +159,6 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
         }
-        onePath = null;
         return sourceInfoMap;
     }
-
 }

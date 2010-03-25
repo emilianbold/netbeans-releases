@@ -82,12 +82,12 @@ public class CompileLineService {
 
     private static void dump(String kind, String objFileName, PrintStream out) throws IOException, Exception {
         List<SourceFile> res = null;
-        if ("-file".equals(kind)){
+        if ("-file".equals(kind)){ // NOI18N
             res = getSourceFileProperties(objFileName);
-        } else if ("-folder".equals(kind)){
+        } else if ("-folder".equals(kind)){ // NOI18N
             res = getSourceFolderProperties(objFileName);
         } else {
-            throw new Exception("Wrong arguments: "+kind+" "+objFileName);
+            throw new Exception("Wrong arguments: "+kind+" "+objFileName); // NOI18N
         }
         for(SourceFile entry : res) {
             out.println(entry.compileDir);
