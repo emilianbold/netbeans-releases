@@ -215,24 +215,47 @@ public class Generator {
             generatorDir = FileUtil.toFile(location);
         }
 
-        File usageFile = new File(generatorDir, "USAGE"); // NOI18N
-        // At least the "resource" generator on railties seems to live
-        // in the "wrong" place; check the additional location
-        if (!usageFile.exists()) {
-            usageFile = new File(generatorDir, "templates" + File.separator + "USAGE"); // NOI18N
-        }
-        // e.g. haml_scaffold doesn't ship with a usage file, try README.rdoc instead
-        if (!usageFile.exists()) {
-            usageFile = new File(generatorDir, "README.rdoc"); // NOI18N
-        }
-        // finally try just README
-        if (!usageFile.exists()) {
-            usageFile = new File(generatorDir, "README"); // NOI18N
-        }
-
-        return usageFile.exists() ? RailsProjectUtil.asText(usageFile) : null;
+        File usageFile = findUsageFile(generatorDir);
+        return usageFile != null ? RailsProjectUtil.asText(usageFile) : null;
     }
 
+    private File findUsageFile(File generatorDir) {
+        final String[] filesToTry = {"USAGE",
+            // At least the "resource" generator on railties seems to live
+            // in the "wrong" place; check the additional location
+            "templates" + File.separator + "USAGE",
+            // e.g. haml_scaffold doesn't ship with a usage file, try README.rdoc instead
+            "README.rdoc",
+            // finally try just README
+            "README"
+        };
+
+        List<File> dirsToTry = new ArrayList<File>(3);
+        dirsToTry.add(generatorDir);
+
+        // look at parents as well for usage/readme. a typical structure of
+        // gem generators is <gem_home>/my-gem-generator/generators/my-gem-generator.rb,
+        // so we're looking for <gem_home>/my-gem-generator/generators/README and
+        // <gem_home>/my-gem-generator/README etc.
+        File parent = generatorDir.getParentFile();
+        if (parent.exists() && "generators".equals(parent.getName())) {
+            dirsToTry.add(parent);
+            File grandParent = parent.getParentFile();
+            if (grandParent.exists()) {
+                dirsToTry.add(grandParent);
+            }
+        }
+
+        for (File dir : dirsToTry) {
+            for (String file : filesToTry) {
+                File result = new File(dir, file);
+                if (result.exists()) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
 
     String getNameLabel() {
         if (nameKey != null) {
