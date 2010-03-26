@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.api.ui.RemoteFileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -271,7 +272,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                         public void run() {
                             if (tblPathMappings != null) {
                                 handleProgress(false);
-                                updatePathMappingsTable(tm);
+                                updatePathMappingsTable(tm, host.getExecutionEnvironment());
                                 enableControls(true, "");
                             }
                         }
@@ -283,7 +284,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             cache.put(host, tableModel);
         }
 
-        updatePathMappingsTable(tableModel);
+        updatePathMappingsTable(tableModel, host.getExecutionEnvironment());
     }
 
     private void enableControls(boolean value, String message) {
@@ -292,9 +293,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtError.setText(message);
     }
 
-    private void updatePathMappingsTable(DefaultTableModel tableModel) {
+    private void updatePathMappingsTable(DefaultTableModel tableModel, ExecutionEnvironment env) {
         tblPathMappings.setModel(tableModel);
-        tblPathMappings.getColumnModel().getColumn(0).setCellEditor(new PathCellEditor());
+        tblPathMappings.getColumnModel().getColumn(0).setCellEditor(new PathCellEditor(ExecutionEnvironmentFactory.getLocal()));
+        tblPathMappings.getColumnModel().getColumn(1).setCellEditor(new PathCellEditor(env));
     }
 
     private PathMapTableModel prepareTableModel(ExecutionEnvironment host) {
@@ -544,8 +546,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         private final JPanel panel;
         private final JTextField tfPath;
         private final JButton btnBrowse;
+        private final ExecutionEnvironment execEnv;
 
-        public PathCellEditor() {
+        public PathCellEditor(ExecutionEnvironment execEnv) {
+            this.execEnv = execEnv;
             tfPath = new JTextField();
             btnBrowse = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Browse"));
             panel = new JPanel();
@@ -581,11 +585,20 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            File file = new File(tfPath.getText());
-            JFileChooser fc = new JFileChooser(file);
+            JFileChooser fc;
+            String title;
+            if (execEnv.isLocal()) {
+                File file = new File(tfPath.getText());
+                fc = new JFileChooser(file);
+                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Local");
+            } else {
+                RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(execEnv);
+                fc = fcb.createFileChooser(tfPath.getText());
+                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Remote", ServerList.get(execEnv).getDisplayName());
+            }
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.setApproveButtonText(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Choose"));
-            fc.setDialogTitle(NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title"));
+            fc.setDialogTitle(title);
             fc.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
             if (fc.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) {
                 tfPath.setText(fc.getSelectedFile().getAbsolutePath());
@@ -646,7 +659,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         @Override
-        public Class getColumnClass(int columnIndex) {
+        public Class<?> getColumnClass(int columnIndex) {
             return String.class;
         }
     }
