@@ -50,20 +50,20 @@ Searchable Keys:
   field : type|PRIVATE
   fqn : ActiveRecord::ConnectionAdapters::Column
   method : binary_to_string(value)|DOCUMENTED|STATIC|
-  method : extract_default(default);;NilClass|Integer|Float;
+  method : extract_default(default);;NilClass|Fixnum|Integer|Float;
   method : extract_limit(sql_type)|PRIVATE|;;Integer;
   method : extract_precision(sql_type)|PRIVATE|;;Integer;
   method : extract_scale(sql_type)|PRIVATE|;;Fixnum|Integer;
-  method : fallback_string_to_date(string)|PROTECTED|STATIC|
-  method : fallback_string_to_time(string)|PROTECTED|STATIC|
-  method : fast_string_to_date(string)|PROTECTED|STATIC|
-  method : fast_string_to_time(string)|DOCUMENTED|PROTECTED|STATIC|
+  method : fallback_string_to_date(string)|PROTECTED|STATIC|;;NilClass|Date;
+  method : fallback_string_to_time(string)|PROTECTED|STATIC|;;NilClass;
+  method : fast_string_to_date(string)|PROTECTED|STATIC|;;NilClass|Date;
+  method : fast_string_to_time(string)|DOCUMENTED|PROTECTED|STATIC|;;NilClass;
   method : human_name|DOCUMENTED|
   method : initialize(name,default,sql_type,null)|DOCUMENTED|PRIVATE|;;NilClass;
   method : klass|DOCUMENTED|
   method : microseconds(time)|DOCUMENTED|PROTECTED|STATIC|;;Integer;
   method : new(name,default,sql_type,null)|DOCUMENTED|PRIVATE|STATIC|;;NilClass;
-  method : new_date(year,mon,mday)|PROTECTED|STATIC|;;Date;
+  method : new_date(year,mon,mday)|PROTECTED|STATIC|;;NilClass|Date;
   method : new_time(year,mon,mday,hour,min,sec,microsec)|PROTECTED|STATIC|;;NilClass;
   method : number?;;TrueClass|FalseClass;
   method : simplified_type(field_type)|PRIVATE|;;Symbol;
@@ -72,7 +72,7 @@ Searchable Keys:
   method : string_to_dummy_time(string)|STATIC|;;NilClass;
   method : string_to_time(string)|STATIC|;;NilClass;
   method : text?;;TrueClass|FalseClass;
-  method : type_cast(value)|DOCUMENTED|;;NilClass|Integer|Float;
+  method : type_cast(value)|DOCUMENTED|;;NilClass|Fixnum|Integer|Float;
   method : type_cast_code(var_name);;NilClass|String;
   method : value_to_boolean(value)|DOCUMENTED|STATIC|;;TrueClass|FalseClass;
   method : value_to_decimal(value)|DOCUMENTED|STATIC|

@@ -1319,6 +1319,25 @@ itor tabs #66700).
     }
 
     /**
+     * Returns true if hg in a given version supports '--topo' option
+     * --topo available probably since 1.5
+     * @param version
+     * @return
+     */
+    public static boolean hasTopoOption (String version) {
+        if (version != null && !version.startsWith("0.") //NOI18N
+                && !version.startsWith("1.0") //NOI18N
+                && !version.startsWith("1.1") //NOI18N
+                && !version.startsWith("1.2") //NOI18N
+                && !version.startsWith("1.3") //NOI18N
+                && !version.startsWith("1.4")) { //NOI18N
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the remote repository url for the given file.</br>
      * It will be the pull url in the first case, otherwise push url or null
      * in case there is nothig set in .hg

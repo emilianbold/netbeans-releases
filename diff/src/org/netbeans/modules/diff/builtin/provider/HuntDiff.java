@@ -176,6 +176,7 @@ class HuntDiff {
                 m.appendReplacement(sb, "");
             }
         }
+        m.appendTail(sb);
         strings[idx] = sb.toString();
     }
 

@@ -391,6 +391,7 @@ public class HgCommand {
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERSION_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
     }
+    private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
 
     /**
      * Merge working directory with the head revision
@@ -2213,6 +2214,7 @@ public class HgCommand {
         return id;
     }
 
+    private static Boolean topoAvailable;
     private static List<String> getHeadInfo(String repository, String template) throws HgException {
         if (repository == null) return null;
 
@@ -2220,11 +2222,19 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
+        topoAvailable = Boolean.TRUE.equals(topoAvailable) || topoAvailable == null && HgUtils.hasTopoOption(Mercurial.getInstance().getVersion());
+        if (topoAvailable) {
+            command.add(HG_FLAG_TOPO);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository);
         command.add(template);
-
-        return exec(command);
+        List<String> output = exec(command);
+        if (topoAvailable && output.contains("hg heads: option --topo not recognized")) { //NOI18N
+            topoAvailable = false;
+            return getHeadInfo(repository, template);
+        }
+        return output;
     }
 
     private static List<String> getHeadInfo(File repository, String template) throws HgException {
