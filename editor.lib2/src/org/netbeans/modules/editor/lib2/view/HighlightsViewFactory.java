@@ -217,13 +217,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
+        int startOffset = event.getStartOffset();
+        int endOffset = event.getEndOffset();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("highlightChanged: event:<" + event.getStartOffset() + ',' + event.getEndOffset() + ">\n"); // NOI18N
+            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + ">\n"); // NOI18N
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.INFO, "Highlight Change Thread Dump", new Exception());
             }
         }
-        fireEvent(Collections.singletonList(createChange(event.getStartOffset(), event.getEndOffset())));
+        if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
+            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
+        }
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {

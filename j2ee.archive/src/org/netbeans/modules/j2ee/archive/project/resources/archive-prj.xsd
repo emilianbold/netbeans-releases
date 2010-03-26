@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="source-jar" minOccurs="1" maxOccurs="1"><xsd:complexType/></xsd:element>
+                <xsd:element name="source-jar" minOccurs="1" maxOccurs="1" type="xsd:string"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>    
