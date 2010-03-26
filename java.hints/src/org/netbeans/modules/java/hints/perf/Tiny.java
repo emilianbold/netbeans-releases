@@ -77,7 +77,7 @@ public class Tiny {
     static final String SC_IGNORE_SUBSTRING = "ignore.substring";
     static final boolean SC_IGNORE_SUBSTRING_DEFAULT = true;
     
-    @Hint(category="performance", customizerProvider=StringConstructorCustomizerProviderImpl.class)
+    @Hint(category="performance", customizerProvider=StringConstructorCustomizerProviderImpl.class, suppressWarnings="RedundantStringConstructorCall")
     @TriggerPattern(value="new java.lang.String($original)",
                     constraints=@Constraint(variable="$original", type="java.lang.String"))
     public static ErrorDescription stringConstructor(HintContext ctx) {
@@ -120,7 +120,7 @@ public class Tiny {
     }
 
 
-    @Hint(category="performance", enabled=false)
+    @Hint(category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
     @TriggerPattern(value="$string.equals(\"\")",
                     constraints=@Constraint(variable="$string", type="java.lang.String"))
     public static ErrorDescription stringEqualsEmpty(HintContext ctx) {
@@ -138,7 +138,7 @@ public class Tiny {
     }
 
 
-    @Hint(category="performance", enabled=false)
+    @Hint(category="performance", enabled=false, suppressWarnings="SingleCharacterStringConcatenation")
     @TriggerPatterns({
         @TriggerPattern(value="$string.indexOf($toSearch)",
                         constraints={@Constraint(variable="$string", type="java.lang.String"),
@@ -179,7 +179,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);
     }
 
-    @Hint(category="performance", enabled=false)
+    @Hint(category="performance", enabled=false, suppressWarnings="InstantiatingObjectToGetClassObject")
     @TriggerPattern(value="new $O($params$).getClass()")
     public static ErrorDescription getClassInsteadOfDotClass(HintContext ctx) {
         TreePath O = ctx.getVariables().get("$O");
@@ -196,7 +196,7 @@ public class Tiny {
 
     private static final Set<Kind> KEEP_PARENTHESIS = EnumSet.of(Kind.MEMBER_SELECT);
     
-    @Hint(category="performance", enabled=false)
+    @Hint(category="performance", enabled=false, suppressWarnings="ConstantStringIntern")
     @TriggerPattern(value="$str.intern()",
                     constraints=@Constraint(variable="$str", type="java.lang.String"))
     public static ErrorDescription constantIntern(HintContext ctx) {

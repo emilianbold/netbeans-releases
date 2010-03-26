@@ -313,7 +313,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return false;
     }
 
-    private static final Set<TypeKind> IGNORE_KINDS = EnumSet.of(TypeKind.EXECUTABLE, TypeKind.PACKAGE);
+    private static final Set<TypeKind> IGNORE_KINDS = EnumSet.of(TypeKind.EXECUTABLE, TypeKind.PACKAGE, TypeKind.ERROR);
 
     private TreePath currentPath;
 
