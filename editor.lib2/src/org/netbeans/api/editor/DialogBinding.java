@@ -27,6 +27,8 @@
  */
 package org.netbeans.api.editor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -34,6 +36,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.editor.lib2.DialogBindingTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -55,7 +58,7 @@ public final class DialogBinding {
         Parameters.notNull("component", component); //NOI18N
         if (!fileObject.isValid() || !fileObject.isData())
             return;
-        bind(component, null, fileObject, offset, length, fileObject.getMIMEType());
+        bind(component, null, fileObject, offset, -1, -1, length, fileObject.getMIMEType());
     }
 
     /**
@@ -68,20 +71,47 @@ public final class DialogBinding {
     public static void bindComponentToDocument(final Document document, int offset, int length, final JTextComponent component) {
         Parameters.notNull("document", document); //NOI18N
         Parameters.notNull("component", component); //NOI18N
-        bind(component, document, null, offset, length, (String)document.getProperty("mimeType")); //NOI18N
+        bind(component, document, null, offset, -1, -1, length, (String)document.getProperty("mimeType")); //NOI18N
     }
 
-    private static void bind(final JTextComponent component, final Document document, final FileObject fileObject, int offset, int length, final String mimeType) {
+    // -J-Dorg.netbeans.api.editor.DialogBinding.level=FINE
+    private static final Logger LOG = Logger.getLogger(DialogBinding.class.getName());
+    
+    private static void bind(
+        JTextComponent component,
+        Document document,
+        FileObject fileObject,
+        int offset,
+        int line,
+        int column,
+        int length,
+        final String mimeType
+    ) {
         if (component instanceof JEditorPane)
             ((JEditorPane) component).setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
         Document doc = component.getDocument();
-        doc.putProperty("mimeType", "text/x-dialog-binding"); //NOI18N
+        doc.putProperty("mimeType", DialogBindingTokenId.language().mimeType()); //NOI18N
         InputAttributes inputAttributes = new InputAttributes();
-        Language language = MimeLookup.getLookup("text/x-dialog-binding").lookup(Language.class); //NOI18N
+        Language language = MimeLookup.getLookup(DialogBindingTokenId.language().mimeType()).lookup(Language.class); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.document", document, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.fileObject", fileObject, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.offset", offset, true); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.line", line, true); //NOI18N
+        inputAttributes.setValue(language, "dialogBinding.column", column, true); //NOI18N
         inputAttributes.setValue(language, "dialogBinding.length", length, true); //NOI18N
         doc.putProperty(InputAttributes.class, inputAttributes);
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "\njtc={0}\ndoc={1}\nfile={2}\noffset={3}\nline={4}\ncolumn={5}\nlength={6}\nmimeType={7}\n", new Object [] {
+                component,
+                document,
+                fileObject,
+                offset,
+                line,
+                column,
+                length,
+                mimeType
+            });
+        }
     }
 }
