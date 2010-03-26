@@ -46,8 +46,10 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -114,13 +116,13 @@ public final class JsfModelFactory {
         }
         SourceGroup[] sourceGroups = sources.getSourceGroups( 
                 JavaProjectConstants.SOURCES_TYPE_JAVA );
-        ClassPath[] paths = new ClassPath[ sourceGroups.length];
-        int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, type);
+            ClassPath path = provider.findClassPath( rootFolder, type);
+            // return classpath of the first source group, that is ignore test source roots:
+            return ClassPathSupport.createProxyClassPath(path);
         }
-        return ClassPathSupport.createProxyClassPath( paths );
+        return null;
     }
     
     private static FileObject getFileObject( WebModule module ) {
