@@ -32,12 +32,12 @@
 #include <math.h>
 #include <sys/time.h>
 #include <string.h>
-#define wi 1000 //1280            // consider (wi,hi) as the R-axis and I-axis on a complex plane
-#define hi 800 //1024
+#define WI 1000 //1280            // consider (wi,hi) as the R-axis and I-axis on a complex plane
+#define HI 800 //1024
+#define ITER 100
 #define MAXISIZE 500000    // maximum iterated elements allowed to written per file
 
 long double currLeft = -2, currRight = 2, currTop = 1.6, currBottom = -1.6, inc = .001;
-long double wide = wi, high = hi, iter = 100;
 
 // Complex struct: overloads +, -, *, /, =, and implemented function cpow
 
@@ -101,36 +101,36 @@ double abs(complex& a) { // magnitude of the complex number
  * Depends on inputs, increments, and locality, it might paint the complex
  * plane radially, with certain rotation.
  */
-void Mandelbrot() // Basic Mandelbrot calculation
+void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mandelbrot calculation
 {
-    int *hits[wi];
-    int *max[wi];
-    double *realBuf[wi];
-    double *imgBuf[wi];
+    int **hits = new int*[wi];
+    int **max = new int*[wi];
+    double **realBuf = new double*[wi];
+    double **imgBuf = new double*[wi];
 
     // initialize vectors
     hits[0] = new int[wi * hi];
-    memset(hits[0], 0, wi * hi * sizeof (int));
     max[0] = new int[wi * hi];
-    memset(max[0], 0, wi * hi * sizeof (int));
     realBuf[0] = new double[wi * hi];
-    memset(realBuf[0], 0, wi * hi * sizeof (double));
     imgBuf[0] = new double[wi * hi];
-    memset(imgBuf[0], 0, wi * hi * sizeof (double));
     for (int i = 1; i < wi; i++) {
         hits[i] = hits[i - 1] + hi;
         max[i] = max[i - 1] + hi;
         realBuf[i] = realBuf[i - 1] + hi;
         imgBuf[i] = imgBuf[i - 1] + hi;
     }
+    memset(hits[0], 0, wi * hi * sizeof (int));
+    memset(max[0], 0, wi * hi * sizeof (int));
+    memset(realBuf[0], 0, wi * hi * sizeof (double));
+    memset(imgBuf[0], 0, wi * hi * sizeof (double));
 
+    long double wide = wi, high = hi, iter = it;
     int i = 0, x = 0, y = 0, fcnt = 0, icnt = 0;
     long double a = currLeft, b = currBottom;
     complex z(0, 0);
     complex c(0, 0);
     long double inc = (currRight - currLeft) / wide;
     long double yinc = (currTop - currBottom) / high;
-    long double cnt = 0;
     char filename[80];
     strcpy(filename, "output_pns_0.dat");
     FILE* fh = fopen(filename, (char *) &"a+b");
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
     startwtime = wallTime();
 
     // call Mandelbrot routine
-    Mandelbrot();
+    Mandelbrot(WI, HI, ITER);
 
     // calculate wall time
     endwtime = wallTime();

@@ -336,9 +336,11 @@ public class PullAction extends ContextAction {
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
+                boolean checkHeads = false;
                 if(bMergeNeededDueToPull){
                     bConfirmMerge = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
+                    checkHeads = !bConfirmMerge;
                 } else {
                     boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                     if(bOutStandingUncommittedMerges){
@@ -350,7 +352,7 @@ public class PullAction extends ContextAction {
                     logger.output(""); // NOI18N
                     logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null, logger);
-                } else {
+                } else if (checkHeads) {
                     List<String> headRevList = HgCommand.getHeadRevisions(root);
                     if (headRevList != null && headRevList.size() > 1){
                         MergeAction.printMergeWarning(headRevList, logger);

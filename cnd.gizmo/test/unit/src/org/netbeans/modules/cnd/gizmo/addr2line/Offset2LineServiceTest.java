@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToLine;
+import org.netbeans.modules.cnd.gizmo.RemoteJarServiceProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -156,15 +157,7 @@ public class Offset2LineServiceTest extends NbTestCase {
     }
 
     private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable("java"); //NOI18N
-        List<String> args = new ArrayList<String>();
-        args.add("-cp"); //NOI18N
-        args.add(clazz.getProtectionDomain().getCodeSource().getLocation().getPath());
-        args.add(clazz.getName());
-        args.addAll(Arrays.asList(arguments));
-        npb.setArguments(args.toArray(new String[args.size()]));
-        return npb.call();
+        return RemoteJarServiceProvider.getJavaProcess(clazz, env, arguments);
     }
 
     private String getResource(String resource) {
