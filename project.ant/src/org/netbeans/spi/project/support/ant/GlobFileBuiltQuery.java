@@ -217,6 +217,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             return null;
         }
     }
+
+    private static final RequestProcessor RP = new RequestProcessor(StatusImpl.class.getName());
     
     private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, Runnable {
         
@@ -320,7 +322,8 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         private void update() {
-            RequestProcessor.getDefault().post(this);
+            // XXX should this maintain a single Task and schedule() it?
+            RP.post(this);
         }
         
         public void run() {
