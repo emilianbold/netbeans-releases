@@ -42,6 +42,7 @@
 package org.netbeans.modules.derby.ui;
 
 import java.io.File;
+import java.util.Arrays;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.api.DerbyDatabases;
@@ -76,7 +77,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         initComponents();
         databaseNameTextField.getDocument().addDocumentListener(docListener);
         userTextField.getDocument().addDocumentListener(docListener);
-        passwordTextField.getDocument().addDocumentListener(docListener);
+        password.getDocument().addDocumentListener(docListener);
+        retypePassword.getDocument().addDocumentListener(docListener);
         updateLocation();
     }
     
@@ -95,8 +97,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     public String getPassword() {
-        String password = new String(passwordTextField.getPassword()).trim();
+        String password = new String(this.password.getPassword());
         return password.length() > 0 ? password : null;
+    }
+
+    public String getRetypePassword() {
+        String pw2 = new String(this.retypePassword.getPassword());
+        return pw2.length() > 0 ? pw2 : null;
+    }
+
+    public boolean matchPasswords() {
+        return Arrays.equals(this.retypePassword.getPassword(), this.password.getPassword());
     }
 
     public void setIntroduction() {
@@ -119,6 +130,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         // workaround for issue 69265
         int unsupportedChar = getFirstUnsupportedCharacter(databaseName);
         
+        retypePassword.setEnabled(getPassword() != null);
+        retypePasswordLabel.setEnabled(getPassword() != null);
+        
         if (databaseName.length() <= 0) { // NOI18N
             warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameEmpty");
         } else if (illegalChar >= 0) {
@@ -129,6 +143,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
             info = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
+        } else if (getUser() != null && getPassword() != null && getRetypePassword() == null) {
+            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_NeedRetypePassword");
+        } else if (! matchPasswords()) {
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_PasswordsDontMatch");
         }
         
         if (error != null) {
@@ -174,9 +192,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
-        passwordTextField = new javax.swing.JPasswordField();
+        password = new javax.swing.JPasswordField();
         propertiesButton = new javax.swing.JButton();
         databaseLocationValueLabel = new javax.swing.JLabel();
+        retypePasswordLabel = new javax.swing.JLabel();
+        retypePassword = new javax.swing.JPasswordField();
 
         databaseNameLabel.setLabelFor(databaseNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName")); // NOI18N
@@ -189,10 +209,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         userTextField.setColumns(15);
 
-        passwordLabel.setLabelFor(passwordTextField);
+        passwordLabel.setLabelFor(password);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Password")); // NOI18N
 
-        passwordTextField.setColumns(15);
+        password.setColumns(15);
 
         org.openide.awt.Mnemonics.setLocalizedText(propertiesButton, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Properties")); // NOI18N
         propertiesButton.addActionListener(new java.awt.event.ActionListener() {
@@ -203,23 +223,30 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         databaseLocationValueLabel.setToolTipText(derbySystemHome.getAbsolutePath());
 
+        retypePasswordLabel.setLabelFor(retypePassword);
+        org.openide.awt.Mnemonics.setLocalizedText(retypePasswordLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_RetypePassword")); // NOI18N
+
+        retypePassword.setColumns(15);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(databaseNameLabel)
                     .add(passwordLabel)
                     .add(userLabel)
-                    .add(databaseLocationLabel))
+                    .add(databaseLocationLabel)
+                    .add(retypePasswordLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                    .add(databaseLocationValueLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 296, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(retypePassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .add(databaseLocationValueLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(propertiesButton)
                 .addContainerGap())
@@ -238,20 +265,24 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(passwordLabel)
-                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(password, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER, false)
+                    .add(retypePasswordLabel)
+                    .add(retypePassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(databaseLocationLabel)
-                    .add(propertiesButton)
-                    .add(databaseLocationValueLabel))
-                .addContainerGap(17, Short.MAX_VALUE))
+                    .add(databaseLocationValueLabel)
+                    .add(propertiesButton))
+                .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {databaseNameTextField, passwordTextField, userTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {databaseNameTextField, password, userTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         databaseNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_databaseNameTextField")); // NOI18N
         userTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_userTextField")); // NOI18N
-        passwordTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_passwordTextField")); // NOI18N
+        password.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_passwordTextField")); // NOI18N
         propertiesButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSN_CreateDatabasePanel_propertiesButton")); // NOI18N
         propertiesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSD_CreateDatabasePanel_propertiesButton")); // NOI18N
         databaseLocationValueLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "ACSN_CreateDatabasePanel_databaseLocationValueLabel")); // NOI18N
@@ -271,9 +302,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     public javax.swing.JLabel databaseLocationValueLabel;
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
+    public javax.swing.JPasswordField password;
     public javax.swing.JLabel passwordLabel;
-    public javax.swing.JPasswordField passwordTextField;
     public javax.swing.JButton propertiesButton;
+    public javax.swing.JPasswordField retypePassword;
+    public javax.swing.JLabel retypePasswordLabel;
     public javax.swing.JLabel userLabel;
     public javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
