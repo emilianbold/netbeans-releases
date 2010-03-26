@@ -198,12 +198,13 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                         if (text.indexOf(".") == -1 && text.indexOf(":") == -1) {
                             embeddings.add(snapshot.create("\n ", CSS_MIME_TYPE)); //NOI18N
 
+                            String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";
                             Matcher matcher = CLASSES_LIST_PATTERN.matcher(text);
+                            boolean classExists = false;
                             while(matcher.find()) {
                                 int start = matcher.start();
                                 int end = matcher.end();
                                 if(start != end) {
-                                    String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";
                                     embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
 
                                     //compute the token's document offset
@@ -212,7 +213,17 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
                                     //create the real text embedding
                                     embeddings.add(snapshot.create(start_in_document, lenght, CSS_MIME_TYPE));
+
+                                    classExists = true;
                                 }
+                            }
+
+                            if(!classExists) {
+                                //empty class attribute, we need to generate . {} so the completion can complete
+                                //classes after the dot
+                                embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
+                                //+ empty real embedding for the empty value "" content
+                                embeddings.add(snapshot.create(sourceStart, 0, CSS_MIME_TYPE));
                             }
 
                             embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));

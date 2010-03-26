@@ -42,9 +42,9 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.text.Collator;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -225,13 +225,9 @@ public final class ModuleDependency implements Comparable<ModuleDependency> {
             filterTokens.add(me.getLocalizedName());
             filterTokens.add(me.getJarLocation().getAbsolutePath());
             String[] cpext = PropertyUtils.tokenizePath(me.getClassPathExtensions());
-            for (int i = 0; i < cpext.length; i++) {
-                filterTokens.add(cpext[i]);
-            }
+            filterTokens.addAll(Arrays.asList(cpext));
             if (friend) {
-                Iterator it = me.getPublicClassNames().iterator();
-                while (it.hasNext()) {
-                    String clazz = (String) it.next();
+                for (String clazz : me.getPublicClassNames()) {
                     filterTokens.add(clazz.replace('$', '.'));
                 }
             }

@@ -139,6 +139,7 @@ public class RetoucheUtils {
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
     private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RetoucheUtils.class.getName(), 1, false, false);
     
     public static String htmlize(String input) {
         String temp = input.replace("<", "&lt;"); // NOI18N
@@ -943,7 +944,7 @@ public class RetoucheUtils {
             waitDialog = DialogDisplayer.getDefault().createDialog(dd);
             waitDialog.pack();
             //100ms is workaround for 127536
-            waitTask = RequestProcessor.getDefault().post(ap, 100);
+            waitTask = RP.post(ap, 100);
             waitDialog.setVisible(true);
             waitTask = null;
             waitDialog = null;
