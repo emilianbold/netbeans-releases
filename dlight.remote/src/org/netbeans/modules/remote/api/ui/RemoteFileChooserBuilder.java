@@ -53,7 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author ak119685
  */
-final class RemoteFileChooserBuilder {
+public final class RemoteFileChooserBuilder {
 
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
