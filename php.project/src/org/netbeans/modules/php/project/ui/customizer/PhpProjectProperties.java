@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
@@ -48,7 +49,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
@@ -62,6 +65,7 @@ import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -195,6 +199,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
     Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -429,20 +434,28 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.phpUnitSuite = phpUnitSuite;
     }
 
+    public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
+        if (customizerExtenders == null) {
+            customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
+        }
+        customizerExtenders.add(customizerExtender);
+    }
+
     public void save() {
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     saveProperties();
+
+                    saveCustomizerExtenders();
+
+                    ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
             });
-            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             Exceptions.printStackTrace((IOException) e.getException());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -562,6 +575,15 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             // actual file needs to be reparsed (because of php 5.3 hint)
             PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_PHP_VERSION,
                     ProjectPropertiesSupport.getPhpVersion(oldPhpVersion), ProjectPropertiesSupport.getPhpVersion(phpVersion));
+        }
+    }
+
+    void saveCustomizerExtenders() {
+        if (customizerExtenders != null) {
+            final PhpModule phpModule = project.getPhpModule();
+            for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
+                customizerExtender.save(phpModule);
+            }
         }
     }
 
