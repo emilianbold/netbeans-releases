@@ -689,8 +689,9 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
      */
     public Set<ModuleEntry> getModules() {
+        if (nbd)
         try {
-            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getAllEntries();
+            return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getAllEntries();
         } catch (IOException e) {
             Util.err.notify(e);
             return Collections.emptySet();
@@ -702,7 +703,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      */
     public ModuleEntry getModule(String cnb) {
         try {
-            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getEntry(cnb);
+            return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);
         } catch (IOException e) {
             Util.err.notify(e);
             return null;
