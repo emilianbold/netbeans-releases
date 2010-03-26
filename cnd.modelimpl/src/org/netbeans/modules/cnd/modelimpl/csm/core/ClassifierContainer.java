@@ -49,8 +49,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
@@ -159,17 +162,31 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
     public boolean putClassifier(CsmClassifier decl) {
         boolean put = false;
-        CharSequence qn = decl.getQualifiedName();
+        CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         if (isTypedef(decl)) {
             map = typedefs;
         } else {
             map = classifiers;
         }
+        CharSequence qn = decl.getQualifiedName();
+        put = putClassifier(map, qn, uid);
+        if (CsmKindUtilities.isClass(decl) && !CsmKindUtilities.isTemplate(decl)) {
+            // Special case for nested structs in C
+            // See Bug 144535 - wrong error highlighting for inner structure
+            CharSequence qn2 = getQualifiedNameWithoutScopeClasses(decl);
+            if (qn.length() != qn2.length()) {
+                putClassifier(map, qn2, uid);
+            }
+        }
+        return put;
+    }
+
+    public boolean putClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn, CsmUID<CsmClassifier> uid) {
+        boolean put = false;
         try {
             declarationsLock.writeLock().lock();
             if (!map.containsKey(qn)) {
-                CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
                 assert uid != null;
                 map.put(qn, uid);
                 assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
@@ -191,10 +208,23 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
         } else {
             map = classifiers;
         }
+        CharSequence qn = decl.getQualifiedName();
+        removeClassifier(map, qn);
+        if (CsmKindUtilities.isClass(decl) && !CsmKindUtilities.isTemplate(decl)) {
+            // Special case for nested structs in C
+            // See Bug 144535 - wrong error highlighting for inner structure
+            CharSequence qn2 = getQualifiedNameWithoutScopeClasses((CsmClass) decl);
+            if (qn.length() != qn2.length()) {
+                removeClassifier(map, qn2);
+            }
+        }
+    }
+
+    public void removeClassifier(Map<CharSequence, CsmUID<CsmClassifier>> map, CharSequence qn) {
         CsmUID<CsmClassifier> uid;
         try {
             declarationsLock.writeLock().lock();
-            uid = map.remove(decl.getQualifiedName());
+            uid = map.remove(qn);
         } finally {
             declarationsLock.writeLock().unlock();
         }
@@ -208,6 +238,27 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     //    classifiers.clear();
     //    typedefs.clear();
     //}
+
+    private CharSequence getQualifiedNameWithoutScopeClasses(CsmClassifier decl) {
+        CharSequence qualifiedNamePostfix;
+        if(decl instanceof OffsetableDeclarationBase) {
+            qualifiedNamePostfix = ((OffsetableDeclarationBase)decl).getQualifiedNamePostfix();
+        } else {
+            qualifiedNamePostfix = decl.getName();
+        }
+        CsmScope scope = decl.getScope();
+        while (CsmKindUtilities.isClass(scope)) {
+            scope = ((CsmClass) scope).getScope();
+        }
+        CharSequence qualifiedName;
+        if (CsmKindUtilities.isNamespace(scope)) {
+            qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
+        } else {
+            qualifiedName = qualifiedNamePostfix;
+        }
+        qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
+        return qualifiedName;
+    }
 
     private boolean isTypedef(CsmDeclaration decl){
         return CsmKindUtilities.isTypedef(decl);

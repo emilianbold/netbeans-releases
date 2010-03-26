@@ -1108,6 +1108,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //                System.out.println(tree.getChildren());
             } catch (org.antlr.runtime.RecognitionException ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+            } catch (Exception ex) {
+                System.err.println("Fortran parser error at parsing file " + file.getAbsolutePath()); // NOI18N
             }
         }
 
