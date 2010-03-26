@@ -586,15 +586,19 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             JFileChooser fc;
+            String title;
             if (execEnv.isLocal()) {
                 File file = new File(tfPath.getText());
                 fc = new JFileChooser(file);
+                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Local");
             } else {
-                fc = new RemoteFileChooserBuilder(execEnv).createFileChooser();
+                RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(execEnv);
+                fc = fcb.createFileChooser(tfPath.getText());
+                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Remote", ServerList.get(execEnv).getDisplayName());
             }
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.setApproveButtonText(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Choose"));
-            fc.setDialogTitle(NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title"));
+            fc.setDialogTitle(title);
             fc.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
             if (fc.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) {
                 tfPath.setText(fc.getSelectedFile().getAbsolutePath());
@@ -655,7 +659,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         @Override
-        public Class getColumnClass(int columnIndex) {
+        public Class<?> getColumnClass(int columnIndex) {
             return String.class;
         }
     }
