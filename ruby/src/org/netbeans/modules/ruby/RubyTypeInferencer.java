@@ -311,7 +311,9 @@ public final class RubyTypeInferencer {
         Set<Node> exits = new LinkedHashSet<Node>();
         AstUtilities.findExitPoints(methodDefNode, exits);
         for (Node exit : exits) {
-            result.append(inferType(exit, name));
+            if (!AstUtilities.isRaiseCall(exit)) {
+                result.append(inferType(exit, name));
+            }
         }
         return result;
     }
