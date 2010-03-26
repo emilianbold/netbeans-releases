@@ -72,6 +72,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
+    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class.getName());
 
     private ProjectPropertiesSupport() {
     }
@@ -452,7 +453,7 @@ public final class ProjectPropertiesSupport {
     }
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     // store properties
@@ -471,14 +472,13 @@ public final class ProjectPropertiesSupport {
                             EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             projectProperties.put(propertyName, testPath);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+
+                            ProjectManager.getDefault().saveProject(project);
                             return null;
                         }
                     });
-                    ProjectManager.getDefault().saveProject(project);
                 } catch (MutexException e) {
                     Exceptions.printStackTrace((IOException) e.getException());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         });
