@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.j2ee.weblogic9.config;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -87,7 +88,7 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        return support.getDatasources();
+        return new HashSet<Datasource>(support.getDatasources());
     }
 
     @Override

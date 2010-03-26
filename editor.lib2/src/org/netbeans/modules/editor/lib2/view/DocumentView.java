@@ -56,6 +56,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -76,6 +77,7 @@ import javax.swing.text.TabExpander;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -219,6 +221,8 @@ public final class DocumentView extends EditorBoxView
 
     private PreferenceChangeListener prefsListener;
 
+    private Map<?, ?> renderingHints;
+
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
@@ -324,9 +328,13 @@ public final class DocumentView extends EditorBoxView
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateVisibleWidth();
                 checkSettingsInfo();
+                // Use rendering hints (antialiasing etc.)
+                if (renderingHints != null) {
+                    ((Graphics2D) graphics).setRenderingHints(renderingHints);
+                }
+                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
                 reinitViews();
             }
@@ -476,6 +484,7 @@ public final class DocumentView extends EditorBoxView
                 if (c != null) {
                     backColor = c;
                 }
+                renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
             }
         }
 
@@ -533,11 +542,15 @@ public final class DocumentView extends EditorBoxView
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
+                    // Use rendering hints (antialiasing etc.)
+                    if (renderingHints != null) {
+                        g.setRenderingHints(renderingHints);
+                    }
                     super.paint(g, alloc, clipBounds);
                     ok = true;
                 } finally {
@@ -555,9 +568,8 @@ public final class DocumentView extends EditorBoxView
     {
         synchronized (getMonitor()) {
             checkDocumentLocked();
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
@@ -575,9 +587,9 @@ public final class DocumentView extends EditorBoxView
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     alloc = super.modelToViewChecked(offset, alloc, bias);
@@ -595,9 +607,9 @@ public final class DocumentView extends EditorBoxView
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
         synchronized (getMonitor()) {
-            if (textComponent != null) {
-                checkDocumentLocked();
-                checkViewsInited();
+            checkDocumentLocked();
+            checkViewsInited();
+            if (isActive()) {
                 boolean ok = false;
                 try {
                     int offset = super.viewToModelChecked(x, y, alloc, biasReturn);

@@ -48,8 +48,8 @@ import java.io.PrintStream;
  * @author ak119685
  */
 public class DwarfNameLookupEntry {
-    public long offset;
-    public String string;
+    public final long offset;
+    public final String string;
     
     public DwarfNameLookupEntry(long offset, String str) {
         this.offset = offset;

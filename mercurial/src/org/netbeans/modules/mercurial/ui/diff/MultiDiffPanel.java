@@ -57,7 +57,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.awt.UndoRedo;
-import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
@@ -189,10 +188,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         initNextPrevActions();
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2, forceNonEditable));
+        Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, forceNonEditable)};
+        setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = RequestProcessor.getDefault().post(dpt);
+        prepareTask = Mercurial.getInstance().getParallelRequestProcessor().post(dpt);
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -204,11 +204,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         add(replacement, BorderLayout.CENTER);
     }
 
-    private void setSetups(Setup... setups) {
+    private void setSetups(Setup[] setups, EditorCookie[] editorCookies) {
         this.setups = setups;
-        this.editorCookies = (setups != null)
-                             ? DiffUtils.setupsToEditorCookies(setups)
-                             : null;
+        this.editorCookies = editorCookies;
     }
 
     private boolean fileTableSetSelectedIndexContext;
@@ -310,7 +308,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Called by the enclosing TopComponent to interrupt the fetching task.
      */
     void componentClosed() {
-        setSetups((Setup[]) null);
+        setSetups((Setup[]) null, null);
         /**
          * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
          * see #159266
@@ -645,10 +643,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         File [] files = HgUtils.getModifiedFiles(context, status, true);
         final int localDisplayStatuses = status;
         final Setup[] localSetups = computeSetups(files);
+        final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
         Runnable runnable = new Runnable() {
             public void run() {
                 displayStatuses = localDisplayStatuses;
-                setSetups(localSetups);
+                setSetups(localSetups, cookies);
                 boolean propertyColumnVisible = false;
                 for (Setup setup : setups) {
                     if (setup.getPropertyName() != null) {
@@ -673,7 +672,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         default:
                             throw new IllegalStateException("Unknown DIFF type:" + currentType);
                     }
-                    setSetups((Setup[]) null);
+                    setSetups((Setup[]) null, null);
                     fileTable.getComponent().setEnabled(false);
                     fileTable.getComponent().setPreferredSize(null);
                     Dimension dim = fileTable.getComponent().getPreferredSize();
@@ -693,7 +692,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     setDiffIndex(0, 0);
                     commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
-                    prepareTask = RequestProcessor.getDefault().post(dpt);
+                    prepareTask = Mercurial.getInstance().getParallelRequestProcessor().post(dpt);
                 }
             }
         };

@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -81,7 +83,14 @@ public class Utilities {
             try {
                 for (KenaiService service : kenai.getServices()) {
                     if (service.getType() == KenaiService.Type.CHAT) {
-                        b = Boolean.TRUE;
+                        XMPPConnection xmppConnection = new XMPPConnection(kenai.getUrl().getHost());
+                        try {
+                            xmppConnection.connect();
+                            b = Boolean.TRUE;
+                            xmppConnection.disconnect();
+                        } catch (XMPPException ex) {
+                            Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                        }
                         break;
                     }
                 }

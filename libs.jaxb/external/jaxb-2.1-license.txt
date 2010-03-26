@@ -4,7 +4,7 @@ Description: JAXB Reference Implementation
 License: CDDL-1.0
 OSR: 4116
 Origin: https://jaxb.dev.java.net/
-Files: activation.jar jaxb-api.jar jaxb-impl.jar jaxb-xjc.jar jsr173_api.jar
+Files: jaxb-impl.jar jaxb1-impl.jar jaxb-xjc.jar jaxb-api-doc.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

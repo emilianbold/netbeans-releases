@@ -1217,6 +1217,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #4274
     public void testGetMIMETypeCachedInAtomicAction() throws IOException {
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             @Override

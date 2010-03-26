@@ -51,7 +51,6 @@ import org.netbeans.modules.subversion.util.Context;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module).
@@ -63,6 +62,7 @@ public class ResolveConflictsAction extends ContextAction {
     public ResolveConflictsAction() {
     }
 
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "ResolveConflicts";  // NOI18N
     }
@@ -73,6 +73,7 @@ public class ResolveConflictsAction extends ContextAction {
         return Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT, true);
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
@@ -85,12 +86,14 @@ public class ResolveConflictsAction extends ContextAction {
     }
 
     static void resolveConflicts(final File[] files) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 final List<File> filteredFiles = removeFolders(files);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        if (filteredFiles.size() == 0) {
+                        if (filteredFiles.isEmpty()) {
                             NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
                             DialogDisplayer.getDefault().notify(nd);
                         } else {
@@ -121,6 +124,7 @@ public class ResolveConflictsAction extends ContextAction {
         return filteredFiles;
     }
 
+    @Override
     public boolean asynchronous() {
         return false;
     }

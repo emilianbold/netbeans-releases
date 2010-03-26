@@ -383,23 +383,46 @@ public class HighlightsView extends EditorView implements TextLayoutView {
 
         // Paint possible underlines
         if (attrs != null) {
-            Color bottomBorderLineColor = null;
+            int xInt = (int) allocBounds.getX();
+            int yInt = (int) allocBounds.getY();
+            int endXInt = (int) (allocBounds.getX() + allocBounds.getWidth() - 1);
+            int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
+            Color leftBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.LeftBorderLineColor);
+            Color rightBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.RightBorderLineColor);
+            Color topBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.TopBorderLineColor);
+            Color bottomBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.BottomBorderLineColor);
+            if (leftBorderLineColor != null) {
+                g.setColor(leftBorderLineColor);
+                g.drawLine(xInt, yInt, xInt, endYInt);
+            }
+            if (rightBorderLineColor != null) {
+                g.setColor(rightBorderLineColor);
+                g.drawLine(endXInt, yInt, endXInt, endYInt);
+            }
+            if (topBorderLineColor != null) {
+                g.setColor(topBorderLineColor);
+                g.drawLine(xInt, yInt, endXInt, yInt);
+            }
+            if (bottomBorderLineColor != null) {
+                g.setColor(bottomBorderLineColor);
+                g.drawLine(xInt, endYInt, endXInt, endYInt);
+            }
+
             Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
                 float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
+                int y = (int)(allocBounds.getY() + underlineOffset + 0.5);
                 int wavePixelCount = (int) allocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
                     int[] waveForm = {0, 0, -1, -1};
                     int[] xArray = new int[wavePixelCount];
                     int[] yArray = new int[wavePixelCount];
 
-                    int intX = (int) allocBounds.x;
-                    int intY = (int) (allocBounds.y + underlineOffset + 0.5);
-                    int waveFormIndex = intX % 4;
+                    int waveFormIndex = xInt % 4;
                     for (int i = 0; i < wavePixelCount; i++) {
-                        xArray[i] = intX + i;
-                        yArray[i] = intY + waveForm[waveFormIndex];
+                        xArray[i] = xInt + i;
+                        yArray[i] = y + waveForm[waveFormIndex];
                         waveFormIndex = (++waveFormIndex) & 3;
                     }
                     g.drawPolyline(xArray, yArray, wavePixelCount - 1);

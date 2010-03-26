@@ -1426,13 +1426,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
     if="cluster.name"
   >
+    <fail message="Specify cluster.name property!" unless="cluster.name"/>
     <property name="buildnum" value="dev-${buildnumber}"/>
     <echo message="Packaging sources of ${cluster.name} modules"/>
     <resolve name="cluster-modules" value="${cluster.name}"/>
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${cluster-modules},${harness-modules},ide,nbbuild"/>
+    <dirset 
+        id="source.dirset" dir="${nb_all}"
+        includes="${cluster-modules},${harness-modules},ide,nbbuild,nbi"
+        excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
+    />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1444,6 +1449,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </zipfileset>
       <zipfileset dir="${nb_all}">
           <include name="nbbuild/licenses/CDDL-GPL-2-CP"/>
+          <include name="build.xml"/>
       </zipfileset>
     </zip>
   </target>
@@ -1474,7 +1480,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" description="Generate summaries of module dependencies.">
-    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
+    <property name="deps.max.friends" value="20"/>
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     

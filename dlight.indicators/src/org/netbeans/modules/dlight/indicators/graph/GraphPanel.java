@@ -46,7 +46,6 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -57,6 +56,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.awt.Actions;
 
@@ -182,7 +182,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
 
     }
 
-    private class PopupMenuListener extends MouseAdapter implements MouseListener {
+    private class PopupMenuListener extends MouseAdapter{
 
         PopupMenuListener() {
         }
@@ -196,6 +196,20 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
                 }
             }
         }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                JPopupMenu pm = createPopupMenu();
+                if (pm != null) {
+                    pm.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        }
+
+
+
+
     }
 
     protected final G getGraph() {

@@ -68,12 +68,13 @@ import org.w3c.dom.Element;
 class UsageLogger {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.freeform"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(UsageLogger.class.getName(), 1, false, false);
 
     private UsageLogger() {}
 
     public static void log(final Project p) {
         if (LOG.isLoggable(Level.INFO)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     Object[] data;
                     try {
