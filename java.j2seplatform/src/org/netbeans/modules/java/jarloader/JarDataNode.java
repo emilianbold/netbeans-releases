@@ -57,6 +57,7 @@ import org.openide.util.RequestProcessor;
  * @author Jesse Glick
  */
 final class JarDataNode extends DataNode {
+    private static final RequestProcessor RP = new RequestProcessor(JarDataNode.class.getName(), 1, false, false);
 
     public JarDataNode(JarDataObject obj) {
         this(obj, new DummyChildren());
@@ -97,7 +98,7 @@ final class JarDataNode extends DataNode {
         protected void addNotify() {
             super.addNotify();
             assert node != null;
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
         }
 
         private void attachJarNode(JarDataNode jarDataNode) {

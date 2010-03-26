@@ -87,6 +87,7 @@ import org.openide.util.RequestProcessor;
  * @author Andrei Badea
  */
 public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
+    private static final RequestProcessor RP = new RequestProcessor(J2SEPersistenceProvider.class.getName(), 1, false, false);
 
     private final J2SEProject project;
     private final ClassPathProviderImpl cpProvider;
@@ -283,7 +284,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     private void puChanged() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

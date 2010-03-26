@@ -170,7 +170,7 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
         if( null != loader )
             loader.cancel();
         loader = new Loader();
-        RequestProcessor.getDefault().post(loader);
+        post(loader);
     }
 
     private void timedout() {

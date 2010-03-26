@@ -75,6 +75,7 @@ import org.openide.util.Utilities;
 final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener  {
     
     private static final Logger LOG = Logger.getLogger(ToolTipManagerEx.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ToolTipManagerEx.class.getName(), 1, false, false);
     
     private Timer enterTimer;
     private Timer  exitTimer;
@@ -667,7 +668,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
         // start full tooltip calculation in request processor
         TooltipCalculator tc = new TooltipCalculator( tooltipForRect, loc );
         synchronized (TOOLTIP_DATA_LOCK) {
-            tooltipTask = RequestProcessor.getDefault().post(tc);
+            tooltipTask = RP.post(tc);
         }
         return WAITING_TEXT;
     }

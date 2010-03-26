@@ -421,7 +421,7 @@ static int init_files() {
 
             if (*path == '/') {
                 char real_path [PATH_MAX + 1];
-                if (state == INEXISTENT) {
+                if (state == UNCONTROLLED || state == INEXISTENT) {
                     char *dir = path;
                     char *file = path;
                     // find trailing zero
