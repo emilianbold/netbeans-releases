@@ -81,7 +81,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.ui.RemoteFileChooserBuilder;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -585,17 +585,10 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JFileChooser fc;
-            String title;
-            if (execEnv.isLocal()) {
-                File file = new File(tfPath.getText());
-                fc = new JFileChooser(file);
-                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Local");
-            } else {
-                RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(execEnv);
-                fc = fcb.createFileChooser(tfPath.getText());
-                title = NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Remote", ServerList.get(execEnv).getDisplayName());
-            }
+            String title = execEnv.isLocal() ?
+                NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Local") :
+                NbBundle.getMessage(EditPathMapDialog.class, "DIR_Choose_Title_Remote", ServerList.get(execEnv).getDisplayName());
+            JFileChooser fc = new FileChooserBuilder(execEnv).createFileChooser(tfPath.getText());
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fc.setApproveButtonText(NbBundle.getMessage(EditPathMapDialog.class, "BTN_Choose"));
             fc.setDialogTitle(title);
