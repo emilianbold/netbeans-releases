@@ -49,7 +49,9 @@ import java.io.StringReader;
 import java.util.List;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.editor.LexerUtils;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParser;
+import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.Token;
@@ -148,25 +150,40 @@ public class CssGSFParser extends Parser {
         int from = errorToken.offset;
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
-            String errorMessage = buildErrorMessage(pe);
-            int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
-            int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
+            if(!filterError(pe, snapshot, errorToken)) {
+                String errorMessage = buildErrorMessage(pe);
+                int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
+                int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
 
-            if(documentStartOffset == -1 && documentEndOffset == -1) {
-                //the error is completely out of the mappable area, map it to the beginning of the document
-                documentStartOffset = documentEndOffset = 0;
-            } else if(documentStartOffset == -1) {
-                documentStartOffset = documentEndOffset;
-            } else if(documentEndOffset == -1) {
-                documentEndOffset = documentStartOffset;
+                if (documentStartOffset == -1 && documentEndOffset == -1) {
+                    //the error is completely out of the mappable area, map it to the beginning of the document
+                    documentStartOffset = documentEndOffset = 0;
+                } else if (documentStartOffset == -1) {
+                    documentStartOffset = documentEndOffset;
+                } else if (documentEndOffset == -1) {
+                    documentEndOffset = documentStartOffset;
+                }
+
+                assert documentStartOffset <= documentEndOffset;
+
+                return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
+                        documentStartOffset, documentEndOffset, Severity.ERROR);
             }
-
-            assert documentStartOffset <= documentEndOffset;
-
-            return new DefaultError(PARSE_ERROR_KEY, errorMessage, errorMessage, fo,
-                    documentStartOffset, documentEndOffset, Severity.ERROR);
         }
         return null;
+    }
+
+    private boolean filterError(ParseException pe, Snapshot snapshot, Token errorToken) {
+        //#182133 - filter error in css virtual source code for empty html tag class attribute
+        //<div class=""/> generates .|{} for the empty value so the css completion can work there
+        //and offer all classes
+        if (pe.currentToken.kind == CssParserConstants.DOT
+                && errorToken.kind == CssParserConstants.LBRACE
+                && snapshot.getOriginalOffset(pe.currentToken.offset) == -1) {
+            return true;
+        }
+
+        return false;
     }
 
     private String buildErrorMessage(ParseException pe) {
