@@ -14,7 +14,7 @@ storepass=`cat $SECRET/storepass`
 # XXX build autoupdate.services first to ensure DTD validation works
 ant -emacs -Dcluster.config=experimental \
     -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
-    verify-libs-and-licenses build-nbms create-license-summary create-netbeans-import finish-build || exit
+    verify-libs-and-licenses build-nozip build-nbms || exit
 
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
