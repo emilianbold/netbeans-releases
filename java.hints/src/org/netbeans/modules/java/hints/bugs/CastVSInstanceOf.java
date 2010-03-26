@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs")
+@Hint(category="bugs", suppressWarnings="CastConflictsWithInstanceof")
 public class CastVSInstanceOf {
 
     @TriggerPatterns({
