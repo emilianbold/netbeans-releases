@@ -155,11 +155,10 @@ final class RubyMethodTypeInferencer {
             case VCALLNODE:
                 Node root = knowledge.getRoot();
                 AstPath path = new AstPath(root, callNodeToInfer);
-                IScopingNode clazz = AstUtilities.findClassOrModule(path);
-                if (clazz == null) {
+                String className = AstUtilities.getFqnName(path);
+                if (className.isEmpty()) {
                     break;
                 }
-                String className = AstUtilities.getClassOrModuleName(clazz);
                 // check whether it is a call to a method in the same file that 
                 // we've already analyzed (so we don't have to use the index for such cases)
                 RubyType methodInSameFile = knowledge.getTypeForMethod(className, name);
