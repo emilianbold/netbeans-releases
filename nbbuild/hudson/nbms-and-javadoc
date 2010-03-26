@@ -11,11 +11,10 @@ fi
 
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
-# XXX could use <subant-junit> to prevent compilation error in one module from stopping others
-# (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster use <subant>)
+# XXX build autoupdate.services first to ensure DTD validation works
 ant -emacs -Dcluster.config=experimental \
-    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false \
-    verify-libs-and-licenses build-nozip build-nbms || exit
+    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
+    verify-libs-and-licenses build-nbms create-license-summary create-netbeans-import finish-build || exit
 
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
