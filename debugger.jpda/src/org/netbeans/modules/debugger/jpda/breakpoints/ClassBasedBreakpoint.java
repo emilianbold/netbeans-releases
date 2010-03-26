@@ -197,6 +197,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 return false;
             }
             String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
+            if (urlRoot == null) {
+                return true;
+            }
             preferredSourceRoot[0] = urlRoot;
             return sourceRoot.equals(urlRoot);
         }
