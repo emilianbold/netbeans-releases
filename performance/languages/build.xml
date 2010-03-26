@@ -29,12 +29,6 @@
         <os family="unix"/>
     </condition>
 
-    <condition property="nbjdk.home" value="e:\\space\\hudson\\jdks\\jdk1.6.0_12">
-        <os family="windows"/>
-    </condition>
-    <condition property="nbjdk.home" value="/space/hudson/jdks/jdk1.6.0_12">
-        <os family="unix"/>
-    </condition>
 
     <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -Dsun.java2d.noddraw=true -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;  -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
 
