@@ -59,6 +59,7 @@ import org.openide.windows.TopComponent;
 public class FloatingWindowTransparencyManager {
 
     private static FloatingWindowTransparencyManager theInstance;
+    private static final RequestProcessor RP = new RequestProcessor("FloatingWindowTransparencyManager"); //NOI18N
     
     private PropertyChangeListener topComponentRegistryListener;
     
@@ -78,8 +79,10 @@ public class FloatingWindowTransparencyManager {
             return;
         if( null == topComponentRegistryListener ) {
             topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     SwingUtilities.invokeLater( new Runnable() {
+                        @Override
                         public void run() {
                             toggleFloatingWindowTransparency();
                         }
@@ -122,6 +125,7 @@ public class FloatingWindowTransparencyManager {
                 }
 
                 Runnable runnable = new Runnable() {
+                    @Override
                     public void run() {
                         if( !SwingUtilities.isEventDispatchThread() ) {
                             SwingUtilities.invokeLater( this );
@@ -135,8 +139,7 @@ public class FloatingWindowTransparencyManager {
                         makeFloatingWindowsTransparent( activeMode );
                     }
                 };
-                RequestProcessor.getDefault().post(runnable, 
-                        WinSysPrefs.HANDLER.getInt(WinSysPrefs.TRANSPARENCY_FLOATING_TIMEOUT, 1000));
+                RP.post(runnable, WinSysPrefs.HANDLER.getInt(WinSysPrefs.TRANSPARENCY_FLOATING_TIMEOUT, 1000));
             }
         } else {
             //floating window transparency is disabled, so turn it off for all floating windows
