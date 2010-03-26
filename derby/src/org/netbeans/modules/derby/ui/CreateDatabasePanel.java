@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,14 +59,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
     private DocumentListener docListener = new DocumentListener() {
         
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent e) {
             validateDatabaseName();
         }
 
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent e) {
             validateDatabaseName();
         }
 
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
             validateDatabaseName();
         }
@@ -97,8 +100,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     public String getPassword() {
-        String password = new String(this.password.getPassword());
-        return password.length() > 0 ? password : null;
+        String pw = new String(this.password.getPassword());
+        return pw.length() > 0 ? pw : null;
     }
 
     public String getRetypePassword() {
