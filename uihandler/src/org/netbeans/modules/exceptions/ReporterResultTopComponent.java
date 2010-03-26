@@ -72,6 +72,7 @@ import org.openide.windows.WindowManager;
 public final class ReporterResultTopComponent extends TopComponent implements HyperlinkListener {
 
     private static ReporterResultTopComponent instance;
+    private static final RequestProcessor RP = new RequestProcessor("ReporterResultTopComponentLoader", 3);
     private static final Logger LOG = Logger.getLogger(ReporterResultTopComponent.class.getName());
     private static boolean showUpload = false;
     /** path to the icon used by the component and its open action */
@@ -265,7 +266,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         } catch (IOException ex) {
             handleIOException(url, ex);
         }
-        RequestProcessor.getDefault().post(new PageUploader(url, show));
+        RP.post(new PageUploader(url, show));
     }
 
     private class PageUploader implements Runnable{
@@ -279,25 +280,25 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             this.show = show;
         }
 
-            public void run() {
-                try {
-                    if (EventQueue.isDispatchThread()) {
-                        if (show) {
-                            ReporterResultTopComponent topComponent =
-                                    ReporterResultTopComponent.this;
-                            topComponent.requestVisible();
-                            topComponent.requestActive();
-                        }
-                        dataDisplayer.setPage(localData);
-                    } else {
-                        LOG.fine("Loading: " + url);        //NOI18N
-                        localData = uploadURL(url);
-                        EventQueue.invokeLater(this);
+        public void run() {
+            try {
+                if (EventQueue.isDispatchThread()) {
+                    if (show) {
+                        ReporterResultTopComponent topComponent =
+                                ReporterResultTopComponent.this;
+                        topComponent.requestVisible();
+                        topComponent.requestActive();
                     }
-                } catch (IOException ex) {
-                    handleIOException(url, ex);
+                    dataDisplayer.setPage(localData);
+                } else {
+                    LOG.log(Level.FINE, "Loading: {0}", url);        //NOI18N
+                    localData = uploadURL(url);
+                    EventQueue.invokeLater(this);
                 }
+            } catch (IOException ex) {
+                handleIOException(url, ex);
             }
+        }
         
     }
 
