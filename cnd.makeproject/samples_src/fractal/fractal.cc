@@ -109,17 +109,19 @@ void Mandelbrot() // Basic Mandelbrot calculation
     double *imgBuf[wi];
 
     // initialize vectors
-    for (int i = 0; i < wi; i++) {
-        hits[i] = (int*) malloc(sizeof (int) *hi);
-        max[i] = (int*) malloc(sizeof (int) *hi);
-        realBuf[i] = (double*) malloc(sizeof (double) *hi);
-        imgBuf[i] = (double*) malloc(sizeof (double) *hi);
-        for (int j = 0; j < hi; j++) {
-            hits[i][j] = 0;
-            max[i][j] = 0;
-            realBuf[i][j] = 0;
-            imgBuf[i][j] = 0;
-        }
+    hits[0] = new int[wi * hi];
+    memset(hits[0], 0, wi * hi * sizeof (int));
+    max[0] = new int[wi * hi];
+    memset(max[0], 0, wi * hi * sizeof (int));
+    realBuf[0] = new double[wi * hi];
+    memset(realBuf[0], 0, wi * hi * sizeof (double));
+    imgBuf[0] = new double[wi * hi];
+    memset(imgBuf[0], 0, wi * hi * sizeof (double));
+    for (int i = 1; i < wi; i++) {
+        hits[i] = hits[i - 1] + hi;
+        max[i] = max[i - 1] + hi;
+        realBuf[i] = realBuf[i - 1] + hi;
+        imgBuf[i] = imgBuf[i - 1] + hi;
     }
 
     int i = 0, x = 0, y = 0, fcnt = 0, icnt = 0;
