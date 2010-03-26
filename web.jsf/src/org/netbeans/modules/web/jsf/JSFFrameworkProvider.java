@@ -212,7 +212,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         return result;
     }
-    
+
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sbuffer = new StringBuffer();
