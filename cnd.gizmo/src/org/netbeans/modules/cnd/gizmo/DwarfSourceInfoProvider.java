@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
@@ -60,6 +62,8 @@ import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -96,18 +100,33 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return info;
     }
 
-    private SourceFileInfo _fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
+    private synchronized SourceFileInfo _fileName(String functionQName, int lineNumber, long offset, Map<String, String> serviceInfo) {
         if (serviceInfo == null){
             return null;
         }
-
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
-
         String executable = null;
 
         if (execEnv.isLocal()) {
             executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
         } else {
+            String remoteExecutable = serviceInfo.get(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE);
+            if (remoteExecutable != null) {
+                if (!cache.containsKey(remoteExecutable)){
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = getOffsets(execEnv, remoteExecutable);
+                    if (sourceInfoMap != null) {
+                        cache.put(remoteExecutable, sourceInfoMap.isEmpty()?
+                            Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
+                    } else {
+                        cache.put(remoteExecutable, null);
+                    }
+                } else {
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutable);
+                    if (sourceInfoMap != null) {
+                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
+                    }
+                }
+            }
             String executableID = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
             RemoteBinaryID id = RemoteBinaryService.RemoteBinaryID.fromIDString(executableID);
             Future<Boolean> remoteSyncResult = RemoteBinaryService.getResult(id);
@@ -124,22 +143,43 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         }
 
         if (executable != null) {
-            Map<String, AbstractFunctionToLine> sourceInfoMap = getSourceInfo(executable);
+            return findSourceInfo(getSourceInfo(executable), functionQName, lineNumber, offset);
+        }
+        return null;
+    }
+
+    private SourceFileInfo findSourceInfo(Map<String, AbstractFunctionToLine> sourceInfoMap, String functionQName, int lineNumber, long offset ) {
+        if (TRACE) {
+            System.err.println("Search for:" + functionQName + "+" + offset); // NOI18N
+        }
+        AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
+        if (fl != null) {
+            SourceLineInfo sourceInfo = fl.getLine((int) offset);
             if (TRACE) {
-                System.err.println("Search for:"+functionQName+"+"+offset); // NOI18N
+                System.err.println("Found:" + fl); // NOI18N
+                System.err.println("Line:" + sourceInfo); // NOI18N
             }
-            AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
-            if (fl != null) {
-                SourceLineInfo sourceInfo = fl.getLine((int)offset);
-                if (TRACE) {
-                    System.err.println("Found:"+fl); // NOI18N
-                    System.err.println("Line:"+sourceInfo); // NOI18N
-                }
-                if (lineNumber > 0 && sourceInfo != null) {
-                    return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
-                }
-                return new SourceFileInfo(sourceInfo.getFileName(), sourceInfo.getLine(), 0);
+            if (lineNumber > 0 && sourceInfo != null) {
+                return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
             }
+            return new SourceFileInfo(sourceInfo.getFileName(), sourceInfo.getLine(), 0);
+        }
+        return null;
+    }
+
+    private Map<String, AbstractFunctionToLine> getOffsets(ExecutionEnvironment execEnv, String executable) {
+        try {
+            NativeProcess process = RemoteJarServiceProvider.getJavaProcess(Offset2LineService.class, execEnv, new String[]{executable});
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Map<String, AbstractFunctionToLine> res = Offset2LineService.getOffset2Line(br);
+            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String line;
+            while ((line = br.readLine())!= null){
+                System.err.println(line);
+            }
+            return res;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

@@ -135,6 +135,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             } else {
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);

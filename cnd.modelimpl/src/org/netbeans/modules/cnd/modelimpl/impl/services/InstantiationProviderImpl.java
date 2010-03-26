@@ -325,6 +325,19 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 }
             }
+            for (CsmTemplateParameter p : mapping.keySet()) {
+                int length = clsParams.size();
+                for (int i = 0; i < length; i++) {
+                    if(p.equals(clsParams.get(i))) {
+                        for (CsmTemplateParameter p2 : specParams ) {
+                            if(p2.getName().toString().equals(clsParams.get(i).getName().toString())) {
+                                newMapping.put(p2, mapping.get(p));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             CsmObject obj =  Instantiation.create((CsmTemplate) specialization,  newMapping);
             if(CsmKindUtilities.isClassifier(obj)) {
                 specialization = (CsmClassifier) obj ;
@@ -338,7 +351,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         // TODO : update
 
         CsmClassifier bestSpecialization = null;
-       
+
         if (!specializations.isEmpty()) {
             int bestMatch = 0;
             int paramsSize = params.size();
@@ -365,6 +378,40 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     int match = 0;
                     if (specParams.size() == paramsSize) {
                         for (int i = 0; i < paramsSize; i++) {
+                            CsmSpecializationParameter specParam1 = specParams.get(i);
+                            CsmSpecializationParameter param1 = params.get(i);
+                            for (int j = i + 1; j < paramsSize; j++) {
+                                CsmSpecializationParameter specParam2 = specParams.get(j);
+                                CsmSpecializationParameter param2 = params.get(j);
+                                if (specParam1.getText().toString().equals(specParam2.getText().toString())
+                                        && param1.getText().toString().equals(param2.getText().toString())) {
+                                    match += 1;
+                                }
+                                // it works but does it too slow
+//                                if(specParam1.getText().toString().equals(specParam2.getText().toString()) &&
+//                                        CsmKindUtilities.isTypeBasedSpecalizationParameter(param1) &&
+//                                        CsmKindUtilities.isTypeBasedSpecalizationParameter(param2)) {
+//                                    CsmTypeBasedSpecializationParameter tbp1 = (CsmTypeBasedSpecializationParameter) param1;
+//                                    CsmType type1 = tbp1.getType();
+//                                    if(CsmKindUtilities.isInstantiation(cls)) {
+//                                        type1 = Instantiation.createType(tbp1.getType(), (Instantiation)cls);
+//                                    }
+//                                    CsmClassifier tbsp1Cls = getClassifier(type1, resolver);
+//                                    if (tbsp1Cls != null) {
+//                                        CsmTypeBasedSpecializationParameter tbp2 = (CsmTypeBasedSpecializationParameter) param2;
+//                                        CsmType type2 = tbp2.getType();
+//                                        if(CsmKindUtilities.isInstantiation(cls)) {
+//                                            type2 = Instantiation.createType(tbp2.getType(), (Instantiation)cls);
+//                                        }
+//                                        CsmClassifier tbsp2Cls = getClassifier(type2, resolver);
+//                                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
+//                                            match += 1;
+//                                        }
+//                                    }
+//                                }
+                            }
+                        }
+                        for (int i = 0; i < paramsSize; i++) {
                             CsmSpecializationParameter specParam = specParams.get(i);
                             CsmSpecializationParameter param = params.get(i);
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) &&
@@ -380,31 +427,31 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
                                         match += 2;
                                     }
-                                    if (tbsp.isPointer() && // NOI18N
+                                    if (tbsp.isPointer() &&
                                             isPointer(paramsType.get(i), resolver)) {
                                         match += 1;
                                     }
-                                    if (tbsp.isReference() && // NOI18N
+                                    if (tbsp.isReference() &&
                                             isReference(paramsType.get(i), resolver)) {
                                         match += 1;
                                     }
                                 }
-                            } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam) &&
-                                    CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                            } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
                                 if (paramsText.get(i).equals(((CsmExpressionBasedSpecializationParameter) specParam).getText())) {
                                     match += 2;
                                 } else {
                                     // Expression evaluation
                                     if (TraceFlags.EXPRESSION_EVALUATOR) {
                                         if (CsmKindUtilities.isInstantiation(cls)) {
-                                            if (CsmExpressionEvaluator.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(),
-                                                    (CsmInstantiation) cls).equals(
-                                                    CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString()))) {
+                                            final Object val1 = CsmExpressionEvaluator.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(), (CsmInstantiation) cls);
+                                            final Object val2 = CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            if (val1.equals(val2)) {
                                                 match += 2;
                                             }
                                         } else {
-                                            if (CsmExpressionEvaluator.eval(paramsText.get(i).toString()).equals(
-                                                    CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString()))) {
+                                            final Object val1 = CsmExpressionEvaluator.eval(paramsText.get(i).toString());
+                                            final Object val2 = CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            if (val1.equals(val2)) {
                                                 match += 2;
                                             }
                                         }
@@ -470,6 +517,31 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             iteration--;
         }
         return false;
+    }
+
+    private static CsmClassifier getClassifier(CsmType type, Resolver resolver) {
+        int iteration = MAX_DEPTH;
+        CsmClassifier cls;
+        if (type instanceof Resolver.SafeClassifierProvider) {
+            cls = ((Resolver.SafeClassifierProvider) type).getClassifier(resolver);
+        } else {
+            cls = type.getClassifier();
+        }
+//        while (cls != null && iteration != 0) {
+//            if (CsmKindUtilities.isTypedef(cls)) {
+//                CsmTypedef td = (CsmTypedef) cls;
+//                type = td.getType();
+//                if (type instanceof Resolver.SafeClassifierProvider) {
+//                    cls = ((Resolver.SafeClassifierProvider) type).getClassifier(resolver);
+//                } else {
+//                    cls = type.getClassifier();
+//                }
+//            } else {
+//                break;
+//            }
+//            iteration--;
+//        }
+        return cls;
     }
 
     private boolean isClassForward(CsmClassifier cls) {
