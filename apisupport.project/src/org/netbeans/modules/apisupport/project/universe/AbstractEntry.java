@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -105,7 +107,8 @@ abstract class AbstractEntry implements ModuleEntry {
                 for (int i = 0; i < cpext.length; i++) {
                     File ext = new File(cpext[i]);
                     if (!ext.isFile()) {
-                        Util.err.log(ErrorManager.WARNING, "Could not find Class-Path extension " + ext + " of " + this);
+                        Logger.getLogger(AbstractEntry.class.getName()).log(Level.FINE,
+                                "Could not find Class-Path extension {0} of {1}", new Object[] {ext, this});
                         continue;
                     }
                     scanJarForPublicClassNames(publicClassNames, ext);
