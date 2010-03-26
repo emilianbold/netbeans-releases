@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
@@ -137,7 +138,9 @@ public final class ViewUpdates implements DocumentListener {
 
     @Override
     public void insertUpdate(DocumentEvent evt) {
-        synchronized (documentView.getMonitor()) {
+        PriorityMutex mutex = documentView.getMutex();
+        if (mutex != null) {
+            mutex.lock();
             try {
                 // Insert into document was performed -> update or rebuild views
                 // First update factories since they may fire rebuilding
@@ -213,6 +216,10 @@ public final class ViewUpdates implements DocumentListener {
                         }
                     }
                     if (!rebuildNecessary) {
+                        // Possibly clear text layout for the child view
+                        if (childView instanceof TextLayoutView) {
+                            documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
+                        }
                         // View may refuse length setting in which case it must be rebuilt
                         rebuildNecessary = !childView.setLength(childView.getLength() + insertLength);
                         // Update offsets of the views that follow the modified one
@@ -239,13 +246,16 @@ public final class ViewUpdates implements DocumentListener {
                 checkIntegrity();
             } finally {
                 incomingModification = false;
+                mutex.unlock();
             }
         }
     }
 
     @Override
     public void removeUpdate(DocumentEvent evt) {
-        synchronized (documentView.getMonitor()) {
+        PriorityMutex mutex = documentView.getMutex();
+        if (mutex != null) {
+            mutex.lock();
             try {
                 // Removal in document was performed -> update or rebuild views
                 checkFactoriesComponentInited();
@@ -313,6 +323,10 @@ public final class ViewUpdates implements DocumentListener {
                             (removeOffset > childStartOffset && removeOffset + removeLength <= childEndOffset));
                     rebuildNecessary = !localEdit;
                     if (!rebuildNecessary) {
+                        // Possibly clear text layout for the child view
+                        if (childView instanceof TextLayoutView) {
+                            documentView.getTextLayoutCache().put(paragraphView, (TextLayoutView)childView, null);
+                        }
                         // View may refuse length setting in which case it must be rebuilt
                         rebuildNecessary = !childView.setLength(childView.getLength() - removeLength);
                         // Update offsets of the views that follow the modified one
@@ -339,13 +353,16 @@ public final class ViewUpdates implements DocumentListener {
                 checkIntegrity();
             } finally {
                 incomingModification = false;
+                mutex.unlock();
             }
         }
     }
 
     @Override
     public void changedUpdate(DocumentEvent evt) {
-        synchronized (documentView.getMonitor()) {
+        PriorityMutex mutex = documentView.getMutex();
+        if (mutex != null) {
+            mutex.lock();
             try {
                 checkFactoriesComponentInited();
                 for (int i = 0; i < viewFactories.length; i++) {
@@ -357,6 +374,7 @@ public final class ViewUpdates implements DocumentListener {
                 checkIntegrity();
             } finally {
                 incomingModification = false;
+                mutex.unlock();
             }
         }
     }
@@ -409,24 +427,30 @@ public final class ViewUpdates implements DocumentListener {
     }
 
     /*private*/ void checkRebuild() {
-        synchronized (documentView.getMonitor()) {
-            if (documentView.isActive() && !incomingModification) {
-                if (isRebuildNecessary()) {
-                    int rStartOffset = rebuildStartOffset;
-                    int rEndOffset = rebuildEndOffset;
-                    int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
-                    assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
-                    ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
-                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                            viewFactories, rStartOffset, rEndOffset, 0);
-                    try {
-                        viewBuilder.createViews();
-                        viewBuilder.repaintAndReplaceViews();
-                    } finally {
-                        viewBuilder.finish(); // Includes factory.finish() in each factory
+        PriorityMutex mutex = documentView.getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                if (documentView.isActive() && !incomingModification) {
+                    if (isRebuildNecessary()) {
+                        int rStartOffset = rebuildStartOffset;
+                        int rEndOffset = rebuildEndOffset;
+                        int paragraphViewIndex = documentView.getViewIndex(rStartOffset);
+                        assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
+                        ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
+                        ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
+                                viewFactories, rStartOffset, rEndOffset, 0);
+                        try {
+                            viewBuilder.createViews();
+                            viewBuilder.repaintAndReplaceViews();
+                        } finally {
+                            viewBuilder.finish(); // Includes factory.finish() in each factory
+                        }
+                        resetRebuildInfo();
                     }
-                    resetRebuildInfo();
                 }
+            } finally {
+                mutex.unlock();
             }
         }
     }

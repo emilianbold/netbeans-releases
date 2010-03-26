@@ -123,13 +123,12 @@ public class HighlightsView extends EditorView implements TextLayoutView {
     @Override
     public boolean setLength(int length) {
         this.length = length;
-        releaseTextLayout(); // Ensure that text layout gets recreated
-        return true;
+        return true; // Possibly cached text layout gets released automatically
     }
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 
@@ -178,16 +177,6 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return textLayout;
     }
 
-    void releaseTextLayout() {
-        ParagraphView paragraphView = getParagraphView();
-        if (paragraphView != null) {
-            DocumentView documentView = paragraphView.getDocumentView();
-            if (documentView != null) {
-                getTextLayoutCache().put(paragraphView, this, null);
-            }
-        }
-    }
-
     ParagraphView getParagraphView() {
         return (ParagraphView) getParent();
     }
@@ -197,20 +186,9 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         return (paragraphView != null) ? paragraphView.getDocumentView() : null;
     }
 
-    TextLayoutCache getTextLayoutCache() {
-        DocumentView documentView = getDocumentView();
-        return (documentView != null) ? documentView.getTextLayoutCache() : null;
-    }
-
-    TextLayout getTextLayout() {
-        ParagraphView paragraphView = getParagraphView();
-        if (paragraphView != null) {
-            DocumentView documentView = paragraphView.getDocumentView();
-            if (documentView != null) {
-                return getTextLayoutCache().get(paragraphView, this);
-            }
-        }
-        return null;
+    private TextLayout getTextLayout() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getTextLayout(this) : null;
     }
 
     @Override
