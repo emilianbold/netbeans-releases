@@ -153,6 +153,8 @@ public class DoxygenDocumentation {
 
     static {
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\p", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
         commands.put("\\author", new CommandDescription(EndsOn.PAR, "<strong>Author:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\exception", new CommandDescription(EndsOn.PAR, "<strong>Exceptions:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
@@ -163,7 +165,6 @@ public class DoxygenDocumentation {
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
         commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
-        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
     }
 
     static final class CommandDescription {
