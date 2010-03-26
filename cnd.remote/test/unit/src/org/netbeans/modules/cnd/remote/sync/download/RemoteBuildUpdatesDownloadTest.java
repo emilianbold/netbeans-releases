@@ -40,12 +40,16 @@
 package org.netbeans.modules.cnd.remote.sync.download;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
 /**
  *
  * @author Vladimir Kvashin
@@ -70,14 +74,25 @@ public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_LexYacc() throws Exception {
+    public void test_LexYacc_BuildLocalAndRemote() throws Exception {
+        MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Build");
+        int timeout = getSampleBuildTimeout();
+        changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
+        changeProjectHost(makeProject, getTestExecutionEnvironment());
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, TimeUnit.SECONDS);
+    }
+
+    @ForAllEnvironments
+    public void test_LexYacc_Updates() throws Exception {
         NameStatePair[] filesToCheck = new NameStatePair[] {
             new NameStatePair("y.tab.c", FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair("y.tab.h", FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair("lex.yy.c", FileDownloadInfo.State.UNCONFIRMED)
         };
         List<FileDownloadInfo> updates;
-        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_01", 1);
+        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates", 1);
         updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
         checkInfo(updates, filesToCheck);
     }
