@@ -86,7 +86,7 @@ public abstract class TreeListNode {
 
     private ChildrenLoader loader;
 
-    private static RequestProcessor rp = new RequestProcessor("Asynchronous Tree List Node", 5);
+    private static RequestProcessor rp = new RequestProcessor("Asynchronous Tree List Node", 5); // NOI18N
 
     protected static void post(Runnable run) {
         rp.post(run);

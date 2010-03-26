@@ -71,8 +71,8 @@ import org.openide.util.Utilities;
 public class SearchField extends JPanel implements ActionListener {
 
     private Kenai selected;
-    private static final String KENAI = "kenai";
-    static final String SEARCH = "search";
+    private static final String KENAI = "kenai"; //NOI18N
+    static final String SEARCH = "search"; //NOI18N
     private JTextComponent command = createCommandField();
     private javax.swing.JLabel leftIcon;
     private javax.swing.JPanel panel;
@@ -106,7 +106,7 @@ public class SearchField extends JPanel implements ActionListener {
         panel.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         panel.setLayout(new java.awt.GridBagLayout());
 
-        leftIcon.setIcon(selected!=null?selected.getIcon():ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
+        leftIcon.setIcon(selected!=null?selected.getIcon():ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));//NOI18N
         leftIcon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         leftIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -192,7 +192,7 @@ public class SearchField extends JPanel implements ActionListener {
     }
 
     private static Color getTextBackground () {
-        Color textB = UIManager.getColor("TextPane.background");
+        Color textB = UIManager.getColor("TextPane.background"); //NOI18N
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
             textB = UIManager.getColor("NbExplorerView.background"); //NOI18N
         return textB != null ? textB : Color.WHITE;
@@ -200,12 +200,12 @@ public class SearchField extends JPanel implements ActionListener {
 
     private static Color getComboBorderColor () {
         Color shadow = UIManager.getColor(
-                Utilities.isWindows() ? "Nb.ScrollPane.Border.color" : "TextField.shadow");
+                Utilities.isWindows() ? "Nb.ScrollPane.Border.color" : "TextField.shadow"); //NOI18N
         return shadow != null ? shadow : getPopupBorderColor();
     }
 
     private static Color getPopupBorderColor () {
-        Color shadow = UIManager.getColor("controlShadow");
+        Color shadow = UIManager.getColor("controlShadow"); //NOI18N
         return shadow != null ? shadow : Color.GRAY;
     }
 
@@ -251,11 +251,11 @@ public class SearchField extends JPanel implements ActionListener {
 
     private static String getKenaiDisplayName(Kenai kenai) {
         if (kenai==null) {
-            return "";
+            return ""; //NOI18N
         }
-        return "<html><b>" + kenai.getName() + "</b> ("
-                + kenai.getUrl().getProtocol() + "://"
-                + kenai.getUrl().getHost() + ")</html>";
+        return "<html><b>" + kenai.getName() + "</b> (" //NOI18N
+                + kenai.getUrl().getProtocol() + "://" //NOI18N
+                + kenai.getUrl().getHost() + ")</html>"; //NOI18N
     }
 
     public void actionPerformed(ActionEvent e) {

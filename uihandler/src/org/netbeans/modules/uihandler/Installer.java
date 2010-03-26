@@ -1742,7 +1742,7 @@ public class Installer extends ModuleInstall implements Runnable {
             checkingResult = true;
             try {
                 String login = URLEncoder.encode(panel.getUserName(), "UTF-8");
-                String encryptedPasswd = URLEncoder.encode(PasswdEncryption.encrypt(panel.getPasswd()), "UTF-8");
+                String encryptedPasswd = URLEncoder.encode(PasswdEncryption.encrypt(new String(panel.getPasswdChars())), "UTF-8");
                 char[] array = new char[100];
                 URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, encryptedPasswd));
                 URLConnection connection = checkingServerURL.openConnection();
@@ -1914,12 +1914,13 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             final String summary = message;
+            final char[] passwd = new ExceptionsSettings().getPasswd();
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
                     public void run() {
                         if (reportPanel==null) {
-                            reportPanel = new ReportPanel(isOOM);
+                            reportPanel = new ReportPanel(isOOM, passwd);
                         }
                         if (summary != null){
                             reportPanel.setSummary(summary);
@@ -2138,10 +2139,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
                 try {
-                    String passwd = reportPanel.getPasswd();
-                    if ((openPasswd) && (passwd.length() != 0) && (!reportPanel.asAGuest())){
-                        passwd = PasswdEncryption.encrypt(passwd);
-                        params.add(passwd);
+                    char[] passwd = reportPanel.getPasswdChars();
+                    if ((openPasswd) && (passwd.length != 0) && (!reportPanel.asAGuest())){
+                        String pwd = new String(passwd);
+                        pwd = PasswdEncryption.encrypt(pwd);
+                        params.add(pwd);
                     } else {
                         params.add("*********");// NOI18N
                     }

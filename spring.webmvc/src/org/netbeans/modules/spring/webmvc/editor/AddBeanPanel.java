@@ -108,15 +108,22 @@ public class AddBeanPanel {
                     Document doc = cc.getDocument();
                     if (doc != null) {
                         ExpressionTree packageTree = cc.getCompilationUnit().getPackageName();
-                        className[0] = packageTree.accept(new TreePathScanner<String, Void>(){
+                        if (packageTree != null) {
+                            className[0] = packageTree.accept(new TreePathScanner<String, Void>(){
 
-                            @Override
-                            public String visitIdentifier(IdentifierTree node, Void p) {
-                                return node.getName().toString();
-                            }
+                                @Override
+                                public String visitIdentifier(IdentifierTree node, Void p) {
+                                    return node.getName().toString();
+                                }
 
-                        }, null)+".";
-                        className[0] += new ClassScanner().scan(cc.getCompilationUnit(), null);
+                            }, null)+".";
+                        }
+                        String cls = new ClassScanner().scan(cc.getCompilationUnit(), null);
+                        if (className[0] == null) {
+                            className[0] = cls;
+                        } else {
+                            className[0] += cls;
+                        }
                     }
 
 

@@ -54,6 +54,7 @@ import org.openide.util.NbPreferences;
 public final class PasswordManager {
 
     private static final boolean useKeyringAPI = true;
+    private static final boolean keepPasswordsInMemory = true;
     private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
     private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
@@ -70,22 +71,24 @@ public final class PasswordManager {
     public char[] get(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         Encrypter crypter = new Encrypter(KEY_PREFIX+key);
-        String cachedPassword = cache.get(key);
-        if (cachedPassword != null) {
-            return crypter.decrypt(cachedPassword).toCharArray();
+        if (keepPasswordsInMemory) {
+            String cachedPassword = cache.get(key);
+            if (cachedPassword != null) {
+                return crypter.decrypt(cachedPassword).toCharArray();
+            }
         }
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (stored) {
             if (useKeyringAPI) {
                 char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
-                if (keyringPassword != null) {
+                if (keepPasswordsInMemory && keyringPassword != null) {
                      String encryptedPasswordToStore = String.valueOf(crypter.encrypt(keyringPassword));
                      cache.put(key, encryptedPasswordToStore);
                 }
                 return keyringPassword;
             } else {
                 String storedEncryptedPassword = NbPreferences.forModule(PasswordManager.class).get(KEY_PREFIX + key, null);
-                if (storedEncryptedPassword != null) {
+                if (keepPasswordsInMemory && storedEncryptedPassword != null) {
                     cache.put(key, storedEncryptedPassword);
                     return crypter.decrypt(storedEncryptedPassword.toCharArray());
                 }
@@ -99,7 +102,9 @@ public final class PasswordManager {
         String key = execEnv.toString();
         Encrypter crypter = new Encrypter(KEY_PREFIX+key);
         String encryptedPasswordToStore = String.valueOf(crypter.encrypt(password));
-        cache.put(key, encryptedPasswordToStore);
+        if (keepPasswordsInMemory) {
+            cache.put(key, encryptedPasswordToStore);
+        }
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
             if (useKeyringAPI) {
@@ -112,7 +117,9 @@ public final class PasswordManager {
 
     public void clearPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        cache.remove(key);
+        if (keepPasswordsInMemory) {
+            cache.remove(key);
+        }
         NbPreferences.forModule(PasswordManager.class).remove(STORE_PREFIX + key);
         if (useKeyringAPI) {
             Keyring.delete(KEY_PREFIX + key);
@@ -137,10 +144,14 @@ public final class PasswordManager {
                         if (useKeyringAPI) {
                             Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
                         }
-                        cache.remove(aKey.substring(STORE_PREFIX.length()));
+                        if (keepPasswordsInMemory) {
+                            cache.remove(aKey.substring(STORE_PREFIX.length()));
+                        }
                     } else if (aKey.startsWith(KEY_PREFIX)) {
                         NbPreferences.forModule(PasswordManager.class).remove(aKey);
-                        cache.remove(aKey.substring(KEY_PREFIX.length()));
+                        if (keepPasswordsInMemory) {
+                            cache.remove(aKey.substring(KEY_PREFIX.length()));
+                        }
                     }
                 }
             }
