@@ -69,6 +69,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -236,8 +237,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** The maximal number of processors that can perform the requests sent
      * to this RequestProcessors. If 1, all the requests are serialized. */
     private int throughput;
-    /** mapping of parallelly executed classes */
-    private Map<Class,int[]> inParallel;
+    /** mapping of classes executed in parallel */
+    private Map<Class<? extends Runnable>,AtomicInteger> inParallel;
     /** Warn if there is parallel execution */
     private final int warnParallel;
     
@@ -2020,20 +2021,20 @@ outer:  do {
                 return;
             }
             final Class<? extends Runnable> c = todo.run.getClass();
-            int[] number;
+            AtomicInteger number;
             synchronized (rp.processorLock) {
                 if (rp.inParallel == null) {
-                    rp.inParallel = new WeakHashMap<Class, int[]>();
+                    rp.inParallel = new WeakHashMap<Class<? extends Runnable>,AtomicInteger>();
                 }
                 number = rp.inParallel.get(c);
                 if (number == null) {
-                    rp.inParallel.put(c, number = new int[] { 1 });
+                    rp.inParallel.put(c, number = new AtomicInteger(1));
                 } else {
-                    number[0]++;
+                    number.incrementAndGet();
                 }
             }
-            if (number[0] >= rp.warnParallel && warnedClasses.add(c)) {
-                final String msg = "Too many " + c.getName() + " in non-private processor. Use own static final RequestProcessor RP = new RequestProcessor(...)!"; // NOI18N
+            if (number.get() >= rp.warnParallel && warnedClasses.add(c)) {
+                final String msg = "Too many " + c.getName() + " (" + number + ") in shared RequestProcessor; create your own"; // NOI18N
                 Exception ex = null;
                 if (todo.item != null) {
                     ex = new IllegalStateException(msg);
@@ -2048,9 +2049,8 @@ outer:  do {
                 return;
             }
             synchronized (rp.processorLock) {
-                Class<?> c = todo.run.getClass();
-                int[] number = rp.inParallel.get(c);
-                number[0]--;
+                Class<? extends Runnable> c = todo.run.getClass();
+                rp.inParallel.get(c).decrementAndGet();
             }
         }
     }
