@@ -232,10 +232,15 @@ made subject to such option by the copyright holder.
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
       <property name="jnlp.fail.on.error" value="true"/>
+      <pathconvert property="jnlp.modules.fullpath">
+          <path>
+              <dirset dir="${nb_all}" includes="${config.jnlp.stable}"/>
+          </path>
+          <mapper type="identity"/>
+      </pathconvert>
+      <sortsuitemodules unsortedmodules="${jnlp.modules.fullpath}" sortedmodulesproperty="jnlp.modules.sorted"/>
       <subant-junit target="jnlp" failonerror="${jnlp.fail.on.error}" report="build/build-all-jnlp.xml">
-          <buildpath>
-              <dirset dir=".." includes="${config.jnlp.stable}"/>
-          </buildpath>
+          <buildpath path="${jnlp.modules.sorted}"/>
       </subant-junit>
       <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="nbantext.jar"/>
       <verifyjnlp report="build/verify-jnlp.xml" failonerror="jnlp.fail.on.error">

@@ -159,16 +159,20 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     public String getIncludeDirective(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-            if (file.equals(currentFile) || file.isHeaderFile()) {
-                return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
-            } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
-                if (!decls.isEmpty()) {
-                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+            if (file != null) {
+                if (file.equals(currentFile) || file.isHeaderFile()) {
+                    return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
+                } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                    if (!decls.isEmpty()) {
+                        return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                    }
                 }
+            } else {
+                System.err.println("can not find for item " + item); // NOI18N;
             }
         } else if (!CsmKindUtilities.isNamespace(item)) {
-            System.err.println("not yet handled object " + item);
+            System.err.println("not yet handled object " + item); // NOI18N;
         }
         return ""; // NOI18N
     }
