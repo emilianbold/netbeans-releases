@@ -43,13 +43,15 @@ import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.remote.api.RemoteBinaryService.RemoteBinaryID;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
@@ -63,8 +65,11 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -72,7 +77,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
-    private static final boolean TRACE = false;
+    private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.gizmo.dwarf");
     private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
 
     public DwarfSourceInfoProvider() {
@@ -112,18 +118,19 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         } else {
             String remoteExecutable = serviceInfo.get(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE);
             if (remoteExecutable != null) {
-                if (!cache.containsKey(remoteExecutable)){
+                if (cache.containsKey(remoteExecutable)){
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutable);
+                    if (sourceInfoMap != null) {
+                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
+                    }
+                } else {
                     Map<String, AbstractFunctionToLine> sourceInfoMap = getOffsets(execEnv, remoteExecutable);
                     if (sourceInfoMap != null) {
                         cache.put(remoteExecutable, sourceInfoMap.isEmpty()?
                             Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
+                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
                     } else {
                         cache.put(remoteExecutable, null);
-                    }
-                } else {
-                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutable);
-                    if (sourceInfoMap != null) {
-                        return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
                     }
                 }
             }
@@ -149,16 +156,12 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     }
 
     private SourceFileInfo findSourceInfo(Map<String, AbstractFunctionToLine> sourceInfoMap, String functionQName, int lineNumber, long offset ) {
-        if (TRACE) {
-            System.err.println("Search for:" + functionQName + "+" + offset); // NOI18N
-        }
+        logger.log(Level.FINE, "Search for:{0}+{1}", new Object[]{functionQName, offset}); // NOI18N
         AbstractFunctionToLine fl = sourceInfoMap.get(functionQName);
         if (fl != null) {
             SourceLineInfo sourceInfo = fl.getLine((int) offset);
-            if (TRACE) {
-                System.err.println("Found:" + fl); // NOI18N
-                System.err.println("Line:" + sourceInfo); // NOI18N
-            }
+            logger.log(Level.FINE, "Found:{0}", fl); // NOI18N
+            logger.log(Level.FINE, "Line:{0}", sourceInfo); // NOI18N
             if (lineNumber > 0 && sourceInfo != null) {
                 return new SourceFileInfo(sourceInfo.getFileName(), lineNumber, 0);
             }
@@ -168,18 +171,52 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     }
 
     private Map<String, AbstractFunctionToLine> getOffsets(ExecutionEnvironment execEnv, String executable) {
+        NativeProcess process = null;
+        Task errorTask = null;
         try {
-            NativeProcess process = RemoteJarServiceProvider.getJavaProcess(Offset2LineService.class, execEnv, new String[]{executable});
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            Map<String, AbstractFunctionToLine> res = Offset2LineService.getOffset2Line(br);
-            br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line;
-            while ((line = br.readLine())!= null){
-                System.err.println(line);
+            process = RemoteJarServiceProvider.getJavaProcess(Offset2LineService.class, execEnv, new String[]{executable});
+            if (process.getState() != State.ERROR){
+                final NativeProcess startedProcess = process;
+                final List<String> errors = new ArrayList<String>();
+                errorTask = RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            errors.addAll(ProcessUtils.readProcessError(startedProcess));
+                        } catch (Throwable ex) {
+                        }
+                    }
+                });
+
+                BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                Map<String, AbstractFunctionToLine> res = Offset2LineService.getOffset2Line(out);
+
+                int rc = process.waitFor();
+                logger.log(Level.FINE, "Return code {0}", rc); // NOI18N
+                boolean hasException = false;
+                for(String error : errors) {
+                    if (error.indexOf("Exception") >= 0) { // NOI18N
+                        hasException = true;
+                    }
+                    logger.log(Level.INFO, error); // NOI18N
+                }
+                if (rc == 0 && !hasException) {
+                    logger.log(Level.FINE, "Loaded lines info for {0} functions from executable file {1}", new Object[]{res.size(), executable}); // NOI18N
+                    return res;
+                }
             }
-            return res;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            logger.log(Level.INFO, ex.getMessage(), ex);
+        } catch (InterruptedException ex) {
+        } catch (Throwable ex) {
+            logger.log(Level.INFO, ex.getMessage(), ex);
+        } finally {
+            if (errorTask != null){
+                errorTask.cancel();
+            }
+            if (process != null) {
+                process.destroy();
+            }
         }
         return null;
     }
@@ -189,6 +226,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         if (sourceInfoMap == null) {
             try {
                 sourceInfoMap = Offset2LineService.getOffset2Line(executable);
+                logger.log(Level.FINE, "Loaded lines info for {0} functions from executable file {1}", new Object[]{sourceInfoMap.size(), executable}); // NOI18N
             } catch (FileNotFoundException ex) {
                 DLightLogger.instance.log(Level.SEVERE, ex.getMessage(), ex);
             } catch (IOException ex) {
