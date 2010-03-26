@@ -372,7 +372,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                                     ChatTopComponent ct = ChatTopComponent.findInstance();
                                     ct.open();
                                     ct.requestActive();
-                                    ct.setActiveGroup(instProj.getName() + "@muc." + instProj.getKenai().getUrl().getHost());
+                                    ct.setActiveGroup(instProj.getName() + "@muc." + instProj.getKenai().getUrl().getHost()); // NOI18N
                                 }
                             });
                         }
