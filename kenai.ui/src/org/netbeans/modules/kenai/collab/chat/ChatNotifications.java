@@ -183,16 +183,16 @@ public class ChatNotifications {
 
     public synchronized  MessagingHandleImpl getMessagingHandle(KenaiProject prj) {
         //TODO: plain project name will not work for multiple instances
-        MessagingHandleImpl handle=groupMessages.get(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost());
+        MessagingHandleImpl handle=groupMessages.get(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost()); // NOI18N
         if (handle==null) {
             handle =new MessagingHandleImpl(prj);
-            groupMessages.put(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost(), handle);
+            groupMessages.put(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost(), handle); // NOI18N
         }
         return handle;
     }
 
     synchronized void clearAll(Kenai kenai) {
-        String name = "@muc." + kenai.getUrl().getHost();
+        String name = "@muc." + kenai.getUrl().getHost(); // NOI18N
         Iterator<Entry<String, MessagingHandleImpl>> iterator = groupMessages.entrySet().iterator();
         while (iterator.hasNext()) {
             java.util.Map.Entry<String, MessagingHandleImpl> entry = iterator.next();
