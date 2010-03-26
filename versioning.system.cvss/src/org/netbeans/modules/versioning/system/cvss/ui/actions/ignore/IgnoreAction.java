@@ -75,7 +75,17 @@ public class IgnoreAction extends AbstractSystemAction {
     }
 
     public int getActionStatus(Node [] nodes) {
-        return getActionStatus(Utils.getCurrentContext(nodes).getFiles());
+        return getActionStatus(getContext(nodes).getFiles());
+    }
+
+    @Override
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    @Override
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     public int getActionStatus(File [] files) {
