@@ -273,9 +273,9 @@ public class ChatPanel extends javax.swing.JPanel {
                 } else { //Jira issue?
                     while (it.hasNext()) { // find the project according to the part of the issue, for example "bug SAMPLE_PROJECT-1"=>sample-project
                         System.out.println(_proj.getName());
-                        String s = m.group(2).replaceAll("-", "_").toLowerCase();
+                        String s = m.group(2).replaceAll("-", "_").toLowerCase(); // NOI18N
                         s = s.substring(0, s.length() - 1);
-                        if (_proj.getName().replaceAll("-", "_").toLowerCase().equals(s)) {
+                        if (_proj.getName().replaceAll("-", "_").toLowerCase().equals(s)) { // NOI18N
                             break;
                         }
                         _proj = it.next();
@@ -560,10 +560,6 @@ public class ChatPanel extends javax.swing.JPanel {
         } else {
             kc.leaveGroup(getShortName());
         }
-    }
-
-    private boolean isDiff(JTextComponent comp) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     private class NotificationsEnabledAction implements ActionListener {
