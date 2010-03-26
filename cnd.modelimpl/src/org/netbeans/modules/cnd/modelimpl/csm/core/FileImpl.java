@@ -96,7 +96,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -211,7 +210,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final List<CsmUID<FunctionImplEx>> fakeRegistrationPairs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private final List<CsmUID<FunctionImplEx>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
@@ -1844,17 +1844,28 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public final void onFakeRegisration(FunctionImplEx decl, AST fakeRegistrationAst) {
-        synchronized (fakeRegistrationPairs) {
+        synchronized (fakeFunctionRegistrations) {
             CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-            fakeRegistrationPairs.add(uidDecl);
+            fakeFunctionRegistrations.add(uidDecl);
             getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
         }
     }
 
+    public final void onFakeRegisration(IncludeImpl include, ClassImpl cls) {
+        synchronized (fakeIncludeRegistrations) {
+            CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
+            CsmUID<ClassImpl> classUid = UIDCsmConverter.declarationToUID(cls);
+            fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, classUid));
+        }
+    }
+
     private void clearFakeRegistrations() {
-        synchronized (fakeRegistrationPairs) {
+        synchronized (fakeFunctionRegistrations) {
             getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
-            fakeRegistrationPairs.clear();
+            fakeFunctionRegistrations.clear();
+        }
+        synchronized (fakeIncludeRegistrations) {
+            fakeIncludeRegistrations.clear();
         }
     }
 
@@ -1866,17 +1877,24 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
     private boolean fixFakeRegistrations(boolean projectParsedMode) {
+        boolean result = false;
+        result |= fixFakeFunctionRegistrations(projectParsedMode);
+        result |= fixFakeIncludeRegistrations(projectParsedMode);
+        return result;
+    }
+
+    private boolean fixFakeFunctionRegistrations(boolean projectParsedMode) {
         boolean wereFakes = false;
-        synchronized (fakeRegistrationPairs) {
+        synchronized (fakeFunctionRegistrations) {
             if (!alreadyInFixFakeRegistrations) {
                 alreadyInFixFakeRegistrations = true;
-                if (fakeRegistrationPairs.isEmpty() || !isValid()) {
+                if (fakeFunctionRegistrations.isEmpty() || !isValid()) {
                     alreadyInFixFakeRegistrations = false;
                     return false;
                 }
-                if (fakeRegistrationPairs.size() > 0) {
-                    for (int i = 0; i < fakeRegistrationPairs.size(); i++) {
-                        CsmUID<FunctionImplEx> fakeUid = fakeRegistrationPairs.get(i);
+                if (fakeFunctionRegistrations.size() > 0) {
+                    for (int i = 0; i < fakeFunctionRegistrations.size(); i++) {
+                        CsmUID<FunctionImplEx> fakeUid = fakeFunctionRegistrations.get(i);
                         AST fakeAST = getProjectImpl(true).getFakeFunctionAST(getUID(), fakeUid);
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
@@ -1894,6 +1912,37 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     }
                 }
                 alreadyInFixFakeRegistrations = false;
+            }
+        }
+        return wereFakes;
+    }
+
+    private boolean fixFakeIncludeRegistrations(boolean projectParsedMode) {
+        boolean wereFakes = false;
+        synchronized (fakeIncludeRegistrations) {
+            for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+                CsmInclude include = fakeIncludePair.includeUid.getObject();
+                ClassImpl cls = fakeIncludePair.classUid.getObject();
+                FileImpl file = (FileImpl) include.getIncludeFile();
+
+                TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
+
+                CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
+                parser.fix_fake_class_members();
+                AST ast = parser.getAST();
+
+
+                CsmDeclaration.Kind kind = cls.getKind();
+                CsmVisibility visibility = CsmVisibility.PRIVATE;
+                if(kind == CsmDeclaration.Kind.CLASS) {
+                    visibility = CsmVisibility.PRIVATE;
+                } else if( kind == CsmDeclaration.Kind.STRUCT ||
+                        kind == CsmDeclaration.Kind.UNION) {
+                    visibility = CsmVisibility.PUBLIC;
+                }
+                cls.fixFakeRender(file, visibility, ast, false);
+
+                wereFakes = true;
             }
         }
         return wereFakes;
@@ -1947,7 +1996,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             macrosLock.readLock().unlock();
         }
-        factory.writeUIDCollection(this.fakeRegistrationPairs, output, false);
+        factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
         //output.writeUTF(state.toString());
         output.writeByte(fileType.ordinal());
 
@@ -1991,7 +2040,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.brokenIncludes, input);
         this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
-        factory.readUIDCollection(this.fakeRegistrationPairs, input);
+        factory.readUIDCollection(this.fakeFunctionRegistrations, input);
         fileType = FileType.values()[input.readByte()];
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -2124,6 +2173,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         tsRef.clear();
         stateCache.clearStateCache();
         APTFileCacheManager.invalidate(this.getBuffer());
+    }
+
+    private static final class FakeIncludePair {
+
+        private final CsmUID<IncludeImpl> includeUid;
+        private final CsmUID<ClassImpl> classUid;
+
+        public FakeIncludePair(CsmUID<IncludeImpl> includeUid, CsmUID<ClassImpl> classUid) {
+            this.includeUid = includeUid;
+            this.classUid = classUid;
+        }
     }
 
     public static class NameKey implements Comparable<NameKey> {
