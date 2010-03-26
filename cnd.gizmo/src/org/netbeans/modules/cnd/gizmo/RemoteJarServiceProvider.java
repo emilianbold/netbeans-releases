@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -91,8 +90,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
                 libDir += "/"; // NOI18N
             }
             String resource = libDir+relativePath;
-            args.add(resource); //NOI18N
-            System.err.println("Path to jar: "+resource);
+            args.add(resource);
         }
         args.add(clazz.getName());
         args.addAll(Arrays.asList(arguments));
