@@ -78,7 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = SourceFileInfoProvider.class, position = 5000)
 public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.gizmo.dwarf");
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.gizmo.dwarf"); // NOI18N
     private WeakHashMap<String, Map<String, AbstractFunctionToLine>> cache;
 
     public DwarfSourceInfoProvider() {
