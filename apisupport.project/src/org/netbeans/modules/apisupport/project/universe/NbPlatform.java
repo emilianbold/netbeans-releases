@@ -94,6 +94,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static final String PLATFORM_JAVADOC_SUFFIX = ".javadoc"; // NOI18N
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
     public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
+    private static final Logger LOG = Logger.getLogger(NbPlatform.class.getName());
     
     private static volatile Set<NbPlatform> platforms;
     
@@ -689,25 +690,32 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * to the {@link ModuleList#findOrCreateModuleListFromBinaries}.
      */
     public Set<ModuleEntry> getModules() {
-        if (nbd)
-        try {
-            return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getAllEntries();
-        } catch (IOException e) {
-            Util.err.notify(e);
-            return Collections.emptySet();
+        if (nbdestdir.isDirectory()) {
+            try {
+                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getAllEntries();
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        } else {
+            LOG.log(Level.WARNING, "Platform directory {0} does not exist", nbdestdir);
         }
+        return Collections.emptySet();
     }
 
     /**
      * Gets a module from the platform by name.
      */
     public ModuleEntry getModule(String cnb) {
-        try {
-            return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);
-        } catch (IOException e) {
-            Util.err.notify(e);
-            return null;
+        if (nbdestdir.isDirectory()) {
+            try {
+                return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir).getEntry(cnb);
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+        } else {
+            LOG.log(Level.WARNING, "Platform directory {0} does not exist", nbdestdir);
         }
+        return null;
     }
     
     private static File findCoreJar(File destdir) {
