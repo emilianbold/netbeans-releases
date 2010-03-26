@@ -95,7 +95,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
     
     public String getPassword() {
-        String password = passwordTextField.getText().trim();
+        String password = new String(passwordTextField.getPassword()).trim();
         return password.length() > 0 ? password : null;
     }
 
@@ -174,7 +174,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
-        passwordTextField = new javax.swing.JTextField();
+        passwordTextField = new javax.swing.JPasswordField();
         propertiesButton = new javax.swing.JButton();
         databaseLocationValueLabel = new javax.swing.JLabel();
 
@@ -272,7 +272,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
     public javax.swing.JLabel passwordLabel;
-    public javax.swing.JTextField passwordTextField;
+    public javax.swing.JPasswordField passwordTextField;
     public javax.swing.JButton propertiesButton;
     public javax.swing.JLabel userLabel;
     public javax.swing.JTextField userTextField;

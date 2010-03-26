@@ -124,7 +124,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="passwordTextField">
+    <Component class="javax.swing.JPasswordField" name="passwordTextField">
       <Properties>
         <Property name="columns" type="int" value="15"/>
       </Properties>
