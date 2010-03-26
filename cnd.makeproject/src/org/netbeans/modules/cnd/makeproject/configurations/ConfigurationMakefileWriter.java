@@ -331,6 +331,15 @@ public class ConfigurationMakefileWriter {
         }
     }
 
+    private static boolean isDMake(CompilerSet compilerSet) {
+        boolean dMakeSyntax = false;
+        Tool makeTool = compilerSet.getTool(PredefinedToolKind.MakeTool);
+        if (makeTool != null && makeTool.getFlavor().isSunStudioCompiler()) {
+            dMakeSyntax = true;
+        }
+        return dMakeSyntax;
+    }
+
     public static String getCompilerName(MakeConfiguration conf, PredefinedToolKind tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
@@ -703,6 +712,7 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
+                boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet,items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -740,8 +750,11 @@ public class ConfigurationMakefileWriter {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
                         //Fix for #180918: Multiple make targets incompatible with GNU make
-                        //target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
-                        target = customToolConfiguration.getOutputs().getValue();
+                        if (dMake) {
+                            target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                        } else {
+                            target = customToolConfiguration.getOutputs().getValue();
+                        }
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -795,6 +808,7 @@ public class ConfigurationMakefileWriter {
                         if (compilerSet == null) {
                             continue;
                         }
+                        boolean dMake = isDMake(compilerSet);
                         file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
                         command = ""; // NOI18N
                         comment = null;
@@ -831,7 +845,11 @@ public class ConfigurationMakefileWriter {
                         } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                             CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                             if (customToolConfiguration.getModified()) {
-                                target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                                if (dMake) {
+                                    target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                                } else {
+                                    target = customToolConfiguration.getOutputs().getValue();
+                                }
                                 command = customToolConfiguration.getCommandLine().getValue();
                                 comment = customToolConfiguration.getDescription().getValue();
                                 additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
@@ -888,6 +906,7 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
+                boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -929,7 +948,11 @@ public class ConfigurationMakefileWriter {
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
-                        target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                        if (dMake) {
+                            target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                        } else {
+                            target = customToolConfiguration.getOutputs().getValue();
+                        }
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();

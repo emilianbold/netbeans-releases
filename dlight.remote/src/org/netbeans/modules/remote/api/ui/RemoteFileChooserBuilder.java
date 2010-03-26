@@ -53,7 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author ak119685
  */
-final class RemoteFileChooserBuilder {
+public final class RemoteFileChooserBuilder {
 
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
@@ -65,6 +65,13 @@ final class RemoteFileChooserBuilder {
     }
 
     public JFileChooser createFileChooser() {
+        return createFileChooser(null);
+    }
+
+    public JFileChooser createFileChooser(String selectedPath) {
+        if (selectedPath == null || selectedPath.trim().length() == 0) {
+            selectedPath = "/"; //NOI18N
+        }
         String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
         String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
         Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
@@ -74,7 +81,7 @@ final class RemoteFileChooserBuilder {
 
         RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
 
-        JFileChooserImpl chooser = new JFileChooserImpl("/", remoteFileSystemView);//NOI18N
+        JFileChooserImpl chooser = new JFileChooserImpl(selectedPath, remoteFileSystemView);//NOI18N
         remoteFileSystemView.addPropertyChangeListener(chooser);
 
         UIManager.put(openDialogTitleTextKey, currentOpenTitle);
@@ -100,7 +107,7 @@ final class RemoteFileChooserBuilder {
         public void approveSelection() {
             File selectedFile = getSelectedFile();
             if (selectedFile != null) {
-                if (selectedFile.isDirectory()) {
+                if (selectedFile.isDirectory() && getFileSelectionMode() == FILES_ONLY) {
                     setCurrentDirectory(getSelectedFile());
                 } else {
                     super.approveSelection();

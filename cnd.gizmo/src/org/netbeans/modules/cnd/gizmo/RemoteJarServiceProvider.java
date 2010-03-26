@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
@@ -63,10 +62,10 @@ public class RemoteJarServiceProvider implements SetupProvider {
     private static final String relativePath;
     static {
         String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
-        path = path.replace('\\', '/');
-        path = path.substring(path.lastIndexOf("cnd/")+4);
+        path = path.replace('\\', '/'); // NOI18N
+        path = path.substring(path.lastIndexOf("cnd/")+4); // NOI18N
         if (path.indexOf('!') > 0) {
-            path = path.substring(0, path.indexOf('!'));
+            path = path.substring(0, path.indexOf('!')); // NOI18N
         }
         relativePath = path;
     }
@@ -91,8 +90,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
                 libDir += "/"; // NOI18N
             }
             String resource = libDir+relativePath;
-            args.add(resource); //NOI18N
-            System.err.println("Path to jar: "+resource);
+            args.add(resource);
         }
         args.add(clazz.getName());
         args.addAll(Arrays.asList(arguments));
