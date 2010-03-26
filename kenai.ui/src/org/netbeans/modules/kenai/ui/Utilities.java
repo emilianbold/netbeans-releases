@@ -113,10 +113,10 @@ public class Utilities {
         Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
         Kenai kenai = null;
         for (Kenai k:kenais) {
-            if (k.getUrl().getHost().equals("kenai.com")) { //NOI!18N
+            if (k.getUrl().getHost().equals("kenai.com")) { //NOI18N
                 kenai = k;
             }
-            if (k.getUrl().getHost().endsWith("java.net")) { //NOI!18N
+            if (k.getUrl().getHost().endsWith("java.net")) { //NOI18N
                 return k;
             }
         }

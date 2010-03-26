@@ -106,7 +106,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.setActiveGroup(project.getId() + "@muc." + project.getKenaiProject().getKenai().getUrl().getHost());
+                chatTC.setActiveGroup(project.getId() + "@muc." + project.getKenaiProject().getKenai().getUrl().getHost()); // NOI18N
                 chatTC.requestActive(false);
             }
         };
