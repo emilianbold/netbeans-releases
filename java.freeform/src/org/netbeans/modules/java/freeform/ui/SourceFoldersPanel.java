@@ -189,7 +189,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     }
     
     private void updateEncodingCombo() {
-        encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
+        String enc = model.getEncoding();
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(enc));
     }
     
     private String getSourceLevelValue(int index) {
