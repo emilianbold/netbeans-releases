@@ -713,6 +713,15 @@ public class CopyFinderTest extends NbTestCase {
                              new Pair[0]);
     }
 
+    public void testCorrectSite4() throws Exception {
+        performVariablesTest("package test; public class Test { public void test() { foo.stop(); } }",
+                             "$s{java.lang.Thread}.stop()",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
