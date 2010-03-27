@@ -125,7 +125,7 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ONLY_OPENED;
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
