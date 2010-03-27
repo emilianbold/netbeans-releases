@@ -45,6 +45,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +81,7 @@ import javax.swing.text.View;
 public abstract class EditorView extends View {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorView.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(EditorView.class.getName());
 
     /**
      * Raw offset along the parent's major axis (axis along which the children are laid out).
@@ -487,6 +489,31 @@ public abstract class EditorView extends View {
         if (bias == null) { // Position.Bias is final class so only null value is invalid
             throw new IllegalArgumentException("Null bias prohibited.");
         }
+    }
+
+    public interface Parent {
+
+        /**
+         * Get start offset of a child view based on view's raw offset.
+         * @param rawOffset relative child's raw offset.
+         * @return real offset.
+         */
+        int getViewOffset(int rawOffset);
+
+        /**
+         * Get cached text layout for the given child view.
+         *
+         * @param textLayoutView non-null text layout view.
+         * @return cached (or created) text layout.
+         */
+        TextLayout getTextLayout(TextLayoutView textLayoutView);
+
+        /**
+         * Get font rendering context that for example may be used for text layout creation.
+         * @return font rendering context.
+         */
+        FontRenderContext getFontRenderContext();
+
     }
 
 }

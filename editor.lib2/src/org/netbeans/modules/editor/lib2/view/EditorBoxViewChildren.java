@@ -66,6 +66,12 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
     private static final Logger LOG = Logger.getLogger(EditorBoxViewChildren.class.getName());
 
     /**
+     * Repaint bounds that extend to end of component. Using just MAX_VALUE
+     * for width/height caused problems since it probably overflowed
+     * inside AWT code when added to positive x/y so ">> 1" is done for now.
+     */
+    protected static final double EXTEND_TO_END = (double) (Integer.MAX_VALUE >> 1);
+    /**
      * Number of child views above which they will start to be managed
      * in a gap-storage way upon modification.
      * Below the threshold the views are updated without gap creation.
@@ -222,26 +228,26 @@ public class EditorBoxViewChildren extends GapList<EditorView> {
                 repaintBounds.x += visualOffset;
                 if (majorAxisSpanChange || removedTillEnd) {
                     result.widthChanged = true;
-                    repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.width = EXTEND_TO_END;
                 } else { // Just repaint the modified area (of the same size)
                     repaintBounds.width = removedSpan;
                 }
                 if (minorAxisSpanChange) {
                     result.heightChanged = true;
-                    repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.height = EXTEND_TO_END;
                 } // else: leave the repaintBounds.height set to alloc's height
 
             } else { // Y_AXIS is major axis
                 repaintBounds.y += visualOffset;
                 if (majorAxisSpanChange || removedTillEnd) {
                     result.heightChanged = true;
-                    repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.height = EXTEND_TO_END;
                 } else { // Just repaint the modified area (of the same size)
                     repaintBounds.height = removedSpan;
                 }
                 if (minorAxisSpanChange) {
                     result.widthChanged = true;
-                    repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+                    repaintBounds.width = EXTEND_TO_END;
                 } // else: leave the repaintBounds.width set to alloc's width
             }
             result.repaintBounds = ViewUtils.toRect(repaintBounds);

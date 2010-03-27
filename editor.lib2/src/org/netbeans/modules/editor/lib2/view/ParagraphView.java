@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.font.TextLayout;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
@@ -132,6 +133,12 @@ public class ParagraphView extends EditorBoxView {
                 setMinorAxisSpan(documentView.getDefaultLineHeight());
             }
         }
+    }
+
+    @Override
+    public TextLayout getTextLayout(TextLayoutView textLayoutView) {
+        DocumentView documentView = getDocumentView();
+        return (documentView != null) ? documentView.getTextLayoutCache().get(this, textLayoutView) : null;
     }
 
     void recomputeSpans() {

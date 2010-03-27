@@ -41,17 +41,14 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
+import java.awt.font.FontRenderContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -91,7 +88,7 @@ import javax.swing.text.ViewFactory;
  * @author Miloslav Metelka
  */
 
-public abstract class EditorBoxView extends EditorView {
+public abstract class EditorBoxView extends EditorView implements EditorView.Parent {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxView.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxView.class.getName());
@@ -477,8 +474,15 @@ public abstract class EditorBoxView extends EditorView {
         children.paint(this, g, alloc, clipBounds);
     }
 
-    final int getViewOffset(int rawOffset) {
+    @Override
+    public int getViewOffset(int rawOffset) {
         return getStartOffset() + children.raw2RelOffset(rawOffset);
+    }
+
+    @Override
+    public FontRenderContext getFontRenderContext() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getFontRenderContext() : null;
     }
 
     @Override

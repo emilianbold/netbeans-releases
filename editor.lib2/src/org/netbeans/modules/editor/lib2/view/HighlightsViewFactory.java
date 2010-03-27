@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +67,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
-
-    private int offset;
 
     private Element lineElementRoot;
 
@@ -102,11 +99,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void restart(int startOffset) {
-        this.offset = startOffset;
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
-        lineIndex = lineElementRoot.getElementIndex(offset);
+        lineIndex = lineElementRoot.getElementIndex(startOffset);
         fetchLineInfo();
 
         highlightsSequence = highlightsContainer.getHighlights(startOffset, doc.getLength());
@@ -143,7 +139,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             throw new IllegalStateException("startOffset=" + startOffset // NOI18N
                     + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
                     + "," + highlightEndOffset // NOI18N
-                    + ">, newlineOffset=" + newlineOffset); // NOI18N
+                    + ">, newlineOffset=" + newlineOffset + ", docText.length()=" + docText.length()); // NOI18N
         }
         boolean tabs = (docText.charAt(startOffset) == '\t');
         for (int i = 1; i < length; i++) {

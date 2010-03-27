@@ -136,14 +136,14 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren {
             }
             if (majorAxisSpanChange || removedTillEnd) {
                 result.widthChanged = true;
-                repaintBounds.width = (double) Integer.MAX_VALUE; // Extend to end
+                repaintBounds.width = EXTEND_TO_END;
             } else { // Just repaint the modified area (of the same size)
                 // Leave the whole visible width for repaint
                 //repaintBounds.width = removedSpan;
             }
             if (minorAxisSpanChange) {
                 result.heightChanged = true;
-                repaintBounds.height = (double) Integer.MAX_VALUE; // Extend to end
+                repaintBounds.height = EXTEND_TO_END;
             } // else: leave the repaintBounds.height set to alloc's height
             result.repaintBounds = ViewUtils.toRect(repaintBounds);
 

@@ -58,7 +58,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
     private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.CLASS);
     
     public AnnotationAsSuperInterface() {
-        super( true, true, HintSeverity.WARNING );
+        super( true, true, HintSeverity.WARNING, "AnnotationAsSuperInterface");
     }
 
     public Set<Kind> getTreeKinds() {
