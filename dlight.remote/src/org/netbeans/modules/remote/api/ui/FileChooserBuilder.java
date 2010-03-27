@@ -53,14 +53,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author ak119685
  */
-public final class RemoteFileChooserBuilder {
+public final class FileChooserBuilder {
 
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
     private static final String readOnlyKey = "FileChooser.readOnly"; // NOI18N
     private final ExecutionEnvironment env;
 
-    public RemoteFileChooserBuilder(ExecutionEnvironment env) {
+    public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
     }
 
@@ -69,26 +69,30 @@ public final class RemoteFileChooserBuilder {
     }
 
     public JFileChooser createFileChooser(String selectedPath) {
-        if (selectedPath == null || selectedPath.trim().length() == 0) {
-            selectedPath = "/"; //NOI18N
+        if (env.isLocal()) {
+            return new JFileChooser(selectedPath);
+        } else {
+            if (selectedPath == null || selectedPath.trim().length() == 0) {
+                selectedPath = "/"; //NOI18N
+            }
+            String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
+            String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
+            Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
+
+            UIManager.put(openDialogTitleTextKey, currentOpenTitle + " @ " + env.getDisplayName()); // NOI18N
+            UIManager.put(saveDialogTitleTextKey, currentSaveTitle + " @ " + env.getDisplayName()); // NOI18N
+
+            RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
+
+            JFileChooserImpl chooser = new JFileChooserImpl(selectedPath, remoteFileSystemView);//NOI18N
+            remoteFileSystemView.addPropertyChangeListener(chooser);
+
+            UIManager.put(openDialogTitleTextKey, currentOpenTitle);
+            UIManager.put(saveDialogTitleTextKey, currentSaveTitle);
+            UIManager.put(readOnlyKey, currentReadOnly);
+
+            return chooser;
         }
-        String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
-        String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
-        Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
-
-        UIManager.put(openDialogTitleTextKey, currentOpenTitle + " @ " + env.getDisplayName()); // NOI18N
-        UIManager.put(saveDialogTitleTextKey, currentSaveTitle + " @ " + env.getDisplayName()); // NOI18N
-
-        RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
-
-        JFileChooserImpl chooser = new JFileChooserImpl(selectedPath, remoteFileSystemView);//NOI18N
-        remoteFileSystemView.addPropertyChangeListener(chooser);
-
-        UIManager.put(openDialogTitleTextKey, currentOpenTitle);
-        UIManager.put(saveDialogTitleTextKey, currentSaveTitle);
-        UIManager.put(readOnlyKey, currentReadOnly);
-
-        return chooser;
     }
 
     private static class JFileChooserImpl extends JFileChooser

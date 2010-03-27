@@ -130,7 +130,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             try {
                 status = process.waitFor();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
 
             if (status != 0) {
