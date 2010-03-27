@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.maven/1
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/maven/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/maven/ModInstall.class

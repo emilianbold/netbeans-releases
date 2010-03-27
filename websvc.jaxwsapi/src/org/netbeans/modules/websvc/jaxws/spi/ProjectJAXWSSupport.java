@@ -67,6 +67,8 @@ import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
@@ -74,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /** Abstract class that implements most of JAXWSSupportImpl methods
@@ -378,7 +381,8 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
         String folderName = forWsdl?"wsdl":"bindings"; //NOI18N
         FileObject root = getXmlArtifactsRoot();
         if (root==null) {
-            assert !createFolder : "Cannot create XML artifacts folder"; //NOI18N
+            DialogDisplayer.getDefault().notify(
+                new DialogDescriptor.Message(NbBundle.getMessage(ProjectJAXWSSupport.class, "MSG_MISSING_SRC_CONF")));
             return null;
         }
         FileObject wsdlLocalFolder = root.getFileObject(XML_RESOURCES_FOLDER+"/"+SERVICES_LOCAL_FOLDER+"/"+serviceName+"/"+folderName); //NOI18N
