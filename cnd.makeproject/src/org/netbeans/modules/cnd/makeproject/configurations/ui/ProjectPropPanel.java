@@ -40,21 +40,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.util.logging.Level;
-import javax.swing.plaf.UIResource;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
-import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -62,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -99,9 +89,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
             originalEncoding = Charset.defaultCharset().name();
         }
 
-        encoding.setModel(new EncodingModel(this.originalEncoding));
-        encoding.setRenderer(new EncodingRenderer());
-
+        encoding.setModel(ProjectCustomizer.encodingModel(originalEncoding));
+        encoding.setRenderer(ProjectCustomizer.encodingRenderer());
 
         encoding.addActionListener(new ActionListener() {
 
@@ -131,86 +120,6 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
             makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
         }
         makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
-    }
-
-    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-    }
-
-    private static class EncodingModel extends DefaultComboBoxModel {
-
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset(originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-
-    private static class UnknownCharset extends Charset {
-
-        UnknownCharset(String name) {
-            super(name, new String[0]);
-        }
-
-        @Override
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private static class SourceRootChooser extends DirectoryChooserInnerPanel {
