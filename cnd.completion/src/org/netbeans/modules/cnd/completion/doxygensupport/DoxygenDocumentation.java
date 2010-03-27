@@ -61,7 +61,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
  */
 public class DoxygenDocumentation {
 
-    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]*", Pattern.MULTILINE); // NOI18N
+    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]", Pattern.MULTILINE); // NOI18N
     private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen) {
@@ -153,17 +153,20 @@ public class DoxygenDocumentation {
 
     static {
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\p", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
         commands.put("\\author", new CommandDescription(EndsOn.PAR, "<strong>Author:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\exception", new CommandDescription(EndsOn.PAR, "<strong>Exceptions:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameter:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\verbatim", new CommandDescription(EndsOn.NONE, "<pre>", "")); // NOI18N
+        commands.put("\\endverbatim", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
 
-        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
-        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
-        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
-        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
-        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
+//        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong>")); // NOI18N
+//        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
+//        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
+//        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
     }
 
     static final class CommandDescription {
@@ -232,6 +235,7 @@ public class DoxygenDocumentation {
         StringBuilder img = new StringBuilder();
         int i = 0;
         boolean wasContent = true;
+        boolean verbatimMode = false;
 
         OUTER:
         while (i < text.length()) {
@@ -260,12 +264,24 @@ public class DoxygenDocumentation {
                         img.append(text.charAt(i++));
                     }
                     result.add(new Token(TokenId.COMMAND, img.toString()));
+                    if (img.toString().equals("\\verbatim")) { // NOI18N
+                        verbatimMode = true;
+                    }
+                    if (verbatimMode && img.toString().equals("\\endverbatim")) { // NOI18N
+                        verbatimMode = false;
+                    }
                     img = new StringBuilder();
                     wasContent = true;
                     break;
                 default:
                     img.append(text.charAt(i++));
-                    while (i < text.length() && (text.charAt(i) != ' ' && text.charAt(i) != '\t' && text.charAt(i) != '\n' && text.charAt(i) != '\\')) { // NOI18N
+                    while (i < text.length()) { // NOI18N
+                        if (!verbatimMode && (text.charAt(i) == ' ' || text.charAt(i) == '\t' || text.charAt(i) == '\n')) {
+                            break;
+                        }
+                        else if (text.charAt(i) == '\\' || text.charAt(i) == '@') {
+                            break;
+                        }
                         img.append(text.charAt(i++));
                     }
                     result.add(new Token(TokenId.WORD, img.toString()));
