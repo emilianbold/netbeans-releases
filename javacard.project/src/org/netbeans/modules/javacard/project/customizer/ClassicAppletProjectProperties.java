@@ -41,6 +41,7 @@
 package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.AID;
+import java.io.File;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
@@ -52,10 +53,15 @@ import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import org.netbeans.modules.javacard.project.JCProjectProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,9 +125,64 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         }
     }
 
+    public static final String PROXY_SOURCE_DIR = "proxies";
+    @Override
+    protected void onBeforeStoreProperties() throws IOException {
+        super.onBeforeStoreProperties();
+    }
+
+    static void updateProxies (JCProjectProperties props, boolean useMyProxies, DefaultTableModel srcRootsModel) throws IOException {
+        FileObject root = props.getProject().getProjectDirectory();
+        FileObject proxies = root.getFileObject (PROXY_SOURCE_DIR);
+        if (useMyProxies) {
+            if (proxies == null) {
+                proxies = root.createFolder(PROXY_SOURCE_DIR);
+            }
+            int max = props.SOURCE_ROOTS_MODEL.getRowCount();
+            boolean found = false;
+            File proxiesFile = FileUtil.toFile(proxies);
+            String proxiesPath = proxiesFile.getAbsolutePath();
+            for (int i=0; i < max; i++) {
+                File f = (File) srcRootsModel.getValueAt(i, 0);
+                if (f.getAbsolutePath().equals(proxiesPath)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                String label = NbBundle.getMessage(ClassicAppletProjectProperties.class, "LBL_PROXY_SOURCES");
+                srcRootsModel.addRow(new Object[] { proxiesFile, label });
+            }
+        } else {
+            if (proxies != null) {
+                File f = FileUtil.toFile(proxies);
+                int max = srcRootsModel.getRowCount();
+                Vector<?> v = srcRootsModel.getDataVector();
+                int toRemove = -1;
+                for (int i= 0; i < max; i++) {
+                    File test = (File) ((Vector<?>)(v.elementAt(i))).elementAt(0);
+                    boolean match = test.getAbsolutePath().equals(f.getAbsolutePath());
+                    System.err.println(test + " against " + f + " match? " + match);
+                    if (match) {
+                        toRemove = i;
+                        break;
+                    }
+                }
+                if (toRemove != -1) {
+                    srcRootsModel.removeRow(toRemove);
+                }
+            }
+        }
+    }
+
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
+        updateProxies(this, useMyProxies, SOURCE_ROOTS_MODEL);
         props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
+        if (useMyProxies) {
+            props.setProperty (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR,
+                    PROXY_SOURCE_DIR);
+        }
         if (packageAID != null && !packageAID.equals(originalPackageAID)) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
