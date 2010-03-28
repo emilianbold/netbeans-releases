@@ -192,7 +192,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
-        curModel = new NavigatorModel(cdo, ui, this);
+        curModel = new NavigatorModel(cdo, ui, this, getMime(cdo));
         CsmListeners.getDefault().addProgressListener(curModel);
         CsmListeners.getDefault().addModelListener(curModel);
         ui.getContent().setModel(curModel);

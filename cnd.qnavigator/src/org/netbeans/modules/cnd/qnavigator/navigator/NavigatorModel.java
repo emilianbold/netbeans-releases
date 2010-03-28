@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -97,7 +98,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private final static class Lock {}
     private final Object lock = new Lock();
 
-    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component) {
+    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component, String mimeType) {
         this.cdo = cdo;
         this.ui = ui;
         actions = new Action[]{
@@ -106,7 +107,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             new GroupByKindAction(),
             new ExpandAllAction(),
             null,
-            new FilterSubmenuAction(),
+            new FilterSubmenuAction(mimeType),
                               };
         root = new AbstractNode(new Children.Array()) {
             @Override
@@ -697,8 +698,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class FilterSubmenuAction extends AbstractAction implements Presenter.Popup {
+        private String mimeType;
 
-        public FilterSubmenuAction() {
+        public FilterSubmenuAction(String mimeType) {
+            this.mimeType = mimeType;
         }
 
         @Override
@@ -712,14 +715,27 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
         private JMenuItem createSubmenu () {
             JMenuItem menu = new JMenu(NbBundle.getMessage(NavigatorModel.class, "FilterSubmenu")); //NOI18N
-            menu.add(new ShowForwardClassDeclarationsAction().getPopupPresenter());
-            menu.add(new ShowForwardFunctionDeclarationsAction().getPopupPresenter());
-            menu.add(new ShowMacroAction().getPopupPresenter());
-            menu.add(new ShowIncludeAction().getPopupPresenter());
-            menu.add(new ShowTypedefAction().getPopupPresenter());
-            menu.add(new ShowVariableAction().getPopupPresenter());
-            menu.add(new ShowFieldAction().getPopupPresenter());
-            menu.add(new ShowUsingAction().getPopupPresenter());
+            boolean isC = MIMENames.isHeaderOrCppOrC(mimeType);
+            boolean isCpp = MIMENames.isHeaderOrCpp(mimeType);
+            boolean isCnd = MIMENames.isFortranOrHeaderOrCppOrC(mimeType);
+            if (isC) {
+                menu.add(new ShowForwardClassDeclarationsAction().getPopupPresenter());
+                menu.add(new ShowForwardFunctionDeclarationsAction().getPopupPresenter());
+                menu.add(new ShowMacroAction().getPopupPresenter());
+            }
+            if (isCnd) {
+                menu.add(new ShowIncludeAction().getPopupPresenter());
+            }
+            if (isC) {
+                menu.add(new ShowTypedefAction().getPopupPresenter());
+            }
+            if (isCnd) {
+                menu.add(new ShowVariableAction().getPopupPresenter());
+                menu.add(new ShowFieldAction().getPopupPresenter());
+            }
+            if (isCpp) {
+                menu.add(new ShowUsingAction().getPopupPresenter());
+            }
             return menu;
         }
     }

@@ -126,8 +126,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         changed = false;
         currentCompilerSet = null;
         execEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
-        btEditDevHost.setEnabled(true);
-        cbDevHost.setEnabled(true);
 
         lstDirlist.setCellRenderer(new MyCellRenderer());
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
@@ -197,11 +195,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             cbDevHost.addItem(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
         }
 
-        if (selectedRec != null) {
-            cbDevHost.setSelectedItem(selectedRec);
-        } else {
-            cbDevHost.setSelectedItem(tcm.getDefaultHostRecord());
+        if (selectedRec == null) {
+            selectedRec = tcm.getDefaultHostRecord();
         }
+        if (selectedRec == null) {
+            selectedRec = ServerList.get(ExecutionEnvironmentFactory.getLocal());
+        }
+        cbDevHost.setSelectedItem(selectedRec);
 
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
