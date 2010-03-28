@@ -41,6 +41,8 @@
 package org.netbeans.modules.javacard.project.customizer;
 
 import com.sun.javacard.AID;
+import java.awt.EventQueue;
+import java.io.File;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.modules.javacard.project.JCProject;
@@ -52,10 +54,23 @@ import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
+import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.javacard.project.JCProjectProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -92,8 +107,8 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         Manifest manifest = null;
         if (manifestFo == null) {
             Logger.getLogger(ClassicAppletProjectProperties.class.getName()).log(
-                    Level.INFO, "Manifest missing for project " + //NOI18N
-                    project.getProjectDirectory().getPath() + ".  Recreating."); //NOI18N
+                    Level.INFO, "Manifest missing for project {0}.  Recreating.",  //NOI18N
+                    project.getProjectDirectory().getPath());
             manifestFo = project.getProjectDirectory().createData(JCConstants.MANIFEST_PATH); //NOI18N
             manifest = new Manifest();
             Attributes a = manifest.getMainAttributes();
@@ -119,9 +134,115 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
         }
     }
 
+    public static final String PROXY_SOURCE_DIR = "proxies";
+    @Override
+    protected void onBeforeStoreProperties() throws IOException {
+        super.onBeforeStoreProperties();
+        updateProxies(this, useMyProxies, SOURCE_ROOTS_MODEL);
+    }
+
+    static void updateProxies (JCProjectProperties props, boolean useMyProxies, DefaultTableModel srcRootsModel) throws IOException {
+        FileObject root = props.getProject().getProjectDirectory();
+        FileObject proxies = root.getFileObject (PROXY_SOURCE_DIR);
+        boolean created = false;
+        if (useMyProxies) {
+            if (proxies == null) {
+                proxies = root.createFolder(PROXY_SOURCE_DIR);
+                created = true;
+            }
+            int max = props.SOURCE_ROOTS_MODEL.getRowCount();
+            boolean found = false;
+            File proxiesFile = FileUtil.toFile(proxies);
+            String proxiesPath = proxiesFile.getAbsolutePath();
+            for (int i=0; i < max; i++) {
+                File f = (File) srcRootsModel.getValueAt(i, 0);
+                if (f.getAbsolutePath().equals(proxiesPath)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                String label = NbBundle.getMessage(ClassicAppletProjectProperties.class, "LBL_PROXY_SOURCES");
+                srcRootsModel.addRow(new Object[] { proxiesFile, label });
+            }
+        } else {
+            if (proxies != null) {
+                File f = FileUtil.toFile(proxies);
+                int max = srcRootsModel.getRowCount();
+                Vector<?> v = srcRootsModel.getDataVector();
+                int toRemove = -1;
+                for (int i= 0; i < max; i++) {
+                    File test = (File) ((Vector<?>)(v.elementAt(i))).elementAt(0);
+                    boolean match = test.getAbsolutePath().equals(f.getAbsolutePath());
+                    System.err.println(test + " against " + f + " match? " + match);
+                    if (match) {
+                        toRemove = i;
+                        break;
+                    }
+                }
+                if (toRemove != -1) {
+                    srcRootsModel.removeRow(toRemove);
+                }
+            }
+        }
+        if (created || proxies.getChildren().length == 0) {
+            offerToGenerateProxies(props.getProject());
+        }
+    }
+
+    private static void offerToGenerateProxies(JCProject project) {
+        Parameters.notNull("project", project);
+        assert project.kind().isClassic();
+        //Do this after everything has been written to disk and with no
+        //mutexes held - currently we're inside ProjectManager.mutex().
+        //Not a good idea to show a modal dialog while holding locks.
+        EventQueue.invokeLater (new ProxyGenerator(project));
+    }
+
+    private static final class ProxyGenerator implements Runnable {
+        private final JCProject project;
+
+        public ProxyGenerator(JCProject project) {
+            this.project = project;
+        }
+
+        public void run() {
+            if (EventQueue.isDispatchThread()) {
+                String msg = NbBundle.getMessage (ClassicAppletProjectProperties.class, "ASK_GENERATE_PROXIES");
+                String title= NbBundle.getMessage(ClassicAppletProjectProperties.class, "TITLE_ASK_GENERATE_PROXIES");
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
+                if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(nd))) {
+                    RequestProcessor.getDefault().post (this);
+                }
+            } else {
+                FileObject buildFo = project.getProjectDirectory().getFileObject(
+                        "build.xml"); //NOI18N
+                if (buildFo != null) {
+                    try {
+                        ExecutorTask task = ActionUtils.runTarget(buildFo,
+                                new String[]{"generate-sio-proxies"}, //NOI18N
+                                new Properties());
+                        task.getInputOutput().select();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
         props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
+        if (useMyProxies) {
+            props.setProperty (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR,
+                    PROXY_SOURCE_DIR);
+        } else if (PROXY_SOURCE_DIR.equals(props.getProperty(ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR))) {
+            props.remove (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR);
+            props.remove (ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        }
         if (packageAID != null && !packageAID.equals(originalPackageAID)) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
