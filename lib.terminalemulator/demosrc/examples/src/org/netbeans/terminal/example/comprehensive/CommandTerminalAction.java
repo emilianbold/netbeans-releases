@@ -61,6 +61,7 @@ public final class CommandTerminalAction implements ActionListener {
 
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
 	final boolean restartable = terminalPanel.isRestartable();
+	final boolean hupOnClose = terminalPanel.isHUPOnClose();
 	final IOContainer container;
 	final IOProvider iop;
 	final boolean useInternalIOShuttle;
@@ -101,11 +102,17 @@ public final class CommandTerminalAction implements ActionListener {
 		switch (terminalPanel.getExecution()) {
 		    case RICH:
 			io = support.executeRichCommand(iop, container, cmd,
-				                   restartable, useInternalIOShuttle);
+				                   restartable,
+						   hupOnClose,
+						   useInternalIOShuttle,
+						   terminalPanel.getAllowClose());
 			break;
 		    case NATIVE:
 			io = support.executeNativeCommand(iop, container, cmd,
-				                     restartable, useInternalIOShuttle);
+				                     restartable,
+						     hupOnClose,
+						     useInternalIOShuttle,
+						     terminalPanel.getAllowClose());
 			break;
 		    default:
 			io = null;

@@ -37,40 +37,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.test;
+package org.netbeans.modules.terminal.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.VetoableChangeListener;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
- * Access to internal state for testing purposes so that unit tests can
- * become generic.
+ * Capability of an InputOutput which allows the receiving of property
+ * change notifications.
+ * All notifications are delivered on the EDT!
  * @author ivan
  */
-public abstract class IOTest {
+public abstract class IONotifier {
 
-    private static IOTest find(InputOutput io) {
+    private static IONotifier find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOTest.class);
+            return p.getLookup().lookup(IONotifier.class);
         }
         return null;
     }
 
-    /**
-     * An IO is "stream connected" if any of getOut(), getErr() or
-     * IOTerm.connect() are called.
-     * It is "stream closed" after all of getIn().close(), getErr().close() and
-     * IOTerm.disconnect() are closed.
-     * @param io
-     * @return
-     */
-    public static boolean isStreamConnected(InputOutput io) {
-	IOTest iot = find(io);
-	if (iot != null)
-	    return iot.isStreamConnected();
-	else
-	    return false;
+    public static void addPropertyChangeListener(InputOutput io, PropertyChangeListener listener) {
+	IONotifier ion = find(io);
+	if (ion != null)
+	    ion.addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(InputOutput io, PropertyChangeListener listener) {
+	IONotifier ion = find(io);
+	if (ion != null)
+	    ion.removePropertyChangeListener(listener);
+    }
+
+    public static void addVetoableChangeListener(InputOutput io, VetoableChangeListener listener ) {
+	IONotifier ion = find(io);
+	if (ion != null)
+	    ion.addVetoableChangeListener(listener);
+    }
+
+    public static void removeVetoableChangeListener(InputOutput io, VetoableChangeListener listener ) {
+	IONotifier ion = find(io);
+	if (ion != null)
+	    ion.removeVetoableChangeListener(listener);
     }
 
     /**
@@ -82,5 +93,11 @@ public abstract class IOTest {
         return find(io) != null;
     }
 
-    abstract protected boolean isStreamConnected();
+    abstract protected void addPropertyChangeListener(PropertyChangeListener listener);
+
+    abstract protected void removePropertyChangeListener(PropertyChangeListener listener);
+
+    abstract protected void addVetoableChangeListener(VetoableChangeListener listener );
+
+    abstract protected void removeVetoableChangeListener(VetoableChangeListener listener );
 }

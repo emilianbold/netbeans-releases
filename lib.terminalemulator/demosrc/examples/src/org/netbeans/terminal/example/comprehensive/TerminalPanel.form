@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -15,6 +15,8 @@
     <Component class="javax.swing.ButtonGroup" name="executionButtonGroup">
     </Component>
     <Component class="javax.swing.ButtonGroup" name="ioShuttlingButtonGroup">
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="allowCloseButtonGroup">
     </Component>
   </NonVisualComponents>
   <AuxValues>
@@ -44,16 +46,15 @@
                               </Group>
                               <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                               <Component id="ioShuttlingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="allowCloseLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="excutionLabel" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="excutionLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="ioShutlingRadioButton_INTERNAL" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="ioShuttlingRadioButton_EXTERNAL" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Component id="commandTextField" alignment="0" min="-2" pref="179" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="containerProviderRadioButton_DEFAULT" min="-2" max="-2" attributes="0"/>
@@ -72,13 +73,22 @@
                                   <Component id="rpRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="ioShutlingRadioButton_INTERNAL" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="allowCloseRadioButton_NEVER" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="allowCloseRadioButton_ALWAYS" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="allowCloseRadioButton_DISCONNECTED" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="ioShuttlingRadioButton_EXTERNAL" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
-                      <Component id="restartableLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="restartableCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="84" max="-2" attributes="0"/>
@@ -86,8 +96,20 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="threadRadioButton_EDT" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="hupOnCloseLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="restartableLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="hupOnCloseCheckBox" min="-2" max="-2" attributes="0"/>
+                          <Component id="restartableCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
-              <EmptySpace pref="208" max="32767" attributes="0"/>
+              <EmptySpace pref="88" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -117,6 +139,13 @@
                   <Component id="ioShutlingRadioButton_INTERNAL" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="ioShuttlingRadioButton_EXTERNAL" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="allowCloseLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="allowCloseRadioButton_NEVER" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="allowCloseRadioButton_ALWAYS" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="allowCloseRadioButton_DISCONNECTED" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace pref="11" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="excutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -133,6 +162,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="restartableLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="restartableCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="hupOnCloseLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="hupOnCloseCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -308,6 +342,58 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.ioShuttlingRadioButton_EXTERNAL.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="allowCloseLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.allowCloseLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="allowCloseRadioButton_NEVER">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="allowCloseButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.allowCloseRadioButton_NEVER.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="allowCloseRadioButton_ALWAYS">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="allowCloseButtonGroup"/>
+        </Property>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.allowCloseRadioButton_ALWAYS.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="allowCloseRadioButton_DISCONNECTED">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="allowCloseButtonGroup"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.allowCloseRadioButton_DISCONNECTED.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="hupOnCloseLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.hupOnCloseLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="hupOnCloseCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/terminal/example/comprehensive/Bundle.properties" key="TerminalPanel.hupOnCloseCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
