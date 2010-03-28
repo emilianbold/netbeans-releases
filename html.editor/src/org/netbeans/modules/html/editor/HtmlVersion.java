@@ -48,21 +48,25 @@ import java.util.Collection;
  */
 public enum HtmlVersion {
 
-    UNKNOWN(new String[]{}, -1),
+    //unknown version fallbacks to 4.01 transitional
+    UNKNOWN(new String[]{}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
 
-    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, 0), //NOI18N
+    HTML32(new String[]{"-//W3C//DTD HTML 3.2 Final//EN"}, "-//W3C//DTD HTML 3.2 Final//EN"), //NOI18N
 
     HTML40(new String[]{"-//W3C//DTD HTML 4.0//EN", //NOI18N
                         "-//W3C//DTD HTML 4.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, 1), //NOI18N
+                        "-//W3C//DTD HTML 4.0 Frameset//EN"}, "-//W3C//DTD HTML 4.0 Transitional//EN"), //NOI18N
 
     HTML41(new String[]{"-//W3C//DTD HTML 4.01//EN", //NOI18N
                         "-//W3C//DTD HTML 4.01 Transitional//EN", //NOI18N
-                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, 1), //NOI18N
+                        "-//W3C//DTD HTML 4.01 Frameset//EN"}, "-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
 
     XHTML10(new String[]{"-//W3C//DTD XHTML 1.0 Strict//EN", //NOI18N
                         "-//W3C//DTD XHTML 1.0 Transitional//EN", //NOI18N
-                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, 1, "http://www.w3.org/1999/xhtml", true); //NOI18N
+                        "-//W3C//DTD XHTML 1.0 Frameset//EN"}, "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/1999/xhtml", true), //NOI18N
+
+    //XHTML 1.1 version fallbacks to XHTML 1.1 strict
+    XHTML11(new String[]{"-//W3C//DTD XHTML 1.1//EN"}, "-//W3C//DTD XHTML 1.0 Strict//EN", "http://www.w3.org/1999/xhtml", true); //NOI18N
 
     //TODO Add XHTML1.1, XHTML 2.0 and HTML 5 support
 
@@ -78,17 +82,17 @@ public enum HtmlVersion {
     private final String[] publicIDs;
     private final String defaultNamespace;
     private boolean isXhtml;
-    private int fallbackPublicIdIndex;
+    private String fallbackPublicId;
 
-    private HtmlVersion(String[] publicIDs, int index) {
-        this(publicIDs, index, null, false);
+    private HtmlVersion(String[] publicIDs, String fallbackPublicId) {
+        this(publicIDs, fallbackPublicId, null, false);
     }
 
-    private HtmlVersion(String[] publicIDs, int index, String defaultNamespace, boolean isXhtml) {
+    private HtmlVersion(String[] publicIDs, String fallbackPublicId, String defaultNamespace, boolean isXhtml) {
         this.publicIDs = publicIDs;
         this.defaultNamespace = defaultNamespace;
         this.isXhtml = isXhtml;
-        this.fallbackPublicIdIndex = index;
+        this.fallbackPublicId = fallbackPublicId;
     }
 
     public Collection<String> getPublicIDs() {
@@ -104,7 +108,7 @@ public enum HtmlVersion {
     }
 
     public String getFallbackPublicId() {
-        return publicIDs[fallbackPublicIdIndex];
+        return fallbackPublicId;
     }
 
 }
