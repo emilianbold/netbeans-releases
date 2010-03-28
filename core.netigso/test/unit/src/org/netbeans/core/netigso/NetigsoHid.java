@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -86,8 +87,8 @@ public class NetigsoHid extends SetupHid {
         Netigso net = (Netigso)Lookup.getDefault().lookup(NetigsoFramework.class);
         final Field field = Netigso.class.getDeclaredField("registered");
         field.setAccessible(true);
-        Set<?> set = (Set<?>)field.get(net);
-        set.clear();
+        Map<?,?> map = (Map<?,?>)field.get(net);
+        map.clear();
 
         
         data = new File(getDataDir(), "jars");
@@ -109,7 +110,7 @@ public class NetigsoHid extends SetupHid {
     protected final File changeManifest(File orig, String manifest) throws IOException {
         return changeManifest(getWorkDir(), orig, manifest);
     }
-    static final File changeManifest(File wd, File orig, String manifest) throws IOException {
+    static File changeManifest(File wd, File orig, String manifest) throws IOException {
         File f = new File(wd, orig.getName());
         int i = 0;
         while (f.exists()) {
