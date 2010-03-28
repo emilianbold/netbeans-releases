@@ -134,7 +134,8 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" url="csh/proj_props/CustomizerPackaging.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" url="csh/proj_props/CustomizerDocumenting.html"/>
- <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="csh/proj_props/EditDependencyPanel.html"/>
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="csh/proj_props/EditDependencyPanel.html"/>
+    <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="tbd.html"/>
 
 
 <!-- Suite -->
