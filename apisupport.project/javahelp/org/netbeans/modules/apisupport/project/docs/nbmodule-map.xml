@@ -6,6 +6,9 @@
 
     <mapID target="apisupport_tbd" url="tbd.html"/>
 
+    <!-- Start of "OSGi Bundle" section -->
+    <mapID target="apisupport_about_osgi" url="osgi/about-osgi.html"/>
+    <!-- End of "OSGi Bundle" section -->
 	
     <!-- Start of "Getting Started" section -->
     <mapID target="apisupport_about_plugins" url="about/nbmodule-about.html"/>

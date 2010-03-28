@@ -11,6 +11,11 @@
             <tocitem text="Rich-Client Applications" target="apisupport_richclientapp_process" />
         </tocitem>
     </tocitem>
+    <tocitem text="OSGi Bundles" expand="false">
+        <tocitem text="Getting Started" >
+            <tocitem text="About OSGi Bundles" target="apisupport_about_osgi" />
+        </tocitem>
+    </tocitem>
     <tocitem text="NetBeans Modules" expand="false">
         <tocitem text="Getting Started" >
             <tocitem text="About NetBeans Modules" target="apisupport_about_plugins" />
