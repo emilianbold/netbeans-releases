@@ -8,6 +8,10 @@ package org.netbeans.terminal.example;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,6 +20,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.lib.richexecution.program.Command;
 import org.netbeans.lib.richexecution.program.Program;
@@ -31,17 +36,25 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
+import org.netbeans.modules.terminal.api.IOConnect;
 
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -65,19 +78,8 @@ public final class TerminalIOProviderSupport {
 	protected Action rerunAction;
 	protected InputOutput io;
 
-	protected static final class ResizeListener implements IOResizable.Listener {
-
-	    private final ExecutionSupport executionSupport;
-
-	    public ResizeListener(ExecutionSupport executionSupport) {
-		this.executionSupport = executionSupport;
-	    }
-
-	    public void sizeChanged(Dimension c, Dimension p) {
-		executionSupport.sizeChanged(c, p);
-	    }
-	}
-
+	private boolean hupOnClose;
+	private AllowClose allowClose;
 
 	public void setRestartable(Action stopAction, Action rerunAction) {
 	    this.restartable = true;
@@ -139,9 +141,116 @@ public final class TerminalIOProviderSupport {
 	    }
 	}
 
+	private class VetoListener implements VetoableChangeListener {
+
+	    private void confirmClose(PropertyChangeEvent evt) throws PropertyVetoException {
+		DialogDescriptor dd = new DialogDescriptor("Really close?", "Close?");
+		Object closer = DialogDisplayer.getDefault().notify(dd);
+		if (closer != NotifyDescriptor.OK_OPTION)
+		    throw new PropertyVetoException("don't close", evt);
+	    }
+
+	    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY) &&
+		    evt.getNewValue().equals(Boolean.FALSE)) {
+
+		    InputOutput src = (InputOutput) evt.getSource();
+		    // A request for closing of this IO has been submitted
+		    switch (allowClose) {
+			case NEVER:
+			    // should never get here
+			    break;
+			case ALWAYS:
+			    confirmClose(evt);
+			    break;
+			case DISCONNECTED:
+			    if (IOConnect.isConnected(src))
+				confirmClose(evt);
+			    break;
+		    }
+		}
+	    }
+	}
+
+	private class CloseListener implements PropertyChangeListener {
+	    public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY) &&
+		    evt.getNewValue().equals(Boolean.FALSE)) {
+		    checkClose();
+		}
+	    }
+	}
+
+	private boolean streamClosed = false;
+	private boolean terminated = false;
+
+	/**
+	 * Terminal actually closed.
+	 */
+	private void checkClose() {
+	    assert SwingUtilities.isEventDispatchThread();
+	    if (streamClosed) {
+		// process already reaped and it's io drained
+		// clean up all resources
+		io.closeInputOutput();
+	    } else {
+
+		if (hupOnClose) {
+		    terminated = true;
+
+		    // This will eventualy wake up the reaper waiting
+		    // in waitFor().
+		    // be quiet if process is already gone;
+		    hangup();
+		}
+	    }
+	}
+
+	private void checkTermination() {
+	    assert SwingUtilities.isEventDispatchThread();
+	   if (terminated) {
+		// clean up all resources
+		io.closeInputOutput();
+	    } else {
+		streamClosed = true;
+	    }
+	}
+
+	private OutputListener makeClosable = new OutputListener() {
+
+	    public void outputLineSelected(OutputEvent ev) {
+	    }
+
+	    public void outputLineAction(OutputEvent ev) {
+		InputOutput io = ev.getInputOutput();
+		IOVisibility.setClosable(io, true);
+	    }
+
+	    public void outputLineCleared(OutputEvent ev) {
+	    }
+	};
+
+	private OutputListener makeUnClosable = new OutputListener() {
+
+	    public void outputLineSelected(OutputEvent ev) {
+	    }
+
+	    public void outputLineAction(OutputEvent ev) {
+		InputOutput io = ev.getInputOutput();
+		IOVisibility.setClosable(io, false);
+	    }
+
+	    public void outputLineCleared(OutputEvent ev) {
+	    }
+	};
+
 	public final InputOutput setupIO(IOProvider iop,
 			     IOContainer ioContainer,
-			     String title) {
+			     String title,
+			     AllowClose allowClose,
+			     boolean hupOnClose) {
+	    this.allowClose = allowClose;
+	    this.hupOnClose = hupOnClose;
 	    Action[] actions = null;
 	    if (isRestartable()) {
 		actions = new Action[] {rerunAction, stopAction};
@@ -151,6 +260,15 @@ public final class TerminalIOProviderSupport {
 
 	    io = iop.getIO(title, actions, ioContainer);
 
+	    if (IONotifier.isSupported(io)) {
+		IONotifier.addVetoableChangeListener(io, new VetoListener());
+		IONotifier.addPropertyChangeListener(io, new CloseListener());
+	    }
+
+	    if (IOVisibility.isSupported(io)) {
+		IOVisibility.setClosable(io, allowClose != AllowClose.NEVER);
+	    }
+
 	    // comment out to verify fix for bug #181064
 	    io.select();
 
@@ -159,6 +277,12 @@ public final class TerminalIOProviderSupport {
 		// term.setDebugFlags(Term.DEBUG_INPUT);
 	    }
 	    tprintln("GREETINGS");
+	    try {
+		IOColorLines.println(io, "Make closable\r", makeClosable, false, Color.BLUE);
+		IOColorLines.println(io, "Make unClosable\r", makeUnClosable, false, Color.RED);
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
 	    return io;
 	}
 
@@ -186,6 +310,8 @@ public final class TerminalIOProviderSupport {
 				tprintln(exitMsg);
 				io.getOut().close();
 				setState(ExecutionSupport.State.EXITED);
+
+				checkTermination();
 			    }
 			});
 		    } else {
@@ -208,6 +334,7 @@ public final class TerminalIOProviderSupport {
 	public abstract void sizeChanged(Dimension c, Dimension p);
 	public abstract void reRun();
 	public abstract void stop();
+	public abstract void hangup();
     }
 
     private static final class RichExecutionSupport extends ExecutionSupport {
@@ -240,8 +367,16 @@ public final class TerminalIOProviderSupport {
 		return;
 	    }
 
-	    if (IOResizable.isSupported(io))
-		IOResizable.addListener(io, new ResizeListener(this));
+	    if (IOResizable.isSupported(io)) {
+		IONotifier.addPropertyChangeListener(io, new PropertyChangeListener() {
+		    public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
+			    IOResizable.Size size = (IOResizable.Size) evt.getNewValue();
+			    RichExecutionSupport.this.sizeChanged(size.cells, size.pixels);
+			}
+		    }
+		});
+	    }
 
 	    Map<String, String> env = program.environment();
 	    if (IOEmulation.isSupported(io)) {
@@ -289,6 +424,10 @@ public final class TerminalIOProviderSupport {
 
 	public void stop() {
             richProcess.terminate();
+	}
+
+	public void hangup() {
+	    richProcess.hangup();
 	}
     }
 
@@ -343,8 +482,16 @@ public final class TerminalIOProviderSupport {
 		startShuttle(impl.getOutputStream(), impl.getInputStream());
 	    }
 
-	    if (IOResizable.isSupported(io))
-		IOResizable.addListener(io, new ResizeListener(this));
+	    if (IOResizable.isSupported(io)) {
+		IONotifier.addPropertyChangeListener(io, new PropertyChangeListener() {
+		    public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
+			    IOResizable.Size size = (IOResizable.Size) evt.getNewValue();
+			    NativeExecutionSupport.this.sizeChanged(size.cells, size.pixels);
+			}
+		    }
+		});
+	    }
 
 	    startReaper();
 	}
@@ -368,6 +515,11 @@ public final class TerminalIOProviderSupport {
 	}
 
 	public void stop() {
+	    nativeProcess.destroy();
+	}
+
+	public void hangup() {
+	    // not sure if destroy is it.
 	    nativeProcess.destroy();
 	}
     }
@@ -466,7 +618,9 @@ public final class TerminalIOProviderSupport {
 
     public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd,
 	                           final boolean restartable,
-				   final boolean internalIOShuttle) {
+	                           final boolean hupOnClose,
+				   final boolean internalIOShuttle,
+				   final AllowClose allowClose) {
 	if (richExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
@@ -478,14 +632,14 @@ public final class TerminalIOProviderSupport {
 	}
 
 	richExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	InputOutput io = richExecutionSupport.setupIO(iop, ioContainer, title);
+	InputOutput io = richExecutionSupport.setupIO(iop, ioContainer, title, allowClose, hupOnClose);
 
 	richExecutionSupport.execute(cmd);
 	return io;
     }
 
     public void executeShell(IOProvider iop, IOContainer ioContainer) {
-	executeRichCommand(iop, ioContainer, "/bin/bash", false, true);
+	executeRichCommand(iop, ioContainer, "/bin/bash", false, true, true, AllowClose.ALWAYS);
 	/* OLD
 	final String title = "Shell";
 	setupIO(iop, ioContainer, title, false);
@@ -496,7 +650,9 @@ public final class TerminalIOProviderSupport {
 
     public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd,
 	                             final boolean restartable,
-				     final boolean internalIOShuttle) {
+	                             final boolean hupOnClose,
+				     final boolean internalIOShuttle,
+				     final AllowClose allowClose) {
 	if (nativeExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
@@ -509,7 +665,7 @@ public final class TerminalIOProviderSupport {
 	}
 
 	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	InputOutput io = nativeExecutionSupport.setupIO(iop, ioContainer, title);
+	InputOutput io = nativeExecutionSupport.setupIO(iop, ioContainer, title, allowClose, hupOnClose);
 
 	nativeExecutionSupport.execute(cmd);
 	return io;

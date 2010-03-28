@@ -43,78 +43,68 @@ import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
- * Capability of an InputOutput which controls whether it is visible
- * as a tab or not. Note that this is orthogonal to whether the
- * window/TopComponent containing this IO becomes visible or not.
- * <p>
- * Support for this capability not only depends on which IOProvider this IO
- * originated from but also which IOContainer it is contained in.
- * <p>
- * setVisible(true) is roughly equivalent to InutOutput.select().
- * setVisible(false) is equivalent to X'ing the tab or Closing from
- * the context menu. setVisible(false) may fail silently if the IO is not
- * closable.
+ * Capability of InputOutput to help manage and track Stream connections
+ * to an InputOutput.
  * @author ivan
  */
-public abstract class IOVisibility {
+public abstract class IOConnect {
 
-    public static final String PROP_VISIBILITY = "IOVisibility.PROP_VISIBILITY";
+    public static final String PROP_CONNECTED = "IOConnect.PROP_CONNECTED";
 
-    private static IOVisibility find(InputOutput io) {
+    private static IOConnect find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOVisibility.class);
+            return p.getLookup().lookup(IOConnect.class);
         }
         return null;
     }
 
     /**
-     * Control the visibility of this I/O.
-     * setVisible(true) is roughly equivalent to InutOutput.select().
-     * setVisible(false) is equivalent to X'ing the tab or Closing from
-     * the context menu. setVisible(false) may fail silently if the IO is not
-     * closable.
-     * @param visible
-     */
-    public static void setVisible(InputOutput io, boolean visible) {
-	IOVisibility iov = find(io);
-	if (iov != null)
-	    iov.setVisible(visible);
-    }
-
-    /**
-     * Control whether this IO is closable. When closable...
-     * <ul>
-     * <li>The X on the tab goes away
-     * <li>Close actions are disabled
-     * <li>Close all tabs actions will close only closable tabs.
-     * <li>setVisible(false) is ineffective.
-     * </ul>
+     * Return whether any streams are connected to this IO.
+     * <b>
+     * An IO is "disconnected" in it's default state, before any of getOut(),
+     * getErr() or IOTerm.connect() are called.
+     * <b>
+     * An IO is "connected" if any of getOut(), getErr() or
+     * IOTerm.connect() are called.
+     * <b>
+     * An IO is "disconnected" after all of getIn().close(), getErr().close() and
+     * IOTerm.disconnect() or disconnectAll() are called.
+     * <b>
+     * Only a "disconnected" IO is eligible for reuse via
+     * {@link IOPRovider.getIO(String, boolean)}
      * @param io
-     * @param closable
      */
-    public static void setClosable(InputOutput io, boolean closable) {
-	IOVisibility iov = find(io);
-	if (iov != null)
-	    iov.setClosable(closable);
+    public static boolean isConnected(InputOutput io) {
+	IOConnect ioc = find(io);
+	if (ioc != null)
+	    return ioc.isConnected();
+	else
+	    return false;
     }
 
     /**
-     * Checks whether this feature is supported for provided IO.
-     * The availability of this capability also depends on which IOContainer
-     * The IO belongs to.
+     * Disconnects all of getIn() and getOut() and any streams connected
+     * via IOTerm.connect().
+     * @param io
+     * @param continuation See {@link IOTerm.disconnect}.
+     */
+    public static void disconnectAll(InputOutput io, Runnable continuation) {
+	IOConnect ioc = find(io);
+	if (ioc != null)
+	    ioc.disconnectAll(continuation);
+    }
+
+    /**
+     * Checks whether this feature is supported for provided IO
      * @param io IO to check on
      * @return true if supported
      */
     public static boolean isSupported(InputOutput io) {
-	IOVisibility iov = find(io);
-	if (iov == null)
-	    return false;
-	else
-	    return iov.isSupported();
+        return find(io) != null;
     }
 
-    abstract protected void setVisible(boolean visible);
-    abstract protected void setClosable(boolean closable);
-    abstract protected boolean isSupported();
+    abstract protected boolean isConnected();
+
+    abstract protected void disconnectAll(Runnable continuation);
 }
