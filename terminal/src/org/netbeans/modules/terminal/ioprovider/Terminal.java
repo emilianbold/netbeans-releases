@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -75,8 +76,14 @@ import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.modules.terminal.api.IOConnect;
+import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.api.IOVisibilityControl;
 
 import org.netbeans.modules.terminal.ui.TermAdvancedOption;
+import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for
@@ -130,15 +137,15 @@ public final class Terminal extends JComponent {
 
     private String title;
 
-    private boolean closing;
-    private boolean closed;
-
     private boolean visibleInContainer;		// AKA ! weak closed
 
     // AKA ! stream closed
     private boolean outConnected;
     private boolean errConnected;
     private boolean extConnected;
+
+    // properties managed by IOvisibility
+    private boolean closable = true;
 
     private class TermOptionsPCL implements PropertyChangeListener {
 	@Override
@@ -150,7 +157,14 @@ public final class Terminal extends JComponent {
     /**
      * These are messages from IOContainer we are obligated to handle.
      */
-    private class CallBacks implements IOContainer.CallBacks {
+    private class CallBacks implements IOContainer.CallBacks, Lookup.Provider {
+
+	private final Lookup lookup = Lookups.fixed(new MyIOVisibilityControl());
+
+	@Override
+	public Lookup getLookup() {
+	    return lookup;
+	}
 
 	@Override
         public void closed() {
@@ -174,6 +188,19 @@ public final class Terminal extends JComponent {
         public void deactivated() {
             // System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
+
+	private class MyIOVisibilityControl extends IOVisibilityControl {
+
+	    @Override
+	    protected boolean okToClose() {
+		return Terminal.this.okToHide();
+	    }
+
+	    @Override
+	    protected boolean isClosable() {
+		return Terminal.this.isClosable();
+	    }
+	}
     }
 
     /* package */ Terminal(IOContainer ioContainer, TerminalInputOutput tio, Action[] actions, String name) {
@@ -359,6 +386,11 @@ public final class Terminal extends JComponent {
                 return;
             close();
         }
+
+	@Override
+	public boolean isEnabled() {
+	    return closable;
+	}
     }
 
     private final class CopyAction extends AbstractAction {
@@ -449,36 +481,17 @@ public final class Terminal extends JComponent {
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
 
-    private void closeWork() {
-        assert closing;
-        if (closed)
-            return;
-	closed = true;
+    public void close() {
+	if (!isVisibleInContainer())
+	    return;
 	ioContainer.remove(this);
     }
 
-    public void close() {
-        // This makes sure, in the reaping pathway, that we don't hang
-        // about even if we're restartable.
-        closing = true;
-
-	/* LATER
-        if (termProcess != null && !termProcess.isFinished()) {
-            termProcess.hangup();
-            // This should eventually end up in reaperThread.
-        } else
-	 */
-	{
-            closeWork();
-        }
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
     public void setVisibleInContainer(boolean visible) {
+	boolean wasVisible = this.visibleInContainer;
 	this.visibleInContainer = visible;
+	if (visible != wasVisible)
+	    tio.pcs().firePropertyChange(IOVisibility.PROP_VISIBILITY, wasVisible, visible);
     }
 
     public boolean isVisibleInContainer() {
@@ -493,26 +506,50 @@ public final class Terminal extends JComponent {
 	if (outConnected == false)
 	    this.errConnected = false;
 
-	if (isConnected() != wasConnected)
+	if (isConnected() != wasConnected) {
 	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
     }
 
     public void setErrConnected(boolean errConnected) {
 	boolean wasConnected = isConnected();
 	this.errConnected = errConnected;
-	if (isConnected() != wasConnected)
+	if (isConnected() != wasConnected) {
 	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
     }
 
     public void setExtConnected(boolean extConnected) {
 	boolean wasConnected = isConnected();
 	this.extConnected = extConnected;
-	if (isConnected() != wasConnected)
+	if (isConnected() != wasConnected) {
 	    updateName();
+	    tio.pcs().firePropertyChange(IOConnect.PROP_CONNECTED, wasConnected, isConnected());
+	}
     }
 
     public boolean isConnected() {
 	return outConnected || errConnected || extConnected;
+    }
+
+    private boolean okToHide() {
+	try {
+	    tio.vcs().fireVetoableChange(IOVisibility.PROP_VISIBILITY, true, false);
+	} catch (PropertyVetoException ex) {
+	    return false;
+	}
+	return true;
+    }
+
+    public void setClosable(boolean closable) {
+	this.closable = closable;
+	putClientProperty(TabbedPaneFactory.NO_CLOSE_BUTTON, ! closable);
+    }
+
+    public boolean isClosable() {
+	return closable;
     }
 
     private void updateName() {

@@ -40,6 +40,10 @@
 package org.netbeans.modules.terminal;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -48,8 +52,10 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.test.IOTest;
+import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.Exceptions;
@@ -152,6 +158,248 @@ public class FirstTest extends NbTestCase {
 	sleep(4);
     }
 
+    private static final class CloseVetoConfig {
+	public final boolean isClosable;
+	public final boolean registerVetoer;
+	public final boolean closeStreamFirst;
+	public final boolean closeIfDisconnected;
+	public final boolean sayYes;
+
+	public final boolean shouldSeeVetoable;
+	public final boolean shouldBeClosed;
+
+	public CloseVetoConfig(boolean isClosable,
+			       boolean registerVetoer,
+		               boolean closeStreamFirst,
+			       boolean closeIfDisconnected,
+			       boolean sayYes,
+			       boolean shouldSeeVetoable,
+	                       boolean shouldBeClosed) {
+	    this.isClosable = isClosable;
+	    this.registerVetoer = registerVetoer;
+	    this.closeStreamFirst = closeStreamFirst;
+	    this.closeIfDisconnected = closeIfDisconnected;
+	    this.sayYes = sayYes;
+	    this.shouldSeeVetoable = shouldSeeVetoable;
+	    this.shouldBeClosed = shouldBeClosed;
+	}
+
+	public String toString() {
+	    return String.format("isClosable %s\nregisterVetoer %b\ncloseStreamFirst %b\ncloseIfDisconnected %b\nsayYes %b\nshouldSeeVEtoable %b\nshouldBeClosed %b\n",
+		    isClosable, registerVetoer, closeStreamFirst, closeIfDisconnected, sayYes, shouldSeeVetoable, shouldBeClosed);
+	}
+    }
+
+    private static final CloseVetoConfig[] configs = new CloseVetoConfig[] {
+	// Columns:
+	//		isClosable	registerVetoer		sayYes		shouldSeeVetoable
+	//					closeStreamFirst			shouldBeClosed
+	//						closeIfDisconnected
+	// AllowClose.NEVER
+	// never see confirmer never close
+	new CloseVetoConfig(false,	true,	false,	false,	false,		false,	false),
+	new CloseVetoConfig(false,	true,	true,	false,	false,		false,	false),
+	// no vetoer
+	new CloseVetoConfig(false,	false,	false,	false,	false,		false,	false),
+	new CloseVetoConfig(false,	false,	true,	false,	false,		false,	false),
+
+	// AllowClose.ALWAYS
+	new CloseVetoConfig(true,	true,	false, 	false,	false, 		true,	false),
+	new CloseVetoConfig(true,	true,	false, 	false,	true, 		true,	true),
+	new CloseVetoConfig(true,	true,	true, 	false,	false, 		true,	false),
+	new CloseVetoConfig(true,	true,	true, 	false,	true, 		true,	true),
+
+	// AllowClose.DISCONNECTED
+	// still connected need confirmer
+	new CloseVetoConfig(true,	true,	false,	true,	false, 		true,	false),
+	new CloseVetoConfig(true,	true,	false,	true,	true, 		true,	true),
+
+	// no longer connected see vetoable but no confirmer
+	new CloseVetoConfig(true,	true,	true,	true,	false, 		true,	true),
+
+	// no vetoer
+	new CloseVetoConfig(true,	false,	true,	false,	false, 		false,	true),
+	new CloseVetoConfig(true,	false,	false,	false,	false, 		false,	true),
+    };
+
+    private CloseVetoConfig currentCvc = null;
+    private boolean sawVetoable = false;
+    private boolean sawClose = false;
+
+    private void testCloseVeto(CloseVetoConfig cvc) {
+
+	VetoableChangeListener vcl = null;
+	if (cvc.registerVetoer) {
+	    vcl = new VetoableChangeListener() {
+		public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+		    if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY) &&
+			evt.getNewValue().equals(Boolean.FALSE)) {
+
+			sawVetoable = true;
+			InputOutput src = (InputOutput) evt.getSource();
+			if (currentCvc.closeIfDisconnected) {
+			    if (IOConnect.isConnected(src)) {
+				if (! currentCvc.sayYes)
+				    throw new PropertyVetoException("don't close", evt);
+			    } else {
+				// close w/o confirming
+			    }
+			} else {
+			    if (! currentCvc.sayYes)
+				throw new PropertyVetoException("don't close", evt);
+			}
+		    }
+		}
+	    };
+	}
+
+	IONotifier.addVetoableChangeListener(io, vcl);
+	currentCvc = cvc;
+	sawVetoable = false;
+	sawClose = false;
+	try {
+
+	    IOVisibility.setClosable(io, cvc.isClosable);
+	    io.select();
+	    io.getOut().println("Config X\r");
+	    if (cvc.closeStreamFirst)
+		io.getOut().close();
+
+	    // This should first trigger a veto propery change followed by
+	    // an actual property change
+	    IOVisibility.setVisible(io, false);
+
+	    // give it all time to settle down.
+	    sleep(3);
+	    assertTrue("sawVetoable != cvc.shouldSeeVetoable\n" + cvc, sawVetoable == cvc.shouldSeeVetoable);
+	    assertTrue("sawClose != cvc.shouldSeeClose\n" + cvc, sawClose == cvc.shouldBeClosed);
+	} finally {
+	    IONotifier.removeVetoableChangeListener(io, vcl);
+	}
+    }
+
+
+
+    public void testCloseVeto() {
+
+	PropertyChangeListener pcl = new PropertyChangeListener() {
+	    @Override
+	    public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY)) {
+		    assertTrue("property change not on EDT", SwingUtilities.isEventDispatchThread());
+		    assertTrue("Got event '" + evt.getPropertyName() + "' instead of PROP_VISIBILITY",
+			evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY));
+		    visible = (Boolean) evt.getNewValue();
+		    if (visible == false)
+			sawClose = true;
+		} else if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
+		} else {
+		    System.out.printf("Unexpected event '%s'\n", evt.getPropertyName());
+		}
+	    }
+	};
+
+	IONotifier.addPropertyChangeListener(io, pcl);
+
+	try {
+	    for (CloseVetoConfig cvc : configs) {
+		testCloseVeto(cvc);
+	    }
+	} finally {
+	    IONotifier.removePropertyChangeListener(io, pcl);
+	}
+    }
+
+    private void testTitleHelp(InputOutput tio) {
+	// This test doesn't work very well visually because when running
+	// under the testsuite tabs' names always appear in bold irregardless.
+
+	// title should not be in bold
+	tio.getOut().println("testTitle\r");
+
+	// previous getOut() should cause title to become bold
+	// tio.getOut().println("title should be in bold\r");
+	sleep(4);
+
+	if (!IOVisibility.isSupported(tio))
+	    return;
+
+	// will remove tab and attempt to adjust title
+	// should not have problems
+	IOVisibility.setVisible(tio, false);
+	sleep(2);
+
+	// Next time we become visible title should not be bold
+	tio.getOut().close();
+	sleep(2);
+	assertTrue("getOut() still connected after close()", ! IOConnect.isConnected(tio));
+
+	IOVisibility.setVisible(tio, true);
+	sleep(4);
+
+	// Currently unfortunately title is still in bold, but can't
+	// figure why.
+	// When I try in TerminalExamples by hand it works.
+    }
+
+    public void testTitle() {
+
+	testTitleHelp(io);
+	InputOutput io1 = ioProvider.getIO("io1", null, ioContainer);
+	io1.select();
+	testTitleHelp(io1);
+	io1.closeInputOutput();
+    }
+
+    private boolean visible = true;
+
+    public void testVisibilityNotification() {
+	if (!IONotifier.isSupported(io))
+	    return;
+
+	PropertyChangeListener pcl = new PropertyChangeListener() {
+	    @Override
+	    public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY)) {
+		    assertTrue("property change not on EDT", SwingUtilities.isEventDispatchThread());
+		    assertTrue("Got event '" + evt.getPropertyName() + "' instead of PROP_VISIBILITY",
+			evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY));
+		    visible = (Boolean) evt.getNewValue();
+		} else if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
+		} else {
+		    System.out.printf("Unexpected event '%s'\n", evt.getPropertyName());
+		}
+	    }
+	};
+	IONotifier.addPropertyChangeListener(io, pcl);
+
+	// setUp() calls select() so the terminal should be initially visible
+
+	try {
+	    // make it invisible
+	    IOVisibility.setVisible(io, false);
+	    sleep(1);
+	    assertTrue("no visibility property change", visible == false);
+
+	    // make it visible again
+	    IOVisibility.setVisible(io, true);
+	    sleep(1);
+	    assertTrue("no visibility property change", visible == true);
+
+	    // make it invisible again
+	    IOVisibility.setVisible(io, false);
+	    sleep(1);
+	    assertTrue("no visibility property change", visible == false);
+
+	    // make it visible again
+	    IOVisibility.setVisible(io, true);
+	    sleep(1);
+	    assertTrue("no visibility property change", visible == true);
+	} finally {
+	    IONotifier.removePropertyChangeListener(io, pcl);
+	}
+    }
+
     public void testStreamClose() {
 	// getIO(String, boolean newIO=false) reuses an IO
 	// that is not stream-open (i.e. streams never started
@@ -213,24 +461,26 @@ public class FirstTest extends NbTestCase {
     public void testMultiStreamClose() {
 	// One of getOut() or getErr() or IOTerm.connect()
 	// will mark the stream as open.
+	//
 	// Both getOut() and getErr() must be closed and
 	// IOTerm must be disconnecetd for stream to be
 	// considered closed.
+
 	if (defaultProvider) {
-	    System.out.printf("Skipped\n");
+	    System.out.printf("testMultiStreamClose() Skipped\n");
 	    return;
 	}
 
 	// just with out
 	assertTrue("IO not initially stream-closed",
-		   ! IOTest.isStreamConnected(io));
+		   ! IOConnect.isConnected(io));
 	io.getOut().println("Hello to io1\r");
 	assertTrue("IO still stream-closed after getOut()",
-		   IOTest.isStreamConnected(io));
+		   IOConnect.isConnected(io));
 	io.getOut().close();
 	sleep(1);
 	assertTrue("IO not stream-closed after out close",
-		   ! IOTest.isStreamConnected(io));
+		   ! IOConnect.isConnected(io));
 
 	// just with err
 
@@ -240,45 +490,48 @@ public class FirstTest extends NbTestCase {
 	// io.getErr().println("Hello to io1\r");
 	io.getErr();
 	assertTrue("IO still stream-closed after getErr()",
-		   IOTest.isStreamConnected(io));
+		   IOConnect.isConnected(io));
 	io.getErr().close();
 	sleep(1);
 	assertTrue("IO not stream-closed after err close",
-		   ! IOTest.isStreamConnected(io));
+		   ! IOConnect.isConnected(io));
 
-	// using connect
+	// just using connect
 	if (IOTerm.isSupported(io)) {
 	    // just with IOTerm.connect()
 	    IOTerm.connect(io, null, null, null);
 	    assertTrue("IO still stream-closed after connect()",
-		       IOTest.isStreamConnected(io));
+		       IOConnect.isConnected(io));
 	    IOTerm.disconnect(io, null);
 	    sleep(1);
 	    assertTrue("IO not stream-closed after disconnect",
-		       ! IOTest.isStreamConnected(io));
+		       ! IOConnect.isConnected(io));
 	}
 
 
-	// using all three
+	// using all three close in one order
 	assertTrue("IO should be stream-closed before \"all three\" test",
-		   ! IOTest.isStreamConnected(io));
+		   ! IOConnect.isConnected(io));
 	io.getOut().println("Hello to io1\r");
 	io.getErr();		// see above for why no print
 	if (IOTerm.isSupported(io))
 	    IOTerm.connect(io, null, null, null);
 	assertTrue("IO should be stream-open after all 3 streams are open",
-		   IOTest.isStreamConnected(io));
+		   IOConnect.isConnected(io));
 
 	if (IOTerm.isSupported(io))
 	    IOTerm.disconnect(io, null);
+	sleep(1);
 	assertTrue("IO should still be stream-open after disconnect",
-		   IOTest.isStreamConnected(io));
+		   IOConnect.isConnected(io));
 	io.getErr().close();
+	sleep(1);
 	assertTrue("IO should still be stream-open after closing err",
-		   IOTest.isStreamConnected(io));
+		   IOConnect.isConnected(io));
 	io.getOut().close();
+	sleep(1);
 	assertTrue("IO should be stream-closed after closing out",
-		   ! IOTest.isStreamConnected(io));
+		   ! IOConnect.isConnected(io));
     }
 
     public void testWeakClose() {

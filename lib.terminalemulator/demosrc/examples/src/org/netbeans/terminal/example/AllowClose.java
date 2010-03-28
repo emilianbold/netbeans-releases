@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.terminal.example;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-
-import org.openide.util.NbBundle;
-import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
-
 /**
- * Action which runs a command under a shell under a Term component.
+ *
+ * @author ivan
  */
-public class CmdTermAction extends AbstractAction {
+public enum AllowClose {
+     /**
+      * Tab is unclosable.
+      * This will control IOVisibility.setClosable()
+      */
+    NEVER,
 
-    public CmdTermAction() {
-        super(NbBundle.getMessage(CmdTermAction.class, "CTL_CmdTermAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
-    }
-
-    public void actionPerformed(ActionEvent evt) {
-        // Ask user what command they want to run
-        String cmd = JOptionPane.showInputDialog("Command");
-        if (cmd == null || cmd.trim().equals(""))
-            return;
-
-	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
-
-	IOContainer container = TerminalIOProviderSupport.getIOContainer();
-	container = null;	// work with default IO container
-
-        boolean restartable = true;
-	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeRichCommand(iop, container, cmd, restartable, true, true, AllowClose.ALWAYS);
-    }
+    /**
+     * Tab is closable. a vetoableChange() will always be called on
+     * IOVisibility.VISIBILITY.
+     */
+    ALWAYS,
+    /**
+     * Tab is closable. a vetoableChange() will always be called on
+     * IOVisibility.VISIBILITY and it's supposed to allow closing
+     * w/o confirmation if IOConnect.isConnected() is false.
+     */
+    DISCONNECTED
 }

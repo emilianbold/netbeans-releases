@@ -61,6 +61,7 @@ import javax.swing.event.ChangeListener;
 
 import org.netbeans.lib.terminalemulator.support.FindBar;
 import org.netbeans.lib.terminalemulator.support.FindState;
+import org.netbeans.modules.terminal.api.IOVisibilityControl;
 
 import org.netbeans.modules.terminal.api.TerminalContainer;
 
@@ -364,6 +365,26 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
             });
             return;
         }
+
+	CallBacks cb = tabToCb.get(comp);
+
+	if (cb != null && IOVisibilityControl.isSupported(cb)) {
+	    if (IOVisibilityControl.isClosable(cb)) {
+		if (! IOVisibilityControl.okToClose(cb))
+		    return;		// close got vetoed.
+	    } else {
+		// Should usually not get here because all relevant
+		// actions or their peformers should've been disabled.
+		// SHOULD emit a warning
+		return;
+	    }
+
+	}
+
+
+	// SHOULD check if callers of this function assume that it
+	// always succeeds.
+
 	if (soleComponent != null) {
 	    // removing tha last one
 	    assert soleComponent == comp;
@@ -373,7 +394,7 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    // LATER checkTabSelChange();
 	    setFocusable(true);
 	    revalidate();
-	    // ?? repaint()
+	    repaint();	// otherwise term will still stay in view
 	} else if (tabbedPane.getParent() == this) {
 	    assert tabbedPane.getTabCount() > 1;
 	    tabbedPane.remove(comp);
@@ -386,10 +407,15 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    }
 	    revalidate();
 	}
-	CallBacks cb = tabToCb.remove(comp);
 	if (cb != null)
 	    cb.closed();
     }
+
+    private boolean contains (JComponent comp) {
+	return soleComponent == comp ||
+	       tabbedPane.indexOfComponent(comp) != -1;
+    }
+
 
     /**
      * Update out containing TC's window name.
@@ -429,12 +455,17 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	// Use the name field of the component to remember title
 	who.setName(title);
 
+	if (!contains(who)) {
+	    return;
+	}
+
         if (soleComponent != null) {
 	    assert soleComponent == who;
 	    updateWindowName(title);
         } else {
 	    assert tabbedPane.getParent() == this;
 	    updateWindowName(null);
+	    // write thru
             tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
         }
     }
@@ -586,7 +617,12 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public boolean isCloseable(JComponent comp) {
-	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	CallBacks cb = tabToCb.get(comp);
+	if (cb != null && IOVisibilityControl.isSupported(cb)) {
+	    return IOVisibilityControl.isClosable(cb);
+	} else {
+	    return true;
+	}
     }
 
     @Override
