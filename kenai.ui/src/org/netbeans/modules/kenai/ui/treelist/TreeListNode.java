@@ -415,5 +415,25 @@ public abstract class TreeListNode {
         public void stop() {
             t.stop();
         }
+
+        //The usual cell-renderer performance overrides
+        public void repaint() {
+            //do nothing
+        }
+
+        @Override
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            //do nothing
+        }
+
+        @Override
+        public void validate() {
+            //do nothing
+        }
+
+        @Override
+        public void invalidate() {
+            //do nothing
+        }
     }
 }
