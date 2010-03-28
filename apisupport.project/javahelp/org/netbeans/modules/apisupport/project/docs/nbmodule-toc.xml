@@ -76,6 +76,7 @@
                 <tocitem text="Registering the NetBeans Sources and Javadoc" target="apisupport_netbeans_api_javadoc" />
                 <tocitem text="Using the NetBeans Sources and Javadoc" target="apisupport_using_netbeans_api_javadoc" />
                 <tocitem text="Searching for NetBeans APIs" target="apisupport_searching_apis" />
+                <tocitem text="Code Templates for NetBeans APIs" target="apisupport_codetemplates_apis" />
             </tocitem>
         </tocitem>
         <tocitem text="Bundling Supporting Items" >
