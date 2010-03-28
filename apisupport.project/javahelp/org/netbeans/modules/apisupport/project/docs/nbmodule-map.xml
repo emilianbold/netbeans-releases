@@ -191,11 +191,10 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.JavaHelpPanel" url="csh/JavaHelpPanel.html"/>
    
     <!-- ModuleInstallPanel -->
-				<!-- ModuleInstallPanel -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.ModuleInstallPanel" url="csh/ModuleInstallPanel.html"/>
-   
-    
-    
+
+    <!-- AddModulePanel -->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
     <!-- End of "CSH" section -->
 
