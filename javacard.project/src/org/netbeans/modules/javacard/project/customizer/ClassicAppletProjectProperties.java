@@ -192,6 +192,7 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     private static void offerToGenerateProxies(JCProject project) {
         Parameters.notNull("project", project);
+        if (Boolean.getBoolean("JCProject.test")) return; //unit tests
         assert project.kind().isClassic();
         //Do this after everything has been written to disk and with no
         //mutexes held - currently we're inside ProjectManager.mutex().
