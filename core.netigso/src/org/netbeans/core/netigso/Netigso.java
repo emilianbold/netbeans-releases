@@ -38,22 +38,20 @@
  */
 package org.netbeans.core.netigso;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -80,6 +78,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 @ServiceProvider(service = NetigsoFramework.class)
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
+    private static final String[] EMPTY = {};
 
     private Framework framework;
     private NetigsoActivator activator;
@@ -111,7 +110,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             } catch (BundleException ex) {
                 LOG.log(Level.SEVERE, "Cannot start OSGi framework", ex); // NOI18N
             }
-            new NetigsoServices(framework);
+            NetigsoServices ns = new NetigsoServices(framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
         activator.register(preregister);
@@ -152,27 +151,33 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
         try {
-            assert registered.contains(m.getCodeNameBase()) : m.getCodeNameBase();
+            assert registered.containsKey(m.getCodeNameBase()) : m.getCodeNameBase();
             Bundle b = findBundle(m.getCodeNameBase());
             if (b == null) {
                 throw new IOException("Not found bundle:" + m.getCodeNameBase());
             }
             ClassLoader l = new NetigsoLoader(b, m, jar);
             Set<String> pkgs = new HashSet<String>();
-            Enumeration en = b.findEntries("", "", true);
-            while (en.hasMoreElements()) {
-                URL url = (URL) en.nextElement();
-                if (url.getFile().startsWith("/META-INF")) {
-                    continue;
+            String[] knownPkgs = registered.get(m.getCodeNameBase());
+            if (knownPkgs == EMPTY) {
+                Enumeration en = b.findEntries("", "", true);
+                while (en.hasMoreElements()) {
+                    URL url = (URL) en.nextElement();
+                    if (url.getFile().startsWith("/META-INF")) {
+                        continue;
+                    }
+                    pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                 }
-                pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+                registered.put(m.getCodeNameBase(), pkgs.toArray(new String[0]));
+            } else {
+                pkgs.addAll(Arrays.asList(knownPkgs));
             }
             pcl.append(new ClassLoader[]{ l });
             LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
             b.start();
             return pkgs;
         } catch (BundleException ex) {
-            throw (IOException) new IOException("Cannot start " + jar).initCause(ex);
+            throw new IOException("Cannot start " + jar, ex);
         }
     }
 
@@ -204,7 +209,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     //
     // take care about the registered bundles
     //
-    private final Set<String> registered = new HashSet<String>();
+    private final Map<String,String[]> registered = new HashMap<String,String[]>();
 
     private File getNetigsoCache() throws IllegalStateException {
         // Explicitly specify the directory to use for caching bundles.
@@ -227,10 +232,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private void fakeOneModule(Module m, Bundle original) throws IOException {
-        final boolean alreadyPresent = registered.add(m.getCodeNameBase());
-        if (!alreadyPresent && original == null) {
+        if (registered.get(m.getCodeNameBase()) != null && original == null) {
             return;
         }
+        registered.put(m.getCodeNameBase(), EMPTY);
         Bundle b;
         try {
             String symbolicName = (String) m.getAttribute("Bundle-SymbolicName");
@@ -324,13 +329,12 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 deleteRec(f);
                 return;
             }
-            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
-            for (;;) {
-                String line = r.readLine();
-                if (line == null) {
-                    break;
-                }
-                registered.add(line);
+            Properties p = new Properties();
+            p.load(is);
+            for (Map.Entry<Object, Object> entry : p.entrySet()) {
+                String k = (String)entry.getKey();
+                String v = (String)entry.getValue();
+                registered.put(k, v.split(","));
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Cannot read cache", ex);
@@ -339,12 +343,17 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     public void flushCaches(DataOutputStream os) throws IOException {
-        Writer w = new OutputStreamWriter(os);
-        for (String s : registered) {
-            w.write(s);
-            w.write('\n');
+        Properties p = new Properties();
+        for (Map.Entry<String, String[]> entry : registered.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (String s : entry.getValue()) {
+                sb.append(sep);
+                sb.append(s);
+                sep = ",";
+            }
         }
-        w.close();
+        p.store(os, null);
     }
 
     @Override
