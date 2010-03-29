@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.php.spi.phpmodule;
 
+import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
 import org.openide.util.HelpCtx;
 
 /**
@@ -114,12 +116,25 @@ public abstract class PhpModuleCustomizerExtender {
 
     /**
      * Called to extend properties of the given PHP module. This method
-     * is called only if user clicks on the OK button; also, it cannot be called
-     * if {@link #isValid()} is <code>false</code>.
-     * <i>This method should be as fast as possible.</i>
+     * is called in a background thread and only if user clicks on the OK button;
+     * also, it cannot be called if {@link #isValid()} is <code>false</code>.
+     * <p>
+     * <b>Please notice that this method is called under project write lock
+     * so it should finish as fast as possible.</b>
+     * <p>
+     * There are 2 situations that can happen (also simultaneously):
+     * <ol>
+     *  <li><i>a {@link Change}</i> - in such case the code must run in the method itself (it
+     *      must finish before the {@link Change} is returned), or</li>
+     *  <li><i>not a {@link Change}</i> - in this case, if it is a long-running task (e.g. sending e-mail, connecting to a remote server),
+     *      it is recommended to create {@link org.openide.util.RequestProcessor} and run the code in it; the return value is {@code null}.</li>
+     * </ol>
      *
-     * @param  phpModule the PHP module which properties are to be extended; never <code>null</code>
+     * @param phpModule the PHP module which properties are to be extended; never <code>null</code>
+     * @return set of {@link Change changes} that happened in the PHP module; can be {@code null} if no such change happened (more information in method description)
      * @see #isValid()
+     * @see Change
+     * @see PhpModule#getPreferences(Class, boolean)
      */
-    public abstract void save(PhpModule phpModule);
+    public abstract EnumSet<PhpModule.Change> save(PhpModule phpModule);
 }

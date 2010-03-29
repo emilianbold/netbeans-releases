@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
+import java.util.EnumSet;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
@@ -75,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -177,6 +179,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     }
 
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PhpProjectProperties.class.getName(), 2);
 
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
@@ -580,9 +583,40 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     void saveCustomizerExtenders() {
         if (customizerExtenders != null) {
+            final EnumSet<PhpModule.Change> changes = EnumSet.noneOf(PhpModule.Change.class);
             final PhpModule phpModule = project.getPhpModule();
             for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
-                customizerExtender.save(phpModule);
+                EnumSet<PhpModule.Change> change = customizerExtender.save(phpModule);
+                if (change != null) {
+                    changes.addAll(change);
+                }
+            }
+
+            // fire events (background thread, no locks)
+            if (!changes.isEmpty()) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (PhpModule.Change change : changes) {
+                            switch (change) {
+                                case SOURCES_CHANGE:
+                                    project.getSourceRoots().fireChange();
+                                    break;
+                                case TESTS_CHANGE:
+                                    project.getTestRoots().fireChange();
+                                    break;
+                                case SELENIUM_CHANGE:
+                                    project.getSeleniumRoots().fireChange();
+                                    break;
+                                case IGNORED_FILES_CHANGE:
+                                    project.fireIgnoredFilesChange();
+                                    break;
+                                default:
+                                    throw new IllegalStateException("Unknown change: " + change);
+                            }
+                        }
+                    }
+                });
             }
         }
     }
