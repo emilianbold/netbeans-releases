@@ -110,14 +110,6 @@ import org.openide.util.lookup.Lookups;
  */
 public final class Terminal extends JComponent {
 
-//    /**
-//     * Communicates state changes to container (TermTopComponent).
-//     */
-//    interface TerminalListener {
-//        void reaped(Terminal who);
-//        void setTitle(Terminal who, String title);
-//    }
-
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
