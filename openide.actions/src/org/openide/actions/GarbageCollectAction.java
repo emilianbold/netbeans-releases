@@ -46,7 +46,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CallableSystemAction;
 
 import java.awt.*;
-import java.awt.event.*;
 
 
 import javax.swing.*;
@@ -64,14 +63,17 @@ import javax.swing.*;
  * @author Jesse Glick, Tim Boudreau
  */
 public class GarbageCollectAction extends CallableSystemAction {
+    @Override
     public String getName() {
         return NbBundle.getBundle(GarbageCollectAction.class).getString("CTL_GarbageCollect"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(GarbageCollectAction.class);
     }
 
+    @Override
     public void performAction() {
         gc();
     }
@@ -80,6 +82,7 @@ public class GarbageCollectAction extends CallableSystemAction {
         // Can be slow, would prefer not to block on it.
         RequestProcessor.getDefault().post(
             new Runnable() {
+            @Override
                 public void run() {
                     System.gc();
                     System.runFinalization();
@@ -89,10 +92,12 @@ public class GarbageCollectAction extends CallableSystemAction {
         );
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     public Component getToolbarPresenter() {
         return new HeapViewWrapper();
 //        return new MemButton();
@@ -104,18 +109,22 @@ public class GarbageCollectAction extends CallableSystemAction {
             setLayout(null);
         }
         
+        @Override
         public boolean isOpaque() {
             return false;
         }
         
+        @Override
         public Dimension getMinimumSize() {
             return calcPreferredSize();
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return calcPreferredSize();
         }
 
+        @Override
         public Dimension getMaximumSize() {
             Dimension pref = calcPreferredSize();
             Container parent = getParent();
