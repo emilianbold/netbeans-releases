@@ -60,6 +60,7 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Voskresensky
  */
 public class ModalMessageDlg extends javax.swing.JPanel {
+    private static final RequestProcessor RP = new RequestProcessor(ModalMessageDlg.class.getName(), 1);
 
     /**
      * allows to display modal dialog with title and message for the period of
@@ -126,7 +127,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         }
         addPanel(parent, dialog, panel);
 
-        RequestProcessor.getDefault().post(new NamedRunnable(title) {
+        RP.post(new NamedRunnable(title) {
             @Override
             public void runImpl() {
                 try {
@@ -180,7 +181,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         }
         addPanel(parent, dialog, panel);
 
-        RequestProcessor.getDefault().post(new NamedRunnable(title) {
+        RP.post(new NamedRunnable(title) {
             @Override
             public void runImpl() {
                 try {
