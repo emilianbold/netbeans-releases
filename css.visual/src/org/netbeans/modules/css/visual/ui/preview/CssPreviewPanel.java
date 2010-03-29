@@ -71,7 +71,7 @@ import org.xhtmlrenderer.swing.NaiveUserAgent;
 public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewComponent {
 
     private static final Logger LOGGER = Logger.getLogger(CssPreviewPanel.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+    private static final boolean LOG_FINE = LOGGER.isLoggable(Level.FINE);
     private Handler FS_HANDLER = new FlyingSaucerLoggersHandler();
     private XHTMLPanel xhtmlPanel;
     private Runnable panelCreatedTask;
@@ -179,16 +179,16 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
         @Override
         public void publish(LogRecord record) {
-            if (LOG) {
+            if (LOG_FINE) {
                 //set log level to INFO to prevent the exceptions
                 //popping up in a netbeans exceptions dialog
-                record.setLevel(Level.INFO);
+                record.setLevel(Level.FINE);
                 LOGGER.log(record);
                 //log the exception message to output
-                LOGGER.log(Level.WARNING, record.getMessage());
+                LOGGER.log(Level.INFO, record.getMessage());
                 //...and to the status bar
-                StatusDisplayer.getDefault().setStatusText(record.getMessage());
             }
+            StatusDisplayer.getDefault().setStatusText(record.getMessage());
         }
 
         @Override
@@ -218,8 +218,8 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
             try {
                 super.paintComponent(g);
             } catch (Throwable e) {
-                if (LOG) {
-                    LOGGER.log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                if (LOG_FINE) {
+                    LOGGER.log(Level.FINE, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
                 }
                 CssPreviewTopComponent.getDefault().setError();
             }
