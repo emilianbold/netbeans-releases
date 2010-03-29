@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <package>org.xhtmlrenderer.extend</package>
                 <package>org.xhtmlrenderer.simple</package>
                 <package>org.xhtmlrenderer.swing</package>
+                <package>org.xhtmlrenderer.event</package>
                 <package>org.xhtmlrenderer.util</package>
             </friend-packages>
             <class-path-extension>
