@@ -198,13 +198,13 @@ public final class CompletionSupport implements DocumentListener {
             return 0;
         }
 //        if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos)) {
-//            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
-//                return lastSeparatorOffset;
-//            }
-//            lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
-//            return lastSeparatorOffset;
+            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
+                return lastSeparatorOffset;
+            }
+            lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+            return lastSeparatorOffset;
 //        } else {
-        return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+//            return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
 //        }
     }
 

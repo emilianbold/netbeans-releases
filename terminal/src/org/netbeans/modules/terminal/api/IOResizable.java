@@ -50,7 +50,7 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOResizable {
 
-    public static final String PROP_SIZE = "IOResizable.PROP_SIZE";
+    public static final String PROP_SIZE = "IOResizable.PROP_SIZE"; // NOI18N
 
     public static final class Size {
 	public final Dimension cells;
