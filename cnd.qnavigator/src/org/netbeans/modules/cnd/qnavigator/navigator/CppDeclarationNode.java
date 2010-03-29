@@ -144,11 +144,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         }
 
         if(CsmKindUtilities.isNamespaceDefinition(object)) {
-            return 0*0+2;
+            return 0*10+2;
         } else if(CsmKindUtilities.isNamespaceAlias(object)) {
-            return 0*0+0;
+            return 0*10+0;
         } else if(CsmKindUtilities.isUsing(object)) {
-            return 0*0+1;
+            return 0*10+1;
+        } else if(CsmKindUtilities.isModule(object)) {
+            return 0*10+3;
+        } else if(CsmKindUtilities.isProgram(object)) {
+            return 0*10+4;
         } else if(CsmKindUtilities.isClass(object)) {
             return 1*10+1;
         } else if(CsmKindUtilities.isFriendClass(object)) {
