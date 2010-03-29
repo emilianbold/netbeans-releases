@@ -938,8 +938,9 @@ public abstract class TreeView extends JScrollPane {
         }
 
         showWaitCursor(true);
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        // not sure whenter throughput 1 is OK...
+        ViewUtil.uiProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     node.getChildren().getNodesCount(true);
@@ -1229,6 +1230,7 @@ public abstract class TreeView extends JScrollPane {
             });
         }
 
+        @Override
         public synchronized void treeExpanded(TreeExpansionEvent ev) {
             VisualizerNode vn = (VisualizerNode) ev.getPath().getLastPathComponent();
             visHolder.add(vn.getChildren());
@@ -1305,9 +1307,10 @@ public abstract class TreeView extends JScrollPane {
 
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
-            scheduled = RequestProcessor.getDefault().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
+            scheduled = ViewUtil.uiProcessor().post(new Request(ev.getPath()), 250); // hope that all children are there after this time
         }
 
+        @Override
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
             class Request implements Runnable {
                 private TreePath path;
@@ -1369,7 +1372,7 @@ public abstract class TreeView extends JScrollPane {
             // It is OK to use multithreaded shared RP as the requests
             // will be serialized in event queue later
             // bugfix #37420, children of all collapsed folders will be throw out
-            RequestProcessor.getDefault().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
+            ViewUtil.uiProcessor().post(new Request(ev.getPath()), TIME_TO_COLLAPSE);
         }
 
         /* Called whenever the value of the selection changes.
