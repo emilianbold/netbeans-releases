@@ -87,13 +87,19 @@ public final class HostInfoUtils {
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
+     *
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws IOException if host, identified by this execution
+     *
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected or operation was terminated.
+     *
+     * @throws IOException if the thread was interrupted.
+     * In this case the getCause() method will return InterruptedException.
+     * TODO: it shall throw InterruptedException instead
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
-            throws IOException {
+            throws ConnectException, IOException {
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -109,7 +115,7 @@ public final class HostInfoUtils {
             try {
                 fileExists = npb.call().waitFor() == 0;
             } catch (InterruptedException ex) {
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex.getMessage(), ex);
             }
         }
 
