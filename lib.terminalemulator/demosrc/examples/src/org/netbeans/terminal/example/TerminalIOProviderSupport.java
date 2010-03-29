@@ -33,7 +33,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
+// OLD import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
 import org.netbeans.modules.terminal.api.IOConnect;
@@ -434,7 +434,7 @@ public final class TerminalIOProviderSupport {
     private static final class NativeExecutionSupport extends ExecutionSupport {
 	private String cmd;
 	private NativeProcess nativeProcess;
-	private PtyImplementation impl;
+	// OLD private PtyImplementation impl;
 
 	public void execute(String cmd) {
 	    this.cmd = cmd;
@@ -472,14 +472,14 @@ public final class TerminalIOProviderSupport {
 	    org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty
 	    pty = PtySupport.getPty(nativeProcess);
 	    PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-	    impl = (PtyImplementation) ptyImpl;
+	    // OLD impl = (PtyImplementation) ptyImpl;
 	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
 		IOTerm.connect(io,
-			       impl.getOutputStream(),
-			       impl.getInputStream(),
+			       ptyImpl.getOutputStream(),
+			       ptyImpl.getInputStream(),
 			       null);
 	    } else {
-		startShuttle(impl.getOutputStream(), impl.getInputStream());
+		startShuttle(ptyImpl.getOutputStream(), ptyImpl.getInputStream());
 	    }
 
 	    if (IOResizable.isSupported(io)) {
