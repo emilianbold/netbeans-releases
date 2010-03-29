@@ -33,7 +33,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
-// OLD import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
 import org.netbeans.modules.terminal.api.IOConnect;
@@ -43,6 +42,7 @@ import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.terminal.example.Config.AllowClose;
 import org.netbeans.terminal.example.topcomponent.TerminalTopComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -247,10 +247,9 @@ public final class TerminalIOProviderSupport {
 	public final InputOutput setupIO(IOProvider iop,
 			     IOContainer ioContainer,
 			     String title,
-			     AllowClose allowClose,
-			     boolean hupOnClose) {
-	    this.allowClose = allowClose;
-	    this.hupOnClose = hupOnClose;
+			     Config config) {
+	    this.allowClose = config.getAllowClose();
+	    this.hupOnClose = config.isHUPOnClose();
 	    Action[] actions = null;
 	    if (isRestartable()) {
 		actions = new Action[] {rerunAction, stopAction};
@@ -616,58 +615,40 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer, String cmd,
-	                           final boolean restartable,
-	                           final boolean hupOnClose,
-				   final boolean internalIOShuttle,
-				   final AllowClose allowClose) {
+    public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer, Config config) {
 	if (richExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
-	final String title = "Cmd: " + cmd;
-	if (restartable) {
+	final String title = "Cmd: " + config.getCommand();
+	if (config.isRestartable()) {
 	    Action stopAction = new StopAction(richExecutionSupport);
 	    Action rerunAction = new RerunAction(richExecutionSupport);
 	    richExecutionSupport.setRestartable(stopAction, rerunAction);
 	}
 
-	richExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	InputOutput io = richExecutionSupport.setupIO(iop, ioContainer, title, allowClose, hupOnClose);
+	richExecutionSupport.setInternalIOShuttle(config.getIOShuttling() == Config.IOShuttling.INTERNAL);
+	InputOutput io = richExecutionSupport.setupIO(iop, ioContainer, title, config);
 
-	richExecutionSupport.execute(cmd);
+	richExecutionSupport.execute(config.getCommand());
 	return io;
     }
 
-    public void executeShell(IOProvider iop, IOContainer ioContainer) {
-	executeRichCommand(iop, ioContainer, "/bin/bash", false, true, true, AllowClose.ALWAYS);
-	/* OLD
-	final String title = "Shell";
-	setupIO(iop, ioContainer, title, false);
-	Program program = new Shell();
-	startProgram(program, false);
-	 */
-    }
-
-    public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer, String cmd,
-	                             final boolean restartable,
-	                             final boolean hupOnClose,
-				     final boolean internalIOShuttle,
-				     final AllowClose allowClose) {
+    public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer, Config config) {
 	if (nativeExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
-	final String title = "Cmd: " + cmd;
+	final String title = "Cmd: " + config.getCommand();
 
-	if (restartable) {
+	if (config.isRestartable()) {
 	    Action stopAction = new StopAction(nativeExecutionSupport);
 	    Action rerunAction = new RerunAction(nativeExecutionSupport);
 	    nativeExecutionSupport.setRestartable(stopAction, rerunAction);
 	}
 
-	nativeExecutionSupport.setInternalIOShuttle(internalIOShuttle);
-	InputOutput io = nativeExecutionSupport.setupIO(iop, ioContainer, title, allowClose, hupOnClose);
+	nativeExecutionSupport.setInternalIOShuttle(config.getIOShuttling() == Config.IOShuttling.INTERNAL);
+	InputOutput io = nativeExecutionSupport.setupIO(iop, ioContainer, title, config);
 
-	nativeExecutionSupport.execute(cmd);
+	nativeExecutionSupport.execute(config.getCommand());
 	return io;
     }
 }
