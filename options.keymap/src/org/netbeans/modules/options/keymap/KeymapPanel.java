@@ -96,34 +96,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter = new TableSorter(getModel());
         initComponents();
         specialkeyList = new SpecialkeyPanel(this, searchSCField);
-        actionsTable = new JTable() {
-            int lastRow;
-            int lastColumn;
-
-            @Override
-            public boolean editCellAt(int row, int column) {
-                lastRow = row;
-                lastColumn = column;
-                
-                boolean editCellAt = super.editCellAt(row, column);
-                ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
-               return editCellAt;
-            }
-
-            @Override
-            protected void processKeyEvent(KeyEvent e) {
-
-                if (!isEditing())
-                    super.processKeyEvent(e);
-                else {
-                    Component component = ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent();
-                    component.requestFocus();
-                    component.dispatchEvent(new KeyEvent(component, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar()));
-                }
-            }
-        };
-        actionsTable.setModel(sorter);
-        jScrollPane1.setViewportView(actionsTable);
 
         sorter.setTableHeader(actionsTable.getTableHeader());
         sorter.getTableHeader().setReorderingAllowed(false);
@@ -200,6 +172,33 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         manageButton.addActionListener(this);
     }
 
+    private class KeymapTable extends JTable {
+        int lastRow;
+        int lastColumn;
+
+        @Override
+        public boolean editCellAt(int row, int column) {
+            lastRow = row;
+            lastColumn = column;
+
+            boolean editCellAt = super.editCellAt(row, column);
+            ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
+           return editCellAt;
+        }
+
+        @Override
+        protected void processKeyEvent(KeyEvent e) {
+
+            if (!isEditing())
+                super.processKeyEvent(e);
+            else {
+                Component component = ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent();
+                component.requestFocus();
+                component.dispatchEvent(new KeyEvent(component, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar()));
+            }
+        }
+    }
+
     //todo: merge with update
     private void narrowByShortcut() {
         if (searchSCField.getText().length() != 0) {
@@ -224,8 +223,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     }
 
     static KeymapViewModel getModel() {
-        if (keymapModel == null)
-            keymapModel = new KeymapViewModel();
+        if (keymapModel == null) {
+            KeymapViewModel tmpModel = new KeymapViewModel();
+            synchronized (KeymapPanel.class) {
+                keymapModel = tmpModel;
+            }
+        }
         return keymapModel;
     }
 
@@ -336,7 +339,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         cbProfile = new javax.swing.JComboBox();
         manageButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        actionsTable = new javax.swing.JTable();
+        actionsTable = new KeymapTable();
         spShortcuts = new javax.swing.JScrollPane();
         liShortcuts = new javax.swing.JList();
         jSeparator1 = new javax.swing.JSeparator();

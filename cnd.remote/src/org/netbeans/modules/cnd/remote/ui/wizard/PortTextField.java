@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,68 +34,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.openide.explorer.view;
+package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
-import javax.swing.plaf.UIResource;
-import org.openide.util.RequestProcessor;
+import java.awt.event.KeyEvent;
+import java.text.NumberFormat;
+import javax.swing.JFormattedTextField;
 
 /**
- * Utility class
  *
- * @author S. Aubrecht
+ * @author ak119685
  */
-class ViewUtil {
-    
-    public static final boolean isAquaLaF =
-            "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+public final class PortTextField extends JFormattedTextField {
 
-    private static final boolean useDefaultBackground =
-            Boolean.getBoolean("nb.explorerview.aqua.defaultbackground"); //NOI18N
+    final static String badchars = "-`~!@#$%^&*()_+=\\|\"':;?/>.<, "; // NOI18N
+    final static NumberFormat format;
 
-    private static final RequestProcessor RP = new RequestProcessor("Explorer Views"); // NOI18N
-
-    private ViewUtil() {
+    static {
+        format = NumberFormat.getInstance();
+        format.setMinimumIntegerDigits(2);
+        format.setMaximumIntegerDigits(6);
+        format.setGroupingUsed(false);
+        format.setParseIntegerOnly(true);
     }
 
-    static RequestProcessor uiProcessor() {
-        return RP;
+    public PortTextField() {
+        super(format);
     }
 
-    /**
-     * Change background of given component to light gray on Mac look and feel
-     * when the component is in a tabbed container and its background hasn't been
-     * already changed (is instance of UIResource).
-     * @param c
-     */
-    static void adjustBackground( JComponent c ) {
-        if( !isAquaLaF || useDefaultBackground )
+    @Override
+    public void processKeyEvent(KeyEvent ev) {
+        char c = ev.getKeyChar();
+
+        if ((Character.isLetter(c) && !ev.isAltDown()) || badchars.indexOf(c) > -1) {
+            ev.consume();
             return;
-
-        if( !isInTabbedContainer(c) )
-            return;
-
-        Color currentBackground = c.getBackground();
-        if( currentBackground instanceof UIResource ) {
-            c.setBackground(UIManager.getColor("NbExplorerView.background"));
         }
-    }
 
-
-    private static boolean isInTabbedContainer( Component c ) {
-        Component parent = c.getParent();
-        while( null != parent ) {
-            if( parent instanceof JComponent
-                    && "TabbedContainerUI".equals( ((JComponent)parent).getUIClassID() ) ) //NOI18N
-                return true;
-            parent = parent.getParent();
-        }
-        return false;
+        super.processKeyEvent(ev);
     }
 }
