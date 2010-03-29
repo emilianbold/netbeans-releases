@@ -232,6 +232,7 @@ public final class ConnectionManager {
             Session session = sessions.remove(env);
             if (session != null) {
                 session.disconnect();
+                fireDisconnected(env);
             }
         }
     }
@@ -440,6 +441,12 @@ public final class ConnectionManager {
     private void fireConnected(ExecutionEnvironment execEnv) {
         for (ConnectionListener connectionListener : connectionListeners) {
             connectionListener.connected(execEnv);
+        }
+    }
+
+    private void fireDisconnected(ExecutionEnvironment execEnv) {
+        for (ConnectionListener connectionListener : connectionListeners) {
+            connectionListener.disconnected(execEnv);
         }
     }
 
