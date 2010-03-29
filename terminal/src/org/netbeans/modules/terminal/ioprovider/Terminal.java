@@ -80,7 +80,7 @@ import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.IOVisibilityControl;
 
-import org.netbeans.modules.terminal.ui.TermAdvancedOption;
+import org.netbeans.modules.terminal.TermAdvancedOption;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
