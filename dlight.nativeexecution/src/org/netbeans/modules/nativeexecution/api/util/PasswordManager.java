@@ -47,13 +47,12 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.Encrypter;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 public final class PasswordManager {
 
-    private static final boolean useKeyringAPI = true;
     private static final boolean keepPasswordsInMemory = true;
     private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
@@ -70,48 +69,36 @@ public final class PasswordManager {
 
     public char[] get(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        Encrypter crypter = new Encrypter(KEY_PREFIX+key);
         if (keepPasswordsInMemory) {
             String cachedPassword = cache.get(key);
             if (cachedPassword != null) {
-                return crypter.decrypt(cachedPassword).toCharArray();
+                return cachedPassword.toCharArray();
             }
         }
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (stored) {
-            if (useKeyringAPI) {
-                char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
-                if (keepPasswordsInMemory && keyringPassword != null) {
-                     String encryptedPasswordToStore = String.valueOf(crypter.encrypt(keyringPassword));
-                     cache.put(key, encryptedPasswordToStore);
-                }
-                return keyringPassword;
-            } else {
-                String storedEncryptedPassword = NbPreferences.forModule(PasswordManager.class).get(KEY_PREFIX + key, null);
-                if (keepPasswordsInMemory && storedEncryptedPassword != null) {
-                    cache.put(key, storedEncryptedPassword);
-                    return crypter.decrypt(storedEncryptedPassword.toCharArray());
-                }
-                return null;
+            char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
+            if (keepPasswordsInMemory && keyringPassword != null) {
+                 cache.put(key, String.valueOf(keyringPassword));
             }
+            return keyringPassword;
         }
         return null;
     }
 
     public void put(ExecutionEnvironment execEnv, char[] password) {
         String key = execEnv.toString();
-        Encrypter crypter = new Encrypter(KEY_PREFIX+key);
-        String encryptedPasswordToStore = String.valueOf(crypter.encrypt(password));
         if (keepPasswordsInMemory) {
-            cache.put(key, encryptedPasswordToStore);
+            if (password != null) {
+                cache.put(key, String.valueOf(password));
+            } else {
+                cache.put(key, null);
+            }
         }
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
-            if (useKeyringAPI) {
-                Keyring.save(KEY_PREFIX + key, password, "Password for "+execEnv.getDisplayName()); // NOI18N
-            } else {
-                NbPreferences.forModule(PasswordManager.class).put(KEY_PREFIX + key, String.valueOf(encryptedPasswordToStore));
-            }
+            Keyring.save(KEY_PREFIX + key, password,
+                    NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
         }
     }
 
@@ -121,11 +108,7 @@ public final class PasswordManager {
             cache.remove(key);
         }
         NbPreferences.forModule(PasswordManager.class).remove(STORE_PREFIX + key);
-        if (useKeyringAPI) {
-            Keyring.delete(KEY_PREFIX + key);
-        } else {
-            NbPreferences.forModule(PasswordManager.class).remove(KEY_PREFIX + key);
-        }
+        Keyring.delete(KEY_PREFIX + key);
     }
 
     public void setServerList(List<ExecutionEnvironment> envs) {
@@ -140,17 +123,9 @@ public final class PasswordManager {
             for (String aKey : allKeys) {
                 if (!keys.contains(aKey)){
                     if (aKey.startsWith(STORE_PREFIX)) {
-                        NbPreferences.forModule(PasswordManager.class).remove(aKey);
-                        if (useKeyringAPI) {
-                            Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
-                        }
+                        Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
                         if (keepPasswordsInMemory) {
                             cache.remove(aKey.substring(STORE_PREFIX.length()));
-                        }
-                    } else if (aKey.startsWith(KEY_PREFIX)) {
-                        NbPreferences.forModule(PasswordManager.class).remove(aKey);
-                        if (keepPasswordsInMemory) {
-                            cache.remove(aKey.substring(KEY_PREFIX.length()));
                         }
                     }
                 }

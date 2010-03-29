@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
