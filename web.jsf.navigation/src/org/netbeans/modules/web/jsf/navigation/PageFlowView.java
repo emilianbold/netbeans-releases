@@ -326,8 +326,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         LOG.log(Level.FINE, "clearGraph() took: " + (System.currentTimeMillis() - time)+" ms"); //NOI18N
     }
 
+    private static RequestProcessor requestProcessor = new RequestProcessor();
+    
     private static void destroyPage(final Page page) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        requestProcessor.post(new Runnable() {
 
             @Override
             public void run() {
