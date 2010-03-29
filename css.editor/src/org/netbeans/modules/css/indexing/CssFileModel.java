@@ -53,6 +53,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.css.gsf.CssGSFParser;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
@@ -347,6 +348,11 @@ public class CssFileModel {
     }
 
     public Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+        //do not create entries for virtual generated code
+        if(CssGSFParser.containsGeneratedCode(name)) {
+            return null;
+        }
+
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 

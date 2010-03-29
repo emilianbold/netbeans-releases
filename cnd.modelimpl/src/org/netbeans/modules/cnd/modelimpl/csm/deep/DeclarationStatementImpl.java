@@ -108,7 +108,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         private List<CsmDeclaration> declarators = new ArrayList<CsmDeclaration>();
 
         public DSRenderer() {
-            super((FileImpl) getContainingFile());
+            super((FileImpl) DeclarationStatementImpl.this.getContainingFile());
         }
 
         @Override
