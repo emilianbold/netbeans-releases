@@ -205,7 +205,8 @@ final class RubyMethodTypeInferencer {
                             ? FindersHelper.pickFinderType(callNodeToInfer, name, receiverType)
                             // looks like a query method
                             : ActiveRecordQueryIndexer.getReturnType(name);
-                } else if (RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
+                } else if (ActiveRecordQueryIndexer.isQueryMethod(name)
+                        && RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
                     return ActiveRecordQueryIndexer.getReturnType(name);
                 }
             }
