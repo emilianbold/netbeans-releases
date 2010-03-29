@@ -672,6 +672,11 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 Rectangle start = pane.modelToView(p0);
                 Rectangle end = pane.modelToView(p1);
 
+                if (start.x < 0) {
+                    LOG.log(Level.INFO, "#182545: negative view position: {0} for: {1}", new Object[] {start, p0});
+                    return;
+                }
+
                 int waveLength = end.x + end.width - start.x;
                 if (waveLength > 0) {
                     int[] wf = {0, 0, -1, -1};
