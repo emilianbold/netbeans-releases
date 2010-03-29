@@ -39,115 +39,38 @@
 
 package org.netbeans.modules.terminal;
 
-import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
-import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.Exceptions;
-import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
- *
+ * Test the three kinds of closing as described in terminal/README.close_semantics
  * @author ivan
  */
-public class FirstTest extends NbTestCase {
-
-    private JFrame frame;
-    private JComponent actualContainer;
-    private IOContainer ioContainer;
-    private IOProvider ioProvider;
-    private InputOutput io;
-
-    boolean defaultContainer = false;
-    // LATER: my IOContainer doesn't do well with output2 IOProvider
-    boolean defaultProvider = false;
+public class T1_Close_Test extends TestSupport {
 
 
-    public FirstTest(String testName) {
+    public T1_Close_Test(String testName) {
 	super(testName);
     }
 
-    private static void sleep(int seconds) {
-	try {
-	    Thread.sleep(seconds * 1000);
-	} catch(InterruptedException x) {
-	    fail("sleep interrupted");
-	}
-    }
 
     @Override
     protected void setUp() throws Exception {
-	System.out.printf("setUp()\n");
-
-	if (defaultContainer) {
-	    ioContainer = IOContainer.getDefault();
-	    actualContainer = defaultContainer(ioContainer);
-	} else {
-	    TerminalContainer tc = TerminalContainer.create(null, "Test");
-	    actualContainer = tc;
-	    ioContainer = tc.ioContainer();
-	}
-
-        SwingUtilities.invokeAndWait(new Runnable() {
-	    @Override
-            public void run() {
-
-		frame = new JFrame();
-		frame.getContentPane().setLayout(new BorderLayout());
-		frame.getContentPane().add(actualContainer, BorderLayout.CENTER);
-		frame.setBounds(20, 20, 700, 300);
-		frame.setVisible(true);
-
-	    }
-	});
-
-	if (defaultProvider) {
-	    ioProvider = IOProvider.getDefault();
-	    assertNotNull ("Could not find IOProvider", ioProvider);
-	} else {
-	    ioProvider = IOProvider.get("Terminal");
-	    assertNotNull ("Could not find IOProvider", ioProvider);
-	    assertTrue("Got default IOProvider", ioProvider != IOProvider.getDefault());
-	}
-	io = ioProvider.getIO("test", null, ioContainer);
-	assertNotNull ("Could not get InputOutput", io);
-	io.select();
+	super.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
-	System.out.printf("tearDown()\n");
-
-	io.closeInputOutput();
-	io = null;
-	ioProvider = null;
-	ioContainer = null;
-	actualContainer = null;
-
-        SwingUtilities.invokeAndWait(new Runnable() {
-	    @Override
-            public void run() {
-		frame.dispose();
-		frame = null;
-	    }
-	});
+	super.tearDown();
     }
 
     public void testHello() {
@@ -158,157 +81,6 @@ public class FirstTest extends NbTestCase {
 	sleep(4);
     }
 
-    private static final class CloseVetoConfig {
-	public final boolean isClosable;
-	public final boolean registerVetoer;
-	public final boolean closeStreamFirst;
-	public final boolean closeIfDisconnected;
-	public final boolean sayYes;
-
-	public final boolean shouldSeeVetoable;
-	public final boolean shouldBeClosed;
-
-	public CloseVetoConfig(boolean isClosable,
-			       boolean registerVetoer,
-		               boolean closeStreamFirst,
-			       boolean closeIfDisconnected,
-			       boolean sayYes,
-			       boolean shouldSeeVetoable,
-	                       boolean shouldBeClosed) {
-	    this.isClosable = isClosable;
-	    this.registerVetoer = registerVetoer;
-	    this.closeStreamFirst = closeStreamFirst;
-	    this.closeIfDisconnected = closeIfDisconnected;
-	    this.sayYes = sayYes;
-	    this.shouldSeeVetoable = shouldSeeVetoable;
-	    this.shouldBeClosed = shouldBeClosed;
-	}
-
-	public String toString() {
-	    return String.format("isClosable %s\nregisterVetoer %b\ncloseStreamFirst %b\ncloseIfDisconnected %b\nsayYes %b\nshouldSeeVEtoable %b\nshouldBeClosed %b\n",
-		    isClosable, registerVetoer, closeStreamFirst, closeIfDisconnected, sayYes, shouldSeeVetoable, shouldBeClosed);
-	}
-    }
-
-    private static final CloseVetoConfig[] configs = new CloseVetoConfig[] {
-	// Columns:
-	//		isClosable	registerVetoer		sayYes		shouldSeeVetoable
-	//					closeStreamFirst			shouldBeClosed
-	//						closeIfDisconnected
-	// AllowClose.NEVER
-	// never see confirmer never close
-	new CloseVetoConfig(false,	true,	false,	false,	false,		false,	false),
-	new CloseVetoConfig(false,	true,	true,	false,	false,		false,	false),
-	// no vetoer
-	new CloseVetoConfig(false,	false,	false,	false,	false,		false,	false),
-	new CloseVetoConfig(false,	false,	true,	false,	false,		false,	false),
-
-	// AllowClose.ALWAYS
-	new CloseVetoConfig(true,	true,	false, 	false,	false, 		true,	false),
-	new CloseVetoConfig(true,	true,	false, 	false,	true, 		true,	true),
-	new CloseVetoConfig(true,	true,	true, 	false,	false, 		true,	false),
-	new CloseVetoConfig(true,	true,	true, 	false,	true, 		true,	true),
-
-	// AllowClose.DISCONNECTED
-	// still connected need confirmer
-	new CloseVetoConfig(true,	true,	false,	true,	false, 		true,	false),
-	new CloseVetoConfig(true,	true,	false,	true,	true, 		true,	true),
-
-	// no longer connected see vetoable but no confirmer
-	new CloseVetoConfig(true,	true,	true,	true,	false, 		true,	true),
-
-	// no vetoer
-	new CloseVetoConfig(true,	false,	true,	false,	false, 		false,	true),
-	new CloseVetoConfig(true,	false,	false,	false,	false, 		false,	true),
-    };
-
-    private CloseVetoConfig currentCvc = null;
-    private boolean sawVetoable = false;
-    private boolean sawClose = false;
-
-    private void testCloseVeto(CloseVetoConfig cvc) {
-
-	VetoableChangeListener vcl = null;
-	if (cvc.registerVetoer) {
-	    vcl = new VetoableChangeListener() {
-		public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-		    if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY) &&
-			evt.getNewValue().equals(Boolean.FALSE)) {
-
-			sawVetoable = true;
-			InputOutput src = (InputOutput) evt.getSource();
-			if (currentCvc.closeIfDisconnected) {
-			    if (IOConnect.isConnected(src)) {
-				if (! currentCvc.sayYes)
-				    throw new PropertyVetoException("don't close", evt);
-			    } else {
-				// close w/o confirming
-			    }
-			} else {
-			    if (! currentCvc.sayYes)
-				throw new PropertyVetoException("don't close", evt);
-			}
-		    }
-		}
-	    };
-	}
-
-	IONotifier.addVetoableChangeListener(io, vcl);
-	currentCvc = cvc;
-	sawVetoable = false;
-	sawClose = false;
-	try {
-
-	    IOVisibility.setClosable(io, cvc.isClosable);
-	    io.select();
-	    io.getOut().println("Config X\r");
-	    if (cvc.closeStreamFirst)
-		io.getOut().close();
-
-	    // This should first trigger a veto propery change followed by
-	    // an actual property change
-	    IOVisibility.setVisible(io, false);
-
-	    // give it all time to settle down.
-	    sleep(3);
-	    assertTrue("sawVetoable != cvc.shouldSeeVetoable\n" + cvc, sawVetoable == cvc.shouldSeeVetoable);
-	    assertTrue("sawClose != cvc.shouldSeeClose\n" + cvc, sawClose == cvc.shouldBeClosed);
-	} finally {
-	    IONotifier.removeVetoableChangeListener(io, vcl);
-	}
-    }
-
-
-
-    public void testCloseVeto() {
-
-	PropertyChangeListener pcl = new PropertyChangeListener() {
-	    @Override
-	    public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY)) {
-		    assertTrue("property change not on EDT", SwingUtilities.isEventDispatchThread());
-		    assertTrue("Got event '" + evt.getPropertyName() + "' instead of PROP_VISIBILITY",
-			evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY));
-		    visible = (Boolean) evt.getNewValue();
-		    if (visible == false)
-			sawClose = true;
-		} else if (evt.getPropertyName().equals(IOResizable.PROP_SIZE)) {
-		} else {
-		    System.out.printf("Unexpected event '%s'\n", evt.getPropertyName());
-		}
-	    }
-	};
-
-	IONotifier.addPropertyChangeListener(io, pcl);
-
-	try {
-	    for (CloseVetoConfig cvc : configs) {
-		testCloseVeto(cvc);
-	    }
-	} finally {
-	    IONotifier.removePropertyChangeListener(io, pcl);
-	}
-    }
 
     private void testTitleHelp(InputOutput tio) {
 	// This test doesn't work very well visually because when running
@@ -572,36 +344,5 @@ public class FirstTest extends NbTestCase {
 	sleep(1);
 
 	sleep(3);
-    }
-
-    /**
-     * Use reflection to extract private IOWindow instance so
-     * we can embed it in a JFrame.
-     */
-    static JComponent defaultContainer(IOContainer ioContainer) {
-        JComponent comp = null;
-        try {
-            try {
-                Field f = ioContainer.getClass().getDeclaredField("provider");
-                f.setAccessible(true);
-                IOContainer.Provider prov = (IOContainer.Provider) f.get(ioContainer);
-                Method m = prov.getClass().getDeclaredMethod("impl", new Class[0]);
-                m.setAccessible(true);
-                comp = (JComponent) m.invoke(prov);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } catch (NoSuchFieldException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return comp;
     }
 }
