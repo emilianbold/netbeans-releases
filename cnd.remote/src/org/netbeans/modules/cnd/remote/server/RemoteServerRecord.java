@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -203,11 +204,17 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public boolean isOnline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.ONLINE;
     }
 
     @Override
     public boolean isOffline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.OFFLINE;
     }
 
