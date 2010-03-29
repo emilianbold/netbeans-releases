@@ -210,7 +210,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
                 }
             }
-            rename((String) evt.getNewValue(), nameWithoutExtension);
+            String oldName = (String) evt.getOldValue();
+            String newName = ((String) evt.getNewValue()).trim();
+            if (!oldName.equals(newName)) {
+                rename(newName, nameWithoutExtension);
+            }
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             // Do nothing (IZ 87557, 94935)
