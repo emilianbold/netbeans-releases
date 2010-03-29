@@ -89,9 +89,6 @@ public class JarXmlModelTest extends CommonTestCase {
                 assertEquals( 6 , model.getModels().size());
                 assertEquals( 6 , model.getFacesConfigs().size());
                 
-                assertNotNull( model.getModels().get( 1 ).getModelSource().
-                        getLookup().lookup( JsfModel.class ));
-                
                 List<ManagedBean> beans = model.getElements( ManagedBean.class );
                 assertEquals( 4 ,beans.size());
                 boolean found = false;
