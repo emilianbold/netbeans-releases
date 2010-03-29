@@ -49,7 +49,7 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOConnect {
 
-    public static final String PROP_CONNECTED = "IOConnect.PROP_CONNECTED";
+    public static final String PROP_CONNECTED = "IOConnect.PROP_CONNECTED"; // NOI18N
 
     private static IOConnect find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
