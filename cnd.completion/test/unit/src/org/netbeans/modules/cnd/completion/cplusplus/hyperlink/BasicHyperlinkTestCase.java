@@ -663,6 +663,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144535.c", 10, 10, "IZ144535.c", 4, 9);
     }
 
+    public void testIZ155577() throws Exception {
+        // Bug 155577 - Code Assistance has problems with #include directives in class definitions
+        performTest("IZ155577.cc", 8, 12, "IZ155577.h", 2, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
