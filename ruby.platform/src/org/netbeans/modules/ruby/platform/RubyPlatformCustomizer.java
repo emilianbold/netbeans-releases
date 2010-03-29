@@ -613,6 +613,7 @@ public class RubyPlatformCustomizer extends JPanel {
     private void addButtonaddPlatform(java.awt.event.ActionEvent evt) {                                      
         JFileChooser chooser = new JFileChooser(RubyPreferences.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
         chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileHidingEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
