@@ -106,12 +106,13 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue(r.hasRun);
     }
 
-    @RandomlyFails // NB-Core-Build #4168: notRun.empty
     public void testSomeTasksNotRunIfShutDown() throws Exception {
         final Object lock = new Object();
         int count = 10;
         final CountDownLatch waitAllLaunched = new CountDownLatch(count);
         final CountDownLatch waitOneFinished = new CountDownLatch(1);
+        final RequestProcessor notificationThread = new RequestProcessor("notifier", 1, true, true);
+
         RequestProcessor rp = new RequestProcessor("TestRP", count * 2);
         class R implements Runnable {
 
@@ -131,10 +132,27 @@ public class RequestProcessor180386Test extends NbTestCase {
                     } catch (InterruptedException ex) {
                         return;
                     } finally {
-                        waitOneFinished.countDown();
+                        new N(waitOneFinished).launch();
                     }
                     hasFinished = true;
                 }
+            }
+
+            class N implements Runnable {
+                private final CountDownLatch l;
+                N (CountDownLatch l) {
+                    this.l = l;
+                }
+
+                void launch() {
+                    notificationThread.create(this).schedule(20);
+                }
+
+                @Override
+                public void run() {
+                    l.countDown();
+                }
+
             }
         }
         Set<Future<String>> s = new HashSet<Future<String>>();
@@ -282,13 +300,13 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue (rp.isTerminated());
     }
 
-    @RandomlyFails // NB-Core-Build #4116
     public void testInvokeAll() throws Exception {
         int count = 20;
         final CountDownLatch waitAll = new CountDownLatch(count);
+        final RequestProcessor notificationThread = new RequestProcessor("notifier", 1, true, true);
         final RequestProcessor rp = new RequestProcessor("TestRP", count);
         try {
-            class C implements Callable<String> {
+            class C implements Callable<String>, Runnable {
 
                 private final String result;
                 volatile boolean ran;
@@ -300,8 +318,17 @@ public class RequestProcessor180386Test extends NbTestCase {
                 @Override
                 public String call() throws Exception {
                     ran = true;
-                    waitAll.countDown();
+                    //#182637 - the waiting thread can be notified before
+                    //the Done flag on this runnable's future has been set,
+                    //so ensure this thread's runnable has time to exit
+                    //before we do the notification
+                    notificationThread.create(this).schedule (20);
                     return result;
+                }
+
+                @Override
+                public void run() {
+                    waitAll.countDown();
                 }
             }
             List<C> callables = new ArrayList<C>(count);
@@ -462,28 +489,25 @@ public class RequestProcessor180386Test extends NbTestCase {
         int count = 1000;
         final RequestProcessor rp = new RequestProcessor("TestRP", 20);
         final CountDownLatch latch = new CountDownLatch(count);
+        final Set<Thread> ts = Collections.synchronizedSet(new HashSet<Thread>());
         class C implements Callable<String> {
 
             volatile boolean hasRun;
-            private final String result;
+            private final String name;
 
-            C(String result) {
-                this.result = result;
+            C(String name) {
+                this.name = name;
             }
 
             @Override
             public String call() throws Exception {
                 latch.countDown();
-                if (!"R17".equals(result)) {
-                    try {
-                        //Block all but one thread until threads have entered
-                        latch.await();
-                    } catch (InterruptedException ie) {
-                    }
+                if (!"R17".equals(name)) {
+                    //Block all but one thread until threads have entered
+                    Thread.currentThread().suspend();
                 }
-                Thread.yield();
                 hasRun = true;
-                return result;
+                return name;
             }
         }
         List<C> l = new ArrayList<C>(count);
@@ -504,6 +528,9 @@ public class RequestProcessor180386Test extends NbTestCase {
             }
         }
         assertTrue("Not all " + count + " threads should have completed, but " + runCount + " did.", runCount < count);
+        for (Thread t : ts) {
+            t.resume();
+        }
     }
 
     public void testInvokeAnyWithTimeout() throws Exception {

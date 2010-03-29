@@ -503,7 +503,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
                     }
-                    if (!handler.isServiceElement()) {
+                    if (handler != null && !handler.isServiceElement()) {
                         StreamSource source = new StreamSource(localWsdl.getURL().toExternalForm());
                         try {
                             File wrapperWsdlFile = new File(FileUtil.toFile(localWsdl.getParent()), WsdlWrapperGenerator.getWrapperName(localWsdl.getURL())); //NOI18N

@@ -71,7 +71,7 @@ import static java.util.logging.Level.SEVERE;
  * @author  Marian Petras
  * @author  Tim Boudreau
  */
-final class MatchingObject 
+final class MatchingObject
         implements Comparable<MatchingObject>, PropertyChangeListener {
 
     /** */
@@ -181,6 +181,7 @@ final class MatchingObject
         dataObj.removePropertyChangeListener(this);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
@@ -430,7 +431,7 @@ final class MatchingObject
             }
             return getName().compareToIgnoreCase(o.getName()); // locale?
     }
-    
+
     /**
      * Describes invalidity status of this item.
      */

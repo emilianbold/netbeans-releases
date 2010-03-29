@@ -39,6 +39,10 @@
 
 package org.openide.filesystems;
 
+import javax.swing.JRootPane;
+import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CountDownLatch;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
@@ -50,6 +54,7 @@ import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.RootPaneContainer;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
@@ -242,23 +247,14 @@ public class FileChooserBuilderTest extends NbTestCase {
     }
 
     private static AbstractButton findDefaultButton(Container c) {
-        if (c instanceof AbstractButton && "Snorkelbreath".equals(((AbstractButton) c).getText())) {
-            return (JButton) c;
-        } else {
-            for (Component comp : c.getComponents()) {
-                if (comp instanceof Container) {
-                    AbstractButton result = findDefaultButton((Container) comp);
-                    if (result != null) {
-                        return result;
-                    }
-                }
-            }
+        if (c instanceof RootPaneContainer) {
+            JRootPane root = ((RootPaneContainer) c).getRootPane();
+            return root == null ? null : root.getDefaultButton();
         }
         return null;
     }
 
-    @RandomlyFails // NB-Core-Build #1896
-    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException {
+    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException, InvocationTargetException {
         FileChooserBuilder instance = new FileChooserBuilder("i");
         instance.setDirectoriesOnly(true);
         final File toDir = getWorkDir();
@@ -267,63 +263,78 @@ public class FileChooserBuilderTest extends NbTestCase {
             assertTrue(selDir.mkdirs());
         }
 
-        instance.setApproveText("Snorkelbreath");
         final JFileChooser ch = instance.createFileChooser();
-        class X implements Runnable, AncestorListener {
-            volatile int run = -2;
-            public void run() {
-                run++;
-                System.out.println("  run " + run);
-                switch (run) {
-                    case -1:
-                        break;
-                    case 0:
-                        ch.setCurrentDirectory(toDir);
-                        assertEquals(toDir, ch.getCurrentDirectory());
-                        break;
-                    case 1:
-                        ch.setSelectedFile(selDir);
-                        break;
-                    case 2:
-                        assertTrue(ch.isVisible());
-                        AbstractButton defButton = findDefaultButton(ch.getTopLevelAncestor());
-                        assertNotNull(defButton);
-                        assertTrue(defButton.isEnabled());
-                        defButton.doClick();
-                        break;
-                    case 3:
-                        synchronized (X.this) {
-                            X.this.notifyAll();
-                        }
-                        break;
-                    default:
-                        return;
-                }
-                EventQueue.invokeLater(this);
-            }
+        final CountDownLatch showLatch = new CountDownLatch(1);
+        ch.addAncestorListener (new AncestorListener() {
 
+            @Override
             public void ancestorAdded(AncestorEvent event) {
-                run();
+                if (ch.isShowing()) {
+                    ch.removeAncestorListener(this);
+                    showLatch.countDown();
+                }
             }
 
+            @Override
             public void ancestorRemoved(AncestorEvent event) {
+
             }
 
+            @Override
             public void ancestorMoved(AncestorEvent event) {
+
             }
-        }
 
-        X x = new X();
-        ch.addAncestorListener(x);
-        RequestProcessor.getDefault().post(new Runnable() {
+        });
 
+        final AtomicReference<Object> chooserRes = new AtomicReference<Object>();
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
             public void run() {
-                assertEquals(JFileChooser.APPROVE_OPTION, ch.showOpenDialog(null));
+                Object r = ch.showOpenDialog(null);
+                chooserRes.set(r);
             }
-        }).waitFinished(5000);
-        synchronized (x) {
-            x.wait(5000);
-        }
+
+        });
+
+
+        showLatch.await();
+        EventQueue.invokeAndWait (new Runnable() {
+            @Override
+            public void run() {
+                ch.setCurrentDirectory(toDir);
+            }
+        });
+        EventQueue.invokeAndWait (new Runnable() {
+            @Override
+            public void run() {
+                ch.setSelectedFile (selDir);
+            }
+        });
+        assertTrue (ch.isShowing());
+        final AtomicReference<AbstractButton> btn = new AtomicReference<AbstractButton>();
+        EventQueue.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                AbstractButton defButton = findDefaultButton(ch.getTopLevelAncestor());
+                btn.set(defButton);
+            }
+
+        });
+        assertNotNull(btn.get());
+        assertTrue(btn.get().isEnabled());
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                AbstractButton defButton = btn.get();
+                defButton.doClick();
+            }
+        });
+
+        task.waitFinished();
+        assertEquals(JFileChooser.APPROVE_OPTION, chooserRes.get());
 
         assertEquals(toDir, ch.getCurrentDirectory());
 
