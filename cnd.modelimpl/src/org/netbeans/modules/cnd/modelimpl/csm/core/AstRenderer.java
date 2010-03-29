@@ -72,6 +72,10 @@ public class AstRenderer {
         this.file = fileImpl;
     }
 
+    protected CsmFile getContainingFile() {
+        return file;
+    }
+
     public void render(AST root) {
 //        if (file.getAbsolutePath().toString().endsWith("shared.h")) {
 //            int i = 10;

@@ -1734,16 +1734,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 LCURLY
                 // This stores class name in dictionary
                 {beginClassDefinition(ts, id);}
-                (options{generateAmbigWarnings = false;greedy=false;}:
-                    member_declaration
-                |
-                    // IZ 136081 : Wrong parser recovering in class
-                    balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
-                |
-                    // IZ 138291 : Completion does not work for unfinished constructor
-                    // On unfinished construction we skip some symbols for class parsing process recovery
-                    (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
-                )*
+                class_members
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -1761,6 +1752,26 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             | RCURLY )
             {enclosingClass = saveClass;}
         )
+    ;
+
+class_members
+    :
+    (options{generateAmbigWarnings = false;greedy=false;}:
+        member_declaration
+    |
+        // IZ 136081 : Wrong parser recovering in class
+        balanceCurlies { reportError(new NoViableAltException(LT(0), getFilename())); }
+    |
+        // IZ 138291 : Completion does not work for unfinished constructor
+        // On unfinished construction we skip some symbols for class parsing process recovery
+        (~(LCURLY))! { reportError(new NoViableAltException(LT(0), getFilename())); }
+    )*
+    ;
+
+fix_fake_class_members
+    :
+        class_members
+        { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
     ;
 
 enum_specifier
