@@ -48,6 +48,7 @@ import java.util.prefs.BackingStoreException;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 public final class PasswordManager {
@@ -96,7 +97,8 @@ public final class PasswordManager {
         }
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
-            Keyring.save(KEY_PREFIX + key, password, "Password for "+execEnv.getDisplayName()); // NOI18N
+            Keyring.save(KEY_PREFIX + key, password,
+                    NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
         }
     }
 
