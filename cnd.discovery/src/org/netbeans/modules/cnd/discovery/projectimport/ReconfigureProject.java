@@ -83,6 +83,7 @@ import org.openide.windows.InputOutput;
 public class ReconfigureProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ReconfigureProject.class.getName(), 1);
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
@@ -157,7 +158,7 @@ public class ReconfigureProject {
 
     public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags, final InputOutput io){
         if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true, io);
@@ -412,11 +413,11 @@ public class ReconfigureProject {
         if (configure.endsWith("CMakeLists.txt")){ // NOI18N
             buf.append(" -G \"Unix Makefiles\""); // NOI18N
             buf.append(" -DCMAKE_BUILD_TYPE=Debug"); // NOI18N
-            buf.append(" -DCMAKE_C_COMPILER="+getCCompilerName()); // NOI18N
-            buf.append(" -DCMAKE_CXX_COMPILER="+getCppCompilerName()); // NOI18N
-            buf.append(" -DCMAKE_C_FLAGS_DEBUG="+cCompilerFlags); // NOI18N
-            buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
-            buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
+            buf.append(" -DCMAKE_C_COMPILER=").append(getCCompilerName()); // NOI18N
+            buf.append(" -DCMAKE_CXX_COMPILER=").append(getCppCompilerName()); // NOI18N
+            buf.append(" -DCMAKE_C_FLAGS_DEBUG=").append(cCompilerFlags); // NOI18N
+            buf.append(" -DCMAKE_CXX_FLAGS_DEBUG=").append(cppCompilerFlags); // NOI18N
+            buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG=").append(ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             if (isSunCompiler && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) {
                 buf.append(" -spec solaris-cc"); // NOI18N
@@ -424,17 +425,17 @@ public class ReconfigureProject {
             if (platform == PlatformTypes.PLATFORM_MACOSX) {
                 buf.append(" -spec macx-g++"); // NOI18N
             }
-            buf.append(" QMAKE_CC="+getCCompilerName()); // NOI18N
-            buf.append(" QMAKE_CXX="+getCppCompilerName()); // NOI18N
-            buf.append(" QMAKE_CFLAGS="+cCompilerFlags); // NOI18N
-            buf.append(" QMAKE_CXXFLAGS="+cppCompilerFlags); // NOI18N
-            buf.append(" QMAKE_LDFLAGS="+ldFlags); // NOI18N
+            buf.append(" QMAKE_CC=").append(getCCompilerName()); // NOI18N
+            buf.append(" QMAKE_CXX=").append(getCppCompilerName()); // NOI18N
+            buf.append(" QMAKE_CFLAGS=").append(cCompilerFlags); // NOI18N
+            buf.append(" QMAKE_CXXFLAGS=").append(cppCompilerFlags); // NOI18N
+            buf.append(" QMAKE_LDFLAGS=").append(ldFlags); // NOI18N
         } else {
-            buf.append(" CC="+getCCompilerName()); // NOI18N
-            buf.append(" CXX="+getCppCompilerName()); // NOI18N
-            buf.append(" CFLAGS="+cCompilerFlags); // NOI18N
-            buf.append(" CXXFLAGS="+cppCompilerFlags); // NOI18N
-            buf.append(" LDFLAGS="+ldFlags); // NOI18N
+            buf.append(" CC=").append(getCCompilerName()); // NOI18N
+            buf.append(" CXX=").append(getCppCompilerName()); // NOI18N
+            buf.append(" CFLAGS=").append(cCompilerFlags); // NOI18N
+            buf.append(" CXXFLAGS=").append(cppCompilerFlags); // NOI18N
+            buf.append(" LDFLAGS=").append(ldFlags); // NOI18N
         }
         return buf.toString();
     }

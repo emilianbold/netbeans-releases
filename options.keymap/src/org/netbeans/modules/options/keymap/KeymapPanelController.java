@@ -93,7 +93,7 @@ public final class KeymapPanelController extends OptionsPanelController {
     
     @Override
     public Lookup getLookup () {
-        return Lookups.singleton (getKeymapPanel ().getModel ());
+        return Lookups.singleton (KeymapPanel.getModel ());
     }
     
     public JComponent getComponent (Lookup masterLookup) {

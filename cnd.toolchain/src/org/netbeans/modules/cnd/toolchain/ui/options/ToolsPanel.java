@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
@@ -118,6 +119,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private CompilerSet currentCompilerSet;
     private ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
 
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
@@ -243,7 +245,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         final CompilerSet cs = panel.getCompilerSet();
         updating = true;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        RequestProcessor.getDefault().post(new Runnable(){
+        RP.post(new Runnable(){
             @Override
             public void run() {
                 csm.add(cs);
@@ -361,7 +363,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (!initialized || doInitialize) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             showHideToolchainInitialization(false);
-            RequestProcessor.getDefault().post(new Runnable(){
+            RP.post(new Runnable(){
                 @Override
                 public void run() {
                     try {
@@ -971,7 +973,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    RequestProcessor.getDefault().post(new Runnable() {
+    RP.post(new Runnable() {
 
             @Override
         public void run() {

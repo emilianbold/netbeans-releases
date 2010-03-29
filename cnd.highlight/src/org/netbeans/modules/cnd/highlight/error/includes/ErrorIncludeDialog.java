@@ -109,6 +109,7 @@ import org.openide.util.Utilities;
  */
 public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private static final boolean TRACE_ERROR_STATISTIC = Boolean.getBoolean("cnd.highlight.trace.statistic"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ErrorIncludeDialog.class.getName(), 1);
     private CsmProject baseProject;
     private Dialog parent;
 
@@ -143,6 +144,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                                        NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240))); // NOI18N
         setMinimumSize(new Dimension(320, 240));
         addHierarchyListener(new HierarchyListener() {
+            @Override
             public void hierarchyChanged(HierarchyEvent e) {
                 if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
                     if (!e.getChanged().isVisible()){
@@ -163,9 +165,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         });
     }
 
+    @Override
     public void projectOpened(CsmProject project) {
     }
 
+    @Override
     public void projectClosed(CsmProject project) {
         if (project == baseProject) {
             if (parent !=  null) {
@@ -174,6 +178,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
     }
 
+    @Override
     public void modelChanged(CsmChangeEvent e) {
     }
     
@@ -201,7 +206,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         leftList.setModel(model);
         addListeners();
         if (TRACE_ERROR_STATISTIC) {
-             RequestProcessor.getDefault().post(new Runnable(){
+             RP.post(new Runnable(){
+                @Override
                   public void run() {
                       printStatistic();
                   }
@@ -424,6 +430,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
 
         vertical.addHierarchyListener(new HierarchyListener() {
             private boolean show;
+            @Override
             public void hierarchyChanged(HierarchyEvent e) {
                 if ((HierarchyEvent.SHOWING_CHANGED & e.getChangeFlags()) == HierarchyEvent.SHOWING_CHANGED){
                     JSplitPane p = (JSplitPane)e.getSource();
@@ -443,6 +450,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
 
         pane.addHierarchyListener(new HierarchyListener() {
             private boolean show;
+            @Override
             public void hierarchyChanged(HierarchyEvent e) {
                 if ((HierarchyEvent.SHOWING_CHANGED & e.getChangeFlags()) == HierarchyEvent.SHOWING_CHANGED){
                     JSplitPane p = (JSplitPane)e.getSource();
@@ -465,6 +473,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     
     private void addListeners(){
         leftList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int selected = leftList.getSelectedIndex();
@@ -493,6 +502,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         leftList.setSelectedIndex(0);
         
         rightList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int selected = rightList.getSelectedIndex();
@@ -518,10 +528,13 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         });
         
         leftList.addKeyListener(new KeyListener(){
+            @Override
             public void keyTyped(KeyEvent e) {
             }
+            @Override
             public void keyPressed(KeyEvent e) {
             }
+            @Override
             public void keyReleased(KeyEvent e) {
                 int selected = rightList.getSelectedIndex();
                 if (e.getModifiers()==0 && e.getKeyCode()==KeyEvent.VK_SPACE && selected >= 0){
@@ -541,10 +554,13 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         });
         
         rightList.addKeyListener(new KeyListener(){
+            @Override
             public void keyTyped(KeyEvent e) {
             }
+            @Override
             public void keyPressed(KeyEvent e) {
             }
+            @Override
             public void keyReleased(KeyEvent e) {
                 int selected = rightList.getSelectedIndex();
                 if (e.getModifiers()==0 && e.getKeyCode()==KeyEvent.VK_SPACE && selected >= 0){
@@ -576,11 +592,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             if(found.indexOf('/')>=0){
                 found = found.substring(found.lastIndexOf('/')+1);
             }
-            List result = (List)searchBase.get(found);
+            List<String> result = searchBase.get(found);
             if (result != null){
-                for (Iterator it = result.iterator(); it.hasNext();) {
-                    String elem = (String) it.next();
-                    buf.append(elem+"\n<br>"); // NOI18N
+                for (Iterator<String> it = result.iterator(); it.hasNext();) {
+                    String elem = it.next();
+                    buf.append(elem).append("\n<br>"); // NOI18N
                 }
             }
         } else {
@@ -654,14 +670,14 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
         if (source.lastIndexOf('.')>0){
             source = source.substring(0,source.lastIndexOf('.'))+".o";  // NOI18N
-            List result = (List)searchBase.get(source);
+            List<String> result = searchBase.get(source);
             if (result != null){
-                for (Iterator it = result.iterator(); it.hasNext();) {
-                    String elem = (String) it.next();
-                    buf.append(elem+"\n<br>"); // NOI18N
+                for (Iterator<String> it = result.iterator(); it.hasNext();) {
+                    String elem = it.next();
+                    buf.append(elem).append("\n<br>"); // NOI18N
                     String path = trace(searchFor, elem, in);
                     if (path != null){
-                        buf.append(path+"\n<br>"); // NOI18N
+                        buf.append(path).append("\n<br>"); // NOI18N
                     }
                 }
             }
@@ -733,13 +749,13 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private Map<String,List<String>> search(CsmOffsetable ppDirective){
         CsmProject prj = ppDirective.getContainingFile().getProject();
         HashSet<String> set = new HashSet<String>();
-        for (Iterator it = prj.getSourceFiles().iterator(); it.hasNext();){
-            CsmFile file = (CsmFile)it.next();
+        for (Iterator<CsmFile> it = prj.getSourceFiles().iterator(); it.hasNext();){
+            CsmFile file = it.next();
             File f = new File(file.getAbsolutePath().toString());
             set.add(f.getParentFile().getAbsolutePath());
         }
-        for (Iterator it = prj.getHeaderFiles().iterator(); it.hasNext();){
-            CsmFile file = (CsmFile)it.next();
+        for (Iterator<CsmFile> it = prj.getHeaderFiles().iterator(); it.hasNext();){
+            CsmFile file = it.next();
             File f = new File(file.getAbsolutePath().toString());
             set.add(f.getParentFile().getAbsolutePath());
         }
@@ -749,8 +765,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             gatherSubFolders(f, set);
         }
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
-        for (Iterator it = set.iterator(); it.hasNext();){
-            File d = new File((String)it.next());
+        for (Iterator<String> it = set.iterator(); it.hasNext();){
+            File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {

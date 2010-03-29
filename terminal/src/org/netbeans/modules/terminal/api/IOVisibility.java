@@ -58,7 +58,7 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOVisibility {
 
-    public static final String PROP_VISIBILITY = "IOVisibility.PROP_VISIBILITY";
+    public static final String PROP_VISIBILITY = "IOVisibility.PROP_VISIBILITY"; // NOI18N
 
     private static IOVisibility find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
