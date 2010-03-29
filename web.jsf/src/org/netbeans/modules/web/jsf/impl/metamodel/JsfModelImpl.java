@@ -70,10 +70,14 @@ import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -298,7 +302,11 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         JSFConfigModel model = getCachedModel(fo);
         if (model == null) {
             try {
-                model = JSFConfigModelFactory.getInstance().getModel(Utilities.createModelSource(fo, true));
+                ModelSource source = Utilities.createModelSource(fo, true);
+                Lookup lookup = source.getLookup();
+                lookup = new ProxyLookup(lookup, Lookups.singleton(this));
+                source = new ModelSource(lookup, true);
+                model = JSFConfigModelFactory.getInstance().getModel(source);
                 putCachedModel(fo, model);
             } catch (CatalogModelException ex) {
                 Exceptions.printStackTrace(ex);
