@@ -43,8 +43,8 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -75,7 +75,16 @@ public class ModelUnit {
     
     private final PropertyChangeSupport changeSupport;
 
+    /**
+     * Cached list of JSF configuration files.
+     */
     private List<FileObject> configFiles;
+
+    /**
+     * Cached list of folders under which some configuration files may be created,
+     * eg. Java source root under which MEAT-INF/*faces-config.xml can be created.
+     */
+    private List<FileObject> configRoots = Collections.EMPTY_LIST;
 
     private static final String META_INF = "META-INF";      // NOI18N
     private static final String FACES_CONFIG = "faces-config.xml";// NOI18N
@@ -155,7 +164,7 @@ public class ModelUnit {
         }
     }
 
-    private void collectConfigurationFilesFromClassPath(ClassPath cp, List<FileObject> configs) {
+    private void collectConfigurationFilesFromClassPath(ClassPath cp, List<FileObject> configs, List<FileObject> configRoots) {
         for (ClassPath.Entry entry : cp.entries()) {
             FileObject roots[];
             if (entry.isValid()) {
@@ -168,6 +177,7 @@ public class ModelUnit {
                 roots = res.getRoots();
             }
             for (FileObject root : roots) {
+                configRoots.add(root);
                 FileObject metaInf = root.getFileObject(META_INF);
                 if (metaInf != null) {
                     FileObject[] children = metaInf.getChildren();
@@ -189,8 +199,13 @@ public class ModelUnit {
         return configFiles;
     }
 
-    private synchronized void setConfigFiles(List<FileObject> configFiles) {
+    private synchronized void setConfigFiles(List<FileObject> configFiles, List<FileObject> configRoots) {
         this.configFiles = configFiles;
+        this.configRoots = configRoots;
+    }
+
+    private synchronized List<FileObject> getConfigRoots() {
+        return configRoots;
     }
 
     private List<FileObject> getConfigFilesImpl() {
@@ -202,10 +217,14 @@ public class ModelUnit {
         //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
         //we need to ensure the original ordering
         configs = new LinkedList<FileObject>(Arrays.asList(objects));
+        configRoots = new LinkedList<FileObject>();
+        if (module.getDocumentBase() != null) {
+            configRoots.add(module.getDocumentBase());
+        }
         //find for configs in meta-inf
-        collectConfigurationFilesFromClassPath(sourcePath, configs);
-        collectConfigurationFilesFromClassPath(compilePath, configs);
-        setConfigFiles(configs);
+        collectConfigurationFilesFromClassPath(sourcePath, configs, configRoots);
+        collectConfigurationFilesFromClassPath(compilePath, configs, configRoots);
+        setConfigFiles(configs, configRoots);
         return configs;
     }
     
@@ -219,7 +238,7 @@ public class ModelUnit {
 
     private void fireChange() {
         // reset list of config files to be re-read:
-        setConfigFiles(null);
+        setConfigFiles(null, Collections.EMPTY_LIST);
         
         changeSupport.firePropertyChange(PROP_CONFIG_FILES, null, null);
     }
@@ -257,6 +276,18 @@ public class ModelUnit {
                 FileRenameEvent fre = (FileRenameEvent)fe;
                 res = (fre.getName().equals("faces-config") || fre.getName().endsWith(".faces-config") || fre.getName().endsWith("web.xml")) &&
                         fre.getExt().equals("xml");
+            }
+            if (res) {
+                // file passed filename criteria but it must be also under one
+                // of the folder we are keeping eye on; that way we will ignore
+                // events coming for JSF configuration files from different projects
+                res = false;
+                for (FileObject fo : ModelUnit.this.getConfigRoots()) {
+                    if (FileUtil.isParentOf(fo, fe.getFile())) {
+                        res = true;
+                        break;
+                    }
+                }
             }
             return res;
         }
