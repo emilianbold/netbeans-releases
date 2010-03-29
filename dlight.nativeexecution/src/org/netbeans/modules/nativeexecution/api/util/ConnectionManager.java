@@ -57,7 +57,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -69,6 +68,7 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfoProvider;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Manages connections that are needed for remote {@link NativeProcess}
@@ -176,11 +176,11 @@ public final class ConnectionManager {
                     try {
                         doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
                     } catch (IOException ex) {
-                        log.log(Level.FINEST, Thread.currentThread() +
-                                " : ConnectionManager.getSession()", ex); // NOI18N
+                        log.log(Level.FINEST, Thread.currentThread()
+                                + " : ConnectionManager.getSession()", ex); // NOI18N
                     } catch (CancellationException ex) {
-                        log.log(Level.FINEST, Thread.currentThread() +
-                                " : ConnectionManager.getSession()", ex); // NOI18N
+                        log.log(Level.FINEST, Thread.currentThread()
+                                + " : ConnectionManager.getSession()", ex); // NOI18N
                     }
                 }
             }
@@ -205,13 +205,20 @@ public final class ConnectionManager {
             // otherwise UI can hang forever
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
         }
+
         if (env.isLocal()) {
+            if (!HostInfoUtils.isHostInfoAvailable(env)) {
+                HostInfoUtils.getHostInfo(env);
+            }
             return true;
         }
 
         Session session = getSession(env, false);
 
         if (session != null && session.isConnected()) {
+            if (!HostInfoUtils.isHostInfoAvailable(env)) {
+                HostInfoUtils.getHostInfo(env);
+            }
             // just return if already connected ...
             return true;
         }
@@ -359,24 +366,18 @@ public final class ConnectionManager {
                     sessions.put(env, session);
                 }
 
-                NativeTaskExecutorService.submit(new Runnable() {
+                HostInfoUtils.getHostInfo(env);
+
+                log.log(Level.FINE, "New connection established: {0}", env.toString()); // NOI18N
+
+                RequestProcessor.getDefault().post(new Runnable() {
 
                     @Override
                     public void run() {
-                        try {
-                            // Initiate a task that will fetch host info...
-                            // fetched information will be buffered, so
-                            // those who will ask for it later will likely get
-                            // without wait
-                            HostInfoUtils.getHostInfo(env);
-                        } catch (IOException ex) {
-                        } catch (CancellationException ex) {
-                        }
                         fireConnected(env);
                     }
-                }, "Fetch hosts info " + env.toString()); // NOI18N
+                });
 
-                log.log(Level.FINE, "New connection established: {0}", env.toString()); // NOI18N
                 return true;
             }
 
@@ -543,8 +544,8 @@ public final class ConnectionManager {
 
             try {
                 while (!cancelled && !socket.isConnected()) {
-                    if (SOCKET_CREATION_TIMEOUT != 0 &&
-                            (System.currentTimeMillis() - currentTime) > SOCKET_CREATION_TIMEOUT) {
+                    if (SOCKET_CREATION_TIMEOUT != 0
+                            && (System.currentTimeMillis() - currentTime) > SOCKET_CREATION_TIMEOUT) {
                         break;
                     }
 
