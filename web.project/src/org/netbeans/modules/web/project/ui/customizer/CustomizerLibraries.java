@@ -650,7 +650,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompileProcessor.add(jButtonMoveDownP, gridBagConstraints);
 
-        jTabbedPane1.addTab("Processor", jPanelCompileProcessor);
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Processors_Tab"), jPanelCompileProcessor); // NOI18N
 
         jPanelCompileTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
