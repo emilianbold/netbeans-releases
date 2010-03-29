@@ -154,7 +154,6 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     pwdDlg.clearPassword();
                     return true;
                 } else {
-                    pm.clearPassword(env);
                     throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
                 }
             }
