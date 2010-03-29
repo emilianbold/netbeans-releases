@@ -78,9 +78,13 @@ public class GarbageCollectAction extends CallableSystemAction {
         gc();
     }
 
+    private static RequestProcessor RP;
     private static void gc() {
+        if (RP == null) {
+            RP = new RequestProcessor("GarbageCollectAction");
+        }
         // Can be slow, would prefer not to block on it.
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
             @Override
                 public void run() {
