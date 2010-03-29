@@ -66,6 +66,8 @@ import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.project.customizer.ClassicAppletProjectProperties;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
 import org.netbeans.modules.javacard.spi.capabilities.AntTarget;
 import org.netbeans.modules.javacard.spi.Card;
@@ -77,12 +79,15 @@ import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.StartCapability;
 import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 public class JCProjectActionProvider implements ActionProvider {
@@ -284,6 +289,13 @@ public class JCProjectActionProvider implements ActionProvider {
                                 }
                                 ExecutorTask task = ActionUtils.runTarget(buildFo, tNames, p);
                                 task.addTaskListener(l);
+                                if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
+                                    PropertyEvaluator eval = project.evaluator();
+                                    String useProxiesProp = eval.evaluate("{" + ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES + "}"); //NOI18N
+                                    if (!Boolean.valueOf(useProxiesProp)) {
+                                        task.addTaskListener (new EnsureUseProxiesSetAfterProxyGeneration(project));
+                                    }
+                                }
                                 task.getInputOutput().select();
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -495,6 +507,27 @@ public class JCProjectActionProvider implements ActionProvider {
             //try anyway?
             return null;
         }
+    }
+
+    static final class EnsureUseProxiesSetAfterProxyGeneration implements TaskListener {
+        private final JCProject project;
+        EnsureUseProxiesSetAfterProxyGeneration (JCProject project) {
+            this.project = project;
+            assert project.kind().isClassic();
+        }
+
+        @Override
+        public void taskFinished(Task task) {
+            JCCustomizerProvider prov = project.getLookup().lookup(JCCustomizerProvider.class);
+            Parameters.notNull("prov", prov);
+            JCProjectProperties p = prov.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+            if (p instanceof ClassicAppletProjectProperties) {
+                ClassicAppletProjectProperties cp = (ClassicAppletProjectProperties) p;
+                cp.setUseMyProxies(true);
+                cp.storeProperties();
+            }
+        }
+
     }
 
     class OnAntProcessFinishedListener implements TaskListener, PropertyChangeListener {

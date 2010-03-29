@@ -170,6 +170,18 @@ final class TextDetail {
         lineText = text;
     }
 
+    String getLineTextPart(int beginIndex, int endIndex) {
+        return lineText.substring(beginIndex, endIndex);
+    }
+
+    String getLineTextPart(int beginIndex) {
+        return lineText.substring(beginIndex);
+    }
+
+    int getLineTextLength() {
+        return lineText == null ? 0 : lineText.length();
+    }
+
     /**
      * Gets the <code>DataObject</code> where the searched text was found. 
      *
@@ -199,15 +211,25 @@ final class TextDetail {
         column = col;
     }
 
+    /** Gets the column position of the text or -1 (0 based). */
+    int getColumn0() {
+        return column - 1;
+    }
+
     /**
-     * Gets the length of the text that should be marked when the detail is
+     * Sets the length of the text that should be marked when the detail is
      * shown.
+     * @param len the length of the marked text
      */
     void setMarkLength(int len) {
         markLength = len;
     }
 
-    /** @return length or 0 */
+    /** 
+     * Gets the length of the text that should be marked when the detail is
+     * shown.
+     * @return length of the marked text or 0
+     */
     int getMarkLength() {
         return markLength;
     }
@@ -387,55 +409,62 @@ final class TextDetail {
         /** {@inheritDoc} */
         @Override
         public String getHtmlDisplayName() {
-            String colored;
-            if (txtDetail.getMarkLength() > 0 && txtDetail.getColumn() > 0) {
-                try {
-                    StringBuffer bold = new StringBuffer();
-                    String plain = txtDetail.getLineText();
-                    int col0 =   txtDetail.getColumn() -1;  // base 0
-
-                    bold.append(XMLUtil.toElementContent(
-                                          plain.substring(0, col0)));  // NOI18N
-                    bold.append("<b>");  // NOi18N
-                    int end = col0 + 
-                              Math.min(txtDetail.getMarkLength(),
-                                       txtDetail.getLineText().length() - col0);
-                    if ((col0 + txtDetail.getMarkLength()) >
-                                              txtDetail.getLineText().length()){
-                        bold.append(XMLUtil.toElementContent(
-                                                    plain.substring(col0, end) +
-                                                    " ...")); //NOI18N
-                    }else{
-                        bold.append(XMLUtil.toElementContent(
-                                                   plain.substring(col0, end)));
-                    }
-                    bold.append("</b>"); // NOi18N
-                    if (txtDetail.getLineText().length() > end) {
-                        bold.append(XMLUtil.toElementContent(
-                                                         plain.substring(end)));
-                    }
-                    colored = bold.toString();
-                } catch (CharConversionException ex) {
-                    return null;
-                }
-            } else {
-                try {
-                    colored = XMLUtil.toElementContent(txtDetail.getLineText());
-                } catch (CharConversionException e) {
-                    return null;
-                }
-            }
-
             try {
-                return colored +
-                       "      <font color='!controlShadow'>[" +
-                       XMLUtil.toElementContent(DetailNode.getName(txtDetail)) +
-                       "]";  // NOI18N
+                StringBuffer text = new StringBuffer();
+                if(canBeMarked()) {
+                    appendMarkedText(text);
+                }
+                else {
+                    text.append(escape(txtDetail.getLineText()));
+                }
+                text.append("      ");  // NOI18N
+                text.append("<font color='!controlShadow'>[");  // NOI18N
+                text.append(escape(DetailNode.getName(txtDetail)));
+                text.append("]");  // NOI18N
+                return text.toString();
             } catch (CharConversionException e) {
-                return null;
+                return null; // exception in escape(String s)
             }
         }
-      
+
+        /**
+         * Checks whether text can be marked.
+         * @return {@code true} if text can be marked, otherwise {@code false}.
+         */
+        private boolean canBeMarked() {
+            int col0 = txtDetail.getColumn0();
+            return txtDetail.getMarkLength() > 0 && 
+                   col0 > -1 &&
+                   col0 < txtDetail.getLineTextLength(); // #177891
+        }
+
+        private void appendMarkedText(StringBuffer text)
+                                                throws CharConversionException {
+            int col0 = txtDetail.getColumn0();  // base 0
+            int end = col0 + Math.min(txtDetail.getMarkLength(),
+                                      txtDetail.getLineTextLength() - col0);
+            int markEnd = col0 + txtDetail.getMarkLength();
+            final int detailLen = txtDetail.getLineTextLength();
+
+            text.append(escape(txtDetail.getLineTextPart(0, col0)));
+            text.append("<b>");  // NOI18N
+            if (markEnd > detailLen) { // mark up to the text end?
+                text.append(escape(txtDetail.getLineTextPart(col0, end)));
+                text.append(" ..."); //NOI18N
+            }
+            else {
+                text.append(escape(txtDetail.getLineTextPart(col0, end)));
+            }
+            text.append("</b>"); // NOI18N
+            if (detailLen > end) {
+                text.append(escape(txtDetail.getLineTextPart(end)));
+            }
+        }
+
+        private static String escape(String s) throws CharConversionException {
+            return XMLUtil.toElementContent(s);
+        }
+
         /** Displays the matching string in a text editor. */
         void gotoDetail() {
             txtDetail.showDetail(TextDetail.DH_GOTO);
