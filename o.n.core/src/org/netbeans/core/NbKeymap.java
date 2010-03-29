@@ -213,9 +213,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             if (refresh) {
                 // Update accelerators of existing actions after switching keymap.
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
-                            entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                        synchronized( action2Id ) {
+                            for (Map.Entry<Action, String> entry : action2Id.entrySet()) {
+                                entry.getKey().putValue(Action.ACCELERATOR_KEY, id2Stroke.get(entry.getValue()));
+                            }
                         }
                     }
                 });
@@ -342,10 +345,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     KeyStroke keyStrokeForAction(Action a, FileObject definingFile) {
         String id = idForFile(definingFile);
         bindings();
-        action2Id.put(a, id);
-        KeyStroke k = id2Stroke.get(id);
-        LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
-        return k;
+        synchronized( action2Id ) {
+            action2Id.put(a, id);
+            KeyStroke k = id2Stroke.get(id);
+            LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+            return k;
+        }
     }
 
     @ServiceProvider(service=AcceleratorBinding.class)

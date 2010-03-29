@@ -129,7 +129,9 @@ public abstract class CssElementContext {
 	private SimpleNode findCurrentElement() {
 	    SimpleNode root = getParserResult().root();
 	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
-	    return SimpleNodeUtil.findDescendant(root, astOffset);
+	    SimpleNode leaf = SimpleNodeUtil.findDescendant(root, astOffset);
+            //if leaf == null the astOffset is out of the root's node range, return the root node
+            return leaf == null ? root : leaf;
 	}
 
         public Document getDocument() {
