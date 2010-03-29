@@ -639,6 +639,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
         if (inPP == null) { // not yet initialized
             inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
@@ -2223,11 +2224,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return lastSeparatorOffset;
     }
 
+    @Override
     public void start(int startOffset, int firstTokenOffset, int lastOffset) {
         inPP = null;
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public void end(int offset, int lastTokenOffset) {
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
@@ -2494,7 +2497,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
 //        if (stopped) {
 //            sb.append("Parsing STOPPED by request.\n"); // NOI18N
 //        }
-        sb.append("Stack size is " + cnt + "\n"); // NOI18N
+        sb.append("Stack size is ").append(cnt).append("\n"); // NOI18N
         if (cnt > 0) {
             sb.append("Stack expressions:\n"); // NOI18N
             for (int i = 0; i < cnt; i++) {
@@ -2509,6 +2512,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTo
         return sb.toString();
     }
 
+    @Override
     public boolean isStopped() {
         return false;
     }
