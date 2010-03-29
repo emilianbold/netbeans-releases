@@ -169,7 +169,7 @@ public class SeveralXmlModelTest extends CommonTestCase {
      * fired in separate thread and to synchronize on delivery of these events
      * we wait on a property change event.
      */
-    private static class PropListener implements PropertyChangeListener {
+    static class PropListener implements PropertyChangeListener {
 
         private boolean modelUpdated = false;
 
