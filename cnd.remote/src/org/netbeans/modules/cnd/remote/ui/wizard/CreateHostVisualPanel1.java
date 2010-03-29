@@ -59,14 +59,17 @@ import org.openide.util.NbBundle;
         textPort.setText(Integer.toString(22));
         textHostname.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
@@ -76,16 +79,20 @@ import org.openide.util.NbBundle;
         pbarStatusPanel.validate();
 
         addAncestorListener(new AncestorListener() {
+            @Override
             public void ancestorAdded(AncestorEvent event) {
                 tableModel.start(new Runnable() {
+                    @Override
                     public void run() {
                         pbarStatusPanel.setVisible(false);
                     }
                 });
             }
+            @Override
             public void ancestorRemoved(AncestorEvent event) {
                 tableModel.stop();
             }
+            @Override
             public void ancestorMoved(AncestorEvent event) {
             }
         });
@@ -105,6 +112,10 @@ import org.openide.util.NbBundle;
     }
 
     public Integer getPort() {
+        if ("".equals(textPort.getText())) { // NOI18N
+            return 22;
+        }
+
         try {
             return Integer.valueOf(Integer.parseInt(textPort.getText()));
         } catch(NumberFormatException e) {
@@ -128,7 +139,7 @@ import org.openide.util.NbBundle;
         tableHostsList = new javax.swing.JTable();
         pbarStatusPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
-        textPort = new javax.swing.JTextField();
+        textPort = new org.netbeans.modules.cnd.remote.ui.wizard.PortTextField();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
@@ -167,11 +178,11 @@ import org.openide.util.NbBundle;
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textHostname, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addComponent(textHostname, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
-                .addGap(4, 4, 4)
-                .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addContainerGap(402, Short.MAX_VALUE))
@@ -184,12 +195,12 @@ import org.openide.util.NbBundle;
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(textHostname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
-                    .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel3)
+                    .addComponent(textPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -211,7 +222,7 @@ import org.openide.util.NbBundle;
     private javax.swing.JPanel pbarStatusPanel;
     private javax.swing.JTable tableHostsList;
     private javax.swing.JTextField textHostname;
-    private javax.swing.JTextField textPort;
+    private org.netbeans.modules.cnd.remote.ui.wizard.PortTextField textPort;
     // End of variables declaration//GEN-END:variables
     }
 
