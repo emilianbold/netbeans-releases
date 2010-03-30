@@ -84,7 +84,7 @@ public class GetCleanAction extends AbstractSystemAction {
 
     public void performCvsAction(final Node[] nodes) {
         if (!confirmed(null, null)) return;
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 revertModifications(nodes);
             }

@@ -127,7 +127,7 @@ public class BranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
 
-        RequestProcessor.getDefault().post(new BranchExecutor(context, settings, getRunningName(nodes)));
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new BranchExecutor(context, settings, getRunningName(nodes)));
     }
     
     private static class BranchExecutor implements Runnable {
