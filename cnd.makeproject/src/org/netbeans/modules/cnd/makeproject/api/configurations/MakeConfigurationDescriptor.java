@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -79,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
@@ -113,7 +115,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder externalFileItems = null;
     private Folder testItems = null;
     private Folder rootFolder = null;
-    private HashMap<String, Item> projectItems = null;
+    private Map<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
     private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
@@ -127,7 +129,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         super();
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
-        projectItems = new HashMap<String, Item>();
+        projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
         ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
     }
@@ -353,11 +355,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
     }
 
-    public HashMap<String, Item> getProjectItemsMap() {
+    public Map<String, Item> getProjectItemsMap() {
         return projectItems;
     }
 
-    public void setProjectItemsMap(HashMap<String, Item> projectItems) {
+    public void setProjectItemsMap(Map<String, Item> projectItems) {
         this.projectItems = projectItems;
     }
 
@@ -372,7 +374,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     @Override
     public Configuration defaultConf(String name, int type) {
-        MakeConfiguration c = new MakeConfiguration(this, name, type);
+        MakeConfiguration c = new MakeConfiguration(this.getBaseDir(), name, type, CppUtils.getDefaultDevelopmentHost(), null);
         Item[] items = getProjectItems();
         for (int i = 0; i < items.length; i++) {
             c.addAuxObject(new ItemConfiguration(c, items[i]));

@@ -150,7 +150,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
-                       "        List<String> l = null;\n" +
+                       "        java.util.List<String> l = null;\n" +
                        "\n" +
                        "        for (int c = 0; c < args.length; c++) {\n" +
                        "            l.add(args[c]);\n" +
@@ -163,7 +163,7 @@ public class ManualArrayCopyTest extends TestBase {
                         "import java.util.Arrays;\n" +
                         "public class Test {\n" +
                         "    public void test(String[] args) {\n" +
-                        "        List<String> l = null;\n" +
+                        "        java.util.List<String> l = null;\n" +
                         "\n" +
                         "        l.addAll(Arrays.asList(args));\n" +
                         "     }\n" +
@@ -175,7 +175,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
-                       "        List<String> l = null;\n" +
+                       "        java.util.List<String> l = null;\n" +
                        "\n" +
                        "        for (String s : args) {\n" +
                        "            l.add(s);\n" +
@@ -188,7 +188,7 @@ public class ManualArrayCopyTest extends TestBase {
                         "import java.util.Arrays;\n" +
                         "public class Test {\n" +
                         "    public void test(String[] args) {\n" +
-                        "        List<String> l = null;\n" +
+                        "        java.util.List<String> l = null;\n" +
                         "\n" +
                         "        l.addAll(Arrays.asList(args));\n" +
                         "     }\n" +

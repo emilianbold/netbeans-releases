@@ -146,6 +146,7 @@ public final class Embedding {
         Collections.sort (originalToCurrent, TMS_VCLV);
         Snapshot snapshot = new Snapshot (
             sb,
+            null,
             source,
             mimePath,
             currentToOriginal.toArray (new int [currentToOriginal.size ()] []),

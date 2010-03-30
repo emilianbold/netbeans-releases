@@ -68,6 +68,8 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.metadata.model.api.Tuple;
+import org.netbeans.modules.db.metadata.model.api.View;
 import org.netbeans.modules.db.sql.analyzer.CreateStatement;
 import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
 import org.netbeans.modules.db.sql.analyzer.TablesClause;
@@ -102,8 +104,10 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private SQLCompletionEnv env;
     private Quoter quoter;
     private SQLStatement statement;
-    /** All tables available for completion in current offset. */
+    /** All tables (views possible) available for completion in current offset. */
     private TablesClause tablesClause;
+    // ugly but likely the best way to add views to cc for SELECTs
+    private boolean includeViews = false;
     private int anchorOffset = -1; // Relative to statement offset.
     private int substitutionOffset = 0; // Relative to statement offset.
     private SQLCompletionItems items;
@@ -218,19 +222,20 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
         tablesClause = selectStatement.getTablesInEffect(env.getCaretOffset());
+        includeViews = true;
         switch (context) {
             case SELECT:
                 completeColumn(ident);
                 break;
             case FROM:
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             case JOIN_CONDITION:
-                completeColumnWithDefinedTable(ident);
+                completeColumnWithDefinedTuple(ident);
                 break;
             case WHERE:
                 if (tablesClause != null) {
-                    completeColumnWithDefinedTable(ident);
+                    completeColumnWithDefinedTuple(ident);
                 } else {
                     completeColumn(ident);
                 }
@@ -241,22 +246,23 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             default:
                 if (tablesClause != null) {
-                    completeColumnWithDefinedTable(ident);
+                    completeColumnWithDefinedTuple(ident);
                 }
         }
     }
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
+        includeViews = false;
         switch (context) {
             case INSERT:
                 completeKeyword(context);
                 break;
             case INSERT_INTO:
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             case COLUMNS:
-                insideColumns (ident, resolveTable(insertStatement.getTable ()));
+                insideColumns (ident, resolveTuple(insertStatement.getTable ()));
                 break;
             case VALUES:
                 break;
@@ -264,12 +270,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeDrop() {
+        includeViews = false;
         switch (context) {
             case DROP:
                 completeKeyword(context);
                 break;
             case DROP_TABLE:
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             default:
         }
@@ -278,12 +285,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void completeUpdate() {
         UpdateStatement updateStatement = (UpdateStatement) statement;
         tablesClause = updateStatement.getTablesInEffect(env.getCaretOffset());
+        includeViews = false;
         switch (context) {
             case UPDATE:
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             case JOIN_CONDITION:
-                completeColumnWithDefinedTable(ident);
+                completeColumnWithDefinedTuple(ident);
                 break;
             case SET:
                 completeColumn(ident);
@@ -292,7 +300,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 if (!updateStatement.getSubqueries().isEmpty()) {
                     completeSelect();
                 } else if (tablesClause != null) {
-                    completeColumnWithDefinedTable(ident);
+                    completeColumnWithDefinedTuple(ident);
                 }
         }
     }
@@ -300,27 +308,28 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private void completeDelete() {
         DeleteStatement deleteStatement = (DeleteStatement) statement;
         tablesClause = deleteStatement.getTablesInEffect(env.getCaretOffset());
+        includeViews = false;
         switch (context) {
             case DELETE:
                 completeKeyword(context);
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             case FROM:
-                completeTable(ident);
+                completeTuple(ident);
                 break;
             case JOIN_CONDITION:
-                completeColumnWithDefinedTable(ident);
+                completeColumnWithDefinedTuple(ident);
                 break;
             case WHERE:
                 if (tablesClause != null) {
-                    completeColumnWithDefinedTable(ident);
+                    completeColumnWithDefinedTuple(ident);
                 } else {
                     completeColumn(ident);
                 }
                 break;
             default:
                 if (tablesClause != null) {
-                    completeColumnWithDefinedTable(ident);
+                    completeColumnWithDefinedTuple(ident);
                 }
         }
     }
@@ -402,7 +411,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         items.addKeywords(prefix.lastPrefix, substitutionOffset, keywords);
     }
 
-    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumn(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeColumnSimpleIdent(ident.lastPrefix, ident.quoted);
@@ -411,34 +420,34 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideColumns (Identifier ident, Table table) {
+    private void insideColumns (Identifier ident, Tuple tuple) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            if (table == null) {
-                completeColumnWithTableIfSimpleIdent (ident.lastPrefix, ident.quoted);
+            if (tuple == null) {
+                completeColumnWithTupleIfSimpleIdent (ident.lastPrefix, ident.quoted);
             } else {
-                items.addColumns (table, ident.lastPrefix, ident.quoted, substitutionOffset);
+                items.addColumns (tuple, ident.lastPrefix, ident.quoted, substitutionOffset);
             }
         } else {
-            if (table == null) {
-                completeColumnWithTableIfQualIdent (ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            if (tuple == null) {
+                completeColumnWithTupleIfQualIdent (ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
             } else {
-                items.addColumns (table, ident.lastPrefix, ident.quoted, substitutionOffset);
+                items.addColumns (tuple, ident.lastPrefix, ident.quoted, substitutionOffset);
             }
         }
     }
 
-    /** Adds tables, schemas and catalogs according to given identifier. */
-    private void completeTable(Identifier ident) {
+    /** Adds tuples, schemas and catalogs according to given identifier. */
+    private void completeTuple(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            completeTableSimpleIdent(ident.lastPrefix, ident.quoted);
+            completeTupleSimpleIdent(ident.lastPrefix, ident.quoted);
         } else if (ident.fullyTypedIdent.isSimple()) {
-            completeTableQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
+            completeTupleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
         }
     }
 
-    /** Adds columns, tables, schemas and catalogs according to given identifier
-     * but only for tables already defined in statement. */
-    private void completeColumnWithDefinedTable(Identifier ident) {
+    /** Adds columns, tuples, schemas and catalogs according to given identifier
+     * but only for tuples already defined in statement. */
+    private void completeColumnWithDefinedTuple(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.quoted);
         } else {
@@ -446,7 +455,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnSimpleIdent(String typedPrefix, boolean quoted) {
         if (tablesClause != null) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
@@ -459,9 +468,17 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                     for (Table table : defaultSchema.getTables()) {
                         items.addColumns(table, typedPrefix, quoted, substitutionOffset);
                     }
+                    if (includeViews) {
+                        for (View view : defaultSchema.getViews()) {
+                            items.addColumns(view, typedPrefix, quoted, substitutionOffset);
+                        }
+                    }
                 }
-                // All tables in default schema.
+                // All tuples in default schema.
                 items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
+                if (includeViews) {
+                    items.addViews(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
+                }
             }
             // All schemas.
             Catalog defaultCatalog = metadata.getDefaultCatalog();
@@ -471,18 +488,26 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void completeColumnWithTableIfSimpleIdent(String typedPrefix, boolean quoted) {
+    private void completeColumnWithTupleIfSimpleIdent(String typedPrefix, boolean quoted) {
         Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
             // All columns in default schema, but only if a prefix has been typed, otherwise there
             // would be too many columns.
             if (typedPrefix != null) {
                 for (Table table : defaultSchema.getTables()) {
-                    items.addColumnsWithTableName (table, null, typedPrefix, quoted, substitutionOffset - 1);
+                    items.addColumnsWithTupleName(table, null, typedPrefix, quoted, substitutionOffset - 1);
+                }
+                if (includeViews) {
+                    for (View view : defaultSchema.getViews()) {
+                        items.addColumnsWithTupleName(view, null, typedPrefix, quoted, substitutionOffset - 1);
+                    }
                 }
             } else {
-                // All tables in default schema.
+                // All tuples in default schema.
                 items.addTablesAtInsertInto (defaultSchema, null, null, typedPrefix, quoted, substitutionOffset - 1);
+                if (includeViews) {
+                    items.addViewsAtInsertInto(defaultSchema, null, null, typedPrefix, quoted, substitutionOffset - 1);
+                }
             }
         }
         // All schemas.
@@ -492,18 +517,20 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
     }
 
-    private void completeColumnWithTableIfQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-            // Assume fullyTypedIdent is a table.
-            Table table = resolveTable(fullyTypedIdent);
-            if (table != null) {
-                items.addColumnsWithTableName (table, fullyTypedIdent, lastPrefix, quoted,
+    private void completeColumnWithTupleIfQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+            // Assume fullyTypedIdent is a tuple.
+            Tuple tuple = resolveTuple(fullyTypedIdent);
+            if (tuple != null) {
+                items.addColumnsWithTupleName (tuple, fullyTypedIdent, lastPrefix, quoted,
                         substitutionOffset - 1);
             }
             // Assume fullyTypedIdent is a schema.
             Schema schema = resolveSchema(fullyTypedIdent);
             if (schema != null) {
-                items.addTablesAtInsertInto (schema, fullyTypedIdent, null, lastPrefix, quoted,
-                        substitutionOffset - 1);
+                items.addTablesAtInsertInto(schema, fullyTypedIdent, null, lastPrefix, quoted, substitutionOffset - 1);
+                if (includeViews) {
+                    items.addViewsAtInsertInto(schema, fullyTypedIdent, null, lastPrefix, quoted, substitutionOffset - 1);
+                }
             }
             // Assume fullyTypedIdent is a catalog.
             Catalog catalog = resolveCatalog(fullyTypedIdent);
@@ -512,20 +539,23 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
     }
 
-    /** Adds columns, tables, schemas and catalogs according to given identifier. */
+    /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         if (tablesClause != null) {
             completeQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
         } else {
-            // Assume fullyTypedIdent is a table.
-            Table table = resolveTable(fullyTypedIdent);
-            if (table != null) {
-                items.addColumns(table, lastPrefix, quoted, substitutionOffset);
+            // Assume fullyTypedIdent is a tuple.
+            Tuple tuple = resolveTuple(fullyTypedIdent);
+            if (tuple != null) {
+                items.addColumns(tuple, lastPrefix, quoted, substitutionOffset);
             }
             // Assume fullyTypedIdent is a schema.
             Schema schema = resolveSchema(fullyTypedIdent);
             if (schema != null) {
                 items.addTables(schema, null, lastPrefix, quoted, substitutionOffset);
+                if (includeViews) {
+                    items.addViews(schema, null, lastPrefix, quoted, substitutionOffset);
+                }
             }
             // Assume fullyTypedIdent is a catalog.
             Catalog catalog = resolveCatalog(fullyTypedIdent);
@@ -535,13 +565,16 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    /** Adds all tables from default schema, all schemas from defaultcatalog
+    /** Adds all tuples from default schema, all schemas from defaultcatalog
      * and all catalogs. */
-    private void completeTableSimpleIdent(String typedPrefix, boolean quoted) {
+    private void completeTupleSimpleIdent(String typedPrefix, boolean quoted) {
         Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
-            // All tables in default schema.
+            // All tuples in default schema.
             items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
+            }
         }
         // All schemas.
         Catalog defaultCatalog = metadata.getDefaultCatalog();
@@ -550,13 +583,16 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
     }
 
-    /** Adds all tables in schema get from fully qualified identifier or all
+    /** Adds all tuples in schema get from fully qualified identifier or all
      * schemas from catalog. */
-    private void completeTableQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
+    private void completeTupleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         Schema schema = resolveSchema(fullyTypedIdent);
         if (schema != null) {
-            // Tables in the typed schema.
+            // tuples in the typed schema.
             items.addTables(schema, null, lastPrefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(schema, null, lastPrefix, quoted, substitutionOffset);
+            }
         }
         Catalog catalog = resolveCatalog(fullyTypedIdent);
         if (catalog != null) {
@@ -567,43 +603,46 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeSimpleIdentBasedOnFromClause(String typedPrefix, boolean quoted) {
         assert tablesClause != null;
-        Set<QualIdent> tableNames = tablesClause.getUnaliasedTableNames();
-        Set<Table> tables = resolveTables(tableNames);
-        Set<QualIdent> allTableNames = new TreeSet<QualIdent>(tableNames);
-        Set<Table> allTables = new LinkedHashSet<Table>(tables);
+        Set<QualIdent> tupleNames = tablesClause.getUnaliasedTableNames();
+        Set<Tuple> tuples = resolveTuples(tupleNames);
+        Set<QualIdent> allTupleNames = new TreeSet<QualIdent>(tupleNames);
+        Set<Tuple> allTuples = new LinkedHashSet<Tuple>(tuples);
         Map<String, QualIdent> aliases = tablesClause.getAliasedTableNames();
         for (Entry<String, QualIdent> entry : aliases.entrySet()) {
-            QualIdent tableName = entry.getValue();
-            allTableNames.add(tableName);
-            Table table = resolveTable(tableName);
-            if (table != null) {
-                allTables.add(table);
+            QualIdent tupleName = entry.getValue();
+            allTupleNames.add(tupleName);
+            Tuple tuple = resolveTuple(tupleName);
+            if (tuple != null) {
+                allTuples.add(tuple);
             }
         }
         // Aliases.
         Map<String, QualIdent> sortedAliases = new TreeMap<String, QualIdent>(aliases);
         items.addAliases(sortedAliases, typedPrefix, quoted, substitutionOffset);
-        // Columns from aliased and non-aliased tables in the FROM clause.
-        for (Table table : allTables) {
-            items.addColumns(table, typedPrefix, quoted, substitutionOffset);
+        // Columns from aliased and non-aliased tuples in the FROM clause.
+        for (Tuple tuple : allTuples) {
+            items.addColumns(tuple, typedPrefix, quoted, substitutionOffset);
         }
-        // Tables from default schema, restricted to non-aliased table names in the FROM clause.
+        // Tuples from default schema, restricted to non-aliased tuple names in the FROM clause.
         Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
-            Set<String> simpleTableNames = new HashSet<String>();
-            for (Table table : tables) {
-                if (table.getParent().isDefault()) {
-                    simpleTableNames.add(table.getName());
+            Set<String> simpleTupleNames = new HashSet<String>();
+            for (Tuple tuple : tuples) {
+                if (tuple.getParent().isDefault()) {
+                    simpleTupleNames.add(tuple.getName());
                 }
             }
-            items.addTables(defaultSchema, simpleTableNames, typedPrefix, quoted, substitutionOffset);
+            items.addTables(defaultSchema, simpleTupleNames, typedPrefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(defaultSchema, simpleTupleNames, typedPrefix, quoted, substitutionOffset);
+            }
         }
-        // Schemas from default catalog other than the default schema, based on non-aliased table names in the FROM clause.
-        // Catalogs based on non-aliased tables names in the FROM clause.
+        // Schemas from default catalog other than the default schema, based on non-aliased tuple names in the FROM clause.
+        // Catalogs based on non-aliased tuples names in the FROM clause.
         Set<String> schemaNames = new HashSet<String>();
         Set<String> catalogNames = new HashSet<String>();
-        for (Table table : tables) {
-            Schema schema = table.getParent();
+        for (Tuple tuple : tuples) {
+            Schema schema = tuple.getParent();
             Catalog catalog = schema.getParent();
             if (!schema.isDefault() && !schema.isSynthetic() && catalog.isDefault()) {
                 schemaNames.add(schema.getName());
@@ -620,51 +659,57 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeQualIdentBasedOnFromClause(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
         assert tablesClause != null;
-        Set<Table> tables = resolveTables(tablesClause.getUnaliasedTableNames());
-        // Assume fullyTypedIdent is the name of a table in the default schema.
-        Table foundTable = resolveTable(fullyTypedIdent);
-        if (foundTable == null || !tables.contains(foundTable)) {
-            // Table not found, or it is not in the FROM clause.
-            foundTable = null;
+        Set<Tuple> tuples = resolveTuples(tablesClause.getUnaliasedTableNames());
+        // Assume fullyTypedIdent is the name of a tuple in the default schema.
+        Tuple foundTuple = resolveTuple(fullyTypedIdent);
+        if (foundTuple == null || !tuples.contains(foundTuple)) {
+            // Tuple not found, or it is not in the FROM clause.
+            foundTuple = null;
             // Then assume fullyTypedIdent is an alias.
             if (fullyTypedIdent.isSimple()) {
-                QualIdent aliasedTableName = tablesClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
-                if (aliasedTableName != null) {
-                    foundTable = resolveTable(aliasedTableName);
+                QualIdent aliasedTupleName = tablesClause.getTableNameByAlias(fullyTypedIdent.getSimpleName());
+                if (aliasedTupleName != null) {
+                    foundTuple = resolveTuple(aliasedTupleName);
                 }
             }
         }
-        if (foundTable != null) {
-            items.addColumns(foundTable, lastPrefix, quoted, substitutionOffset);
+        if (foundTuple != null) {
+            items.addColumns(foundTuple, lastPrefix, quoted, substitutionOffset);
         }
         // Now assume fullyTypedIdent is the name of a schema in the default catalog.
         Schema schema = resolveSchema(fullyTypedIdent);
         if (schema != null) {
-            Set<String> tableNames = new HashSet<String>();
-            for (Table table : tables) {
-                if (table.getParent().equals(schema)) {
-                    tableNames.add(table.getName());
+            Set<String> tupleNames = new HashSet<String>();
+            for (Tuple tuple : tuples) {
+                if (tuple.getParent().equals(schema)) {
+                    tupleNames.add(tuple.getName());
                 }
             }
-            items.addTables(schema, tableNames, lastPrefix, quoted, substitutionOffset);
+            items.addTables(schema, tupleNames, lastPrefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(schema, tupleNames, lastPrefix, quoted, substitutionOffset);
+            }
         }
         // Now assume fullyTypedIdent is the name of a catalog.
         Catalog catalog = resolveCatalog(fullyTypedIdent);
         if (catalog != null) {
-            Set<String> syntheticSchemaTableNames = new HashSet<String>();
+            Set<String> syntheticSchemaTupleNames = new HashSet<String>();
             Set<String> schemaNames = new HashSet<String>();
-            for (Table table : tables) {
-                schema = table.getParent();
+            for (Tuple tuple : tuples) {
+                schema = tuple.getParent();
                 if (schema.getParent().equals(catalog)) {
                     if (!schema.isSynthetic()) {
                         schemaNames.add(schema.getName());
                     } else {
-                        syntheticSchemaTableNames.add(table.getName());
+                        syntheticSchemaTupleNames.add(tuple.getName());
                     }
                 }
             }
             items.addSchemas(catalog, schemaNames, lastPrefix, quoted, substitutionOffset);
-            items.addTables(catalog.getSyntheticSchema(), syntheticSchemaTableNames, lastPrefix, quoted, substitutionOffset);
+            items.addTables(catalog.getSyntheticSchema(), syntheticSchemaTupleNames, lastPrefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(catalog.getSyntheticSchema(), syntheticSchemaTupleNames, lastPrefix, quoted, substitutionOffset);
+            }
         }
     }
 
@@ -673,6 +718,9 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         Schema syntheticSchema = catalog.getSyntheticSchema();
         if (syntheticSchema != null) {
             items.addTables(syntheticSchema, null, prefix, quoted, substitutionOffset);
+            if (includeViews) {
+                items.addViews(syntheticSchema, null, prefix, quoted, substitutionOffset);
+            }
         }
     }
 
@@ -700,53 +748,68 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         return schema;
     }
 
-    private Table resolveTable(QualIdent tableName) {
-        Table table = null;
-        if (tableName == null) {
-            return table;
+    private Tuple resolveTuple(QualIdent tupleName) {
+        if (tupleName == null) {
+            return null;
         }
-        switch (tableName.size()) {
+        Tuple tuple = null;
+        switch (tupleName.size()) {
             case 1:
                 Schema schema = metadata.getDefaultSchema();
                 if (schema != null) {
-                    return schema.getTable(tableName.getSimpleName());
+                    return getTuple(schema, tupleName);
                 }
                 break;
             case 2:
                 Catalog catalog = metadata.getDefaultCatalog();
-                schema = catalog.getSchema(tableName.getFirstQualifier());
+                schema = catalog.getSchema(tupleName.getFirstQualifier());
                 if (schema != null) {
-                    table = schema.getTable(tableName.getSimpleName());
+                    tuple = getTuple(schema, tupleName);
+                    if (tuple != null) {
+                        return tuple;
+                    }
                 }
-                if (table == null) {
-                    catalog = metadata.getCatalog(tableName.getFirstQualifier());
-                    if (catalog != null) {
-                        schema = catalog.getSyntheticSchema();
-                        if (schema != null) {
-                            table = schema.getTable(tableName.getSimpleName());
-                        }
+                catalog = metadata.getCatalog(tupleName.getFirstQualifier());
+                if (catalog != null) {
+                    schema = catalog.getSyntheticSchema();
+                    if (schema != null) {
+                        return getTuple(schema, tupleName);
                     }
                 }
                 break;
             case 3:
-                catalog = metadata.getCatalog(tableName.getFirstQualifier());
+                catalog = metadata.getCatalog(tupleName.getFirstQualifier());
                 if (catalog != null) {
-                    schema = catalog.getSchema(tableName.getSecondQualifier());
+                    schema = catalog.getSchema(tupleName.getSecondQualifier());
                     if (schema != null) {
-                        table = schema.getTable(tableName.getSimpleName());
+                        return getTuple(schema, tupleName);
                     }
                 }
                 break;
         }
-        return table;
+        return null;
     }
 
-    private Set<Table> resolveTables(Set<QualIdent> tableNames) {
-        Set<Table> result = new LinkedHashSet<Table>(tableNames.size());
-        for (QualIdent tableName : tableNames) {
-            Table table = resolveTable(tableName);
-            if (table != null) {
-                result.add(table);
+    private Tuple getTuple(Schema schema, QualIdent tupleName) {
+        Table table = schema.getTable(tupleName.getSimpleName());
+        if (table != null) {
+            return table;
+        }
+        if (includeViews) {
+            View view = schema.getView(tupleName.getSimpleName());
+            if (view != null) {
+                return view;
+            }
+        }
+        return null;
+    }
+
+    private Set<Tuple> resolveTuples(Set<QualIdent> tupleNames) {
+        Set<Tuple> result = new LinkedHashSet<Tuple>(tupleNames.size());
+        for (QualIdent tupleName : tupleNames) {
+            Tuple tuple = resolveTuple(tupleName);
+            if (tuple != null) {
+                result.add(tuple);
             }
         }
         return result;

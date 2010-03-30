@@ -647,6 +647,27 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ175877.cc", 12, 6, "IZ175877.cc", 5, 3);
     }
 
+    public void testIZ182152() throws Exception {
+        // Bug 182152 - variable names in prototypes are unresolved in ide display
+        performTest("IZ182152.cc", 3, 66, "IZ182152.cc", 3, 52);
+    }
+
+    public void testIZ154779() throws Exception {
+        // Bug 154779 - Completion fails on preprocessor statements
+        performTest("IZ154779.cc", 12, 10, "IZ154779.cc", 2, 5);
+    }
+
+    public void testIZ144535() throws Exception {
+        // Bug 144535 - wrong error highlighting for inner structure
+        performTest("IZ144535.c", 9, 31, "IZ144535.c", 3, 5);
+        performTest("IZ144535.c", 10, 10, "IZ144535.c", 4, 9);
+    }
+
+    public void testIZ155577() throws Exception {
+        // Bug 155577 - Code Assistance has problems with #include directives in class definitions
+        performTest("IZ155577.cc", 8, 12, "IZ155577.h", 2, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

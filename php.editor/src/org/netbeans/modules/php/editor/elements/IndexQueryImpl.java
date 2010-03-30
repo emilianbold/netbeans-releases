@@ -305,9 +305,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             final Collection<? extends IndexResult> constructorResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
                     new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_CONSTRUCTOR_FIELD, MethodElementImpl.IDX_FIELD});
             final Set<MethodElement> methodsForResult = new HashSet<MethodElement>();
+            final ElementFilter forEqualTypes = ElementFilter.forEqualTypes(inheritedClass);
             for (final IndexResult indexResult : constructorResults) {
-                //methodsForResult.addAll(MethodElementImpl.fromConstructorSignature(originalClass, this, indexResult));
-                methodsForResult.addAll(MethodElementImpl.fromSignature(originalClass, this, indexResult));
+                Set<ClassElement> classes = ClassElementImpl.fromSignature(this, indexResult);
+                for (ClassElement classElement : classes) {
+                    if (forEqualTypes.isAccepted(classElement)) {
+                        methodsForResult.addAll(MethodElementImpl.fromSignature(originalClass, this, indexResult));
+                    }
+                }
             }
             methods.addAll(ElementFilter.forName(NameKind.exact(MethodElementImpl.CONSTRUCTOR_NAME)).filter(methodsForResult));
             if (methods.isEmpty()) {
@@ -1227,7 +1232,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             }
         } else if (typeElement.isInterface()) {
             final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_IFACE, query,
-                    new String[] {PHPIndexer.FIELD_SUPER_CLASS, InterfaceElementImpl.IDX_FIELD, ClassElementImpl.IDX_FIELD});
+                    new String[] {PHPIndexer.FIELD_SUPER_IFACE, InterfaceElementImpl.IDX_FIELD, ClassElementImpl.IDX_FIELD});
             for (final IndexResult indexResult : result) {
                 String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_IFACE);
                 for (String value : values) {

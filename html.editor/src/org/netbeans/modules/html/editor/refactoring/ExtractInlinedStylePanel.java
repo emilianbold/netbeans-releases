@@ -41,15 +41,21 @@
 package org.netbeans.modules.html.editor.refactoring;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.ListCellRenderer;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -57,48 +63,132 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.html.editor.indexing.HtmlLinkEntry;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.Mode;
+import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring.SelectorType;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Extract Inlined Style Panel
  *
  * @author mfukala@netbeans.org
  */
-public class ExtractInlinedStylePanel extends JPanel implements CustomRefactoringPanel, ItemListener {
+public class ExtractInlinedStylePanel extends JPanel implements CustomRefactoringPanel {
 
     private List<FileObject> allStylesheets;
     private RefactoringContext context;
     private Mode selection;
-    private FileObject newStyleSheet;
+    private SelectorType selectorType;
+    private ResolveDeclarationsPanel resolveIdsPanel, resolveClassesPanel, current;
 
     /** Creates new form RenamePanelName */
     public ExtractInlinedStylePanel(RefactoringContext context) {
         this.context = context;
         this.allStylesheets = new ArrayList<FileObject>(CssRefactoring.findAllStyleSheets(context.getFile()));
+
+        Collection<ResolveDeclarationItem> idItems = context.getIdSelectorsToResolve().values();
+        this.resolveIdsPanel = idItems.isEmpty() ? null : new ResolveDeclarationsPanel(idItems);
+        Collection<ResolveDeclarationItem> classItems = context.getClassSelectorsToResolve().values();
+        this.resolveClassesPanel = classItems.isEmpty() ? null : new ResolveDeclarationsPanel(classItems);
+
         initComponents();
         initUI();
     }
 
     private void initUI() {
-        buttonGroup1.getSelection();
+        refactorToTypeButtonGroup.getSelection();
 
-        existingEmbeddedSectionRB.addItemListener(this);
-        createNewEmbeddedSectionRB.addItemListener(this);
-        usedExternalSheetRB.addItemListener(this);
-        existingExternalSheetRB.addItemListener(this);
-        newExternalSheetRB.addItemListener(this);
+        ItemListener embeddedSectionsItemListener = new ItemListener() {
 
-        //default button group selection
-        if (!context.getExistingEmbeddedCssSections().isEmpty()) {
-            setButtonsGroupSelection(Mode.refactorToExistingEmbeddedSection);
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                EmbeddedSectionItem selected =
+                        (EmbeddedSectionItem) existingEmbeddedSectionsComboBox.getSelectedItem();
+
+                if (selected instanceof CreateNewEmbeddedSectionItem) {
+                    selection = Mode.refactorToNewEmbeddedSection;
+                } else {
+                    selection = Mode.refactorToExistingEmbeddedSection;
+                }
+            }
+        };
+        embeddedSectionRB.addItemListener(embeddedSectionsItemListener);
+        existingEmbeddedSectionsComboBox.addItemListener(embeddedSectionsItemListener);
+
+        ItemListener externalStylesheetsItemListener = new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                ExternalStyleSheetItem selected =
+                        (ExternalStyleSheetItem) externalSheetsComboBox.getSelectedItem();
+
+                if (selected instanceof ReferedExternalStyleSheetItem) {
+                    selection = Mode.refactorToReferedExternalSheet;
+                } else {
+                    selection = Mode.refactorToExistingExternalSheet;
+                }
+            }
+        };
+
+        externalSheetRB.addItemListener(externalStylesheetsItemListener);
+        externalSheetsComboBox.addItemListener(externalStylesheetsItemListener);
+
+        ItemListener refactorToSelectorTypeItemListener = new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object s = e.getSource();
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    if (s == classSelectorTypeRB) {
+                        selectorType = SelectorType.CLASS;
+                    } else if (s == idSelectorTypeRB) {
+                        selectorType = SelectorType.ID;
+                    } else {
+                        assert false;
+                    }
+
+                    setResolveDeclarationsPanel(selectorType);
+                }
+            }
+        };
+
+        idSelectorTypeRB.addItemListener(refactorToSelectorTypeItemListener);
+        classSelectorTypeRB.addItemListener(refactorToSelectorTypeItemListener);
+
+
+        //TODO store the choices in settings!
+        setButtonsGroupSelection(Mode.refactorToExistingEmbeddedSection);
+        setSelectorType(SelectorType.ID);
+
+    }
+
+    private void setResolveDeclarationsPanel(SelectorType type) {
+        ResolveDeclarationsPanel panel = type == SelectorType.CLASS ? resolveClassesPanel : resolveIdsPanel;
+
+        if (current != null) {
+            jScrollPane1.setViewportView(null);
+            jScrollPane1.setEnabled(false);
+
+        }
+        current = panel;
+
+        if (current != null) {
+            //enable the 'you must resolve this' label text
+            resolveDeclarationsLabel.setEnabled(true);
+            jScrollPane1.setEnabled(true);
+            //and add the panel
+            jScrollPane1.setViewportView(panel);
         } else {
-            setButtonsGroupSelection(Mode.refactorToNewEmbeddedSection);
+            //disable the 'you must resolve this' label text
+            resolveDeclarationsLabel.setEnabled(false);
+            jScrollPane1.setEnabled(false);
         }
 
+        revalidate();
+        repaint();
     }
 
     private void setButtonsGroupSelection(Mode mode) {
@@ -106,17 +196,13 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         JRadioButton select;
         switch (selection) {
             case refactorToExistingEmbeddedSection:
-                select = existingEmbeddedSectionRB;
-                break;
             case refactorToNewEmbeddedSection:
-                select = createNewEmbeddedSectionRB;
+                select = embeddedSectionRB;
                 break;
-            case refactorToReferedExternalSheet:
-                select = usedExternalSheetRB;
-            case refactorToNewExternalSheet:
-                select = newExternalSheetRB;
             case refactorToExistingExternalSheet:
-                select = existingExternalSheetRB;
+            case refactorToReferedExternalSheet:
+                select = externalSheetRB;
+                break;
             default:
                 select = null;
                 assert false;
@@ -124,26 +210,22 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         select.setSelected(true);
     }
 
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        Object s = e.getSource();
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            if (s == existingEmbeddedSectionRB) {
-                selection = Mode.refactorToExistingEmbeddedSection;
-            } else if (s == createNewEmbeddedSectionRB) {
-                selection = Mode.refactorToNewEmbeddedSection;
-            } else if (s == usedExternalSheetRB) {
-                selection = Mode.refactorToReferedExternalSheet;
-            } else if (s == existingExternalSheetRB) {
-                selection = Mode.refactorToExistingExternalSheet;
-            } else if (s == newExternalSheetRB) {
-                selection = Mode.refactorToNewExternalSheet;
-            }
+    private void setSelectorType(SelectorType type) {
+        if (type == SelectorType.ID) {
+            idSelectorTypeRB.setSelected(true);
+        } else if (type == SelectorType.CLASS) {
+            classSelectorTypeRB.setSelected(true);
+        } else {
+            assert false;
         }
     }
 
     Mode getSelectedMode() {
         return selection;
+    }
+
+    SelectorType getSelectorType() {
+        return selectorType;
     }
 
     /** This method is called from within the constructor to
@@ -154,18 +236,18 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
+        refactorToTypeButtonGroup = new javax.swing.ButtonGroup();
+        selectorTypeButtonGroup = new javax.swing.ButtonGroup();
         label = new javax.swing.JLabel();
-        existingEmbeddedSectionRB = new javax.swing.JRadioButton();
-        createNewEmbeddedSectionRB = new javax.swing.JRadioButton();
-        usedExternalSheetRB = new javax.swing.JRadioButton();
+        embeddedSectionRB = new javax.swing.JRadioButton();
+        externalSheetRB = new javax.swing.JRadioButton();
         existingEmbeddedSectionsComboBox = new javax.swing.JComboBox();
-        usedExternalSheetsComboBox = new javax.swing.JComboBox();
-        newExternalSheetRB = new javax.swing.JRadioButton();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        existingExternalSheetRB = new javax.swing.JRadioButton();
-        existingExternalStyleSheetsComboBox = new javax.swing.JComboBox();
+        externalSheetsComboBox = new javax.swing.JComboBox();
+        generatedSelectorTypeLabel = new javax.swing.JLabel();
+        idSelectorTypeRB = new javax.swing.JRadioButton();
+        classSelectorTypeRB = new javax.swing.JRadioButton();
+        resolveDeclarationsLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setRequestFocusEnabled(false);
@@ -173,54 +255,40 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
         label.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "LBL_ExtractInlinedStyleToLabel")); // NOI18N
 
-        buttonGroup1.add(existingEmbeddedSectionRB);
-        org.openide.awt.Mnemonics.setLocalizedText(existingEmbeddedSectionRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExtractToEmbeddedSection")); // NOI18N
-        existingEmbeddedSectionRB.setEnabled(!context.getExistingEmbeddedCssSections().isEmpty());
+        refactorToTypeButtonGroup.add(embeddedSectionRB);
+        org.openide.awt.Mnemonics.setLocalizedText(embeddedSectionRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExtractToEmbeddedSection")); // NOI18N
 
-        buttonGroup1.add(createNewEmbeddedSectionRB);
-        org.openide.awt.Mnemonics.setLocalizedText(createNewEmbeddedSectionRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_createNewEmbeddedSection")); // NOI18N
+        refactorToTypeButtonGroup.add(externalSheetRB);
+        org.openide.awt.Mnemonics.setLocalizedText(externalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExternalStyleSheet")); // NOI18N
+        externalSheetRB.setEnabled(!allStylesheets.isEmpty());
 
-        buttonGroup1.add(usedExternalSheetRB);
-        org.openide.awt.Mnemonics.setLocalizedText(usedExternalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ExistingExternalStyleSheet")); // NOI18N
-        usedExternalSheetRB.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
-
-        existingEmbeddedSectionsComboBox.setModel(createExistingEmbeddedCssSectionsModel());
-        existingEmbeddedSectionsComboBox.setEnabled(!context.getExistingEmbeddedCssSections().isEmpty());
+        existingEmbeddedSectionsComboBox.setModel(createEmbeddedCssSectionsModel());
         existingEmbeddedSectionsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 existingEmbeddedSectionsComboBoxActionPerformed(evt);
             }
         });
 
-        usedExternalSheetsComboBox.setModel(createExternalStylesheetsModel());
-        usedExternalSheetsComboBox.setEnabled(!context.getLinkedExternalStylesheets().isEmpty());
-        usedExternalSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
+        externalSheetsComboBox.setModel(createExternalStylesheetsModel());
+        externalSheetsComboBox.setEnabled(!allStylesheets.isEmpty());
+        externalSheetsComboBox.setRenderer(new ExternalStylesheetsListCellRenderer(externalSheetsComboBox.getRenderer()));
+        externalSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                usedExternalSheetsComboBoxActionPerformed(evt);
+                externalSheetsComboBoxActionPerformed(evt);
             }
         });
 
-        buttonGroup1.add(newExternalSheetRB);
-        org.openide.awt.Mnemonics.setLocalizedText(newExternalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_NewExternalStyleSheet")); // NOI18N
-        newExternalSheetRB.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(generatedSelectorTypeLabel, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_GenerateSelectorType")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_PreferClassesUsages")); // NOI18N
-        jCheckBox1.setEnabled(false);
+        selectorTypeButtonGroup.add(idSelectorTypeRB);
+        org.openide.awt.Mnemonics.setLocalizedText(idSelectorTypeRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_IdType")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_AllowUsingExistingClasses")); // NOI18N
-        jCheckBox2.setEnabled(false);
+        selectorTypeButtonGroup.add(classSelectorTypeRB);
+        org.openide.awt.Mnemonics.setLocalizedText(classSelectorTypeRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ClassType")); // NOI18N
 
-        buttonGroup1.add(existingExternalSheetRB);
-        org.openide.awt.Mnemonics.setLocalizedText(existingExternalSheetRB, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_ChooseExternalStyleSheet")); // NOI18N
-        existingExternalSheetRB.setEnabled(!allStylesheets.isEmpty());
-
-        existingExternalStyleSheetsComboBox.setModel(createExistingExternalSheetsModel());
-        existingExternalStyleSheetsComboBox.setEnabled(!allStylesheets.isEmpty());
-        existingExternalStyleSheetsComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                existingExternalStyleSheetsComboBoxActionPerformed(evt);
-            }
-        });
+        resolveDeclarationsLabel.setLabelFor(jScrollPane1);
+        org.openide.awt.Mnemonics.setLocalizedText(resolveDeclarationsLabel, org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_UnresolvedDeclarationsLabel")); // NOI18N
+        resolveDeclarationsLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ExtractInlinedStylePanel.class, "TT_UnresolvedDeclarationsLabel")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -228,31 +296,21 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(label)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(existingEmbeddedSectionRB)
-                .addGap(30, 30, 30)
-                .addComponent(existingEmbeddedSectionsComboBox, 0, 173, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(generatedSelectorTypeLabel)
+                .addGap(18, 18, 18)
+                .addComponent(idSelectorTypeRB)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(classSelectorTypeRB))
+            .addComponent(resolveDeclarationsLabel)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(createNewEmbeddedSectionRB)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(usedExternalSheetRB)
-                        .addGap(42, 42, 42)
-                        .addComponent(usedExternalSheetsComboBox, 0, 173, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
+                    .addComponent(externalSheetRB)
+                    .addComponent(embeddedSectionRB))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox1)
-                    .addComponent(jCheckBox2))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(existingExternalSheetRB)
-                .addGap(22, 22, 22)
-                .addComponent(existingExternalStyleSheetsComboBox, 0, 173, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(newExternalSheetRB)
-                .addContainerGap())
+                    .addComponent(externalSheetsComboBox, 0, 345, Short.MAX_VALUE)
+                    .addComponent(existingEmbeddedSectionsComboBox, 0, 345, Short.MAX_VALUE)))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -260,106 +318,100 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 .addComponent(label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(existingEmbeddedSectionRB)
+                    .addComponent(embeddedSectionRB)
                     .addComponent(existingEmbeddedSectionsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(createNewEmbeddedSectionRB)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(externalSheetRB)
+                    .addComponent(externalSheetsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(usedExternalSheetRB)
-                    .addComponent(usedExternalSheetsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(existingExternalSheetRB)
-                    .addComponent(existingExternalStyleSheetsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(generatedSelectorTypeLabel)
+                    .addComponent(idSelectorTypeRB)
+                    .addComponent(classSelectorTypeRB))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(newExternalSheetRB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(jCheckBox1)
+                .addComponent(resolveDeclarationsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox2)
-                .addGap(30, 30, 30))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void existingEmbeddedSectionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingEmbeddedSectionsComboBoxActionPerformed
-        existingEmbeddedSectionRB.setSelected(true);
+        embeddedSectionRB.setSelected(true);
     }//GEN-LAST:event_existingEmbeddedSectionsComboBoxActionPerformed
 
-    private void usedExternalSheetsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usedExternalSheetsComboBoxActionPerformed
-        usedExternalSheetRB.setSelected(true);
-    }//GEN-LAST:event_usedExternalSheetsComboBoxActionPerformed
-
-    private void existingExternalStyleSheetsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingExternalStyleSheetsComboBoxActionPerformed
-        existingExternalSheetRB.setSelected(true);
-    }//GEN-LAST:event_existingExternalStyleSheetsComboBoxActionPerformed
+    private void externalSheetsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalSheetsComboBoxActionPerformed
+        externalSheetRB.setSelected(true);
+    }//GEN-LAST:event_externalSheetsComboBoxActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JRadioButton createNewEmbeddedSectionRB;
-    private javax.swing.JRadioButton existingEmbeddedSectionRB;
+    private javax.swing.JRadioButton classSelectorTypeRB;
+    private javax.swing.JRadioButton embeddedSectionRB;
     private javax.swing.JComboBox existingEmbeddedSectionsComboBox;
-    private javax.swing.JRadioButton existingExternalSheetRB;
-    private javax.swing.JComboBox existingExternalStyleSheetsComboBox;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
+    private javax.swing.JRadioButton externalSheetRB;
+    private javax.swing.JComboBox externalSheetsComboBox;
+    private javax.swing.JLabel generatedSelectorTypeLabel;
+    private javax.swing.JRadioButton idSelectorTypeRB;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel label;
-    private javax.swing.JRadioButton newExternalSheetRB;
-    private javax.swing.JRadioButton usedExternalSheetRB;
-    private javax.swing.JComboBox usedExternalSheetsComboBox;
+    private javax.swing.ButtonGroup refactorToTypeButtonGroup;
+    private javax.swing.JLabel resolveDeclarationsLabel;
+    private javax.swing.ButtonGroup selectorTypeButtonGroup;
     // End of variables declaration//GEN-END:variables
 
-    private ComboBoxModel createExistingEmbeddedCssSectionsModel() {
+    private ComboBoxModel createEmbeddedCssSectionsModel() {
         List<OffsetRange> ranges = context.getExistingEmbeddedCssSections();
-        String[] values = new String[ranges.size()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = getRenderStringFromOffsetRange(ranges.get(i));
+        EmbeddedSectionItem[] values = new EmbeddedSectionItem[ranges.size() + 1];
+
+        //new embedded section item
+        values[0] = new CreateNewEmbeddedSectionItem();
+
+        //existing sections
+        for (int i = 0; i < values.length - 1; i++) {
+            OffsetRange astRange = ranges.get(i);
+            //recompute to document offset range
+            OffsetRange range = context.getDocumentRange(astRange);
+            values[i + 1] = new EmbeddedSectionItem(range,
+                    getRenderStringFromOffsetRange(range));
         }
-        return new DefaultComboBoxModel(values) {
-        };
+
+        return new DefaultComboBoxModel(values);
     }
 
     private ComboBoxModel createExternalStylesheetsModel() {
         List<HtmlLinkEntry> links = context.getLinkedExternalStylesheets();
-        String[] values = new String[links.size()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = links.get(i).getName();
+        Collection<FileObject> linkedObjects = new HashSet<FileObject>();
+        for (HtmlLinkEntry entry : links) {
+            linkedObjects.add(entry.getFileReference().target());
         }
-        return new DefaultComboBoxModel(values) {
-        };
-    }
 
-    private ComboBoxModel createExistingExternalSheetsModel() {
-        FileObject webRoot = ProjectWebRootQuery.getWebRoot(context.getFile());
-        String[] values = new String[allStylesheets.size()];
-        int index = 0;
-        for (FileObject file : allStylesheets) {
-            String relativePath = FileUtil.getRelativePath(webRoot, file);
-            values[index++] = relativePath;
+        List<ExternalStyleSheetItem> items = new ArrayList<ExternalStyleSheetItem>();
+        for (FileObject stylesheet : allStylesheets) {
+            if (linkedObjects.contains(stylesheet)) {
+                items.add(new ReferedExternalStyleSheetItem(stylesheet));
+            } else {
+                items.add(new ExternalStyleSheetItem(stylesheet));
+            }
         }
-        return new DefaultComboBoxModel(values);
 
+        return new DefaultComboBoxModel(items.toArray(new ExternalStyleSheetItem[0]));
     }
 
-    OffsetRange getSelectedExistingEmbeddedSection() {
-        int index = existingEmbeddedSectionsComboBox.getSelectedIndex();
-        return context.getExistingEmbeddedCssSections().get(index);
-    }
-
-    FileObject getSelectedUsedExternalStylesheet() {
-        int index = usedExternalSheetsComboBox.getSelectedIndex();
-        return context.getLinkedExternalStylesheets().get(index).getFileReference().target();
+    OffsetRange getSelectedEmbeddedSection() {
+        EmbeddedSectionItem selected =
+                (EmbeddedSectionItem) existingEmbeddedSectionsComboBox.getSelectedItem();
+        return selected.range;
     }
 
     FileObject getSelectedExternalStyleSheet() {
-        int index = existingExternalStyleSheetsComboBox.getSelectedIndex();
-        return allStylesheets.get(index);
-    }
-
-    FileObject getNewStyleSheet() {
-        return newStyleSheet;
+        ExternalStyleSheetItem selected =
+                (ExternalStyleSheetItem) externalSheetsComboBox.getSelectedItem();
+        return selected.getFile();
     }
 
     String getRenderStringFromOffsetRange(final OffsetRange range) {
+        if(range == null) {
+            return NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_SectionCannotDetermineLines"); //NOI18N
+        }
         //compute lines for each offset
         final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
         context.getDocument().render(new Runnable() {
@@ -378,11 +430,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
 
         OffsetRange line = ret.get();
 
-        return new StringBuilder().append("Section from line ").
-                append(line.getStart() + 1). //lines in editor are counted from 1
-                append(" to ").
-                append(line.getEnd() + 1). //lines in editor are counted from 1
-                toString();
+        return NbBundle.getMessage(ExtractInlinedStylePanel.class,
+                "MSG_SectionFromTo",  //NOI18N
+                line.getStart() + 1,
+                line.getEnd() + 1);
+
     }
 
     @Override
@@ -394,5 +446,104 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
     public void initialize() {
         //put initialization code here
         //when is this called???
+    }
+
+    private static class EmbeddedSectionItem {
+
+        public OffsetRange range;
+        public String displayName;
+
+        public EmbeddedSectionItem(OffsetRange range, String displayName) {
+            this.range = range;
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
+    private static class CreateNewEmbeddedSectionItem extends EmbeddedSectionItem {
+
+        private static final String TEXT =
+                NbBundle.getMessage(ExtractInlinedStylePanel.class, "MSG_createNewEmbeddedSection");
+
+        public CreateNewEmbeddedSectionItem() {
+            super(null, TEXT);
+        }
+    }
+
+    private static class ExternalStyleSheetItem implements Comparable {
+
+        private FileObject file;
+        private String displayName;
+
+        public ExternalStyleSheetItem(FileObject file) {
+            this.file = file;
+            FileObject webRoot = ProjectWebRootQuery.getWebRoot(file);
+            //XXX may be null if out of web root
+            displayName = FileUtil.getRelativePath(webRoot, file);
+        }
+
+        public FileObject getFile() {
+            return file;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        //sort by file pathnames
+        @Override
+        public int compareTo(Object o) {
+            if (!(o instanceof ExternalStyleSheetItem)) {
+                throw new ClassCastException();
+            }
+            ExternalStyleSheetItem esi = (ExternalStyleSheetItem) o;
+            return getFile().getPath().compareTo(esi.getFile().getPath());
+        }
+    }
+
+    private static class ReferedExternalStyleSheetItem extends ExternalStyleSheetItem {
+
+        public ReferedExternalStyleSheetItem(FileObject file) {
+            super(file);
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o instanceof ReferedExternalStyleSheetItem) {
+                return super.compareTo(o);
+            } else if (o instanceof ExternalStyleSheetItem) {
+                return +1; //refered external stylesheet is always before normal stylesheet
+            } else {
+                throw new ClassCastException();
+            }
+        }
+    }
+
+    private class ExternalStylesheetsListCellRenderer implements ListCellRenderer {
+
+        private ListCellRenderer orig;
+
+        public ExternalStylesheetsListCellRenderer(ListCellRenderer orig) {
+            this.orig = orig;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component res = orig.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof ReferedExternalStyleSheetItem) {
+                if (res instanceof JLabel) {
+                    Font font = res.getFont();
+                    if (!font.isBold()) {
+                        res.setFont(font.deriveFont(Font.BOLD));
+                    }
+                }
+            }
+            return res;
+        }
     }
 }

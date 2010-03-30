@@ -43,12 +43,14 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -66,6 +68,8 @@ import javax.swing.SwingUtilities;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -73,6 +77,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.swing.etable.ETableColumn;
 
 import org.openide.awt.Actions;
 import org.openide.explorer.view.CheckableNode;
@@ -344,13 +349,40 @@ public class TreeModelNode extends AbstractNode {
         if (context) 
             return treeModelRoot.getRootNode ().getActions (false);
         try {
-            return model.getActions (object);
+            return filterActionsWhenSorted(model.getActions (object));
         } catch (UnknownTypeException e) {
             // NodeActionsProvider is voluntary
             return new Action [0];
         }
     }
-    
+
+    private boolean isTableSorted() {
+        TableColumnModel tcm = treeModelRoot.getOutlineView().getOutline().getColumnModel();
+        Enumeration<TableColumn> cen = tcm.getColumns();
+        while (cen.hasMoreElements()) {
+            ETableColumn etc = (ETableColumn) cen.nextElement();
+            if (etc.isSorted()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Action[] filterActionsWhenSorted(Action[] actions) {
+        if (actions == null || actions.length == 0) {
+            return actions;
+        }
+        for (int i = 0; i < actions.length; i++) {
+            Action a = actions[i];
+            if (a == null) continue;
+            boolean disabled = Boolean.TRUE.equals(a.getValue("DisabledWhenInSortedTable"));    // NOI18N
+            if (disabled) {
+                actions[i] = new DisabledWhenSortedAction(a);
+            }
+        }
+        return actions;
+    }
+
     @Override
     public Action getPreferredAction () {
         return new AbstractAction () {
@@ -898,6 +930,54 @@ public class TreeModelNode extends AbstractNode {
     }
 
     // innerclasses ............................................................
+
+    private class DisabledWhenSortedAction implements Action {
+
+        private Action a;
+
+        public DisabledWhenSortedAction(Action a) {
+            this.a = a;
+        }
+
+        @Override
+        public Object getValue(String key) {
+            return a.getValue(key);
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+            a.putValue(key, value);
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+            a.setEnabled(b);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            if (isTableSorted()) {
+                return false;
+            } else {
+                return a.isEnabled();
+            }
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            a.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            a.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            a.actionPerformed(e);
+        }
+    }
 
     private static final class CheckNodeCookieImpl implements CheckableNode {
 

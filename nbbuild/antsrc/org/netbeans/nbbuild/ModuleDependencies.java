@@ -412,7 +412,7 @@ public class ModuleDependencies extends Task {
                     cntFriends++;
                 }
                 if (cntFriends > maxFriends) {
-                    throw new BuildException("Too many intercluster friends (" + cntFriends + ") for module " + info.getName(false));
+                    w.println("  WARNING: excessive number of intercluster friends (" + cntFriends + ")");
                 }
                 
                 if (cntFriends > 0) {

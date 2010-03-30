@@ -60,6 +60,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Lahoda
  */
 public class SourceFileObjectTest extends NbTestCase {
+    private static final RequestProcessor RP = new RequestProcessor(SourceFileObjectTest.class.getName(), 1, false, false);
     
     public SourceFileObjectTest(String testName) {
         super(testName);
@@ -96,7 +97,7 @@ public class SourceFileObjectTest extends NbTestCase {
 
         public CharSequence filterCharSequence(CharSequence charSequence) {
             try {
-                RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
+                RequestProcessor.Task t = RP.post(new Runnable() {
                     public void run() {
                         try {
                             doc.insertString(0, "1", null);

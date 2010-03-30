@@ -45,6 +45,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +59,21 @@ import javax.swing.text.View;
 /**
  * Base class for views in editor view hierarchy.
  * <br/>
- * Box views should also implement {@link Parent}.
+ * In general there are three types of views:<ul>
+ * <li>Document view</li>
+ * <li>Paragraph views</li>
+ * <li>Children of paragraph views which include highlights view, newline view and others.</li>
+ * </ul>
+ * <br/>
+ * Paragraph views have their start offset based over a swing text position. Their end offset
+ * is based on last child's end offset.
+ * <br/>
+ * Children of paragraph views have their start offset based over a relative distance
+ * to their parent's paragraph view's start offset. Therefore their start offset does not mutate
+ * upon modification unless the whole paragraph's start offset mutates.
+ * Their {@link #getLength()} method should remain stable upon document mutations
+ * (this way the view builder can iterate over them when calculating last affected view
+ * once the new views become created).
  *
  * @author Miloslav Metelka
  */
@@ -65,7 +81,7 @@ import javax.swing.text.View;
 public abstract class EditorView extends View {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorView.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(EditorView.class.getName());
 
     /**
      * Raw offset along the parent's major axis (axis along which the children are laid out).
@@ -431,7 +447,7 @@ public abstract class EditorView extends View {
                     } else if (childStartOffset > childEndOffset) {
                         err = "childStartOffset=" + childStartOffset + " > childEndOffset=" + childEndOffset; // NOI18N
                     } else if (childEndOffset > endOffset) {
-                        err = "childEndOffset=" + childEndOffset + " > endOffset=" + endOffset; // NOI18N
+                        err = "childEndOffset=" + childEndOffset + " > parentEndOffset=" + endOffset; // NOI18N
                     } else {
                         err = child.findTreeIntegrityError();
                         noChildInfo = true;
@@ -473,6 +489,31 @@ public abstract class EditorView extends View {
         if (bias == null) { // Position.Bias is final class so only null value is invalid
             throw new IllegalArgumentException("Null bias prohibited.");
         }
+    }
+
+    public interface Parent {
+
+        /**
+         * Get start offset of a child view based on view's raw offset.
+         * @param rawOffset relative child's raw offset.
+         * @return real offset.
+         */
+        int getViewOffset(int rawOffset);
+
+        /**
+         * Get cached text layout for the given child view.
+         *
+         * @param textLayoutView non-null text layout view.
+         * @return cached (or created) text layout.
+         */
+        TextLayout getTextLayout(TextLayoutView textLayoutView);
+
+        /**
+         * Get font rendering context that for example may be used for text layout creation.
+         * @return font rendering context.
+         */
+        FontRenderContext getFontRenderContext();
+
     }
 
 }

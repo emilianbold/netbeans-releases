@@ -1,2 +1,2 @@
 #!/bin/sh
-ant build-nozip commit-validation
+ant -Dcontinue.after.failing.tests=true build-nozip commit-validation

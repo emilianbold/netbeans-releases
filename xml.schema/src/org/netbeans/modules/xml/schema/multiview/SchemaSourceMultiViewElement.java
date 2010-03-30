@@ -424,7 +424,8 @@ public class SchemaSourceMultiViewElement extends CloneableEditor
 			SchemaEditorSupport support = schemaDataObject.getSchemaEditorSupport();
 			if(support==null) return null;
 			SchemaModel model = support.getModel();
-			if(model==null||model.getState()!=SchemaModel.State.VALID) return null;
+			if(model==null || model.getRootComponent() == null ||
+                    model.getState()!=SchemaModel.State.VALID) return null;
 			if(rootNode==null)
 				rootNode = new StructuralSchemaNodeFactory(support.getModel(),
 						schemaDataObject.getNodeDelegate().getLookup()).createRootNode();

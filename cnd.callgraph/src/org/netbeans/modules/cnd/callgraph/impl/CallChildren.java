@@ -39,9 +39,10 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
-import org.netbeans.modules.cnd.callgraph.api.*;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.callgraph.api.Call;
+import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -57,6 +58,7 @@ public class CallChildren extends Children.Keys<Call> {
     private Node parent;
     private boolean isInited = false;
     private boolean isCalls;
+    private static final RequestProcessor RP = new RequestProcessor(CallChildren.class.getName(), 1);
 
     public CallChildren(Call call, CallGraphState model, boolean isCalls) {
         this.call = call;
@@ -104,6 +106,7 @@ public class CallChildren extends Children.Keys<Call> {
         setKeys(new Call[0]);
     }
     
+    @Override
     protected Node[] createNodes(Call call) {
         if (call instanceof LoadingNode) {
             return new Node[]{(Node)call};
@@ -154,7 +157,8 @@ public class CallChildren extends Children.Keys<Call> {
             setKeys(new Call[0]);
         } else {
             setKeys(new Call[]{new LoadingNode()});
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     resetKeys();
                 }

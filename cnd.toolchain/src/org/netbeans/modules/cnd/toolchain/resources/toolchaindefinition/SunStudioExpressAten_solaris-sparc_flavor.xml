@@ -45,6 +45,6 @@ made subject to such option by the copyright holder.
     <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 5/10 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_sparc"/>
     <default_locations>
-        <platform os="sun_sparc" directory="/opt/aten/bin"/>
+        <platform os="sun_sparc" directory="/opt/solstudioex1005/bin"/>
     </default_locations>
 </toolchaindefinition>

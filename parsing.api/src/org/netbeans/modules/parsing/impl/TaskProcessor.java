@@ -73,6 +73,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -1069,17 +1070,25 @@ public class TaskProcessor {
         }
 
         public Void get() throws InterruptedException, ExecutionException {
+            checkCaller();
             this.sync.await();
             return null;
         }
 
         public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            checkCaller();
             this.sync.await(timeout, unit);
             return null;
         }
 
         private void taskFinished () {
             this.sync.countDown();
+        }
+
+        private void checkCaller() {
+            if (RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread())) {
+                throw new IllegalStateException("ScanSync.get called by protected mode owner.");    //NOI18N
+            }
         }
 
     }

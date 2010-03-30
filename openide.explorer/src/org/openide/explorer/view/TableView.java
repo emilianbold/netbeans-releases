@@ -51,6 +51,7 @@ import java.beans.VetoableChangeListener;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Properties;
+import javax.swing.AbstractButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -63,6 +64,7 @@ import javax.swing.table.TableModel;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.TableColumnSelector;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -615,6 +617,16 @@ public class TableView extends JScrollPane {
 
         @Override
         public Object transformValue(Object value) {
+            if (value instanceof ETableColumn) {
+                ETableColumn c = (ETableColumn) value;
+                return c.getHeaderValue ().toString ();
+            } else if (value instanceof AbstractButton) {
+                AbstractButton b = (AbstractButton) value;
+                Mnemonics.setLocalizedText (b, b.getText ());
+                return b;
+            } else if (value instanceof VisualizerNode) {
+                return Visualizer.findNode (value);
+            }
             return PropertiesRowModel.getValueFromProperty(value);
         }
         

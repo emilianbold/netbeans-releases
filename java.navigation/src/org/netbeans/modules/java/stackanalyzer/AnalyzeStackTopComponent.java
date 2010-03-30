@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.java.stackanalyzer;
 
+import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -107,6 +109,68 @@ final class AnalyzeStackTopComponent extends TopComponent {
                 open (currentLine);
             }
         });
+        list.addMouseMotionListener (new MouseAdapter () {
+
+            @Override
+            public void mouseMoved (MouseEvent e) {
+                int i = list.locationToIndex (e.getPoint ());
+                if (i >= 0) {
+                    Rectangle r = list.getCellBounds (i, i);
+                    if (r.contains (e.getPoint ())) {
+                        String line = (String) list.getModel ().getElementAt (i);
+                        Link link = StackLineAnalyser.analyse (line);
+                        if (link != null && link.hasSource ()) {
+                            list.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
+                            return;
+                        }
+                    }
+                }
+                list.setCursor (Cursor.getDefaultCursor ());
+            }
+
+            @Override
+            public void mouseExited (MouseEvent e) {
+                list.setCursor (Cursor.getDefaultCursor ());
+            }
+        });
+    }
+
+    /**
+     * Reads the lines from the supplied reader and fills the supplied
+     * model with the lines.
+     * @param r
+     * @param model
+     */
+    static void fillListModel(BufferedReader r, DefaultListModel model) {
+        String currentLine = null;
+        String lastLine = null;
+        try {
+            while ((currentLine = r.readLine()) != null) {
+                currentLine = currentLine.trim();
+                if (StackLineAnalyser.matches(currentLine)) {
+                    if (lastLine != null) {
+                        model.addElement(lastLine);
+                    }
+                    model.addElement(currentLine);
+                    lastLine = null;
+                } else {
+                    if (lastLine == null) {
+                        lastLine = currentLine;
+                    } else {
+                        String together = lastLine + currentLine;
+                        if (StackLineAnalyser.matches(together)) {
+                            model.addElement(together);
+                            lastLine = null;
+                        } else {
+                            model.addElement(lastLine);
+                            lastLine = currentLine;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -173,26 +237,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
             Reader reader = DataFlavor.stringFlavor.getReaderForText (transferable);
             BufferedReader r = new BufferedReader (reader);
             DefaultListModel model = new DefaultListModel ();
-            String currentLine = null;
-            String lastLine = null;
-            try {
-                for (;;) {
-                    currentLine = r.readLine ();
-                    if (currentLine == null) break;
-                    currentLine = currentLine.trim ();
-                    if (lastLine == null && currentLine.equals ("at")) {
-                        lastLine = currentLine;
-                        continue;
-                    }
-                    if (lastLine != null) {
-                        currentLine = lastLine + ' ' + currentLine;
-                        lastLine = null;
-                    }
-                    model.addElement (currentLine);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            fillListModel(r, model);
             list.setModel (model);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace (ex);

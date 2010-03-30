@@ -346,7 +346,13 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
-        return new VariablesFormatter[] { charSequence, collection, map, mapEntry };
+        VariablesFormatter enumFormatter = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_EnumFormatter"));
+        enumFormatter.setClassTypes("java.lang.Enum");
+        enumFormatter.setIncludeSubTypes(true);
+        enumFormatter.setValueFormatCode("toString()");
+        enumFormatter.isDefault = true;
+
+        return new VariablesFormatter[] { charSequence, collection, map, mapEntry, enumFormatter };
     }
 
 

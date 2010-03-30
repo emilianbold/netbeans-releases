@@ -161,7 +161,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    RequestProcessor requestProcessor = null;
+    static RequestProcessor requestProcessor = null;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -706,7 +706,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Gets a request processor which is able to cancel tasks.
      */
-    private RequestProcessor getRequestProcessor() {
+    private static synchronized RequestProcessor getRequestProcessor() {
         if (requestProcessor == null) {
             requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);  // NOI18N
         }

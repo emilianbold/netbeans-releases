@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
  * @author Alexander Simon
  */
 public class DwarfRelaDebugInfoSection extends ElfSection {
-    private Map<Long, Long> table = new HashMap<Long,Long>();
+    private final Map<Long, Long> table = new HashMap<Long,Long>();
 
     public DwarfRelaDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
@@ -67,7 +67,7 @@ public class DwarfRelaDebugInfoSection extends ElfSection {
     }
 
     @Override
-    public DwarfArangesSection read() throws IOException {
+    public final DwarfArangesSection read() throws IOException {
         long sectionStart = header.getSectionOffset();
         long sectionEnd = header.getSectionSize() + sectionStart;
 

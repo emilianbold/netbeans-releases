@@ -52,6 +52,7 @@ import com.sun.jdi.CharType;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleType;
@@ -351,6 +352,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                 } else {
+                    Assert.error(arg0, "invokeInstanceMethodAsStatic", methodName);
                     type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
                 }
             }
@@ -732,7 +734,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (left instanceof ClassType) {
             ClassType classLeft = (ClassType) left;
             if (right instanceof InterfaceType) {
-                List<InterfaceType> ifaces = classLeft.allInterfaces();
+                List<InterfaceType> ifaces;
+                try {
+                    ifaces = classLeft.allInterfaces();
+                } catch (ClassNotPreparedException cnpex) {
+                    return false;
+                }
                 for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
                     InterfaceType type = i.next();
                     if (type.equals(right)) return true;
@@ -750,7 +757,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (left instanceof InterfaceType) {
             InterfaceType intLeft = (InterfaceType) left;
             if (right instanceof InterfaceType) {
-                List<InterfaceType> ifaces = intLeft.superinterfaces();
+                List<InterfaceType> ifaces;
+                try {
+                    ifaces = intLeft.superinterfaces();
+                } catch (ClassNotPreparedException cnpex) {
+                    return false;
+                }
                 for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
                     InterfaceType type = i.next();
                     if (type.equals(right)) return true;

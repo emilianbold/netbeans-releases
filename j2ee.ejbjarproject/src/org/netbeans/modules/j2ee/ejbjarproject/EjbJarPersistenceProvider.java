@@ -295,6 +295,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
                         if (ap == null) {
                             ap = "";
                         }
+                        boolean changed = false;
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
                         if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
@@ -307,9 +308,17 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
                                 boolean turnOn = ap.length()==0;//we will switch generation on only if there was no processors even by default properties "save" have case on existence of ap
                                 ap = ap + (ap.length() > 0 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
                                 prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
+                                changed = true;
                                 if( turnOn ) {
                                     prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "false");//NOI18N
                                 }
+                            }
+                        }
+                        if (!"true".equals(prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))) {
+                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true");    //NOI18N
+                            changed = true;
+                        }
+                        if(changed) {
                                 project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
                                 try {
                                     ProjectManager.getDefault().saveProject(project);
@@ -318,7 +327,6 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
                                 } catch (IllegalArgumentException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
-                            }
                         }
                     }
                 });

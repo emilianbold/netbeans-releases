@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", category="Formatting", position=100)
 public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCategoryProvider {
 
+    @Override
     public ProjectCustomizer.Category createCategory(Lookup look) {
         return ProjectCustomizer.Category.create(
                 "checkstyle",
@@ -60,6 +61,7 @@ public class CheckstyleCustomizerPanel implements ProjectCustomizer.CompositeCat
                 null);
     }
 
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category cat, Lookup look) {
         ModelHandle handle = look.lookup(ModelHandle.class);
         return new CheckstylePanel(handle, cat);

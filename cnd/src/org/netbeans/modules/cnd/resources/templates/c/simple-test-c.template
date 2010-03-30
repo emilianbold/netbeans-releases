@@ -14,8 +14,11 @@
 
 void test1() {
     printf("%<%NAME%>% test 1\n");
+}
 
-    //printf("%%TEST_FAILED%% time=0 testname=test1 (%<%NAME%>%) message=error message location= \n");
+void test2() {
+    printf("%<%NAME%>% test 2\n");
+    printf("%%TEST_FAILED%% time=0 testname=test2 (%<%NAME%>%) message=error message sample\n");
 }
 
 int main(int argc, char** argv) {
@@ -25,6 +28,10 @@ int main(int argc, char** argv) {
     printf("%%TEST_STARTED%% test1 (%<%NAME%>%)\n");
     test1();
     printf("%%TEST_FINISHED%% time=0 test1 (%<%NAME%>%) \n");
+
+    printf("%%TEST_STARTED%% test2 (%<%NAME%>%)\n");
+    test2();
+    printf("%%TEST_FINISHED%% time=0 test2 (%<%NAME%>%) \n");
 
     printf("%%SUITE_FINISHED%% time=0\n");
 

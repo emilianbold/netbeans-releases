@@ -208,8 +208,33 @@ public abstract class JPDADebugger {
      * @param connector The listening connector
      * @param args The arguments
      * @param services The additional services
+     * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
+     * returns an empty array
      */
     public static void startListening (
+        ListeningConnector        connector,
+        Map<String, ? extends Argument>  args,
+        Object[]                  services
+    ) throws DebuggerStartException {
+        startListening2(connector, args, services);
+    }
+
+    /**
+     * This utility method helps to start a new JPDA debugger session.
+     * Its implementation use {@link ListeningDICookie} and
+     * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
+     * It's identical to {@link #startListening(com.sun.jdi.connect.ListeningConnector, java.util.Map, java.lang.Object[])},
+     * but returns the started engines.
+     *
+     * @param connector The listening connector
+     * @param args The arguments
+     * @param services The additional services
+     * @return A non-empty array of started engines (since 2.26)
+     * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
+     * returns an empty array
+     * @since 2.26
+     */
+    public static DebuggerEngine[] startListening2 (
         ListeningConnector        connector,
         Map<String, ? extends Argument>  args,
         Object[]                  services
@@ -231,6 +256,7 @@ public abstract class JPDADebugger {
             throw new DebuggerStartException(
                     NbBundle.getMessage(JPDADebugger.class, "MSG_NO_DEBUGGER"));
         }
+        return es;
     }
     
     /**

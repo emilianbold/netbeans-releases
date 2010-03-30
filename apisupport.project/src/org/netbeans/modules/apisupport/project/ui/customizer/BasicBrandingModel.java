@@ -44,6 +44,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
@@ -62,6 +63,7 @@ import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -322,7 +324,12 @@ public class BasicBrandingModel {
             getBranding().brandBundleKeys(winsysKeys);
 
             getBranding().brandBundleKeys(generalResourceBundleKeys);
-            
+
+            FileObject root = FileUtil.toFileObject(getBranding().getBrandingRoot());
+            if( null != root ) {
+                root.refresh();
+            }
+
         } else {
             if (brandingChanged && null != suiteProps) {//#115737
                 suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
@@ -349,7 +356,11 @@ public class BasicBrandingModel {
                 
                 g2.dispose();
                 try {
-                    ImageIO.write(bi,"png",icon.getFileLocation());//NOI18N
+                    File iconLocation = icon.getFileLocation();
+                    if( !iconLocation.exists() )
+                        iconLocation.createNewFile();
+                    FileObject fo = FileUtil.toFileObject(iconLocation);
+                    ImageIO.write(bi,"png", null == fo ? new FileOutputStream(iconLocation) : fo.getOutputStream());//NOI18N
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
@@ -772,5 +783,9 @@ public class BasicBrandingModel {
 
     public @CheckForNull BundleKey getWsEnableSliding() {
         return wsEnableSliding;
+    }
+
+    SuiteProperties getSuiteProperties() {
+        return suiteProps;
     }
 }

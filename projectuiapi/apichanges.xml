@@ -104,6 +104,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectChooser.encodingRenderer">
+            <api name="general"/>
+            <summary>Added public static ProjectCustomizer.encodingModel(String) and public static ProjectCustomizer.encodingRenderer()</summary>
+            <version major="1" minor="42"/>
+            <date day="25" month="3" year="2010"/>
+            <author login="tboudreau"/>
+            <compatibility addition="yes" source="compatible" semantic="compatible"/>
+            <description>
+                <p>
+                    Added factory methods to ProjectCustomizer,
+                    for creating a ComboBoxModel of Charsets for all available
+                    character encodings with an initial selection, and a
+                    ListCellRenderer for Charset objects, for use in
+                    combo boxes.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="182711"/>
+        </change>
         <change id="CompositeCategoryProvider.Registration">
             <api name="general"/>
             <summary>Customizer panel registrations using annotations</summary>

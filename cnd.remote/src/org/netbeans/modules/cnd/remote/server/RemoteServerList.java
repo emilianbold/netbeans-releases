@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -293,13 +295,16 @@ public class RemoteServerList implements ServerListImplementation {
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
         ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
-        RemoteUtil.LOGGER.finest("ServerList: set " + records);
+        RemoteUtil.LOGGER.log(Level.FINEST, "ServerList: set {0}", records);
         Collection<ExecutionEnvironment> removed = clear();
+        List<ExecutionEnvironment> allEnv = new ArrayList<ExecutionEnvironment>();
         for (ServerRecord rec : records) {
             addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
             removed.remove(rec.getExecutionEnvironment());
+            allEnv.add(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
+        PasswordManager.getInstance().setServerList(allEnv);
         firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
 

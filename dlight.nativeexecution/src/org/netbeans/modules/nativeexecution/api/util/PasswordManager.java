@@ -38,10 +38,25 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 public final class PasswordManager {
+
+    private static final boolean keepPasswordsInMemory = true;
+    private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
+    private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
+    private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
 
     private static PasswordManager instance = new PasswordManager();
 
@@ -54,16 +69,80 @@ public final class PasswordManager {
 
     public char[] get(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        return Keyring.read(key);
+        if (keepPasswordsInMemory) {
+            String cachedPassword = cache.get(key);
+            if (cachedPassword != null) {
+                return cachedPassword.toCharArray();
+            }
+        }
+        boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
+        if (stored) {
+            char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
+            if (keepPasswordsInMemory && keyringPassword != null) {
+                 cache.put(key, String.valueOf(keyringPassword));
+            }
+            return keyringPassword;
+        }
+        return null;
     }
 
-    public void put(ExecutionEnvironment execEnv, char[] password, boolean store) {
+    public void put(ExecutionEnvironment execEnv, char[] password) {
         String key = execEnv.toString();
-        Keyring.save(key, password, "Password for "+execEnv.getDisplayName()); // NOI18N
+        if (keepPasswordsInMemory) {
+            if (password != null) {
+                cache.put(key, String.valueOf(password));
+            } else {
+                cache.put(key, null);
+            }
+        }
+        boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
+        if (store) {
+            Keyring.save(KEY_PREFIX + key, password,
+                    NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
+        }
     }
 
     public void clearPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        Keyring.delete(key);
+        if (keepPasswordsInMemory) {
+            cache.remove(key);
+        }
+        NbPreferences.forModule(PasswordManager.class).remove(STORE_PREFIX + key);
+        Keyring.delete(KEY_PREFIX + key);
+    }
+
+    public void setServerList(List<ExecutionEnvironment> envs) {
+        Set<String> keys = new HashSet<String>();
+        for(ExecutionEnvironment env : envs) {
+            String key = env.toString();
+            keys.add(KEY_PREFIX+key);
+            keys.add(STORE_PREFIX+key);
+        }
+        try {
+            String[] allKeys = NbPreferences.forModule(PasswordManager.class).keys();
+            for (String aKey : allKeys) {
+                if (!keys.contains(aKey)){
+                    if (aKey.startsWith(STORE_PREFIX)) {
+                        Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
+                        if (keepPasswordsInMemory) {
+                            cache.remove(aKey.substring(STORE_PREFIX.length()));
+                        }
+                    }
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public boolean isRememberPassword(ExecutionEnvironment execEnv){
+        String key = execEnv.toString();
+        boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
+        return stored;
+    }
+
+    public void setRememberPassword(ExecutionEnvironment execEnv, boolean rememberPassword) {
+        String key = execEnv.toString();
+        NbPreferences.forModule(PasswordManager.class).putBoolean(STORE_PREFIX + key, rememberPassword);
     }
 }

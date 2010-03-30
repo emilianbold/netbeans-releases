@@ -1629,7 +1629,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         } else if (smart.getKind() == TypeKind.ARRAY) {
                                             insideNew = false;
                                             try {
-                                                results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                                TypeMirror tm = smart;
+                                                while(tm.getKind() == TypeKind.ARRAY) {
+                                                    tm = ((ArrayType)tm).getComponentType();
+                                                }
+                                                if (tm.getKind().isPrimitive() && startsWith(env, tm.toString(), prefix)) {
+                                                    results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                                } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString(), prefix)) {
+                                                    results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                                }
                                             } catch (IllegalArgumentException iae) {}
                                         }
                                     }
@@ -1887,7 +1895,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     }
                                 } else if (smart.getKind() == TypeKind.ARRAY) {
                                     try {
-                                        results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                        TypeMirror tm = smart;
+                                        while(tm.getKind() == TypeKind.ARRAY) {
+                                            tm = ((ArrayType)tm).getComponentType();
+                                        }
+                                        String prefix = env.getPrefix();
+                                        if (tm.getKind().isPrimitive() && startsWith(env, tm.toString(), prefix)) {
+                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                        } else if ((tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) && startsWith(env, ((DeclaredType)tm).asElement().getSimpleName().toString(), prefix)) {
+                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));
+                                        }
                                     } catch (IllegalArgumentException iae) {}
                                 }
                             }
@@ -2168,7 +2185,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 };
                 for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
-                    results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, false));
+                    results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, true, false));
                 return;
             }
             if (et.getKind() == Tree.Kind.IDENTIFIER) {
@@ -2193,7 +2210,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             };
                             for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
-                                results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, false));
+                                results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, true, false));
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
                         if (ve != null) {
@@ -2220,7 +2237,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             };
                             for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
-                                results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, false));
+                                results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, true, false));
                         }
                         break;
                 }
@@ -2323,7 +2340,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     };
                     for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
-                        results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, false));
+                        results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, true, false));
                     if (et.getKind() == Tree.Kind.MEMBER_SELECT && tm != null && tm.getKind() == TypeKind.ERROR) {
                         addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
@@ -2347,7 +2364,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (ts != null && ts.token().id() == JavaTokenId.BREAK) {
                 while (path != null) {
                     if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT)
-                        results.add(JavaCompletionItem.createVariableItem(((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false));
+                        results.add(JavaCompletionItem.createVariableItem(((LabeledStatementTree)path.getLeaf()).getLabel().toString(), anchorOffset, false, false));
                     path = path.getParentPath();
                 }
             }

@@ -41,6 +41,7 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -86,6 +87,10 @@ public class ToolchainListRootNode extends AbstractNode {
         return NbBundle.getMessage(getClass(), "LBL_ToolchainRootNode");
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] { new ShowToolchainsAction(env, null) };
+    }
 
     private static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
 
@@ -145,6 +150,11 @@ public class ToolchainListRootNode extends AbstractNode {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] { new ShowToolchainsAction(env, compilerSet) };
         }
     }
 

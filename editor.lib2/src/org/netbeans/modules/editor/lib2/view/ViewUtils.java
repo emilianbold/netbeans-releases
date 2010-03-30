@@ -61,7 +61,7 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-final class ViewUtils {
+public final class ViewUtils {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUtils.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUtils.class.getName());

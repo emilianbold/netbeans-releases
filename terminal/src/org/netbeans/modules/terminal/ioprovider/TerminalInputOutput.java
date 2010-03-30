@@ -8,6 +8,10 @@ package org.netbeans.modules.terminal.ioprovider;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.InputEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,7 +47,11 @@ import org.openide.windows.OutputWriter;
 
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
+import org.netbeans.modules.terminal.api.IOVisibility;
+
+import org.netbeans.modules.terminal.api.IOConnect;
 
 /**
  * An implementation of {@link InputOutput} based on
@@ -80,10 +88,12 @@ import org.netbeans.modules.terminal.api.IOTerm;
 public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private final IOContainer ioContainer;
+    private final String name;
 
     private final Terminal terminal;
     private final StreamTerm term;
     private OutputWriter outputWriter;
+    private OutputWriter errWriter;
 
     // shadow copies in support of IOTab
     private Icon icon;
@@ -95,7 +105,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 						new MyIOResizable(),
 						new MyIOEmulation(),
 						new MyIOTerm(),
-                                                new MyIOTab()
+                                                new MyIOTab(),
+						new MyIOVisibility(),
+						new MyIOConnect(),
+						new MyIONotifier()
                                                 );
 
 
@@ -107,9 +120,24 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private int outputColor = 0;
 
+    private PropertyChangeSupport pcs;
+    private VetoableChangeSupport vcs;
+
     @Override
     public Lookup getLookup() {
         return lookup;
+    }
+
+    /* package */ PropertyChangeSupport pcs() {
+	if (pcs == null)
+	    pcs = new PropertyChangeSupport(this);
+	return pcs;
+    }
+
+    /* package */ VetoableChangeSupport vcs() {
+	if (vcs == null)
+	    vcs = new VetoableChangeSupport(this);
+	return vcs;
     }
 
     /**
@@ -297,7 +325,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private class MyIOResizable extends IOResizable {
 
-	// We need a map to help use remove TermListeners from 'term'
+	// We need a map to help us remove TermListeners from 'term'
 	// based on IOResizable.Listener.
 	private Map<Listener, TermListener> listenerMap =
 		new HashMap<Listener, TermListener>();
@@ -348,6 +376,52 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	}
     }
 
+    private class MyIOVisibility extends IOVisibility {
+
+	@Override
+	protected void setVisible(boolean visible) {
+	    final Task task;
+	    if (visible) {
+		task = new Task.Select(ioContainer, terminal);
+	    } else {
+		task = new Task.DeSelect(ioContainer, terminal);
+	    }
+	    task.dispatch();
+	}
+
+	@Override
+	protected void setClosable(boolean closable) {
+	    terminal.setClosable(closable);
+	}
+
+	@Override
+	protected boolean isSupported() {
+	    return true;
+	    // LATER return ioContainer instanceof TerminalContainerImpl;
+	    // We really can't do the above.
+	    // However after IOVisibilityControl.isClosable() switches to
+	    // the push model we'll be able to answer this question more
+	    // accurately by asking ioContainer if it has the IOClosability
+	    // capability.
+	}
+    }
+
+    private class MyIOConnect extends IOConnect {
+
+	@Override
+	protected boolean isConnected() {
+	    return terminal.isConnected();
+	}
+
+	@Override
+	protected void disconnectAll(Runnable continuation) {
+	    // don't use getOut().close() as convenient as that might be
+	    // because getOut() will change states and fire properties.
+	    terminal.setOutConnected(false);	// also "closes" Err
+	    IOTerm.disconnect(TerminalInputOutput.this, continuation);
+	}
+    }
+
     private class MyIOTerm extends IOTerm {
 
 	@Override
@@ -358,28 +432,57 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
 	    term.connect(pin, pout, perr);
+	    terminal.setExtConnected(true);
+	}
+
+	@Override
+	protected void disconnect(final Runnable continuation) {
+	    // Wrap 'continuation' in another one so we can
+	    // set the extConnected state at the right time.
+	    term.disconnect(new Runnable() {
+		@Override
+		public void run() {
+		    terminal.setExtConnected(false);
+		    if (continuation != null)
+			continuation.run();
+		}
+	    });
 	}
     }
 
+    private class MyIONotifier extends IONotifier {
 
-    /* OLD
-    private class MyIOExecution extends IOExecution {
+	@Override
+	protected void addPropertyChangeListener(PropertyChangeListener listener) {
+	    pcs().addPropertyChangeListener(listener);
+	}
 
-        @Override
-        protected void execute(Program program) {
-	    terminal.startProgram(program, true);
-        }
+	@Override
+	protected void removePropertyChangeListener(PropertyChangeListener listener) {
+	    pcs().removePropertyChangeListener(listener);
+	}
+
+	@Override
+	public void addVetoableChangeListener(VetoableChangeListener listener ) {
+	    vcs().addVetoableChangeListener(listener);
+	}
+
+	@Override
+	public void removeVetoableChangeListener(VetoableChangeListener listener ) {
+	    vcs().removeVetoableChangeListener(listener);
+	}
     }
-     */
-
 
 
     /**
      * Delegate prints and writes to a Term via TermWriter.
      */
     private class TermOutputWriter extends OutputWriter {
-        TermOutputWriter() {
+	private final Terminal owner;
+
+        TermOutputWriter(Terminal owner) {
             super(term.getOut());
+	    this.owner = owner;
         }
 
         @Override
@@ -396,6 +499,52 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         public void reset() throws IOException {
             term.clearHistory();
         }
+
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setOutConnected(false);
+	}
+    }
+
+    /**
+     * Delegate prints and writes to a Term via TermWriter.
+     */
+    private final class TermErrWriter extends OutputWriter {
+	private final Terminal owner;
+
+	TermErrWriter(Terminal owner) {
+	    super(term.getOut());
+	    this.owner = owner;
+	}
+
+	@Override
+	public void println(String s, OutputListener l) throws IOException {
+	    TerminalInputOutput.this.println(s, l, false, Color.red);
+	}
+
+	@Override
+	public void println(String s, OutputListener l, boolean important) throws IOException {
+	    TerminalInputOutput.this.println(s, l, important, Color.red);
+	}
+
+	@Override
+	public void println(String x) {
+	    TerminalInputOutput.this.println(x, Color.red);
+	}
+
+	@Override
+	public void reset() throws IOException {
+	    // no-op
+	}
+
+	@Override
+	public void close() {
+	    // Don't really close it
+	    // super.close();
+	    owner.setErrConnected(false);
+	}
     }
 
     private static class TerminalOutputEvent extends OutputEvent {
@@ -412,10 +561,22 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         }
     }
 
+    /**
+     * Adapter to forward Term size change events as property changes.
+     */
+    private class MyTermListener implements TermListener {
+	@Override
+	public void sizeChanged(Dimension cells, Dimension pixels) {
+	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
+	    pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
+	}
+    }
+
     TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
+	this.name = name;
         this.ioContainer = ioContainer;
 
-        terminal = new Terminal(ioContainer, actions, name);
+        terminal = new Terminal(ioContainer, this, actions, name);
 
 	Task task = new Task.Add(ioContainer, terminal);
 	task.dispatch();
@@ -424,6 +585,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         if (! (term instanceof ActiveTerm))
             return;
+
+	term.addListener(new MyTermListener());
 
         ActiveTerm at = (ActiveTerm) term;
 
@@ -454,19 +617,39 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         colorMap.put(Color.white, 37);
     }
 
+    void dispose() {
+	if (outputWriter != null) {
+	    // LATER outputWriter.dispose();
+	    outputWriter = null;
+	}
+	// LATER getIn().eof();
+	// LATER focusTaken = null;
+    }
+
+
     public StreamTerm term() {
         return term;
     }
-    
+
+    Terminal terminal() {
+        return terminal;
+    }
+
+    String name() {
+	return name;
+    }
+
+
     /**
-     * Stream to write to stuff being output by the proceess destined for the
+     * Stream to write to stuff being output by the process destined for the
      * terminal.
      * @return the writer.
      */
     @Override
     public OutputWriter getOut() {
         if (outputWriter == null)
-            outputWriter = new TermOutputWriter();
+            outputWriter = new TermOutputWriter(terminal);
+	terminal.setOutConnected(true);
         return outputWriter;
     }
 
@@ -494,17 +677,25 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public OutputWriter getErr() {
-        throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
+	// workaround for #182063: -  UnsupportedOperationException
+	if (errWriter == null) {
+	    errWriter = new TermErrWriter(terminal);
+	}
+	terminal.setErrConnected(true);
+	return errWriter;
     }
 
     @Override
     public void closeInputOutput() {
-        terminal.close();
+	if (outputWriter != null)
+	    outputWriter.close();
+	Task task = new Task.StrongClose(ioContainer, terminal);
+	task.dispatch();
     }
 
     @Override
     public boolean isClosed() {
-        return terminal.isClosed();
+        return ! terminal.isVisibleInContainer();
     }
 
     @Override
@@ -524,7 +715,6 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void select() {
-        // OLD terminal.select();
 	Task task = new Task.Select(ioContainer, terminal);
 	task.dispatch();
     }

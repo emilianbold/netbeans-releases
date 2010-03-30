@@ -333,34 +333,45 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             }
         } finally {
             if (!isCanceled()) {
-                doc.render(new Runnable() {
-                    public void run() {
-                        if (isCanceled()) {
-                            return;
-                        }
-                        try {
-                            if (!(pane instanceof JEditorPane)) {
-                                Highlighter h = pane.getHighlighter();
+                if (!(pane instanceof JEditorPane)) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            doc.render(new Runnable() {
+                                public void run() {
+                                    if (isCanceled()) {
+                                        return;
+                                    }
+                                    try {
+                                        Highlighter h = pane.getHighlighter();
 
-                                if (h != null) {
-                                    h.removeAllHighlights();
-                                    for (int[] current : localHighlights) {
-                                        h.addHighlight(current[0], current[1], new ErrorHighlightPainter());
+                                        if (h != null) {
+                                            h.removeAllHighlights();
+                                            for (int[] current : localHighlights) {
+                                                h.addHighlight(current[0], current[1], new ErrorHighlightPainter());
+                                            }
+                                        }
+                                    } catch (BadLocationException e) {
+                                        Exceptions.printStackTrace(e);
                                     }
                                 }
-                            } else {
-                                OffsetsBag localHighlightsBag = new OffsetsBag(doc);
-
-                                for (int[] current : localHighlights) {
-                                    localHighlightsBag.addHighlight(current[0], current[1], ERROR);
-                                }
-                                SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
-                            }
-                        } catch (BadLocationException e) {
-                            Exceptions.printStackTrace(e);
+                            });
                         }
-                    }
-                });
+                    });
+                } else {
+                    doc.render(new Runnable() {
+                        public void run() {
+                            if (isCanceled()) {
+                                return;
+                            }
+                            OffsetsBag localHighlightsBag = new OffsetsBag(doc);
+
+                            for (int[] current : localHighlights) {
+                                localHighlightsBag.addHighlight(current[0], current[1], ERROR);
+                            }
+                            SpellcheckerHighlightLayerFactory.getBag(pane).setHighlights(localHighlightsBag);
+                        }
+                    });
+                }
                 
                 FileObject file = getFile(doc);
 
@@ -464,12 +475,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private static final AttributeSet ERROR = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.RED, EditorStyleConstants.Tooltip, NbBundle.getMessage(ComponentPeer.class, "TP_MisspelledWord"));
 
     private static FileObject getFile(Document doc) {
-        DataObject file = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        DataObject dataObject = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
-        if (file == null)
+        if (dataObject == null)
             return null;
 
-        return file.getPrimaryFile();
+        return dataObject.getPrimaryFile();
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -660,6 +671,11 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             try {
                 Rectangle start = pane.modelToView(p0);
                 Rectangle end = pane.modelToView(p1);
+
+                if (start.x < 0) {
+                    LOG.log(Level.INFO, "#182545: negative view position: {0} for: {1}", new Object[] {start, p0});
+                    return;
+                }
 
                 int waveLength = end.x + end.width - start.x;
                 if (waveLength > 0) {
