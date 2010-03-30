@@ -1708,6 +1708,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.project = project;
         }
 
+        @Override
+        public void setName(String s) {
+            super.setName(s.trim()); // IZ #152560
+        }
+
         public Folder getFolder() {
             return folder;
         }
