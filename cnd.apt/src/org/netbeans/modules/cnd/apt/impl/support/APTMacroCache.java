@@ -123,7 +123,7 @@ public abstract class APTMacroCache  {
             APTMacro outMacro = null;
 
             synchronized (lock) {
-                outMacro = storage.addOrGet(macro);
+                outMacro = storage.putIfAbsent(macro);
             }
             assert (outMacro != null);
             assert (outMacro.equals(macro));

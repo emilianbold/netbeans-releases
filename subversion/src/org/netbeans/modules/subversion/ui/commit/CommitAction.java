@@ -712,7 +712,7 @@ public class CommitAction extends ContextAction {
                     return;
                 }
             }
-
+            SvnUtils.refreshFS(commitCandidates.toArray(new File[commitCandidates.size()]));
         } catch (SVNClientException ex) {
             support.annotate(ex);
         } finally {

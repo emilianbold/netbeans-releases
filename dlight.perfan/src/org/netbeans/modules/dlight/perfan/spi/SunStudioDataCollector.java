@@ -361,6 +361,9 @@ public class SunStudioDataCollector
                         loc("ValidationStatus.ErrorWhileValidation", ex.getMessage()), // NOI18N
                         connectAction);
                 return validationStatus;
+            } catch(InterruptedException ex) {
+                validationStatus = ValidationStatus.invalidStatus(loc("ValidationStatus.InterruptedWhileValidation")); // NOI18N
+                return validationStatus;
             }
 
             validateCollectedInfo();
