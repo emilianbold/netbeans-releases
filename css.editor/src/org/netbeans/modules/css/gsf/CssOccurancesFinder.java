@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.css.gsf;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -63,19 +62,16 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
     private int caretDocumentPosition;
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> occurances = Collections.emptyMap();
+    private Map<OffsetRange, ColoringAttributes> occurrences;
 
     @Override
     public void setCaretPosition(int position) {
         caretDocumentPosition = position;
-        
-        //TODO Add an optimalization which caches the occurances for some
-        //document range - typically a token start-end.
     }
 
     @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
-        return occurances;
+        return occurrences;
     }
 
     @Override
@@ -86,6 +82,9 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
     @Override
     public void run(Result result, SchedulerEvent event) {
+        //remove the last occurrences - the CSL caches the last found occurences for us
+        occurrences = null;
+
         if(cancelled) {
             return ;
         }
@@ -122,6 +121,9 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
             @Override
             public void visit(SimpleNode node) {
+                if (cancelled) {
+                    return;
+                }
                 if(currentNode.kind() == node.kind() && currentNode.image().equals(node.image())) {
                     //something to highlight
                     int docFrom = snapshot.getOriginalOffset(node.startOffset());
@@ -145,8 +147,12 @@ public class CssOccurancesFinder extends OccurrencesFinder {
             }
         });
 
+        if (cancelled) {
+            return;
+        }
+
         if(occurancesLocal.size() > 0) {
-            occurances = occurancesLocal;
+            occurrences = occurancesLocal;
         }
 
     }
