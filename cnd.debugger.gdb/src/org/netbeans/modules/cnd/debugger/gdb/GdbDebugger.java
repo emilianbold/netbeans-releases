@@ -931,6 +931,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 }
             }
         }
@@ -1520,6 +1522,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     } else if (HostInfoUtils.fileExists(execEnv, KILL_PATH2)) {
                         killcmd.add(KILL_PATH2);
                     }
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -2329,6 +2333,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 return true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                // don't log InterruptedException
             }
         } 
         return false;

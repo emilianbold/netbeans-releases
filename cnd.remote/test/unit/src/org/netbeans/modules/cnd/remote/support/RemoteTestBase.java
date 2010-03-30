@@ -42,15 +42,12 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -211,7 +208,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
-        assertTrue(ok);
+        assertTrue("Error setting up host " + execEnv, ok);
         tcm.applyChanges();
     }
 
