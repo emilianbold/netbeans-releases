@@ -72,13 +72,20 @@ public class UnbufferSupport {
             return;
         }
 
-        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
-        // Setup LD_PRELOAD to load unbuffer library...
-
         final HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
 
-        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
         boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
+
+        // Bug 179172 - unbuffer.dylib not found
+        // Will disable unbuffer on Mac as seems it is not required...
+        if (isMacOS) {
+            return;
+        }
+
+        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
+
+        final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
+        // Setup LD_PRELOAD to load unbuffer library...
 
         String unbufferPath = null; // NOI18N
         String unbufferLib = null; // NOI18N

@@ -63,9 +63,9 @@ public class CssRefactoring {
     private CssRefactoring() {
     }
 
-    public static Collection<Entry> getAllIdSelectors(FileObject file) {
+    public static Collection<Entry> getAllSelectors(FileObject file, RefactoringElementType type) {
         try {
-            return new CssFileModel(Source.create(file)).getIds();
+            return new CssFileModel(Source.create(file)).get(type);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }

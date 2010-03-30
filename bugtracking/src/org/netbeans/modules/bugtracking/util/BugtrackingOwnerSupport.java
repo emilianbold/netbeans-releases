@@ -352,7 +352,7 @@ public abstract class BugtrackingOwnerSupport {
                         return repo;
                     }
                 } catch (IOException ex) {
-                    LOG.log(Level.WARNING,
+                    LOG.log(Level.INFO,
                           " communication with Kenai failed while loading " //NOI18N
                               + "information about bugtracking repository", //NOI18N
                           ex);

@@ -1113,7 +1113,8 @@ public class PropertiesOpen extends CloneableOpenSupport
                 
                 boolean thisChanged = false;
                 for (int i=0;i<bundleStructure.getEntryCount();i++) {
-                    if(ev.hasChanged(bundleStructure.getNthEntry(i).getFile())) {
+                    PropertiesFileEntry pfe = bundleStructure.getNthEntry(i);
+                    if(pfe != null && ev.hasChanged(pfe.getFile())) { // #172691
                         thisChanged = true;
                         break;
                     }

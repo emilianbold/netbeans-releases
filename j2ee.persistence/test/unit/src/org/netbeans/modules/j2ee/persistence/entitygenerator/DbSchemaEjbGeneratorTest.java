@@ -146,8 +146,8 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
              return false;
         }
 
-        public String getUpdateType(String tableName) {
-            return UpdateType.NEW.toString();
+        public UpdateType getUpdateType(String tableName) {
+            return UpdateType.NEW;
         }
 
         public Set<List<String>> getUniqueConstraints(String tableName) {

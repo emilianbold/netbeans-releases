@@ -92,6 +92,7 @@ import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.NotNode;
 import org.jrubyparser.ast.OrNode;
+import org.jrubyparser.ast.RescueNode;
 import org.jrubyparser.ast.ReturnNode;
 import org.jrubyparser.ast.UntilNode;
 import org.jrubyparser.ast.WhenNode;
@@ -706,6 +707,13 @@ public class AstUtilities {
         return node.getNodeType() == NodeType.FCALLNODE ||
                 node.getNodeType() == NodeType.VCALLNODE ||
                 node.getNodeType() == NodeType.CALLNODE;
+    }
+
+    static boolean isRaiseCall(Node node) {
+        if (isCall(node)) {
+            return "raise".equals(getName(node)); //NOI18N
+        }
+        return false;
     }
 
     static boolean isAssignmentNode(Node node) {
@@ -2311,6 +2319,9 @@ public class AstUtilities {
                 || node instanceof UntilNode
                 || node instanceof DefinedNode) {
             return Collections.emptyList();
+        }
+        if (node instanceof RescueNode) {
+            return node.childNodes();
         }
         List<Node> children = node.childNodes();
         if (!children.isEmpty()) {

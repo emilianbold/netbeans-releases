@@ -169,7 +169,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         return new Node[0];
     }
     
-    RequestProcessor.Task task = RequestProcessor.getDefault().create( this );
+    RequestProcessor.Task task = PackageRootNode.PKG_VIEW_RP.create( this );
         
     @Override
     protected void addNotify() {
@@ -317,7 +317,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             } else {
                 synchronized (this) {
                     if (refreshLazilyTask == null) {
-                        refreshLazilyTask = RequestProcessor.getDefault().post(new Runnable() {
+                        refreshLazilyTask = PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
                             public void run() {
                                 synchronized (PackageViewChildren.this) {
                                     refreshLazilyTask = null;
@@ -398,7 +398,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
                     public void run() {
                         fileFolderCreated(fe);
                     }
@@ -416,7 +416,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         FileObject fo = fe.getFile();
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
                     public void run() {
                         fileDataCreated(fe);
                     }
@@ -447,7 +447,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         
         if ( FileUtil.isParentOf( root, fo ) && isVisible( root, fo ) ) {
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
                     public void run() {
                         // why don't we jave closures in java? :(
                         fileDeleted(fe);
@@ -535,7 +535,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && fo.isFolder() ) {
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                PackageRootNode.PKG_VIEW_RP.post(new Runnable() {
                     public void run() {
                         // why don't we jave closures in java? :(
                         fileRenamed(fe);

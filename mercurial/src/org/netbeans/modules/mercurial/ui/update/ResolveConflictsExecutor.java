@@ -330,7 +330,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                         f1l1 = i;
                         continue;
                     }
-                } else if (line.endsWith(CHANGE_DELIMETER)) {
+                } else if (line.endsWith(CHANGE_DELIMETER) && !line.endsWith(CHANGE_DELIMETER + CHANGE_DELIMETER.charAt(0))) {
                     String lineText = line.substring(0, line.length() - CHANGE_DELIMETER.length()) + "\n"; // NOI18N
                     if (isChangeLeft) {
                         text1.append(lineText);

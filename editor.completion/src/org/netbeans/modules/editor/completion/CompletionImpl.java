@@ -760,8 +760,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             commonText = text;
                         } else {
                             // Get the largest common part
-                            int minLen = Math.min(text.length(), commonText.length());
-                            for (int commonInd = 0; commonInd < minLen; commonInd++) {
+                            if (text.length() < commonText.length())
+                                commonText = commonText.subSequence(0, text.length());
+                            for (int commonInd = 0; commonInd < commonText.length(); commonInd++) {
                                 if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
                                     if (commonInd == 0) {
                                         commonText = null;
@@ -1754,7 +1755,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         profile = new Profile(profiler, when);
     }
 
-    private class Profile implements Runnable {
+    private final class Profile implements Runnable {
         Object profiler;
         boolean profiling;
         private final long time;
@@ -1765,6 +1766,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             run();
         }
 
+        @Override
         public synchronized void run() {
             profiling = true;
             if (profiler instanceof Runnable) {
@@ -1778,7 +1780,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
             ActionListener ss = (ActionListener)profiler;
             profiler = null;
-            if (!profiling) {
+            if (!profiling || delta < 0 || delta > 60L * 60 * 1000) {
                 return;
             }
             try {

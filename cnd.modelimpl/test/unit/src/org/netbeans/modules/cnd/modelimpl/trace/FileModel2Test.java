@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -303,5 +305,23 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ176530() throws Exception {
         // IZ#176530 : Unresolved function parameters in function parameters
         performTest("iz176530.cc");
+    }
+
+    public void testIZ182510() throws Exception {
+        // IZ#182510 : C comment block causes syntax coloring to lose sync
+
+        File file = getDataFile("iz182510.cc");
+        FileWriter writer = new FileWriter(file);
+        try {
+            // \r's are essential for this test, so write the test file here
+            writer.write("//\\\r\n#define FOO 1\r\n#define BAR 2\r\n");
+        } finally {
+            writer.close();
+        }
+
+        // Test that trailing \\\r\n in line comment is interpreted as
+        // single escaped newline, i.e. #define FOO is in comment.
+        // Also test offsets of BAR definition.
+        performTest("iz182510.cc");
     }
 }

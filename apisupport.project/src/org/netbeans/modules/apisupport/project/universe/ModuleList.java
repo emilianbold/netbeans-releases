@@ -435,6 +435,7 @@ public final class ModuleList {
         for (ModuleEntry known : entries.values()) {
             knownProjects.add(known.getSourceLocation());
         }
+        Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries);
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
             String clusterName = tok.nextToken();
@@ -447,10 +448,11 @@ public final class ModuleList {
                 String module = tok2.nextToken();
                 File basedir = new File(home, module.replace('/', File.separatorChar));
                 if (!knownProjects.contains(basedir)) { // we may already have scanned some
-                    scanPossibleProject( basedir, entries, NbModuleType.NETBEANS_ORG, home, nbdestdir, module);
+                    scanPossibleProject(basedir, _entries, NbModuleType.NETBEANS_ORG, home, nbdestdir, module);
                 }
             }
         }
+        entries = _entries;
         LOG.log(Level.FINER, "scanning NetBeans.org stable sources finished");
         lazyNetBeansOrgList = 1;
     }
@@ -909,12 +911,15 @@ public final class ModuleList {
             }
             scanJars(dir, ci, nbDestDir, cluster, entries, registerEntry, jars);
         }
-        File configs = new File(new File(cluster, "config"), "Modules");
+        File configs = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File[] xmls = configs.listFiles();
         if (xmls != null) {
             XPathExpression xpe = null;
             for (File xml : xmls) {
                 String n = xml.getName();
+                if (!n.endsWith(".xml")) { // NOI18N
+                    continue;
+                }
                 n = n.substring(0, n.length() - 4).replace('-', '.');
                 if (entries.get(n) != null) {
                     continue;

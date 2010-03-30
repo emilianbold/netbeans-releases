@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -163,7 +164,10 @@ public final class RubyPlatformManager {
         // Check the path to see if we find any other Ruby installations
 
         final Set<File> rubies = new LinkedHashSet<File>();
-        for (String dir : Util.dirsOnPath()) {
+        Collection<String> candidateDirs = new LinkedHashSet<String>();
+        candidateDirs.addAll(Util.dirsOnPath());
+        candidateDirs.addAll(Util.rvmRubies());
+        for (String dir : candidateDirs) {
             for (String ruby : RUBY_EXECUTABLE_NAMES) {
                 File f = findPlatform(dir, ruby);
                 if (f != null) {

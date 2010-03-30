@@ -31,6 +31,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -57,6 +59,39 @@ public class BaseDocumentTest extends NbTestCase {
         for (int i = 0; i < doc.getLength() + 1; i++) {
             assertEquals(doc.getText(i, 1).charAt(0), text.charAt(i));
         }
+    }
+
+    public void testRecursiveUndoableEdits() throws Exception {
+        final BaseDocument doc = new BaseDocument(false, "text/plain");
+        class UEL implements UndoableEditListener, Runnable {
+            boolean undo;
+            @Override
+            public void undoableEditHappened(UndoableEditEvent e) {
+                //doc.runAtomic(this);
+                doc.render(this);
+                undo = e.getEdit().canUndo();
+            }
+
+            @Override
+            public void run() {
+            }
+        }
+        UEL uel = new UEL();
+        doc.addUndoableEditListener(uel);
+
+        class Atom implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    doc.insertString(0, "Ahoj", null);
+                } catch (BadLocationException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
+        doc.runAtomicAsUser(new Atom());
+
+        assertTrue("Can undo now", uel.undo);
     }
 
     public void testBreakAtomicLock() throws Exception {

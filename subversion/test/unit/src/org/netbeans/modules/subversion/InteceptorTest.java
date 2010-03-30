@@ -2521,7 +2521,7 @@ public class InteceptorTest extends NbTestCase {
         fileA.delete();
         Handler h = new SVNInterceptor();
         Subversion.LOG.addHandler(h);
-        RequestProcessor.Task r = RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.Task r = Subversion.getInstance().getParallelRequestProcessor().create(new Runnable() {
             public void run() {
                 FileUtil.refreshFor(fileA);
             }

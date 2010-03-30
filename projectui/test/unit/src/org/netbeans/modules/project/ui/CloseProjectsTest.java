@@ -127,8 +127,13 @@ public class CloseProjectsTest extends NbTestCase {
             arr[i] = n.getLookup().lookup(Project.class);
             assertNotNull("but some project is there", arr[i]);
             
+            if (i >= 15) {
+                OpenProjects.getDefault().close(new Project[] { arr[i] });
+            }
             i++;
         }
+        assertEquals("Just fifteen left nodes", 15, logicalView.getChildren().getNodesCount());
+
         // let the project open hook run
         down.countDown();
         

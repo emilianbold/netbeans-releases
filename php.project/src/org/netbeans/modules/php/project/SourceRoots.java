@@ -342,6 +342,10 @@ public final class SourceRoots {
         }
     }
 
+    public void fireChange() {
+        resetCache(null);
+    }
+
     private final class ProjectMetadataListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             resetCache(evt.getPropertyName());

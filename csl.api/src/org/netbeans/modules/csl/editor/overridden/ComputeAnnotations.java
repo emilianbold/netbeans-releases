@@ -237,8 +237,14 @@ public class ComputeAnnotations extends ParserResultTask<Result> {
                     //#179304: possibly the position is outside document bounds (i.e. <0 or >doc.getLenght())
                     continue;
                 }
+
+                List<OverrideDescription> ods = new LinkedList<OverrideDescription>();
+
+                for (AlternativeLocation l : e.getValue()) {
+                    ods.add(new OverrideDescription(l, overridden));
+                }
                 
-                annotations.add(new IsOverriddenAnnotation(doc, pos, type, dn, e.getValue()));
+                annotations.add(new IsOverriddenAnnotation(doc, pos, type, dn, ods));
             }
         }
     }

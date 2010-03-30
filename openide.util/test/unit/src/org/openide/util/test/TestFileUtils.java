@@ -156,6 +156,8 @@ public class TestFileUtils {
         long older = f.lastModified();
         if (ref != null) {
             older = Math.max(older, ref.lastModified());
+        } else {
+            older = Math.max(older, System.currentTimeMillis());
         }
         int maxPause = 9999;
         /* XXX consider this (as yet untested):

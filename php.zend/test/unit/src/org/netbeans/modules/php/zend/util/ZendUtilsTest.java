@@ -39,11 +39,8 @@
 
 package org.netbeans.modules.php.zend.util;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import static org.junit.Assert.*;
 
 /**
  * @author Tomas Mysik
@@ -54,17 +51,27 @@ public class ZendUtilsTest extends NbTestCase {
         super(name);
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
+    @Test
+    public void testControllerName() {
+        assertEquals("IndexController", ZendUtils.getControllerName("index"));
+        assertEquals("AllJobsController", ZendUtils.getControllerName("all-jobs"));
     }
 
     @Test
-    public void testControllerName() {
-        assertEquals("Index", ZendUtils.getControllerName("index"));
-        assertEquals("MyIndex", ZendUtils.getControllerName("myIndex"));
+    public void testActionName() {
+        assertEquals("indexAction", ZendUtils.getActionName("index"));
+        assertEquals("allJobsAction", ZendUtils.getActionName("all-jobs"));
+    }
+
+    @Test
+    public void testViewName() {
+        assertEquals("index", ZendUtils.getViewName("indexAction"));
+        assertEquals("all-jobs", ZendUtils.getViewName("allJobsAction"));
+    }
+
+    @Test
+    public void testViewFolderName() {
+        assertEquals("index", ZendUtils.getViewFolderName("IndexController"));
+        assertEquals("all-jobs", ZendUtils.getViewFolderName("AllJobsController"));
     }
 }

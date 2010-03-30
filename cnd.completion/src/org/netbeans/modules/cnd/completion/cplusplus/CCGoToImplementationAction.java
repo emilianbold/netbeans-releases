@@ -58,19 +58,19 @@ import org.netbeans.modules.cnd.utils.MIMENames;
     @EditorActionRegistration(
     name = "goto-implementation",// NOI18N
     popupPath = "goto", // NOI18N
-    popupText = "#goto-implementation", // NOI18N
+    popupText = "#goto-implementation-text", // NOI18N
     mimeType = MIMENames.CPLUSPLUS_MIME_TYPE
     ),
     @EditorActionRegistration(
     name = "goto-implementation",// NOI18N
     popupPath = "goto", // NOI18N
-    popupText = "#goto-implementation", // NOI18N
+    popupText = "#goto-implementation-text", // NOI18N
     mimeType = MIMENames.C_MIME_TYPE
     ),
     @EditorActionRegistration(
     name = "goto-implementation",// NOI18N
     popupPath = "goto", // NOI18N
-    popupText = "#goto-implementation", // NOI18N
+    popupText = "#goto-implementation-text", // NOI18N
     mimeType = MIMENames.HEADER_MIME_TYPE
     )
 })

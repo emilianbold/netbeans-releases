@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -66,9 +67,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -78,6 +82,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -127,6 +132,7 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -172,8 +178,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         summaryField.setPreferredSize(summaryField.getMinimumSize());
         initAttachmentsPanel();
         initIssueLinksPanel();
+        initSpellChecker();
+        initDefaultButton();
         attachFieldStatusListeners();
         attachHideStatusListener();
+    }
+
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
     }
 
     private void updateReadOnlyField(JTextField field) {
@@ -331,6 +354,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentPanel, commentsPanel);
+    }
+
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
     }
 
     private Map<String,JLabel> customFieldLabels = new HashMap<String,JLabel>();
@@ -1956,7 +1984,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 try {
                     ret = issue.submitAndRefresh();
                     for (File attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.exists()) {
+                        if (attachment.exists() && attachment.isFile()) {
                             issue.addAttachment(attachment, null, null);
                         } else {
                             // PENDING notify user

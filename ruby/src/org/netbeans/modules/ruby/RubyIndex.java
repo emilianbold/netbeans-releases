@@ -438,12 +438,11 @@ public final class RubyIndex {
         return classes;
     }
     
-    Set<? extends IndexedMethod> getMethods(final String name, final RubyType clz, QuerySupport.Kind kind) {
-        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
-        for (String realType : clz.getRealTypes()) {
-            methods.addAll(getMethods(name, realType, kind));
+    public Set<IndexedMethod> getMethods(final String name, final String clz, QuerySupport.Kind kind) {
+        if (clz == null) {
+            return getMethods(name, (Collection<String>) null, kind);
         }
-        return methods;
+        return getMethods(name, Collections.singleton(clz), kind);
     }
 
     Set<IndexedMethod> getMethods(String name, QuerySupport.Kind kind) {
@@ -457,8 +456,8 @@ public final class RubyIndex {
      * you must call this method on each superclass as well as the mixin modules.
      */
     @SuppressWarnings("fallthrough")
-    public Set<IndexedMethod> getMethods(final String name, final String clz, QuerySupport.Kind kind) {
-        boolean inherited = clz == null;
+    public Set<IndexedMethod> getMethods(final String name, final Collection<String> classes, QuerySupport.Kind kind) {
+        boolean inherited = classes == null;
         
         //    public void searchByCriteria(final String name, final ClassIndex.QuerySupport.Kind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> file) throws IOException {
         final Set<IndexResult> result = new HashSet<IndexResult>();
@@ -488,10 +487,9 @@ public final class RubyIndex {
         final Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
         for (IndexResult map : result) {
-            if (clz != null) {
+            if (classes != null) {
                 String fqn = map.getValue(FIELD_FQN_NAME);
-
-                if (!(clz.equals(fqn))) {
+                if (!classes.contains(fqn)) {
                     continue;
                 }
             }
@@ -985,11 +983,15 @@ public final class RubyIndex {
         Set<IndexedMethod> methods = getMethods(methodName, className, QuerySupport.Kind.EXACT);
         for (IndexedMethod method : methods) {
             Set<IndexedClass> subClasses = getSubClasses(method.getIn(), null, null, false);
+            Set<String> subClassNames = new HashSet<String>(subClasses.size());
             for (IndexedClass subClass : subClasses) {
                 if (excludeSelf && className.equals(subClass.getIn())) {
                     continue;
                 }
-                result.addAll(getMethods(method.getName(), subClass.getName(), QuerySupport.Kind.EXACT));
+                subClassNames.add(subClass.getName());
+            }
+            if (!subClassNames.isEmpty()) {
+                result.addAll(getMethods(method.getName(), subClassNames, QuerySupport.Kind.EXACT));
             }
         }
         return result;

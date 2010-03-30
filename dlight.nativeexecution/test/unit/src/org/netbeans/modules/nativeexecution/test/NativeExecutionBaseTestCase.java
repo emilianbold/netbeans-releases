@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -62,33 +63,46 @@ import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
-    static {
-        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+    protected static class TestLogHandler extends Handler {
 
-        log.setLevel(Level.ALL);
+        protected final Logger log;
 
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
+        public TestLogHandler(Logger log) {
+            this.log = log;
+        }
+        
+        @Override
+        public void publish(LogRecord record) {
+            // Log if parent cannot log the message ONLY.
+            if (!log.getParent().isLoggable(record.getLevel())) {
+                String message;
+                Object[] params = record.getParameters();
+                if (params == null || params.length == 0) {
+                    message = record.getMessage();
+                } else {
+                    message =  MessageFormat.format(record.getMessage(), record.getParameters());
+                }
+                System.err.printf("%s: %s\n", record.getLevel(), message); // NOI18N
+                if (record.getThrown() != null) {
+                    record.getThrown().printStackTrace(System.err);
                 }
             }
+        }
 
-            @Override
-            public void flush() {
-            }
+        @Override
+        public void flush() {
+        }
 
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        @Override
+        public void close() throws SecurityException {
+        }
 
+    }
+
+    static {
+        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+        log.setLevel(Level.ALL);
+        log.addHandler(new TestLogHandler(log));
     }
     private final ExecutionEnvironment testExecutionEnvironment;
 

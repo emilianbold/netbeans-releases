@@ -62,7 +62,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
     }
 
     public void testBuildExecutionDescriptorsNoParams() throws Exception {
-        Project project = createTestProject();
+        RubyProject project = createTestProject();
         RakeRunner rakeRunner = new RakeRunner(project);
         RakeTask task1 = new RakeTask("atask", "A Task", "This is a task");
         RakeTask task2 = new RakeTask("anothertask", "Another Task", "This is another task");
@@ -82,7 +82,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
     }
 
     public void testBuildExecutionDescriptorsWithParams() throws Exception {
-        Project project = createTestProject();
+        RubyProject project = createTestProject();
         RakeRunner rakeRunner = new RakeRunner(project);
         RakeTask task1 = new RakeTask("atask", "A Task", "This is a task");
         task1.addTaskParameters("ATASK_PARAM=param");
@@ -107,7 +107,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
     }
 
     public void testBuildExecutionDescriptorsWithRakeRunnerParams() throws Exception {
-        Project project = createTestProject();
+        RubyProject project = createTestProject();
         RakeRunner rakeRunner = new RakeRunner(project);
         rakeRunner.setParameters("RAKE_RUNNER_PARAM=mama");
 
@@ -134,7 +134,7 @@ public class RakeRunnerTest extends RubyProjectTestBase {
     }
 
     public void testBuildExecutionDescriptorsWithInitialParams() throws Exception {
-        Project project = createTestProject();
+        RubyProject project = createTestProject();
         RakeRunner rakeRunner = new RakeRunner(project);
         rakeRunner.setParameters("RAKE_RUNNER_PARAM=mama");
 

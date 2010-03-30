@@ -94,6 +94,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     };
     
     private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class.getName(), 1, false, false);
 
     private PlatformConvertor() {}
 
@@ -222,7 +223,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (this) {
             if (saveTask == null)
-                saveTask = RequestProcessor.getDefault().create(this);
+                saveTask = RP.create(this);
         }
         synchronized (this) {
             keepAlive.add(evt);

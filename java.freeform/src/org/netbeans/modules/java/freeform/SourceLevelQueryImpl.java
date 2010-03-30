@@ -98,7 +98,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
             }
         }
         // Need to compute it.
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (java == null) {
             return null;
         }
@@ -133,7 +133,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
      * Get the source level indicated in a compilation unit (or null if none is indicated).
      */
     private String getLevel(Element compilationUnitEl) {
-        Element sourceLevelEl = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_2);
+        Element sourceLevelEl = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
         if (sourceLevelEl != null) {
             return Util.findText(sourceLevelEl);
         } else {

@@ -90,7 +90,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return file != null ? file.getProject() : null;
     }    
     
-    protected CharSequence getQualifiedNamePostfix() {
+    public CharSequence getQualifiedNamePostfix() {
         if (TraceFlags.SET_UNNAMED_QUALIFIED_NAME && (getName().length() == 0)) {
             return getOffsetBasedName();
         } else {

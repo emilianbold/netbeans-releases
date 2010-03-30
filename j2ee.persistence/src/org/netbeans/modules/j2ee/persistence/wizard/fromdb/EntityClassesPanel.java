@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -267,6 +268,16 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         } catch (InvalidPersistenceXmlException ipx){
             createPUCheckbox.setVisible(false);
             warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
+        }
+
+        if(warning.trim().length() == 0){//may need to show warning about sourc level
+            if(getCreatePersistenceUnit()){
+                String sourceLevel = SourceLevelChecker.getSourceLevel(project);
+                if(sourceLevel !=null ){//by default except some minor cases jpa 2.0 is used in this wizard
+                    if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6))
+                    warning  = NbBundle.getMessage(RelatedCMPWizard.class, "ERR_WrongSourceLevel", sourceLevel);
+                }
+            }
         }
 
         if (warning.trim().length() > 0) {

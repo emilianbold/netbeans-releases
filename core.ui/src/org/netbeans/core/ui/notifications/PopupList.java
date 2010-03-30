@@ -109,11 +109,15 @@ public class PopupList {
             row.setOpaque(false);
 
             JComponent component = n.getPopupComponent();
+            if( null == component ) {
+                continue; //just in case...
+            }
             row.add(component, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2,2,2,2), 1, 1));
             JButton btnDismiss = new BalloonManager.DismissButton();
             final NotificationImpl notification = n;
             btnDismiss.addActionListener( new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     notification.clear();
                     panel.remove(row);

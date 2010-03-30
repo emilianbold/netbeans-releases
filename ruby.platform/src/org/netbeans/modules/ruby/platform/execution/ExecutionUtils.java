@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -76,9 +79,10 @@ public final class ExecutionUtils {
 
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
+    /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
+    private static final boolean SKIP_KCODE = Boolean.getBoolean("ruby.no.kcode"); // NOI18N
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
-    private static final boolean LAUNCH_JRUBY_SCRIPT =
-        System.getProperty("ruby.use.jruby.script") != null; // NOI18N
+    private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
 
     private ExecutionUtils() {
     }
@@ -97,7 +101,7 @@ public final class ExecutionUtils {
                 platform.getInterpreterFile().getName(), desc, null);
     }
 
-    private static List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor, String charsetName) {
+    static List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor, String charsetName) {
         List<String> argvList = new ArrayList<String>();
         // Decide whether I'm launching JRuby, and if so, take a shortcut and launch
         // the VM directly. This is important because killing JRuby via the launcher script
@@ -116,6 +120,8 @@ public final class ExecutionUtils {
 
             String javaMemory = "-Xmx512m"; // NOI18N
             String javaStack = "-Xss1024k"; // NOI18N
+            // use the client mode by default
+            String jvmMode = "-client";
 
             String[] jvmArgs = descriptor == null ? null : descriptor.getJVMArguments();
             if (jvmArgs != null) {
@@ -126,10 +132,16 @@ public final class ExecutionUtils {
                     if (arg.contains("-Xss")) { // NOI18N
                         javaStack = null;
                     }
+                    if ("-client".equals(arg) || "-server".equals(arg)) { //NOI18N
+                        jvmMode = null;
+                    }
                     argvList.add(arg);
                 }
             }
 
+            if (jvmMode != null) {
+                argvList.add(1, jvmMode);
+            }
             if (javaMemory != null) {
                 argvList.add(javaMemory);
             }
@@ -155,7 +167,7 @@ public final class ExecutionUtils {
 
             File jrubyLib = new File(rubyHomeDir, "lib"); // NOI18N
             if (!jrubyLib.isDirectory()) {
-                throw new AssertionError('"' + jrubyLib.getAbsolutePath() + "\" exists (\"" + cmdName + "\" is not valid JRuby executable?)");
+                throw new AssertionError('"' + jrubyLib.getAbsolutePath() + "\" exists (\"" + descriptor.getCmd() + "\" is not valid JRuby executable?)");
             }
 
             argvList.add(computeJRubyClassPath(
@@ -181,6 +193,28 @@ public final class ExecutionUtils {
         // TODO: JRUBYOPTS
 
         // Application arguments follow
+        }
+
+        if (!SKIP_KCODE && cmdName.startsWith("ruby")) { // NOI18N
+            String cs = charsetName;
+            if (cs == null) {
+                // Add project encoding flags
+                FileObject fo = descriptor.getFileObject();
+                if (fo != null) {
+                    Charset charset = FileEncodingQuery.getEncoding(fo);
+                    if (charset != null) {
+                        cs = charset.name();
+                    }
+                }
+            }
+
+            if (cs != null) {
+                if (cs.equals("UTF-8")) { // NOI18N
+                    argvList.add("-Ku"); // NOI18N
+                //} else if (cs.equals("")) {
+                // What else???
+                }
+            }
         }
 
         // Is this a native Ruby process? If so, do sync-io workaround.
@@ -214,24 +248,7 @@ public final class ExecutionUtils {
         return argvList;
     }
 
-    /** Package-private for unit test. */
-    static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
-        StringBuilder cp = new StringBuilder();
-        File[] libs = jrubyLib.listFiles();
-
-        for (File lib : libs) {
-            if (lib.getName().endsWith(".jar")) { // NOI18N
-
-                if (cp.length() > 0) {
-                    cp.append(File.pathSeparatorChar);
-                }
-
-                cp.append(lib.getAbsolutePath());
-            }
-        }
-
-        // Add in user-specified jars passed via JRUBY_EXTRA_CLASSPATH
-
+    public static String getExtraClassPath(String extraCp) {
         if (extraCp != null && File.pathSeparatorChar != ':') {
             // Ugly hack - getClassPath has mixed together path separator chars
             // (:) and filesystem separators, e.g. I might have C:\foo:D:\bar but
@@ -249,8 +266,29 @@ public final class ExecutionUtils {
                 }
                 p.append(c);
             }
-            extraCp = p.toString();
+            return p.toString();
         }
+        return extraCp;
+    }
+
+    /** Package-private for unit test. */
+    static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
+        StringBuilder cp = new StringBuilder();
+        File[] libs = jrubyLib.listFiles();
+
+        for (File lib : libs) {
+            if (lib.getName().endsWith(".jar")) { // NOI18N
+
+                if (cp.length() > 0) {
+                    cp.append(File.pathSeparatorChar);
+                }
+
+                cp.append(lib.getAbsolutePath());
+            }
+        }
+
+        // Add in user-specified jars passed via JRUBY_EXTRA_CLASSPATH
+        extraCp = getExtraClassPath(extraCp);
 
         if (extraCp == null) {
             extraCp = System.getenv("JRUBY_EXTRA_CLASSPATH"); // NOI18N

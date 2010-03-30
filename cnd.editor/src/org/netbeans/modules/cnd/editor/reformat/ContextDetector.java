@@ -512,7 +512,7 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){
                 if (next.id() == IDENTIFIER) {
-                    if (isPreviousStatementParen()) {
+                    if (isPreviousStatementParen() || isPreviousTypeCastParen()) {
                         switch(current.id()){
                             case STAR:
                             case AMP:
@@ -614,6 +614,31 @@ public class ContextDetector extends ExtendedTokenSequence {
                         break;
                     default:
                         return isStatementParen();
+                }
+            }
+            return true;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+
+    private boolean isPreviousTypeCastParen(){
+        int index = index();
+        try {
+            while(movePrevious()){
+                switch (token().id()) {
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case DOXYGEN_LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return isTypeCast();
                 }
             }
             return true;

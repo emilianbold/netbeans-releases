@@ -841,7 +841,7 @@ protected COMMENT :
 
 protected CPP_COMMENT 
 	:	
-		"//" ( '\\' ('\n' | '\r') 
+		"//" ( '\\' EndOfLine {deferredNewline();}
                      |  ~('\n' | '\r')
                      )* 
 	;

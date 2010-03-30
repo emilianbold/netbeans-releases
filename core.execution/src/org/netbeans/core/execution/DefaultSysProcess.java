@@ -135,8 +135,13 @@ final class DefaultSysProcess extends ExecutorTask {
                            catch (InterruptedException e) {
                                Exceptions.printStackTrace(e);
                            }
-                           if (!group.isDestroyed())
-                               group.destroy();
+                           if (!group.isDestroyed()) {
+                               try {
+                                   group.destroy();
+                               } catch (IllegalThreadStateException x) {
+                                   // #165302: destroyed some other way?
+                               }
+                           }
                        }
                    }).start();
     }

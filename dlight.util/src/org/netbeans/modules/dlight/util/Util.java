@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -110,13 +109,8 @@ public class Util {
             }
 
             String prefix = "_dlight_" + getBriefName(url); // NOI18N
-            String tmpDirBase = hostInfo.getTempDir();
 
-            if (hostInfo.getOSFamily() == hostInfo.getOSFamily().WINDOWS) {
-                tmpDirBase = WindowsSupport.getInstance().convertToWindowsPath(tmpDirBase);
-            }
-
-            File result = File.createTempFile(prefix, "", new File(tmpDirBase));//NOI18N
+            File result = File.createTempFile(prefix, "", hostInfo.getTempDirFile()); // NOI18N
             result.deleteOnExit();
 
             OutputStream os = new FileOutputStream(result);
@@ -216,7 +210,7 @@ public class Util {
                     } else {
                         boolean result = files[i].delete();
                         if (!result && log.isLoggable(Level.FINE)) {
-                            log.fine("Unable to delete file " + files[i].getAbsolutePath()); // NOI18N
+                            log.log(Level.FINE, "Unable to delete file {0}", files[i].getAbsolutePath()); // NOI18N
                         }
                     }
                 }

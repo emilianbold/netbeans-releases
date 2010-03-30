@@ -382,7 +382,7 @@ public class AnnotationType {
         if (desc == null) {
             String localizer = (String)getProp(PROP_LOCALIZING_BUNDLE);
             String key = (String)getProp(PROP_DESCRIPTION_KEY);
-            if (key != null) {
+            if (localizer != null && key != null) {
                 try {
                     ResourceBundle bundle = ImplementationProvider.getDefault().getResourceBundle(localizer);                
                     desc = bundle.getString(key);

@@ -114,8 +114,8 @@ final class TextDetail {
 
     /**
      * Shows the search detail on the DataObject.
-     * The document is opened in the editor, the caret is positioned on the right line and column 
-     * and searched string is marked.
+     * The document is opened in the editor, the caret is positioned on the
+     * right line and column and searched string is marked.
      *
      * @param how indicates how to show detail. 
      * @see #DH_GOTO 
@@ -127,7 +127,6 @@ final class TextDetail {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-
         if (how == DH_HIDE) {
             return;
         }
@@ -136,17 +135,23 @@ final class TextDetail {
             edCookie.open();
 	}
         if (how == DH_SHOW) {
-            lineObj.show(ShowOpenType.NONE, ShowVisibilityType.NONE, column - 1);
+            lineObj.show(ShowOpenType.NONE, 
+                         ShowVisibilityType.NONE,
+                         column - 1);
         } else if (how == DH_GOTO) {
-            lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS, column - 1);
+            lineObj.show(ShowOpenType.OPEN, 
+                         ShowVisibilityType.FOCUS,
+                         column - 1);
         }
         if ((markLength > 0) && (edCookie != null)) {
             final JEditorPane[] panes = edCookie.getOpenedPanes();
             if (panes != null && panes.length > 0) {
-                // Necessary since above lineObj.show leads to invoke later as well.
+                // Necessary since above lineObj.show leads to invoke
+                // later as well.
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        Caret caret = panes[0].getCaret(); // http://www.netbeans.org/issues/show_bug.cgi?id=23626
+                        Caret caret = panes[0].getCaret(); // #23626
                         caret.moveDot(caret.getDot() + markLength);
                     }
                 });
@@ -164,7 +169,18 @@ final class TextDetail {
     void setLineText(String text) {
         lineText = text;
     }
-    
+
+    String getLineTextPart(int beginIndex, int endIndex) {
+        return lineText.substring(beginIndex, endIndex);
+    }
+
+    String getLineTextPart(int beginIndex) {
+        return lineText.substring(beginIndex);
+    }
+
+    int getLineTextLength() {
+        return lineText == null ? 0 : lineText.length();
+    }
 
     /**
      * Gets the <code>DataObject</code> where the searched text was found. 
@@ -195,12 +211,25 @@ final class TextDetail {
         column = col;
     }
 
-    /** Gets the length of the text that should be marked when the detail is shown. */
+    /** Gets the column position of the text or -1 (0 based). */
+    int getColumn0() {
+        return column - 1;
+    }
+
+    /**
+     * Sets the length of the text that should be marked when the detail is
+     * shown.
+     * @param len the length of the marked text
+     */
     void setMarkLength(int len) {
         markLength = len;
     }
 
-    /** @return length or 0 */
+    /** 
+     * Gets the length of the text that should be marked when the detail is
+     * shown.
+     * @return length of the marked text or 0
+     */
     int getMarkLength() {
         return markLength;
     }
@@ -317,8 +346,6 @@ final class TextDetail {
         /** Detail to represent. */
         private TextDetail txtDetail;
         
-
-        
         /**
          * Constructs a node representing the specified information about
          * a matching string.
@@ -340,6 +367,7 @@ final class TextDetail {
             txtDetail.prepareLine();
         }
         
+        /** {@inheritDoc} */
         @Override
         public Action[] getActions(boolean context) {
             if (!context) {
@@ -349,11 +377,15 @@ final class TextDetail {
             }
         }
         
+        /** {@inheritDoc}
+         * @return {@link GotoDetailAction}
+         */
         @Override
         public Action getPreferredAction() {
             return SystemAction.get(GotoDetailAction.class);
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean equals(Object anotherObj) {
             return (anotherObj != null)
@@ -361,57 +393,78 @@ final class TextDetail {
                 && (((DetailNode) anotherObj).txtDetail.equals(this.txtDetail));
         }
         
+        /** {@inheritDoc} */
         @Override
         public int hashCode() {
             return txtDetail.hashCode() + 1;
         }
         
-        /** */
+        /** {@inheritDoc} */
         @Override
         public String getName() {
-            return txtDetail.getLineText() + "      [" + DetailNode.getName(txtDetail) + "]";  // NOI18N
+            return txtDetail.getLineText() +
+                    "      [" + DetailNode.getName(txtDetail) + "]";  // NOI18N
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getHtmlDisplayName() {
-            String colored;
-            if (txtDetail.getMarkLength() > 0 && txtDetail.getColumn() > 0) {
-                try {
-                    StringBuffer bold = new StringBuffer();
-                    String plain = txtDetail.getLineText();
-                    int col0 =   txtDetail.getColumn() -1;  // base 0
-
-                    bold.append(XMLUtil.toElementContent(plain.substring(0, col0)));  // NOI18N
-                    bold.append("<b>");  // NOi18N
-                    int end = col0 + Math.min(txtDetail.getMarkLength(), txtDetail.getLineText().length() - col0);
-                    if ((col0 + txtDetail.getMarkLength()) > txtDetail.getLineText().length()){
-                        bold.append(XMLUtil.toElementContent(plain.substring(col0, end) + " ...")); //NOI18N
-                    }else{
-                        bold.append(XMLUtil.toElementContent(plain.substring(col0, end)));
-                    }
-                    bold.append("</b>"); // NOi18N
-                    if (txtDetail.getLineText().length() > end) {
-                        bold.append(XMLUtil.toElementContent(plain.substring(end)));
-                    }
-                    colored = bold.toString();
-                } catch (CharConversionException ex) {
-                    return null;
-                }
-            } else {
-                try {
-                    colored = XMLUtil.toElementContent( txtDetail.getLineText());
-                } catch (CharConversionException e) {
-                    return null;
-                }
-            }
-
             try {
-                return colored + "      <font color='!controlShadow'>[" + XMLUtil.toElementContent(DetailNode.getName(txtDetail)) + "]";  // NOI18N
+                StringBuffer text = new StringBuffer();
+                if(canBeMarked()) {
+                    appendMarkedText(text);
+                }
+                else {
+                    text.append(escape(txtDetail.getLineText()));
+                }
+                text.append("      ");  // NOI18N
+                text.append("<font color='!controlShadow'>[");  // NOI18N
+                text.append(escape(DetailNode.getName(txtDetail)));
+                text.append("]");  // NOI18N
+                return text.toString();
             } catch (CharConversionException e) {
-                return null;
+                return null; // exception in escape(String s)
             }
         }
-      
+
+        /**
+         * Checks whether text can be marked.
+         * @return {@code true} if text can be marked, otherwise {@code false}.
+         */
+        private boolean canBeMarked() {
+            int col0 = txtDetail.getColumn0();
+            return txtDetail.getMarkLength() > 0 && 
+                   col0 > -1 &&
+                   col0 < txtDetail.getLineTextLength(); // #177891
+        }
+
+        private void appendMarkedText(StringBuffer text)
+                                                throws CharConversionException {
+            int col0 = txtDetail.getColumn0();  // base 0
+            int end = col0 + Math.min(txtDetail.getMarkLength(),
+                                      txtDetail.getLineTextLength() - col0);
+            int markEnd = col0 + txtDetail.getMarkLength();
+            final int detailLen = txtDetail.getLineTextLength();
+
+            text.append(escape(txtDetail.getLineTextPart(0, col0)));
+            text.append("<b>");  // NOI18N
+            if (markEnd > detailLen) { // mark up to the text end?
+                text.append(escape(txtDetail.getLineTextPart(col0, end)));
+                text.append(" ..."); //NOI18N
+            }
+            else {
+                text.append(escape(txtDetail.getLineTextPart(col0, end)));
+            }
+            text.append("</b>"); // NOI18N
+            if (detailLen > end) {
+                text.append(escape(txtDetail.getLineTextPart(end)));
+            }
+        }
+
+        private static String escape(String s) throws CharConversionException {
+            return XMLUtil.toElementContent(s);
+        }
+
         /** Displays the matching string in a text editor. */
         void gotoDetail() {
             txtDetail.showDetail(TextDetail.DH_GOTO);
@@ -422,17 +475,26 @@ final class TextDetail {
             txtDetail.showDetail(TextDetail.DH_SHOW);
         }
 
-        /** Implements <code>OutputListener</code> interface method. */
+        /** {@inheritDoc } 
+         * Implements <code>OutputListener</code> interface method.
+         */
+        @Override
         public void outputLineSelected (OutputEvent evt) {
             txtDetail.showDetail(TextDetail.DH_SHOW);
         }
 
-        /** Implements <code>OutputListener</code> interface method. */        
+        /** {@inheritDoc}
+         * Implements <code>OutputListener</code> interface method.
+         */
+        @Override
         public void outputLineAction (OutputEvent evt) {
             txtDetail.showDetail(TextDetail.DH_GOTO);
         }
 
-        /** Implements <code>OutputListener</code> interface method. */
+        /** {@inheritDoc}
+         * Implements <code>OutputListener</code> interface method.
+         */
+        @Override
         public void outputLineCleared (OutputEvent evt) {
             txtDetail.showDetail(TextDetail.DH_HIDE);
         }
@@ -446,18 +508,18 @@ final class TextDetail {
         private static String getName(TextDetail det) {
             int line = det.getLine();
             int col = det.getColumn();
-            
             if (col > 0) {
-                
                 /* position <line>:<col> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_NAME1",      //NOI18N
-                        Integer.toString(line),
-                        Integer.toString(col));
-            } else {
-                
+                return NbBundle.getMessage(DetailNode.class, 
+                                           "TEXT_DETAIL_FMT_NAME1",     //NOI18N
+                                           Integer.toString(line),
+                                           Integer.toString(col));
+            }
+            else {
                 /* position <line> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_NAME2",      //NOI18N
-                        Integer.toString(line));
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_NAME2", //NOI18N
+                                           Integer.toString(line));
             }
         }
 
@@ -476,14 +538,17 @@ final class TextDetail {
             if (col > 0) {
                 
                 /* line <line>, column <col> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_SHORT1",   //NOI18N
-                        new Object[] {Integer.toString(line),
-                                      Integer.toString(col)});
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_SHORT1",   //NOI18N
+                                           new Object[] {Integer.toString(line),
+                                                         Integer.toString(col)
+                                                        });
             } else {
                 
                 /* line <line> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_SHORT2",   //NOI18N
-                        Integer.toString(line));
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_SHORT2",   //NOI18N
+                                           Integer.toString(line));
             }
         }
 
@@ -504,18 +569,22 @@ final class TextDetail {
             if (col > 0) {
 
                 /* [<filename> at line <line>, column <col>] <text> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_FULL1",    //NOI18N
-                        new Object[] {lineText,
-                                      filename,
-                                      Integer.toString(line),
-                                      Integer.toString(col)});
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_FULL1",    //NOI18N
+                                           new Object[] {lineText,
+                                                         filename,
+                                                         Integer.toString(line),
+                                                         Integer.toString(col)
+                                                        });
             } else {
 
                 /* [<filename> line <line>] <text> */
-                return NbBundle.getMessage(DetailNode.class, "TEXT_DETAIL_FMT_FULL2",    //NOI18N
-                        new Object[] {lineText,
-                                      filename,
-                                      Integer.toString(line)});
+                return NbBundle.getMessage(DetailNode.class,
+                                           "TEXT_DETAIL_FMT_FULL2",    //NOI18N
+                                           new Object[] {lineText,
+                                                         filename,
+                                                         Integer.toString(line)
+                                                        });
             }
         }
         
@@ -528,39 +597,43 @@ final class TextDetail {
      */
     private static class GotoDetailAction extends NodeAction {
         
-        /** */
+        /**  {@inheritDoc} */
+        @Override
         public String getName() {
-            return NbBundle.getBundle(GotoDetailAction.class).getString("LBL_GotoDetailAction");
+            return NbBundle.getBundle(GotoDetailAction.class).
+                                              getString("LBL_GotoDetailAction");
         }
         
-        /** */
+        /**  {@inheritDoc} */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(GotoDetailAction.class);
         }
 
-        /**
+        /**  {@inheritDoc}
          * @return  <code>true</code> if at least one node is activated and
          *          the first node is an instance of <code>DetailNode</code>
          *          (or its subclass), <code>false</code> otherwise
          */
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return activatedNodes != null && activatedNodes.length != 0
                    && activatedNodes[0] instanceof DetailNode;
         }
 
-        /**
+        /**  {@inheritDoc}
          * Displays the matching string in a text editor.
          * Works only if condition specified in method {@link #enable} is met,
          * otherwise does nothing.
          */
+        @Override
         protected void performAction(Node[] activatedNodes) {
             if (enable(activatedNodes)) {
                 ((DetailNode) activatedNodes[0]).gotoDetail();
             }
         }
         
-        /**
-         */
+        /**  {@inheritDoc} */
         @Override
         protected boolean asynchronous() {
             return false;

@@ -72,6 +72,7 @@ import org.openide.util.actions.Presenter;
 public class CallGraphScene extends GraphScene<Function,Call> {
 
     private static final Border BORDER_4 = BorderFactory.createLineBorder (4);
+    private static final RequestProcessor RP = new RequestProcessor(CallGraphScene.class.getName(), 1);
 
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
@@ -110,6 +111,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     
     public void doLayout(){
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 sceneLayout.invokeLayout();
                 validate();
@@ -124,6 +126,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     public void hideNode(final Function element) {
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 removeNodeWithEdges(element);
                 doLayout();
@@ -138,6 +141,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     public void clean() {
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 List<Function> list = new ArrayList<Function>(getNodes());
                 for (Function f : list) {
@@ -155,6 +159,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     public void addCallToScene(final Call element) {
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 boolean isDoLayout = false;
                 Function toFunction = element.getCallee();
@@ -172,7 +177,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                         from.setPreferredLocation(new Point(10, 10));
                         isDoLayout = true;
                     }
-                    if (findEdgesBetween(fromFunction, toFunction).size() == 0) {
+                    if (findEdgesBetween(fromFunction, toFunction).isEmpty()) {
                         if (toFunction.equals(fromFunction)) {
                             addLoopEdge(element, toFunction);
                         } else {
@@ -197,6 +202,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     public void addFunctionToScene(final Function element) {
         Runnable run = new Runnable() {
+            @Override
             public void run() {
                 Widget to = findWidget(element);
                 if (to == null) {
@@ -225,6 +231,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     }
 
 
+    @Override
     protected Widget attachNodeWidget(Function node) {
         String name = node.getName();
         String scope = node.getScopeName();
@@ -247,6 +254,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         return label;
     }
 
+    @Override
     protected Widget attachEdgeWidget(Call edge) {
         ConnectionWidget connection = new ConnectionWidget(this);
         connection.setToolTipText(edge.getDescription());
@@ -257,11 +265,13 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         return connection;
     }
 
+    @Override
     protected void attachEdgeSourceAnchor(Call edge, Function oldSourceNode, Function sourceNode) {
         Widget w = sourceNode != null ? findWidget(sourceNode) : null;
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(AnchorFactory.createRectangularAnchor(w));
     }
 
+    @Override
     protected void attachEdgeTargetAnchor(Call edge, Function oldTargetNode, Function targetNode) {
         Widget w = targetNode != null ? findWidget(targetNode) : null;
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(w));
@@ -277,6 +287,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             this.node = node;
         }
         
+        @Override
         public void edit(Widget widget) {
             node.open();
         }
@@ -288,6 +299,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             this.call = call;
         }
         
+        @Override
         public void edit(Widget widget) {
             call.open();
         }
@@ -494,6 +506,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             Entry[] entries = keys.toArray(new Entry[keys.size()]);
             Arrays.sort(entries, new Comparator<Entry>() {
 
+                @Override
                 public int compare(Entry o1, Entry o2) {
                     float f = map.get(o1) - map.get(o2);
                     if (f > 0.0f) {
@@ -513,6 +526,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
          * @param entry the entry
          * @return the calculated result
          */
+        @Override
         public Result compute(Entry entry) {
             recalculate();
             return results.get(entry);
@@ -520,6 +534,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     }
 
     private class MyPopupMenuProvider implements PopupMenuProvider {
+        @Override
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu menu = null;
             Object node = findObject(widget);
@@ -551,8 +566,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     for(Call call : callModel.getCallees(function)){
                         addCallToScene(call);
@@ -561,6 +578,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             });
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
@@ -578,8 +596,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     for(Call call : callModel.getCallers(function)){
                         addCallToScene(call);
@@ -588,6 +608,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             });
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
@@ -603,14 +624,17 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     hideNode(function);
                 }
             });
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }

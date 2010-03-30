@@ -41,17 +41,14 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
+import java.awt.font.FontRenderContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -91,7 +88,7 @@ import javax.swing.text.ViewFactory;
  * @author Miloslav Metelka
  */
 
-public abstract class EditorBoxView extends EditorView {
+public abstract class EditorBoxView extends EditorView implements EditorView.Parent {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.EditorBoxView.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorBoxView.class.getName());
@@ -151,7 +148,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param majorAxisSpan
      */
-    void setMajorAxisSpan(double majorAxisSpan) {
+    protected void setMajorAxisSpan(double majorAxisSpan) {
         this.majorAxisSpan = majorAxisSpan;
     }
 
@@ -164,7 +161,7 @@ public abstract class EditorBoxView extends EditorView {
      * preferenceChange to parent of this view.
      * @param minorAxisSpan
      */
-    void setMinorAxisSpan(float minorAxisSpan) {
+    protected void setMinorAxisSpan(float minorAxisSpan) {
         this.minorAxisSpan = minorAxisSpan;
     }
 
@@ -213,11 +210,6 @@ public abstract class EditorBoxView extends EditorView {
         return children.getViewMajorAxisSpan(this, index);
     }
 
-    @Override
-    public void setParent(View parent) {
-        super.setParent(parent);
-    }
-    
     public void releaseChildren() {
         if (children != null) {
             children = null;
@@ -262,9 +254,7 @@ public abstract class EditorBoxView extends EditorView {
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
         }
-        ReplaceResult result = new ReplaceResult();
-        children.replace(this, result, index, length, (EditorView[]) views, offsetDelta, alloc);
-        return result;
+        return children.replace(this, new ReplaceResult(), index, length, (EditorView[]) views, offsetDelta, alloc);
     }
 
     /**
@@ -317,7 +307,7 @@ public abstract class EditorBoxView extends EditorView {
             }
             double delta = newSpan - origSpan;
             if (delta != 0d) { // TODO (diff < epsilon) instead ?
-                children.fixOffsetsAndSpan(this, childViewIndex + 1, 0, delta);
+                children.fixOffsetsAndMajorSpan(this, childViewIndex + 1, 0, delta);
             } else {
                 majorSpanChange = false; // No real change
             }
@@ -326,7 +316,7 @@ public abstract class EditorBoxView extends EditorView {
             int minorAxis = ViewUtils.getOtherAxis(majorAxis);
             float newSpan = childView.getPreferredSpan(minorAxis);
             if (newSpan > minorAxisSpan) {
-                minorAxisSpan = newSpan;
+                setMinorAxisSpan(newSpan);
             } else {
                 minorSpanChange = false; // No change for this view
             }
@@ -385,6 +375,10 @@ public abstract class EditorBoxView extends EditorView {
         int index = children.getViewIndex(childView.getStartOffset());
         assert (getEditorView(index) == childView);
         return index;
+    }
+
+    public int getViewIndexFirst(int offset) {
+        return children.getViewIndexFirst(offset);
     }
 
     @Override
@@ -480,8 +474,15 @@ public abstract class EditorBoxView extends EditorView {
         children.paint(this, g, alloc, clipBounds);
     }
 
-    final int getViewOffset(int rawOffset) {
+    @Override
+    public int getViewOffset(int rawOffset) {
         return getStartOffset() + children.raw2RelOffset(rawOffset);
+    }
+
+    @Override
+    public FontRenderContext getFontRenderContext() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getFontRenderContext() : null;
     }
 
     @Override
@@ -499,7 +500,7 @@ public abstract class EditorBoxView extends EditorView {
     }
 
     final void fixSpans(int index, int offsetDelta, double visualDelta) {
-        children.fixOffsetsAndSpan(this, index, offsetDelta, visualDelta);
+        children.fixOffsetsAndMajorSpan(this, index, offsetDelta, visualDelta);
     }
 
     @Override

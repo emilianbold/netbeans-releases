@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.validator;
 
 import java.util.Collection;
@@ -70,13 +69,11 @@ public class ValidatorSchemaFactoryRegistry {
         schemaFactories = new Hashtable<String, ValidatorSchemaFactory>();
         Result<ValidatorSchemaFactory> lookupResult = Lookup.getDefault().lookupResult(ValidatorSchemaFactory.class);
         lookupResult.addLookupListener(new LookupListener() {
-
             public void resultChanged(LookupEvent ev) {
-                refreshServices();
+                  refreshServices();
             }
         });
         refreshServices();
-
     }
      
     public ValidatorSchemaFactory getValidatorSchemaFactory(String namespace) {
@@ -84,14 +81,14 @@ public class ValidatorSchemaFactoryRegistry {
     }
     
     public Collection<ValidatorSchemaFactory> getAllValidatorSchemaFactories() {
-        return schemaFactories.values();
+        return ((Hashtable<String, ValidatorSchemaFactory>) schemaFactories.clone()).values();
     }
 
     private void refreshServices() {
         schemaFactories.clear();
+
         for (ValidatorSchemaFactory factory : Lookup.getDefault().lookupAll(ValidatorSchemaFactory.class)){
             schemaFactories.put(factory.getNamespaceURI(), factory);
         }
     }
-
 }

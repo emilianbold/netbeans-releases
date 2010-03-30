@@ -231,14 +231,15 @@ public class CommitAction extends ContextAction {
         dialog.setVisible(true);
 
         final String message = panel.getCommitMessage().trim();
-        if (!message.isEmpty()) {
-            HgModuleConfig.getDefault().setLastCommitMessage(message);
+        if (dd.getValue() != commitButton && !message.isEmpty()) {
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
         } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {

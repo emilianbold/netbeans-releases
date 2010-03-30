@@ -55,6 +55,8 @@ import org.openide.util.RequestProcessor;
 public class NetworkAccess {
     private static final Logger err = Logger.getLogger(NetworkAccess.class.getName());
 
+    private static final RequestProcessor NETWORK_ACCESS = new RequestProcessor("autoupdate-network-access", 10, false);
+
     private NetworkAccess () {}
     
     public static Task createNetworkAcessTask (URL url, int timeout, NetworkListener networkAcesssListener) {
@@ -84,7 +86,7 @@ public class NetworkAccess {
         
         private void postTask () {
             final SizedConnection connectTask = createCallableNetwork (url, timeout);
-            rpTask = RequestProcessor.getDefault ().post (new Runnable () {
+            rpTask = NETWORK_ACCESS.post (new Runnable () {
                 public void run () {
                     connect = es.submit (connectTask);
                     InputStream is = null;

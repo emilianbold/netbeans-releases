@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -135,6 +135,14 @@ public class DerbyOptions {
         return location;
     }
 
+    private String getCurrentLocation() {
+        String location = getProperty(PROP_DERBY_LOCATION);
+        if (location == null) {
+            location = ""; // NOI18N
+        }
+        return location;
+    }
+
     /**
      * Returns true if the Derby location is null. This method is needed
      * since getLocation() will never return a null value.
@@ -181,7 +189,7 @@ public class DerbyOptions {
 
     public synchronized boolean trySetLocation(String location) {
         LOGGER.log(Level.FINE, "trySetLocation: Trying to set location to {0}", location); // NOI18N
-        String current = getLocation();
+        String current = getCurrentLocation();
         if (current.length() == 0) {
             setLocation(location);
             LOGGER.fine("trysetLocation: Succeeded"); // NOI18N
