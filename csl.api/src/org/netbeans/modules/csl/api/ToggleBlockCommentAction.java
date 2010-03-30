@@ -42,6 +42,8 @@ import java.awt.event.ActionEvent;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -63,6 +65,9 @@ import org.openide.util.Exceptions;
 
 public class ToggleBlockCommentAction extends BaseAction {
 
+    // -J-Dorg.netbeans.modules.csl.api.ToggleBlockCommentAction.level=FINE
+    private static final Logger LOG = Logger.getLogger(ToggleBlockCommentAction.class.getName());
+    
     static final long serialVersionUID = -1L;
 
     private final CommentHandler commentHandler;
@@ -119,10 +124,17 @@ public class ToggleBlockCommentAction extends BaseAction {
                             }
                             
                             Language lang = null;
+                            LanguagePath langPath = null;
                             for(int i = seqs.size() - 1; i >= 0; i--) {
                                 TokenSequence<?> ts = seqs.get(i);
-                                lang = LanguageRegistry.getInstance().getLanguageByMimeType(ts.language().mimeType());
+                                String mimeType = ts.language().mimeType();
+                                lang = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
                                 if (lang != null) {
+                                    langPath = ts.languagePath();
+                                    offset = i < seqs.size() - 1 ? ts.offset() : offset;
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "offset={0}, lang={1}, mimeType={2}, ts={3}", new Object [] { offset, lang, mimeType, ts }); //NOI18N
+                                    }
                                     break;
                                 }
                             }
@@ -138,7 +150,7 @@ public class ToggleBlockCommentAction extends BaseAction {
                             if (commentHandler != null) {
                                 commentUncommentBlock(target, th, commentHandler, true);
                             } else if (lang.getGsfLanguage().getLineCommentPrefix() != null) {
-                                commentUncommentLines(target, th, lang.getGsfLanguage().getLineCommentPrefix());
+                                commentUncommentLines(target, offset, langPath, th, lang.getGsfLanguage().getLineCommentPrefix());
                             }
                         } else {
                             commentUncommentBlock(target, th, ToggleBlockCommentAction.this.commentHandler, false);
@@ -375,22 +387,22 @@ public class ToggleBlockCommentAction extends BaseAction {
         return cH2 != null && cH.getClass() == cH2.getClass();
     }
 
-    private void debug(Document doc, int[] comments, int start, int end) {
-        System.out.println("TOGGLE_COMENT [" + start + "-" + end + "]");
-        for (int i = 0; i < comments.length; i++) {
+    private void debug(Document doc, List<int[]> blocks, Level level) {
+        LOG.log(level, "TOGGLE_COMENT"); //NOI18N
+        for (int [] block : blocks) {
             try {
-                int from = comments[i];
-                int to = comments[++i];
-                if (from <= start && to > end) {
-                    System.out.print("*");
+                int from = block[0];
+                int to = block[1];
+                if (from != -1 && to != -1) {
+                    LOG.log(level, "[{0}, {1}]: ''{2}''", new Object[] { from, to, doc.getText(from, to - from) }); //NOI18N
+                } else {
+                    LOG.log(level, "[{0}, {1}]", new Object[] { from, to }); //NOI18N
                 }
-                System.out.print("[" + from + " - " + to + "]");
-                System.out.println(doc.getText(from, to - from));
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(level, null, ex);
             }
         }
-        System.out.println("----------------");
+        LOG.log(level, "----------------"); //NOI18N
     }
 
     private void check(int[] comments, int from, int to) {
@@ -409,27 +421,22 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     // -- copied from ExtKit.ToggleCommentAction
 
-    private void commentUncommentLines(JTextComponent target, TokenHierarchy<?> th, String lineCommentString) throws BadLocationException {
-        final Caret caret = target.getCaret();
+    private void commentUncommentLines(JTextComponent target, int offset, LanguagePath lp, TokenHierarchy<?> th, String lineCommentString) throws BadLocationException {
         final BaseDocument doc = (BaseDocument)target.getDocument();
 
         // determine all language blocks between <startPos, endPos>
-        int from, to;
-        if (Utilities.isSelectionShowing(caret)) {
-            from = Utilities.getRowStart(doc, target.getSelectionStart());
+        int from = offset, to;
+        if (Utilities.isSelectionShowing(target)) {
             to = target.getSelectionEnd();
             if (to > 0 && Utilities.getRowStart(doc, to) == to) {
                 to--;
             }
-            to = Utilities.getRowEnd(doc, to);
         } else { // selection not visible
-            from = Utilities.getRowStart(doc, caret.getDot());
-            to = Utilities.getRowEnd(doc, caret.getDot());
+            to = Utilities.getRowEnd(doc, target.getCaretPosition());
         }
 
-        List<TokenSequence<?>> seqs = th.embeddedTokenSequences(from, false);
-        LanguagePath lp = seqs.get(seqs.size() - 1).languagePath();
-        seqs = th.tokenSequenceList(lp, from, to);
+        int fromLineStartOffset = Utilities.getRowStart(doc, from);
+        List<TokenSequence<?>> seqs = th.tokenSequenceList(lp, fromLineStartOffset, to);
         List<int []> blocks = new LinkedList<int []>();
 
         for(int i = 0; i < seqs.size(); i++) {
@@ -437,16 +444,19 @@ public class ToggleBlockCommentAction extends BaseAction {
             int endPos = -1;
 
             TokenSequence<?> ts = seqs.get(i);
-            ts.moveStart();
+            ts.move(fromLineStartOffset);
             while (ts.moveNext()) {
-                if (ts.embedded() != null) {
-                    blocks.add(new int [] { startPos, endPos });
+                TokenSequence<?> embeddedSeq = ts.embedded();
+                if (embeddedSeq != null && !ts.token().id().primaryCategory().contains("comment")) { //NOI18N
+                    if (startPos != -1 && endPos != -1) {
+                        blocks.add(new int [] { startPos, endPos });
+                    }
                     startPos = endPos = -1;
                     continue;
                 }
 
                 if (startPos == -1) {
-                    startPos = Math.max(ts.offset(), from);
+                    startPos = Math.max(ts.offset(), fromLineStartOffset);
                 }
 
                 int tokenEnd = ts.offset() + ts.token().length();
@@ -459,10 +469,43 @@ public class ToggleBlockCommentAction extends BaseAction {
                 }
             }
 
-            blocks.add(new int [] { startPos, endPos });
+            if (startPos != -1 && endPos != -1) {
+                blocks.add(new int [] { startPos, endPos });
+            }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            debug(doc, blocks, Level.FINE);
         }
         
-        for(ListIterator<int []> i = blocks.listIterator(blocks.size()); i.hasPrevious(); ) {
+        int lastLineOffset = -1;
+        int lastLineEndOffset = -1;
+        for(int [] block : blocks) {
+            if (lastLineOffset != -1) {
+                if (block[0] <= lastLineEndOffset) {
+                    // this block starts at the same line where the previous block ends
+                    if (block[1] <= lastLineEndOffset) {
+                        // this block ends at the same line where the previous block ends
+                        // and so we can safely ignore this block
+                        block[0] = block[1] = -1;
+                        continue;
+                    } else {
+                        // this block ends on some furter line, move the beginning of this block
+                        // to the following line and update the last* offsets
+                        block[0] = lastLineEndOffset + 1;
+                    }
+                }
+            }
+
+            lastLineOffset = Math.max(Utilities.getRowStart(doc, block[1]), block[0]);
+            lastLineEndOffset = Utilities.getRowEnd(doc, block[1]);
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            debug(doc, blocks, Level.FINE);
+        }
+
+        for (ListIterator<int []> i = blocks.listIterator(blocks.size()); i.hasPrevious(); ) {
             int [] block = i.previous();
             int startPos = block[0];
             int endPos = block[1];
@@ -471,9 +514,6 @@ public class ToggleBlockCommentAction extends BaseAction {
                 continue;
             }
 
-            startPos = Math.max(Utilities.getRowStart(doc, startPos), startPos);
-            endPos = Math.max(Utilities.getRowEnd(doc, endPos), startPos);
-            
             int lineCount = Utilities.getRowCount(doc, startPos, endPos);
             boolean comment = !allComments(doc, startPos, lineCount, lineCommentString);
 
@@ -488,7 +528,7 @@ public class ToggleBlockCommentAction extends BaseAction {
     private boolean allComments(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
-            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
             if (firstNonWhitePos == -1) {
                 return false;
             }
@@ -518,7 +558,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
             // Get the first non-whitespace char on the current line
-            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
 
             // If there is any, check wheter it's the line-comment-chars and remove them
             if (firstNonWhitePos != -1) {

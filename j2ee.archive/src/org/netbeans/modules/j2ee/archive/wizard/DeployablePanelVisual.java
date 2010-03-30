@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -232,10 +232,12 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     
     private void archiveLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_archiveLocationButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        //FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setDialogTitle(NbBundle.getMessage(DeployablePanelVisual.class,
                 "DLG_TITLE_ArchiveChooser"));   // NOI18N
         chooser.setFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 if (f.isDirectory()) {
                     return true;
@@ -243,6 +245,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
                 String path = f.getAbsolutePath();
                 return acceptableArchive(path);
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(DeployablePanelVisual.class,
                         "ARCHIVE_CHOOSER_DESCRIPTOR");  //NOI18N
@@ -267,7 +270,8 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     
     private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        //FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setDialogTitle(NbBundle.getMessage(DeployablePanelVisual.class,
                 "DLG_TITLE_FolderChooser"));    //NOI18N
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -476,6 +480,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     
     // Implementation of DocumentListener --------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -483,6 +488,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -491,6 +497,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         }
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -515,6 +522,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         panel.fireChangeEvent(); // Notify that the panel changed
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         panel.fireChangeEvent();
     }

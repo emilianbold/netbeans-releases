@@ -132,7 +132,7 @@ public class DDUtils {
             } else if (WebApp.VERSION_3_0.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_3_0.WebApp.createGraph(is);
             } else {
-                throw new IOException("Unsupported version of web.xml found! Version: "+version);
+                return null;
             }
         } catch (RuntimeException ex) {
             throw new SAXException(ex);

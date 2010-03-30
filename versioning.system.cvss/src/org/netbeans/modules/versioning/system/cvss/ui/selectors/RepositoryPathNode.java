@@ -59,6 +59,7 @@ import java.awt.*;
 import java.beans.BeanInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Represents a path in repository, its children
@@ -133,8 +134,7 @@ public class RepositoryPathNode extends AbstractNode {
             super.addNotify();
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2024"));
             setKeys(Collections.singleton(waitNode));
-            RequestProcessor rp = RequestProcessor.getDefault();
-            task = rp.post(this);
+            task = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(this);
         }
 
         protected void removeNotify() {

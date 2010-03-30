@@ -104,6 +104,8 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private NativeExecutionService execution;
     private TestRunnerLineConvertor convertor;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private TestSession session;
+    private Manager manager;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -237,14 +239,14 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     }
 
     private TestRunnerLineConvertor createTestRunnerConvertor(Project project) {
-        final TestSession session = new TestSession("Test", // NOI18N
+        session = new TestSession("Test", // NOI18N
                 project,
                 SessionType.TEST, new CndTestRunnerNodeFactory());
 
         session.setRerunHandler(this);
 
-        final Manager manager = Manager.getInstance();
-        final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
+        manager = Manager.getInstance();
+        CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
 
         return new TestRunnerLineConvertor(manager, session, handlerFactory);
     }

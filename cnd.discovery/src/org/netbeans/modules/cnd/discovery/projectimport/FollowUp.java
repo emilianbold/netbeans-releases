@@ -75,6 +75,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class FollowUp extends JPanel {
+    private static final RequestProcessor RP = new RequestProcessor(FollowUp.class.getName(), 2);
     private CsmProject csmProject;
     /** Creates new form FollowUp */
     private FollowUp(ImportProject importer, NativeProject project) {
@@ -188,6 +189,7 @@ public class FollowUp extends JPanel {
 
     public static void showFollowUp(final ImportProject importer, final NativeProject project) {
         ActionListener onClickAction = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (importer.isProjectOpened()){
                     FollowUp panel = new FollowUp(importer, project);
@@ -216,7 +218,8 @@ public class FollowUp extends JPanel {
         }
         final Notification notification = NotificationDisplayer.getDefault().notify(title, icon,
                 getString("Dialog_Action"), onClickAction, NotificationDisplayer.Priority.HIGH); // NOI18N
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 notification.clear();
             }

@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 
 /**
  *
@@ -62,6 +63,7 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
     private FormalParameterInfo(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {
         super(node);
         FormalParameter formalParameter = getOriginalNode();
+        boolean isReference = (formalParameter.getParameterName() instanceof  Reference);
         String name = getName();
         String defVal = CodeUtils.getParamDefaultValue(formalParameter);
         Expression parameterType = formalParameter.getParameterType();
@@ -70,7 +72,8 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         if (types == null) {
             types = Collections.emptyList();
         }
-        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(), TypeResolverImpl.forNames(types), isRawType);
+        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(), 
+                TypeResolverImpl.forNames(types), formalParameter.getDefaultValue() == null, isRawType, isReference);
     }
 
     public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {

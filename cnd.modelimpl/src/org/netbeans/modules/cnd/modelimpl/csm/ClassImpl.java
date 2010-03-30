@@ -78,11 +78,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     private class ClassAstRenderer extends AstRenderer {
         private final boolean renderingLocalContext;
-        private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
+        private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(boolean renderingLocalContext) {
-            super((FileImpl) ClassImpl.this.getContainingFile());
+        public ClassAstRenderer(CsmFile containingFile, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+            super((FileImpl) containingFile);
             this.renderingLocalContext = renderingLocalContext;
+            this.curentVisibility = curentVisibility;
         }
 
         @Override
@@ -109,7 +110,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 switch (token.getType()) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
-                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
                         String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
                         setTemplateDescriptor(params, name);
                         break;
@@ -355,6 +356,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                         //new VariableImpl(
                         break;
+                }
+            }
+            
+            // Check for include directives in class
+            if (!renderingLocalContext) {
+                CsmFile file = getContainingFile();
+                for (CsmInclude include : file.getIncludes()) {
+                    if (include.getStartOffset() > getStartOffset()
+                            && include.getEndOffset() < getEndOffset()) {
+                        ((FileImpl) file).onFakeRegisration((IncludeImpl) include, ClassImpl.this);
+                    }
                 }
             }
         }
@@ -719,7 +731,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     protected final void render(AST ast, boolean localClass) {
-        new ClassAstRenderer(localClass).render(ast);
+        new ClassAstRenderer(getContainingFile(), CsmVisibility.PRIVATE, localClass).render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
+    }
+
+    public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
+        new ClassAstRenderer(file, visibility, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 

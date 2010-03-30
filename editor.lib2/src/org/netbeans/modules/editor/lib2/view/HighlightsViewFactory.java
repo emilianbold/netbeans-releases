@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +67,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
-
-    private int offset;
 
     private Element lineElementRoot;
 
@@ -102,11 +99,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void restart(int startOffset) {
-        this.offset = startOffset;
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
-        lineIndex = lineElementRoot.getElementIndex(offset);
+        lineIndex = lineElementRoot.getElementIndex(startOffset);
         fetchLineInfo();
 
         highlightsSequence = highlightsContainer.getHighlights(startOffset, doc.getLength());
@@ -141,9 +137,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
         if (length <= 0) {
             throw new IllegalStateException("startOffset=" + startOffset // NOI18N
-                    + ", length=" + length + "highlight: <" + highlightStartOffset // NOI18N
+                    + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
                     + "," + highlightEndOffset // NOI18N
-                    + ">, newlineOffset=" + newlineOffset); // NOI18N
+                    + ">, newlineOffset=" + newlineOffset + ", docText.length()=" + docText.length()); // NOI18N
         }
         boolean tabs = (docText.charAt(startOffset) == '\t');
         for (int i = 1; i < length; i++) {
@@ -217,13 +213,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
+        int startOffset = event.getStartOffset();
+        int endOffset = event.getEndOffset();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("highlightChanged: event:<" + event.getStartOffset() + ',' + event.getEndOffset() + ">\n"); // NOI18N
+            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + ">\n"); // NOI18N
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.INFO, "Highlight Change Thread Dump", new Exception());
             }
         }
-        fireEvent(Collections.singletonList(createChange(event.getStartOffset(), event.getEndOffset())));
+        if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
+            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
+        }
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {

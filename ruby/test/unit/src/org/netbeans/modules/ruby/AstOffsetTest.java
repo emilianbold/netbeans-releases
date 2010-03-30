@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.SourcePosition;
@@ -131,11 +132,26 @@ public class AstOffsetTest extends RubyTestBase {
     }
 
     public void testAnalysis() throws Exception {
-        checkOffsets("testfiles/postgresql_adapter.rb");
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                checkOffsets("testfiles/postgresql_adapter.rb");
+                return null;
+            }
+        });
+
     }
 
     public void testAnalysis3() throws Exception {
-        checkOffsets("testfiles/date.rb");
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                checkOffsets("testfiles/date.rb");
+                return null;
+            }
+        });
     }
 
     public void testAnalysis4() throws Exception {

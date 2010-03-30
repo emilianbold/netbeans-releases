@@ -604,7 +604,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
     public void cleanUp(final long ttl) {        
         // XXX run only once a day - use the top folder metadata for version and cleanup flag
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {              
                 LocalHistory.log("Cleanup Start");                       // NOI18N                                  
                 cleanUpImpl(ttl);

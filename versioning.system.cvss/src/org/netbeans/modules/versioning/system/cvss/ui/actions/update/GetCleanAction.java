@@ -75,7 +75,7 @@ public class GetCleanAction extends AbstractSystemAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).getNodes().length > 0;
+        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).length > 0;
     }
     
     protected boolean asynchronous() {
@@ -84,7 +84,7 @@ public class GetCleanAction extends AbstractSystemAction {
 
     public void performCvsAction(final Node[] nodes) {
         if (!confirmed(null, null)) return;
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 revertModifications(nodes);
             }

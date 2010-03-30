@@ -65,7 +65,7 @@ public class Dwarf {
     private String fileName;
     private List<FileMagic> toDispose = new ArrayList<FileMagic>();
     
-    enum Mode {
+    private enum Mode {
         Normal, Archive, MachoLOF
     };
     private final Mode mode;
@@ -81,7 +81,7 @@ public class Dwarf {
                 // support archives
                 skipFirstHeader(magic.getReader());
                 offsets = getObjectTable(magic.getReader());
-                if (offsets.size()==0) {
+                if (offsets.isEmpty()) {
                     throw new WrongFileFormatException("Not an ELF file"); // NOI18N
                 }
                 mode = Mode.Archive;
@@ -101,7 +101,7 @@ public class Dwarf {
         }
     }
     
-    public void dispose(){
+    public final void dispose(){
         if (magic != null) {
             magic.dispose();
             magic = null;
@@ -268,6 +268,7 @@ public class Dwarf {
             advanceArchive();
         }
 
+        @Override
         public boolean hasNext() {
             if (currentList == null) {
                 return false;
@@ -284,10 +285,12 @@ public class Dwarf {
             return currentList != null;
         }
 
+        @Override
         public CompilationUnit next() {
             return currentList.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -326,6 +329,7 @@ public class Dwarf {
             advanceArchive();
         }
 
+        @Override
         public boolean hasNext() {
             if (currentIterator == null) {
                 return false;
@@ -342,10 +346,12 @@ public class Dwarf {
             return currentIterator != null;
         }
 
+        @Override
         public CompilationUnit next() {
             return currentIterator.next();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

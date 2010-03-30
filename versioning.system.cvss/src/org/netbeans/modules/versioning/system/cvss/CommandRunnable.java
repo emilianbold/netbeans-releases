@@ -88,7 +88,7 @@ class CommandRunnable implements Runnable, Cancellable {
             support.commandStarted(this);
         }
         CounterRunnable counterUpdater = new CounterRunnable();
-        RequestProcessor.Task counterTask = RequestProcessor.getDefault().create(counterUpdater);
+        RequestProcessor.Task counterTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(counterUpdater);
         counterUpdater.initTask(counterTask);
         try {
             counterTask.schedule(500);

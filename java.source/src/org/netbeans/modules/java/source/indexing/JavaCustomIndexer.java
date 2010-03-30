@@ -63,12 +63,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -77,6 +79,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -435,10 +438,20 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (!sourceLevel.equals(JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, sourceLevel))) {
+    public static void verifySourceLevel(@NonNull FileObject root, @NonNull FileObject file, @NonNull String sourceLevel) throws IOException {
+        URL rootURL = root.getURL();
+        
+        if (!sourceLevel.equals(JavaIndex.getAttribute(rootURL, SOURCE_LEVEL_ROOT, sourceLevel))) {
+            String rootSourceLevel = SourceLevelQuery.getSourceLevel(root);
+
+            if (!sourceLevel.equals(rootSourceLevel)) {
+                //#181454: mismatching source levels for file and root, may cause infinite rescanning:
+                JavaIndex.LOG.log(Level.WARNING, "Source level for file and for its root differ (file={0}, root={1})", new Object[]{sourceLevel, rootSourceLevel});
+                return;
+            }
+            
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-            IndexingManager.getDefault().refreshIndex(root, null);
+            IndexingManager.getDefault().refreshIndex(rootURL, null);
         }
     }
 
@@ -700,6 +713,13 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     public static class Factory extends CustomIndexerFactory {
 
+        private static AtomicBoolean javaTaskFactoriesInitialized = new AtomicBoolean(false);
+
+        public Factory() {
+            if (!javaTaskFactoriesInitialized.getAndSet(true)) {
+                JavaSourceTaskFactoryManager.register();
+            }
+        }
 
         @Override
         public boolean scanStarted(final Context context) {

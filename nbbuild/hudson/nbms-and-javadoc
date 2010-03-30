@@ -11,10 +11,9 @@ fi
 
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
-# XXX could use <subant-junit> to prevent compilation error in one module from stopping others
-# (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster use <subant>)
+# XXX build autoupdate.services first to ensure DTD validation works
 ant -emacs -Dcluster.config=experimental \
-    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false \
+    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
     verify-libs-and-licenses build-nozip build-nbms || exit
 
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
@@ -25,12 +24,6 @@ ant -Dtest.fail.on.error=false build-test-dist
 
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -Dold.updates=${JOB_URL}lastStableBuild/artifact/nbbuild/nbms/updates.xml generate-uc-catalog verify-update-descriptor || exit
-ant -Djnlp.codebase=${BUILD_URL}artifact/nbbuild/build/jnlp/ \
-    -Djnlp.signjar.keystore=$keystore \
-    -Djnlp.signjar.alias=nb_ide \
-    -Djnlp.signjar.password=$storepass \
-    -Djnlp.fail.on.error=false \
-    build-jnlp || exit
 
 ant clean-untracked-files
 

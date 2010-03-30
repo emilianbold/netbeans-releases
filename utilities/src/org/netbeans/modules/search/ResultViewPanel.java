@@ -346,7 +346,7 @@ class ResultViewPanel extends JPanel{
             setBtnReplaceVisible(hasCheckBoxes);
         }
         if (resultModel != null) {
-            hasResults = !resultModel.isEmpty();
+            hasResults = resultModel.size() != 0;
             hasDetails = hasResults && resultModel.hasDetails();
             resultModel.setObserver(this);
         } else {
@@ -380,9 +380,10 @@ class ResultViewPanel extends JPanel{
     /** Send search details to output window. */
     public void fillOutput() {
         btnShowDetails.setEnabled(false);
-        Manager.getInstance().schedulePrintTask(new PrintDetailsTask(resultModel.getFoundObjects(),
-                                        basicSearchCriteria,
-                                        searchTypes));
+        Manager.getInstance().schedulePrintTask(
+                new PrintDetailsTask(resultModel.getMatchingObjects(),
+                                     basicSearchCriteria,
+                                     searchTypes));
     }
 
     /**
@@ -945,7 +946,8 @@ class ResultViewPanel extends JPanel{
             return null;
         }
 
-        final MatchingObject[] matchingObjs = resultModel.getMatchingObjects();
+        final List<MatchingObject> matchingObjs =
+                resultModel.getMatchingObjects();
         int currMatchingObjIndex = getMatchingObjIndex(matchingObjs,
                                                        matchingObj,
                                                        forward);
@@ -953,18 +955,22 @@ class ResultViewPanel extends JPanel{
         int i;
 
         if (forward) {
-            for (i = currMatchingObjIndex + 1; i < matchingObjs.length; i++) {
-                nextMatchingObj = matchingObjs[i];
+            for (i = currMatchingObjIndex + 1; i < matchingObjs.size(); i++) {
+                nextMatchingObj = matchingObjs.get(i);
                 if (resultModel.hasDetails(nextMatchingObj)) {
+                    Node[] details = resultModel.getDetails(nextMatchingObj);
+                    if(details == null) { // #177642
+                        continue;
+                    }
                     return new TreePath(new Object[] {
                             root,
                             nextMatchingObj,
-                            resultModel.getDetails(nextMatchingObj)[0]});
+                            details[0]});
                 }
             }
         } else {
             for (i = currMatchingObjIndex - 1; i >= 0; i--) {
-                nextMatchingObj = matchingObjs[i];
+                nextMatchingObj = matchingObjs.get(i);
                 if (resultModel.hasDetails(nextMatchingObj)) {
                     Node[] details = resultModel.getDetails(nextMatchingObj);
                     return new TreePath(new Object[] {
@@ -979,7 +985,7 @@ class ResultViewPanel extends JPanel{
 
     /**
      */
-    private int getMatchingObjIndex(final MatchingObject[] matchingObjs,
+    private int getMatchingObjIndex(final List<MatchingObject> matchingObjs,
                                     final MatchingObject matchingObj,
                                     final boolean forward) {
         if (matchingObj == null) {
@@ -1001,18 +1007,18 @@ class ResultViewPanel extends JPanel{
             int i;
             if (forward) {
                 startIndex = Math.min(matchingObjIndexCacheIndex + 1,
-                                      matchingObjs.length - 1);
+                                      matchingObjs.size() - 1);
                 endIndex = Math.min(
                                   matchingObjIndexCacheIndex + quickSearchRange,
-                                  matchingObjs.length - 1);
+                                  matchingObjs.size() - 1);
                 for (i = startIndex; i <= endIndex; i++) {
-                    if (matchingObjs[i] == matchingObj) {
+                    if (matchingObjs.get(i) == matchingObj) {
                         foundIndex = i;
                         break;
                     }
                 }
                 if ((foundIndex == -1) && (matchingObjIndexCacheIndex > 0)) {
-                    if (matchingObjs[i = matchingObjIndexCacheIndex - 1]
+                    if (matchingObjs.get(i = matchingObjIndexCacheIndex - 1)
                             == matchingObj) {
                         foundIndex = i;
                     }
@@ -1023,14 +1029,14 @@ class ResultViewPanel extends JPanel{
                                   matchingObjIndexCacheIndex - quickSearchRange,
                                   0);
                 for (i = startIndex; i >= endIndex; i--) {
-                    if (matchingObjs[i] == matchingObj) {
+                    if (matchingObjs.get(i) == matchingObj) {
                         foundIndex = i;
                         break;
                     }
                 }
                 if ((foundIndex == -1)
-                    && (matchingObjIndexCacheIndex < matchingObjs.length - 1)) {
-                    if (matchingObjs[i = matchingObjIndexCacheIndex + 1]
+                    && (matchingObjIndexCacheIndex < matchingObjs.size() - 1)) {
+                    if (matchingObjs.get(i = matchingObjIndexCacheIndex + 1)
                             == matchingObj) {
                         foundIndex = i;
                     }
@@ -1040,8 +1046,8 @@ class ResultViewPanel extends JPanel{
 
         /* Nothing found near the cached position - search from the beginning */
         if (foundIndex == -1) {
-            for (int i = 0; i < matchingObjs.length; i++) {
-                if (matchingObj == matchingObjs[i]) {
+            for (int i = 0; i < matchingObjs.size(); i++) {
+                if (matchingObj == matchingObjs.get(i)) {
                     foundIndex = i;
                     break;
                 }
@@ -1131,7 +1137,8 @@ class ResultViewPanel extends JPanel{
         nodeListener.setSelectionChangeEnabled(false);
         btnReplace.setEnabled(false);
 
-        ReplaceTask taskReplace = new ReplaceTask(resultModel.getMatchingObjects());
+        ReplaceTask taskReplace =
+                new ReplaceTask(resultModel.getMatchingObjects());
         ResultView.getInstance().addReplacePair(taskReplace, this);
         Manager.getInstance().scheduleReplaceTask(taskReplace);
     }

@@ -111,7 +111,7 @@ public final class Dependency {
     }
 
     private String getExpFilePropertyName() {
-        return DEP_PROPERTY_PREFIX + '.' + getID() + ".expfile"; //NOI18N
+        return DEP_PROPERTY_PREFIX +  getID() + ".expfile"; //NOI18N
     }
 
     private String getSigFilePropertyName() {

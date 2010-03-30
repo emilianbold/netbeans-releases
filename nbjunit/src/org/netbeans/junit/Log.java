@@ -275,6 +275,7 @@ public final class Log extends Handler {
         return c == null ? System.err : c.getLog();
     }
 
+    @Override
     public void publish(LogRecord record) {
         if (record.getLevel().intValue() < getLevel().intValue()) {
             return;
@@ -296,12 +297,15 @@ public final class Log extends Handler {
         }
     }
 
+    @Override
     public void flush() {
     }
 
+    @Override
     public void close() {
-        if (getLevel() != Level.OFF) {
-            this.logger.addHandler(this);
+        Logger l = this.logger;
+        if (getLevel() != Level.OFF && l != null) {
+            l.addHandler(this);
         }
     }
 

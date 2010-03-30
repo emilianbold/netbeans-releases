@@ -118,6 +118,9 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public File[] getFiles(File dir, boolean useFileHiding) {
+        if (!(dir instanceof FileObjectBasedFile)) {
+            dir = new FileObjectBasedFile(dir.getAbsolutePath());
+        }
         FileObjectBasedFile rdir = (FileObjectBasedFile) dir;
         File[] result = null;
 

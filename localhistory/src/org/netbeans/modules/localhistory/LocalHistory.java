@@ -108,6 +108,7 @@ public class LocalHistory {
     private final Set<File> touchedFiles = new HashSet<File>();
     
     private LocalHistoryVCS lhvcs;
+    private RequestProcessor parallelRP;
 
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
@@ -145,7 +146,7 @@ public class LocalHistory {
         if(s != null) {
             getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        getParallelRequestProcessor().post(new Runnable() {
             public void run() {                       
                 setRoots(OpenProjects.getDefault().getOpenProjects());                                
                 OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(openProjectsListener, null));                                  
@@ -312,7 +313,7 @@ public class LocalHistory {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
                 final Project[] projects = (Project[]) evt.getNewValue();
-                RequestProcessor.getDefault().post(new Runnable() {
+                getParallelRequestProcessor().post(new Runnable() {
                     public void run() {               
                         setRoots(projects);
                     }
@@ -393,6 +394,13 @@ public class LocalHistory {
         sb.append('\t');
         sb.append(Thread.currentThread().getName());            
         LocalHistory.LOG.fine(sb.toString()); // NOI18N
+    }
+
+    public RequestProcessor getParallelRequestProcessor() {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("LocalHistory.ParallelTasks", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
 
     private class OpenedFilesListener implements PropertyChangeListener {

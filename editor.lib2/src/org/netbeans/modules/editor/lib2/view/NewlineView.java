@@ -88,7 +88,7 @@ public final class NewlineView extends EditorView {
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 
@@ -137,10 +137,8 @@ public final class NewlineView extends EditorView {
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        int endOffset = getEndOffset();
-        assert (offset >= endOffset - 1 && offset <= endOffset);
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-        mutableBounds.width = 1; // Check what width of newline should be?
+        mutableBounds.width = getPreferredSpan(X_AXIS);
         return mutableBounds;
     }
 

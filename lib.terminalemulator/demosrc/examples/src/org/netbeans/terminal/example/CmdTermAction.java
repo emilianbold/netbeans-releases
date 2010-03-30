@@ -1,8 +1,8 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -43,6 +43,8 @@ package org.netbeans.terminal.example;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
+import org.netbeans.terminal.example.Config.AllowClose;
+
 import org.openide.util.NbBundle;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
@@ -68,8 +70,7 @@ public class CmdTermAction extends AbstractAction {
 	IOContainer container = TerminalIOProviderSupport.getIOContainer();
 	container = null;	// work with default IO container
 
-        boolean restartable = true;
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeCommand(iop, container, cmd, restartable);
+	support.executeRichCommand(iop, container, Config.getCmdConfig(cmd));
     }
 }

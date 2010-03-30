@@ -75,7 +75,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     private RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
-    private boolean populating;
+    private boolean populated = false;
+    private RequestProcessor rp;
+    private TaskRunner taskRunner;
 
     RepositoryController(JiraRepository repository) {
         this.repository = repository;
@@ -86,14 +88,6 @@ public class RepositoryController extends BugtrackingController implements Docum
         panel.psswdField.getDocument().addDocumentListener(this);
 
         panel.validateButton.addActionListener(this);
-        panel.addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                populate();
-            }
-            public void ancestorRemoved(AncestorEvent event) { }
-            public void ancestorMoved(AncestorEvent event)   { }
-        });
-
     }
 
     public JComponent getComponent() {
@@ -134,6 +128,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private boolean validate() {
+        if(!populated) {
+            return true;
+        }
         if(validateError) {
             return false;
         }
@@ -216,50 +213,72 @@ public class RepositoryController extends BugtrackingController implements Docum
             getHttpPassword());
         Jira.getInstance().addRepository(repository);
         repository.getNode().setName(newName);
+        repository.register();
     }
 
     void populate() {
-        if(repository.getTaskRepository() != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    populating = true;
-                    AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-                    panel.userField.setText(c.getUserName());
-                    panel.psswdField.setText(c.getPassword());
-                    c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
-                    if(c != null) {
-                        String httpUser = c.getUserName();
-                        String httpPsswd = c.getPassword();
-                        if(httpUser != null && !httpUser.equals("") &&          // NOI18N
-                           httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
-                        {
-                            panel.httpCheckBox.setSelected(true);
-                            panel.httpUserField.setText(httpUser);
-                            panel.httpPsswdField.setText(httpPsswd);
+        taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
+            @Override
+            protected void preRun() {
+                panel.validateButton.setVisible(false);
+                super.preRun();
+            }
+            @Override
+            protected void postRun() {
+                panel.validateButton.setVisible(true);
+                super.postRun();
+            }
+            @Override
+            void execute() {
+
+                JiraConfig.getInstance().setupCredentials(repository);
+                if(repository.getTaskRepository() != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            AuthenticationCredentials c = repository.getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
+                            panel.userField.setText(c.getUserName());
+                            panel.psswdField.setText(c.getPassword());
+                            c = repository.getTaskRepository().getCredentials(AuthenticationType.HTTP);
+                            if(c != null) {
+                                String httpUser = c.getUserName();
+                                String httpPsswd = c.getPassword();
+                                if(httpUser != null && !httpUser.equals("") &&          // NOI18N
+                                   httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
+                                {
+                                    panel.httpCheckBox.setSelected(true);
+                                    panel.httpUserField.setText(httpUser);
+                                    panel.httpPsswdField.setText(httpPsswd);
+                                }
+                            }
+                            panel.urlField.setText(repository.getTaskRepository().getUrl());
+                            panel.nameField.setText(repository.getDisplayName());
+                            populated = true;
+                            fireDataChanged();
                         }
-                    }
-                    panel.urlField.setText(repository.getTaskRepository().getUrl());
-                    panel.nameField.setText(repository.getDisplayName());
-                    populating = false;
+                    });
+                } else {
+                    populated = true;
+                    fireDataChanged();
                 }
-            });
-        }
+            }
+        };
+        taskRunner.startTask();
     }
 
     public void insertUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void removeUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
 
     public void changedUpdate(DocumentEvent e) {
-        if(populating) return;
+        if(!populated) return;
         validateErrorOff(e);
         fireDataChanged();
     }
@@ -271,82 +290,126 @@ public class RepositoryController extends BugtrackingController implements Docum
     }
 
     private void onValidate() {
-        RequestProcessor rp = Jira.getInstance().getRequestProcessor();
+        taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")) {  // NOI18N
+            public void execute() {
+                String name = getName();
+                String url = getUrl();
+                String user = getUser();
+                String httpUser = getHttpUser();
+                TaskRepository taskRepo = JiraRepository.createTaskRepository(
+                        name,
+                        url,
+                        user,
+                        getPassword(),
+                        getHttpUser(),
+                        getHttpPassword());
 
-        final Task[] task = new Task[1];
-        Cancellable c = new Cancellable() {
-            public boolean cancel() {
-                panel.progressPanel.setVisible(false);
-                panel.validateLabel.setVisible(false);
-                if(task[0] != null) {
-                    task[0].cancel();
-                }
-                return true;
-            }
-        };
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating"), c); // NOI18N
-        JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
-        panel.progressPanel.removeAll();
-        panel.progressPanel.add(comp, BorderLayout.CENTER);
-
-        task[0] = rp.create(new Runnable() {
-            public void run() {
-                handle.start();
-                panel.connectionLabel.setVisible(false);
-                panel.progressPanel.setVisible(true);
-                panel.validateLabel.setVisible(true);
-                panel.enableFields(false);
-                panel.validateLabel.setText(NbBundle.getMessage(RepositoryPanel.class, "LBL_Validating")); // NOI18N
-                try {
-                    String name = getName();
-                    String url = getUrl();
-                    String user = getUser();
-                    String httpUser = getHttpUser();
-                    TaskRepository taskRepo = JiraRepository.createTaskRepository(
-                            name,
-                            url,
-                            user,
-                            getPassword(),
-                            getHttpUser(),
-                            getHttpPassword());
-
-                    ValidateCommand cmd = new ValidateCommand(taskRepo);
-                    repository.getExecutor().execute(cmd, false, false, false);
-                    if(cmd.hasFailed()) {
-                        if(cmd.getErrorMessage() == null) {
-                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
-                                               Level.WARNING, name, url, user, httpUser);
-                            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
-                        } else {
-                            errorMessage = cmd.getErrorMessage();
-                            logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
-                                               Level.WARNING, name, url, user, httpUser);                        
-                        }
-                        validateError = true;
-                        fireDataChanged();
+                ValidateCommand cmd = new ValidateCommand(taskRepo);
+                repository.getExecutor().execute(cmd, false, false, false);
+                if(cmd.hasFailed()) {
+                    if(cmd.getErrorMessage() == null) {
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed, yet the returned error message is null.", // NOI18N
+                                           Level.WARNING, name, url, user, httpUser);
+                        errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
                     } else {
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
-                                           Level.INFO, name, url, user, httpUser);
-                        panel.connectionLabel.setVisible(true);
+                        errorMessage = cmd.getErrorMessage();
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] has failed: " + errorMessage, // NOI18N
+                                           Level.WARNING, name, url, user, httpUser);
                     }
-                } finally {
-                    panel.enableFields(true);
-                    panel.progressPanel.setVisible(false);
-                    panel.validateLabel.setVisible(false);
-                    handle.finish();
+                    validateError = true;
+                    fireDataChanged();
+                } else {
+                    logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
+                                       Level.INFO, name, url, user, httpUser);
+                    panel.connectionLabel.setVisible(true);
                 }
             }
 
             private void logValidateMessage(String msg, Level level, String name, String url, String user, String httpUser) {
                 Jira.LOG.log(level, msg, new Object[] {name, url, user, httpUser});
             }
-        });
-        task[0].schedule(0);
+        };
+        taskRunner.startTask();
     }
 
     private void validateErrorOff(DocumentEvent e) {
         if (e.getDocument() == panel.userField.getDocument() || e.getDocument() == panel.urlField.getDocument() || e.getDocument() == panel.psswdField.getDocument()) {
             validateError = false;
         }
+    }
+
+    void cancel() {
+        if(taskRunner != null) {
+            taskRunner.cancel();
+        }
+    }
+
+    private abstract class TaskRunner implements Runnable, Cancellable {
+        private Task task;
+        private ProgressHandle handle;
+        private String labelText;
+
+        public TaskRunner(String labelText) {
+            this.labelText = labelText;
+        }
+
+        final void startTask() {
+            cancel();
+            task = getRequestProcessor().create(this);
+            task.schedule(0);
+        }
+
+        @Override
+        final public void run() {
+            preRun();
+            try {
+                execute();
+            } finally {
+                postRun();
+            }
+        }
+
+        abstract void execute();
+
+        protected void preRun() {
+            handle = ProgressHandleFactory.createHandle(labelText, this);
+            JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
+            panel.progressPanel.removeAll();
+            panel.progressPanel.add(comp, BorderLayout.CENTER);
+
+            panel.connectionLabel.setVisible(false);
+            handle.start();
+            panel.progressPanel.setVisible(true);
+            panel.validateLabel.setVisible(true);
+            panel.enableFields(false);
+            panel.validateLabel.setText(labelText); // NOI18N
+        }
+
+        protected void postRun() {
+            if(handle != null) {
+                handle.finish();
+            }
+            panel.progressPanel.setVisible(false);
+            panel.validateLabel.setVisible(false);
+            panel.enableFields(true);
+        }
+
+        @Override
+        public boolean cancel() {
+            boolean ret = true;
+            postRun();
+            if(task != null) {
+                ret = task.cancel();
+            }
+            errorMessage = null;
+            return ret;
+        }
+    }
+
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("Jira Repository tasks", 1, true); // NOI18N
+        }
+        return rp;
     }
 }

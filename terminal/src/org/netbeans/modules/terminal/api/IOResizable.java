@@ -50,6 +50,25 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOResizable {
 
+    public static final String PROP_SIZE = "IOResizable.PROP_SIZE"; // NOI18N
+
+    public static final class Size {
+	public final Dimension cells;
+	public final Dimension pixels;
+
+	public Size(Dimension cells, Dimension pixels) {
+	    this.cells = cells;
+	    this.pixels = pixels;
+	}
+    }
+
+    /**
+     * Deprecated: Use IONotifier with PROP_SIZE and IOResizable.Size
+    // LATER @deprecated Use IONotifier with PROP_SIZE and IOResizable.Size
+     */
+    // If we mark it as @deprecated then our own builds will be noise.
+    // add/removeListener are already marked as deprecated.
+    // LATER @Deprecated
     public interface Listener {
 	public void sizeChanged(Dimension cells, Dimension pixels);
     }
@@ -66,7 +85,9 @@ public abstract class IOResizable {
      * Add a size change listener to the provided IO.
      * @param io IO to operate on.
      * @param listener ... to notify of size changes.
+     * @deprecated Use IONotifier with PROP_SIZE.
      */
+    @Deprecated
     public static void addListener(InputOutput io, Listener listener) {
 	IOResizable ior = find(io);
 	if (ior != null) {
@@ -78,7 +99,9 @@ public abstract class IOResizable {
      * Remove the given size change listener from the provided IO.
      * @param io IO to operate on.
      * @param listener ... to remove.
+     * @deprecated Use IONotifier with PROP_SIZE.
      */
+    @Deprecated
     public static void removeListener(InputOutput io, Listener listener) {
 	IOResizable ior = find(io);
 	if (ior != null) {

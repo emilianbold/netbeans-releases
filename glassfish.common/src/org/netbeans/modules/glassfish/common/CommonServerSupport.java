@@ -242,6 +242,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
+        if (null == retVal) {
+            return null;
+        }
         File candidate = new File(retVal);
         if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...

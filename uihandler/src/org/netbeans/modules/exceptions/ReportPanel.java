@@ -54,12 +54,14 @@ import org.openide.awt.HtmlBrowser;
 
 public class ReportPanel extends javax.swing.JPanel {
     private final ExceptionsSettings exSettings = new ExceptionsSettings();
-
+    private final char[] originalPasswd;
+    
     /** Creates new form ReportPanel */
     public ReportPanel() {
-        this(false);
+        this(false, new char[0]);
     }
-    public ReportPanel(boolean isOOM) {
+    public ReportPanel(boolean isOOM, char[] previousPasswd) {
+        this.originalPasswd = previousPasswd;
         initComponents();
         if (isOOM){
             oomInfo.setVisible(true);
@@ -142,7 +144,7 @@ public class ReportPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel5.text_1")); // NOI18N
 
-        jPasswordField1.setText(new String(exSettings.getPasswd()));
+        jPasswordField1.setText(new String(originalPasswd));
 
         rememberCheckBox.setSelected(exSettings.rememberPasswd());
         org.openide.awt.Mnemonics.setLocalizedText(rememberCheckBox, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
@@ -311,16 +313,12 @@ public class ReportPanel extends javax.swing.JPanel {
             return loginField.getText().trim();
         }
 
-        public String getPasswd(){
-            return new String(getPasswdChars());
-        }
-
         public char[] getPasswdChars(){
-            char[] passwd = jPasswordField1.getPassword();
-            if (passwd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
-                passwd = copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
+            char[] localPasswd = jPasswordField1.getPassword();
+            if (localPasswd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
+                localPasswd = copyOf(localPasswd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
             }
-            return passwd;
+            return localPasswd;
         }
 
         public static char[] copyOf(char[] original, int newLength) {

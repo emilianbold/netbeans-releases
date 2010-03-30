@@ -307,7 +307,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
-            initColumns();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    initColumns();
+                }
+            });
         }
     }
 

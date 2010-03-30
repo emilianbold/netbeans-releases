@@ -33,7 +33,7 @@ License Agreement and Entitlement.
 LICENSE #4: The use of the Java ME SDK 3.0 is subject to
 this Software License Agreement and Entitlement.
 
-LICENSE #5: The use of the JavaFX SDK 1.2.1 is subject to
+LICENSE #5: The use of the JavaFX SDK 1.3 is subject to
 this Software License Agreement and Entitlement.
 
 LICENSE #6: The use of the Sun GlassFish Enterprise Server
@@ -1510,7 +1510,7 @@ Santa Clara, California 95054 if you have questions.
 
 LICENSE #5:
 
-JAVAFX 1.2.1 SOFTWARE DEVELOPMENT KIT (SDK).
+JAVAFX 1.3 SOFTWARE DEVELOPMENT KIT (SDK).
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
@@ -1518,7 +1518,7 @@ Licensee/Company: Entity receiving Software.
 
 Effective Date: Date of delivery of the Software to You.
 
-Software: JavaFX 1.2.1 Software Development Kit (SDK).
+Software: JavaFX 1.3 Software Development Kit (SDK).
 
 License Term: Perpetual (subject to termination under the
 SLA).

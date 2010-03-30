@@ -62,6 +62,16 @@ public interface BugzillaConstants {
             "&emailtype1=exact" +                                               // NOI18N
             "&email1={1}";                                                      // NOI18N
 
+    public static final String NB_MY_ISSUES_PARAMETERS_FORMAT =
+            "&product={0}" +                                                    // NOI18N
+            "&bug_status=NEW" +                                                 // NOI18N
+            "&bug_status=STARTED" +                                             // NOI18N
+            "&bug_status=REOPENED" +                                            // NOI18N
+            "&emailassigned_to1=1" +                                            // NOI18N
+            "&emailreporter1=1" +                                               // NOI18N
+            "&emailtype1=exact" +                                               // NOI18N
+            "&email1={1}";                                                      // NOI18N
+
     public static final String ALL_ISSUES_PARAMETERS =
             "&product={0}" +                                                    // NOI18N
             "&bug_status=UNCONFIRMED" +                                         // NOI18N

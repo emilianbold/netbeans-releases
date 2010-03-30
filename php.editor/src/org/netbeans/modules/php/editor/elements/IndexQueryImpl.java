@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -304,9 +305,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             final Collection<? extends IndexResult> constructorResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
                     new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_CONSTRUCTOR_FIELD, MethodElementImpl.IDX_FIELD});
             final Set<MethodElement> methodsForResult = new HashSet<MethodElement>();
+            final ElementFilter forEqualTypes = ElementFilter.forEqualTypes(inheritedClass);
             for (final IndexResult indexResult : constructorResults) {
-                //methodsForResult.addAll(MethodElementImpl.fromConstructorSignature(originalClass, this, indexResult));
-                methodsForResult.addAll(MethodElementImpl.fromSignature(originalClass, this, indexResult));
+                Set<ClassElement> classes = ClassElementImpl.fromSignature(this, indexResult);
+                for (ClassElement classElement : classes) {
+                    if (forEqualTypes.isAccepted(classElement)) {
+                        methodsForResult.addAll(MethodElementImpl.fromSignature(originalClass, this, indexResult));
+                    }
+                }
             }
             methods.addAll(ElementFilter.forName(NameKind.exact(MethodElementImpl.CONSTRUCTOR_NAME)).filter(methodsForResult));
             if (methods.isEmpty()) {
@@ -483,21 +489,29 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public final Set<MethodElement> getMethods(final NameKind.Exact typeQuery, final NameKind methodQuery) {
+        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE));
+    }
+
+    private final Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         //two queries: once for classes, second for ifaces
-        final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
-                new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : clzResults) {
-            for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.CLASS)) {
+            final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{ClassElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : clzResults) {
+                for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
             }
         }
-        final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
-                new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : ifaceResults) {
-            for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.IFACE)) {
+            final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : ifaceResults) {
+                for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -625,21 +639,29 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public Set<TypeConstantElement> getTypeConstants(NameKind.Exact typeQuery, NameKind constantQuery) {
+        return getTypeConstantsImpl(typeQuery, constantQuery, EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE));
+    }
+
+    private Set<TypeConstantElement> getTypeConstantsImpl(NameKind.Exact typeQuery, NameKind constantQuery, EnumSet<PhpElementKind> typeKinds) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<TypeConstantElement> constants = new HashSet<TypeConstantElement>();
         //two queries: once for classes, second for ifaces
-        final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
-                new String[]{ClassElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : clzResults) {
-            for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.CLASS)) {
+            final Collection<? extends IndexResult> clzResults = results(ClassElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{ClassElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : clzResults) {
+                for (final TypeElement typeElement : ClassElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+                }
             }
         }
-        final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
-                new String[]{InterfaceElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : ifaceResults) {
-            for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
-                constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+        if (typeKinds.contains(PhpElementKind.IFACE)) {
+            final Collection<? extends IndexResult> ifaceResults = results(InterfaceElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{InterfaceElementImpl.IDX_FIELD, TypeConstantElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : ifaceResults) {
+                for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    constants.addAll(TypeConstantElementImpl.fromSignature(typeElement, constantQuery, this, indexResult));
+                }
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -746,7 +768,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(retval);
     }
 
-    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypesWithMembers(final TypeElement typeElement,
+    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypeMembers(final TypeElement typeElement,
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
@@ -757,13 +779,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(superClassName), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                                    getMethodsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                         case FIELD:
                             directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(superClassName), NameKind.empty())));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(superClassName), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                                    getTypeConstantsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                     }
                 }
@@ -776,13 +800,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethods(NameKind.exact(iface), NameKind.empty())));
-                            break;
-                        case FIELD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(iface), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(iface), NameKind.empty(), 
+                                    EnumSet.of(PhpElementKind.IFACE))));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstants(NameKind.exact(iface), NameKind.empty())));
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
+                                    EnumSet.of(PhpElementKind.IFACE))));
                             break;
                     }
                 }
@@ -921,7 +944,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             LinkedHashSet<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         if (recursionPrevention.add(typeElement)) {
             final LinkedHashSet<TypeMemberElement> typeMembers =
-                    getDirectInheritedTypesWithMembers(typeElement, typeKinds, memberKinds);
+                    getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
             retval.addAll(forComparingNameKinds(retval).reverseFilter(typeMembers));
             for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
@@ -1034,6 +1057,18 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             logQueryTime("Set<TypeConstantElement> getInheritedTypeConstants", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
         }
         return Collections.unmodifiableSet(retval);
+    }
+
+    @Override
+    public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+        getInheritedByTypes(typeElement, retval);
+        retval.remove(typeElement);
+        if (LOG.isLoggable(Level.FINE)) {
+            logQueryTime("LinkedHashSet<TypeElement> getInheritedByTypes", NameKind.exact(typeElement.getFullyQualifiedName()), start);//NOI18N
+        }
+        return retval;
     }
 
     @Override
@@ -1168,24 +1203,59 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return directTypes;
     }
 
+    private void getInheritedByTypes(final TypeElement typeElement, final LinkedHashSet<TypeElement> retval) {
+        if (retval.add(typeElement)) {
+            LinkedHashSet<TypeElement> directTypes = getDirectInheritedByTypes(typeElement);
+            for (TypeElement tp : directTypes) {
+                getInheritedByTypes(tp, retval);
+            }
+        }
+    }
+
+    private LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
+        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
+        final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());
+        if (typeElement.isClass()) {
+            final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_CLASS, query,
+                    new String[] {PHPIndexer.FIELD_SUPER_CLASS, ClassElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : result) {
+                String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_CLASS);
+                for (String value : values) {
+                    Signature signature = Signature.get(value);
+                    final String name = signature.string(1);
+                    //TODO: FQN should have been compared, but first into index must come super cls/iface
+                    //as FQN
+                    if (query.matchesName(PhpElementKind.CLASS, name)) {
+                        directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                    }
+                }
+            }
+        } else if (typeElement.isInterface()) {
+            final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_IFACE, query,
+                    new String[] {PHPIndexer.FIELD_SUPER_IFACE, InterfaceElementImpl.IDX_FIELD, ClassElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : result) {
+                String[] values = indexResult.getValues(PHPIndexer.FIELD_SUPER_IFACE);
+                for (String value : values) {
+                    Signature signature = Signature.get(value);
+                    final String name = signature.string(1);
+                    //TODO: FQN should have been compared, but first into index must come super cls/iface
+                    //as FQN
+                    if (query.matchesName(PhpElementKind.IFACE, name)) {
+                        directTypes.addAll(InterfaceElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                        directTypes.addAll(ClassElementImpl.fromSignature(NameKind.empty(), this, indexResult));
+                    }
+                }
+            }
+        }
+        return directTypes;
+    }
+
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
         Set<String> names = new HashSet<String>();
         for (PhpElement elem : elements) {
             names.add(elem.getName());
         }
         return names;
-    }
-
-    private static Set<String> toKindNames(Set<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
-        for (PhpElement elem : elements) {
-            names.add(toKindName(elem));
-        }
-        return names;
-    }
-
-    private static String toKindName(PhpElement elem) {
-        return String.format("%s:%s", elem.getPhpElementKind().toString(), elem.getName());
     }
 
     private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
@@ -1229,7 +1299,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     private Collection<? extends IndexResult> results(final String indexField,
             final NameKind query, final String[] fieldsToLoad) {
-        return search(indexField, query.getQueryName(), Kind.CASE_INSENSITIVE_PREFIX, fieldsToLoad);
+        return search(indexField, prepareIdxQuery(query.getQueryName(),query.getQueryKind()), Kind.CASE_INSENSITIVE_PREFIX, fieldsToLoad);
     }
 
     private void logQueryTime(final String queryDescription, final NameKind typeQuery,
@@ -1245,5 +1315,21 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         LOG.fine(String.format("%s for query: [%s:%s] took: %d [ms]", queryDescription,//NOI18N
                 query.getQueryKind().toString(), query.getQuery().toString(),
                 System.currentTimeMillis() - start)); //NOI18N
+    }
+
+    private static String prepareIdxQuery(String textForQuery, Kind kind) {
+        String query = textForQuery.toLowerCase();
+        if (kind.equals(QuerySupport.Kind.CAMEL_CASE)) {
+            final char charAt = textForQuery.charAt(0);
+            final int length = textForQuery.length();
+            if (Character.isLetter(charAt) && length > 0) {
+                query = query.substring(0, 1);//NOI18N
+            } else if (charAt == '$' && length > 1) {
+                query = query.substring(0, 1);//NOI18N
+            }else {
+                query = "";//NOI18N
+            }
+        }
+        return query;
     }
 }

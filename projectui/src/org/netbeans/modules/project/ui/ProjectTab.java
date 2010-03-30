@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -66,7 +65,6 @@ import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
@@ -84,7 +82,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.groups.Group;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -104,6 +101,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -620,11 +618,16 @@ public class ProjectTab extends TopComponent
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            if (OpenProjects.getDefault().getOpenProjects().length > 0) {
-                restoreTreeView();
-            } else {
-                showNoProjectsLabel();
-            }
+            final boolean someProjectsOpen = OpenProjects.getDefault().getOpenProjects().length > 0;
+            Mutex.EVENT.readAccess(new Runnable() {
+                public @Override void run() {
+                    if (someProjectsOpen) {
+                        restoreTreeView();
+                    } else {
+                        showNoProjectsLabel();
+                    }
+                }
+            });
         }
     }
 

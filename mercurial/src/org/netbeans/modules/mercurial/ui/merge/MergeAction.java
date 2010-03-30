@@ -71,11 +71,12 @@ public class MergeAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Merge";                                    //NOI18N
     }
@@ -101,13 +102,12 @@ public class MergeAction extends ContextAction {
             return;
         }
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        final File[] files = HgUtils.filterForRepository(context, root, false);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
-                OutputLogger logger = getLogger();
+                final OutputLogger logger = getLogger();
                 try {
                     List<String> headList = HgCommand.getHeadRevisions(root);
-                    String revStr = null;
                     if (headList.size() <= 1) {
                         logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
                         logger.outputInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
@@ -119,20 +119,30 @@ public class MergeAction extends ContextAction {
                             NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
                             JOptionPane.INFORMATION_MESSAGE);
                          return;
-                    } else {
-                        final MergeRevisions mergeDlg = new MergeRevisions(root, files);
-                        if (!mergeDlg.showDialog()) {
-                            return;
-                        }
-                        revStr = mergeDlg.getSelectionRevision();               
                     }
-                    logger.outputInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
-                    logger.outputInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
-                    doMergeAction(root, revStr, logger);
-                    HgUtils.forceStatusRefreshProject(context);
-                    logger.output(""); // NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String revStr = null;
+                                MergeRevisions mergeDlg = new MergeRevisions(root, new File[] {root});
+                                if (!mergeDlg.showDialog()) {
+                                    return;
+                                }
+                                revStr = mergeDlg.getSelectionRevision();
+                                logger.outputInRed(
+                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
+                                logger.outputInRed(
+                                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
+                                doMergeAction(root, revStr, logger);
+                                HgUtils.forceStatusRefreshProject(context);
+                                logger.output(""); // NOI18N
+                            } catch (HgException ex) {
+                                NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                                DialogDisplayer.getDefault().notifyLater(e);
+                            }
+                        }
+                    });
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
