@@ -163,7 +163,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     private FormEditor formEditor;
     
     /** Set of opened FormEditorSupport instances (java or form opened) */
-    private static Set<FormEditorSupport> opened = Collections.synchronizedSet(new HashSet<FormEditorSupport>());
+    private static final Set<FormEditorSupport> opened = Collections.synchronizedSet(new HashSet<FormEditorSupport>());
     
     private static Map<FileSystem,FileStatusListener> fsToStatusListener = new HashMap<FileSystem,FileStatusListener>();
     
@@ -240,12 +240,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             fsl = new FileStatusListener() {
                 @Override
                 public void annotationChanged(FileStatusEvent ev) {
-                    Iterator<FormEditorSupport> iter = opened.iterator();
-                    while (iter.hasNext()) {
-                        FormEditorSupport fes = iter.next();
-                        if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())
-                                || ev.hasChanged(fes.getFormDataObject().getFormFile())) {
-                            fes.updateMVTCDisplayName();
+                    synchronized (opened) {
+                        Iterator<FormEditorSupport> iter = opened.iterator();
+                        while (iter.hasNext()) {
+                            FormEditorSupport fes = iter.next();
+                            if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())
+                                    || ev.hasChanged(fes.getFormDataObject().getFormFile())) {
+                                fes.updateMVTCDisplayName();
+                            }
                         }
                     }
                 }
