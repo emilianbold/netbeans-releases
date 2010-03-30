@@ -122,6 +122,11 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         }
 
         List<OffsetRange> bag = processImpl(info, doc, caretPosition);
+        if(bag == null) {
+            //the occurrences finder haven't found anything, just ignore the result
+            //and keep the previous occurrences
+            return ;
+        }
 
         if (isCancelled()) {
             return;
@@ -166,26 +171,19 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         assert finder != null;
         
         finder.setCaretPosition(caretPosition);
-        OccurrencesFinder task = finder;
-        if (task != null) {
-            try {
-                task.run(info, null);
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-
-            if (isCancelled()) {
-                task.cancel();
-            }
-
-
-            Map<OffsetRange,ColoringAttributes> highlights = task.getOccurrences();
-            if (highlights != null) {
-                return new ArrayList<OffsetRange>(highlights.keySet());
-            }
+        try {
+            finder.run(info, null);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
         }
-        
-        return Collections.<OffsetRange>emptyList();
+
+        if (isCancelled()) {
+            finder.cancel();
+        }
+
+        Map<OffsetRange, ColoringAttributes> highlights = finder.getOccurrences();
+
+        return highlights == null ? null : new ArrayList<OffsetRange>(highlights.keySet());
     }
 
     @Override

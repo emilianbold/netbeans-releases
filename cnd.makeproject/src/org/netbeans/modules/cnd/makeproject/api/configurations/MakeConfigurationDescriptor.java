@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +53,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -109,6 +110,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test)$"; // NOI18N
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
     private String baseDir;
     private boolean modified = false;
@@ -187,15 +189,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         if (confs != null) {
             MakeConfiguration conf = (MakeConfiguration) confs.getActive();
             if (conf == null) {
-                if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                    new Exception("There are no active configuration in the project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + getBaseDir()).printStackTrace(); // NOI18N
-                }
+                LOGGER.log(Level.FINE, "There are no active configuration in the project descriptor MakeConfigurationDescriptor@{0} for project {1}", new Object[]{System.identityHashCode(this), getBaseDir()}); // NOI18N
             }
             return conf;
         } else {
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                new Exception("There are no configurations in the project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + getBaseDir()).printStackTrace(); // NOI18N
-            }
+            LOGGER.log(Level.FINE, "There are no configurations in the project descriptor MakeConfigurationDescriptor@{0} for project {1}", new Object[]{System.identityHashCode(this), getBaseDir()}); // NOI18N
         }
         return null;
     }
@@ -728,15 +726,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         FileObject fo = null;
         fo = FileUtil.toFileObject(new File(getBaseDir()));
         if (fo != null) {
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                System.err.println("Start of writting project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + fo.getName() + " @" + System.identityHashCode(this)); // NOI18N
-            }
+            LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
             ConfigurationProjectXMLWriter();
-            if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                System.err.println("End of writting project descriptor MakeConfigurationDescriptor@" + System.identityHashCode(this) + " for project " + fo.getName() + " @" + System.identityHashCode(this)); // NOI18N
-            }
+            LOGGER.log(Level.FINE, "End of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
         }
 
         // Clear flag

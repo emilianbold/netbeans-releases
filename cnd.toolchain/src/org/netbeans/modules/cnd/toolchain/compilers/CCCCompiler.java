@@ -315,7 +315,7 @@ import org.openide.util.Utilities;
         }
     }
 
-    protected final class Pair {
+    protected static final class Pair {
         public PersistentList<String> systemIncludeDirectoriesList;
         public PersistentList<String> systemPreprocessorSymbolsList;
         public Pair(){

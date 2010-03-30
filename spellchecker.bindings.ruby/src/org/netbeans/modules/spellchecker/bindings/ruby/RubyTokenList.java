@@ -47,6 +47,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tokenize Ruby text for spell checking
@@ -62,15 +64,27 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  * @author Tor Norbye
  */
 public class RubyTokenList extends AbstractRubyTokenList {
+
+
+    private boolean hidden = false;
+
     /** Creates a new instance of RubyTokenList */
     public RubyTokenList(BaseDocument doc) {
         super(doc);
     }
 
+    @Override
+    public void setStartOffset(int offset) {
+        super.setStartOffset (offset);
+        FileObject fileObject = FileUtil.getConfigFile ("Spellcheckers/Ruby");
+        Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+        hidden = Boolean.TRUE.equals (b);
+    }
+
     /** Given a sequence of Ruby tokens, return the next span of eligible comments */
     @Override
     protected int[] findNextSpellSpan(TokenSequence<? extends TokenId> ts, int offset) throws BadLocationException {
-        if (ts == null) {
+        if (ts == null || hidden) {
             return new int[]{-1, -1};
         }
 

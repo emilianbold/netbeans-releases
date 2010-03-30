@@ -243,7 +243,6 @@ public final class MakeActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.setDeleted();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }

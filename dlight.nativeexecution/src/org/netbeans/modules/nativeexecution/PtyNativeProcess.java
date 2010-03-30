@@ -58,13 +58,20 @@ import org.openide.util.Exceptions;
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
-    private final Pty pty;
-    private final PtyImpl ptyImpl;
+    private Pty pty = null;
+    private PtyImpl ptyImpl = null;
     private AbstractNativeProcess delegate = null;
 
-    public PtyNativeProcess(NativeProcessInfo info) throws IOException {
+    public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
+    }
 
+    public Pty getPty() {
+        return pty;
+    }
+
+    @Override
+    protected void create() throws Throwable {
         ExecutionEnvironment env = info.getExecutionEnvironment();
         Pty _pty = info.getPty();
 
@@ -78,15 +85,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         pty = _pty;
         ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-    }
 
-    public Pty getPty() {
-        return pty;
-    }
-
-    @Override
-    protected void create() throws Throwable {
-        ExecutionEnvironment env = info.getExecutionEnvironment();
         String executable = PtyProcessStartUtility.getInstance().getPath(env);
 
         List<String> newArgs = new ArrayList<String>();

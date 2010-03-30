@@ -5,13 +5,15 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#include <stdlib.h>
+#include <cstdlib>
+
+using namespace std;
 
 /*
  * 
  */
 int main(int argc, char** argv) {
     
-    return (EXIT_SUCCESS);
+    return 0;
 }
 

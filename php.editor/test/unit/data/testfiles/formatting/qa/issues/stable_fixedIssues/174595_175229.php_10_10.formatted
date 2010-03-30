@@ -5,8 +5,8 @@
           <head>
                     <title><?php translate("Jobeet ; Your best job board"); ?></title>
                     <link rel="shortcut icon" href="/favicon.ico" />
-                            <?php include_javascripts() ?>
-                            <?php include_stylesheets(); ?>
+                    <?php include_javascripts() ?>
+                    <?php include_stylesheets(); ?>
           </head>
           <body>
                     <div id="container">

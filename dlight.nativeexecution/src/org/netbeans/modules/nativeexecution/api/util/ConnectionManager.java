@@ -230,6 +230,13 @@ public final class ConnectionManager {
         return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
     }
 
+    private void reconnect(ExecutionEnvironment env) throws IOException {
+        synchronized (sessions) {
+            disconnect(env);
+            connectTo(env);
+        }
+    }
+
     /**
      * Disconnects from the remote host
      * @param env specifies the host to disconnect
@@ -658,8 +665,13 @@ public final class ConnectionManager {
             extends ConnectionManagerAccessor {
 
         @Override
-        public Session getConnectionSession(ConnectionManager mgr, ExecutionEnvironment env, boolean restoreLostConnection) {
-            return mgr.getSession(env, restoreLostConnection);
+        public Session getConnectionSession(ExecutionEnvironment env, boolean restoreLostConnection) {
+            return instance.getSession(env, restoreLostConnection);
+        }
+
+        @Override
+        public void reconnect(final ExecutionEnvironment env) throws IOException {
+            instance.reconnect(env);
         }
     }
 }
