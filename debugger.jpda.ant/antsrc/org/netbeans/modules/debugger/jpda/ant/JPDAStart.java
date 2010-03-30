@@ -450,7 +450,7 @@ public class JPDAStart extends Task implements Runnable {
                             listeningStarted.notifyAll();
                         }
                         try {
-                            DebuggerEngine[] engines = JPDADebugger.startListening2 (
+                            DebuggerEngine[] engines = JPDADebugger.startListeningAndGetEngines (
                                 flc,
                                 args,
                                 new Object[] { properties }

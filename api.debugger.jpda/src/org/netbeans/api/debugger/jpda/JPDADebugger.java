@@ -216,7 +216,7 @@ public abstract class JPDADebugger {
         Map<String, ? extends Argument>  args,
         Object[]                  services
     ) throws DebuggerStartException {
-        startListening2(connector, args, services);
+        startListeningAndGetEngines(connector, args, services);
     }
 
     /**
@@ -234,7 +234,7 @@ public abstract class JPDADebugger {
      * returns an empty array
      * @since 2.26
      */
-    public static DebuggerEngine[] startListening2 (
+    public static DebuggerEngine[] startListeningAndGetEngines (
         ListeningConnector        connector,
         Map<String, ? extends Argument>  args,
         Object[]                  services

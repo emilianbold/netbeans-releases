@@ -768,14 +768,16 @@ These are mainly class and thread filters and hit counts.
 
     <change>
         <api name="JPDADebuggerAPI"/>
-        <summary>JPDADebugger.startListening2().</summary>
+        <summary>JPDADebugger.startListeningAndGetEngines().</summary>
         <version major="2" minor="26"/>
         <date day="23" month="3" year="2010"/>
         <author login="mentlicher"/>
         <compatibility addition="yes" source="compatible" binary="compatible"/>
         <description>
-            JPDADebugger.startListening2() introduced to return the debugger engines that are
-            started, for use by the fix of the defect #182439.
+            JPDADebugger.startListeningAndGetEngines() introduced to return the
+            debugger engines that are started, for use by the fix of the defect #182439.
+            This method is identical to JPDADebugger.startListening(), but returns
+            the started engines.
         </description>
         <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
         <issue number="182439"/>
