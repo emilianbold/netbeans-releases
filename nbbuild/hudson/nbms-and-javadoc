@@ -16,6 +16,7 @@ ant -emacs -Dcluster.config=experimental \
     -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
     verify-libs-and-licenses build-nozip build-nbms || exit
 
+rm -rv nbbuild/netbeans/ergonomics nbbuild/nbms/ergonomics # not going to have been built reasonably anyway
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 (cd nbbuild/netbeans; for cluster in *; do if [ -d $cluster/update_tracking ]; then zip -rq ../dist/$BUILD_TAG-$cluster.zip $cluster; fi; done)
