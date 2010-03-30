@@ -102,7 +102,7 @@ public class MylynUtils {
                 proxyPort = ps.getHttpsPort();
             }
 
-            if(proxyHost != null || !proxyHost.equals("")) {
+            if(proxyHost != null && !proxyHost.equals("")) {
                 BugtrackingManager.LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
 
                 repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
