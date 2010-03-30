@@ -52,7 +52,7 @@ public class GdbEngineProvider extends DebuggerEngineProvider {
 
     private DebuggerEngine.Destructor   desctuctor;
     private Session                     session;
-    private RequestProcessor            gdbRP = new RequestProcessor("GDB Debugger", 5);
+    private RequestProcessor            gdbRP = new RequestProcessor("GDB Debugger", 5); //NOI18N
 
     public GdbEngineProvider(ContextProvider contextProvider) {
         session = contextProvider.lookupFirst(null, Session.class);
