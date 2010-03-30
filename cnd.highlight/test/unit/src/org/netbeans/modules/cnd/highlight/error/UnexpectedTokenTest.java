@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,47 +34,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.cnd.highlight.error;
 
 /**
- * @author Tomas Mysik
+ * Test for syntax errors.
+ *
+ * @author Alexey Vladykin
  */
-public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
-    private static final String DIR_CACHE = "cache"; // NOI18N
+public class UnexpectedTokenTest extends ErrorHighlightingBaseTestCase {
 
-    private final PhpModule phpModule;
-    // currently, only "cache" directory can be hidden
-    private final File cache;
-
-    public SymfonyPhpModuleIgnoredFilesExtender(PhpModule phpModule) {
-        assert phpModule != null;
-
-        this.phpModule = phpModule;
-
-        FileObject cacheFO = SymfonyPhpFrameworkProvider.locate(phpModule, DIR_CACHE, true);
-        if (cacheFO != null && cacheFO.isFolder()) {
-            cache = FileUtil.toFile(cacheFO);
-        } else {
-            // cache not found, simply pretend that it's under sources
-            cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), DIR_CACHE);
-        }
+    public UnexpectedTokenTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public Set<File> getIgnoredFiles() {
-        // XXX maybe cache? let's wait for report
-        boolean cacheIgnored = SymfonyPhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule);
-        return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
+    public void testIZ178766() throws Exception {
+        // #178766  Wrong line is highlighted as wrong on MacOSX
+        performStaticTest("bug178766.c");
     }
 }

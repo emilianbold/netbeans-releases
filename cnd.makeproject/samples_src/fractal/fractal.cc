@@ -27,11 +27,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <complex>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
 #include <sys/time.h>
-#include <string.h>
+
+using namespace std;
+
 #define WI 1000 //1280            // consider (wi,hi) as the R-axis and I-axis on a complex plane
 #define HI 800 //1024
 #define ITER 100
@@ -39,60 +43,39 @@
 
 long double currLeft = -2, currRight = 2, currTop = 1.6, currBottom = -1.6, inc = .001;
 
-// Complex struct: overloads +, -, *, /, =, and implemented function cpow
+template <class T> class Matrix {
+private:
+    unsigned wi, hi;
+    T* mtrx;
+public:
 
-struct complex {
-    long double real;
-    long double img;
+    Matrix(unsigned w, unsigned h) : wi(w), hi(h), mtrx(new T[w*h]) {
+    };
 
-    // overload basic complex operations
+    Matrix(const Matrix& M) : wi(M.wi), hi(M.hi), mtrx(new T[M.wi*M.hi]) {
+        memcpy(mtrx, M.mtrx, wi * hi * sizeof (T));
+    };
 
-    complex(long double r, long double i) {
-        real = r;
-        img = i;
+    ~Matrix() {
+        delete [] mtrx;
+    };
+
+    void zero() {
+        memset(mtrx, 0, sizeof (T) * wi * hi);
     }
 
-    complex operator +(const complex & a) {
-        return complex(real + a.real, img + a.img);
+    unsigned width() {
+        return wi;
     }
 
-    complex operator -(const complex & a) {
-        return complex(real - a.real, img - a.img);
+    unsigned height() {
+        return hi;
     }
 
-    complex operator *(const complex & a) {
-        return complex((real * a.real) - (img * a.img), (real * a.img) + (img * a.real));
-    }
-
-    complex operator /(const complex & a) {
-        return complex(((real * a.real) + (img * a.img)) / ((a.real * a.real) + (a.img * a.img)),
-                (((a.real * img) - (real * a.img)) / ((a.real * a.real) + (a.img * a.img))));
-    }
-
-    complex operator =(const complex & a) {
-        real = a.real;
-        img = a.img;
-        return *this;
-    }
-
-    complex cpow(long double a) { // Complex exponentials
-        // determine phase and amplitude
-        long double logr = log(hypot(real, img));
-        long double logi = atan2(img, real);
-        long double x = exp(logr * a);
-        long double y = logi*a;
-
-        // Euclidean formula for complex nubmer
-        real = x * cos(y);
-        img = x * sin(y);
-
-        return *this;
+    T * operator [] (unsigned i) {
+        return mtrx + (i * hi);
     }
 };
-
-double abs(complex& a) { // magnitude of the complex number
-    return sqrt(a.real * a.real + a.img * a.img);
-}
 
 /* Note: Distinction between a Mandelbrot set and Buddhabrot set,
  * Buddhabrot is still a Mandelbrot set, but display the number of
@@ -103,32 +86,17 @@ double abs(complex& a) { // magnitude of the complex number
  */
 void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mandelbrot calculation
 {
-    int **hits = new int*[wi];
-    int **max = new int*[wi];
-    double **realBuf = new double*[wi];
-    double **imgBuf = new double*[wi];
+    Matrix <int> hits(wi, hi), max(wi, hi);
+    Matrix <complex<long double> > Buf(wi, hi);
 
-    // initialize vectors
-    hits[0] = new int[wi * hi];
-    max[0] = new int[wi * hi];
-    realBuf[0] = new double[wi * hi];
-    imgBuf[0] = new double[wi * hi];
-    for (int i = 1; i < wi; i++) {
-        hits[i] = hits[i - 1] + hi;
-        max[i] = max[i - 1] + hi;
-        realBuf[i] = realBuf[i - 1] + hi;
-        imgBuf[i] = imgBuf[i - 1] + hi;
-    }
-    memset(hits[0], 0, wi * hi * sizeof (int));
-    memset(max[0], 0, wi * hi * sizeof (int));
-    memset(realBuf[0], 0, wi * hi * sizeof (double));
-    memset(imgBuf[0], 0, wi * hi * sizeof (double));
+    hits.zero();
+    max.zero();
+    Buf.zero();
 
     long double wide = wi, high = hi, iter = it;
     int i = 0, x = 0, y = 0, fcnt = 0, icnt = 0;
     long double a = currLeft, b = currBottom;
-    complex z(0, 0);
-    complex c(0, 0);
+
     long double inc = (currRight - currLeft) / wide;
     long double yinc = (currTop - currBottom) / high;
     char filename[80];
@@ -144,13 +112,12 @@ void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mand
     // Note: the exponents for z could be varied to achieve other types of fractals
     // Varying const. c by sweeping across the complex plane
     for (a = currLeft; a < currRight; a += inc) {
-        c.real = a;
+        complex<long double> c(a, 0);
 
         for (b = currBottom; b < currTop; b += yinc) {
             i = 0;
-            z.real = 0;
-            z.img = 0;
-            c.img = b;
+            complex<long double> z(0, 0);
+            c = complex<long double>(c.real(), b);
 
             // divergence test
             // (note 1) computation complexity, or resolution finess, is determined by pre-defined iteration limit, iter
@@ -160,16 +127,15 @@ void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mand
                 z = (z * z) + c; // heart-and-soul of the Mandelbrot fractal
 
                 // check if z is inbound
-                if (z.real > currLeft && z.real < currRight && z.img < currTop && z.img > currBottom && i != 0) {
+                if (z.real() > currLeft && z.real() < currRight && z.imag() < currTop && z.imag() > currBottom && i != 0) {
 
-                    x = (z.real - currLeft) / inc;
-                    y = (z.img - currBottom) / yinc;
+                    x = (z.real() - currLeft) / inc;
+                    y = (z.imag() - currBottom) / yinc;
                     hits[x][y]++;
 
                     if (hits[x][y] > max[x][y]) {
                         max[x][y] = hits[x][y];
-                        realBuf[x][y] = z.real;
-                        imgBuf[x][y] = z.img;
+                        Buf[x][y] = z;
                         icnt++;
                     }
 
@@ -186,7 +152,7 @@ void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mand
                         for (int ii = 0; ii < wi; ii++) {
                             for (int jj = 0; jj < hi; jj++) {
                                 if (max[ii][jj] > 0)
-                                    fprintf(fh, "%d %lf %lf\n", max[ii][jj], (float) realBuf[ii][jj], (float) imgBuf[ii][jj]);
+                                    fprintf(fh, "%d %lf %lf\n", max[ii][jj], (float) Buf[ii][jj].real(), (float) Buf[ii][jj].imag());
                             }
                         }
                         fcnt++;

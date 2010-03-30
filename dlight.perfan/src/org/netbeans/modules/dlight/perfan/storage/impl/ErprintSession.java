@@ -114,13 +114,9 @@ public class ErprintSession {
                         session.error = true;
                         return;
                     } catch (IOException ex) {
-                        if( ex.getCause() instanceof InterruptedException) { // should be catch (InterruptedException) instead
-                            Thread.currentThread().interrupt();
-                        } else {
-                            //Exceptions.printStackTrace(ex);
-                            session.error = true;
-                            return;
-                        }
+                        //Exceptions.printStackTrace(ex);
+                        session.error = true;
+                        return;
                     }
                 }
             }

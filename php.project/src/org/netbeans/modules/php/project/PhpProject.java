@@ -660,6 +660,11 @@ public class PhpProject implements Project {
         return refHelper;
     }
 
+    public void fireIgnoredFilesChange() {
+        ignoredFolders = null;
+        ignoredFoldersChangeSupport.fireChange();
+    }
+
     private final class Info implements ProjectInformation {
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -819,8 +824,7 @@ public class PhpProject implements Project {
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
-                ignoredFolders = null;
-                ignoredFoldersChangeSupport.fireChange();
+                fireIgnoredFilesChange();
             } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
                 testsDirectory = null;
             }
