@@ -78,7 +78,6 @@ import org.openide.windows.IOProvider;
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
-    private String remoteTmpDir;
 
     public static enum Sync {
         FTP("ftp"),
@@ -172,36 +171,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         super.tearDown();
         ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
-    }
-
-    protected void createRemoteTmpDir() throws Exception {
-        String dir = getRemoteTmpDir();
-        int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();
-        assertEquals("Can not create directory " + dir, 0, rc);
-    }
-
-    protected void clearRemoteTmpDir() throws Exception {
-        String dir = getRemoteTmpDir();
-        int rc = CommonTasksSupport.rmDir(getTestExecutionEnvironment(), dir, true, new PrintWriter(System.err)).get().intValue();
-        if (rc != 0) {
-            System.err.printf("Can not delete directory %s\n", dir);
-        }
-    }
-
-    protected synchronized  String getRemoteTmpDir() {
-        if (remoteTmpDir == null) {
-            final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-            MacroExpander expander = MacroExpanderFactory.getExpander(local);
-            String id;
-            try {
-                id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-            } catch (ParseException ex) {
-                id = local.getHost();
-                Exceptions.printStackTrace(ex);
-            }
-            remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
-        }
-        return remoteTmpDir;
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
