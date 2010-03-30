@@ -61,10 +61,10 @@ import java.util.Set;
 
 /**
  * This class provides storage functionality with Weak-referenced entries and
- * one new method <tt>addOrGet<tt> (backed by a hash table)
+ * one new method <tt>putIfAbsent<tt> (backed by a hash table)
  * Access to set should be syncronized if used from different threads
  *
- * @see #addOrGet(Object)
+ * @see #putIfAbsent(Object)
  * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
@@ -137,7 +137,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     }
 
     /**
-     * it is expected that method addOrGet is used instead of add
+     * it is expected that method putIfAbsent is used instead of add
      */
     @Override
     public boolean add(E e) { return m.put(e, null) == null; }
@@ -169,7 +169,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
      * @return the previous set entry equals with <tt>e</tt>, or
      *         passed object <tt>e</tt> if there were not entry in set.
      */
-    public E addOrGet(E e) { return m.putOrGet(e); }
+    public E putIfAbsent(E e) { return m.putIfAbsent(e); }
 
     private static final long serialVersionUID = 2454657854757543876L;
 
@@ -1168,7 +1168,7 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
          * @return the previous set entry equals with <tt>key</tt>, or
          *         new <tt>key</tt> if there were not entry in set.
          */
-        private K putOrGet(K key) {
+        private K putIfAbsent(K key) {
             K k = (K) maskNull(key);
             int h = hash(k.hashCode());
             Entry[] tab = getTable();
