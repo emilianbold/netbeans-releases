@@ -382,7 +382,15 @@ No emulator found at ${emulator.executable}]]>
             </xsl:choose>
 
             <xsl:choose>
-                <xsl:when test="$classiclibraryproject or $extensionlibraryproject">
+                <xsl:when test="$classiclibraryproject">
+                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,do-pack"/>
+                </xsl:when>
+
+                <xsl:when test="$classicappletproject">
+                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,create-static-pages,do-pack"/>
+                </xsl:when>
+
+                <xsl:when test="$extensionlibraryproject">
                     <target name="pack" depends="unpack-dependencies,compile,create-descriptors,do-pack"/>
                 </xsl:when>
 
@@ -591,13 +599,13 @@ run   - Builds and deploys the application and starts the browser.
                     </classpath>
                 </javac>
             <xsl:if test="$classicappletproject or $classiclibraryproject">
-                <condition property="use.proxies">
+                <condition property="compile.proxies">
                     <and>
                         <isset property="use.my.proxies"/>
                         <equals arg1="${{use.my.proxies}}" arg2="true"/>
+                        <available file="${{src.proxies.dir}}" type="dir"/>
                     </and>
                 </condition>
-                <antcall target="compile.proxies" inheritall="true" inheritrefs="true"/>
             </xsl:if>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -608,7 +616,7 @@ run   - Builds and deploys the application and starts the browser.
             </target>
 
         <xsl:if test="$classicappletproject or $classiclibraryproject">
-            <target name="compile.proxies" if="use.proxies">
+            <target name="compile-proxies" if="compile.proxies">
                 <javac destdir="${{build.classes.dir}}" source="${{javac.source}}"
                         target="${{javac.target}}" nowarn="${{javac.deprecation}}"
                         debug="${{javac.debug}}" optimize="no" includeAntRuntime="no"
