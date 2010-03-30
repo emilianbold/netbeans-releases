@@ -52,6 +52,9 @@ public class FormatToken {
 	ANCHOR,
 	UNBREAKABLE_SEQUENCE_START,
 	UNBREAKABLE_SEQUENCE_END,
+	OPEN_TAG,
+	CLOSE_TAG,
+	INIT_TAG, // special tag, that will contain some initional information
 
 	INDENT,
 	WHITESPACE,
@@ -128,6 +131,11 @@ public class FormatToken {
 	WHITESPACE_IN_PARAMETER_LIST,
 	WHITESPACE_IN_CHAINED_METHOD_CALLS,
 
+	WHITESPACE_BEFORE_OPEN_PHP_TAG,
+	WHITESPACE_AFTER_OPEN_PHP_TAG,
+	WHITESPACE_BEFORE_CLOSE_PHP_TAG,
+	WHITESPACE_AFTER_CLOSE_PHP_TAG,
+
 	WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS,
 	WHITESPACE_BEFORE_FOR_STATEMENT,
 	WHITESPACE_BEFORE_WHILE_STATEMENT,
@@ -139,9 +147,6 @@ public class FormatToken {
 	WHITESPACE_BEFORE_WHILE,
 	WHITESPACE_BEFORE_ELSE,
 	WHITESPACE_BEFORE_CATCH,
-
-	WHITESPACE_BEFORE_OPEN_PHP_TAG,
-	WHITESPACE_BEFORE_CLOSE_PHP_TAG,
 	
 	LINE_COMMENT,
 	COMMENT,
@@ -194,7 +199,10 @@ public class FormatToken {
 		&& kind != Kind.INDENT && kind != Kind.LINE_COMMENT
 		&& kind != Kind.COMMENT
 		&& kind != Kind.DOC_COMMENT
-		&& kind != Kind.DOC_COMMENT_END;
+		&& kind != Kind.DOC_COMMENT_END
+		&& kind != Kind.OPEN_TAG
+		&& kind != Kind.CLOSE_TAG
+		&& kind != Kind.INIT_TAG;
     }
 
     @Override
@@ -252,6 +260,28 @@ public class FormatToken {
 	    return anchor;
 	}
 	
+    }
+
+    /**
+     * The first tag in the list that contains information for the processing list
+     * of formatting commants. 
+     */
+    public static class InitToken extends FormatToken {
+
+	boolean hasHTML;
+
+	public InitToken() {
+	    super(Kind.INIT_TAG, 0);
+	    hasHTML = false;
+	}
+
+	public boolean hasHTML() {
+	    return hasHTML;
+	}
+
+	public void setHasHTML(boolean hasHTML) {
+	    this.hasHTML = hasHTML;
+	}
     }
     
 }

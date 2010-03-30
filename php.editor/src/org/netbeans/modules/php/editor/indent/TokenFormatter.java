@@ -135,6 +135,7 @@ public class TokenFormatter {
 	public boolean spaceBeforeSemi;
 	public boolean spaceAfterSemi;
 	public boolean spaceAfterTypeCast;
+	public boolean spaceBeforeClosePHPTag;
 
 	public boolean placeElseOnNewLine;
 	public boolean placeWhileOnNewLine;
@@ -154,6 +155,10 @@ public class TokenFormatter {
 	public int blankLinesBeforeFunction;
 	public int blankLinesAfterFunction;
 	public int blankLinesBeforeFunctionEnd;
+	public int blankLinesAfterOpenPHPTag;
+	public int blankLinesAfterOpenPHPTagInHTML;
+	public int blankLinesBeforeClosePHPTag;
+
 	public CodeStyle.WrapStyle wrapExtendsImplementsKeyword;
 	public CodeStyle.WrapStyle wrapExtendsImplementsList;
 	public CodeStyle.WrapStyle wrapMethodParams;
@@ -243,6 +248,7 @@ public class TokenFormatter {
 	    spaceBeforeSemi = codeStyle.spaceBeforeSemi();
 	    spaceAfterSemi = codeStyle.spaceAfterSemi();
 	    spaceAfterTypeCast = codeStyle.spaceAfterTypeCast();
+	    spaceBeforeClosePHPTag = codeStyle.spaceBeforeClosePHPTag();
 
 	    placeElseOnNewLine = codeStyle.placeElseOnNewLine();
 	    placeWhileOnNewLine = codeStyle.placeWhileOnNewLine();
@@ -262,6 +268,9 @@ public class TokenFormatter {
 	    blankLinesBeforeFunction = codeStyle.getBlankLinesBeforeFunction();
 	    blankLinesAfterFunction = codeStyle.getBlankLinesAfterFunction();
 	    blankLinesBeforeFunctionEnd = codeStyle.getBlankLinesBeforeFunctionEnd();
+	    blankLinesAfterOpenPHPTag = codeStyle.getBlankLinesAfterOpenPHPTag();
+	    blankLinesAfterOpenPHPTagInHTML = codeStyle.getBlankLinesAfterOpenPHPTagInHTML();
+	    blankLinesBeforeClosePHPTag = codeStyle.getBlankLinesBeforeClosePHPTag();
 
 	    wrapExtendsImplementsKeyword = codeStyle.wrapExtendsImplementsKeyword();
 	    wrapExtendsImplementsList = codeStyle.wrapExtendsImplementsList();
@@ -812,8 +821,22 @@ public class TokenFormatter {
 					}
 				    }
 				    break;
+				case WHITESPACE_AFTER_OPEN_PHP_TAG:
+				    indentRule = true;
+				    if (!isOpenAndCloseTagOnOneLine(index)) {
+					newLines = ((FormatToken.InitToken)formatTokens.get(0)).hasHTML()
+						? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
+						: docOptions.blankLinesAfterOpenPHPTag + 1;
+					countSpaces = indent;
+				    }
+				    else {
+					newLines = 0;
+					countSpaces = 1;
+				    }
+				    break;
 				case WHITESPACE_BEFORE_CLOSE_PHP_TAG:
 				    suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+				    indentRule = true;
 				    if (suggestedLineIndents != null) {
 					try {
 					    int offset = formatToken.getOffset() + delta;
@@ -824,17 +847,58 @@ public class TokenFormatter {
 						int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
 						if (firstNW == offset) {
     						    countSpaces = indentOfOpenTag;
-						    indentRule = true;
+						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
 						}
 						else {
-						    countSpaces = 1;
+//						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+						    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
 						}
-    					    }
+    					    } else {
+						if (!isCloseAndOpenTagOnOneLine(index)) {
+						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+						    countSpaces = indent;
+						} else {
+						    newLines = 0;
+						    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
+						}
+					    }
 					} catch (BadLocationException ex) {
 					    Exceptions.printStackTrace(ex);
 					}
 				    }
+				    else {
+					if (!isCloseAndOpenTagOnOneLine(index)) {
+					    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+					    countSpaces = indent;
+					} else {
+					    newLines = 0;
+					    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
+					}
+				    }
 				    indent = lastIndent;
+				    break;
+				case WHITESPACE_AFTER_CLOSE_PHP_TAG:
+//				    if (index < formatTokens.size() -1
+//					    && formatTokens.get(index + 1).getId() == FormatToken.Kind.TEXT) {
+//					String text = formatTokens.get(index + 1).getOldText();
+//					int removeLength = 0;
+//					int lastLine = 0;
+//					while (removeLength < text.length()
+//						&& (text.charAt(removeLength) == ' '
+//						|| text.charAt(removeLength) == '\n')
+//						|| text.charAt(removeLength) == '\t') {
+//					    if (text.charAt(removeLength) == '\n') {
+//						lastLine = removeLength;
+//					    }
+//					    removeLength++;
+//					}
+//					if (lastLine > 0) {
+//					    oldText = text.substring(0, lastLine + 1);
+//					    newLines = 1;
+//					    countSpaces = 0;
+//					    indentRule = true;
+//					}
+//				    }
 				    break;
 			    }
 			    index++;//index += moveIndex;
@@ -1025,6 +1089,47 @@ public class TokenFormatter {
 		return new Whitespace(lines, spaces);
 	    }
 
+	    private boolean isOpenAndCloseTagOnOneLine(int currentIndex) {
+		boolean result = false;
+		FormatToken token = formatTokens.get(currentIndex);
+		do {
+		    token = formatTokens.get(currentIndex);
+		    currentIndex++;
+		} while (currentIndex < formatTokens.size()
+			&& token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+			&& token.getId() != FormatToken.Kind.CLOSE_TAG);
+		if (currentIndex < formatTokens.size() && token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+		    do {
+			token = formatTokens.get(currentIndex);
+			currentIndex++;
+		    } while (currentIndex < formatTokens.size()
+			    && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+			    && token.getId() != FormatToken.Kind.CLOSE_TAG);
+		}
+		result = token.getId() == FormatToken.Kind.CLOSE_TAG;
+		return result;
+	    }
+
+	    private boolean isCloseAndOpenTagOnOneLine(int currentIndex) {
+		boolean result = false;
+		FormatToken token = formatTokens.get(currentIndex);
+		do {
+		    token = formatTokens.get(currentIndex);
+		    currentIndex--;
+		} while (currentIndex > 0
+			&& token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+			&& token.getId() != FormatToken.Kind.OPEN_TAG);
+		if (currentIndex > 0 && token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+		    do {
+			token = formatTokens.get(currentIndex);
+			currentIndex--;
+		    } while (currentIndex > 0
+			    && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+			    && token.getId() != FormatToken.Kind.OPEN_TAG);
+		}
+		result = token.getId() == FormatToken.Kind.OPEN_TAG;
+		return result;
+	    }
 
 	    private int addLines(int currentCount, int addLines) {
 		addLines = addLines + 1;

@@ -1,4 +1,5 @@
 <?php
+
 $d2 = (int) $dd;
 $d3 = (object) /* */ $dd;
 $d4 = (int) $dd;

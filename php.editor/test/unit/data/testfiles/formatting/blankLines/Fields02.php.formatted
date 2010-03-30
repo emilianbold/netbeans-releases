@@ -6,5 +6,3 @@ class Simple {
     public $field2 = "ahoj";
 
 }
-
-

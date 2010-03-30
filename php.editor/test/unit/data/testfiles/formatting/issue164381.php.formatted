@@ -1,4 +1,5 @@
 <?php
+
 require_once("DBClass.php");
 $db = new DB();
 $db->_construct();

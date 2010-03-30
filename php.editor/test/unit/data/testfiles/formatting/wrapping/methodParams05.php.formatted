@@ -15,5 +15,4 @@ function tes($param1/* comment 1 */,
     echo $param1;
     echo $param2;
 }
-
 ?>

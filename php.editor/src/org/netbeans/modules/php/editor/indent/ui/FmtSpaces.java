@@ -304,7 +304,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 //                new Item(spaceBeforeColon),
 //                new Item(spaceAfterColon),
                 new Item(spaceAfterTypeCast),
-		new Item(spaceCheckAfterKeywords))
+		new Item(spaceCheckAfterKeywords),
+		new Item(spaceBeforeClosePHPTag))
                 
         };
          
