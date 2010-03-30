@@ -914,7 +914,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 String variableName = variable.getName();
 
                 Iterator<CompletionProposal> iter = completionResult.getItems().iterator();
-                for (CompletionProposal proposal : completionResult.getItems()) {
+                while (iter.hasNext()) {
+                    CompletionProposal proposal = iter.next();
                     if (variableName.equals(proposal.getName())) {
                         iter.remove();
                         break;

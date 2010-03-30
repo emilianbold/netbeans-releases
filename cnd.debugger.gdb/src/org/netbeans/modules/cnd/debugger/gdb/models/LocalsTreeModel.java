@@ -302,7 +302,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     task.cancel();
                     task = null;
                 }
-                task = RequestProcessor.getDefault().post(new Runnable() {
+                task = debugger.getRequestProcessor().post(new Runnable() {
                     public void run() {
                         if (debugger.isStopped()) {
                             ltm.fireTreeChanged();

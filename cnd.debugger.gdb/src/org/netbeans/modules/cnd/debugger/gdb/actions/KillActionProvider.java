@@ -47,12 +47,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-
-import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -119,7 +115,7 @@ public class KillActionProvider extends ActionsProvider {
     @Override
     public void postAction(final Object action,
             final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

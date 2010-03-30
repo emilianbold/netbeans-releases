@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -252,6 +251,10 @@ public class GdbDebugger implements PropertyChangeListener {
 
     public ContextProvider getLookup() {
         return lookupProvider;
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return gdbEngineProvider.getRequestProcessor();
     }
 
     public void startDebugger() {
@@ -931,6 +934,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 }
             }
         }
@@ -1520,6 +1525,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     } else if (HostInfoUtils.fileExists(execEnv, KILL_PATH2)) {
                         killcmd.add(KILL_PATH2);
                     }
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -2010,7 +2017,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * thread and CommandBuffer.waitForCompletion() doesn't work on that thread.
      */
     private void checkSharedLibs() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 String share = gdb.info_share(true).getResponse();
@@ -2329,6 +2336,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 return true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                // don't log InterruptedException
             }
         } 
         return false;

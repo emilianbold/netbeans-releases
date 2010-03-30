@@ -130,8 +130,7 @@ class CommandRunnable implements Runnable, Cancellable {
                 (cmdName.startsWith("update") && (options == null || !options.isDoNoChanges()))
              || cmdName.startsWith("export")
              || cmdName.startsWith("remove")
-             || cmdName.startsWith("checkout")
-             || cmdName.startsWith("commit");
+             || cmdName.startsWith("checkout");
 
         File[] files = null;
         if(blockIndexing) {

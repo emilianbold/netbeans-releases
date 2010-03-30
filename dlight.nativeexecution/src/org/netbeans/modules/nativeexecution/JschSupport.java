@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
@@ -63,11 +62,8 @@ public final class JschSupport {
     public static ChannelStreams execCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
             throws IOException, JSchException {
 
-        final ConnectionManager mgr = ConnectionManager.getInstance();
-
         final Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(mgr, env, true);
-
+                getConnectionSession(env, true);
 
         int retry = 2;
 
@@ -98,8 +94,11 @@ public final class JschSupport {
                 } else if ("channel is not opened.".equals(message)) { // NOI18N
                     // Looks like in this case an attempt to
                     // just re-attempt to open a channel
-                    // will fail - so do disconnect...
-                    mgr.disconnect(env);
+                    // will fail - so do disconnect/connect...
+                    
+                    ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+                    cmAccess.reconnect(env);
+
                     log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [%s]...", retry); // NOI18N
                     try {
                         Thread.sleep(500);

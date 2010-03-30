@@ -80,17 +80,19 @@ public class PtyCreatorImpl implements PtyAllocator {
             }
 
             PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);
-            result = new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
+            result = ptyInfo == null ? null : new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
         } catch (Exception ex) {
-            if (input != null) {
-                input.close();
-            }
-
-            if (output != null) {
-                output.close();
-            }
-
             throw new IOException(ex);
+        } finally {
+            if (result == null) {
+                if (input != null) {
+                    input.close();
+                }
+
+                if (output != null) {
+                    output.close();
+                }
+            }
         }
 
         return result;
