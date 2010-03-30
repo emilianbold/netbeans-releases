@@ -78,6 +78,7 @@ import org.openide.windows.TopComponent;
  * @author  Pavel Flaska, Martin Matula
  */
 public class RefactoringPanel extends JPanel implements InvalidationListener {
+    private static final RequestProcessor RP = new RequestProcessor(RefactoringPanel.class.getName(), 1, false, false);
     
     // PRIVATE FIELDS
     /* tree contains elements which will be changed by refactoring action */
@@ -445,7 +446,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         checkEventThread();
         disableComponents(RefactoringPanel.this);
         progressListener = new ProgressL();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     session.addProgressListener(progressListener);
@@ -605,7 +606,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             this.repaint();
             tree=null;
         } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     Set<CloneableEditorSupport> editorSupports = new HashSet<CloneableEditorSupport>();
                     int errorsNum = 0;

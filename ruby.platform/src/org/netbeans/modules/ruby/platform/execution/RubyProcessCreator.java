@@ -39,20 +39,14 @@
 package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -70,8 +64,6 @@ public final class RubyProcessCreator implements Callable<Process> {
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
 
-    /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
-    private static final boolean SKIP_KCODE = Boolean.getBoolean("ruby.no.kcode"); // NOI18N
 
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
     private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
@@ -108,6 +100,7 @@ public final class RubyProcessCreator implements Callable<Process> {
         return true;
     }
 
+    @Override
     public Process call() throws Exception {
         if (descriptor.debug) {
             RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
@@ -144,153 +137,6 @@ public final class RubyProcessCreator implements Callable<Process> {
         return builder.call();
     }
 
-    private List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor) {
-        List<String> argvList = new ArrayList<String>();
-        // Decide whether I'm launching JRuby, and if so, take a shortcut and launch
-        // the VM directly. This is important because killing JRuby via the launcher script
-        // is not working right; now that JRuby on Unix exec's the VM that part is okay but
-        // on Windows there are still problems.
-        if (!LAUNCH_JRUBY_SCRIPT && cmdName.startsWith("jruby")) { // NOI18N
-            String javaHome = getJavaHome();
-
-            argvList.add(javaHome + File.separator + "bin" + File.separator + // NOI18N
-                    "java"); // NOI18N
-            // XXX Do I need java.exe on Windows?
-
-            // Additional execution flags specified in the JRuby startup script:
-            argvList.add("-Xverify:none"); // NOI18N
-            argvList.add("-da"); // NOI18N
-
-            String javaMemory = "-Xmx512m"; // NOI18N
-            String javaStack = "-Xss1024k"; // NOI18N
-            // use the client mode by default
-            String jvmMode = "-client";
-
-            String[] jvmArgs = descriptor == null ? null : descriptor.getJVMArguments();
-            if (jvmArgs != null) {
-                for (String arg : jvmArgs) {
-                    if (arg.contains("-Xmx")) { // NOI18N
-                        javaMemory = null;
-                    }
-                    if (arg.contains("-Xss")) { // NOI18N
-                        javaStack = null;
-                    }
-                    if ("-client".equals(arg) || "-server".equals(arg)) { //NOI18N
-                        jvmMode = null;
-                    }
-                    argvList.add(arg);
-                }
-            }
-
-            if (jvmMode != null) {
-                argvList.add(1, jvmMode);
-            }
-            if (javaMemory != null) {
-                argvList.add(javaMemory);
-            }
-            if (javaStack != null) {
-                argvList.add(javaStack);
-            }
-
-            // Classpath
-            argvList.add("-classpath"); // NOI18N
-
-            File rubyHomeDir = null;
-
-            try {
-                rubyHomeDir = new File(rubyHome);
-                rubyHomeDir = rubyHomeDir.getCanonicalFile();
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-
-            if (!rubyHomeDir.isDirectory()) {
-                throw new IllegalArgumentException(rubyHomeDir.getAbsolutePath() + " does not exist."); // NOI18N
-            }
-
-            File jrubyLib = new File(rubyHomeDir, "lib"); // NOI18N
-            if (!jrubyLib.isDirectory()) {
-                throw new AssertionError('"' + jrubyLib.getAbsolutePath() + "\" exists (\"" + descriptor.getCmd() + "\" is not valid JRuby executable?)");
-            }
-
-            argvList.add(computeJRubyClassPath(
-                    descriptor == null ? null : descriptor.getClassPath(), jrubyLib));
-
-            argvList.add("-Djruby.base=" + rubyHomeDir); // NOI18N
-            argvList.add("-Djruby.home=" + rubyHomeDir); // NOI18N
-            argvList.add("-Djruby.lib=" + jrubyLib); // NOI18N
-
-            // TODO - turn off verifier?
-
-            if (Utilities.isWindows()) {
-                argvList.add("-Djruby.shell=\"cmd.exe\""); // NOI18N
-                argvList.add("-Djruby.script=jruby.bat"); // NOI18N
-            } else {
-                argvList.add("-Djruby.shell=/bin/sh"); // NOI18N
-                argvList.add("-Djruby.script=jruby"); // NOI18N
-            }
-
-            // Main class
-            argvList.add("org.jruby.Main"); // NOI18N
-
-        // TODO: JRUBYOPTS
-
-        // Application arguments follow
-        }
-
-        if (!SKIP_KCODE && cmdName.startsWith("ruby")) { // NOI18N
-            String cs = charsetName;
-            if (cs == null) {
-                // Add project encoding flags
-                FileObject fo = descriptor.getFileObject();
-                if (fo != null) {
-                    Charset charset = FileEncodingQuery.getEncoding(fo);
-                    if (charset != null) {
-                        cs = charset.name();
-                    }
-                }
-            }
-
-            if (cs != null) {
-                if (cs.equals("UTF-8")) { // NOI18N
-                    argvList.add("-Ku"); // NOI18N
-                //} else if (cs.equals("")) {
-                // What else???
-                }
-            }
-        }
-
-        // Is this a native Ruby process? If so, do sync-io workaround.
-        if (SYNC_RUBY_STDIO && cmdName.startsWith("ruby")) { // NOI18N
-
-            int dot = cmdName.indexOf('.');
-
-            if ((dot == -1) || (dot == 4) || (dot == 5)) { // 5: rubyw
-
-                InstalledFileLocator locator = InstalledFileLocator.getDefault();
-                File f =
-                        locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
-                        null, false); // NOI18N
-
-                if (f == null) {
-                    throw new RuntimeException("Can't find cluster"); // NOI18N
-                }
-
-                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator +
-                        "sync-stdio.rb"); // NOI18N
-
-                try {
-                    f = f.getCanonicalFile();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-
-                argvList.add("-r" + f.getAbsolutePath()); // NOI18N
-            }
-        }
-        return argvList;
-    }
-
     /**
      * Retruns list of default arguments and options from the descriptor's
      * <code>initialArgs</code>, <code>script</code> and
@@ -324,74 +170,10 @@ public final class RubyProcessCreator implements Callable<Process> {
         String rubyHome = descriptor.getCmd().getParentFile().getParent();
         String cmdName = descriptor.getCmd().getName();
         if (descriptor.isRunThroughRuby()) {
-            argvList.addAll(getRubyArgs(rubyHome, cmdName, descriptor));
+            argvList.addAll(ExecutionUtils.getRubyArgs(rubyHome, cmdName, descriptor, charsetName));
         }
         argvList.addAll(getCommonArgs());
         return argvList;
     }
 
-    public static String getJavaHome() {
-        String javaHome = System.getProperty("jruby.java.home"); // NOI18N
-
-        if (javaHome == null) {
-            javaHome = System.getProperty("java.home"); // NOI18N
-        }
-
-        return javaHome;
-    }
-
-    /** Package-private for unit test. */
-    static String computeJRubyClassPath(String extraCp, final File jrubyLib) {
-        StringBuilder cp = new StringBuilder();
-        File[] libs = jrubyLib.listFiles();
-
-        for (File lib : libs) {
-            if (lib.getName().endsWith(".jar")) { // NOI18N
-
-                if (cp.length() > 0) {
-                    cp.append(File.pathSeparatorChar);
-                }
-
-                cp.append(lib.getAbsolutePath());
-            }
-        }
-
-        // Add in user-specified jars passed via JRUBY_EXTRA_CLASSPATH
-
-        if (extraCp != null && File.pathSeparatorChar != ':') {
-            // Ugly hack - getClassPath has mixed together path separator chars
-            // (:) and filesystem separators, e.g. I might have C:\foo:D:\bar but
-            // obviously only the path separator after "foo" should be changed to ;
-            StringBuilder p = new StringBuilder();
-            int pathOffset = 0;
-            for (int i = 0; i < extraCp.length(); i++) {
-                char c = extraCp.charAt(i);
-                if (c == ':' && pathOffset != 1) {
-                    p.append(File.pathSeparatorChar);
-                    pathOffset = 0;
-                    continue;
-                } else {
-                    pathOffset++;
-                }
-                p.append(c);
-            }
-            extraCp = p.toString();
-        }
-
-        if (extraCp == null) {
-            extraCp = System.getenv("JRUBY_EXTRA_CLASSPATH"); // NOI18N
-        }
-
-        if (extraCp != null) {
-            if (cp.length() > 0) {
-                cp.append(File.pathSeparatorChar);
-            }
-            //if (File.pathSeparatorChar != ':' && extraCp.indexOf(File.pathSeparatorChar) == -1 &&
-            //        extraCp.indexOf(':') != -1) {
-            //    extraCp = extraCp.replace(':', File.pathSeparatorChar);
-            //}
-            cp.append(extraCp);
-        }
-        return Utilities.isWindows() ? "\"" + cp.toString() + "\"" : cp.toString(); // NOI18N
-    }
 }

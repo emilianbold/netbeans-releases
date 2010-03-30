@@ -155,12 +155,14 @@ public class FileStatusCache {
         
         turbo = Turbo.createCustom(new CustomProviders() {
             private final Set providers = Collections.singleton(cacheProvider);
+            @Override
             public Iterator providers() {
                 return providers.iterator();
             }
         }, 200, 5000);
     
         refreshTask = rp.create( new Runnable() {
+            @Override
             public void run() {
                 if (DelayScanRegistry.getInstance().isDelayed(refreshTask, LOG, "FileStatusCache.refreshTask")) { //NOI18N
                     return;
@@ -217,7 +219,7 @@ public class FileStatusCache {
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
-                LOG.fine(" containsFiles(Context, int) took " + (System.currentTimeMillis() - ts));
+                LOG.log(Level.FINE, " containsFiles(Context, int) took {0}", (System.currentTimeMillis() - ts));
             }
         }
     }
@@ -236,7 +238,7 @@ public class FileStatusCache {
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
-                LOG.fine(" containsFiles(Set<File>, int) took " + (System.currentTimeMillis() - ts));
+                LOG.log(Level.FINE, " containsFiles(Set<File>, int) took {0}", (System.currentTimeMillis() - ts));
             }
         }
     }
@@ -328,7 +330,7 @@ public class FileStatusCache {
             return set.toArray(new File[set.size()]);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
-                LOG.fine(" listFiles(File[], int, boolean) took " + (System.currentTimeMillis() - ts));
+                LOG.log(Level.FINE, " listFiles(File[], int, boolean) took {0}", (System.currentTimeMillis() - ts));
             }
         }
     }
@@ -367,7 +369,7 @@ public class FileStatusCache {
             return set.toArray(new File[set.size()]);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
-                LOG.fine(" listFiles(Context, int) took " + (System.currentTimeMillis() - ts));
+                LOG.log(Level.FINE, " listFiles(Context, int) took {0}", (System.currentTimeMillis() - ts));
             }
         }
     }
@@ -461,7 +463,8 @@ public class FileStatusCache {
         if (files == null || files.length == 0) {
             return;
         }
-        RequestProcessor.getDefault().post(new Runnable() {
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 synchronized (filesToRefresh) {
                     for (File file : files) {
@@ -491,11 +494,12 @@ public class FileStatusCache {
     /**
      * Refreshes status of all files inside given context. Files that have some remote status, eg. REMOTELY_ADDED
      * are brought back to UPTODATE.
+     * DOES NOT refresh ignored files.
      * 
      * @param ctx context to refresh
      */ 
     public void refreshCached(Context ctx) {
-        File [] files = listFiles(ctx, ~0);
+        File [] files = listFiles(ctx, ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             refresh(file, REPOSITORY_STATUS_UNKNOWN);
@@ -506,12 +510,27 @@ public class FileStatusCache {
      * Refreshes the status for the given file and all its children
      * 
      * @param root
+     * @param traverseIgnored if set to false, the recursive refresh will stop on ignored folders
+     * XXX is traverseIgnored really necessary or should it always be considered false?
      */
-    public void refreshRecursively(File root) {  
-        List<File> files = SvnUtils.listRecursively(root);
-        for (File file : files) {
-            refresh(file, REPOSITORY_STATUS_UNKNOWN);
-        }        
+    public void refreshRecursively(File root, boolean traverseIgnored) {
+        if (traverseIgnored) {
+            // use old logic and refresh ALL files under the root
+            List<File> files = SvnUtils.listRecursively(root);
+            for (File file : files) {
+                refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            }
+        } else {
+            // refresh the root itself
+            FileInformation info = refresh(root, REPOSITORY_STATUS_UNKNOWN);
+            // for unignored files, refresh recursively its direct children too
+            if (info == null || (info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                List<File> files = SvnUtils.listChildren(root);
+                for (File file : files) {
+                    refreshRecursively(file, traverseIgnored);
+                }
+            }
+        }
     }    
     
     private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
@@ -583,7 +602,7 @@ public class FileStatusCache {
                     newFiles.put(file, fi);
                 }
                 assert newFiles.containsKey(dir) == false;
-                turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.isEmpty() ? null : newFiles);
             }
         }
 
@@ -626,7 +645,7 @@ public class FileStatusCache {
                         Map<File, FileInformation> files = getScannedFiles(dir);
                         Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
                         newFiles.put(file, info);
-                        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.isEmpty() ? null : newFiles);
                     }
                 }
             }
@@ -656,20 +675,23 @@ public class FileStatusCache {
      * @return true if supplied entries contain equivalent information
      */ 
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
-        long r1 = -1;
-        if (e1 != null) {
-            SVNRevision r = e1.getRevision();
-            r1 = r != null ? e1.getRevision().getNumber() : r1;
-        }
+        if (!SVNStatusKind.IGNORED.equals(e1.getTextStatus()) && !SVNStatusKind.UNVERSIONED.equals(e1.getTextStatus())) {
+            // check revisions just when it's meaningful, unversioned or ignored files have no revision and thus should be considered equal
+            long r1 = -1;
+            if (e1 != null) {
+                SVNRevision r = e1.getRevision();
+                r1 = r != null ? e1.getRevision().getNumber() : r1;
+            }
 
-        long r2 = -2;
-        if (e2 != null) {
-            SVNRevision r = e2.getRevision();
-            r2 = r != null ? e2.getRevision().getNumber() : r2;
-        }
-        
-        if ( r1 != r2 ) {
-            return false;
+            long r2 = -2;
+            if (e2 != null) {
+                SVNRevision r = e2.getRevision();
+                r2 = r != null ? e2.getRevision().getNumber() : r2;
+            }
+
+            if (r1 != r2) {
+                return false;
+            }
         }
         if (e1.isCopied() != e2.isCopied()) {
             return false;
@@ -907,9 +929,9 @@ public class FileStatusCache {
                 // no remote change at all
             } else {
                 // so far above were observed....
-                Subversion.LOG.warning("SVN.FSC: unhandled repository status: " + file.getAbsolutePath() + "\n" +   // NOI18N
-                                       "\ttext: " + repositoryStatus.getRepositoryTextStatus() + "\n" +             // NOI18N
-                                       "\tprop: " + repositoryStatus.getRepositoryPropStatus());                    // NOI18N
+                Subversion.LOG.log(Level.WARNING,"SVN.FSC: unhandled repository status: {0}" + "\n" +   // NOI18N
+                                       "\ttext: " + "{1}" + "\n" +             // NOI18N
+                                       "\tprop: " + "{2}", new Object[]{file.getAbsolutePath(), repositoryStatus.getRepositoryTextStatus(), repositoryStatus.getRepositoryPropStatus()});                    // NOI18N
             }
         }
         
@@ -1087,6 +1109,7 @@ public class FileStatusCache {
     }
 
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
+        @Override
         public Set<Entry<File, FileInformation>> entrySet() {
             return Collections.emptySet();
         }
@@ -1099,84 +1122,107 @@ public class FileStatusCache {
             this.value = value;
             this.revision = revision;           
         }
+        @Override
         public boolean isWcLocked() {
             return value.isWcLocked();
         }
+        @Override
         public boolean isSwitched() {
             return value.isSwitched();
         }
+        @Override
         public boolean isCopied() {
             return value.isCopied();
         }
+        @Override
         public String getUrlString() {
             return value.getUrlString();
         }
+        @Override
         public SVNUrl getUrlCopiedFrom() {
             return value.getUrlCopiedFrom();
         }
+        @Override
         public SVNUrl getUrl() {
             return value.getUrl();
         }
+        @Override
         public SVNStatusKind getTextStatus() {
             return value.getTextStatus();
         }
+        @Override
         public Number getRevision() {                        
             return revision;
         }
+        @Override
         public SVNStatusKind getRepositoryTextStatus() {
             return value.getRepositoryTextStatus();
         }
+        @Override
         public SVNStatusKind getRepositoryPropStatus() {
             return value.getRepositoryPropStatus();
         }
+        @Override
         public SVNStatusKind getPropStatus() {
             return value.getPropStatus();
         }
+        @Override
         public String getPath() {
             return value.getPath();
         }
+        @Override
         public SVNNodeKind getNodeKind() {
             return value.getNodeKind();
         }
+        @Override
         public String getLockOwner() {
             return value.getLockOwner();
         }
+        @Override
         public Date getLockCreationDate() {
             return value.getLockCreationDate();
         }
+        @Override
         public String getLockComment() {
             return value.getLockComment();
         }
+        @Override
         public String getLastCommitAuthor() {
             return value.getLastCommitAuthor();
         }
+        @Override
         public Number getLastChangedRevision() {
             return value.getLastChangedRevision();
         }
+        @Override
         public Date getLastChangedDate() {
             return value.getLastChangedDate();
         }
+        @Override
         public File getFile() {
             return value.getFile();
         }
+        @Override
         public File getConflictWorking() {
             return value.getConflictWorking();
         }
+        @Override
         public File getConflictOld() {
             return value.getConflictOld();
         }
+        @Override
         public File getConflictNew() {
             return value.getConflictNew();
         }
-
+        @Override
         public boolean hasTreeConflict() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        @Override
         public SVNConflictDescriptor getConflictDescriptor() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
+        @Override
         public boolean isFileExternal() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -1210,7 +1256,7 @@ public class FileStatusCache {
             synchronized (fileLabels) {
                 for (File f : files) {
                     if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
-                        LABELS_CACHE_LOG.fine("Removing from cache: " + f.getAbsolutePath()); //NOI18N
+                        LABELS_CACHE_LOG.log(Level.FINE, "Removing from cache: {0}", f.getAbsolutePath()); //NOI18N
                     }
                     fileLabels.remove(f);
                 }
@@ -1235,9 +1281,9 @@ public class FileStatusCache {
                 if (labelInfo == null || !labelInfo.isValid(mimeTypeFlag, true)) {
                     if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
                         if (labelInfo == null && LABELS_CACHE_LOG.isLoggable(Level.FINER)) {
-                            LABELS_CACHE_LOG.finer("No item in cache for : " + file.getAbsolutePath()); //NOI18N
+                            LABELS_CACHE_LOG.log(Level.FINER, "No item in cache for : {0}", file.getAbsolutePath()); //NOI18N
                         } else if (labelInfo != null) {
-                            LABELS_CACHE_LOG.fine("Too old item in cache for : " + file.getAbsolutePath()); //NOI18N
+                            LABELS_CACHE_LOG.log(Level.FINE, "Too old item in cache for : {0}", file.getAbsolutePath()); //NOI18N
                         }
                     }
                     if (labelInfo == null) {
@@ -1352,7 +1398,7 @@ public class FileStatusCache {
                     synchronized (fileLabels) {
                         if (fileLabels.size() > 50) {
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
-                                LABELS_CACHE_LOG.fine("Cache contains : " + fileLabels.size() + " entries before a cleanup"); //NOI18N
+                                LABELS_CACHE_LOG.log(Level.FINE, "Cache contains : {0} entries before a cleanup", fileLabels.size()); //NOI18N
                             }
                             for (Iterator<File> it = fileLabels.keySet().iterator(); it.hasNext();) {
                                 File f = it.next();
@@ -1363,7 +1409,7 @@ public class FileStatusCache {
                                 }
                             }
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
-                                LABELS_CACHE_LOG.fine("Cache contains : " + fileLabels.size() + " entries after a cleanup"); //NOI18N
+                                LABELS_CACHE_LOG.log(Level.FINE, "Cache contains : {0} entries after a cleanup", fileLabels.size()); //NOI18N
                             }
                         }
                     }

@@ -99,7 +99,11 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
             cpuNum = _cpuNum;
             hostname = env.get("COMPUTERNAME"); // NOI18N
             shell = WindowsSupport.getInstance().getShell();
-            path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
+            if (shell != null) {
+                path = env.get("PATH") + ';' + new File(shell).getParent(); // NOI18N
+            } else {
+                path = env.get("PATH"); // NOI18N
+            }
 
             os = new OS() {
 

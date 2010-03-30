@@ -47,9 +47,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -70,7 +68,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 
@@ -115,24 +112,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     static {
-        log.addHandler(new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
-                }
-            }
-            @Override
-            public void flush() {
-            }
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        log.addHandler(new TestLogHandler(log));
     }
 
 
@@ -228,19 +208,19 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
-        assertTrue(ok);
+        assertTrue("Error setting up host " + execEnv, ok);
         tcm.applyChanges();
     }
 
-    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
-            throws InterruptedException, IllegalArgumentException, TimeoutException {
-        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
-    }
+//    protected void rebuildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_REBUILD, timeout, unit);
+//    }
 
-    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit) 
-            throws InterruptedException, IllegalArgumentException, TimeoutException {
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
-    }
+//    protected void buildProject(MakeProject makeProject, long timeout, TimeUnit unit)
+//            throws InterruptedException, IllegalArgumentException, TimeoutException {
+//        buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, unit);
+//    }
 
     protected void buildProject(MakeProject makeProject, String command, long timeout, TimeUnit unit) throws InterruptedException, IllegalArgumentException, TimeoutException {
 

@@ -97,12 +97,12 @@ public class GdbLogger {
      */
     public void logMessage(String message) {
         if (message != null && message.length() > 0) {
-            if (!message.endsWith("\n")) { // NOI18N
-                message = message + '\n';
-            }
             if (logFile != null) {
                 try {
                     logFile.write(message);
+                    if (message.charAt(message.length()-1) != '\n') {
+                        logFile.write('\n');
+                    }
                     logFile.flush();
                 } catch (IOException ioex) {
                 }

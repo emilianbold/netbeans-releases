@@ -59,7 +59,6 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.Signal;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 
 /**
@@ -78,6 +77,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
  */
 public class GdbProxy {
     private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
+    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -407,23 +407,6 @@ public class GdbProxy {
     }
 
     /**
-     * Interrupts execution of the inferior program.
-     * This method is supposed to send "-exec-interrupt" to the debugger,
-     * but this feature is not implemented in gdb yet, so it is replaced
-     * with sending a signal "INT" (Unix) or signal TSTP (Windows).
-     */
-    public void exec_interrupt() {
-        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
-            if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                debugger.kill(Signal.TRAP);
-            } else {
-                debugger.kill(Signal.INT);
-            }
-        }
-        //return 0;
-    }
-
-    /**
      * Send "-exec-abort" to the debugger
      * This command kills the inferior program.
      */
@@ -571,7 +554,7 @@ public class GdbProxy {
     }
 
     public void stack_list_arguments(int showValues) {
-        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
+        stack_list_arguments(showValues, 0, STACK_MAX_DEPTH);
     }
 
     /**
@@ -597,15 +580,15 @@ public class GdbProxy {
 
     /** Request a stack dump from gdb */
     public void stack_list_frames() {
-        engine.sendCommand("-stack-list-frames "); // NOI18N
+        engine.sendCommand("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
     }
 
     /** Request a stack dump from gdb */
     public CommandBuffer stack_list_framesEx() {
-        return engine.sendCommandEx("-stack-list-frames "); // NOI18N
+        return engine.sendCommandEx("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
     }
     
-    public void gdb_set(String command, String value) {
+    public void gdb_set(String command, Object value) {
         StringBuilder sb = new StringBuilder();
         sb.append("-gdb-set "); // NOI18N
         sb.append(command);

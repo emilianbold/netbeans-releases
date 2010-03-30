@@ -105,6 +105,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -113,7 +115,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -177,6 +178,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
+        panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -699,6 +701,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onReloadAttributes();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
+        } else if (e.getSource() == panel.findIssuesButton) {
+            onFindIssues();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -749,7 +753,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(name == null) {
                         return;
                     }
-                    panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
                 save(name, firstTime);
@@ -762,30 +765,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private String getSaveName() {
-        String name = null;
-        if(JiraUtils.show(
-                panel.savePanel,
-                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
-                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
-        {
-            name = panel.queryNameTextField.getText();
-            if(name == null || name.trim().equals("")) { // NOI18N
+        QueryNameValidator v = new QueryNameValidator() {
+            @Override
+            public String isValid(String name) {
+                Query[] queries = repository.getQueries();
+                for (Query q : queries) {
+                    if(q.getDisplayName().equals(name)) {
+                        return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
+                    }
+                }
                 return null;
             }
-            Query[] queries = repository.getQueries();
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(name)) {
-                    panel.saveErrorLabel.setVisible(true);
-                    name = getSaveName();
-                    panel.saveErrorLabel.setVisible(false);
-                    break;
-                }
-            }
-        } else {
-            return null;
-        }
-        return name;
+        };
+        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.jira.query.savePanel")); // NOI18N
     }
 
     private void save(String name, boolean firstTime) {
@@ -1128,6 +1120,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(modifiable) {
             postPopulate(getFilterDefinition(), true);
         }
+    }
+
+    private void onFindIssues() {
+        Query.openNew(repository);
     }
 
     private void onCloneQuery() {

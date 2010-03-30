@@ -203,11 +203,11 @@ public class IPSPackager implements PackagerDescriptor {
                         if (toDir.charAt(0) == '/') {
                             toDir = toDir.substring(1);
                         }
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
                     }
-                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = CndPathUtilitities.getDirName(elem.getTo());
                     String toName = CndPathUtilitities.getBaseName(elem.getTo());
@@ -215,9 +215,9 @@ public class IPSPackager implements PackagerDescriptor {
                         if (toDir.charAt(0) == '/') {
                             toDir = toDir.substring(1);
                         }
-                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
@@ -230,7 +230,7 @@ public class IPSPackager implements PackagerDescriptor {
 
             bw.write("# Create manifest file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("MANIFEST=${TMPDIR}/manifest\n"); // NOI18N
+            bw.write("MANIFEST=${NBTMPDIR}/manifest\n"); // NOI18N
             bw.write("rm -f ${MANIFEST}\n"); // NOI18N
             bw.write("\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
@@ -341,11 +341,11 @@ public class IPSPackager implements PackagerDescriptor {
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("mkdir -p  " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
-            bw.write("cd \"${TMPDIR}\"\n"); // NOI18N
+            bw.write("cd \"${NBTMPDIR}\"\n"); // NOI18N
             bw.write("for i in *; do cd \"${TOP}\"; rm -rf " + packagingConfiguration.getOutputValue() + "/$i; done" + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("mv ${TMPDIR}/* " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("mv ${NBTMPDIR}/* " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
 
             bw.write("\n"); // NOI18N

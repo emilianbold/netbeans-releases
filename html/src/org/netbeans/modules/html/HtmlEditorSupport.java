@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -94,6 +95,8 @@ import org.openide.windows.CloneableOpenSupport;
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
+    private static final RequestProcessor SINGLE_THREAD_RP = new RequestProcessor(HtmlEditorSupport.class.getName(), 1);
+
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
     // only to be ever user from unit tests:
@@ -106,6 +109,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     private final SaveCookie saveCookie = new SaveCookie() {
 
         /** Implements <code>SaveCookie</code> interface. */
+        @Override
         public void save() throws IOException {
             try {
                 saveDocument();
@@ -327,11 +331,13 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
 
         /** Implements abstract superclass method. */
+        @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
 
         /** Implements abstract superclass method.*/
+        @Override
         protected FileLock takeLock() throws IOException {
             return ((HtmlDataObject) getDataObject()).getPrimaryEntry().takeLock();
         }
@@ -372,7 +378,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
             setActivatedNodes(nodes);
             if (dataObject instanceof HtmlDataObject) {
-                 RequestProcessor.getDefault().post(new Runnable() {
+                //serialize the palette controller initialization requests into one thread
+                 SINGLE_THREAD_RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             PaletteController pc = HtmlPaletteFactory.getPalette(dataObject.getPrimaryFile());

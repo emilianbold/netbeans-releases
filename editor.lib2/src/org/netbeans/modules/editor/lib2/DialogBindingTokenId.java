@@ -54,7 +54,7 @@ public enum DialogBindingTokenId implements TokenId {
 
     TEXT;
 
-    public String primaryCategory() {
+    public @Override String primaryCategory() {
         return "text"; //NOI18N
     }
 
@@ -118,7 +118,7 @@ public enum DialogBindingTokenId implements TokenId {
             input = info.input();
         }
 
-        public Token<DialogBindingTokenId> nextToken() {
+        public @Override Token<DialogBindingTokenId> nextToken() {
             int actChar;
             while (true) {
                 actChar = input.read();
@@ -134,11 +134,11 @@ public enum DialogBindingTokenId implements TokenId {
             return tokenFactory.createToken(DialogBindingTokenId.TEXT);
         }
 
-        public Object state() {
+        public @Override Object state() {
             return null;
         }
 
-        public void release() {
+        public @Override void release() {
         }
     }
 }

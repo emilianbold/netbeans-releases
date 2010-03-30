@@ -61,6 +61,7 @@ import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 public class AddViewDialog {
 
@@ -107,14 +108,17 @@ public class AddViewDialog {
             pane.add(namefld);
             DocumentListener docListener = new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     validate();
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     validate();
                 }
@@ -155,12 +159,14 @@ public class AddViewDialog {
             pane.add(spane);
 
             ActionListener listener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
                             boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                @Override
                                 public Boolean call() throws Exception {
                                     return AddViewDDL.addView(spec, 
                                             schemaName,
@@ -188,6 +194,7 @@ public class AddViewDialog {
             pane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AddViewDialog.class, "ACS_AddViewDialogA11yDesc")); //NOI18N
 
             descriptor = new DialogDescriptor(pane, NbBundle.getMessage (AddViewDialog.class, "AddViewTitle"), true, listener); //NOI18N
+            descriptor.setHelpCtx(new HelpCtx("createviews")); // NOI18N
             statusLine = descriptor.createNotificationLineSupport();
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand
@@ -197,7 +204,7 @@ public class AddViewDialog {
             dialog.setResizable(true);
             validate();
         } catch (MissingResourceException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
     }
 

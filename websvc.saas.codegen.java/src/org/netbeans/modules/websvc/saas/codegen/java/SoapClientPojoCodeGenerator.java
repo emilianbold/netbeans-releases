@@ -85,7 +85,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -465,8 +464,9 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {7} = lookup object
     // {8} = result statement (return type and variable, e.g., MyClass myvar =
     private static final String INVOKE_JAXRPC_BODY =
-            "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
-            "\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{7}\");\n" +
+            //"\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
+            //"\t\t{0} {1} = ({0}) ic.lookup(\"java:comp/env/service/{7}\");\n" +
+            "\t\t{0} {1} = new {0}_Impl();\n" +
             "\t\t{2} {3} = {1}.{4}();\n" +
             "\t\t{8} {3}.{5}({6});\n";
 

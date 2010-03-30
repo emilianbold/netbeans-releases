@@ -142,7 +142,9 @@ public final class DDProvider {
             }
             if (version != null) {
                 webApp = new WebAppProxy(original, version);
-                if (error != null) {
+                if (original == null) {
+                    webApp.setStatus(WebApp.STATE_INVALID_OLD_VERSION);
+                } else if (error != null) {
                     webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
                     webApp.setError(error);
                 }
@@ -290,13 +292,6 @@ public final class DDProvider {
         public void fileChanged(FileEvent evt) {
             FileObject fo=evt.getFile();
             try {
-                if (DataObject.find(fo) != null) {
-                    return;
-                }
-            } catch (DataObjectNotFoundException e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-            try {
                 synchronized (ddMap) {
                     synchronized (baseBeanMap) {
                         WebAppProxy webApp = getFromCache(fo);
@@ -315,6 +310,10 @@ public final class DDProvider {
                                     webApp.setStatus(WebApp.STATE_VALID);
                                 }
                                 WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                if (original == null) {
+                                    webApp.setStatus(WebApp.STATE_INVALID_OLD_VERSION);
+                                    webApp.setError(null);
+                                }
                                 baseBeanMap.put(fo.getURL(), new WeakReference(original));
                                 errorMap.put(fo.getURL(), webApp.getError());
                                 webApp.merge(original, WebApp.MERGE_UPDATE);
@@ -333,10 +332,14 @@ public final class DDProvider {
                             try {
                                 version = WebParseUtils.getVersion(fo.getInputStream());
                                 WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
-                                if (original.getClass().equals(orig.getClass())) {
-                                    orig.merge(original,WebApp.MERGE_UPDATE);
+                                if (original == null) {
+                                    baseBeanMap.remove(fo.getURL());
                                 } else {
-                                    baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                                    if (original.getClass().equals(orig.getClass())) {
+                                        orig.merge(original,WebApp.MERGE_UPDATE);
+                                    } else {
+                                        baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                                    }
                                 }
                             } catch (SAXException ex) {
                                 baseBeanMap.remove(fo.getURL());

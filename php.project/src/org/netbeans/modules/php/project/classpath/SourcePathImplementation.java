@@ -48,6 +48,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
@@ -106,7 +108,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
                 for (URL root : urls) {
-                    result.add(new FilteringPathResource(evaluator, root));
+                    result.add(new FilteringPathResource(project, root));
                 }
                 resources = Collections.unmodifiableList(result);
             }
@@ -188,18 +190,19 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     && !relativePath.startsWith("../"); // NOI18N
     }
 
-    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener {
+    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener, ChangeListener {
 
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         volatile PathMatcher matcher;
         private final URL root;
 
-        FilteringPathResource(PropertyEvaluator evaluator, URL root) {
-            assert evaluator != null;
+        FilteringPathResource(PhpProject project, URL root) {
+            assert project != null;
             assert root != null;
 
             this.root = root;
-            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
+            ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
         public URL[] getRoots() {
@@ -236,11 +239,23 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     || prop.equals(PhpProjectProperties.IGNORE_PATH)
                     || prop.equals(PhpProjectProperties.TEST_SRC_DIR)
                     || prop.equals(PhpProjectProperties.SELENIUM_SRC_DIR)) {
-                matcher = null;
-                PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
-                ev2.setPropagationId(ev);
-                pcs.firePropertyChange(ev2);
+                fireChange(ev);
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // ignored files change
+            fireChange(null);
+        }
+
+        private void fireChange(PropertyChangeEvent event) {
+            matcher = null;
+            PropertyChangeEvent ev = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+            if (event != null) {
+                ev.setPropagationId(ev);
+            }
+            pcs.firePropertyChange(ev);
         }
     }
 }

@@ -64,8 +64,9 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
-import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
@@ -80,14 +81,29 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider.class)
 public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
+    private int level;
+
+    public ExpressionEvaluator() {
+        this.level = 0;
+    }
+
+    public ExpressionEvaluator(int level) {
+        this.level = level;
+    }
+
     public Object eval(String expr) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr);
+
+        APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
+        ts = lang.getFilteredStream(ts);
+
         TokenBuffer tb = new TokenBuffer(ts);
 
         int result = 0;
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
+            parser.setVariableProvider(new VariableProvider(level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -96,18 +112,26 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     public Object eval(String expr, CsmInstantiation inst) {
-        return eval(expr, inst.getTemplateDeclaration(), getMapping(inst));
+        if(CsmKindUtilities.isOffsetableDeclaration(inst)) {
+            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst));
+        } else {
+            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst));
+        }
     }
 
     public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr);
+
+        APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
+        ts = lang.getFilteredStream(ts);
+
         TokenBuffer tb = new TokenBuffer(ts);
 
         int result = 0;
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(decl, mapping));
+            parser.setVariableProvider(new VariableProvider(decl, mapping, level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -118,23 +142,22 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     private Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
         mapping.putAll(inst.getMapping());
-        while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-            inst = (CsmInstantiation) inst.getTemplateDeclaration();
-            for (CsmTemplateParameter param : inst.getMapping().keySet()) {
-                Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-                CsmSpecializationParameter spec = inst.getMapping().get(param);
-                if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                    Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapping);
-                    CsmSpecializationParameter newSpec = new ExpressionBasedSpecializationParameterImpl(o.toString(),
-                            spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
-                    newMapping.put(param, newSpec);
-                } else {
-                    newMapping.put(param, spec);
-                }
-                mapping.putAll(newMapping);
-            }
+//        for (CsmTemplateParameter param : inst.getMapping().keySet()) {
+//            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+//            CsmSpecializationParameter spec = inst.getMapping().get(param);
+//            if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+//                Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapping);
+//                CsmSpecializationParameter newSpec = new ExpressionBasedSpecializationParameterImpl(o.toString(),
+//                        spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
+//                newMapping.put(param, newSpec);
+//            } else {
+//                newMapping.put(param, spec);
+//            }
+//            mapping.putAll(newMapping);
+//        }
+        if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+            mapping.putAll(getMapping((CsmInstantiation) inst.getTemplateDeclaration()));
         }
-
         return mapping;
     }
 

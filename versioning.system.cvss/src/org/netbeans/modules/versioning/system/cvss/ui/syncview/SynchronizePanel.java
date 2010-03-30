@@ -419,7 +419,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 }
             }
         });
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 refreshCommandGroup.execute();
             }

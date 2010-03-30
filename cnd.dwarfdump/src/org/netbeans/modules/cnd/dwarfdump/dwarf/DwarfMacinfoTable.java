@@ -56,10 +56,10 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 public class DwarfMacinfoTable {
     private long baseSourceTableOffset = -1;
     private long fileSourceTableOffset = -1;
-    private DwarfMacroInfoSection section;
-    ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
-    ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
-    List<Integer> commandIncludedFilesTable;
+    private final DwarfMacroInfoSection section;
+    private final ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private final ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    private List<Integer> commandIncludedFilesTable;
     private boolean baseSourceTableRead;
     private boolean fileSourceTableRead;
     private boolean commandIncludedFilesRead;

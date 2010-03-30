@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs")
+@Hint(category="bugs", suppressWarnings="ReflectionForUnavailableAnnotation")
 public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$el.isAnnotationPresent($annotation.class)",

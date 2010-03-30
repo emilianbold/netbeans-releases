@@ -275,6 +275,17 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertTrue("Was " + node, node instanceof CallNode);
     }
 
+    public void testExitPointsBarry() {
+        Node root = getRootNode("testfiles/exit_points.rb");
+        MethodDefNode methodDef = (MethodDefNode) AstUtilities.findBySignature(root, "Dummy#barry(p)");
+        List<Node> exits = new ArrayList<Node>();
+        AstUtilities.findExitPoints(methodDef, exits);
+        assertEquals("Was: " + exits, 3, exits.size());
+        assertEquals("raise", AstUtilities.getNameOrValue(exits.get(0)));
+        assertTrue(exits.get(1) instanceof FixnumNode);
+        assertEquals("77", AstUtilities.getNameOrValue(exits.get(2)));
+    }
+
     public void testGetMethodName() {
         String testFile = "testfiles/ape.rb";
         FileObject fileObject = getTestFile(testFile);

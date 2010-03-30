@@ -42,6 +42,7 @@ import java.awt.Dialog;
 import javax.swing.BorderFactory;
 import javax.swing.border.EtchedBorder;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -69,6 +70,7 @@ public class PasswordDlg extends javax.swing.JPanel {
             hostName += ":" + execEnv.getSSHPort(); //NOI18N
         }
         tfHost.setText(hostName); // NOI18N
+        cbRememberPwd.setSelected(PasswordManager.getInstance().isRememberPassword(execEnv));
 
         DialogDescriptor dd = new DialogDescriptor(this,
                 loc("TITLE_Password"), true, // NOI18N

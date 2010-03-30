@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,6 +68,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.Generator.Script;
@@ -92,6 +94,7 @@ import org.openide.util.NbBundle;
  * @author  Tor Norbye
  */
 public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
+    private static final String GENERATOR_SUFFIX = "_generator";
 
     private static final Logger LOGGER = Logger.getLogger(GeneratorPanel.class.getName());
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
@@ -361,23 +364,30 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
                             continue;
                         }
 
-                        if (gem.endsWith("_generator")) { // NOI18N
-                            String version = gemManager.getLatestVersion(gem);
-                            if (version != null) {
-                                File f = new File(gemDir, gem + "-" + version); // NOI18N
-                                if (f.exists()) {
-                                    FileObject fo = FileUtil.toFileObject(f);
-                                    // The generator is named "gem"
-                                    int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
+                        String version = gemManager.getLatestVersion(gem);
+                        if (version != null) {
+                            File f = new File(gemDir, gem + "-" + version); // NOI18N
+                            if (f.exists()) {
+                                FileObject fo = FileUtil.toFileObject(f);
+                                FileObject generatorsDir = fo.getFileObject("generators/");
+                                String name = null;
+                                if (gem.endsWith(GENERATOR_SUFFIX)) {
                                     // Chop off _generator suffix
-                                    String name = gem.substring(0, gem.length()-"_generator".length()); // NOI18N
-                                    Generator generator = new Generator(name, fo, argsRequired);
-                                    generators.add(generator);
-                                    added.add(generator.getName());
+                                    name = gem.substring(0, gem.length() - GENERATOR_SUFFIX.length());
+                                } else if (generatorsDir != null) {
+                                    generators.addAll(collect(generatorsDir));
+                                    continue;
+                                } else {
+                                    // not a generator
+                                    continue;
                                 }
+                                int argsRequired = 0; // I could look at the usage files here to determine # of required arguments...
+                                Generator generator = new Generator(name, fo, argsRequired);
+                                generators.add(generator);
+                                added.add(generator.getName());
                             }
-
                         }
+
                     }
                 }
             }
@@ -436,6 +446,25 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         return generators;
     }
     
+    /**
+     * Collects all the generators from the given dir.
+     * @param generatorsDir
+     * @return
+     */
+    private static Set<Generator> collect(FileObject generatorsDir) {
+        Set<Generator> result = new HashSet<Generator>();
+        Enumeration<? extends FileObject> children = generatorsDir.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject each = children.nextElement();
+            String name = each.getName();
+            if (!each.isFolder() && name.endsWith(GENERATOR_SUFFIX)) {
+                name = name.substring(0, name.length() - GENERATOR_SUFFIX.length());
+                result.add(new Generator(name, each.getParent(), 0));
+            }
+        }
+        return result;
+    }
+
     private static boolean add(Generator toAdd, List<Generator> result) {
         for (Generator each : result) {
             if (each.getName().equals(toAdd.getName())) {

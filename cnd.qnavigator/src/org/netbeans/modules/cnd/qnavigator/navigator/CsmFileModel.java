@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -45,6 +47,7 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class CsmFileModel {
+    static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.qnavigator"); // NOI18N
     private List<IndexOffsetNode> lineNumberIndex = Collections.synchronizedList(new ArrayList<IndexOffsetNode>());
     private List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
     private CsmFileFilter filter;
@@ -114,14 +117,15 @@ public class CsmFileModel {
                 clear();
                 list.addAll(newList);
                 lineNumberIndex.addAll(newLineNumberIndex);
-                //System.out.println("Set new navigator model");
+                logger.log(Level.FINE, "Set new navigator model for file {0}", csmFile); // NOI18N
             } else {
                 resetScope(lineNumberIndex);
                 res = false;
-                //System.out.println("Reset navigator model");
+                logger.log(Level.FINE, "Reset navigator model for file {0}", csmFile); // NOI18N
             }
         } else {
             clear();
+            logger.log(Level.FINE, "Clear navigator model for file {0}", csmFile); // NOI18N
         }
         newList.clear();
         newLineNumberIndex.clear();

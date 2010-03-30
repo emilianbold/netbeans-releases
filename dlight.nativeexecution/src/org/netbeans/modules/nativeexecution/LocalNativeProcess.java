@@ -80,6 +80,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 createNonWin();
             }
         } catch (Throwable ex) {
+            if (process != null) {
+                process.destroy();
+            }
+
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage()) + "\n"; // NOI18N
             processOutput = new ByteArrayInputStream(new byte[0]);
             processError = new ByteArrayInputStream(msg.getBytes());
@@ -123,7 +127,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         processInput.write("echo $$\n".getBytes()); // NOI18N
         processInput.flush();
 
-        EnvWriter ew = new EnvWriter(processInput);
+        EnvWriter ew = new EnvWriter(processInput, false);
         ew.write(env);
 
         if (info.getInitialSuspend()) {

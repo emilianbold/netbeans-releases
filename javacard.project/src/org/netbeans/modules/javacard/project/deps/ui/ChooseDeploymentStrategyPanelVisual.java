@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.javacard.project.deps.ui;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -53,6 +55,10 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.javacard.project.deps.DependencyKind;
 import org.netbeans.modules.javacard.project.deps.DeploymentStrategy;
@@ -94,12 +100,36 @@ final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemLi
         labelConstraints.insets = new Insets(0, 20, 12, 0);
         labelConstraints.weightx = 1.0F;
         labelConstraints.weighty = 1.0F;
+        Border empty = BorderFactory.createEmptyBorder();
+        Color ctrl = UIManager.getColor("control"); //NOI18N
+        ctrl = ctrl == null ? Color.GRAY : ctrl;
+        Font font = null;
         for (DeploymentStrategy d : l) {
             JRadioButton button = new JRadioButton (d.toString());
             button.putClientProperty(CLIENT_PROP_DEP_KIND, d);
             button.addItemListener(this);
             grp.add(button);
-            JLabel desc = new JLabel (d.getDescription());
+            //And this is why people say Swing is verbose...
+            JTextArea area = new JTextArea(d.getDescription());
+            if (font == null) {
+                font = area.getFont();
+                if (font != null) {
+                    font = font.deriveFont(Font.ITALIC);
+                }
+            }
+            if (font != null) { //may be during initialization on some L&Fs
+                area.setFont(font);
+            }
+            area.setBorder (empty);
+            area.setLineWrap(true);
+            area.setWrapStyleWord(true);
+            JScrollPane desc = new JScrollPane (area);
+            desc.setBorder(empty);
+            desc.setViewportBorder(empty);
+            area.setBackground (ctrl);
+            desc.setBackground (ctrl);
+            desc.getViewport().setBackground(ctrl);
+            area.getCaret().setVisible(false);
             add (button, buttonConstraints);
             add (desc, labelConstraints);
             buttonConstraints.gridy +=2;
@@ -108,7 +138,22 @@ final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemLi
         //XXX remove once build-time support for new project metadata is
         //implemented
         labelConstraints.gridy++;
-        JLabel lbl = new JLabel(NbBundle.getMessage(ChooseDeploymentStrategyPanelVisual.class, "WARNING_DEPLOYMENT_STRATEGY"));
+        JTextArea area = new JTextArea(NbBundle.getMessage(
+                ChooseDeploymentStrategyPanelVisual.class,
+                "WARNING_DEPLOYMENT_STRATEGY")); //NOI18N
+        Color errColor = UIManager.getColor("nb.errorForeground"); //NOI18N
+        errColor = errColor == null ? Color.RED : errColor;
+        area.setForeground (errColor);
+        JScrollPane lbl = new JScrollPane (area);
+        area.setBackground (ctrl);
+        lbl.setBackground (ctrl);
+        lbl.getViewport().setBackground (ctrl);
+        area.getCaret().setVisible(false);
+        area.setBorder(empty);
+        lbl.setBorder(empty);
+        lbl.setViewportBorder(empty);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
         add (lbl, labelConstraints);
     }
 

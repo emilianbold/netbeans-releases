@@ -119,7 +119,7 @@ public class MergeBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
        
-        RequestProcessor.getDefault().post(new MergeBranchExecutor(context, settings, getRunningName(nodes), getContextDisplayName(nodes)));
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new MergeBranchExecutor(context, settings, getRunningName(nodes), getContextDisplayName(nodes)));
     }
 
     protected boolean asynchronous() {

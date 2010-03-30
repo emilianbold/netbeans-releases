@@ -41,7 +41,6 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -55,7 +54,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
@@ -87,21 +85,7 @@ public class ComponentUsagesChecker extends HintsProvider {
         final Snapshot snapshot = result.getSnapshot();
 
         //find all usages of composite components tags for this page
-        Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        Map<String, FaceletsLibrary> declaredLibraries = new HashMap<String, FaceletsLibrary>();
-        JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
-        if (jsfSupport != null) {
-            Map<String, FaceletsLibrary> libs = jsfSupport.getFaceletsLibraries();
-
-            for (String namespace : declaredNamespaces) {
-                FaceletsLibrary lib = libs.get(namespace);
-                if (lib != null) {
-    //            if(JsfUtils.isCompositeComponentLibrary(lib)) {
-                    declaredLibraries.put(namespace, lib);
-    //            }
-                }
-            }
-        }
+        Map<String, FaceletsLibrary> declaredLibraries = JsfUtils.getDeclaredLibraries(result);
 
         //now we have all  declared component libraries
         //lets get their parse trees and check the content

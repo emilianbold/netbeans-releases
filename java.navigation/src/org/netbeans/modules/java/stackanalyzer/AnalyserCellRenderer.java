@@ -54,6 +54,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
@@ -114,21 +115,29 @@ class AnalyserCellRenderer extends DefaultListCellRenderer {
         }
 
         String line = (String) value;
-        boolean hasSource = hasSource (line);
+        Link link = StackLineAnalyser.analyse (line);
 
         if (isSelected) {
             setBackground (bg == null ? list.getSelectionBackground () : bg);
             setForeground(fg == null ? list.getSelectionForeground() : fg);
         } else {
             setBackground (list.getBackground ());
-            if (hasSource)
-                setForeground (foreground);
-            else
+//            if (link != null)
+//                setForeground (foreground);
+//            else
                 setForeground (list.getForeground ());
         }
 
-        if (hasSource (line)) {
-            setText ("<html><u>" + line.trim () + "</u></html>");
+        if (link != null && link.hasSource ()) {
+            StringBuilder sb = new StringBuilder ();
+            sb.append ("<html>");
+            sb.append (line.substring (0, link.getStartOffset ()));
+            sb.append ("<a href=\"\">");
+            sb.append (line.substring (link.getStartOffset (), link.getEndOffset ()));
+            sb.append ("</a>");
+            sb.append (line.substring (link.getEndOffset ()));
+            sb.append ("</html>");
+            setText (sb.toString ());
         } else
             setText (line.trim ());
 
@@ -150,15 +159,15 @@ class AnalyserCellRenderer extends DefaultListCellRenderer {
         return this;
     }
 
-    private boolean hasSource (String line) {
-        Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher (line);
-        if (!m.matches ()) return false;
-        String pkg = m.group (3);
-        String filename = m.group (4);
-        String resource = pkg.replace ('.', '/') + filename;
-        int lineNumber = Integer.parseInt (m.group (5));
-        ClassPath cp = ClassPathSupport.createClassPath (GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject[0]));
-        return cp.findResource (resource) != null;
-    }
+//    private boolean hasSource (String line) {
+//        Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher (line);
+//        if (!m.matches ()) return false;
+//        String pkg = m.group (3);
+//        String filename = m.group (4);
+//        String resource = pkg.replace ('.', '/') + filename;
+//        int lineNumber = Integer.parseInt (m.group (5));
+//        ClassPath cp = ClassPathSupport.createClassPath (GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject[0]));
+//        return cp.findResource (resource) != null;
+//    }
 }
 

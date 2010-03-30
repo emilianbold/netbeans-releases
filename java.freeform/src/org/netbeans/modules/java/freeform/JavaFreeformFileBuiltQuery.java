@@ -94,7 +94,7 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
             ERR.log(ErrorManager.INFORMATIONAL, "JavaFreeformFileBuiltQuery.createDelegateTo start"); // NOI18N
         }
         
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         List<String> from = new ArrayList<String>();
         List<String> to   = new ArrayList<String>();
         

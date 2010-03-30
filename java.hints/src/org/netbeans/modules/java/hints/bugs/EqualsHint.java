@@ -132,7 +132,7 @@ public class EqualsHint {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, arrays, instance);
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", customizerProvider=CustomizerProviderImpl.class)
+    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="IncompatibleEquals")
     @TriggerPattern(value="$this.equals($par)",
                     constraints={
                         @Constraint(variable="$this", type="java.lang.Object"),

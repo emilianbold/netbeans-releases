@@ -90,7 +90,7 @@ public class DeleteProjectAction extends AbstractAction {
                         }
                     });
                 } catch (KenaiException ex) {
-                    final String message = ex.getAsMap().get("message");
+                    final String message = ex.getAsMap().get("message"); // NOI18N
                     if (message != null) {
                         SwingUtilities.invokeLater(new Runnable() {
 

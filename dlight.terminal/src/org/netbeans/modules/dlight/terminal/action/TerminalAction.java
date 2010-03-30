@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.terminal.action;
 
 import java.awt.event.ActionEvent;
@@ -44,16 +43,25 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOContainer;
@@ -65,9 +73,10 @@ import org.openide.windows.InputOutput;
  * @author Vladimir Voskresensky
  */
 abstract class TerminalAction implements ActionListener {
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
         instance.open();
         instance.requestActive();
         final IOContainer ioContainer = instance.getIOContainer();
@@ -79,6 +88,14 @@ abstract class TerminalAction implements ActionListener {
 
                     @Override
                     public void run() {
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            instance.requestActive();
+                        } else {
+                            doWork();
+                        }
+                    }
+
+                    private void doWork() {
                         try {
                             if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                                 ConnectionManager.getInstance().connectTo(env);
@@ -91,6 +108,16 @@ abstract class TerminalAction implements ActionListener {
 
                             final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+
+                            npb.addNativeProcessListener(new ChangeListener() {
+
+                                @Override
+                                public void stateChanged(ChangeEvent e) {
+                                    NativeProcessChangeEvent ev = (NativeProcessChangeEvent) e;
+//                                    System.out.println("Process' " + e.getSource() + " state is " + ev.state);
+                                }
+                            });
+
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                             String shell = hostInfo.getShell();
 //                            npb.setWorkingDirectory("${HOME}");
@@ -98,8 +125,19 @@ abstract class TerminalAction implements ActionListener {
                             NativeExecutionDescriptor descr;
                             descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(false).inputOutput(io);
                             NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
-                            es.run();
-                            io.select();
+                            Future<Integer> result = es.run();
+                            // ask terminal to become active
+                            SwingUtilities.invokeLater(this);
+
+                            try {
+                                result.get();
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ExecutionException ex) {
+                                String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+                                String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                            }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (CancellationException ex) {
@@ -113,8 +151,8 @@ abstract class TerminalAction implements ActionListener {
     }
 
     protected abstract ExecutionEnvironment getEnvironment();
-
     private static Action[] actions;
+
     private synchronized static Action[] getActions() {
         if (actions == null) {
             List<? extends Action> termActions = Utilities.actionsForPath("Actions/Terminal");// NOI18N

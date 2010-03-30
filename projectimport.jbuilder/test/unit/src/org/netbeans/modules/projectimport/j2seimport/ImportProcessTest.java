@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 
 /**
@@ -64,6 +65,7 @@ public class ImportProcessTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         clearWorkDir();
+        MockLookup.setLayersAndInstances();
         iproc = ImportUtils.createImportProcess(FileUtil.toFileObject(getWorkDir()),createProjectDefinitions(),true);
     }
     

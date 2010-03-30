@@ -83,6 +83,8 @@ public class DiffAction extends NodeAction {
     public DiffAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
+
+    private static boolean diffAvailable = true;
     
     private class DiffActionImpl extends AbstractAction {
         
@@ -134,21 +136,22 @@ public class DiffAction extends NodeAction {
     
     public boolean enable(Node[] nodes) {
         //System.out.println("DiffAction.enable() = "+(nodes.length == 2));
+        if (!diffAvailable) {
+            return false;
+        }
         if (nodes.length == 2) {
             FileObject fo1 = getFileFromNode(nodes[0]);
             FileObject fo2 = getFileFromNode(nodes[1]);
             if (fo1 != null && fo2 != null) {
                 if (fo1.isData() && fo2.isData()) {
-                    Diff d = Diff.getDefault();
-                    return d != null;
+                    return true;
                 }
             }
         } else if (nodes.length == 1) {
             FileObject fo1 = getFileFromNode(nodes[0]);
             if (fo1 != null) {
                 if (fo1.isData()) {
-                    Diff d = Diff.getDefault();
-                    return d != null;
+                    return true;
                 }
             }
         }
@@ -224,6 +227,7 @@ public class DiffAction extends NodeAction {
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
                     "MSG_NoDiffVisualizer")));
+            diffAvailable = false;
             return ;
         }
         SingleDiffPanel sdp = null;
@@ -252,7 +256,13 @@ public class DiffAction extends NodeAction {
             final SingleDiffPanel fsdp = sdp;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp);
+                    TopComponent dtc = new DefaultDiff.DiffTopComponent(fsdp) {
+                        @Override
+                        protected void componentActivated() {
+                            super.componentActivated();
+                            fsdp.requestActive();
+                        }
+                    };
                     dtc.open();
                     dtc.requestActive();
                 }

@@ -100,6 +100,7 @@ public class MavenProjectNode extends AbstractNode {
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
+                    fireNameChange(null, getName());
                     fireDisplayNameChange(null, getDisplayName());
                     fireIconChange();
                 }
@@ -112,6 +113,7 @@ public class MavenProjectNode extends AbstractNode {
                     public void run() {
                         fireIconChange();
                         fireOpenedIconChange();
+                        fireNameChange(null, getName());
                         fireDisplayNameChange(null, getDisplayName());
                         fireShortDescriptionChange(null, getShortDescription());
                     }
@@ -120,6 +122,9 @@ public class MavenProjectNode extends AbstractNode {
         });
     }
 
+    public @Override String getName() {
+        return project.getName();
+    }
 
     @Override
     public String getDisplayName() {

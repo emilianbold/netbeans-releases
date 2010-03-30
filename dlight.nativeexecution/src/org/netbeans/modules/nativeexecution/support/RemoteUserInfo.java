@@ -60,30 +60,37 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         this.env = env;
     }
 
+    @Override
     public String getPassphrase() {
         return null;
     }
 
+    @Override
     public String getPassword() {
         char[] clearPassword = pm.get(env);
         return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
     }
 
+    @Override
     public boolean promptPassword(String arg0) {
         return true;
     }
 
+    @Override
     public boolean promptPassphrase(String arg0) {
         return true;
     }
 
+    @Override
     public boolean promptYesNo(String str) {
         return true;
     }
 
+    @Override
     public void showMessage(String message) {
     }
 
+    @Override
     public String[] promptKeyboardInteractive(String destination,
             String name,
             String instruction,
@@ -109,6 +116,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             this.env = env;
             Mutex.EVENT.readAccess(new Runnable() {
 
+                @Override
                 public void run() {
                     parentWindow = WindowManager.getDefault().getMainWindow();
                 }
@@ -117,15 +125,18 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             parent = parentWindow;
         }
 
+        @Override
         public String getPassphrase() {
             return null;
         }
 
+        @Override
         public String getPassword() {
             char[] clearPassword = pm.get(env);
             return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
         }
 
+        @Override
         public boolean promptPassword(String message) {
             synchronized (lock) {
                 boolean result;
@@ -137,21 +148,23 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
                 if (result) {
                     char[] clearPassword = pwdDlg.getPassword();
-                    pm.put(env, clearPassword, pwdDlg.isRememberPassword());
+                    pm.setRememberPassword(env, pwdDlg.isRememberPassword());
+                    pm.put(env, clearPassword);
                     Arrays.fill(clearPassword, (char) 0);
                     pwdDlg.clearPassword();
                     return true;
                 } else {
-                    pm.clearPassword(env);
                     throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
                 }
             }
         }
 
+        @Override
         public boolean promptPassphrase(String arg0) {
             return true;
         }
 
+        @Override
         public boolean promptYesNo(String str) {
             Object[] options = {"yes", "no"}; // NOI18N
             int foo;
@@ -166,12 +179,14 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             return foo == 0;
         }
 
+        @Override
         public void showMessage(String message) {
             synchronized (lock) {
                 JOptionPane.showMessageDialog(parent, message);
             }
         }
 
+        @Override
         public String[] promptKeyboardInteractive(String destination,
                 String name,
                 String instruction,

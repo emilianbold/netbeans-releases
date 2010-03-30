@@ -67,6 +67,7 @@ public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     public static final String USG_PROJECT_CREATE_CND = "USG_PROJECT_CREATE_CND"; // NOI18N
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.cnd"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private FileObject projectDirectory;
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
@@ -99,12 +100,7 @@ public class ConfigurationDescriptorProvider {
             synchronized (readLock) {
                 // check again that someone already havn't read
                 if (shouldBeLoaded()) {
-                    if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                        System.err.println("Start of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                        if (projectDescriptor != null) {
-                            new Exception("Previous project MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)).printStackTrace(); // NOI18N
-                        }
-                    }
+                    LOGGER.log(Level.FINE, "Start of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                     // It's important to set needReload=false before calling
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.
@@ -147,20 +143,14 @@ public class ConfigurationDescriptorProvider {
     //                        }
                     try {
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
-                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                            System.err.println("End of reading project descriptor for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                        }
+                        LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         if (projectDescriptor == null || newDescriptor == null) {
                             projectDescriptor = newDescriptor;
-                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                                System.err.println("Created project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                            }
+                            LOGGER.log(Level.FINE, "Created project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         } else {
                             (newDescriptor).waitInitTask();
                             projectDescriptor.assign(newDescriptor);
-                            if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                                System.err.println("Reassigned project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)); // NOI18N
-                            }
+                            LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         }
                     } catch (java.io.IOException x) {
                         x.printStackTrace();
@@ -378,9 +368,7 @@ public class ConfigurationDescriptorProvider {
                     if (projectDescriptor == null || !projectDescriptor.getModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
-                        if (MakeProject.TRACE_MAKE_PROJECT_CREATION){
-                            new Exception("Mark to reload project descriptor MakeConfigurationDescriptor@"+System.identityHashCode(projectDescriptor)+" for project "+projectDirectory.getName()+" in ConfigurationDescriptorProvider@"+System.identityHashCode(this)).printStackTrace(); // NOI18N
-                        }
+                        LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getName(), System.identityHashCode(this)}); // NOI18N
                         needReload = true;
                         hasTried = false;
                     }

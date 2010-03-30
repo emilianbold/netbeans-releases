@@ -70,6 +70,7 @@ static void* readerfunc(void *p) {
         }
         pthread_rwlock_unlock(&rwlock);
     }
+    return NULL;
 }
 
 static void* writerfunc(void *p) {
@@ -83,6 +84,7 @@ static void* writerfunc(void *p) {
         pthread_rwlock_unlock(&rwlock);
         usleep(MICROS_PER_SECOND / 10);
     }
+    return NULL;
 }
 
 void rwlock_demo(int readers, int writers, work_t* works, int seconds) {

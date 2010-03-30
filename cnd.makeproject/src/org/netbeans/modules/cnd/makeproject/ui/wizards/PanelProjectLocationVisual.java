@@ -40,23 +40,38 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ResourceBundle;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener, HelpCtx.Provider {
 
@@ -66,7 +81,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private String name;
     private boolean makefileNameChanged = false;
     private int type;
-
+    private volatile boolean initialized = false;
+    private final Object FAKE_ITEM = new Object();
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
         initComponents();
@@ -111,8 +127,35 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainTextField.setVisible(false);
             createMainComboBox.setVisible(false);
         }
+        disableHostsInfo();
     }
 
+    private void disableHostsInfo() {
+        // load hosts && toolchains
+        hostComboBox.setEnabled(false);
+        toolchainComboBox.setEnabled(false);
+        hostComboBox.addItem(FAKE_ITEM);
+        toolchainComboBox.addItem(FAKE_ITEM);
+        hostComboBox.setRenderer(new MyDevHostListCellRenderer(FAKE_ITEM));
+        toolchainComboBox.setRenderer(new MyToolchainListCellRenderer(FAKE_ITEM));
+    }
+
+    private Collection<ServerRecord> initServerRecords() {
+        Collection<ServerRecord> out = new ArrayList<ServerRecord>();
+        for (ServerRecord serverRecord : ServerList.getRecords()) {
+            if (serverRecord.isSetUp() && !serverRecord.isDeleted()) {
+                CompilerSetManager csm = CompilerSetManager.get(serverRecord.getExecutionEnvironment());
+                if (csm != null) {
+                    csm.finishInitialization();
+                    if (!csm.isEmpty() && !csm.isUninitialized()) {
+                        out.add(serverRecord);
+                    }
+                }
+            }
+        }
+        return out;
+    }
+    
     public String getProjectName() {
         return this.projectNameTextField.getText();
     }
@@ -120,6 +163,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewAppWizard"); // NOI18N
+    }
+
+    public CompilerSet getProjectCompilerSet() {
+        return (CompilerSet) this.toolchainComboBox.getSelectedItem();
     }
 
     /** This method is called from within the constructor to
@@ -144,6 +191,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField = new javax.swing.JTextField();
         createMainComboBox = new javax.swing.JComboBox();
         setAsMainCheckBox = new javax.swing.JCheckBox();
+        hostLabel = new javax.swing.JLabel();
+        toolchainLabel = new javax.swing.JLabel();
+        hostComboBox = new javax.swing.JComboBox();
+        toolchainComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -198,7 +249,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         browseButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_browseButton")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_browseButton")); // NOI18N
 
-        createdFolderLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MN_NWP1_CreatedProjectFolder_Lablel").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
         createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -274,12 +324,50 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(setAsMainCheckBox, gridBagConstraints);
+
+        hostLabel.setLabelFor(hostComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_HOST")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        add(hostLabel, gridBagConstraints);
+
+        toolchainLabel.setLabelFor(toolchainComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(toolchainLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_TOOLCHAIN")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        add(toolchainLabel, gridBagConstraints);
+
+        hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                hostComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        add(hostComboBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        add(toolchainComboBox, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSN_PanelProjectLocationVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSD_PanelProjectLocationVisual")); // NOI18N
@@ -309,6 +397,27 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField.setEnabled(createMainCheckBox.isSelected());
         createMainComboBox.setEnabled(createMainCheckBox.isSelected());
 }//GEN-LAST:event_createMainCheckBoxActionPerformed
+
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
+        if (!initialized) {
+            return;
+        }
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            ServerRecord newItem = (ServerRecord) evt.getItem();
+            updateToolchains(newItem);
+            panel.fireChangeEvent(); // Notify that the panel changed
+        }
+    }
+
+    private void updateToolchains(ServerRecord newItem) {
+        // change toolchains
+        CompilerSetManager csm = CompilerSetManager.get(newItem.getExecutionEnvironment());
+        toolchainComboBox.removeAllItems();
+        for (CompilerSet compilerSet : csm.getCompilerSets()) {
+            toolchainComboBox.addItem(compilerSet);
+        }
+        toolchainComboBox.setSelectedItem(csm.getDefaultCompilerSet());
+    }//GEN-LAST:event_hostComboBoxItemStateChanged
 
     @Override
     public void addNotify() {
@@ -346,7 +455,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
-
+        if (!initialized) {
+            return false;
+        }
         if (!isValidProjectName(projectNameTextField.getText())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
@@ -400,7 +511,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 return false;
             }
         }
-
+        ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
+        if (sr == null || !sr.isOnline()) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_OfflineHost")); // NOI18N
+        }
+//        CompilerSetManager csm = CompilerSetManager.get(sr.getExecutionEnvironment());
+//        CompilerSet cs = (CompilerSet) toolchainComboBox.getSelectedItem();
+//        if (cs == null || csm == null || csm.isUninitialized() || csm.isEmpty()) {
+//            // Toolchain is not specified
+//            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, // NOI18N
+//                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalToolchainName")); // NOI18N
+//        }
         /*
         if (destFolder.getPath().indexOf(' ') >= 0) {
         wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
@@ -449,6 +571,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
             }
         }
+        ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
+        if (sr != null) {
+            d.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment())); // NOI18N
+        }
+        d.putProperty("toolchain", toolchainComboBox.getSelectedItem()); // NOI18N
     }
 
     @Override
@@ -460,6 +587,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        String hostUID = (String) settings.getProperty("hostUID");
+        CompilerSet cs = (CompilerSet) settings.getProperty("toolchain");
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs));
 
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
@@ -484,6 +614,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JTextField createMainTextField;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JComboBox hostComboBox;
+    private javax.swing.JLabel hostLabel;
     private javax.swing.JLabel makefileLabel;
     private javax.swing.JTextField makefileTextField;
     private javax.swing.JLabel projectLocationLabel;
@@ -491,6 +623,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JLabel projectNameLabel;
     private javax.swing.JTextField projectNameTextField;
     private javax.swing.JCheckBox setAsMainCheckBox;
+    private javax.swing.JComboBox toolchainComboBox;
+    private javax.swing.JLabel toolchainLabel;
     // End of variables declaration//GEN-END:variables
 
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
@@ -605,5 +739,107 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             bundle = NbBundle.getBundle(PanelProjectLocationVisual.class);
         }
         return bundle.getString(s);
+    }
+
+    private static final class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+        private final Object loadingMarker;
+
+        public MyDevHostListCellRenderer(Object loadingItem) {
+            loadingMarker = loadingItem;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (loadingMarker.equals(value)) {
+                label.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "Loading_Host_Text")); // NOI18N
+            } else {
+                ServerRecord rec = (ServerRecord) value;
+                if (rec != null) {
+                    label.setText(rec.getDisplayName());
+                }
+            }
+            return label;
+        }
+    }
+
+    private static final class MyToolchainListCellRenderer extends DefaultListCellRenderer {
+        private final Object loadingMarker;
+
+        public MyToolchainListCellRenderer(Object loadingItem) {
+            loadingMarker = loadingItem;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (loadingMarker.equals(value)) {
+                label.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "Loading_Toolchain_Text")); // NOI18N
+            } else {
+                CompilerSet cs = (CompilerSet) value;
+                if (cs != null) {
+                    label.setText(cs.getDisplayName());
+                }
+            }
+            return label;
+        }
+    }
+
+    private final class DevHostsInitializer implements Runnable {
+        private final String hostUID;
+        private final CompilerSet cs;
+        
+        // fields to be inited in worker thread and used in EDT
+        private Collection<ServerRecord> records;
+        private ServerRecord srToSelect;
+        private CompilerSet csToSelect;
+        
+        public DevHostsInitializer(String hostUID, CompilerSet cs) {
+            this.hostUID = hostUID;
+            this.cs = cs;
+        }
+
+        @Override
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                try {
+                    records = initServerRecords();
+                    srToSelect = null;
+                    if (hostUID != null) {
+                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+                        if (ee != null) {
+                            srToSelect = ServerList.get(ee);
+                        }
+                    }
+                    if (!records.contains(srToSelect)) {
+                        srToSelect = null;
+                    }
+                    if (srToSelect == null || srToSelect.isDeleted()) {
+                        srToSelect = ServerList.getDefaultRecord();
+                    }
+                    if (cs == null) {
+                        CompilerSetManager csm = CompilerSetManager.get(srToSelect.getExecutionEnvironment());
+                        csToSelect = csm.getDefaultCompilerSet();
+                    }
+                } finally {
+                    SwingUtilities.invokeLater(this);
+                }
+            } else {
+                hostComboBox.removeAllItems();
+                toolchainComboBox.removeAllItems();
+                if (records != null) {
+                    for (ServerRecord serverRecord : records) {
+                        hostComboBox.addItem(serverRecord);
+                    }
+                    hostComboBox.setSelectedItem(srToSelect);
+                    updateToolchains(srToSelect);
+                    toolchainComboBox.setSelectedItem(csToSelect);
+                    hostComboBox.setEnabled(true);
+                    toolchainComboBox.setEnabled(true);
+                }
+                initialized = true;
+                panel.fireChangeEvent(); // Notify that the panel changed
+            }
+        }
     }
 }

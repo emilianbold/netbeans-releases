@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(category="rules15")
+@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch")
 public class ConvertToStringSwitch {
 
     private static final String[] PATTERNS = {

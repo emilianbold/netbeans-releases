@@ -371,11 +371,7 @@ public class RefactoringUtils {
                     return true;
                 }
                 int caret = textC.getCaretPosition();
-                if (LexUtilities.getToken((BaseDocument) d, caret) == null) {
-                    // Not in PHP code!
-                    return true;
-                }
-
+                return LexUtilities.getMostEmbeddedTokenSequence(d, caret, true).language() != PHPTokenId.language();
             }
         }
 

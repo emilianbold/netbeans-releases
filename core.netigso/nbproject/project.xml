@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.27</specification-version>
+                        <specification-version>2.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -120,7 +120,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.core.netigso.spi</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

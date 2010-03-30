@@ -115,6 +115,7 @@ public class JavaEditorWarmUpTask implements Runnable{
     private static final int STATUS_SWITCH_DOCUMENTS = 3;
     private static final int STATUS_TRAVERSE_VIEWS = 4;
     private static final int STATUS_RENDER_FRAME = 5;
+    private static final RequestProcessor RP = new RequestProcessor(JavaEditorWarmUpTask.class.getName(), 1, false, false);
     
     private int status = STATUS_INIT;
 
@@ -179,7 +180,7 @@ public class JavaEditorWarmUpTask implements Runnable{
                 }
 
                 status = STATUS_CREATE_DOCUMENTS;
-                RequestProcessor.getDefault().post(this);
+                RP.post(this);
                 break;
                 
             case STATUS_CREATE_DOCUMENTS:
