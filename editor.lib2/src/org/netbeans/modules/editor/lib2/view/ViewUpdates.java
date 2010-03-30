@@ -142,6 +142,9 @@ public final class ViewUpdates implements DocumentListener {
         if (mutex != null) {
             mutex.lock();
             try {
+                if (!documentView.isActive()) {
+                    return;
+                }
                 // Insert into document was performed -> update or rebuild views
                 // First update factories since they may fire rebuilding
                 checkFactoriesComponentInited();
@@ -257,6 +260,9 @@ public final class ViewUpdates implements DocumentListener {
         if (mutex != null) {
             mutex.lock();
             try {
+                if (!documentView.isActive()) {
+                    return;
+                }
                 // Removal in document was performed -> update or rebuild views
                 checkFactoriesComponentInited();
                 for (int i = 0; i < viewFactories.length; i++) {
@@ -364,6 +370,9 @@ public final class ViewUpdates implements DocumentListener {
         if (mutex != null) {
             mutex.lock();
             try {
+                if (!documentView.isActive()) {
+                    return;
+                }
                 checkFactoriesComponentInited();
                 for (int i = 0; i < viewFactories.length; i++) {
                     EditorViewFactory editorViewFactory = viewFactories[i];
