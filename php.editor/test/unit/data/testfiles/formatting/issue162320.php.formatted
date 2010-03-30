@@ -5,7 +5,7 @@ if (true) {
 }
 
 class class_name {
-  
+
   /**
    * PHPDoc
    */
@@ -13,6 +13,7 @@ class class_name {
     // cmt
     echo 1;
   }
+
 }
 
 ?>

@@ -137,6 +137,8 @@ public class FmtOptions {
     public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
+    public static final String spaceBeforeArrayDeclParen = "spaceBeforeArrayDeclParen"; //NOI18N
+
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
@@ -186,9 +188,7 @@ public class FmtOptions {
     public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
-    public static final String alignMultilineAnnotationArgs = "alignMultilineAnnotationArgs"; //NOI18N
     public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
-    public static final String alignMultilineThrows = "alignMultilineThrows"; //NOI18N
     public static final String alignMultilineParenthesized = "alignMultilineParenthesized"; //NOI18N
     public static final String alignMultilineBinaryOp = "alignMultilineBinaryOp"; //NOI18N
     public static final String alignMultilineTernaryOp = "alignMultilineTernaryOp"; //NOI18N
@@ -239,7 +239,7 @@ public class FmtOptions {
     public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
     
     public static final String WRAP_ALWAYS = CodeStyle.WrapStyle.WRAP_ALWAYS.name();
-    //public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
+    public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
     public static final String WRAP_NEVER = CodeStyle.WrapStyle.WRAP_NEVER.name();
 
     private static Map<String,String> defaults;
@@ -293,6 +293,7 @@ public class FmtOptions {
             { spaceBeforeWhileParen, TRUE},
             { spaceBeforeCatchParen, TRUE},
             { spaceBeforeSwitchParen, TRUE},
+	    { spaceBeforeArrayDeclParen, FALSE},
             { spaceAroundUnaryOps, FALSE},
             { spaceAroundBinaryOps, TRUE},
             { spaceAroundTernaryOps, TRUE},
@@ -338,9 +339,7 @@ public class FmtOptions {
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N
-            { alignMultilineAnnotationArgs, FALSE}, //NOI18N
             { alignMultilineImplements, FALSE}, //NOI18N
-            { alignMultilineThrows, FALSE}, //NOI18N
             { alignMultilineParenthesized, FALSE}, //NOI18N
             { alignMultilineBinaryOp, FALSE}, //NOI18N
             { alignMultilineTernaryOp, FALSE}, //NOI18N
@@ -400,7 +399,7 @@ public class FmtOptions {
 
 	private static final ComboItem  wrap[] = new ComboItem[] {
                 new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
-//                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
+                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
                 new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
             };
 

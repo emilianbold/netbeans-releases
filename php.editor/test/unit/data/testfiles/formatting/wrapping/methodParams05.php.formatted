@@ -1,7 +1,7 @@
 <?php
 
-function tes($param1/*comment 1 */,
-        $param2, /*fasfdsa*/
+function tes($param1/* comment 1 */,
+        $param2, /* fasfdsa */
         $param3,
         $param4,
         $param5,

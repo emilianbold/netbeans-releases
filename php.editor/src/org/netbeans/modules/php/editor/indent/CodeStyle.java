@@ -245,6 +245,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
     }
 
+    public boolean spaceBeforeArrayDeclParen() {
+        return preferences.getBoolean(spaceBeforeArrayDeclParen, getDefaultAsBoolean(spaceBeforeArrayDeclParen));
+    }
+
     public boolean spaceAroundUnaryOps() {
         return preferences.getBoolean(spaceAroundUnaryOps, getDefaultAsBoolean(spaceAroundUnaryOps));
     }
@@ -423,16 +427,8 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineCallArgs, getDefaultAsBoolean(alignMultilineCallArgs));
     }
 
-    public boolean alignMultilineAnnotationArgs() {
-        return preferences.getBoolean(alignMultilineAnnotationArgs, getDefaultAsBoolean(alignMultilineAnnotationArgs));
-    }
-
     public boolean alignMultilineImplements() {
         return preferences.getBoolean(alignMultilineImplements, getDefaultAsBoolean(alignMultilineImplements));
-    }
-
-    public boolean alignMultilineThrows() {
-        return preferences.getBoolean(alignMultilineThrows, getDefaultAsBoolean(alignMultilineThrows));
     }
 
     public boolean alignMultilineParenthesized() {
@@ -563,7 +559,7 @@ public final class CodeStyle {
 
     public enum WrapStyle {
         WRAP_ALWAYS,
-        //WRAP_IF_LONG,
+        WRAP_IF_LONG,
         WRAP_NEVER
     }
 }

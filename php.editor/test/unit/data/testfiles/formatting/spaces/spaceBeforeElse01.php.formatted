@@ -13,7 +13,7 @@ if (false) {
 
 if (false) {
     echo "not true";
-} /* neco duleziteho */ elseif (true) {
+}/* neco duleziteho */ elseif (true) {
     echo "true";
 }
 ?>
