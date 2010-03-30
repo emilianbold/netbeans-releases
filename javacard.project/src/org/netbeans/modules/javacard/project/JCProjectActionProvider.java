@@ -395,6 +395,10 @@ public class JCProjectActionProvider implements ActionProvider {
             targets.add("unload-bundle"); //NOI18N
         } else if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
             targets.add("generate-sio-proxies"); //NOI18N
+            //Set these for the Ant process only.  Post-run Ant task listener will actually update the project
+            //metadata.
+            props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, Boolean.TRUE.toString()); //NOI18N
+            props.setProperty(ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR, ClassicAppletProjectProperties.PROXY_SOURCE_DIR);
         }
         String[] result = targets.toArray(new String[targets.size()]);
         return result;
