@@ -1766,8 +1766,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 throw new IllegalStateException("atomicUnlock() without atomicLock()"); // NOI18N
             }
 
-            AtomicCompoundEdit localAtomicEdits = null;
             if (--atomicDepth == 0) { // lock really ended
+                AtomicCompoundEdit localAtomicEdits = null;
                 lastAtomic = true;
                 fireAtomicUnlock(atomicLockEventInstance);
 
@@ -1783,11 +1783,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     modsUndoneOrRedone = false;
                     modsDone = true;
                 }
-                atomicLockListenerList = null;
-            }
 
-            if (localAtomicEdits != null) {
-                fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                if (localAtomicEdits != null) {
+                    fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                }
+                atomicLockListenerList = null;
             }
         }
 

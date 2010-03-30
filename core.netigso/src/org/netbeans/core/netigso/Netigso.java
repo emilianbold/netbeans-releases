@@ -263,7 +263,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
             Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
         } catch (BundleException ex) {
-            throw new IOException(ex.getMessage());
+            throw new IOException(ex);
         }
     }
     

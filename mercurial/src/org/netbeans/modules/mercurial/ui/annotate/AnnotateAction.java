@@ -70,6 +70,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.text.NbDocument;
 
 /**
  * Annotate action for mercurial: 
@@ -108,6 +109,7 @@ public class AnnotateAction extends ContextAction {
         } 
     } 
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return visible(nodes) ? "CTL_MenuItem_HideAnnotations" : "CTL_MenuItem_ShowAnnotations"; //NOI18N
     }
@@ -154,6 +156,7 @@ public class AnnotateAction extends ContextAction {
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 if (revision != null) {
                     // showing annotations from past, the referenced file differs from the one being displayed
@@ -285,10 +288,7 @@ public class AnnotateAction extends ContextAction {
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);
         if (ec != null && EventQueue.isDispatchThread()) {
-            JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes != null && panes.length > 0) {
-                return panes[0];
-            }
+            return NbDocument.findRecentEditorPane(ec);
         }
         return null;
     }

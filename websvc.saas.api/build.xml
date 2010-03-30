@@ -49,6 +49,8 @@
     <property name="saas.model.jaxb" value="src/org/netbeans/modules/websvc/saas/model/jaxb"/>
     <property name="wadl.xsd" value="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"/>
     <property name="saas.model.wadl" value="src/org/netbeans/modules/websvc/saas/model/wadl"/>
+    <property name="oauth.xsd" value="src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"/>
+    <property name="oauth.model" value="src/org/netbeans/modules/websvc/saas/model/oauth"/>
 
     <target name="xjc-init" depends="build-init">
         <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
@@ -75,6 +77,13 @@
             <depends file="${wadl.xsd}"/>
             <produces dir="${saas.model.wadl}"/>
         </xjc>
+        <xjc schema="src/org/netbeans/modules/websvc/saas/model/oauth-metadata.xsd"
+            package="org.netbeans.modules.websvc.saas.model.oauth"
+            target="2.1"
+            destdir="src">
+            <depends file="${oauth.xsd}"/>
+            <produces dir="${oauth.model}"/>
+        </xjc>
     </target>
     
     <target name="compile" depends="model-gen,projectized-common.compile"/>
@@ -82,6 +91,7 @@
     <target name="clean" depends="projectized-common.clean">
         <delete dir="${saas.model.jaxb}"/>
         <delete dir="${saas.model.wadl}"/>
+        <delete dir="${oauth.model}"/>
     </target>
     
 </project>

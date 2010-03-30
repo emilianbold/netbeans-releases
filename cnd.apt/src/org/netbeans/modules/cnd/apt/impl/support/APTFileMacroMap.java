@@ -44,8 +44,12 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport.StateKey;
@@ -130,6 +134,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
     }
 
+    @Override
     protected APTMacro createMacro(CharSequence file, APTDefine define, Kind macroType) {
         APTMacro macro = new APTMacroImpl(file, define, macroType);
         if (APTTraceFlags.APT_SHARE_MACROS) {
@@ -138,6 +143,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return macro;
     }
 
+    @Override
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         return new APTMacroMapSnapshot(parent);
     }
@@ -248,32 +254,38 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
 
-    private LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
+    private final LinkedList<CharSequence> expandingMacros = new LinkedList<CharSequence>();
+    private final HashSet<CharSequence> expandingMacroIDs = new HashSet<CharSequence>();
 
+    @Override
     public boolean pushExpanding(APTToken token) {
         assert (token != null);
-        if (!isExpanding(token)) {
-            expandingMacros.addLast(token.getTextID());
+        CharSequence id = token.getTextID();
+        if (!isExpanding(id)) {
+            expandingMacros.addLast(id);
+            expandingMacroIDs.add(id);
             return true;
         }
         return false;
     }
 
+    @Override
     public void popExpanding() {
         try {
-            expandingMacros.removeLast();
+            CharSequence id = expandingMacros.removeLast();
+            expandingMacroIDs.remove(id);
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why pop from empty stack?"; // NOI18N
         }
     }
 
+    @Override
     public boolean isExpanding(APTToken token) {
-        try {
-            return expandingMacros.contains(token.getTextID());
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            assert (false) : "why ask empty stack?"; // NOI18N
-        }
-        return false;
+        return isExpanding(token.getTextID());
+    }
+
+    private boolean isExpanding(CharSequence id) {
+        return expandingMacroIDs.contains(id);
     }
 
     //////////////////////////////////////////////////////////////////////////

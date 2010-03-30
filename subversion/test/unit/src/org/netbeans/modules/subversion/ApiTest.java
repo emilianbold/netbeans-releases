@@ -211,7 +211,7 @@ public class ApiTest extends NbTestCase {
 
         Subversion.getInstance().versionedFilesChanged();
         SvnUtils.refreshParents(folder);
-        Subversion.getInstance().getStatusCache().refreshRecursively(folder);
+        Subversion.getInstance().getStatusCache().refreshRecursively(folder, false);
 
         org.netbeans.modules.subversion.api.Subversion.commit(new File[] {folder}, "", "", "msg");
         s = TestKit.getSVNStatus(file);

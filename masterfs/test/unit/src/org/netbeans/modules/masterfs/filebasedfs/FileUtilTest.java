@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
@@ -625,6 +627,13 @@ public class FileUtilTest extends NbTestCase {
             for (EventType type : EventType.values()) {
                 for (FileEvent fe : type2Event.get(type)) {
                     System.out.println(type + "=" + fe);
+                }
+            }
+        }
+        public void printAll(Logger log) {
+            for (EventType type : EventType.values()) {
+                for (FileEvent fe : type2Event.get(type)) {
+                    log.log(Level.WARNING, "{0} = {1} @ {2}", new Object[]{type, fe.getFile(), fe.getTime()});
                 }
             }
         }

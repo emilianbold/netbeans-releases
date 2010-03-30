@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.xam;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.text.Document;
 import junit.framework.*;
@@ -589,6 +588,23 @@ public class AbstractModelTest extends NbTestCase {
         assertEquals("root is same", root, model.getRootComponent());
     }	
 	
+    public void testRootDeleted() throws Exception {
+        Document doc = Util.getResourceAsDocument("resources/test1.xml");
+        assert doc != null;
+        TestModel2 model = new TestModel2(doc);
+        model.sync();
+
+        Util.setDocumentContentTo(doc, "resources/test1_rootdeleted.xml");
+        model.sync();
+        assertEquals(Model.State.NOT_WELL_FORMED, model.getState());
+        assertNotNull(model.getRootComponent());
+
+        Util.setDocumentContentTo(doc, "resources/test1.xml");
+        model.sync();
+        assertEquals(Model.State.VALID, model.getState());
+        assertNotNull(model.getRootComponent());
+    }
+
     public void testPrettyPrint() throws Exception {
         defaultSetup();
         assertEquals("testPrettyPrint.ok", State.VALID, model.getState());

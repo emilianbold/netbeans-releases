@@ -79,14 +79,17 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         this.caretPosition = position;
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         return range2Attribs;
     }
 
+    @Override
     public void cancel() {
         //TODO: implement me 
     }
     
+    @Override
     public void run(Result result, SchedulerEvent event) {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
@@ -99,6 +102,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     
     static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
+            @Override
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
             }

@@ -224,6 +224,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean skipSignal = false;
     private Pty pty = null;
 
+    private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
+
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
@@ -331,7 +333,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
-            gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
+            gdb.gdb_set("print repeat", PRINT_REPEAT); // NOI18N
             // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
@@ -1323,12 +1325,13 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             } else if (msg.startsWith("[Switching to process ")) { // NOI18N
-                int pos = msg.indexOf(' ', 22);
-                if (pos > 0) {
-                    try {
-                        programPID = Long.valueOf(msg.substring(22, pos));
-                    } catch (NumberFormatException ex) {
+                try {
+                    int end = 22;
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
                     }
+                    programPID = Long.valueOf(msg.substring(22, end));
+                } catch (NumberFormatException ex) {
                 }
             }
         } else if (msg.startsWith("Stopped due to shared library event")) { // NOI18N
@@ -1535,7 +1538,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
                 // see IZ 160749 - skip sigcont and sigint
                 // IZ 172855 - skipSignal need to be set before signal sending
-                if (signal == Signal.INT) {
+                if (signal == Signal.INT || signal == Signal.TRAP) {
                     skipSignal = true;
                 }
                 
@@ -1919,7 +1922,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.stack_list_frames();
                 setStopped();
                 return;
-            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
+            } else if ("SIGTRAP".equals(signal) && // NOI18N
+                    (platform == PlatformTypes.PLATFORM_WINDOWS ||
+                    platform == PlatformTypes.PLATFORM_MACOSX)) {
                 // see IZ 172855 (On windows we need to skip SIGTRAP)
                 skipSignal = false;
                 gdb.stack_list_frames();
