@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="ApiSupport">
+                    <attr name="position" intvalue="250"/>
                     <file name="FcbModuleProject" url="FcbModuleProject.zip">
                         <attr name="position" intvalue="4000"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/facebook_16.png"/>

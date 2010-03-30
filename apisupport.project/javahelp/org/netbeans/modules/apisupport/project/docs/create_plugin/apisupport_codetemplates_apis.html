@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright 2009 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <title>Code Templates for NetBeans APIs</title>
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+    <h2>Code Templates for NetBeans APIs</h2>
+    
+    <p>In the Java editor in the IDE, type an abbreviation listed below,
+         press the expansion key (which is Tab, by default), and then
+         the expanded text shown below will be generated.
+  
+    <ul>
+
+<li>Abbreviation: <strong>2do </strong>
+<p>Description: Convert FileObject to DataObject</p><p>Expands to:
+</p><pre class="java">try {<br />    ${dobType type=&quot;org.openide.loaders.DataObject&quot; editable=&quot;false&quot; default=&quot;DataObject&quot;} ${dob newVarName default=&quot;dob&quot;} = ${dobType}.find(${fo instanceof=&quot;org.openide.filesystems.FileObject&quot; default=&quot;fo&quot;});<br />    ${cursor}<br />} catch (${etype type=&quot;org.openide.loaders.DataObjectNotFoundException&quot; default=&quot;DataObjectNotFoundException&quot; editable=&quot;false&quot;} ${exName newVarName default=&quot;ex&quot; editable=&quot;false&quot;}) {<br />    ${exctype type=&quot;org.openide.util.Exceptions&quot; editable=&quot;false&quot; default=&quot;&quot;}.printStackTrace(${exName});<br />}</pre>
+Example:
+<pre class="java">try {<br />    DataObject dataObject = DataObject.find(myFo);<br /><br />} catch (DataObjectNotFoundException dataObjectNotFoundException) {<br />    Exceptions.printStackTrace(dataObjectNotFoundException);<br />}</pre>
+</li>
+<li>Abbreviation: <strong>2f</strong>
+<p>Description: Convert FileObject to java.io.File</p><p>Expands to:
+</p><pre class="java">${fileType type=&quot;java.io.File&quot; default=&quot;File&quot; editable=&quot;false&quot;} ${file newVarName default=&quot;f&quot;} = ${FileUtilType type=&quot;org.openide.filesystems.FileUtil&quot; editable=&quot;false&quot;)}.toFile(${fo instanceof=&quot;org.openide.filesystems.FileObject&quot; default=&quot;fo&quot;});<br />${cursor}</pre>
+Example:
+<pre class="java">File file = FileUtil.toFile(myFo);</pre>
+</li>
+<li>Abbreviation: <strong>2fo</strong>
+<p>Description: Convert java.io.File to FileObject </p><p>Expands to:
+</p><pre class="java">${fileType type=&quot;org.openide.filesystems.FileObject&quot; default=&quot;FileObject&quot; editable=&quot;false&quot;} ${file newVarName default=&quot;f&quot;} = ${FileUtilType type=&quot;org.openide.filesystems.FileUtil&quot; editable=&quot;false&quot;)}.toFileObject(${FileUtilType}.normalizeFile(${f instanceof=&quot;java.io.File&quot; default=&quot;f&quot;}));<br />${cursor}</pre>
+Example:
+<pre class="java">FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(myFile));</pre>
+</li>
+<li>Abbreviation: <strong>Lka</strong>
+<p>Description: Find all implementations of a certain type registered in META-INF/services.</p><p>Expands to:
+</p><pre class="java">${coltype type=&quot;java.util.Collection&quot; default=&quot;Collection&quot; editable=&quot;false&quot;}  ${obj newVarName default=&quot;obj&quot;} = ${lkptype editable=&quot;false&quot; default=&quot;Lookup&quot; type=&quot;org.openide.util.Lookup&quot;}.getDefault().lookupAll(${Type}.class);<br />       ${cursor}</pre>
+Example:
+<pre class="java">Collection&lt;? extends Type&gt; collection = Lookup.getDefault().lookupAll(Type.class);</pre>
+<p>Variation: <strong>lka</strong> (i.e., the first character is lowercase)
+</p><p>Description: Find all implementations of a certain type from a local lookup, e.g., TopComponent, Node, or DataObject.
+</p><p>Example:
+</p><pre class="java">Collection&lt;? extends Type&gt; collection = myNode.lookupAll(Type.class);</pre>
+</li><li>Abbreviation: <strong>Lkp</strong>
+<p>Description: Find a single typed implementation registered in META-INF/services.</p><p>Expands to:
+</p><pre class="java">${Type} ${obj newVarName default=&quot;obj&quot;} = ${lkptype editable=&quot;false&quot; default=&quot;Lookup&quot; type=&quot;org.openide.util.Lookup&quot;}.getDefault().lookup(${Type}.class);<br />       ${cursor}</pre>
+Example:
+<pre class="java">Type type = Lookup.getDefault().lookup(Type.class);</pre>
+<p>Variation: <strong>lkp</strong> (i.e., the first character is lowercase)
+</p><p>Description: Find a single implementation of a certain type from a local lookup, e.g., TopComponent, Node, or DataObject.
+</p><p>Example:
+</p><pre class="java">Type type = myNode.lookup(Type.class);</pre>
+</li>
+<li>Abbreviation: <strong>Lkr</strong>
+<p>Description: Assign a single typed instance from META-INF/services to a Result object, to which you can listen for changes. </p><p>Expands to:
+</p><pre class="java">${coltype type=&quot;org.openide.util.Lookup.Result&quot; default=&quot;Lookup.Result&quot; editable=&quot;false&quot;}  ${obj newVarName default=&quot;res&quot;} = ${lkptype editable=&quot;false&quot; default=&quot;Lookup&quot; type=&quot;org.openide.util.Lookup&quot;}.getDefault().lookupResult(${Type}.class);<br />       ${cursor}</pre>
+Example:
+<pre class="java">Lookup.Result&lt;? extends Type&gt; res = Lookup.getDefault().lookupResult(Type.class);</pre>
+<p>Variation: <strong>lkr</strong> (i.e., the first character is lowercase)
+</p><p>Description: Assign a single typed instance from a local lookup to a Result object, to which you can listen for changes.
+</p><p>Example:
+</p><pre class="java">Result&lt;? extends Type&gt; all = myNode.lookupResult(Type.class);<br /></pre>
+</li>
+<li>Abbreviation: <strong>lko</strong>
+<p>Description: Create a lookup for a local object, e.g., TopComponent, Node, or DataObject. </p><p>Expands to:
+</p><pre class="java">${Type} ${obj newVarName default=&quot;obj&quot;} = ${prov instanceof=&quot;org.openide.util.Lookup.Provider&quot;}.getLookup().lookup(${Type}.class);<br />       ${cursor}</pre>
+Example:
+<pre class="java">Type type = myNode.getLookup().lookup(Type.class);</pre>
+</li>
+<li>Abbreviation: <strong>rp</strong>
+<p>Description: Create code for using org.openide.util.RequestProcessor.</p><p>Expands to:
+</p><pre class="java">${rp type=&quot;org.openide.util.RequestProcessor&quot; default=&quot;RequestProcessor&quot; editable=&quot;false&quot;}.getDefault().post(${toRun instanceof=&quot;java.lang.Runnable&quot; default=&quot;new Runnable() {<br />        public void run() {<br />        }<br />    }&quot;});</pre>
+Example:
+<pre class="java">RequestProcessor.getDefault().post(new Runnable() {<br /><br />    public void run() {<br />    }<br />});</pre>
+</li>
+<li>Abbreviation: <strong>stat</strong>
+<p>Description: Create code for writing text obtained from a Bundle.properties file into the status bar.</p><p>Expands to:
+</p><pre class="java">${coltype type=&quot;org.openide.awt.StatusDisplayer&quot; default=&quot;StatusDisplayer&quot; editable=&quot;false&quot;}.getDefault().setStatusText(${bundletype type=&quot;org.openide.util.NbBundle&quot; default=&quot;NbBundle&quot; editable=&quot;false&quot;}.getMessage(getClass(), &quot;${KEY}&quot;));<br />${cursor}</pre>
+Example:
+<pre class="java">StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(getClass(), &quot;KEY&quot;));</pre>
+</li>
+<li>Abbreviation: <strong>nb</strong>
+<p>Description: Get a text from a Bundle.properties file.</p><p>Expands to:
+</p><pre class="java">${coltype type=&quot;org.openide.util.NbBundle&quot; default=&quot;NbBundle&quot; editable=&quot;false&quot;}.getMessage(${classVar editable=&quot;false&quot; currClassName default=&quot;getClass()&quot;}.class, &quot;${KEY}&quot;)</pre>
+Example:
+<pre class="java">NbBundle.getMessage(DemoAction.class, &quot;KEY&quot;)</pre>
+<p>Variation: <strong>nbb</strong> (i.e., add an additional 'b' character)
+</p><p>Description: Pass in parameters for formatting the text.
+</p><p>Example:
+</p><pre class="java">NbBundle.getMessage(DemoAction.class, &quot;KEY&quot;, params)</pre>
+</li>
+
+
+</ul>
+
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
+</body></html>

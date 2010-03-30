@@ -348,20 +348,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @see AbstractDICookie#getVirtualMachine()
      */
     public void waitRunning () throws DebuggerStartException {
+        waitRunning(0);
+    }
+
+    /**
+     * Waits till the Virtual Machine is started.
+     *
+     * @return <code>true</code> when debugger started or finished in the mean time,
+     *         <code>false</code> when the debugger is still starting
+     * @throws DebuggerStartException is some problems occurres during debugger
+     *         start
+     *
+     * @see AbstractDICookie#getVirtualMachine()
+     */
+    private boolean waitRunning(long timeout) throws DebuggerStartException {
         synchronized (LOCK2) {
             int state = getState();
             if (state == STATE_DISCONNECTED) {
                 if (exception != null)
                     throw new DebuggerStartException (exception);
                 else
-                    return;
+                    return true;
             }
             if (!starting && state != STATE_STARTING || exception != null) {
-                return ; // We're already running
+                return true; // We're already running
             }
             try {
                 logger.fine("JPDADebuggerImpl.waitRunning(): starting = "+starting+", state = "+state+", exception = "+exception);
-                LOCK2.wait ();
+                LOCK2.wait (timeout);
+                if ((starting || state == STATE_STARTING) && exception == null) {
+                    return false; // We're still not running and the time expired
+                }
             } catch (InterruptedException e) {
                  throw new DebuggerStartException (e);
             }
@@ -369,7 +386,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (exception != null)
                 throw new DebuggerStartException (exception);
             else
-                return;
+                return true;
         }
     }
 
@@ -1238,21 +1255,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
             AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             Operator o = getOperator();
             if (o != null) o.stop();
-            synchronized (this) {
-                if (attachingCookie != null) {
-                    if (attachingCookie instanceof ListeningDICookie) {
-                        ListeningDICookie listeningCookie = (ListeningDICookie) attachingCookie;
-                        try {
-                            listeningCookie.getListeningConnector().stopListening(listeningCookie.getArgs());
-                        } catch (java.io.IOException ioex) {
-                        } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
-                        } catch (IllegalArgumentException iaex) {
-                        }
-                    }
-                }
-            }
+            stopAttachListening();
             try {
-                waitRunning(); // First wait till the debugger comes up
+                boolean startedUp;
+                do {
+                    startedUp = waitRunning(500); // First wait till the debugger comes up
+                    if (!startedUp) {
+                        stopAttachListening();
+                        continue;
+                    }
+                } while (false);
             } catch (DebuggerStartException dsex) {
                 // We do not want to start it anyway when we're finishing - do not bother
             }
@@ -1311,6 +1323,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
             EditorContextBridge.getContext().disposeTimeStamp(this);
         } finally {
             finishing = false; // for safety reasons
+        }
+    }
+
+    private synchronized void stopAttachListening() {
+        if (attachingCookie != null) {
+            if (attachingCookie instanceof ListeningDICookie) {
+                ListeningDICookie listeningCookie = (ListeningDICookie) attachingCookie;
+                try {
+                    listeningCookie.getListeningConnector().stopListening(listeningCookie.getArgs());
+                } catch (java.io.IOException ioex) {
+                } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
+                } catch (IllegalArgumentException iaex) {
+                }
+            }
         }
     }
 

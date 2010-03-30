@@ -11,6 +11,11 @@
             <tocitem text="Rich-Client Applications" target="apisupport_richclientapp_process" />
         </tocitem>
     </tocitem>
+    <tocitem text="OSGi Bundles" expand="false">
+        <tocitem text="Getting Started" >
+            <tocitem text="About OSGi Bundles" target="apisupport_about_osgi" />
+        </tocitem>
+    </tocitem>
     <tocitem text="NetBeans Modules" expand="false">
         <tocitem text="Getting Started" >
             <tocitem text="About NetBeans Modules" target="apisupport_about_plugins" />
@@ -71,6 +76,7 @@
                 <tocitem text="Registering the NetBeans Sources and Javadoc" target="apisupport_netbeans_api_javadoc" />
                 <tocitem text="Using the NetBeans Sources and Javadoc" target="apisupport_using_netbeans_api_javadoc" />
                 <tocitem text="Searching for NetBeans APIs" target="apisupport_searching_apis" />
+                <tocitem text="Code Templates for NetBeans APIs" target="apisupport_codetemplates_apis" />
             </tocitem>
         </tocitem>
         <tocitem text="Bundling Supporting Items" >
