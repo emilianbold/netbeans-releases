@@ -46,7 +46,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.ShellSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
