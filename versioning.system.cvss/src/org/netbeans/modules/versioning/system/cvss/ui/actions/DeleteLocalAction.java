@@ -48,16 +48,14 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.*;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Delete action enabled only for new local files only.
@@ -81,7 +79,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
         }
 
         final File [] files = getContext(nodes).getFiles();
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 async(files);
             }

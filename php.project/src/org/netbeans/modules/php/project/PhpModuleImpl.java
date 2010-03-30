@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.php.project;
 
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -99,5 +102,10 @@ public class PhpModuleImpl extends PhpModule {
     @Override
     public String toString() {
         return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
+    }
+
+    @Override
+    public <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared) {
+        return ProjectUtils.getPreferences(phpProject, clazz, shared);
     }
 }

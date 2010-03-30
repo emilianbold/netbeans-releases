@@ -392,7 +392,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
                     }
                     public void actionPerformed(ActionEvent e) {
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                             public void run() {
                                 view(selection[0]);
                             }

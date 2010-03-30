@@ -69,6 +69,7 @@ import org.openide.windows.InputOutput;
 public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor>, CancelablePanel, ChangeListener {
     static final String REMOTE_FILES = "remoteFiles"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Fetching remote files", 2); // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
@@ -165,7 +166,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         getComponent();
         confirmationPanel.setFetchingFiles();
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteConfirmationPanel.class, "LBL_FetchingRemoteFilesProgress"));
                 try {
