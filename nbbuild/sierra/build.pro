@@ -54,11 +54,9 @@
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/trunk/daily/2010-03-17_02-01-09/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
+    <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
 
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
-    <property name="sierra.build"  value="main"/>
-    <property name="netbeans.zip" value="netbeans-6.9.zip"/>
-    <property name="repository" value="http://hg.netbeans.org/main"/>
-    <property name="sierra.user"  value=".netbeans/dev"/>
+    <property name="build.name"  value="main"/>
 </project>
