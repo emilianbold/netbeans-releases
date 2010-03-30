@@ -241,7 +241,7 @@ public class FindInFilesAction extends CallableSystemAction
      */
     @Override
     public void stateChanged(ChangeEvent e) {
-        assert EventQueue.isDispatchThread();
+        // #181681 we shouldn't assert EventQueue.isDispatchThread();
         if (shouldLog(LOG)) {
             log("stateChanged()");
         }
