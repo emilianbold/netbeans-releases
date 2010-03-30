@@ -12,5 +12,4 @@ try {
 } catch (Exception $exc) {
   echo $exc->getTraceAsString();
 }
-
 ?>

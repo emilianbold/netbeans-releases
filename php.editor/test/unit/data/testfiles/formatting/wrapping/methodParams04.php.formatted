@@ -1,7 +1,7 @@
 <?php
 
 function tes(Example $param1,
-        Example $param2, /*fasfdsa*/
+        Example $param2, /* fasfdsa */
         $param3,
         $param4,
         $param5,
