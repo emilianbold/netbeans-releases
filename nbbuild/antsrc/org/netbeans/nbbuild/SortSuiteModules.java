@@ -147,10 +147,10 @@ public class SortSuiteModules extends Task {
                 throw new BuildException("Malformed project file " + projectXml, getLocation());
             }
             for (Element dep : XMLUtil.findSubElements(depsEl)) {
-                if (ParseProjectXml.findNBMElement(dep, "build-prerequisite") == null) {
-                    // Note that this does not prevent "...will first try to build..." from ParseProjectXml,
-                    // since that builds transitive runtime dependencies first. Not clear if SortSuiteModules
-                    // needs an option to sort also by runtime-only dependencies.
+                if (ParseProjectXml.findNBMElement(dep, "build-prerequisite") == null &&
+                    // Just build-prerequisite would not prevent "...will first try to build..." from ParseProjectXml,
+                    // since that builds transitive runtime dependencies (e.g. from *.kit) first.
+                    ParseProjectXml.findNBMElement(dep, "run-dependency") == null) {
                     continue;
                 }
                 Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
