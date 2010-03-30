@@ -36,76 +36,29 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.api;
 
-import javax.swing.JComponent;
+package org.netbeans.core.netigso;
 
-import org.openide.windows.IOContainer;
-import org.openide.windows.TopComponent;
-
-import org.netbeans.modules.terminal.ioprovider.TerminalContainerImpl;
+import org.netbeans.core.netigso.spi.NetigsoArchive;
+import org.openide.util.Exceptions;
 
 /**
- * Help a {@link org.openide.windows.TopComponent} be a an
- * {@link org.openide.windows.IOContainer} of "Terminal"s.
- * <p>
- * Use {@link #create} to get one.
- * <p> 
- * Recipe for enhancing a <code>TopComponent</code> ...
- * <ul>
- * <li>
- * Create a stock TopComponent with the IDE.
- * <li>
- * Change it's Layout to be BorderLayout.
- * <li>
- * Add the following code to it:
- * <pre>
-    private TerminalContainer tc;
-
-    public IOContainer ioContainer() {
-        return tc.ioContainer();
-    }
-
-    private void initComponents2() {
-        tc = TerminalContainer.create(this, getName());
-        add(tc);
-    }
- * </pre>
- * <li>
- * Call <code>initComponents2()</code> at the end of the constructor of
- * your TopComponent.
- * <li>
- * Delegate <code>componentActivated()</code> and <code>componentDeactivated()</code>
- * from the <code>TopComponent</code> to the <code>TerminalContainer</code> as follows:
- * <pre>
-    protected void componentActivated() {
-        super.componentActivated();
-        tc.componentActivated();
-    }
-
-    protected void componentDeactivated() {
-        super.componentDeactivated();
-        tc.componentDeactivated();
-    }
- * </pre>
- * </ul>
- * @author ivan
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public abstract class TerminalContainer extends JComponent {
-
-    public static TerminalContainer create(TopComponent tc, String name) {
-	return new TerminalContainerImpl(tc, name);
+public abstract class NetigsoArchiveFactory {
+    static NetigsoArchiveFactory DEFAULT;
+    static {
+        try {
+            Class.forName(NetigsoArchive.class.getName(), true, NetigsoArchive.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
-    public abstract IOContainer ioContainer();
+    protected NetigsoArchiveFactory() {
+        DEFAULT = this;
+    }
 
-    /**
-     * Handle delegation from containing TopComponent.
-     */
-    public abstract void componentActivated();
-
-    /**
-     * Handle delegation from containing TopComponent.
-     */
-    public abstract void componentDeactivated();
+    protected abstract NetigsoArchive create(Netigso n);
 }

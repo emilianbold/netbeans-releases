@@ -7,6 +7,7 @@ package org.netbeans.terminal.example.comprehensive;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
+import org.netbeans.terminal.example.Config;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -55,18 +56,16 @@ public final class CommandTerminalAction implements ActionListener {
 	}
 
 
-	final String cmd = terminalPanel.getCommand();
+	final Config config = terminalPanel.getConfig();
+	final String cmd = config.getCommand();
         if (cmd == null || cmd.trim().equals(""))
             return;
 
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
-	final boolean restartable = terminalPanel.isRestartable();
-	final boolean hupOnClose = terminalPanel.isHUPOnClose();
 	final IOContainer container;
 	final IOProvider iop;
-	final boolean useInternalIOShuttle;
 
-	switch (terminalPanel.getContainerProvider()) {
+	switch (config.getContainerProvider()) {
 	    case TERM:
 		container = TerminalIOProviderSupport.getIOContainer();
 		break;
@@ -76,7 +75,7 @@ public final class CommandTerminalAction implements ActionListener {
 		break;
 	}
 
-	switch (terminalPanel.getIOProvider()) {
+	switch (config.getIOProvider()) {
 	    case TERM:
 		iop = TerminalIOProviderSupport.getIOProvider();
 		break;
@@ -86,33 +85,15 @@ public final class CommandTerminalAction implements ActionListener {
 		break;
 	}
 
-	switch (terminalPanel.getIOShuttling()) {
-	    case EXTERNAL:
-		useInternalIOShuttle = false;
-		break;
-	    case INTERNAL:
-	    default:
-		useInternalIOShuttle = true;
-		break;
-	}
-
 	final Runnable runnable = new Runnable() {
 	    public void run() {
 		final InputOutput io;
-		switch (terminalPanel.getExecution()) {
+		switch (config.getExecution()) {
 		    case RICH:
-			io = support.executeRichCommand(iop, container, cmd,
-				                   restartable,
-						   hupOnClose,
-						   useInternalIOShuttle,
-						   terminalPanel.getAllowClose());
+			io = support.executeRichCommand(iop, container, config);
 			break;
 		    case NATIVE:
-			io = support.executeNativeCommand(iop, container, cmd,
-				                     restartable,
-						     hupOnClose,
-						     useInternalIOShuttle,
-						     terminalPanel.getAllowClose());
+			io = support.executeNativeCommand(iop, container, config);
 			break;
 		    default:
 			io = null;
@@ -122,7 +103,7 @@ public final class CommandTerminalAction implements ActionListener {
 	    }
 	};
 
-	switch (terminalPanel.getThread()) {
+	switch (config.getThread()) {
 	    case EDT:
 		SwingUtilities.invokeLater(runnable);
 		break;

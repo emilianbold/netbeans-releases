@@ -49,8 +49,8 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -109,7 +109,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         readPID(delegate.getInputStream());
 
-        RequestProcessor.getDefault().post(new Reaper());
+        NativeTaskExecutorService.submit(new Reaper(), "Reaper for " + info.getExecutable()); // NOI18N
     }
 
     @Override
@@ -147,13 +147,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         @Override
         public void run() {
-
-            try {
-                Thread.currentThread().setName("Reaper for " + getPID()); // NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
             try {
                 waitFor();
             } catch (InterruptedException ex) {

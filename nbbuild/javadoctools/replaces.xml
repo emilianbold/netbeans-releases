@@ -195,3 +195,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-openide-util-lookup@" value="${javadoc.docs.org-openide-util-lookup}"/>
 <replacefilter token="@org-netbeans-modules-terminal@" value="${javadoc.docs.org-netbeans-modules-terminal}"/>
 <replacefilter token="@org-netbeans-modules-dlight-nativeexecution@" value="${javadoc.docs.org-netbeans-modules-dlight-nativeexecution}"/>
+<replacefilter token="@org-netbeans-core-netigso@" value="${javadoc.docs.org-netbeans-core-netigso}"/>

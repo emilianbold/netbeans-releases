@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,34 +37,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.terminal.example;
+package org.netbeans;
 
-/**
- *
- * @author ivan
+import java.io.IOException;
+
+
+/** Interface for objects that wish to be archived.
+ * @since 2.29
  */
-public enum AllowClose {
-     /**
-      * Tab is unclosable.
-      * This will control IOVisibility.setClosable()
-      */
-    NEVER,
-
-    /**
-     * Tab is closable. a vetoableChange() will always be called on
-     * IOVisibility.VISIBILITY.
-     */
-    ALWAYS,
-    /**
-     * Tab is closable. a vetoableChange() will always be called on
-     * IOVisibility.VISIBILITY and it's supposed to allow closing
-     * w/o confirmation if IOConnect.isConnected() is false.
-     */
-    DISCONNECTED
+public interface ArchiveResources {
+    /** identifies the resources */
+    String getIdentifier();
+    /** Loads given resource from this set of resource */
+    byte[] resource(String name) throws IOException;
 }
+
