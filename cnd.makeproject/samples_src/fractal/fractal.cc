@@ -90,6 +90,40 @@ struct complex {
     }
 };
 
+template <class T> class Matrix {
+private:
+    unsigned wi, hi;
+    T* mtrx;
+public:
+
+    Matrix(unsigned w, unsigned h) : wi(w), hi(h), mtrx(new T[w*h]) {
+    };
+
+    Matrix(const Matrix& M) : wi(M.wi), hi(M.hi), mtrx(new T[M.wi*M.hi]) {
+        memcpy(mtrx, M.mtrx, wi * hi * sizeof (T));
+    };
+
+    ~Matrix() {
+        delete [] mtrx;
+    };
+
+    void zero() {
+        memset(mtrx, 0, sizeof (T) * wi * hi);
+    }
+
+    unsigned width() {
+        return wi;
+    }
+
+    unsigned height() {
+        return hi;
+    }
+
+    T * operator [] (unsigned i) {
+        return mtrx + (i * hi);
+    }
+};
+
 double abs(complex& a) { // magnitude of the complex number
     return sqrt(a.real * a.real + a.img * a.img);
 }
@@ -103,26 +137,13 @@ double abs(complex& a) { // magnitude of the complex number
  */
 void Mandelbrot(const size_t wi, const size_t hi, const size_t it) // Basic Mandelbrot calculation
 {
-    int **hits = new int*[wi];
-    int **max = new int*[wi];
-    double **realBuf = new double*[wi];
-    double **imgBuf = new double*[wi];
+    Matrix <int> hits(wi, hi), max(wi, hi);
+    Matrix <double> realBuf(wi, hi), imgBuf(wi, hi);
 
-    // initialize vectors
-    hits[0] = new int[wi * hi];
-    max[0] = new int[wi * hi];
-    realBuf[0] = new double[wi * hi];
-    imgBuf[0] = new double[wi * hi];
-    for (int i = 1; i < wi; i++) {
-        hits[i] = hits[i - 1] + hi;
-        max[i] = max[i - 1] + hi;
-        realBuf[i] = realBuf[i - 1] + hi;
-        imgBuf[i] = imgBuf[i - 1] + hi;
-    }
-    memset(hits[0], 0, wi * hi * sizeof (int));
-    memset(max[0], 0, wi * hi * sizeof (int));
-    memset(realBuf[0], 0, wi * hi * sizeof (double));
-    memset(imgBuf[0], 0, wi * hi * sizeof (double));
+    hits.zero();
+    max.zero();
+    realBuf.zero();
+    imgBuf.zero();
 
     long double wide = wi, high = hi, iter = it;
     int i = 0, x = 0, y = 0, fcnt = 0, icnt = 0;
