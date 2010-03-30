@@ -43,7 +43,12 @@
     <property environment="env"/>
 
     <property name="netbeans.prox" value="false"/>
-    <property name="netbeans.type" value="javase"/>
+    <property name="netbeans.type" value="java"/>
+
+    <!-- Sierra latest continuous -->
+    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
+    <property name="sierra.path" value="hudson/job/sierra/ws/cache/latest"/>
+    <property name="sierra.file" value="sierra.zip"/>
 
     <!-- NetBeans latest nightly -->
     <!-- property name="netbeans.host" value="http://bits.netbeans.org"/ -->
@@ -54,11 +59,6 @@
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
-
-    <!-- Sierra latest continuous -->
-    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
-    <property name="sierra.path" value="hudson/job/sierra/ws/cache/latest"/>
-    <property name="sierra.file" value="sierra.zip"/>
 
     <property name="test.cvs.host" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
