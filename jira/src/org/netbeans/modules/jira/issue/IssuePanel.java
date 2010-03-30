@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -66,9 +67,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -78,6 +82,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -174,8 +179,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initAttachmentsPanel();
         initIssueLinksPanel();
         initSpellChecker();
+        initDefaultButton();
         attachFieldStatusListeners();
         attachHideStatusListener();
+    }
+
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
     }
 
     private void updateReadOnlyField(JTextField field) {

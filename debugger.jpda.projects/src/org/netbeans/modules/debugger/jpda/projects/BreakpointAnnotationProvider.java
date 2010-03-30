@@ -110,8 +110,13 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                             DataObject dobj = (DataObject) evt.getSource();
-                            FileObject newFO = dobj.getPrimaryFile();
-                            annotate(newFO);
+                            final FileObject newFO = dobj.getPrimaryFile();
+                            annotationProcessor.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    annotate(newFO);
+                                }
+                            });
                         }
                     }
                 };

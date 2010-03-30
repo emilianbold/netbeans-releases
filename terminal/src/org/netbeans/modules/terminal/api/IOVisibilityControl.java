@@ -60,7 +60,7 @@ public abstract class IOVisibilityControl {
      * This allows satisfying IOContainer.isClosable().
      * If the component is not closable okToHide will not get called.
      * @param cbs
-     * @return
+     * @return Returns true if component should be closable.
      * @deprecated
      * This implementation is a pull style implementation. So when
      * IOVisibility.setClosable() is called someone needs to trigger IOContainer
@@ -105,7 +105,7 @@ public abstract class IOVisibilityControl {
      * If it gets vetoed, false should be returned. Otherwise true should
      * be returned.
      * @param cbs
-     * @return
+     * @return True if OK to close component.
      */
     public static boolean okToClose(IOContainer.CallBacks cbs) {
 	IOVisibilityControl iov = find(cbs);
