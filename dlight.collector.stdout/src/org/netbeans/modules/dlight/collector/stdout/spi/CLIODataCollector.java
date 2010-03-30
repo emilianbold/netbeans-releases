@@ -391,6 +391,9 @@ public final class CLIODataCollector
 
         try {
             fileExists = HostInfoUtils.fileExists(execEnv, command);
+        } catch (InterruptedException ex) {
+            error = loc("ValidationStatus.InterruptedWhileValidation"); //NOI18N
+            return ValidationStatus.invalidStatus(error);
         } catch (IOException ex) {
             error = ex.getMessage();
             connected = false;
