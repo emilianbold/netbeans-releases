@@ -144,7 +144,8 @@ public class DependencyNode extends AbstractNode {
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
     private static String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
-    
+
+    private static final RequestProcessor RP = new RequestProcessor("DependencyNode"); //NOI18N
 
     public static Children createChildren(Lookup look, boolean longLiving) {
         if (!longLiving) {
@@ -195,7 +196,7 @@ public class DependencyNode extends AbstractNode {
         setDisplayName(createName());
         setIconBase(false);
         if (longLiving) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     setIconBase(longLiving);
                     fireIconChange();
