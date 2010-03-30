@@ -163,6 +163,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
@@ -198,12 +199,13 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
     }
 
     class CommandsLineProcessor implements LineProcessor {
-        private final StringBuffer error = new StringBuffer();
+        private final StringBuffer error = new StringBuffer(1000);
         private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
 
+        @Override
         public void processLine(String line) {
             if (!StringUtils.hasText(line)) {
                 return;
@@ -240,9 +242,11 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             return error.toString();
         }
 
+        @Override
         public void close() {
         }
 
+        @Override
         public void reset() {
         }
     }
