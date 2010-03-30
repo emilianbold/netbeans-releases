@@ -145,7 +145,7 @@ public abstract class APTStringManager  {
             CharSequence outText = null;
 
             synchronized (lock) {
-                outText = storage.addOrGet(text);
+                outText = storage.putIfAbsent(text);
             }
             assert (outText != null);
             assert (outText.equals(text));

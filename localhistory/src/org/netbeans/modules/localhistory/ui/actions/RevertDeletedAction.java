@@ -73,7 +73,7 @@ public class RevertDeletedAction extends NodeAction {
     
     protected void performAction(final Node[] activatedNodes) {
                                
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 VCSContext ctx = VCSContext.forNodes(activatedNodes);
                 Set<File> rootSet = ctx.getRootFiles();        

@@ -41,6 +41,8 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
+import java.util.EnumSet;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
@@ -48,7 +50,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
@@ -62,6 +66,7 @@ import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -71,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -173,6 +179,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     }
 
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(PhpProjectProperties.class.getName(), 2);
 
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
@@ -195,6 +202,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
     Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -429,20 +437,28 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.phpUnitSuite = phpUnitSuite;
     }
 
+    public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
+        if (customizerExtenders == null) {
+            customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
+        }
+        customizerExtenders.add(customizerExtender);
+    }
+
     public void save() {
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     saveProperties();
+
+                    saveCustomizerExtenders();
+
+                    ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
             });
-            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             Exceptions.printStackTrace((IOException) e.getException());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -562,6 +578,46 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             // actual file needs to be reparsed (because of php 5.3 hint)
             PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_PHP_VERSION,
                     ProjectPropertiesSupport.getPhpVersion(oldPhpVersion), ProjectPropertiesSupport.getPhpVersion(phpVersion));
+        }
+    }
+
+    void saveCustomizerExtenders() {
+        if (customizerExtenders != null) {
+            final EnumSet<PhpModule.Change> changes = EnumSet.noneOf(PhpModule.Change.class);
+            final PhpModule phpModule = project.getPhpModule();
+            for (PhpModuleCustomizerExtender customizerExtender : customizerExtenders) {
+                EnumSet<PhpModule.Change> change = customizerExtender.save(phpModule);
+                if (change != null) {
+                    changes.addAll(change);
+                }
+            }
+
+            // fire events (background thread, no locks)
+            if (!changes.isEmpty()) {
+                RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (PhpModule.Change change : changes) {
+                            switch (change) {
+                                case SOURCES_CHANGE:
+                                    project.getSourceRoots().fireChange();
+                                    break;
+                                case TESTS_CHANGE:
+                                    project.getTestRoots().fireChange();
+                                    break;
+                                case SELENIUM_CHANGE:
+                                    project.getSeleniumRoots().fireChange();
+                                    break;
+                                case IGNORED_FILES_CHANGE:
+                                    project.fireIgnoredFilesChange();
+                                    break;
+                                default:
+                                    throw new IllegalStateException("Unknown change: " + change);
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
 
