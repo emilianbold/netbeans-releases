@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
-import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -136,6 +135,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             } else {
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
@@ -285,17 +285,11 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private void targetFinished(Integer status) {
         int exitCode = -1;
 
-        boolean outStatus = !IOTerm.isSupported(io);
-        
-        if (outStatus) {
-            io.getOut().println();
-        }
+        io.getOut().println();
 
         if (status == null) {
             StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
-            if (outStatus) {
-                io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
-            }
+            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
         } else {
             exitCode = status.intValue();
             boolean success = exitCode == 0;
@@ -305,12 +299,10 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
             String time = formatTime(System.currentTimeMillis() - startTimeMillis);
             
-            if (outStatus) {
-                if (success) {
-                    io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
-                } else {
-                    io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
-                }
+            if (success) {
+                io.getOut().println(getMessage("Output.RunSuccessful", time)); // NOI18N);
+            } else {
+                io.getErr().println(getMessage("Output.RunFailed", exitCode, time)); // NOI18N
             }
         }
 

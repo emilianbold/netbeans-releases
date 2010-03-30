@@ -151,18 +151,18 @@ public class DebianPackager implements PackagerDescriptor {
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "${NBTMPDIR}/" + toDir + "\n"); // NOI18N
                     }
-                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${TMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("copyFileToTmpDir \"" + elem.getFrom() + "\" \"${NBTMPDIR}/" + elem.getTo() + "\" 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
-                    bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
+                    bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String toDir = CndPathUtilitities.getDirName(elem.getTo());
                     String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
-                        bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                        bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
-                    bw.write("cd " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
+                    bw.write("cd " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     bw.write("ln -s " + "\"" + elem.getFrom() + "\"" + " " + "\"" + toName + "\"" + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.UNKNOWN) {
                     // skip ???
@@ -175,9 +175,9 @@ public class DebianPackager implements PackagerDescriptor {
 
             bw.write("# Create control file\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("CONTROL_FILE=${TMPDIR}/DEBIAN/control\n"); // NOI18N
+            bw.write("CONTROL_FILE=${NBTMPDIR}/DEBIAN/control\n"); // NOI18N
             bw.write("rm -f ${CONTROL_FILE}\n"); // NOI18N
-            bw.write("mkdir -p ${TMPDIR}/DEBIAN\n"); // NOI18N
+            bw.write("mkdir -p ${NBTMPDIR}/DEBIAN\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(PACKAGER_NAME);
@@ -206,12 +206,12 @@ public class DebianPackager implements PackagerDescriptor {
             bw.write("\n"); // NOI18N
             bw.write("# Create Debian Package\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("cd \"${TMPDIR}/..\"\n"); // NOI18N
+            bw.write("cd \"${NBTMPDIR}/..\"\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " --build ${TMPDIRNAME}\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
             bw.write("mkdir -p  " + CndPathUtilitities.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
-            bw.write("mv ${TMPDIR}.deb " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("mv ${NBTMPDIR}.deb " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
 
             bw.write("echo Debian: " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N

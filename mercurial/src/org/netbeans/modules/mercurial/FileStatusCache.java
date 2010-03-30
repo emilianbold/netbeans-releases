@@ -306,7 +306,8 @@ public class FileStatusCache {
                         }
                     } else {
                         // add ignored file to cache
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        rp.post(new Runnable() {
+                            @Override
                             public void run() {
                                 refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
                             }

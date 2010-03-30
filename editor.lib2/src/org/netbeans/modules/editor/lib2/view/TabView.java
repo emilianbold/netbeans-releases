@@ -150,7 +150,7 @@ public final class TabView extends EditorView implements TabableView {
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 

@@ -114,7 +114,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     public void removeNotify() {
         NotificationDisplayerImpl displayer = NotificationDisplayerImpl.getInstance();
         if (displayer != null) {
-            displayer.addPropertyChangeListener(this);
+            displayer.removePropertyChangeListener(this);
         }
         currentNotification = null;
         super.removeNotify();
@@ -251,6 +251,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         return retValue;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( NotificationDisplayerImpl.PROP_NOTIFICATION_ADDED.equals(evt.getPropertyName()) ) {
             final NotificationImpl ni = (NotificationImpl) evt.getNewValue();
@@ -285,13 +286,15 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
             if( showBalloon ) {
                 if( canShowBalloon() ) {
                     SwingUtilities.invokeLater( new Runnable() {
+                        @Override
                         public void run() {
-                            if( null == currentNotification )
+                            if( null == currentNotification || null == currentNotification.getBalloonComp() )
                                 return;
                             BalloonManager.show(FlashingIcon.this,
                                     currentNotification.getBalloonComp(), 
                                     null,
                                     new ActionListener() {
+                                @Override
                                         public void actionPerformed(ActionEvent e) {
                                             n.clear();
                                         }

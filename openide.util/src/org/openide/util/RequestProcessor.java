@@ -44,14 +44,17 @@ package org.openide.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -66,6 +69,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -186,10 +190,6 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor DEFAULT = new RequestProcessor();
 
-    // 50: a conservative value, just for case of misuse
-
-    /** the static instance for users that do not want to have own processor */
-    private static final RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
     /** A shared timer used to pass timed-out tasks to pending queue */
     private static Timer starterThread = new Timer(true);
@@ -197,6 +197,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** logger */
     private static Logger logger;
 
+    /** the static instance for users that do not want to have own processor */
+    private static final RequestProcessor UNLIMITED;
     /** The counter for automatic naming of unnamed RequestProcessors */
     private static int counter = 0;
     private static final boolean SLOW;
@@ -204,6 +206,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
         boolean slow = false;
         assert slow = true;
         SLOW = slow;
+        // 50: a conservative value, just for case of misuse
+        UNLIMITED = new RequestProcessor("Default RequestProcessor", 50, false, SLOW, SLOW ? 3 : 0); // NOI18N
     }
 
     /** The name of the RequestProcessor instance */
@@ -213,7 +217,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * will throw an exception and no task will be processed any further */
     volatile boolean stopped = false;
 
-    /** The lock covering following four fields. They should be accessed
+    /** The lock covering following five fields. They should be accessed
      * only while having this lock held. */
     private final Object processorLock = new Object();
 
@@ -233,6 +237,10 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** The maximal number of processors that can perform the requests sent
      * to this RequestProcessors. If 1, all the requests are serialized. */
     private int throughput;
+    /** mapping of classes executed in parallel */
+    private Map<Class<? extends Runnable>,AtomicInteger> inParallel;
+    /** Warn if there is parallel execution */
+    private final int warnParallel;
     
     /** support for interrupts or not? */
     private boolean interruptThread;
@@ -308,10 +316,15 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * @since 7.24
      */
     public RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces) {
+        this(name, throughput, interruptThread, enableStackTraces, 0);
+    }
+
+    private RequestProcessor(String name, int throughput, boolean interruptThread, boolean enableStackTraces, int warnParallel) {
         this.throughput = throughput;
         this.name = (name != null) ? name : ("OpenIDE-request-processor-" + (counter++));
         this.interruptThread = interruptThread;
         this.enableStackTraces = enableStackTraces;
+        this.warnParallel = warnParallel;
     }
 
     
@@ -1888,13 +1901,13 @@ outer:  do {
 
                     try {
                         if (loggable) {
-                            em.fine("  Executing " + todo); // NOI18N
+                            em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
-
+                        registerParallel(todo, current);
                         todo.run();
 
                         if (loggable) {
-                            em.fine("  Execution finished in" + getName()); // NOI18N
+                            em.log(Level.FINE, "  Execution finished in {0}", getName()); // NOI18N
                         }
 
                         debug = todo.debug();
@@ -1908,6 +1921,8 @@ outer:  do {
                         doNotify(todo, e);
                     } catch (Throwable t) {
                         doNotify(todo, t);
+                    } finally {
+                        unregisterParallel(todo, current);
                     }
 
                     // need the same sync as interruptTask
@@ -1998,6 +2013,45 @@ outer:  do {
                 };
 
             return java.security.AccessController.doPrivileged(run);
+        }
+
+        private static final Set<Class<? extends Runnable>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<? extends Runnable>>());
+        private void registerParallel(Task todo, RequestProcessor rp) {
+            if (rp.warnParallel == 0 || todo.run == null) {
+                return;
+            }
+            final Class<? extends Runnable> c = todo.run.getClass();
+            AtomicInteger number;
+            synchronized (rp.processorLock) {
+                if (rp.inParallel == null) {
+                    rp.inParallel = new WeakHashMap<Class<? extends Runnable>,AtomicInteger>();
+                }
+                number = rp.inParallel.get(c);
+                if (number == null) {
+                    rp.inParallel.put(c, number = new AtomicInteger(1));
+                } else {
+                    number.incrementAndGet();
+                }
+            }
+            if (number.get() >= rp.warnParallel && warnedClasses.add(c)) {
+                final String msg = "Too many " + c.getName() + " (" + number + ") in shared RequestProcessor; create your own"; // NOI18N
+                Exception ex = null;
+                if (todo.item != null) {
+                    ex = new IllegalStateException(msg);
+                    ex.setStackTrace(todo.item.getStackTrace());
+                }
+                logger().log(Level.WARNING, msg, ex);
+            }
+        }
+
+        private void unregisterParallel(Task todo, RequestProcessor rp) {
+            if (rp.warnParallel == 0 || todo.run == null) {
+                return;
+            }
+            synchronized (rp.processorLock) {
+                Class<? extends Runnable> c = todo.run.getClass();
+                rp.inParallel.get(c).decrementAndGet();
+            }
         }
     }
 }

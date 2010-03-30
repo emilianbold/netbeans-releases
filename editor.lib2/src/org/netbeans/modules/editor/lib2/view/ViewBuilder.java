@@ -58,6 +58,14 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
 
 /**
  * View building support.
+ * <br>
+ * When building new views they must have "enough space" so the old view(s) that occupy
+ * area of the new view must be removed. When fReplace (first replace) is non-null
+ * then the views can be replaced locally in a paragraph view.
+ * However if the replace exceeds a local replace then full paragraph views
+ * are being removed and recreated. This is because otherwise the remaining
+ * local views would have to be reparented because new paragraph view instances
+ * are being created and used.
  * 
  * @author Miloslav Metelka
  */
@@ -69,12 +77,6 @@ final class ViewBuilder {
 
     private int lastCreatedViewEndOffset;
 
-    /**
-     * End offset of view creation. It may be exceeded if it points to a middle
-     * of a created view.
-     */
-    private int creationEndOffset; // View creation end offset
-
     private final int offsetDelta;
 
     private final Element lineRoot;
@@ -85,9 +87,9 @@ final class ViewBuilder {
 
     private int lineEndOffset;
     
-    private int removedParagraphViewEndOffset;
+    private int paragraphViewEndOffset = Integer.MIN_VALUE;
 
-    private int removedViewEndOffset;
+    private int matchOffset = Integer.MIN_VALUE;
 
     private final FactoryState[] factoryStates;
 
@@ -101,29 +103,90 @@ final class ViewBuilder {
 
     private ViewReplace<ParagraphView,EditorView> pReplace;
 
-    /**
-     * Whether currently replacing inside fReplace.
-     */
-    private boolean fReplaceActive;
+    private boolean viewRemovalFinished;
 
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
+
+    private int docTextLength; // doc.getLength()+1 which includes an extra newline
 
     /**
      * @param viewFactories should be sorted with increasing priority.
      */
-    ViewBuilder(ViewReplace<DocumentView,ParagraphView> dReplace, ViewReplace<ParagraphView,EditorView> fReplace,
+    ViewBuilder(ParagraphView paragraphView, DocumentView documentView, int paragraphViewIndex,
             EditorViewFactory[] viewFactories, int startOffset, int endOffset, int offsetDelta)
     {
-        Document doc = dReplace.view.getDocument();
-        // Ensure the limit offset is at the end of last paragraph at most since otherwise
-        // the factories might have to do extra checks for offset validity.
-        endOffset = Math.min(endOffset, doc.getLength() + 1);
+        Document doc = documentView.getDocument();
+        docTextLength = doc.getLength() + 1;
+        if (paragraphView != null) {
+            fReplace = new ViewReplace<ParagraphView, EditorView>(
+                    paragraphView, paragraphView.getViewIndex(startOffset));
+            this.pReplace = fReplace;
+            paragraphViewIndex++; // dReplace will start from next paragraph view
+        }
+        dReplace = new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
+        // Search for the views that need to be removed
+        // Map original offsets to after-insert offsets by using both childView.getLength()
+        // and paragraphView.getLength() which return textual span of views
 
-        this.dReplace = dReplace;
-        this.fReplace = fReplace;
-        this.pReplace = fReplace;
+        if (fReplace != null) {
+            int paragraphViewStartOffset = paragraphView.getStartOffset();
+            assert (paragraphViewStartOffset <= startOffset);
+            EditorView childView = fReplace.childViewAtIndex();
+            startOffset = childView.getStartOffset();
+            assert (paragraphViewStartOffset <= startOffset);
+            paragraphViewEndOffset = paragraphViewStartOffset + paragraphView.getLength()
+                    + offsetDelta; // Updated end offset
+            if (paragraphViewEndOffset >= endOffset) { // Rebuild located inside fReplace's paragraph view
+                matchOffset = startOffset + offsetDelta; // childView's start offset + offsetDelta
+                while (matchOffset < endOffset) {
+                    matchOffset += childView.getLength();
+                    fReplace.removeCount++;
+                    int index = fReplace.removeEndIndex();
+                    if (index < paragraphView.getViewCount()) {
+                        childView = paragraphView.getEditorView(index);
+                    } else {
+                        assert (matchOffset >= endOffset);
+                        break;
+                    }
+                }
+            } else {
+                // Leave matchOffset == -1
+                fReplace.removeTillEnd(); // Remove all remaining child views
+            }
+        }
+        if (matchOffset < endOffset) {
+            int paragraphCount = documentView.getViewCount();
+            int index = dReplace.removeEndIndex();
+            if (index < paragraphCount) {
+                EditorView nextParagraphView = documentView.getEditorView(index);
+                // Use startOffset + getLength() to get proper original length and update by offsetDelta
+                // If paragraphViewEndOffset already initialized only update it since for valid fReplace
+                // the nextParagraphView's startOffset could already be above the modification point.
+                if (paragraphViewEndOffset == Integer.MIN_VALUE) {
+                    paragraphViewEndOffset = nextParagraphView.getStartOffset() + offsetDelta;
+                }
+                paragraphViewEndOffset += nextParagraphView.getLength();
+                dReplace.removeCount++;
+                while (matchOffset < endOffset) {
+                    index = dReplace.removeEndIndex();
+                    if (index >= paragraphCount) {
+                        viewRemovalFinished = true;
+                        matchOffset = docTextLength;
+                        break;
+                    }
+                    nextParagraphView = dReplace.view.getEditorView(index);
+                    paragraphViewEndOffset += nextParagraphView.getLength();
+                    matchOffset = paragraphViewEndOffset;
+                    dReplace.removeCount++;
+                }
+            } else {
+                viewRemovalFinished = true;
+                matchOffset = paragraphViewEndOffset = docTextLength;
+            }
+        }
+        assert (matchOffset != -1);
+
         this.lastCreatedViewEndOffset = startOffset;
-        this.creationEndOffset = endOffset;
         this.offsetDelta = offsetDelta;
 
         lineRoot = doc.getDefaultRootElement();
@@ -132,31 +195,30 @@ final class ViewBuilder {
         lineStartOffset = line.getStartOffset();
         lineEndOffset = line.getEndOffset();
 
-        if (fReplace != null) { // viewReplace should != null too
-            assert (dReplace.view.getView(dReplace.index - 1) == fReplace.view);
-            // removedViewEndOffset is start of the corresponding view in order to increase localReplace.removeCount
-            this.removedViewEndOffset = fReplace.view.getView(fReplace.index).getStartOffset();
-            this.removedParagraphViewEndOffset = fReplace.view.getEndOffset();
-            fReplaceActive = true;
-        } else { // No inline replace
-            this.removedParagraphViewEndOffset = (dReplace.index > 0)
-                    ? dReplace.view.getView(dReplace.index - 1).getEndOffset()
-                    : 0;
-            this.removedViewEndOffset = removedParagraphViewEndOffset;
-        }
-
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("ViewBuilder: <" + startOffset + "," + endOffset + // NOI18N
-                    ">\ndReplace=" + dReplace + // NOI18N
-                    "fReplace=" + ((fReplace != null) ? fReplace : "<NULL>\n") + // NOI18N
-                    "removedViewEndOffset=" + removedViewEndOffset + // NOI18N
-                    ", lineIndex=" + lineIndex + ", lineStartOffset=" + lineStartOffset + // NOI18N
-                    '\n');
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("ViewBuilder: <").append(startOffset).append(",").append(endOffset); // NOI18N
+            if (matchOffset != endOffset) {
+                sb.append("=>").append(matchOffset); // NOI18N
+            }
+            sb.append(">, docTextLength=").append(docTextLength).append("\nfReplace=");
+            if (fReplace != null) {
+                sb.append(fReplace);
+            } else {
+                sb.append("<NULL>\n");
+            }
+            sb.append("dReplace=").append(dReplace);
+            sb.append("lineIndex=").append(lineIndex);
+            sb.append(", lineStartOffset=").append(lineStartOffset).append('\n');
+
+            LOG.fine(sb.toString());
         }
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
-            factoryStates[i] = new FactoryState(viewFactories[i], startOffset);
-            factoryStates[i].factory.restart(startOffset);
+            FactoryState state = new FactoryState(viewFactories[i], startOffset);
+            state.init(startOffset);
+            state.updateNextViewStartOffset(startOffset);
+            factoryStates[i] = state;
         }
         pReplaceList = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
     }
@@ -177,7 +239,6 @@ final class ViewBuilder {
             }
             StringBuilder sb = new StringBuilder(200);
             sb.append("ViewBuilder.createViews():\n");
-            int index = 0;
             if (fReplace != null) {
                 sb.append("fReplace:").append(fReplace);
             }
@@ -192,151 +253,66 @@ final class ViewBuilder {
         }
     }
 
-    void repaintAndReplaceViews() {
-        // Compute repaint region as area of views being removed
-        DocumentView docView = dReplace.view;
-        JTextComponent textComponent = docView.getTextComponent();
-        boolean docViewHeightChanged = false;
-        boolean docViewWidthChanged = false;
-        Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
-        Rectangle2D.Double docViewBounds = docView.getAllocation();
-        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
-        if (fReplace != null) {
-            if (fReplace.removeCount > 0) {
-                textLayoutCache.remove(fReplace.view, fReplace.index, fReplace.removeCount);
-            }
-            // fReplace is at (dReplace.index - 1)
-            Shape childAlloc = docView.getChildAllocation(dReplace.index - 1, docViewBounds);
-            // Clear individual views from textLayoutCache
-            EditorBoxView.ReplaceResult fResult = fReplace.replaceViews(offsetDelta, childAlloc);
-            if (fResult != null) {
-                if (fResult.isPreferenceChanged()) {
-                    docView.preferenceChanged(dReplace.index - 1,
-                            fResult.isWidthChanged(), fResult.isHeightChanged(), false);
-                    docViewWidthChanged |= fResult.isWidthChanged();
-                    docViewHeightChanged |= fResult.isHeightChanged();
-                }
-                if (!fResult.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(fResult.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("fReplace:REPAINT:" + ViewUtils.toString(fResult.getRepaintBounds()));
-                    }
-                }
-            }
-        }
-
-        // Remove paragraphs from text-layout-cache
-        for (int i = 0; i < dReplace.removeCount; i++) {
-            ParagraphView paragraphView = (ParagraphView) docView.getEditorView(dReplace.index + i);
-            textLayoutCache.removeParagraph(paragraphView);
-        }
-
-        // Repaint removed paragraph views
-        EditorBoxView.ReplaceResult dResult = dReplace.replaceViews(0, docViewBounds);
-        if (dResult != null) {
-            if (dResult.isPreferenceChanged()) {
-                docViewWidthChanged |= dResult.isWidthChanged();
-                docViewHeightChanged |= dResult.isHeightChanged();
-            }
-            if (!dResult.getRepaintBounds().isEmpty()) {
-                repaintBounds.add(dResult.getRepaintBounds());
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("dReplace:REPAINT:" + ViewUtils.toString(dResult.getRepaintBounds()));
-                }
-            }
-        }
-        for (int i = 0; i < pReplaceList.size(); i++) {
-            ViewReplace<ParagraphView, EditorView> replace = pReplaceList.get(i);
-            Shape childAlloc = docView.getChildAllocation(dReplace.index + i, docViewBounds);
-            EditorBoxView.ReplaceResult pResult = replace.replaceViews(0, childAlloc);
-            if (pResult != null) {
-                if (pResult.isPreferenceChanged()) {
-                    docView.preferenceChanged(dReplace.index + i,
-                            pResult.isWidthChanged(), pResult.isHeightChanged(), false);
-                    docViewWidthChanged |= pResult.isWidthChanged();
-                    docViewHeightChanged |= pResult.isHeightChanged();
-                }
-                if (!pResult.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(pResult.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("pReplaceList[" + i + "]:REPAINT:" + // NOI18N
-                                ViewUtils.toString(pResult.getRepaintBounds()));
-                    }
-                }
-            }
-        }
-        if (!repaintBounds.isEmpty()) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("REPAINT:" + ViewUtils.toString(repaintBounds));
-            }
-            ViewUtils.repaint(textComponent, repaintBounds);
-        }
-        if (docViewWidthChanged || docViewHeightChanged) {
-            docView.preferenceChanged(null, docViewWidthChanged, docViewHeightChanged);
-        }
-    }
-
-    void finish() {
-        // Finish factories
-        for (FactoryState factoryState : factoryStates) {
-            factoryState.factory.finish();
-        }
-
-        dReplace.view.checkIntegrity();
-    }
-
     boolean createNextView() {
-        boolean viewRemovalFinished = false;
-        int limitOffset = creationEndOffset;
+        int limitOffset = matchOffset;
         for (int i = factoryStates.length - 1; i >= 0; i--) {
             FactoryState state = factoryStates[i];
             int cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
             if (cmp < 0) { // Next view starting below
-                state.nextViewStartOffset = state.factory.nextViewStartOffset(lastCreatedViewEndOffset);
+                state.updateNextViewStartOffset(lastCreatedViewEndOffset);
                 cmp = state.nextViewStartOffset - lastCreatedViewEndOffset;
-                if (cmp < 0) {
-                    throw new IllegalStateException("EditorViewFactory " + state.factory + // NOI18N
-                            " returned nextViewStartOffset=" + state.nextViewStartOffset + // NOI18N
-                            " for offset=" + lastCreatedViewEndOffset); // NOI18N
-
-                }
             }
             if (cmp == 0) { // Candidate for the next view
                 // Create new view. Note that the limitOffset is only a suggestion.
                 // Only the bottommost highlights-view-factory should always respect the the limitOffset.
                 EditorView view = state.factory.createView(lastCreatedViewEndOffset, limitOffset);
-                boolean newlineView = (view instanceof NewlineView);
+                boolean newlineViewCreated = (view instanceof NewlineView);
                 int createdViewEndOffset = lastCreatedViewEndOffset + view.getLength();
+                if (createdViewEndOffset > docTextLength) {
+                    throw new IllegalStateException("View " + view + " produced by factory " + state.factory + // NOI18N
+                            " has endOffset=" + createdViewEndOffset + " but docTextLength=" + docTextLength); // NOI18N
+                }
 
-                while (!viewRemovalFinished && (removedViewEndOffset < createdViewEndOffset ||
-                        (newlineView && fReplaceActive)))
+                // Make space for new views by replacing old ones.
+                // When fReplace is active then only local removals are done unless
+                // a NewlineView gets created in which case the views till the end
+                // of a fReplace's view must be removed (they would have to be re-parented otherwise).
+                // If fReplace is not active then remove full paragraph views
+                // (again to avoid re-parenting of local views to new paragraph views).
+                boolean fReplaceActive = (fReplace != null && fReplace == pReplace);
+                while (!viewRemovalFinished && (createdViewEndOffset > matchOffset ||
+                                                (newlineViewCreated && fReplaceActive)))
                 {
-                    if (fReplaceActive) {
+                    if (fReplaceActive) { // Still replacing in fReplace
                         // Check if remove till end of paragraph
-                        if (removedParagraphViewEndOffset < createdViewEndOffset || newlineView) {
-                            pReplace.removeTillEnd();
-                            removedViewEndOffset = removedParagraphViewEndOffset;
+                        if (createdViewEndOffset > paragraphViewEndOffset || newlineViewCreated) {
+                            fReplace.removeTillEnd();
+                            matchOffset = paragraphViewEndOffset;
                             fReplaceActive = false;
-                        } else { // Remove just one view
-                            int index = pReplace.removeEndIndex();
-                            assert (index < pReplace.view.getViewCount());
-                            removedViewEndOffset = pReplace.view.getView(index).getEndOffset();
-                            pReplace.removeCount++;
+                        } else { // Remove single views and not go beyond paragraph view's end
+                            int viewCount = fReplace.view.getViewCount();
+                            int index;
+                            while ((index = fReplace.removeEndIndex()) < viewCount) {
+                                // Use getLength() instead of getEndOffset() since for intra-line mods
+                                // with offsetDelta != 0 the views do not have updated offsets
+                                matchOffset += pReplace.view.getEditorView(index).getLength();
+                                pReplace.removeCount++;
+                                if (matchOffset >= createdViewEndOffset) {
+                                    break;
+                                }
+                            }
                         }
-                    } else { // Remove whole paragraphs
+                    } else { // Remove whole paragraph(s)
                         int pIndex = dReplace.removeEndIndex();
                         if (pIndex < dReplace.view.getViewCount()) {
+                            ParagraphView removeView = (ParagraphView) dReplace.view.getEditorView(pIndex);
                             dReplace.removeCount++;
-                            ParagraphView removeView = (ParagraphView) dReplace.view.getView(pIndex);
-                            removedParagraphViewEndOffset = removeView.getEndOffset();
-                            // Do not remove individual views -> use removedParagraphEndOffset
-                            removedViewEndOffset = removedParagraphViewEndOffset;
+                            paragraphViewEndOffset = removeView.getEndOffset();
+                            // Do not remove individual views
+                            matchOffset = paragraphViewEndOffset;
                         } else { // No more views to remove
                             viewRemovalFinished = true; // Allow to finish the loop
                         }
-                    }
-                    if (creationEndOffset < removedViewEndOffset) {
-                        creationEndOffset = removedViewEndOffset;
                     }
                 }
 
@@ -360,16 +336,12 @@ final class ViewBuilder {
                 pReplace.add(view);
 
 
-                if (newlineView) {
-                    if (fReplaceActive) {
-                        fReplaceActive = false;
-                    } else {
-                        pReplace = null;
-                    }
+                if (newlineViewCreated) {
+                    pReplace = null;
                 }
 
                 lastCreatedViewEndOffset = createdViewEndOffset;
-                return (lastCreatedViewEndOffset < creationEndOffset);
+                return (lastCreatedViewEndOffset < matchOffset);
 
             } else { // cmp > 0 => next view starting somewhere above last view's end offset
                 // Remember the nextViewStartOffset as a limit offset for factories
@@ -380,6 +352,100 @@ final class ViewBuilder {
         // The code should not get there since the highlights-view-factory (at index 0)
         // should always provide a view.
         throw new IllegalStateException("No factory returned view for offset=" + lastCreatedViewEndOffset);
+    }
+
+    void repaintAndReplaceViews() {
+        // Compute repaint region as area of views being removed
+        DocumentView docView = dReplace.view;
+        JTextComponent textComponent = docView.getTextComponent();
+        assert (textComponent != null) : "Null textComponent"; // NOI18N
+        boolean docViewHeightChanged = false;
+        boolean docViewWidthChanged = false;
+        Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
+        Rectangle2D.Double docViewBounds = docView.getAllocation();
+        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
+        if (fReplace != null) {
+            if (fReplace.removeCount > 0) {
+                textLayoutCache.remove(fReplace.view, fReplace.index, fReplace.removeCount);
+            }
+            // fReplace is at (dReplace.index - 1)
+            Shape childAlloc = docView.getChildAllocation(dReplace.index - 1, docViewBounds);
+            // Clear individual views from textLayoutCache
+            EditorBoxView.ReplaceResult fResult = fReplace.replaceViews(offsetDelta, childAlloc);
+            if (fResult != null) {
+                if (fResult.isPreferenceChanged()) {
+                    docView.preferenceChanged(dReplace.index - 1,
+                            fResult.isWidthChanged(), fResult.isHeightChanged(), false);
+                    docViewWidthChanged |= fResult.isWidthChanged();
+                    docViewHeightChanged |= fResult.isHeightChanged();
+                }
+                if (!fResult.getRepaintBounds().isEmpty()) {
+                    repaintBounds.add(fResult.getRepaintBounds());
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("fReplace:REPAINT:" + ViewUtils.toString(fResult.getRepaintBounds()) + '\n');
+                    }
+                }
+            }
+        }
+
+        // Remove paragraphs from text-layout-cache
+        for (int i = 0; i < dReplace.removeCount; i++) {
+            ParagraphView paragraphView = (ParagraphView) docView.getEditorView(dReplace.index + i);
+            textLayoutCache.removeParagraph(paragraphView);
+        }
+
+        // Repaint removed paragraph views
+        EditorBoxView.ReplaceResult dResult = dReplace.replaceViews(0, docViewBounds);
+        if (dResult != null) {
+            if (dResult.isPreferenceChanged()) {
+                docViewWidthChanged |= dResult.isWidthChanged();
+                docViewHeightChanged |= dResult.isHeightChanged();
+            }
+            if (!dResult.getRepaintBounds().isEmpty()) {
+                repaintBounds.add(dResult.getRepaintBounds());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("dReplace:REPAINT:" + ViewUtils.toString(dResult.getRepaintBounds()) + '\n');
+                }
+            }
+        }
+        for (int i = 0; i < pReplaceList.size(); i++) {
+            ViewReplace<ParagraphView, EditorView> replace = pReplaceList.get(i);
+            Shape childAlloc = docView.getChildAllocation(dReplace.index + i, docViewBounds);
+            EditorBoxView.ReplaceResult pResult = replace.replaceViews(0, childAlloc);
+            if (pResult != null) {
+                if (pResult.isPreferenceChanged()) {
+                    docView.preferenceChanged(dReplace.index + i,
+                            pResult.isWidthChanged(), pResult.isHeightChanged(), false);
+                    docViewWidthChanged |= pResult.isWidthChanged();
+                    docViewHeightChanged |= pResult.isHeightChanged();
+                }
+                if (!pResult.getRepaintBounds().isEmpty()) {
+                    repaintBounds.add(pResult.getRepaintBounds());
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("pReplaceList[" + i + "]:REPAINT:" + // NOI18N
+                                ViewUtils.toString(pResult.getRepaintBounds()) + '\n');
+                    }
+                }
+            }
+        }
+        if (!repaintBounds.isEmpty()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');
+            }
+            ViewUtils.repaint(textComponent, repaintBounds);
+        }
+        if (docViewWidthChanged || docViewHeightChanged) {
+            docView.preferenceChanged(null, docViewWidthChanged, docViewHeightChanged);
+        }
+    }
+
+    void finish() {
+        // Finish factories
+        for (FactoryState factoryState : factoryStates) {
+            factoryState.factory.finish();
+        }
+
+        dReplace.view.checkIntegrity();
     }
 
     void updateLine() {
@@ -399,7 +465,19 @@ final class ViewBuilder {
 
         FactoryState(EditorViewFactory factory, int startOffset) {
             this.factory = factory;
-            this.nextViewStartOffset = factory.nextViewStartOffset(startOffset);
+        }
+
+        void init(int startOffset) {
+            factory.restart(startOffset);
+        }
+
+        void updateNextViewStartOffset(int offset) {
+            nextViewStartOffset = factory.nextViewStartOffset(offset);
+            if (nextViewStartOffset < offset) {
+                throw new IllegalStateException("Editor view factory " + factory + // NOI18N
+                        " returned nextViewStartOffset=" + nextViewStartOffset + // NOI18N
+                        " < offset=" + offset); // NOI18N
+            }
         }
 
     }

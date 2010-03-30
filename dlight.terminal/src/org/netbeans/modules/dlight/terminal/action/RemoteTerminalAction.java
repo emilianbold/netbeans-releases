@@ -41,6 +41,7 @@ package org.netbeans.modules.dlight.terminal.action;
 import java.awt.Dialog;
 import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -53,9 +54,8 @@ public final class RemoteTerminalAction extends TerminalAction {
     private final RemoteInfoDialog cfgPanel;
 
     public RemoteTerminalAction() {
-        cfgPanel = new RemoteInfoDialog();
+        cfgPanel = new RemoteInfoDialog(System.getProperty("user.name"));
     }
-
 
     @Override
     protected ExecutionEnvironment getEnvironment() {
@@ -72,6 +72,11 @@ public final class RemoteTerminalAction extends TerminalAction {
         }
 
         final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
+        PasswordManager.getInstance().setRememberPassword(env, cfgPanel.rememberPassword());
+        PasswordManager.getInstance().put(env, cfgPanel.getPassword());
+        if (!cfgPanel.rememberPassword()) {
+            cfgPanel.clearPassword();
+        }
         return env;
     }
 }

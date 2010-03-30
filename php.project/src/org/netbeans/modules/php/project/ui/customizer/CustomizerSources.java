@@ -66,11 +66,10 @@ import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
-import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -174,8 +173,8 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         if (originalEncoding == null) {
             originalEncoding = Charset.defaultCharset().name();
         }
-        encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(originalEncoding));
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(originalEncoding));
         final String lafid = UIManager.getLookAndFeel().getID();
         if (!"Aqua".equals(lafid)) { // NOI18N
              encodingComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N

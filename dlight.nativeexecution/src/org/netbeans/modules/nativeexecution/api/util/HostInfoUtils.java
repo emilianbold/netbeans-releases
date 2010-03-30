@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchParams;
 import org.netbeans.modules.nativeexecution.support.filesearch.FileSearchSupport;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
+import org.netbeans.modules.nativeexecution.support.hostinfo.FetchHostInfoTask;
 import org.openide.util.Exceptions;
 
 /**
@@ -32,8 +32,8 @@ public final class HostInfoUtils {
      */
     public static final String LOCALHOST = "localhost"; // NOI18N
     private static final List<String> myIPAdresses = new ArrayList<String>();
-    private static final TasksCachedProcessor<ExecutionEnvironment, HostInfo> hostInfoCachedProcessor =
-            new TasksCachedProcessor<ExecutionEnvironment, HostInfo>(new FetchHostInfoTask(), false);
+    private static final ConcurrentHashMap<ExecutionEnvironment, HostInfo> cache =
+            new ConcurrentHashMap<ExecutionEnvironment, HostInfo>();
 
     static {
         NetworkInterface iface = null;
@@ -87,13 +87,19 @@ public final class HostInfoUtils {
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
+     *
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws IOException if host, identified by this execution
+     *
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected or operation was terminated.
+     *
+     * @throws IOException if the thread was interrupted.
+     * In this case the getCause() method will return InterruptedException.
+     * TODO: it shall throw InterruptedException instead
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
-            throws IOException {
+            throws ConnectException, IOException {
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -109,7 +115,7 @@ public final class HostInfoUtils {
             try {
                 fileExists = npb.call().waitFor() == 0;
             } catch (InterruptedException ex) {
-                throw new IOException(ex.getMessage());
+                throw new IOException(ex.getMessage(), ex);
             }
         }
 
@@ -157,7 +163,7 @@ public final class HostInfoUtils {
      * <tt>false</tt> otherwise.
      */
     public static boolean isHostInfoAvailable(final ExecutionEnvironment execEnv) {
-        return hostInfoCachedProcessor.isResultAvailable(execEnv);
+        return cache.containsKey(execEnv);
     }
 
     /**
@@ -191,21 +197,27 @@ public final class HostInfoUtils {
                     "Use quick isHostInfoAvailable() to detect whether info is available or not and go out of EDT if not"); // NOI18N
         }
 
-        try {
-            HostInfo result = hostInfoCachedProcessor.compute(execEnv);
-            if (result == null) {
-                throw new IOException("Can not get HostInfo for " + execEnv); //NOI18N
+        HostInfo result = cache.get(execEnv);
+
+        if (result == null) {
+            try {
+                result = new FetchHostInfoTask().compute(execEnv);
+                HostInfo oldInfo = cache.putIfAbsent(execEnv, result);
+                if (oldInfo != null) {
+                    result = oldInfo;
+                }
+            } catch (InterruptedException ex) {
+                throw new CancellationException("getHostInfo(" + execEnv.getDisplayName() + ") cancelled."); // NOI18N
             }
-            return result;
-        } catch (InterruptedException ex) {
-            throw new CancellationException("getHostInfo interrupted"); // NOI18N
         }
+
+        return result;
     }
 
     /**
      * For testing purposes only!
      */
     protected static void resetHostsData() {
-        hostInfoCachedProcessor.resetCache();
+        cache.clear();
     }
 }

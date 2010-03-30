@@ -131,7 +131,7 @@ public class CreateAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
-        RequestProcessor.getDefault().post(new Runnable() {
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 performCreate(context);
             }

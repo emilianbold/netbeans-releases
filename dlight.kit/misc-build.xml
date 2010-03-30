@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
-    <target name="test" depends="-init-modules">
+    <target name="test" depends="-init-modules" description="dlight tests">
         <subant buildpath="${dlight.modules.fullpath}" target="test">
             <property name="cluster.config" value="dlight"/>
         </subant>

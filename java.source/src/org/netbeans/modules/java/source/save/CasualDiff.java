@@ -1755,7 +1755,7 @@ public class CasualDiff {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT);
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, true);
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
@@ -2118,6 +2118,16 @@ public class CasualDiff {
             int pos,
             Comparator<JCTree> measure)
     {
+        return diffParameterList(oldList, newList, makeAround, pos, measure, false);
+    }
+    private int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            JavaTokenId[] makeAround,
+            int pos,
+            Comparator<JCTree> measure,
+            boolean isEnum)
+    {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
             return pos; // they match perfectly or no need to do anything
@@ -2163,9 +2173,8 @@ public class CasualDiff {
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     if (!commaNeeded(result, item) &&
-                        tree.getKind() == Kind.VARIABLE &&
-                        (((JCModifiers)((VariableTree) tree).getModifiers()).flags & Flags.ENUM) != 0 &&
-                        tokenSequence.token().id() != JavaTokenId.SEMICOLON) {
+                        isEnum &&
+                        tokenSequence.token().id() == JavaTokenId.RBRACKET) {
                         printer.print(";");
                     }
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
@@ -2199,7 +2208,11 @@ public class CasualDiff {
                     int start = tokenSequence.offset();
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-                    int end = tokenSequence.offset();
+                    int end = bounds[1];
+                    if (isEnum &&
+                        (tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                        end = tokenSequence.offset();
+                    }
                     copyTo(start, pos = end, printer);
                     break;
                 default:
@@ -2224,7 +2237,11 @@ public class CasualDiff {
             int endPos2 = endPos(oldList);
             tokenSequence.move(endPos2);
             moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-            return tokenSequence.offset();
+            if (isEnum &&
+                (tokenSequence.token().id() == JavaTokenId.SEMICOLON || tokenSequence.token().id() == JavaTokenId.COMMA)) {
+                return tokenSequence.offset();
+            }
+            return pos;
         }
     }
 
@@ -2394,7 +2411,7 @@ public class CasualDiff {
                             //seems like a field group:
                             fieldGroup.add(var);
                         } else {
-                            if (fieldGroup.size() > 1) {
+                            if (fieldGroup.size() > 1 || enumConstants) {
                                 result.add(new FieldGroupTree(fieldGroup, enumConstants));
                             } else {
                                 result.add(fieldGroup.get(0));
@@ -2412,7 +2429,7 @@ public class CasualDiff {
             }
 
             if (!fieldGroup.isEmpty()) {
-                if (fieldGroup.size() > 1) {
+                if (fieldGroup.size() > 1 || enumConstants) {
                     result.add(new FieldGroupTree(fieldGroup, enumConstants));
                 } else {
                     result.add(fieldGroup.get(0));
@@ -2436,7 +2453,7 @@ public class CasualDiff {
             result.add(tree);
         }
         if (!fieldGroup.isEmpty()) {
-            if (fieldGroup.size() > 1) {
+            if (fieldGroup.size() > 1 || enumConstants) {
                 result.add(new FieldGroupTree(fieldGroup, enumConstants));
             } else {
                 result.add(fieldGroup.get(0));

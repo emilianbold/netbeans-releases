@@ -15,6 +15,7 @@ Not Searchable Keys:
 Document 2
 Searchable Keys:
   clz : aaa;AAA;12;;;IAAA;1;
+  superiface : iaaa;IAAA;
   top : aaa
 
 Not Searchable Keys:
@@ -23,6 +24,8 @@ Not Searchable Keys:
 Document 3
 Searchable Keys:
   clz : bbb;BBB;40;AAA;;IBBB;1;
+  superclz : aaa;AAA;
+  superiface : ibbb;IBBB;
   top : bbb
 
 Not Searchable Keys:
@@ -31,6 +34,8 @@ Not Searchable Keys:
 Document 4
 Searchable Keys:
   clz : ccc;CCC;80;BBB;;ICCC;1;
+  superclz : bbb;BBB;
+  superiface : iccc;ICCC;
   top : ccc
 
 Not Searchable Keys:
@@ -66,6 +71,7 @@ Not Searchable Keys:
 Document 7
 Searchable Keys:
   iface : ibbb;IBBB;142;IAAA;;
+  superiface : iaaa;IAAA;
   top : ibbb
 
 Not Searchable Keys:
@@ -74,6 +80,7 @@ Not Searchable Keys:
 Document 8
 Searchable Keys:
   iface : iccc;ICCC;173;IBBB;;
+  superiface : ibbb;IBBB;
   top : iccc
 
 Not Searchable Keys:

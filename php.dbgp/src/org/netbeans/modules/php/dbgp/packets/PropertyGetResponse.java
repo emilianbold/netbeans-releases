@@ -76,12 +76,14 @@ public class PropertyGetResponse extends DbgpResponse {
             getSession( session.getSessionId() );
         if ( currentSession == session ){
          // perform update local view only if response appears in current session
+            PropertyGetCommand propertyCommand = (PropertyGetCommand) command;
             Property property = getProperty();
             /*
              * TODO
              */
             if ( property != null  ) {
                 session.getBridge().getVariablesModel().updateProperty( getProperty() );
+                propertyCommand.firePropertyChangeEvent(property.getName(), property);
             }
         }
     }

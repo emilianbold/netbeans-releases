@@ -77,6 +77,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     private static final String PLEASE_WAIT = NbBundle.getMessage(ReferencesPanel.class, "ReferencesPanel.wait.text");
     private static final Object LOCK = new Object();
     private static final String EMPTY_LOCATION = ""; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ReferencesPanel.class.getName(), 1, false, false);
     private int state = 0;
     private ListModel model;
     /** Descriptions of indices that should be accessed under {@link #LOCK lock}. */
@@ -116,7 +117,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ReferencesPanel.class, "AD_ReferencesDialog"));
 
         // schedule computing indices
-        RequestProcessor.getDefault().post(panel);
+        RP.post(panel);
         dialog.setVisible(true);
         dialog.dispose();
 

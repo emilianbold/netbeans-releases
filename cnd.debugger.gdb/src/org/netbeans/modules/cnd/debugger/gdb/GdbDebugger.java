@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.ExternalTerminal;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxyEngine;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -108,6 +110,7 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -181,7 +184,6 @@ public class GdbDebugger implements PropertyChangeListener {
     private final List<GdbCallStackFrame> callstack = Collections.synchronizedList(new ArrayList<GdbCallStackFrame>());
     private final GdbEngineProvider gdbEngineProvider;
     private GdbCallStackFrame currentCallStackFrame;
-    public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
@@ -221,6 +223,8 @@ public class GdbDebugger implements PropertyChangeListener {
     // to skip SIGCONT after breakpoint set on the fly (see IZ 160749)
     private boolean skipSignal = false;
     private Pty pty = null;
+
+    private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -329,7 +333,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
-            gdb.gdb_set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold())); // NOI18N
+            gdb.gdb_set("print repeat", PRINT_REPEAT); // NOI18N
             // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
@@ -919,10 +923,9 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String path = PathUtils.getExePath(pid, execEnv);
             if (path != null) {
-                File exefile = new File(exepath);
                 try {
                     if (HostInfoUtils.fileExists(execEnv, exepath)) {
-                        if (comparePaths(path, exefile.getAbsolutePath())) {
+                        if (comparePaths(path, exepath)) {
                             return true;
                         }
                     }
@@ -995,7 +998,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     if (gdb != null) {
                         ProjectActionEvent.Type type = lookupProvider.lookupFirst(null, ProjectActionEvent.class).getType();
                         if (state == State.RUNNING) {
-                            gdb.exec_interrupt();
+                            interrupt();
                             if (type != DEBUG_ATTACH) {
                                 gdb.exec_abort();
                             }
@@ -1047,9 +1050,10 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_continue();
     }
 
+    private final Object LV_LOCK = new String("Locals lock"); //NOI18N
     /** Sends request to get arguments and local variables */
     private void updateLocalVariables(int frame) {
-        synchronized (LOCK) {
+        synchronized (LV_LOCK) {
             synchronized (localVariables) {
                 localVariables.clear(); // clear old variables so we can store new ones here
             }
@@ -1321,12 +1325,13 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             } else if (msg.startsWith("[Switching to process ")) { // NOI18N
-                int pos = msg.indexOf(' ', 22);
-                if (pos > 0) {
-                    try {
-                        programPID = Long.valueOf(msg.substring(22, pos));
-                    } catch (NumberFormatException ex) {
+                try {
+                    int end = 22;
+                    while (Character.isDigit(msg.charAt(end))) {
+                        end++;
                     }
+                    programPID = Long.valueOf(msg.substring(22, end));
+                } catch (NumberFormatException ex) {
                 }
             }
         } else if (msg.startsWith("Stopped due to shared library event")) { // NOI18N
@@ -1454,11 +1459,27 @@ public class GdbDebugger implements PropertyChangeListener {
     /**
      * Interrupts execution of the inferior program.
      * This method is called when "Pause" button is pressed.
-     *
+     * 
+     * This method is supposed to send "-exec-interrupt" to the debugger,
+     * but this feature is not implemented in gdb yet, so it is replaced
+     * with sending a signal "INT" (Unix) or signal TSTP (Windows).
+     * 
      * @return null if action is accepted, otherwise return error message
      */
     public void interrupt() {
-        gdb.exec_interrupt();
+        if (state == State.RUNNING || state == State.SILENT_STOP) {
+            // First try engine interrrupt
+            if (GdbProxyEngine.ENGINE_PTY && !gdb.getProxyEngine().isInferiorTty()) {
+                skipSignal = true;
+                gdb.getProxyEngine().interrupt();
+            }
+            
+            if (getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                kill(Signal.TRAP);
+            } else {
+                kill(Signal.INT);
+            }
+        }
     }
 
     /**
@@ -1502,6 +1523,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                //LATER: use
+                //CommonTasksSupport.sendSignal(debugger.getHostExecutionEnvironment(), pid, Signal.SIGINT, null);
             }
             if (!killcmd.isEmpty()) {
                 killcmd.add("-s"); // NOI18N
@@ -1515,7 +1538,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
                 // see IZ 160749 - skip sigcont and sigint
                 // IZ 172855 - skipSignal need to be set before signal sending
-                if (signal == Signal.INT) {
+                if (signal == Signal.INT || signal == Signal.TRAP) {
                     skipSignal = true;
                 }
                 
@@ -1675,10 +1698,10 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void setState(State state) {
-        if (state == this.state) {
+        State oldState = this.state;
+        if (state == oldState) {
             return;
         }
-        State oldState = this.state;
         this.state = state;
         firePropertyChange(PROP_STATE, oldState, state);
     }
@@ -1753,7 +1776,10 @@ public class GdbDebugger implements PropertyChangeListener {
                 map = createMapFromString(frame);
                 updateLastStop(map);
             }
-            setLoading();
+            // See IZ 182316 - attach has a separate setLoading call
+            if (!isAttaching()) {
+                setLoading();
+            }
             return;
         }
         if (state != State.RUNNING) {
@@ -1896,7 +1922,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 gdb.stack_list_frames();
                 setStopped();
                 return;
-            } else if ("SIGTRAP".equals(signal) && platform == PlatformTypes.PLATFORM_WINDOWS) { // NOI18N
+            } else if ("SIGTRAP".equals(signal) && // NOI18N
+                    (platform == PlatformTypes.PLATFORM_WINDOWS ||
+                    platform == PlatformTypes.PLATFORM_MACOSX)) {
                 // see IZ 172855 (On windows we need to skip SIGTRAP)
                 skipSignal = false;
                 gdb.stack_list_frames();
@@ -2865,14 +2893,12 @@ public class GdbDebugger implements PropertyChangeListener {
         }
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
     public String getCharSetEncoding() {
         String encoding;
         if (execEnv.isRemote()) {
-            encoding = remoteCharSet;
+            encoding = ProcessUtils.getRemoteCharSet();
         } else {
-            // TODO: use Charset.defaultCharset().name(), but now leave as is...
-            encoding = System.getProperty("sun.jnu.encoding");
+            encoding = Charset.defaultCharset().name();
         }
         return encoding;
     }

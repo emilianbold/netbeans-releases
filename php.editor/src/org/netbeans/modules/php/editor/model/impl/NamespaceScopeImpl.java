@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Set;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import java.util.Collection;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
@@ -52,6 +54,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 
 /**
  *
@@ -63,6 +66,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
 
     public VariableNameImpl createElement( Variable variable) {
         VariableNameImpl retval = new VariableNameImpl(this, variable, true);
+        return retval;
+    }
+
+    public VariableNameImpl createElement( VariableElement variable) {
+        VariableNameImpl retval = new VariableNameImpl(this, variable);
+        Set<TypeResolver> instanceTypes = variable.getInstanceTypes();
         return retval;
     }
 

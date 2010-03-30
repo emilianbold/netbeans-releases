@@ -274,32 +274,48 @@ public class PhpProject implements Project {
         // #168390, #165494
         if (srcDirProperty == null) {
             FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            boolean found = projectProps != null;
+            boolean projectPropsFound = projectProps != null;
 
             StringBuilder buffer = new StringBuilder(2000);
-            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n");
-            buffer.append("diagnostics:\n");
-            buffer.append("project.properties exists: ");
-            buffer.append(found);
-            if (found) {
+            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n"); // NOI18N
+            buffer.append("diagnostics:\n"); // NOI18N
+            buffer.append("project.properties exists: "); // NOI18N
+            buffer.append(projectPropsFound);
+            if (projectPropsFound) {
                 boolean canRead = projectProps.canRead();
-                buffer.append("\nproject.properties valid: ");
+                buffer.append("\nproject.properties valid: "); // NOI18N
                 buffer.append(projectProps.isValid());
-                buffer.append("\nproject.properties can read: ");
+                buffer.append("\nproject.properties can read: "); // NOI18N
                 buffer.append(canRead);
                 if (canRead) {
-                    buffer.append("\nproject.properties content: [");
+                    buffer.append("\nproject.properties content: ["); // NOI18N
                     try {
                         buffer.append(projectProps.asText());
                     } catch (IOException exc) {
                         buffer.append(exc.getMessage());
                     }
-                    buffer.append("]");
+                    buffer.append("]"); // NOI18N
+                }
+            } else {
+                // project properties not found
+                FileObject projectDirectory = getProjectDirectory();
+                buffer.append("\nproject directory: "); // NOI18N
+                buffer.append(projectDirectory);
+                buffer.append("\nproject directory children: "); // NOI18N
+                buffer.append(Arrays.asList(projectDirectory.getChildren()));
+
+                FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+                boolean nbprojectFound = nbproject != null;
+                buffer.append("\nnbproject exists: "); // NOI18N
+                buffer.append(nbprojectFound);
+                if (nbprojectFound) {
+                    buffer.append("\nnbproject children: "); // NOI18N
+                    buffer.append(Arrays.asList(nbproject.getChildren()));
                 }
             }
-            buffer.append("\nproperties (helper): ");
+            buffer.append("\nproperties (helper): "); // NOI18N
             buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-            buffer.append("\nproperties (evaluator): ");
+            buffer.append("\nproperties (evaluator): "); // NOI18N
             buffer.append(eval.getProperties());
             throw new IllegalStateException(buffer.toString());
         }
@@ -404,7 +420,7 @@ public class PhpProject implements Project {
     }
 
     private void informUser(String title, String message, int type) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
                 message,
                 title,
                 NotifyDescriptor.DEFAULT_OPTION,

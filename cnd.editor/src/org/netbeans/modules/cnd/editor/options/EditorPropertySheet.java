@@ -551,6 +551,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
             new Reformatter(bd, codeStyle).reformat();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (Throwable ex) {
+            ex.printStackTrace();
         }
     }
 

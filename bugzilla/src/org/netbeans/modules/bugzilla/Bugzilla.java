@@ -93,7 +93,14 @@ public class Bugzilla {
         // in the BugzillaRepositoryConnector-s constructor
         brc = new BugzillaRepositoryConnector();
         clientManager = getRepositoryConnector().getClientManager();
-        BugzillaIssueProvider.getInstance();
+
+        // lazy ping tasklist issue provider to load issues ...
+        getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                BugzillaIssueProvider.getInstance();
+            }
+        });
     }
 
     public static synchronized Bugzilla getInstance() {
@@ -145,7 +152,7 @@ public class Bugzilla {
      * 
      * @return
      */
-    public RequestProcessor getRequestProcessor() {
+    public final RequestProcessor getRequestProcessor() {
         if(rp == null) {
             rp = new RequestProcessor("Bugzilla", 1, true); // NOI18N
         }

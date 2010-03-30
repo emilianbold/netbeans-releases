@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -51,6 +52,8 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -121,7 +124,7 @@ public class RemoteServerRecord implements ServerRecord {
         if (isOnline()) {
             return;
         }
-        RemoteUtil.LOGGER.fine("RSR.validate2: Validating " + toString());
+        RemoteUtil.LOGGER.log(Level.FINE, "RSR.validate2: Validating {0}", toString());
         if (force) {
             ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", getDisplayName())); // NOI18N
             ph.start();
@@ -201,11 +204,17 @@ public class RemoteServerRecord implements ServerRecord {
 
     @Override
     public boolean isOnline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.ONLINE;
     }
 
     @Override
     public boolean isOffline() {
+        if (state == State.ONLINE && !ConnectionManager.getInstance().isConnectedTo(executionEnvironment)) {
+            state = State.OFFLINE;
+        }
         return state == State.OFFLINE;
     }
 
@@ -294,11 +303,21 @@ public class RemoteServerRecord implements ServerRecord {
     public String getUserName() {
         return executionEnvironment.getUser();
     }
+
+    @Override
+    public boolean isRememberPassword() {
+        return PasswordManager.getInstance().isRememberPassword(executionEnvironment);
+    }
+
+    public void setRememberPassword(boolean rememberPassword) {
+        PasswordManager.getInstance().setRememberPassword(executionEnvironment, rememberPassword);
+    }
     
     public String getReason() {
         return reason == null ? "" : reason;
     }
 
+    @Override
     public RemoteSyncFactory getSyncFactory() {
         return this.syncFactory;
     }

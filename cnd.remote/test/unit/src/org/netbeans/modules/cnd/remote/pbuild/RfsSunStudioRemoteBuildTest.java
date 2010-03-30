@@ -47,6 +47,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
 /**
  *
  * @author Vladimir Kvashin
@@ -73,7 +74,7 @@ public class RfsSunStudioRemoteBuildTest extends RemoteBuildTestBase {
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         clearRemoteSyncRoot();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {

@@ -42,6 +42,8 @@ package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -49,10 +51,15 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.simple.XHTMLPanel;
+import org.xhtmlrenderer.swing.NaiveUserAgent;
 
 /**
  * JPanel wrapping XHTMLPanel, the Flying Saucer's rendering area.
@@ -64,25 +71,25 @@ import org.xhtmlrenderer.simple.XHTMLPanel;
 public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewComponent {
 
     private static final Logger LOGGER = Logger.getLogger(CssPreviewPanel.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
-    
+    private static final boolean LOG_FINE = LOGGER.isLoggable(Level.FINE);
     private Handler FS_HANDLER = new FlyingSaucerLoggersHandler();
-    
     private XHTMLPanel xhtmlPanel;
     private Runnable panelCreatedTask;
-    
+
     /** Creates new form CssPreviewPanel2 */
     public CssPreviewPanel() {
         initComponents();
 
         //run the xhtml panel creation in a non-AWT thread
         RequestProcessor.getDefault().execute(new FutureTask<XHTMLPanel>(new Runnable() {
+
             @Override
             public void run() {
                 //create outside of AWT
-                final XHTMLPanel panel = new XHTMLPanel();
+                final XHTMLPanel panel = new PatchedXHTMLPanel(new PreviewUserAgent());
                 //and set the panel to this component in AWT
                 SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
                         setXhtmlPanel(panel);
@@ -99,19 +106,20 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
         this.xhtmlPanel = panel;
         jScrollPane1.setViewportView(panel);
         //set the content if some was already requested
-        if(panelCreatedTask != null) {
+        if (panelCreatedTask != null) {
             panelCreatedTask.run();
             //release the only once used runnable
             panelCreatedTask = null;
         }
     }
-    
+
     @Override
     public synchronized void setDocument(final InputStream is, final String url) throws Exception {
-        if(xhtmlPanel == null) {
+        if (xhtmlPanel == null) {
             //early attempt to set a document content, the xhtml panel initialization
             //is still running
             panelCreatedTask = new Runnable() {
+
                 @Override
                 public void run() {
                     try {
@@ -148,7 +156,7 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
         //...just to me
         logger.addHandler(FS_HANDLER);
     }
-        
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -162,24 +170,29 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
         setLayout(new java.awt.BorderLayout());
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
-    
+
     //delegating flying saucer handler
     private class FlyingSaucerLoggersHandler extends Handler {
 
         @Override
         public void publish(LogRecord record) {
-            if (LOG) {
-                //set log level to INFO to prevent the exceptions
+            Level level = record.getLevel();
+            if (LOG_FINE) {
+                //set log level to FILE to prevent the exceptions
                 //popping up in a netbeans exceptions dialog
-                record.setLevel(Level.INFO);
+                record.setLevel(Level.FINE);
                 LOGGER.log(record);
+            } else {
+                //just swallow the log record if FINE logging disabled
+            }
+
+            //log the important messages with INFO level and show them in the status bar
+            if(level.intValue() >= Level.WARNING.intValue()) {
                 //log the exception message to output
-                LOGGER.log(Level.WARNING, record.getMessage());
+                LOGGER.log(Level.INFO, record.getMessage());
                 //...and to the status bar
                 StatusDisplayer.getDefault().setStatusText(record.getMessage());
             }
@@ -196,17 +209,72 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
     //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
     private static class PatchedXHTMLPanel extends XHTMLPanel {
+
+        /**
+         * Instantiates a panel with a custom {@link org.xhtmlrenderer.extend.UserAgentCallback}
+         * implementation.
+         *
+         * @param uac The custom UserAgentCallback implementation.
+         */
+        public PatchedXHTMLPanel(UserAgentCallback uac) {
+            super(uac);
+        }
+
         @Override
         public void paintComponent(Graphics g) {
             try {
                 super.paintComponent(g);
             } catch (Throwable e) {
-                if(LOG) {
-                    LOGGER.log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                if (LOG_FINE) {
+                    LOGGER.log(Level.FINE, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
                 }
                 CssPreviewTopComponent.getDefault().setError();
             }
         }
     }
-    
+
+    //workaround for specifying Base URL
+    private static class PreviewUserAgent extends NaiveUserAgent {
+
+        @Override
+        public String resolveURI(String uri) {
+            if (uri == null) {
+                return null;
+            }
+
+            try {
+                //the FS tries to resolve the absolute link by simply adding it to the
+                //current relative base so the uri given here looks like:
+                //
+                //file:/Users/marekfukala/NetBeansProjects/CssTesting/web/resources//duke2.png
+                //
+                //We can try to identify the doubleslash here and resolve the rest of the URI
+                //by relativizing it to the web root (base of the absolute links).
+                //This solution however seems to be little hacky to me and can stop
+                //working if FS changes the (undefined) semantic.
+                int doubleSlashIndex = uri.lastIndexOf("//"); //NOI18N
+                if(doubleSlashIndex != -1) {
+                    //get the link path w/o the base, KEEP one slash as the link prefix
+                    //so we can simply use WebUtils.resolve()
+                    String absoluteLink = uri.substring(doubleSlashIndex + 1); //+1 => just one slash goes away
+                    // Absolute path now we will look to the webRoot of the project
+                    FileObject edited = URLMapper.findFileObject(new URL(getBaseURL()));
+                    if (edited != null) {
+                        FileObject target = WebUtils.resolve(edited, absoluteLink);
+                        if (target != null) {
+                            URL targetURL = URLMapper.findURL(target, URLMapper.INTERNAL);
+                            if (targetURL != null) {
+                                return targetURL.toExternalForm();
+                            }
+                        }
+                    }
+                }
+
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex); //NOI18N
+            }
+            // falling back to FlyingSaucer implementation
+            return super.resolveURI(uri);
+        }
+    }
 }

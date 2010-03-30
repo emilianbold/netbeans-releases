@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @deprecated Replaced by actions in Artifact viewer window, see #164992
@@ -64,17 +65,30 @@ public class ViewProjectHomeAction extends AbstractAction {
         this.artifact = artifact;
         this.repos = repos;
         putValue(Action.NAME, NbBundle.getMessage(ViewProjectHomeAction.class, "LBL_View_ProjectHome"));
-        MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
+
+//TODO - this call is fairly expensive at times. comment out for now.
         //enable only if url persent
-        setEnabled(mp != null && mp.getUrl() != null);
+//        MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
+//        setEnabled(mp != null && mp.getUrl() != null);
+        setEnabled(true);
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
-        MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
-        try {
-            URLDisplayer.getDefault().showURL(new URL(mp.getUrl()));
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        //TODO report progress in ui somehow, allow to cancel?
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                MavenProject mp = ActionsUtil.readMavenProject(artifact, repos);
+                String url = mp.getUrl();
+                if (url != null) {
+                    try {
+                        URLDisplayer.getDefault().showURL(new URL(url));
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
     }
 }

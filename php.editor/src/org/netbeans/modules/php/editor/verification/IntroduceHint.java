@@ -448,7 +448,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParams), clsName, fileName);//NOI18N
+                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
 
         }
 
@@ -482,7 +482,7 @@ public class IntroduceHint extends AbstractRule {
             String clsName = type.getName();
             String fileName = type.getFileObject().getNameExt();
             return NbBundle.getMessage(IntroduceHint.class, "IntroduceHintStaticMethodDesc",
-                    item.getMethod().asString(PrintAs.NameAndParams), clsName, fileName);//NOI18N
+                    item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);//NOI18N
         }
 
         int getOffset() throws BadLocationException {

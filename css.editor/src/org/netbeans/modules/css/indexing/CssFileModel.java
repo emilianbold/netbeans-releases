@@ -53,6 +53,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.css.gsf.CssGSFParser;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
@@ -246,6 +247,29 @@ public class CssFileModel {
 
                 Collection<Entry> collection;
                 int start_offset_diff;
+                //find the selector body range if possible
+                SimpleNode styleRuleNode = SimpleNodeUtil.getAncestorByType(node, CssParserTreeConstants.JJTSTYLERULE);
+                OffsetRange body = null;
+                if(styleRuleNode != null) {
+                    //find the opening left curly bracket {
+                    Token first = styleRuleNode.jjtGetFirstToken();
+                    Token last = styleRuleNode.jjtGetLastToken();
+                    int from = -1;
+                    do {
+                        if(first.kind == CssParserConstants.LBRACE) {
+                            from = first.offset + 1;
+                            break;
+                        }
+                    } while((first = first.next) != last);
+
+                    //get the closing right curly bracket }
+                    int to = styleRuleNode.jjtGetLastToken().offset;
+
+                    if(from != -1 && to != -1) {
+                        body = new OffsetRange(from, to);
+                    }
+                }
+
                 switch (node.kind()) {
                     case CssParserTreeConstants.JJT_CLASS:
                         collection = getClassesCollectionInstance();
@@ -270,7 +294,7 @@ public class CssFileModel {
                 //check if the real start offset can be translated to the original offset
                 boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
 
-                Entry e = createEntry(image, range, isVirtual);
+                Entry e = createEntry(image, range, body, isVirtual);
                 if(e != null) {
                     collection.add(e);
                 }
@@ -320,10 +344,20 @@ public class CssFileModel {
     }
 
     public Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
+        return createEntry(name, range, null, isVirtual);
+    }
+
+    public Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+        //do not create entries for virtual generated code
+        if(CssGSFParser.containsGeneratedCode(name)) {
+            return null;
+        }
+
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
         OffsetRange documentRange = null;
+        OffsetRange documentBodyRange = null;
         String elementLineText = null;
         String elementText = null;
         int lineOffset = -1;
@@ -373,9 +407,18 @@ public class CssFileModel {
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
+
+            if(bodyRange != null) {
+                int bodyDocFrom = getSnapshot().getOriginalOffset(bodyRange.getStart());
+                int bodyDocTo = getSnapshot().getOriginalOffset(bodyRange.getEnd());
+                if(bodyDocFrom != -1 && bodyDocTo != -1) {
+                    documentBodyRange = new OffsetRange(bodyDocFrom, bodyDocTo);
+                }
+            }
         }
 
-        return new Entry(name, range, documentRange, lineOffset, elementText, elementLineText, isVirtual);
+        return new Entry(name, range, documentRange, bodyRange, documentBodyRange,
+                lineOffset, elementText, elementLineText, isVirtual);
     }
 
     private static int[] getTextWSPreAndPostLens(String text) {

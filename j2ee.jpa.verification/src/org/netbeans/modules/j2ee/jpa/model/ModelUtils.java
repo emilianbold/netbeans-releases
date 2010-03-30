@@ -48,6 +48,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -70,8 +71,11 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
     
     public static Entity getEntity(EntityMappingsMetadata metadata, TypeElement clazz){
+        assert metadata != null : "Metadata is null"; //NOI18N
+        assert clazz != null : "TypeElement is null"; //NOI18N
+        Name clName = clazz.getQualifiedName();
         for (Entity entity: metadata.getRoot().getEntity()){
-            if (clazz.getQualifiedName().contentEquals(entity.getClass2())){
+            if (clName.contentEquals(entity.getClass2())){
                 return entity;
             }
         }

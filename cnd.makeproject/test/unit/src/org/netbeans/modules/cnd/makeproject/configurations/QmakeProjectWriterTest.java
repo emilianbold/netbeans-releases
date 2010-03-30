@@ -74,7 +74,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         projectCreator.initialize(wiz);
         wiz.putProperty("name", destdir.getName());
         wiz.putProperty("projdir", destdir);
-        projectCreator.instantiate(wiz);
+        projectCreator.instantiate();
     }
 
     @Test

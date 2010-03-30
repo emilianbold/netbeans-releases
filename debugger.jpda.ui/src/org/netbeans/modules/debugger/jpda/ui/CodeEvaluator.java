@@ -125,7 +125,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
 
     private HistoryRecord lastEvaluationRecord = null;
     private Variable result;
-    private RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
+    private static RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
     private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
 
 
@@ -336,7 +336,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void addResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -349,7 +349,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     public static void removeResultListener(final PropertyChangeListener listener) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -362,7 +362,7 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private static void fireResultChange() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 CodeEvaluator defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {

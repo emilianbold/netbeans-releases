@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -69,6 +70,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 /**
@@ -76,6 +78,7 @@ import org.openide.util.Mutex;
  */
 public final class FolderObj extends BaseFileObj {    
     static final long serialVersionUID = -1022430210876356809L;
+    private static final Logger LOG = Logger.getLogger(FolderObj.class.getName());
 
     private FolderChildrenCache folderChildren;
     boolean valid = true;
@@ -259,7 +262,7 @@ public final class FolderObj extends BaseFileObj {
 
         if (retVal != null) {            
             if (retVal instanceof FileObj) {
-                retVal.setLastModified(file2Create.lastModified());
+                retVal.setLastModified(file2Create.lastModified(), file2Create);
             }
             retVal.fireFileDataCreatedEvent(false);
         } else {
@@ -344,6 +347,8 @@ public final class FolderObj extends BaseFileObj {
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
+
+        LOG.log(Level.FINER, "refreshImpl for {0} expected: {1} fire: {2} previous: {3}", new Object[]{this, expected, fire, previous});
 
         oldChildren.removeAll(refreshResult.keySet());
         for (final FileNaming child : oldChildren) {

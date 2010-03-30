@@ -95,6 +95,24 @@ public abstract class NetigsoFramework {
     protected abstract void stopLoader(ModuleInfo m, ClassLoader loader);
 
     //
+    // Access to Archive
+    //
+    
+    /** Get an array of bytes from archive. If not found, it remembers the
+     * request and later calls {@link #toArchive(java.lang.String, java.lang.String)}
+     * method to store it for next time.
+     *
+     * @param name name of the resource inside the JAR
+     * @parma resources the provider of the real resources
+     * @return either cached value or the one returned by resources (or null)
+     * @throws IOException if something goes wrong
+     * @since 2.29
+     */
+    protected final byte[] fromArchive(ArchiveResources resources, String name) throws IOException {
+        return JarClassLoader.archive.getData(resources, name);
+    }
+
+    //
     // Implementation
     //
 

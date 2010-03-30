@@ -1754,7 +1754,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         profile = new Profile(profiler, when);
     }
 
-    private class Profile implements Runnable {
+    private final class Profile implements Runnable {
         Object profiler;
         boolean profiling;
         private final long time;
@@ -1765,6 +1765,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             run();
         }
 
+        @Override
         public synchronized void run() {
             profiling = true;
             if (profiler instanceof Runnable) {
@@ -1778,7 +1779,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
             ActionListener ss = (ActionListener)profiler;
             profiler = null;
-            if (!profiling) {
+            if (!profiling || delta < 0 || delta > 60L * 60 * 1000) {
                 return;
             }
             try {

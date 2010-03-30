@@ -43,11 +43,12 @@
 #define _XOPEN_SOURCE 600
 #define _BSD_SOURCE
 #include <termios.h>
+#else
+#include <stropts.h>
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stropts.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -65,7 +66,7 @@ int main(int argc, char* argv[]) {
     int c;
     int err_flag = 0;
 
-    while ((c = getopt(argc, argv, "p:")) != EOF) {
+    while (pty == NULL && (c = getopt(argc, argv, "p:")) != EOF) {
         switch (c) {
             case 'p':
                 pty = optarg;

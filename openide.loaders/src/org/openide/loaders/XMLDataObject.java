@@ -189,8 +189,6 @@ public class XMLDataObject extends MultiDataObject {
     throws DataObjectExistsException {
         super (fo, loader);
         
-        fo.addFileChangeListener (FileUtil.weakFileChangeListener (getIP (), fo));
-
         status = STATUS_NOT;
 
         if (registerEditor) {
@@ -497,6 +495,12 @@ public class XMLDataObject extends MultiDataObject {
         //err.notify (ErrorManager.INFORMATIONAL, new Throwable ("stack dump"));
         doc = null;
         firePropertyChange (PROP_DOCUMENT, null, null);
+    }
+
+    @Override
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        getIP().fileChanged(fe);
     }
 
     /** 

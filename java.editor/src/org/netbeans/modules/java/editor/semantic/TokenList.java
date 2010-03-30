@@ -89,7 +89,7 @@ public class TokenList {
     }
     
     public void moveToOffset(long inputOffset) {
-        final int offset = info.getPositionConverter().getOriginalPosition((int) inputOffset);
+        final int offset = info.getSnapshot().getOriginalOffset((int) inputOffset);
 
         if (offset < 0)
             return ;
@@ -243,7 +243,7 @@ public class TokenList {
                 if (!tArgs.isEmpty()) {
                     int offset = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tArgs.get(0));
                     
-                    offset = info.getPositionConverter().getOriginalPosition(offset);
+                    offset = info.getSnapshot().getOriginalOffset(offset);
                     
                     if (offset < 0)
                         return ;

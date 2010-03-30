@@ -50,6 +50,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -74,7 +75,7 @@ public final class LazyTryCatchStatementImpl extends LazyStatementImpl implement
         }
         CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
         parser.setLazyCompound(false);
-        parser.function_try_block();
+        parser.function_try_block(CsmKindUtilities.isConstructor(getScope()));
         AST out = parser.getAST();
         return out;
     }

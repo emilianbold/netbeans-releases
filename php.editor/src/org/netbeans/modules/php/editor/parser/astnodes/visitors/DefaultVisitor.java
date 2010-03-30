@@ -171,10 +171,6 @@ public class DefaultVisitor implements Visitor {
 
     public void visit(FieldsDeclaration node) {
         scan(node.getFields());
-        Expression[] initialValues = node.getInitialValues();
-        for (Expression expression : initialValues) {
-            scan(expression);
-        }
     }
 
     public void visit(ForEachStatement node) {
