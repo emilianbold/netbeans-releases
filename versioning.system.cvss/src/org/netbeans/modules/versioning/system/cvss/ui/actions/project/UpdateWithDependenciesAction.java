@@ -76,7 +76,7 @@ public final class UpdateWithDependenciesAction extends AbstractSystemAction {
     protected void performCvsAction(final Node[] nodes) {
         setEnabled(false);
         org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("CVS");
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 async(nodes);
             }

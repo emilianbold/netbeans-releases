@@ -39,15 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.localhistory.ui.view;
-import org.netbeans.modules.localhistory.ui.actions.*;
-import org.netbeans.modules.localhistory.ui.revert.*;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.utils.Utils;
 import org.openide.LifecycleManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -73,7 +71,7 @@ public class RevertFileAction extends NodeAction {
         LifecycleManager.getDefault().saveAll();  
         
         // XXX progress support ???
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {                 
                 Utils.revert(activatedNodes);
             }
