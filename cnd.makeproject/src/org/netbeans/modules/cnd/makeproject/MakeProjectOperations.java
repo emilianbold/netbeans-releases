@@ -44,7 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-//import org.apache.tools.ant.module.api.support.ActionUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -57,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private MakeProject project;
 
@@ -89,7 +91,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
         List<FileObject> files = new ArrayList<FileObject>();
         FileObject[] children = projectDirectory.getChildren();
-        List metadataFiles = getMetadataFiles();
+        List<FileObject> metadataFiles = getMetadataFiles();
         for (int i = 0; i < children.length; i++) {
             if (metadataFiles.indexOf(children[i]) < 0) {
                 files.add(children[i]);
@@ -105,23 +107,13 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     @Override
     public void notifyDeleting() throws IOException {
-//        J2SEActionProvider ap = (J2SEActionProvider) project.getLookup().lookup(J2SEActionProvider.class);
-//        
-//        assert ap != null;
-//        
-//        Lookup context = Lookups.fixed(new Object[0]);
-//        Properties p = new Properties();
-//        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, context, p);
-//        FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//        
-//        assert targetNames != null;
-//        assert targetNames.length > 0;
-//        
-//        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        LOGGER.log(Level.FINE, "notify Deleting MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.setDeleted();
     }
 
     @Override
     public void notifyDeleted() throws IOException {
+        LOGGER.log(Level.FINE, "notify Deleted MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
         project.getAntProjectHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject instanceof NativeProjectProvider) {
@@ -137,8 +129,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     @Override
     public void notifyCopying() {
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor().save();
+        LOGGER.log(Level.FINE, "notify Copying MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.save();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -173,9 +165,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     @Override
     public void notifyMoving() throws IOException {
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor().save();
-        notifyDeleting();
+        LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.saveAndMarkDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
@@ -197,38 +188,8 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
-//      fixDistJarProperty (nueName);
         project.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
     }
 
-    private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo)) {
-            return false;
-        }
-
-        while (fo != null) {
-            if (fo.equals(folder)) {
-                return true;
-            }
-
-            fo = fo.getParentFile();
-        }
-
-        return false;
-    }
-//    private void fixDistJarProperty (final String newName) {
-//        ProjectManager.mutex().writeAccess(new Runnable () {
-//            public void run () {
-//                ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-//                String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
-//                EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                String propValue = ep.getProperty("dist.jar");  //NOI18N
-//                if (oldDistJar != null && oldDistJar.equals (propValue)) {
-//                    ep.put ("dist.jar","${dist.dir}/"+PropertyUtils.getUsablePropertyName(newName)+".jar"); //NOI18N
-//                    project.getUpdateHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-//                }
-//            }
-//        });
-//    }
 }

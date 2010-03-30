@@ -125,9 +125,8 @@ class SftpSupport {
                 channel = null;
             }
             if (channel == null) {
-                Session session =
-                    ConnectionManagerAccessor.getDefault().getConnectionSession(
-                    ConnectionManager.getInstance(), execEnv, true);
+                ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+                Session session = cmAccess.getConnectionSession(execEnv, true);
                 channel = (ChannelSftp) session.openChannel("sftp"); // NOI18N
                 channel.connect();
             }
