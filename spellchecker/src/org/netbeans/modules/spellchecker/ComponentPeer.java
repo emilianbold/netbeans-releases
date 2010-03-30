@@ -218,23 +218,23 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return currentVisibleRange;
     }
 
-    private TokenList l;
+    private TokenList tokenList;
     
     private synchronized TokenList getTokenList() {
-        if (l == null) {
-            l = ACCESSOR.lookupTokenList(getDocument());
+        if (tokenList == null) {
+            tokenList = ACCESSOR.lookupTokenList(getDocument());
             
-            if (l != null)
-                l.addChangeListener(this);
+            if (tokenList != null)
+                tokenList.addChangeListener(this);
         }
         
-        return l;
+        return tokenList;
     }
     
     private void process() throws BadLocationException {
-        final Document doc = getDocument();
+        final Document document = getDocument();
         
-        if (doc.getLength() == 0)
+        if (document.getLength() == 0)
             return ;
         
         final List<int[]> localHighlights = new LinkedList<int[]>();
@@ -244,14 +244,14 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         try {
             resume();
             
-            final TokenList l = getTokenList();
+            final TokenList _tokenList = getTokenList();
             
-            if (l == null) {
+            if (_tokenList == null) {
                 //nothing to do:
                 return ;
             }
 
-            Dictionary d = getDictionary(doc);
+            Dictionary d = getDictionary(document);
 
             if (d == null)
                 return ;
@@ -266,13 +266,13 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
             final boolean[] cont = new boolean [1];
             
-            doc.render(new Runnable() {
+            document.render(new Runnable() {
                 public void run() {
                     if (isCanceled()) {
                         cont[0] = false;
                         return;
                     } else {
-                        l.setStartOffset(span[0]);
+                        _tokenList.setStartOffset(span[0]);
                         cont[0] = true;
                     }
                 }
@@ -285,20 +285,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             final CharSequence[] word = new CharSequence[1];
             
             while (!isCanceled()) {
-                doc.render(new Runnable() {
+                document.render(new Runnable() {
                     public void run() {
                         if (isCanceled()) {
                             cont[0] = false;
                             return ;
                         }
                         
-                        if (cont[0] = l.nextWord()) {
-                            if (l.getCurrentWordStartOffset() > span[1]) {
+                        if (cont[0] = _tokenList.nextWord()) {
+                            if (_tokenList.getCurrentWordStartOffset() > span[1]) {
                                 cont[0] = false;
                                 return ;
                             }
                             
-                            word[0] = l.getCurrentWordText();
+                            word[0] = _tokenList.getCurrentWordText();
                         }
                     }
                 });
@@ -322,10 +322,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     case PREFIX_OF_VALID:
                     case BLACKLISTED:
                     case INVALID:
-                        doc.render(new Runnable() {
+                        document.render(new Runnable() {
                             public void run() {
                                 if (!isCanceled()) {
-                                    localHighlights.add(new int[] {l.getCurrentWordStartOffset(), l.getCurrentWordStartOffset() + word[0].length()});
+                                    localHighlights.add(new int[] {_tokenList.getCurrentWordStartOffset(), _tokenList.getCurrentWordStartOffset() + word[0].length()});
                                 }
                             }
                         });
@@ -333,7 +333,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             }
         } finally {
             if (!isCanceled()) {
-                doc.render(new Runnable() {
+                document.render(new Runnable() {
                     public void run() {
                         if (isCanceled()) {
                             return;
@@ -349,7 +349,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                                     }
                                 }
                             } else {
-                                OffsetsBag localHighlightsBag = new OffsetsBag(doc);
+                                OffsetsBag localHighlightsBag = new OffsetsBag(document);
 
                                 for (int[] current : localHighlights) {
                                     localHighlightsBag.addHighlight(current[0], current[1], ERROR);
@@ -362,7 +362,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     }
                 });
                 
-                FileObject file = getFile(doc);
+                FileObject file = getFile(document);
 
                 Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
                         new Object[] {file, System.currentTimeMillis() - startTime});
@@ -501,7 +501,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() == l) {
+        if (e.getSource() == tokenList) {
             reschedule();
         } else {
             updateCurrentVisibleSpan();
