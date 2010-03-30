@@ -208,7 +208,9 @@ public abstract class JPDADebugger {
      * @param connector The listening connector
      * @param args The arguments
      * @param services The additional services
-     * @return A non-empty array of started engines.
+     * @return A non-empty array of started engines (since 2.26)
+     * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
+     * returns an empty array
      */
     public static DebuggerEngine[] startListening (
         ListeningConnector        connector,

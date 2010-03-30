@@ -766,6 +766,21 @@ These are mainly class and thread filters and hit counts.
         <issue number="180695"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDADebugger.startListening() returns the started engines.</summary>
+        <version major="2" minor="26"/>
+        <date day="23" month="3" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="incompatible"/>
+        <description>
+            JPDADebugger.startListening() returns the debugger engines that are
+            started, for use by the fix of the defect #182439.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDADebugger" />
+        <issue number="182439"/>
+    </change>
+
 
 </changes>
 
