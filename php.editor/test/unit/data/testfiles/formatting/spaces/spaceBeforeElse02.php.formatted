@@ -7,8 +7,7 @@ if (true) {
 
 if (false) {
     echo "not true";
-}
-elseif (true) {
+} elseif (true) {
     echo "true";
 }
 

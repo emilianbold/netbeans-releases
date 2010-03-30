@@ -4,8 +4,7 @@ for ($index = 0 ; $index < count($array) ; $index++) {
     $b = $index + 1 ;
 }
 
-for ( ;;) {
+for ( ; ;) {
     echo "ha" ;
 }
-
 ?>

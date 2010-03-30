@@ -6,11 +6,11 @@
  * PHPDoc line 3
  */
 class class_name {
-  
+
   function __construct() {
     
   }
-  
+
   /**
    * PHPDoc line 1
    * PHPDoc line 2
@@ -19,6 +19,7 @@ class class_name {
   function function_name() {
     ;
   }
+
 }
 
 ?>
