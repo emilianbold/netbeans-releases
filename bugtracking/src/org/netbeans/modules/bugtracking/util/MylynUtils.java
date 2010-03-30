@@ -132,7 +132,7 @@ public class MylynUtils {
             new Object[]{
                 repository.getUrl(),
                 user,
-                (psswd != null && !psswd.equals("") ? "******" : "")            // NOI18N
+                BugtrackingUtil.getPasswordLog(psswd)
             }
         );
     }

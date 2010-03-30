@@ -837,5 +837,14 @@ public class BugtrackingUtil {
         IssueAction.createIssue(repo);
     }
 
+    public static String getPasswordLog(String psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return psswd; 
+        }
+        return "******"; // NOI18N
+    }
     
 }
