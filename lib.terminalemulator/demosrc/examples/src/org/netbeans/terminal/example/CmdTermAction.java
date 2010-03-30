@@ -43,6 +43,7 @@ package org.netbeans.terminal.example;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
+import org.netbeans.terminal.example.Config.AllowClose;
 
 import org.openide.util.NbBundle;
 import org.openide.windows.IOContainer;
@@ -69,8 +70,7 @@ public class CmdTermAction extends AbstractAction {
 	IOContainer container = TerminalIOProviderSupport.getIOContainer();
 	container = null;	// work with default IO container
 
-        boolean restartable = true;
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeRichCommand(iop, container, cmd, restartable, true, true, AllowClose.ALWAYS);
+	support.executeRichCommand(iop, container, Config.getCmdConfig(cmd));
     }
 }

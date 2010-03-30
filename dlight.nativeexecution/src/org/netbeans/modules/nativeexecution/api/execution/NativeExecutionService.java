@@ -48,8 +48,8 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.openide.util.RequestProcessor;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -125,7 +125,7 @@ public final class NativeExecutionService {
             }
         });
 
-        RequestProcessor.getDefault().post(runTask);
+        NativeTaskExecutorService.submit(runTask, "start process in term"); // NOI18N
 
         return runTask;
     }
