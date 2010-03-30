@@ -45,12 +45,14 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.RequestProcessor;
 
 /** Cnd Debugger implementatoin of DebuggerEngineProvider */
 public class GdbEngineProvider extends DebuggerEngineProvider {
 
     private DebuggerEngine.Destructor   desctuctor;
     private Session                     session;
+    private RequestProcessor            gdbRP = new RequestProcessor("GDB Debugger", 5);
 
     public GdbEngineProvider(ContextProvider contextProvider) {
         session = contextProvider.lookupFirst(null, Session.class);
@@ -64,8 +66,9 @@ public class GdbEngineProvider extends DebuggerEngineProvider {
         return GdbDebugger.ENGINE_ID;
     }
     
-    public Object[] getServices() {
-        return new Object [0];
+    public Object[] getServices () {
+        Object[] services = new Object[] {gdbRP};
+        return services;
     }
     
     public void setDestructor(DebuggerEngine.Destructor desctuctor) {
@@ -78,6 +81,10 @@ public class GdbEngineProvider extends DebuggerEngineProvider {
     
     public Session getSession() {
         return session;
+    }
+
+    RequestProcessor getRequestProcessor() {
+        return gdbRP;
     }
 }
 

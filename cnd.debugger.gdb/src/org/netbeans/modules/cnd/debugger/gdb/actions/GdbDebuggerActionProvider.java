@@ -43,20 +43,29 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.WeakSet;
 
 /**
 * Representation of a debugging session.
 *
 * @author  Gordon Prieur (copied from Jan Jancura's and Marian Petras' JPDA implementation)
 */
-public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
+abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
                 implements PropertyChangeListener {
     
     private final GdbDebugger debugger;
     
+    private static Set<GdbDebuggerActionProvider> providersToDisableOnLazyActions 
+            = new WeakSet<GdbDebuggerActionProvider>();
+
+    private volatile boolean disabled;
+
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
@@ -76,11 +85,58 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     
     @Override
     public boolean isEnabled(Object action) {
-        checkEnabled(debugger.getState());
+        if (!disabled) {
+            checkEnabled(debugger.getState());
+        }
         return super.isEnabled(action);
     }
     
     GdbDebugger getDebugger() {
         return debugger;
+    }
+
+    /**
+     * Mark the provided action provider to be disabled when a lazy action is to be performed.
+     */
+    protected final void setProviderToDisableOnLazyAction(GdbDebuggerActionProvider provider) {
+        synchronized (GdbDebuggerActionProvider.class) {
+            providersToDisableOnLazyActions.add(provider);
+        }
+    }
+    
+    /**
+     * Do the action lazily in a RequestProcessor.
+     * @param run The action to perform.
+     */
+    protected final void doLazyAction(final Runnable run) {
+        final Set<GdbDebuggerActionProvider> disabledActions;
+        synchronized (GdbDebuggerActionProvider.class) {
+            disabledActions = new HashSet<GdbDebuggerActionProvider>(providersToDisableOnLazyActions);
+        }
+        for (Iterator<GdbDebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+            GdbDebuggerActionProvider ap = it.next();
+            Set actions = ap.getActions();
+            ap.disabled = true;
+            for (Iterator ait = actions.iterator(); ait.hasNext(); ) {
+                Object action = ait.next();
+                ap.setEnabled(action, false);
+                //System.out.println(ap+".setEnabled("+action+", "+false+")");
+            }
+        }
+        debugger.getRequestProcessor().post(new Runnable() {
+            public void run() {
+//                try {
+                    run.run();
+                    for (Iterator<GdbDebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
+                        GdbDebuggerActionProvider ap = it.next();
+                        Set actions = ap.getActions();
+                        ap.disabled = false;
+                        ap.checkEnabled(debugger.getState ());
+                    }
+//                } catch (Exception e) {
+//                    // Causes kill action when something is being evaluated
+//                }
+            }
+        });
     }
 }
