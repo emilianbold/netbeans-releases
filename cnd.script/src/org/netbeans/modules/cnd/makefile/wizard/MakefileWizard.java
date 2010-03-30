@@ -984,7 +984,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                         MakefileWizardEvent.MAKEFILE_NEW,
                         fullMakefilePath,
                         getMakefileData().getBaseDirectory(),
-                        MakeSettings.getDefault().getDefaultMakeCommand(),
+                        "make", // NOI18N
                         targets.toArray(new String[targets.size()]),
                         executables.toArray(new String[executables.size()]));
                 fireMakefileWizardEvent(wizardEvent);

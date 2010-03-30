@@ -62,7 +62,6 @@ public class MakeSettings extends SharedClassObject {
     /** serial uid */
     static final long serialVersionUID = 1276277545941336641L;
     public static final String PROP_DEFAULT_BUILD_DIR = "defaultBuildDirectory"; //NOI18N
-    public static final String PROP_DEFAULT_MAKE_COMMAND = "defaultMakeCommand"; //NOI18N
     public static final String PROP_ERROR_EXPRESSION = "errorExpression"; //NOI18N
     public static final String PROP_EXECUTOR = "executor";	//NOI18N
     public static final String PROP_REUSE_OUTPUT = "reuseOutput";	//NOI18N
@@ -91,7 +90,6 @@ public class MakeSettings extends SharedClassObject {
         super.initialize();
         registerPropertyEditors();
 
-        setDefaultMakeCommand(getString("DEFAULT_MAKE_COMMAND_VALUE")); // NOI18N
         setReuseOutput(false);
         setSaveAll(true);
 
@@ -130,10 +128,7 @@ public class MakeSettings extends SharedClassObject {
     private void registerPropertyEditors() {
         String[] searchPath = PropertyEditorManager.getEditorSearchPath();
         String[] newSP = new String[searchPath.length + 1];
-
-        for (int i = 0; i < searchPath.length; i++) {
-            newSP[i] = searchPath[i];
-        }
+        System.arraycopy(searchPath, 0, newSP, 0, searchPath.length);
 
         newSP[searchPath.length] = "org.netbeans.modules.cnd.builds"; // NOI18N
         PropertyEditorManager.setEditorSearchPath(newSP);
@@ -180,17 +175,7 @@ public class MakeSettings extends SharedClassObject {
      *  @return the default name
      */
     public String getDefaultMakeCommand() {
-        return (String) getProperty(PROP_DEFAULT_MAKE_COMMAND);
-    }
-
-    /**
-     *  Set the default make command. This can be either a simple name or
-     *  a path name to a specific make program.
-     *
-     *  @param make name or path of the desired make program 
-     */
-    public void setDefaultMakeCommand(String make) {
-        putProperty(PROP_DEFAULT_MAKE_COMMAND, make);
+        return "make"; // NOI18N
     }
 
     /** @return Error Expression */
