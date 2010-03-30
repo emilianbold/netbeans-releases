@@ -65,7 +65,7 @@ public class MylynUtils {
 
     public static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
         logCredentials(repository, user, password, "Setting credentials: ");    // NOI18N
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? password : ""); // NOI18N
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
         if(httpUser != null || httpPassword != null) {
