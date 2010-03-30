@@ -134,6 +134,9 @@ final class ProcessList {
             ptype = PTYPE.NONE;
         } catch (CancellationException caex) {
             ptype = PTYPE.NONE;
+        } catch (InterruptedException ex) {
+            // don't log InterruptedException
+            ptype = PTYPE.NONE;
         }
         executable = exec;
     }

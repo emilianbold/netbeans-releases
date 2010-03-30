@@ -5,5 +5,4 @@ function test() {
                     echo "test";
           } while ($condition);
 }
-
 ?>

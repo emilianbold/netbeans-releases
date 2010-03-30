@@ -158,7 +158,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 try {
                     version=JPAParseUtils.getVersion(is);
                 } catch (SAXException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.INFO, null, ex);//persistence.xml may be corrupted, but no need to show exception dialog
                 }
                 finally
                 {
