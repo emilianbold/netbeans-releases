@@ -63,6 +63,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.awt.*;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -194,7 +195,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = RequestProcessor.getDefault().create(currentTask);
+            currentShowDiffTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().create(currentTask);
             currentShowDiffTask.schedule(0);
         }
     }
