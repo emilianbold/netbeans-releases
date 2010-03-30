@@ -57,9 +57,8 @@ import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
-import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
-import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -84,8 +83,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         phpVersionComboBox.setModel(new PhpVersionComboBoxModel());
 
-        encodingComboBox.setModel(new EncodingModel());
-        encodingComboBox.setRenderer(new EncodingRenderer());
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
 
     @Override
