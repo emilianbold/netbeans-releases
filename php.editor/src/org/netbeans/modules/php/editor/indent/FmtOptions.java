@@ -126,6 +126,9 @@ public class FmtOptions {
     public static final String blankLinesBeforeFunction = "blankLinesBeforeFunction"; //NOI18N
     public static final String blankLinesAfterFunction = "blankLinesAfterFunction"; //NOI18N
     public static final String blankLinesBeforeFunctionEnd = "blankLinesBeforeFunctionEnd"; //NOI18N
+    public static final String blankLinesAfterOpenPHPTag = "blankLinesAfterOpenPHPTag"; //NOI18N
+    public static final String blankLinesAfterOpenPHPTagInHTML = "blankLinesAfterOpenPHPTagInHTML"; //NOI18N
+    public static final String blankLinesBeforeClosePHPTag = "blankLinesBeforeClosePHPTag"; //NOI18N
 
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
@@ -181,6 +184,7 @@ public class FmtOptions {
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
+    public static final String spaceBeforeClosePHPTag = "spaceBeforeClosePHPTag"; //NOI18N
 
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
@@ -282,6 +286,9 @@ public class FmtOptions {
             { blankLinesBeforeFunction, "1"}, //NOI18N
             { blankLinesAfterFunction, "1"}, //NOI18N
             { blankLinesBeforeFunctionEnd, "0"}, //NOI18N
+	    { blankLinesAfterOpenPHPTag, "1"}, //NOI18N
+	    { blankLinesAfterOpenPHPTagInHTML, "0"}, //NOI18N
+	    { blankLinesBeforeClosePHPTag, "0"}, //NOI18N
 
             { spaceBeforeWhile, TRUE},
             { spaceBeforeElse, TRUE},
@@ -336,6 +343,7 @@ public class FmtOptions {
 //            { spaceAfterColon, TRUE},
             { spaceAfterTypeCast, TRUE},
 	    { spaceCheckAfterKeywords, TRUE},
+	    { spaceBeforeClosePHPTag, TRUE},
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N

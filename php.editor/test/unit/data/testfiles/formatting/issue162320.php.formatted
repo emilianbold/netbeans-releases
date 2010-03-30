@@ -1,4 +1,5 @@
 <?
+
 if (true) {
   // test
   echo 1;
@@ -15,5 +16,4 @@ class class_name {
   }
 
 }
-
 ?>

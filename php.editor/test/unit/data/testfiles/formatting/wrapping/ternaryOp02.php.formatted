@@ -1,4 +1,5 @@
 <?php
+
 $a = $b > 20
         ? true
         : false;
@@ -12,5 +13,4 @@ function testFunction($param) {
             ? getLastResult()
             : getPreviousResult("There is a long text");
 }
-
 ?>
