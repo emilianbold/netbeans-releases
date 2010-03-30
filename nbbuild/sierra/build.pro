@@ -45,76 +45,20 @@
     <property name="netbeans.prox" value="false"/>
     <property name="netbeans.type" value="java"/>
 
-    <!-- Sierra latest continuous -->
-    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
-    <property name="sierra.path" value="hudson/job/sierra/ws/cache/latest"/>
-    <property name="sierra.file" value="sierra.zip"/>
+    <!-- NetBeans the latest nightly -->
+    <!-- property name="netbeans.host" value="http://smetiste.czech.sun.com"/-->
+    <!-- property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/-->
+    <!-- property name="netbeans.user" value=".netbeans/dev"/-->
 
-    <!-- NetBeans latest nightly -->
-    <!-- property name="netbeans.host" value="http://bits.netbeans.org"/ -->
-    <!-- property name="netbeans.path" value="download/trunk/nightly/latest/zip"/ -->
-    <!-- property name="netbeans.user" value=".netbeans/dev"/ -->
-
-    <!-- NetBeans latest daily -->
+    <!-- NetBeans the latest stable nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
-    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
+    <property name="netbeans.path" value="builds/netbeans/trunk/daily/2010-03-17_02-01-09/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
 
-    <property name="test.cvs.host" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
-    <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
-    <property name="test.cvs.branch" value="-A"/>
-    <property name="test.cvs.modules" value="
-        ${test.cvs.path}/assign
-        ${test.cvs.path}/benchmark
-        ${test.cvs.path}/blueprints
-        ${test.cvs.path}/BpelToBpel
-        ${test.cvs.path}/CAPSIntegration
-        ${test.cvs.path}/clusterSupport
-        ${test.cvs.path}/compensation
-        ${test.cvs.path}/correlation
-        ${test.cvs.path}/dynamicpartnerlink
-        ${test.cvs.path}/empty
-        ${test.cvs.path}/eventHandlers
-        ${test.cvs.path}/exit
-        ${test.cvs.path}/faulthandling
-        ${test.cvs.path}/flow
-        ${test.cvs.path}/foreach-bpel20
-        ${test.cvs.path}/i18n
-        ${test.cvs.path}/if
-        ${test.cvs.path}/implementMultiOperations
-        ${test.cvs.path}/JavaEEIntegration
-        ${test.cvs.path}/MessageExchange
-        ${test.cvs.path}/misc
-        ${test.cvs.path}/nmproperty
-        ${test.cvs.path}/PartnerLinks
-        ${test.cvs.path}/pick
-        ${test.cvs.path}/POJOCalls
-        ${test.cvs.path}/referenced
-        ${test.cvs.path}/repeatuntil
-        ${test.cvs.path}/rethrow
-        ${test.cvs.path}/samples
-        ${test.cvs.path}/scalability
-        ${test.cvs.path}/scenarios
-        ${test.cvs.path}/SchemaElemDecl
-        ${test.cvs.path}/ScopeTermination
-        ${test.cvs.path}/systemicqualities
-        ${test.cvs.path}/TerminationHandler
-        ${test.cvs.path}/TestsForBugs
-        ${test.cvs.path}/wait
-        ${test.cvs.path}/WaitingRequestLifeSpan
-        ${test.cvs.path}/while
-        ${test.cvs.path}/xpathfunctions
-        ${test.cvs.path}/xsddatatypes
-        ${test.cvs.path}/xslt
-    "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
     <property name="sierra.build"  value="main"/>
-    <property name="netbeans.zip" value="netbeans-6.8.zip"/>
+    <property name="netbeans.zip" value="netbeans-6.9.zip"/>
     <property name="repository" value="http://hg.netbeans.org/main"/>
     <property name="sierra.user"  value=".netbeans/dev"/>
-    <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
-    <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
-    <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform/build_number"/>
 </project>
