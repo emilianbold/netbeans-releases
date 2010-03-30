@@ -328,7 +328,17 @@ public final class DocumentView extends EditorBoxView
 
         } else { // Setting null parent
             textComponent.removePropertyChangeListener(this);
-            textComponent = null; // View services stop working and propagating to children
+            // Set the textComponent to null under mutex
+            // so that children suddenly don't see a null textComponent
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                mutex.lock();
+                try {
+                    textComponent = null; // View services stop working and propagating to children
+                } finally {
+                    mutex.unlock();
+                }
+            }
         }
     }
 
