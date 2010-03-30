@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="TermAdvancedOption.instance">
+                <attr name="instanceClass"
+                      stringvalue="org.netbeans.modules.terminal.TermAdvancedOption"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
