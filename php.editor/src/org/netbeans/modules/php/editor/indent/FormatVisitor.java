@@ -43,9 +43,11 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -60,7 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 public class FormatVisitor extends DefaultVisitor {
 
     private BaseDocument document;
-    private final List<FormatToken> formatTokens = new ArrayList<FormatToken>();
+    private final List<FormatToken> formatTokens;
     TokenSequence<PHPTokenId> ts;
     private LinkedList<ASTNode> path;
     private int indentLevel;
@@ -75,7 +77,8 @@ public class FormatVisitor extends DefaultVisitor {
 	indentLevel = 0;
 	options = new DocumentOptions(document);
 	includeWSBeforePHPDoc = true;
-
+	formatTokens = new ArrayList<FormatToken>();
+	formatTokens.add(new FormatToken.InitToken());
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -891,13 +894,16 @@ public class FormatVisitor extends DefaultVisitor {
 		break;
 	    case PHP_OPENTAG:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
 		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
+		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG, ts.offset() + ts.token().length()));
 		break;
 	    case PHP_CLOSETAG:
-		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.initialIndent));
-		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
+		tokens.add(new FormatToken(FormatToken.Kind.CLOSE_TAG, ts.offset(), ts.token().text().toString()));
+		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
+
 		break;
 	    case PHP_COMMENT:
 //	    case PHP_COMMENT_END:
@@ -1082,6 +1088,11 @@ public class FormatVisitor extends DefaultVisitor {
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
 		break;
+	    case T_INLINE_HTML:
+		FormatToken.InitToken token = (FormatToken.InitToken)formatTokens.get(0);
+		if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
+		    token.setHasHTML(true);
+		}
 	    default:
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
 	}
@@ -1240,5 +1251,14 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	return (index == statements.size() - 1
 		|| !((index < statements.size() - 1) && (statements.get(index + 1).getClass().equals(statement.getClass()))));
+    }
+
+    protected static boolean isWhitespace (final CharSequence text) {
+	int index = 0;
+	while (index < text.length()
+		&& Character.isWhitespace(text.charAt(index))) {
+	    index++;
+	}
+	return index == text.length();
     }
 }

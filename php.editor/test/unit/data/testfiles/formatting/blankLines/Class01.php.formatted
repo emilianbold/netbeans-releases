@@ -29,5 +29,4 @@ final class ChildClass2 extends BaseClass {
     public $field2 = 22;
 
 }
-
 ?>

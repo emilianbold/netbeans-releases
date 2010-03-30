@@ -202,6 +202,17 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesBeforeFunctionEnd, getDefaultAsInt(blankLinesBeforeFunctionEnd));
     }
 
+    public int getBlankLinesAfterOpenPHPTag() {
+        return preferences.getInt(blankLinesAfterOpenPHPTag, getDefaultAsInt(blankLinesAfterOpenPHPTag));
+    }
+
+    public int getBlankLinesAfterOpenPHPTagInHTML() {
+        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
+    }
+
+    public int getBlankLinesBeforeClosePHPTag() {
+        return preferences.getInt(blankLinesBeforeClosePHPTag, getDefaultAsInt(blankLinesBeforeClosePHPTag));
+    }
 
     // Spaces ------------------------------------------------------------------
 
@@ -416,6 +427,10 @@ public final class CodeStyle {
 
     public boolean spaceCheckAfterKeywords() {
         return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
+    }
+
+    public boolean spaceBeforeClosePHPTag() {
+        return preferences.getBoolean(spaceBeforeClosePHPTag, getDefaultAsBoolean(spaceBeforeClosePHPTag));
     }
 
     // alignment
