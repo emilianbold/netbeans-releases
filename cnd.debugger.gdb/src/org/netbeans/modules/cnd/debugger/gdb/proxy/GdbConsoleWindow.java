@@ -216,9 +216,12 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
      *
      * @param message - a message
      */
-    public void add(String message) {
+    void add(String message) {
         synchronized (textLock) {
             debuggerLog.append(message);
+            if (message.charAt(message.length()-1) != '\n') {
+                debuggerLog.append("\n"); //NOI18N
+            }
         }
         // Scroll down to show last message
         try {
