@@ -560,6 +560,11 @@ public final class DocumentView extends EditorBoxView
             TextLayout textLayout = new TextLayout(defaultText, defaultFont, frc); // NOI18N
             defaultLineHeight = textLayout.getAscent() + textLayout.getDescent() +
                     textLayout.getLeading(); // Leading: end of descent till next line's start distance
+            // Round up line height to one decimal place which is reasonable for layout
+            // but it also has an important effect that it allows eliminate problems
+            // caused by using a [float,float] point that does not fit into views boundaries
+            // maintained as doubles.
+            defaultLineHeight = (float) (Math.ceil(defaultLineHeight * 10) / 10);
             defaultBaselineOffset = textLayout.getAscent(); // textLayout.getBaselineOffsets()[textLayout.getBaseline()];
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
