@@ -70,7 +70,6 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -407,13 +406,7 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     // End of variables declaration//GEN-END:variables
 
     private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {                                              
-        final ExecutionEnvironment exEnv = getCurrentExecutionEnvironment();
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                updateProcessList(true);
-            }
-        });
+        updateProcessList(true);
     }             
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
