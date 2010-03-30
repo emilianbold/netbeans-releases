@@ -132,7 +132,7 @@ public class FindInFilesAction extends CallableSystemAction
     /** name of property &quot;type Id of the last used search scope&quot; */
     private static final String VAR_LAST_SEARCH_SCOPE_TYPE
                                 = "lastScopeType";                      //NOI18N
-    
+
     @Override
     protected void initialize() {
         super.initialize();
@@ -142,6 +142,7 @@ public class FindInFilesAction extends CallableSystemAction
         putProperty(REPLACING, Boolean.FALSE, false);
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup lookup) {
         if (shouldLog(LOG)) {
             log("createContextAwareInstance(lookup)");
@@ -207,7 +208,8 @@ public class FindInFilesAction extends CallableSystemAction
         }
         
         Component presenter = super.getToolbarPresenter();
-        putProperty(VAR_TOOLBAR_COMP_REF, new WeakReference<Component>(presenter));
+        putProperty(VAR_TOOLBAR_COMP_REF,
+                    new WeakReference<Component>(presenter));
         return presenter;
     }
     
@@ -237,6 +239,7 @@ public class FindInFilesAction extends CallableSystemAction
      * This method is called if we are listening for changes on the set
      * of open projecst and some project(s) is opened/closed.
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
         assert EventQueue.isDispatchThread();
         if (shouldLog(LOG)) {
@@ -291,6 +294,7 @@ public class FindInFilesAction extends CallableSystemAction
         final boolean enabled
                 = SearchScopeRegistry.getDefault().hasApplicableSearchScope();
         Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
             public void run() {
                 setEnabled(enabled);
             }
@@ -302,6 +306,7 @@ public class FindInFilesAction extends CallableSystemAction
         return "org/openide/resources/actions/find.gif";                //NOI18N
     }
     
+    @Override
     public String getName() {
         String key = SearchScopeRegistry.getDefault().hasProjectSearchScopes()
                      ? "LBL_Action_FindInProjects"                      //NOI18N
@@ -309,11 +314,13 @@ public class FindInFilesAction extends CallableSystemAction
         return NbBundle.getMessage(getClass(), key);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(FindInFilesAction.class);
     }
 
     /** Perform this action. */
+    @Override
     public void performAction() {
         performAction(SearchScopeRegistry.getDefault().getSearchScopes(),
                       getLastSearchScope());
@@ -352,15 +359,9 @@ public class FindInFilesAction extends CallableSystemAction
         
         SearchScope searchScope = searchPanel.getSearchScope();
         storeLastSearchScope(searchScope.getTypeId());
-	BasicSearchCriteria basicSearchCriteria = searchPanel.getBasicSearchCriteria();
-	List<SearchType> extraSearchTypes = searchPanel.getSearchTypes();
-        
+	BasicSearchCriteria basicSearchCriteria =
+                searchPanel.getBasicSearchCriteria();
         ResultView resultView = ResultView.getInstance();
-//kaktus
-//temporary commented
-//        resultView.rememberInput(searchScope.getTypeId(),
-//			         basicSearchCriteria,
-//				 extraSearchTypes);
         resultView.open();
         resultView.requestActive();
         
@@ -412,7 +413,8 @@ public class FindInFilesAction extends CallableSystemAction
         return false;
     }
 
-    private static final class LookupSensitive implements Action, ChangeListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
+    private static final class LookupSensitive implements Action,
+            ChangeListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
 
         private static int counter = 0;
 
@@ -447,6 +449,7 @@ public class FindInFilesAction extends CallableSystemAction
             return this;
         }
 
+        @Override
         public Object getValue(String key) {
             if (shouldLog(LOG)) {
                 log("getValue(\"" + key + "\")");
@@ -454,9 +457,11 @@ public class FindInFilesAction extends CallableSystemAction
             return delegate.getValue(key);
         }
 
+        @Override
         public void putValue(String key, Object value) {
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             assert EventQueue.isDispatchThread();
             if (shouldLog(LOG)) {
@@ -470,12 +475,14 @@ public class FindInFilesAction extends CallableSystemAction
                         : delegate.getLastSearchScope());
         }
 
+        @Override
         public void setEnabled(boolean b) {
             if (shouldLog(LOG)) {
                 log("setEnabled(" + b + ')');
             }
         }
 
+        @Override
         public boolean isEnabled() {
             assert EventQueue.isDispatchThread();
             if (shouldLog(LOG)) {
@@ -491,6 +498,7 @@ public class FindInFilesAction extends CallableSystemAction
             return searchScopeRegistry.hasApplicableSearchScope();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             if (shouldLog(LOG)) {
                 log("addPropertyChangeListener(...)");
@@ -510,6 +518,7 @@ public class FindInFilesAction extends CallableSystemAction
             }
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             if (shouldLog(LOG)) {
                 log("removePropertyChangeListener(...)");
@@ -533,6 +542,7 @@ public class FindInFilesAction extends CallableSystemAction
             }
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (shouldLog(LOG)) {
                 log("stateChanged(...)");
@@ -551,6 +561,7 @@ public class FindInFilesAction extends CallableSystemAction
                     final PropertyChangeListener[] listeners
                             = support.getPropertyChangeListeners();
                     Mutex.EVENT.writeAccess(new Runnable() {
+                        @Override
                         public void run() {
                             for (PropertyChangeListener l : listeners) {
                                 l.propertyChange(newEvent);
@@ -561,6 +572,7 @@ public class FindInFilesAction extends CallableSystemAction
             }
         }
 
+        @Override
         public JMenuItem getMenuPresenter() {
             if (shouldLog(LOG)) {
                 log("getMenuPresenter(...)");
@@ -568,6 +580,7 @@ public class FindInFilesAction extends CallableSystemAction
             return delegate.getMenuPresenter();
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (shouldLog(LOG)) {
                 log("getPopupPresenter(...)");
@@ -575,6 +588,7 @@ public class FindInFilesAction extends CallableSystemAction
             return delegate.getPopupPresenter();
         }
 
+        @Override
         public Component getToolbarPresenter() {
             if (shouldLog(LOG)) {
                 log("getToolbarPresenter(...)");
@@ -599,7 +613,7 @@ public class FindInFilesAction extends CallableSystemAction
 
         private boolean shouldLog(Logger logger) {
             return logger.isLoggable(FINER)
-                   && shortClassName.startsWith("FindInFilesAction");
+                   && shortClassName.startsWith("FindInFilesAction"); // NOI18N
         }
 
         private void log(String msg) {
@@ -619,7 +633,7 @@ public class FindInFilesAction extends CallableSystemAction
 
     private boolean shouldLog(Logger logger) {
         return logger.isLoggable(FINER)
-               && shortClassName.equals("FindInFilesAction");
+               && shortClassName.equals("FindInFilesAction"); // NOI18N
     }
 
     private void log(String msg) {
