@@ -39,8 +39,20 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -50,16 +62,26 @@ import org.openide.util.NbBundle;
  */
 public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
+    public static final String CUSTOMIZER_FOLDER = "org-netbeans-modules-php-project"; // NOI18N
+
     public static final String SOURCES = "Sources"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
-    public static final String PHP_UNIT = "phpUnit"; // NOI18N
+    public static final String FRAMEWORKS = "Frameworks"; // NOI18N
+    public static final String PHP_UNIT = "PhpUnit"; // NOI18N
 
     private final String name;
+    private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
 
     public CompositePanelProviderImpl(String name) {
         this.name = name;
+
+        if (FRAMEWORKS.equals(name)) {
+            frameworkCategories = new LinkedHashMap<ProjectCustomizer.Category, PhpModuleCustomizerExtender>();
+        } else {
+            frameworkCategories = null;
+        }
     }
 
     public ProjectCustomizer.Category createCategory(Lookup context) {
@@ -89,6 +111,17 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_IgnorePath"),
                     null,
                     categories);
+        } else if (FRAMEWORKS.equals(name)) {
+            fillFrameworkCategories(context.lookup(PhpProject.class));
+            if (frameworkCategories.isEmpty()) {
+                return null;
+            }
+            List<ProjectCustomizer.Category> subcategories = new ArrayList<ProjectCustomizer.Category>(frameworkCategories.keySet());
+            toReturn = ProjectCustomizer.Category.create(
+                    FRAMEWORKS,
+                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),
+                    null,
+                    subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
         } else if (PHP_UNIT.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     PHP_UNIT,
@@ -111,29 +144,100 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerPhpIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
             return new CustomizerIgnorePath(category, uiProps);
+        } else if (FRAMEWORKS.equals(nm)) {
+            return new JPanel();
         } else if (PHP_UNIT.equals(nm)) {
             return new CustomizerPhpUnit(category, uiProps);
         }
+        // possibly framework?
+        if (frameworkCategories != null) {
+            PhpModuleCustomizerExtender extender = frameworkCategories.get(category);
+            if (extender != null) {
+                return new CustomizerFramework(category, extender, uiProps);
+            }
+        }
+        assert false : "No component found for " + category.getDisplayName();
         return new JPanel();
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 100
+    )
     public static CompositePanelProviderImpl createSources() {
         return new CompositePanelProviderImpl(SOURCES);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 150
+    )
     public static CompositePanelProviderImpl createRunConfig() {
         return new CompositePanelProviderImpl(RUN);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 200
+    )
     public static CompositePanelProviderImpl createPhpIncludePath() {
         return new CompositePanelProviderImpl(PHP_INCLUDE_PATH);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 250
+    )
     public static CompositePanelProviderImpl createIgnorePath() {
         return new CompositePanelProviderImpl(IGNORE_PATH);
     }
 
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 300
+    )
+    public static CompositePanelProviderImpl createFrameworks() {
+        return new CompositePanelProviderImpl(FRAMEWORKS);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 350
+    )
     public static CompositePanelProviderImpl createPhpUnit() {
         return new CompositePanelProviderImpl(PHP_UNIT);
+    }
+
+//o.n.m.javascript.libraries     Projects/o-n-m-php-project/Customizer/o-n-m-javascript-libraries-ui-customizer-JSLibraryCustomizerProvider.instance @375
+//o.n.m.web.client.tools.impl    Projects/o-n-m-php-project/Customizer/o-n-m-web-client-tools-impl-projects-DebugCustomizerPanelProvider-createPhpProjectDebug.instance @400
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = CompositePanelProviderImpl.CUSTOMIZER_FOLDER,
+        position = 1000
+    )
+    public static ProjectCustomizer.CompositeCategoryProvider createFormatting() {
+        return Customizers.createFormattingCategoryProvider(Collections.singletonMap("allowedMimeTypes", FileUtils.PHP_MIME_TYPE)); // NOI18N
+    }
+
+    private void fillFrameworkCategories(PhpProject project) {
+        frameworkCategories.clear();
+
+        final PhpModule phpModule = project.getPhpModule();
+        int i = 0;
+        for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+            PhpModuleCustomizerExtender extender = frameworkProvider.createPhpModuleCustomizerExtender(phpModule);
+            if (extender != null) {
+                String categoryName = extender.getDisplayName();
+                if (categoryName == null) {
+                    categoryName = frameworkProvider.getName();
+                }
+                ProjectCustomizer.Category category = ProjectCustomizer.Category.create(
+                        FRAMEWORKS + i++,
+                        categoryName,
+                        null,
+                        (ProjectCustomizer.Category[]) null);
+                frameworkCategories.put(category, extender);
+            }
+        }
     }
 }
