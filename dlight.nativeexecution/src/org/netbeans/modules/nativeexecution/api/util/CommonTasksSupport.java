@@ -39,14 +39,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -331,67 +324,5 @@ public final class CommonTasksSupport {
                 return support.kill(signal, pid);
             }
         }, descr);
-    }
-
-    private static int transferFileContent(File srcFile, OutputStream outStream) {
-        WritableByteChannel out = null;
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        boolean interrupted = false;
-        ReadableByteChannel in = null;
-        int result = 1;
-
-        try {
-            out = Channels.newChannel(outStream);
-
-            final FileInputStream fis = new FileInputStream(srcFile);
-            in = Channels.newChannel(fis);
-
-            while (true) {
-                if (in.read(buffer) <= 0) {
-                    break;
-                }
-
-                buffer.flip();
-
-                try {
-                    out.write(buffer);
-                } catch (Exception ex) {
-                    throw new InterruptedException();
-                }
-
-                buffer.clear();
-            }
-
-            result = 0;
-        } catch (InterruptedException ie) {
-            interrupted = true;
-        } catch (IOException ex) {
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                }
-            }
-
-            /* Here I have faced with the following problem:
-             * If some error occured (permission denied, as an example),
-             * an attempt to close out leads to JVM crash...
-             * Interesting thing is that out is not null and even is not
-             * closed (isOpen() returns true)...
-             * So this was overcomed using interrupted flag ...
-             *
-             * TODO: I don't like this solution.
-             */
-
-            if (!interrupted && out != null) {
-                try {
-                    out.close();
-                } catch (Exception ex) {
-                }
-            }
-        }
-
-        return result;
     }
 }
