@@ -92,7 +92,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
         switch (oSFamily) {
             case LINUX:
                 cmd = "/usr/bin/md5sum"; // NOI18N
-                args = new String[] { "-b", remotePath };
+                args = new String[] { "-b", remotePath }; // NOI18N
                 break;
             case SUNOS:
                 cmd = "/usr/bin/digest"; // NOI18N
