@@ -60,7 +60,6 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
