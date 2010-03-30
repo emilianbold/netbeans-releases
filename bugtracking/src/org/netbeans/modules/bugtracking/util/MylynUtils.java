@@ -89,7 +89,7 @@ public class MylynUtils {
         }
 
         ProxySettings ps = new ProxySettings();
-        
+
         BugtrackingManager.LOG.log(Level.FINEST, "Proxy: {0}", ps.toString());  // NOI18N
 
         if(!ps.isDirect() && !isNonProxyHost(ps.getNotProxyHosts(), host)) {
@@ -102,23 +102,25 @@ public class MylynUtils {
                 proxyPort = ps.getHttpsPort();
             }
 
-            BugtrackingManager.LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
+            if(proxyHost != null || !proxyHost.equals("")) {
+                BugtrackingManager.LOG.log(Level.FINEST, "Setting proxy: [{0}:{1},{2}]", new Object[]{proxyHost, proxyPort, repository.getUrl()});
 
-            repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
-            repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
+                repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
+                repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
 
-            String proxyUser = ps.getUsername();
-            String proxyPassword = ps.getPassword();
-            if(proxyUser != null || proxyPassword != null) {
-                if(proxyUser == null) {
-                    proxyUser = "";     // NOI18N
+                String proxyUser = ps.getUsername();
+                String proxyPassword = ps.getPassword();
+                if(proxyUser != null || proxyPassword != null) {
+                    if(proxyUser == null) {
+                        proxyUser = "";     // NOI18N
+                    }
+                    if(proxyPassword == null) {
+                        proxyPassword = ""; // NOI18N
+                    }
+                    logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
+                    authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
+                    repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
                 }
-                if(proxyPassword == null) {
-                    proxyPassword = ""; // NOI18N
-                }
-                logCredentials(repository, proxyUser, proxyPassword, "Setting proxy credentials: ");
-                authenticationCredentials = new AuthenticationCredentials(proxyUser, proxyPassword);
-                repository.setCredentials(AuthenticationType.PROXY, authenticationCredentials, false);
             }
         }
     }
