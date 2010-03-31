@@ -253,6 +253,10 @@ final class ViewBuilder {
         }
     }
 
+    /**
+     * Create next view.
+     * @return true if the creation of views should continue or false if it should end.
+     */
     boolean createNextView() {
         int limitOffset = matchOffset;
         for (int i = factoryStates.length - 1; i >= 0; i--) {
@@ -341,7 +345,12 @@ final class ViewBuilder {
                 }
 
                 lastCreatedViewEndOffset = createdViewEndOffset;
-                return (lastCreatedViewEndOffset < matchOffset);
+                // Continue creation until matchOffset is reached
+                // but also in case when it was reached but the created views do not
+                // finish a paragraph view (pReplace is non-null and it's not a first-replace
+                // where it's allowed to finish without newline-view creation).
+                return (lastCreatedViewEndOffset < matchOffset ||
+                        (pReplace != null && pReplace != fReplace));
 
             } else { // cmp > 0 => next view starting somewhere above last view's end offset
                 // Remember the nextViewStartOffset as a limit offset for factories

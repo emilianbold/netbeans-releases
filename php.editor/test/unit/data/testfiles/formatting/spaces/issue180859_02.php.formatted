@@ -3,5 +3,4 @@
 if ($foo instanceof Baa) {
     
 }
-
 ?>

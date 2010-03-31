@@ -110,15 +110,24 @@ public class PHPFormatter implements Formatter {
 
     @Override
     public void reformat(Context context, ParserResult info) {
-        LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
+//        LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
+//
+//        Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
+//        IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
+//        PHPParseResult phpParseResult = ((PHPParseResult) info);
+//        phpParseResult.getProgram().accept(indentCalc);
+//
+//        prettyPrint(context, info);
+//        astReformat(context, indentLevels);
 
-        Map<Position, Integer> indentLevels = new LinkedHashMap<Position, Integer>();
-        IndentLevelCalculator indentCalc = new IndentLevelCalculator(context.document(), indentLevels);
-        PHPParseResult phpParseResult = ((PHPParseResult) info);
-        phpParseResult.getProgram().accept(indentCalc);
+	long start = System.currentTimeMillis();
 
-        prettyPrint(context, info);
-        astReformat(context, indentLevels);
+	(new TokenFormatter()).reformat(context, info);
+	
+	if (LOG.isLoggable(Level.FINE)) {
+	    long end = System.currentTimeMillis();
+	    LOG.fine("The reformat action took: "  + (end - start));
+	}
     }
 
     @Override

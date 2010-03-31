@@ -56,4 +56,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Spellcheckers">
+        <file name="HTML">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
+        </file>
+        <file name="XML">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
+        </file>
+    </folder>
 </filesystem>
