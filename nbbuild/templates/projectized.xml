@@ -266,8 +266,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
     
-    <target name="netbeans-javadoc" depends="netbeans,javadoc" />
-    
     <target name="-create-dest-dir-nbm" depends="init">
         <mkdir dir="${nbm.target.dir}"/> 
     </target>

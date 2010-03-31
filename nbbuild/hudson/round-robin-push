@@ -47,7 +47,7 @@ dobuild() {
     export RESULT
     rm -f $RESULT
 
-    ant build $ANT_PARAM || exit 2
+    ant build-nozip $ANT_PARAM || exit 2
     ant commit-validation $ANT_PARAM || exit 3
     ant check-sigtests-release $ANT_PARAM || exit 35
 #    ant build-test-dist $ANT_PARAM || exit 4
@@ -62,6 +62,9 @@ dobuild() {
         cat $RESULT
         exit 5
     fi
+
+    # Clean up some to save on disk space:
+    rm -rf */build/classes */build/javahelp nbbuild/netbeans nbbuild/build/public-package-jars
 }
 
 rollback() {

@@ -155,6 +155,10 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
+                    <build-prerequisite/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.gsf.codecoverage</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
