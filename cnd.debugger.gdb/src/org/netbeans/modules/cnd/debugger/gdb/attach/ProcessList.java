@@ -80,6 +80,8 @@ final class ProcessList {
     private final List<String> argsSimple = new ArrayList<String>();
     private final ExecutionEnvironment exEnv;
 
+    private final RequestProcessor RP = new RequestProcessor("Process list", 5); //NOI18N
+
     protected ProcessList(ExecutionEnvironment exEnv) {
         this.exEnv = exEnv;
     }
@@ -134,13 +136,16 @@ final class ProcessList {
             ptype = PTYPE.NONE;
         } catch (CancellationException caex) {
             ptype = PTYPE.NONE;
+        } catch (InterruptedException ex) {
+            // don't log InterruptedException
+            ptype = PTYPE.NONE;
         }
         executable = exec;
     }
 
     private void request(final Pattern filter, final ProcessListReader plr, final boolean full) {
         if (ptype != PTYPE.NONE) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {

@@ -124,19 +124,19 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (doc != pane.getDocument()) {
-            if (doc != null) {
-                doc.removeDocumentListener(this);
+        if (document != pane.getDocument()) {
+            if (document != null) {
+                document.removeDocumentListener(this);
             }
-            doc = pane.getDocument();
-            doc.addDocumentListener(this);
-            doc = pane.getDocument();
+            document = pane.getDocument();
+            document.addDocumentListener(this);
+            document = pane.getDocument();
             doUpdateCurrentVisibleSpan();
         }
     }
 
     private JTextComponent pane;
-    private Document doc;
+    private Document document;
 
     private RequestProcessor WORKER = new RequestProcessor("Spellchecker");
     
@@ -162,7 +162,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     private synchronized Document getDocument() {
-        return doc;
+        return document;
     }
 
     /** Creates a new instance of ComponentPeer */
@@ -171,8 +171,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 //        reschedule();
         pane.addPropertyChangeListener(this);
         pane.addCaretListener(this);
-        doc = pane.getDocument();
-        doc.addDocumentListener(this);
+        document = pane.getDocument();
+        document.addDocumentListener(this);
     }
     
     private Component parentWithListener;
@@ -218,23 +218,23 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return currentVisibleRange;
     }
 
-    private TokenList l;
+    private TokenList tokenList;
     
     private synchronized TokenList getTokenList() {
-        if (l == null) {
-            l = ACCESSOR.lookupTokenList(getDocument());
+        if (tokenList == null) {
+            tokenList = ACCESSOR.lookupTokenList(getDocument());
             
-            if (l != null)
-                l.addChangeListener(this);
+            if (tokenList != null)
+                tokenList.addChangeListener(this);
         }
         
-        return l;
+        return tokenList;
     }
     
     private void process() throws BadLocationException {
-        final Document doc = getDocument();
+        final Document _document = getDocument();
         
-        if (doc.getLength() == 0)
+        if (_document.getLength() == 0)
             return ;
         
         final List<int[]> localHighlights = new LinkedList<int[]>();
@@ -244,14 +244,14 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         try {
             resume();
             
-            final TokenList l = getTokenList();
+            final TokenList _tokenList = getTokenList();
             
-            if (l == null) {
+            if (_tokenList == null) {
                 //nothing to do:
                 return ;
             }
 
-            Dictionary d = getDictionary(doc);
+            Dictionary d = getDictionary(_document);
 
             if (d == null)
                 return ;
@@ -266,13 +266,13 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
             final boolean[] cont = new boolean [1];
             
-            doc.render(new Runnable() {
+            _document.render(new Runnable() {
                 public void run() {
                     if (isCanceled()) {
                         cont[0] = false;
                         return;
                     } else {
-                        l.setStartOffset(span[0]);
+                        _tokenList.setStartOffset(span[0]);
                         cont[0] = true;
                     }
                 }
@@ -285,20 +285,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             final CharSequence[] word = new CharSequence[1];
             
             while (!isCanceled()) {
-                doc.render(new Runnable() {
+                _document.render(new Runnable() {
                     public void run() {
                         if (isCanceled()) {
                             cont[0] = false;
                             return ;
                         }
                         
-                        if (cont[0] = l.nextWord()) {
-                            if (l.getCurrentWordStartOffset() > span[1]) {
+                        if (cont[0] = _tokenList.nextWord()) {
+                            if (_tokenList.getCurrentWordStartOffset() > span[1]) {
                                 cont[0] = false;
                                 return ;
                             }
                             
-                            word[0] = l.getCurrentWordText();
+                            word[0] = _tokenList.getCurrentWordText();
                         }
                     }
                 });
@@ -322,10 +322,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     case PREFIX_OF_VALID:
                     case BLACKLISTED:
                     case INVALID:
-                        doc.render(new Runnable() {
+                        _document.render(new Runnable() {
                             public void run() {
                                 if (!isCanceled()) {
-                                    localHighlights.add(new int[] {l.getCurrentWordStartOffset(), l.getCurrentWordStartOffset() + word[0].length()});
+                                    localHighlights.add(new int[] {_tokenList.getCurrentWordStartOffset(), _tokenList.getCurrentWordStartOffset() + word[0].length()});
                                 }
                             }
                         });
@@ -336,7 +336,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 if (!(pane instanceof JEditorPane)) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            doc.render(new Runnable() {
+                            _document.render(new Runnable() {
                                 public void run() {
                                     if (isCanceled()) {
                                         return;
@@ -358,12 +358,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                         }
                     });
                 } else {
-                    doc.render(new Runnable() {
+                    _document.render(new Runnable() {
                         public void run() {
                             if (isCanceled()) {
                                 return;
                             }
-                            OffsetsBag localHighlightsBag = new OffsetsBag(doc);
+                            OffsetsBag localHighlightsBag = new OffsetsBag(_document);
 
                             for (int[] current : localHighlights) {
                                 localHighlightsBag.addHighlight(current[0], current[1], ERROR);
@@ -373,7 +373,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     });
                 }
                 
-                FileObject file = getFile(doc);
+                FileObject file = getFile(_document);
 
                 Logger.getLogger("TIMER").log(Level.FINE, "Spellchecker",
                         new Object[] {file, System.currentTimeMillis() - startTime});
@@ -512,7 +512,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() == l) {
+        if (e.getSource() == tokenList) {
             reschedule();
         } else {
             updateCurrentVisibleSpan();
@@ -534,7 +534,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private void computeHint() {
         LOG.entering(ComponentPeer.class.getName(), "computeHint");
         
-        final Dictionary d = ComponentPeer.getDictionary(doc);
+        final Dictionary d = ComponentPeer.getDictionary(document);
         
         if (d == null) {
             LOG.fine("dictionary == null");
@@ -559,7 +559,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             lastCaretPositionCopy[0] = lastCaretPosition;
         }
         
-        doc.render(new Runnable() {
+        document.render(new Runnable() {
             public void run() {
                 LOG.log(Level.FINE, "lastCaretPosition={0}", lastCaretPositionCopy[0]);
                 l.setStartOffset(lastCaretPositionCopy[0]);
@@ -580,8 +580,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     
                     if (validity != ValidityType.VALID) {
                         try {
-                            span[0] = doc.createPosition(currentWSO);
-                            span[1] = doc.createPosition(currentWSO + length);
+                            span[0] = document.createPosition(currentWSO);
+                            span[1] = document.createPosition(currentWSO + length);
                             word[0] = w;
                         } catch (BadLocationException e) {
                             LOG.log(Level.INFO, null, e);
@@ -599,10 +599,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             String currentWord = word[0].toString();
             
             for (String proposal : d.findProposals(currentWord)) {
-                result.add(new DictionaryBasedHint(currentWord, proposal, doc, span, "0" + currentWord));
+                result.add(new DictionaryBasedHint(currentWord, proposal, document, span, "0" + currentWord));
             }
             
-            FileObject file = getFile(doc);
+            FileObject file = getFile(document);
 
             if (file != null) {
                 Project p = FileOwnerQuery.getOwner(file);
@@ -621,12 +621,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             }
             
             if (!result.isEmpty()) {
-                HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, "Misspelled word", result, doc, span[0], span[1])));
+                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, "Misspelled word", result, document, span[0], span[1])));
             } else {
-                HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
             }
         } else {
-            HintsController.setErrors(doc, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+            HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
         }
     }
     

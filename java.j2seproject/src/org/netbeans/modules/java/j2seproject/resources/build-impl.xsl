@@ -1127,12 +1127,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">manifest.available</xsl:attribute>
-                <property name="main.class" value=""/>
-                <j2seproject1:jar>
-                    <j2seproject1:manifest>
-                        <j2seproject1:attribute name="Main-Class" value="${{main.class}}"/>
-                    </j2seproject1:manifest>
-                </j2seproject1:jar>
+                <j2seproject1:jar/>
             </target>
             
             <target name="-do-jar-with-manifest">

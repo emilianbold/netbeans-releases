@@ -42,15 +42,12 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -81,7 +78,6 @@ import org.openide.windows.IOProvider;
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
-    private String remoteTmpDir;
 
     public static enum Sync {
         FTP("ftp"),
@@ -177,41 +173,11 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
-    protected void createRemoteTmpDir() throws Exception {
-        String dir = getRemoteTmpDir();
-        int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();
-        assertEquals("Can not create directory " + dir, 0, rc);
-    }
-
-    protected void clearRemoteTmpDir() throws Exception {
-        String dir = getRemoteTmpDir();
-        int rc = CommonTasksSupport.rmDir(getTestExecutionEnvironment(), dir, true, new PrintWriter(System.err)).get().intValue();
-        if (rc != 0) {
-            System.err.printf("Can not delete directory %s\n", dir);
-        }
-    }
-
-    protected synchronized  String getRemoteTmpDir() {
-        if (remoteTmpDir == null) {
-            final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-            MacroExpander expander = MacroExpanderFactory.getExpander(local);
-            String id;
-            try {
-                id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-            } catch (ParseException ex) {
-                id = local.getHost();
-                Exceptions.printStackTrace(ex);
-            }
-            remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
-        }
-        return remoteTmpDir;
-    }
-
     protected static void setupHost(ExecutionEnvironment execEnv) {
         ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
-        assertTrue(ok);
+        assertTrue("Error setting up host " + execEnv, ok);
         tcm.applyChanges();
     }
 

@@ -6,6 +6,9 @@
 
     <mapID target="apisupport_tbd" url="tbd.html"/>
 
+    <!-- Start of "OSGi Bundle" section -->
+    <mapID target="apisupport_about_osgi" url="osgi/about-osgi.html"/>
+    <!-- End of "OSGi Bundle" section -->
 	
     <!-- Start of "Getting Started" section -->
     <mapID target="apisupport_about_plugins" url="about/nbmodule-about.html"/>
@@ -81,6 +84,7 @@
     <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
 <mapID target="apisupport_generate_autoupdate_descriptor" url="distribute_plugin/generate_autoupdate_descriptor.html"/>
 <mapID target="apisupport_searching_apis" url="create_plugin/apisupport_searching_apis.html"/>
+<mapID target="apisupport_codetemplates_apis" url="create_plugin/apisupport_codetemplates_apis.html"/>
 <mapID target="apisupport_extending_skeletons" url="create_plugin/apisupport_extending_skeletons.html"/>
 
 
@@ -130,7 +134,8 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" url="csh/proj_props/CustomizerPackaging.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" url="csh/proj_props/CustomizerDocumenting.html"/>
- <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="csh/proj_props/EditDependencyPanel.html"/>
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="csh/proj_props/EditDependencyPanel.html"/>
+    <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="tbd.html"/>
 
 
 <!-- Suite -->
@@ -191,11 +196,10 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.JavaHelpPanel" url="csh/JavaHelpPanel.html"/>
    
     <!-- ModuleInstallPanel -->
-				<!-- ModuleInstallPanel -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.ModuleInstallPanel" url="csh/ModuleInstallPanel.html"/>
-   
-    
-    
+
+    <!-- AddModulePanel -->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
     <!-- End of "CSH" section -->
 

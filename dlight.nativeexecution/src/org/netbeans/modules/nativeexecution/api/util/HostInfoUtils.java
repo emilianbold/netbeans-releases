@@ -93,13 +93,13 @@ public final class HostInfoUtils {
      * @throws ConnectException if host, identified by this execution
      * environment is not connected or operation was terminated.
      *
-     * @throws IOException if the thread was interrupted.
-     * In this case the getCause() method will return InterruptedException.
-     * TODO: it shall throw InterruptedException instead
+     * @throws InterruptedException if the thread was interrupted.
+     *
+     * @throws IOException if the process could not be created
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
-            throws ConnectException, IOException {
+            throws ConnectException, IOException, InterruptedException {
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -112,11 +112,7 @@ public final class HostInfoUtils {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("test").setArguments("-e", fname); // NOI18N
 
-            try {
-                fileExists = npb.call().waitFor() == 0;
-            } catch (InterruptedException ex) {
-                throw new IOException(ex.getMessage(), ex);
-            }
+            fileExists = npb.call().waitFor() == 0;
         }
 
         return fileExists;

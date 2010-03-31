@@ -4,6 +4,6 @@
               xmlns="http://java.sun.com/xml/ns/javacard"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://java.sun.com/xml/ns/javacard http://java.sun.com/xml/ns/javacard/javacard-app_3_0.xsd">
-	<description>Just a place holder. Nothing to configure for this sample.
-                     This file is optional.</description>
+	<description>This file is optional. It contains Java Card Platform-specific
+            elements and configuration information of an application</description>
 </javacard-app>

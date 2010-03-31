@@ -89,6 +89,7 @@ public class TreeModelRoot {
     private final WeakHashMap<Object, WeakReference<TreeModelNode>[]> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>[]>();
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
+    private OutlineView outlineView;
     
     /** The children evaluator for view of this root. *
     private final Map<RequestProcessor, TreeModelNode.LazyEvaluator> childrenEvaluators
@@ -124,6 +125,7 @@ public class TreeModelRoot {
         this.model = model;
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        this.outlineView = outlineView;
         modelListeners = new ModelChangeListener[] { new ModelChangeListener(model) };
         model.addModelListener (modelListeners[0]);
     }
@@ -133,6 +135,7 @@ public class TreeModelRoot {
         this.model = model.getMain();
         this.manager = ExplorerManager.find(outlineView);
         this.treeFeatures = new DefaultTreeFeatures(outlineView);
+        this.outlineView = outlineView;
         int nl = model.getModels().length;
         modelListeners = new ModelChangeListener[nl];
         for (int i = 0; i < nl; i++) {
@@ -144,6 +147,10 @@ public class TreeModelRoot {
 
     public TreeFeatures getTreeFeatures () {
         return treeFeatures;
+    }
+
+    public OutlineView getOutlineView() {
+        return outlineView;
     }
 
     public TreeModelNode getRootNode () {
