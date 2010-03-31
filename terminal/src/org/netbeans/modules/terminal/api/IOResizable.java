@@ -50,6 +50,9 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOResizable {
 
+    /**
+     * Use IONotifier with PROP_SIZE and IOResizable.Size as values
+     */
     public static final String PROP_SIZE = "IOResizable.PROP_SIZE"; // NOI18N
 
     public static final class Size {
@@ -62,51 +65,12 @@ public abstract class IOResizable {
 	}
     }
 
-    /**
-     * Deprecated: Use IONotifier with PROP_SIZE and IOResizable.Size
-    // LATER @deprecated Use IONotifier with PROP_SIZE and IOResizable.Size
-     */
-    // If we mark it as @deprecated then our own builds will be noise.
-    // add/removeListener are already marked as deprecated.
-    // LATER @Deprecated
-    public interface Listener {
-	public void sizeChanged(Dimension cells, Dimension pixels);
-    }
-
     private static IOResizable find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
             return p.getLookup().lookup(IOResizable.class);
         }
         return null;
-    }
-
-    /**
-     * Add a size change listener to the provided IO.
-     * @param io IO to operate on.
-     * @param listener ... to notify of size changes.
-     * @deprecated Use IONotifier with PROP_SIZE.
-     */
-    @Deprecated
-    public static void addListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.addListener(listener);
-	}
-    }
-
-    /**
-     * Remove the given size change listener from the provided IO.
-     * @param io IO to operate on.
-     * @param listener ... to remove.
-     * @deprecated Use IONotifier with PROP_SIZE.
-     */
-    @Deprecated
-    public static void removeListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.removeListener(listener);
-	}
     }
 
     /**
@@ -117,16 +81,4 @@ public abstract class IOResizable {
     public static boolean isSupported(InputOutput io) {
         return find(io) != null;
     }
-
-    /**
-     * Add a size change listener to this.
-     * @param listener ... to notify of size changes.
-     */
-    abstract protected void addListener(Listener listener);
-
-    /**
-     * Remove the given size change listener from this.
-     * @param listener ... to remove.
-     */
-    abstract protected void removeListener(Listener listener);
 }
