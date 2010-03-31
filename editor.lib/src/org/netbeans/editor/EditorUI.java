@@ -47,7 +47,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
 import java.beans.PropertyChangeListener;
@@ -228,7 +227,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     Insets scrollFindInsets;
 
     /** EditorUI properties */
-    Hashtable props = new Hashtable(11);
+    private final HashMap<Object, Object> props = new HashMap<Object, Object>(11);
 
     boolean textLimitLineVisible;
 
@@ -309,6 +308,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      * @param lineNumberEnabled if set to false the line numbers will not be printed.
      *  If set to true the visibility of line numbers depends on lineNumberVisibleSetting.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public EditorUI(BaseDocument printDoc, boolean usePrintColoringMap, boolean lineNumberEnabled) {
         this.printDoc = printDoc;
         listener.preferenceChange(null);
@@ -488,7 +488,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     protected void settingsChangeImpl(String settingName) {
     }
     
-    public void stateChanged(ChangeEvent evt) {
+    public @Override void stateChanged(ChangeEvent evt) {
         SwingUtilities.invokeLater(
             new Runnable() {
                 
@@ -524,7 +524,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     return new boolean [] { false, false };
                 }
                 
-                public void run() {
+                public @Override void run() {
                     JTextComponent c = component;
                     if (c != null && c.hasFocus()) { // do nothing if the component does not have focus, see #110715
                         BaseKit kit = Utilities.getKit(c);
@@ -599,7 +599,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
 
         if ("document".equals(propName)) { // NOI18N
@@ -1109,7 +1109,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(
                 new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         updateTextMargin();
                     }
                 }
@@ -1173,7 +1173,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     public void scrollRectToVisible(final Rectangle r, final int scrollPolicy) {
         Utilities.runInEventDispatchThread(
             new Runnable() {
-                public void run() {
+                public @Override void run() {
                     scrollRectToVisibleFragile(r, scrollPolicy);
                 }
             }
@@ -1280,7 +1280,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 r.width = bounds.width; // could be different algorithm
                 return scrollRectToVisibleImpl(r, scrollPolicy, bounds);            
             } catch (BadLocationException ble){
-                ble.printStackTrace();
+                LOG.log(Level.WARNING, null, ble);
             }
         }
 
@@ -1384,7 +1384,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
                         + (caretPercentFromWindowTop * lineHeight) / 100;
                 Utilities.runInEventDispatchThread(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
                     }
                 });
@@ -1531,7 +1531,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     private class Listener implements PreferenceChangeListener {
 
-        public void preferenceChange(PreferenceChangeEvent evt) {
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
             // ignore events that come after uninstalling the EditorUI from a component
             if (prefs == null) {
                 disableLineNumbers = false;
@@ -1605,7 +1605,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     }
 
                     Utilities.runInEventDispatchThread(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             JTextComponent c = component;
                             if (c != null) {
                                 updateComponentProperties();
@@ -1632,7 +1632,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             // Postponing menu creation in order to give other listeners chance
             // to do their job. See IZ #140127 for details.
             SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     showPopupMenu(evt.getX(), evt.getY());
                 }
             });
@@ -1643,22 +1643,22 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     // MouseListener implementation
     // -----------------------------------------------------------------------
     
-    public void mouseClicked(MouseEvent evt) {
+    public @Override void mouseClicked(MouseEvent evt) {
     }
 
-    public void mousePressed(MouseEvent evt) {
+    public @Override void mousePressed(MouseEvent evt) {
         getWordMatch().clear();
         showPopupMenuForPopupTrigger(evt);
     }
     
-    public void mouseReleased(MouseEvent evt) {
+    public @Override void mouseReleased(MouseEvent evt) {
         showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
     }
 
-    public void mouseEntered(MouseEvent evt) {
+    public @Override void mouseEntered(MouseEvent evt) {
     }
 
-    public void mouseExited(MouseEvent evt) {
+    public @Override void mouseExited(MouseEvent evt) {
     }
     
     // -----------------------------------------------------------------------
