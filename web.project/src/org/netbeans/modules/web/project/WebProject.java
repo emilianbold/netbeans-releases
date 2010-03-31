@@ -1046,8 +1046,8 @@ public final class WebProject implements Project, AntProjectListener {
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);
             }
-            else if(apiWebServicesClientSupport.isBroken(WebProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(WebProject.this);
+            else if(WebServicesClientSupport.isBroken(WebProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(WebProject.this);
             }
             webPagesFileWatch.init();
             webInfFileWatch.init();
