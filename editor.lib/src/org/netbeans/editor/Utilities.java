@@ -83,6 +83,8 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.openide.util.NbBundle;
 
 /**
@@ -1336,7 +1338,11 @@ public class Utilities {
      * (or for a bunch of lines in case there is a code folding present).
      */
     public static View getDocumentView(JTextComponent component) {
-        return getRootView(component, DrawEngineDocView.class);
+        if (BaseKit.LINEWRAP_ENABLED) {
+            return getRootView(component, DocumentView.class);
+        } else {
+            return getRootView(component, DrawEngineDocView.class);
+        }
     }
 
     /**
@@ -1530,8 +1536,14 @@ public class Utilities {
 	    Rectangle alloc = getVisibleEditorRect(tc);
 	    if (alloc != null) {
                 View rootView = tc.getUI().getRootView(tc);
-		rootView.setSize(alloc.width, alloc.height);
-		offs = rootView.viewToModel((float) x, (float) y, alloc, biasReturn);
+                View documentView = rootView.getView(0);
+                if (documentView instanceof EditorView) {
+                    documentView.setSize(alloc.width, alloc.height);
+                    offs = ((EditorView) documentView).viewToModelChecked(x, y, alloc, biasReturn);
+                } else {
+                    rootView.setSize(alloc.width, alloc.height);
+                    offs = rootView.viewToModel((float) x, (float) y, alloc, biasReturn);
+                }
 	    }
 	} finally {
 	    if (doc instanceof AbstractDocument) {
