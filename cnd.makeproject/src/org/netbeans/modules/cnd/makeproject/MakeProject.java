@@ -927,8 +927,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     public synchronized void saveAndMarkDeleted(){
-        if (!isDeleted.get()) {
-            isDeleted.getAndSet(true);
+        if (isDeleted.compareAndSet(false, true)) {
             if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
                 projectDescriptorProvider.getConfigurationDescriptor().save();
             }
