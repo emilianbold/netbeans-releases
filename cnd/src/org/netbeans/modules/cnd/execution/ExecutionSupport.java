@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.execution41.org.openide.loaders;
+package org.netbeans.modules.cnd.execution;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -305,7 +305,7 @@ public class ExecutionSupport implements Node.Cookie {
     }
 
     /** @return a localized String */
-    static String getString(String s) {
+    private static String getString(String s) {
         return NbBundle.getMessage(ExecutionSupport.class, s);
     }
 }
