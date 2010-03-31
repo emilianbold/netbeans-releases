@@ -71,7 +71,8 @@ import static java.util.logging.Level.SEVERE;
  * @author  Marian Petras
  * @author  Tim Boudreau
  */
-final class MatchingObject implements PropertyChangeListener {
+final class MatchingObject
+        implements Comparable<MatchingObject>, PropertyChangeListener {
 
     /** */
     private final Logger LOG = Logger.getLogger(getClass().getName());
@@ -180,6 +181,7 @@ final class MatchingObject implements PropertyChangeListener {
         dataObj.removePropertyChangeListener(this);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
@@ -311,18 +313,6 @@ final class MatchingObject implements PropertyChangeListener {
                                          : matchesSelection[index];
     }
     
-    @Override
-    public boolean equals(Object anotherObject) {
-        return (anotherObject != null)
-               && (anotherObject.getClass() == MatchingObject.class)
-               && (((MatchingObject) anotherObject).object == this.object);
-    }
-    
-    @Override
-    public int hashCode() {
-        return object.hashCode() + 1;
-    }
-
     /**
      * Sets the {@link #childrenSelectionDirty} flag.
      * 
@@ -433,7 +423,15 @@ final class MatchingObject implements PropertyChangeListener {
         }
         return text == null ? new StringBuilder() : text;
     }
-    
+
+    @Override
+    public int compareTo(MatchingObject o) {
+            if(o == null) {
+                return Integer.MAX_VALUE;
+            }
+            return getName().compareToIgnoreCase(o.getName()); // locale?
+    }
+
     /**
      * Describes invalidity status of this item.
      */

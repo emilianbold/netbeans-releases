@@ -1,15 +1,15 @@
 <?php
 
 class SimpleClass{
-    
-// property declaration
+
+    // property declaration
     public $var = 'a value';
-    
-// method declaration
+
+    // method declaration
     public function displayVar()
     {
         echo $this->var;
     }
-}
 
+}
 ?>

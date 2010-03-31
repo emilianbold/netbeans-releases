@@ -3,4 +3,4 @@ parent::|protectedParentMethod();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     protectedParentMethod()         [PROTECTE  ParentClass
 METHOD     publicParentMethod()            [PUBLIC]   ParentClass
-CONSTANT   ? ParentClassConst                         ParentClass
+CONSTANT   ? ParentClassConst              [PUBLIC]   ParentClass

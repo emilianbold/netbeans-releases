@@ -149,7 +149,12 @@ public final class PathRegistry implements Runnable {
             }
         } else if (definingClassPath != null) {
             List<URL> cacheRoots = new ArrayList<URL> ();
-            Collection<? extends URL> unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            Collection<? extends URL> unknownRes;
+            try {
+                unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
+            } catch (IllegalArgumentException iae) {
+                throw new IllegalArgumentException("Defining cp URLs: " + definingClassPath.entries(), iae); //NOI18N
+            }
             if (unknownRes.isEmpty()) {
                 return null;
             }

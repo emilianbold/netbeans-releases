@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,10 +43,13 @@ package org.netbeans.modules.j2ee.archive.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -124,6 +127,7 @@ public class ArchiveProjectProperties {
     public void save() {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                @Override
                 public Object run() throws IOException {
                     // and save the project
                     try {
@@ -160,8 +164,12 @@ public class ArchiveProjectProperties {
     public void put( String propertyName, String value ) {
 //        EditableProperties projectProperties = helper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         if (J2EE_SERVER_INSTANCE.equals(propertyName)) {
-            projectProps.put(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID((String) value));
-//            EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+            try {
+                projectProps.put(J2EE_SERVER_TYPE, Deployment.getDefault().getServerInstance(value).getServerID()); //            EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+                //            EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger("global").log(Level.INFO, value, ex);
+            }
             privateProps.put(J2EE_SERVER_INSTANCE,value);
             
         } else {
@@ -171,6 +179,7 @@ public class ArchiveProjectProperties {
     
     public static void setServerInstance(final Project project, final AntProjectHelper helper, final String serverInstanceID) {
         ProjectManager.mutex().writeAccess(new Runnable() {
+            @Override
             public void run() {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -202,27 +211,32 @@ public class ArchiveProjectProperties {
     
     private static void setNewServerInstanceValue(String newServInstID, /* Project project,*/ EditableProperties projectProps, EditableProperties privateProps) {
         // update j2ee.server.type
-        projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
+        try {
+            projectProps.put(J2EE_SERVER_TYPE, Deployment.getDefault().getServerInstance(newServInstID).getServerID()); //            EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+            //            EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger("global").log(Level.INFO, newServInstID, ex);
+        }
         
         // update j2ee.server.instance
         privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
     }
     public static  Object mapType(String string) {
-        Object retVal = J2eeModule.EJB;
+        Object retVal = J2eeModule.Type.EJB;
         if (string.equals(ArchiveProjectProperties.PROJECT_TYPE_VALUE_CAR)) {
-            retVal = J2eeModule.CLIENT;
+            retVal = J2eeModule.Type.CAR;
         }
         if (string.equals(ArchiveProjectProperties.PROJECT_TYPE_VALUE_WAR)) {
-            retVal = J2eeModule.WAR;
+            retVal = J2eeModule.Type.WAR;
         }
         if (string.equals(ArchiveProjectProperties.PROJECT_TYPE_VALUE_JAR)) {
-            retVal = J2eeModule.EJB;
+            retVal = J2eeModule.Type.EJB;
         }
         if (string.equals(ArchiveProjectProperties.PROJECT_TYPE_VALUE_EAR)) {
-            retVal = J2eeModule.EAR;
+            retVal = J2eeModule.Type.EAR;
         }
         if (string.equals(ArchiveProjectProperties.PROJECT_TYPE_VALUE_RAR)) {
-            retVal = J2eeModule.CONN;
+            retVal = J2eeModule.Type.RAR;
         }
         return retVal;
     }

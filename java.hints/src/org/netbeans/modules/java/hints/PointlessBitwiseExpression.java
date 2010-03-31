@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations")
+@Hint(category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
 public class PointlessBitwiseExpression {
 
     @TriggerPatterns ({

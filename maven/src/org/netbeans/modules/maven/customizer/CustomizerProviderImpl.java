@@ -164,6 +164,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             }
             //#171958 end
 
+            handle.getPOMModel().startTransaction();
+            handle.getProfileModel().startTransaction();
             project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
             OptionListener listener = new OptionListener();
             Lookup context = Lookups.fixed(new Object[] { project, handle});

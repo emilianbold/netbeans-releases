@@ -46,13 +46,15 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * A common base class for ParserErrorFilter implementations
  * @author Vladimir Kvashin
  */
 public abstract class BaseParserErrorFilter extends ParserErrorFilter {
+
+    // Mac OS X uses '\n' as line separator too
+    private static final char LF = '\n'; // NOI18N
 
     protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
@@ -91,7 +93,6 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
             start = prevLine.offset;
             currLine = prevLine.line;
         }
-        char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
 
         while (start < text.length() && currLine < line) {
             char c = text.charAt(start++);

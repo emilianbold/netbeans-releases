@@ -47,6 +47,8 @@ import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -55,6 +57,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
 import org.netbeans.modules.css.refactoring.api.EntryHandle;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
@@ -159,10 +162,16 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             }.run();
 
         } else if (ts.token().id() == HTMLTokenId.VALUE_CSS) {
-            //css class or id hyperlinking 
-            int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
-            OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-            return range;
+            //css class or id hyperlinking
+            TokenSequence<CssTokenId> cssTs = ts.embedded(CssTokenId.language());
+            if (cssTs != null) {
+                cssTs.move(caretOffset);
+                if (cssTs.moveNext() || cssTs.movePrevious()) {
+                    if (cssTs.token().id() == CssTokenId.IDENT) {
+                        return new OffsetRange(cssTs.offset(), cssTs.offset() + cssTs.token().length());
+                    }
+                }
+            }
         }
 
         return null;
@@ -175,7 +184,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             return null;
         }
         int astCaretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
-        if(astCaretOffset == -1) {
+        if (astCaretOffset == -1) {
             return null;
         }
 
@@ -226,51 +235,67 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                         //seems to be valid and properly positioned
                         Token<HTMLTokenId> valueToken = ts.token();
                         if (valueToken.id() == HTMLTokenId.VALUE_CSS) {
-                            //the value_css token contains a metainfo about the type of its css embedding
-                            String cssTokenType = (String) valueToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
-                            String unquotedValue = WebUtils.unquotedValue(valueToken.text().toString());
-                            if (cssTokenType != null) {
-                                RefactoringElementType type;
-                                if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(cssTokenType)) {
-                                    //class selector
-                                    type = RefactoringElementType.CLASS;
-                                } else if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID.equals(cssTokenType)) { // instances comparison is ok here!
-                                    //id selector
-                                    type = RefactoringElementType.ID;
-                                } else {
-                                    type = null;
-                                    assert false; //something very bad is going on!
-                                }
-
-                                Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
-                                if(occurances == null) {
-                                    return ;
-                                }
-
-                                DeclarationLocation dl = null;
-                                for (FileObject f : occurances.keySet()) {
-                                    Collection<EntryHandle> entries = occurances.get(f);
-                                    for (EntryHandle entryHandle : entries) {
-                                        //grrr, the main declarationlocation must be also added to the alternatives
-                                        //if there are more than one
-                                        DeclarationLocation dloc = new DeclarationLocation(f, entryHandle.entry().getDocumentRange().getStart());
-                                        if (dl == null) {
-                                            //ugly DeclarationLocation alternatives handling workaround - one of the
-                                            //locations simply must be "main"!!!
-                                            dl = dloc;
-                                        }
-                                        HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle);
-                                        dl.addAlternative(aloc);
+                            TokenSequence<CssTokenId> cssTs = ts.embedded(CssTokenId.language());
+                            String unquotedValue = null;
+                            if (cssTs != null) {
+                                cssTs.move(caretOffset);
+                                if (cssTs.moveNext() || cssTs.movePrevious()) {
+                                    if (cssTs.token().id() == CssTokenId.IDENT) {
+                                        unquotedValue = cssTs.token().text().toString();
                                     }
                                 }
-
-                                //and finally if there was just one entry, remove the "alternative"
-                                if(dl != null && dl.getAlternativeLocations().size() == 1) {
-                                    dl.getAlternativeLocations().clear();
-                                }
-
-                                ret.set(dl);
                             }
+                            if (unquotedValue == null) {
+                                return;
+                            }
+
+                            //the value_css token contains a metainfo about the type of its css embedding
+                            String cssTokenType = (String) valueToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
+                            if (cssTokenType == null) {
+                                return;
+                            }
+
+                            RefactoringElementType type;
+                            if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(cssTokenType)) {
+                                //class selector
+                                type = RefactoringElementType.CLASS;
+                            } else if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID.equals(cssTokenType)) { // instances comparison is ok here!
+                                //id selector
+                                type = RefactoringElementType.ID;
+                            } else {
+                                type = null;
+                                assert false; //something very bad is going on!
+                            }
+
+                            Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
+                            if (occurances == null) {
+                                return;
+                            }
+
+                            DeclarationLocation dl = null;
+                            for (FileObject f : occurances.keySet()) {
+                                Collection<EntryHandle> entries = occurances.get(f);
+                                for (EntryHandle entryHandle : entries) {
+                                    //grrr, the main declarationlocation must be also added to the alternatives
+                                    //if there are more than one
+                                    DeclarationLocation dloc = new DeclarationLocation(f, entryHandle.entry().getDocumentRange().getStart());
+                                    if (dl == null) {
+                                        //ugly DeclarationLocation alternatives handling workaround - one of the
+                                        //locations simply must be "main"!!!
+                                        dl = dloc;
+                                    }
+                                    HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle, type);
+                                    dl.addAlternative(aloc);
+                                }
+                            }
+
+                            //and finally if there was just one entry, remove the "alternative"
+                            if (dl != null && dl.getAlternativeLocations().size() == 1) {
+                                dl.getAlternativeLocations().clear();
+                            }
+
+                            ret.set(dl);
+
 
                         } else {
                             //some bad guy modified the code meanwhile so the offsets aren't matching
@@ -329,10 +354,13 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
         private DeclarationLocation location;
         private EntryHandle entryHandle;
+        private RefactoringElementType type;
+        private static final int SELECTOR_TEXT_MAX_LENGTH = 50;
 
-        public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry) {
+        public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry, RefactoringElementType type) {
             this.location = location;
             this.entryHandle = entry;
+            this.type = type;
         }
 
         @Override
@@ -349,22 +377,84 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             int curlyBracketIndex = entryHandle.entry().getLineText().indexOf('{'); //NOI18N
             String croppedLineText = curlyBracketIndex == -1 ? entryHandle.entry().getLineText() : entryHandle.entry().getLineText().substring(0, curlyBracketIndex);
 
-            b.append("<b><font color=007c00>");//NOI18N
-            b.append(croppedLineText);
-            b.append("</font></b> in "); //NOI18N
+            //split the text to three parts: the element text itself, its prefix and postfix
+            //then render the element test in bold
+            String elementTextPrefix;
+            switch (type) {
+                case CLASS:
+                    elementTextPrefix = "."; //NOI18N
+                    break;
+                case ID:
+                    elementTextPrefix = "#"; //NOI18N
+                    break;
+                default:
+                    elementTextPrefix = "";
+            }
+            String elementText = elementTextPrefix + entryHandle.entry().getName();
+            int elementTextIndex = croppedLineText.indexOf(elementText);
+            assert elementTextIndex != -1;
+            String prefix = croppedLineText.substring(0, elementTextIndex).trim();
+            String postfix = croppedLineText.substring(elementTextIndex + elementText.length()).trim();
+
+            //now strip the prefix and postfix so the whole text is not longer than SELECTOR_TEXT_MAX_LENGTH
+            int overlap = croppedLineText.length() - SELECTOR_TEXT_MAX_LENGTH;
+            if (overlap > 0) {
+                //strip
+                int stripFromPrefix = Math.min(overlap / 2, prefix.length());
+                prefix = ".." + prefix.substring(stripFromPrefix);
+                int stripFromPostfix = Math.min(overlap - stripFromPrefix, postfix.length());
+                postfix = postfix.substring(0, postfix.length() - stripFromPostfix) + "..";
+            }
+
+            b.append("<font color=007c00>");//NOI18N
+            b.append(prefix);
+            b.append(' '); //NOI18N
+            b.append("<b>"); //NOI18N
+            b.append(elementText);
+            b.append("</b>"); //NOI18N
+            b.append(' '); //NOI18N
+            b.append(postfix);
+            b.append("</font> in "); //NOI18N
 
             //add a link to the file relative to the web root
             FileObject file = location.getFileObject();
-            FileObject webRoot = ProjectWebRootQuery.getWebRoot(file);
-            String path = webRoot == null ? file.getPath() : FileUtil.getRelativePath(webRoot, file);
+            FileObject pathRoot = ProjectWebRootQuery.getWebRoot(file);
 
+            String path = null;
+            String resolveTo = null;
+            if (pathRoot != null) {
+                path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
+            }
+            if (path == null) {
+                //the file cannot be resolved relatively to the webroot or no webroot found
+                //try to resolve relative path to the project's root folder
+                Project project = FileOwnerQuery.getOwner(file);
+                if (project != null) {
+                    pathRoot = project.getProjectDirectory();
+                    path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
+                    if (path != null) {
+                        resolveTo = "${project.home}/"; //NOI18N
+                    }
+                }
+            }
+
+            if (path == null) {
+                //if everything fails, just use the absolute path
+                path = file.getPath();
+            }
+
+            if (resolveTo != null) {
+                b.append("<i>"); //NOI18N
+                b.append(resolveTo);
+                b.append("</i>"); //NOI18N
+            }
             b.append(path);
             int lineOffset = entryHandle.entry().getLineOffset();
-            if(lineOffset != -1) {
+            if (lineOffset != -1) {
                 b.append(":"); //NOI18N
                 b.append(lineOffset + 1); //line offsets are counted from zero, but in editor lines starts with one.
             }
-            if(!entryHandle.isRelatedEntry()) {
+            if (!entryHandle.isRelatedEntry()) {
                 b.append(" <font color=ff0000>(");
                 b.append(NbBundle.getMessage(HtmlDeclarationFinder.class, "MSG_Unrelated"));
                 b.append(")</font>");
@@ -384,12 +474,10 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         }
 
         private static String getComparableString(AlternativeLocation loc) {
-            return new StringBuilder()
-                    .append(loc.getLocation().getOffset()) //offset
+            return new StringBuilder().append(loc.getLocation().getOffset()) //offset
                     .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
         }
     }
-
     //useless class just because we need to put something into the AlternativeLocation to be
     //able to get some icon from it
     private static CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
@@ -435,6 +523,5 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         public OffsetRange getOffsetRange(ParserResult result) {
             return OffsetRange.NONE;
         }
-
     }
 }

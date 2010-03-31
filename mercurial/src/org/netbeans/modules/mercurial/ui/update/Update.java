@@ -61,13 +61,9 @@ public class Update implements PropertyChangeListener {
     private File repository;
     
     /** Creates a new instance of Update */
-    public Update(File repository, File [] roots) {
-        this (repository, roots, null);
-    }
-
-    public Update(File repository, File [] roots, String defaultRevision) {
+    public Update(File repository) {
         this.repository = repository;
-        panel = new UpdatePanel(repository, roots);
+        panel = new UpdatePanel(repository);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_UpdateForm_Action_Update")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_UpdateForm_Action_Update")); // NOI18N

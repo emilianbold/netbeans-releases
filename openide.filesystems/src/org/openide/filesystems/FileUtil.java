@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -193,6 +194,7 @@ public final class FileUtil extends Object {
             LOG.fine("refreshAll - scheduled");  //NOI18N
         }
         taskToWaitFor.waitFinished();
+        LOG.fine("refreshAll - finished");  //NOI18N
     }
 
     /**
@@ -303,6 +305,19 @@ public final class FileUtil extends Object {
         }
     }
     /**
+     * Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.util.concurrent.Callable)
+     * addRecursiveListener(listener, path, null)}.
+     *
+     * @param listener FileChangeListener to listen to changes in path
+     * @param path File path to listen to (even not existing)
+     *
+     * @since org.openide.filesystems 7.28
+     */
+    public static void addRecursiveListener(FileChangeListener listener, File path) {
+        addFileChangeListener(new DeepListener(listener, path, null), path);
+    }
+
+    /**
      * Adds a listener to changes under given path. It permits you to listen to a file
      * which does not yet exist, or continue listening to it after it is deleted and recreated, etc.
      * <br/>
@@ -326,14 +341,27 @@ public final class FileUtil extends Object {
      * listen to any number of paths. Note that listeners are always held weakly
      * - if the listener is collected, it is quietly removed.
      *
+     * <div class="nonnormative">
+     * As registering of the listener can take a long time, especially on deep
+     * hierarchies, it is possible provide a callback <code>stop</code>.
+     * This stop object is guaranteed to be called once per every folder on the
+     * default (when masterfs module is included) implemention. If the call
+     * to <code>stop.call()</code> returns true, then the registration of
+     * next recursive items is interrupted. The listener may or may not get
+     * some events from already registered folders.
+     * </div>
+     *
      * @param listener FileChangeListener to listen to changes in path
      * @param path File path to listen to (even not existing)
+     * @param stop an interface to interrupt the process of registering
+     *    the listener. If the <code>call</code> returns true, the process
+     *    of registering the listener is immediately interrupted
      *
      * @see FileObject#addRecursiveListener
-     * @since org.openide.filesystems 7.28
+     * @since org.openide.filesystems 7.37
      */
-    public static void addRecursiveListener(FileChangeListener listener, File path) {
-        addFileChangeListener(new DeepListener(listener, path), path);
+    public static void addRecursiveListener(FileChangeListener listener, File path, Callable<Boolean> stop) {
+        addFileChangeListener(new DeepListener(listener, path, stop), path);
     }
 
     /**
@@ -346,7 +374,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path), path);
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(new DeepListener(listener, path, null), path);
         dl.run();
     }
 
@@ -1676,7 +1704,12 @@ public final class FileUtil extends Object {
             // URI.normalize removes ../ and ./ sequences nicely.            
             File absoluteFile = new File(file.toURI().normalize());
             File canonicalFile = file.getCanonicalFile();
-            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absoluteFile.getAbsolutePath());
+            String absolutePath = absoluteFile.getAbsolutePath();
+            if (absolutePath.equals("/..")) { // NOI18N
+                // Special treatment.
+                absoluteFile = new File(absolutePath = "/"); // NOI18N
+            }
+            boolean isSymLink = !canonicalFile.getAbsolutePath().equalsIgnoreCase(absolutePath);
 
             if (isSymLink) {
                 retVal = normalizeSymLinkOnMac(absoluteFile);

@@ -43,12 +43,12 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -59,7 +59,7 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public final class ClassIndexManager {
-    
+
     private static final byte OP_ADD    = 1;
     private static final byte OP_REMOVE = 2;
 
@@ -67,19 +67,17 @@ public final class ClassIndexManager {
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final ReentrantReadWriteLock lock;
     private final InternalLock internalLock;
-    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
+    private final Collection<ClassIndexManagerListener> listeners = new ConcurrentLinkedQueue<ClassIndexManagerListener> ();
     private boolean invalid;
     private Set<URL> added;
     private Set<URL> removed;
     private int depth = 0;
-    
-    
-    
+
     private ClassIndexManager() {
         this.lock = new ReentrantReadWriteLock (false);
         this.internalLock = new InternalLock();
     }
-    
+
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
         this.listeners.add(listener);

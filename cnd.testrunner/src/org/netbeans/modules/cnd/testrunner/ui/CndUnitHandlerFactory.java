@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
@@ -76,17 +77,29 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     @Override
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
-        result.add(new SuiteStartingHandler());
-        result.add(new SuiteStartedHandler());
-        result.add(new SuiteFinishedHandler());
-        result.add(new SuiteErrorOutputHandler());
-        result.add(new TestStartedHandler());
-        result.add(new TestFailedHandler());
-        result.add(new TestErrorHandler());
-        result.add(new TestFinishedHandler());
-        result.add(new TestLoggerHandler());
-        result.add(new TestMiscHandler());
-        result.add(new SuiteMiscHandler());
+
+        // Simple
+        result.add(new SimpleSuiteStartingHandler());
+        result.add(new SimpleSuiteStartedHandler());
+        result.add(new SimpleSuiteFinishedHandler());
+        result.add(new SimpleSuiteErrorOutputHandler());
+        result.add(new SimpleTestStartedHandler());
+        result.add(new SimpleTestFailedHandler());
+        result.add(new SimpleTestErrorHandler());
+        result.add(new SimpleTestFinishedHandler());
+        result.add(new SimpleTestLoggerHandler());
+        result.add(new SimpleTestMiscHandler());
+        result.add(new SimpleSuiteMiscHandler());
+
+        // CppUnit
+        result.add(new CppUnitHandler());
+
+        // CUnit
+        result.add(new CUnitSuiteStartingHandler());
+        result.add(new CUnitSuiteFinishedHandler());
+        result.add(new CUnitTestFinishedHandler());
+        result.add(new CUnitTestFailedHandler());
+
         return result;
     }
 
@@ -145,15 +158,15 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     }
 
 
-    static class TestFailedHandler extends TestRecognizerHandler {
+    static class SimpleTestFailedHandler extends TestRecognizerHandler {
         private List<String> output;
 
-        public TestFailedHandler(String regex) {
+        public SimpleTestFailedHandler(String regex) {
             super(regex);
         }
 
-        public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+        public SimpleTestFailedHandler() {
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -163,8 +176,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
             String message = matcher.group(4).replace("%BR%", "\n"); // NOI18N
-            String location = matcher.group(5);
-            testcase.getTrouble().setStackTrace(getStackTrace(message, location));
+            testcase.getTrouble().setStackTrace(getStackTrace(message, "")); // NOI18N
             testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
 
             session.addTestCase(testcase);
@@ -194,12 +206,12 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestErrorHandler extends TestRecognizerHandler {
+    static class SimpleTestErrorHandler extends TestRecognizerHandler {
 
         private List<String> output;
 
-        public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+        public SimpleTestErrorHandler() {
+            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -208,7 +220,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5))); // NOI18N
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), "")); // NOI18N
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
@@ -236,9 +248,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestStartedHandler extends TestRecognizerHandler {
+    static class SimpleTestStartedHandler extends TestRecognizerHandler {
 
-        public TestStartedHandler() {
+        public SimpleTestStartedHandler() {
             super("%TEST_STARTED%\\s*(.+) \\((.+)\\)"); //NOI18N
         }
 
@@ -247,13 +259,13 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class TestFinishedHandler extends TestRecognizerHandler {
+    static class SimpleTestFinishedHandler extends TestRecognizerHandler {
 
-        public TestFinishedHandler(String regex) {
+        public SimpleTestFinishedHandler(String regex) {
             super(regex);
         }
 
-        public TestFinishedHandler() {
+        public SimpleTestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\s+(.+) \\((.+)\\)"); //NOI18N
         }
 
@@ -270,9 +282,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
      * Captures the rest of %TEST_* patterns that are not handled
      * otherwise (yet).
      */
-    static class TestMiscHandler extends TestRecognizerHandler {
+    static class SimpleTestMiscHandler extends TestRecognizerHandler {
 
-        public TestMiscHandler() {
+        public SimpleTestMiscHandler() {
             super("%TEST_.*"); //NOI18N
         }
 
@@ -281,9 +293,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteFinishedHandler extends TestRecognizerHandler {
+    static class SimpleSuiteFinishedHandler extends TestRecognizerHandler {
 
-        public SuiteFinishedHandler() {
+        public SimpleSuiteFinishedHandler() {
             super("%SUITE_FINISHED%\\s+time=(.+)"); //NOI18N
         }
 
@@ -294,9 +306,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteStartedHandler extends TestRecognizerHandler {
+    static class SimpleSuiteStartedHandler extends TestRecognizerHandler {
 
-        public SuiteStartedHandler() {
+        public SimpleSuiteStartedHandler() {
             super("%SUITE_STARTED%\\s.*"); //NOI18N
         }
 
@@ -305,9 +317,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
     }
 
-    static class SuiteErrorOutputHandler extends TestRecognizerHandler {
+    static class SimpleSuiteErrorOutputHandler extends TestRecognizerHandler {
 
-        public SuiteErrorOutputHandler() {
+        public SimpleSuiteErrorOutputHandler() {
             super("%SUITE_ERROR_OUTPUT%\\serror=(.*)"); //NOI18N
         }
 
@@ -324,11 +336,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
     }
 
-    static class SuiteStartingHandler extends TestRecognizerHandler {
+    static class SimpleSuiteStartingHandler extends TestRecognizerHandler {
 
         private boolean firstSuite = true;
 
-        public SuiteStartingHandler() {
+        public SimpleSuiteStartingHandler() {
             super("%SUITE_STARTING%\\s+(.+)"); //NOI18N
         }
 
@@ -348,9 +360,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
      * Captures the rest of %SUITE_* patterns that are not handled
      * otherwise (yet).
      */
-    static class SuiteMiscHandler extends TestRecognizerHandler {
+    static class SimpleSuiteMiscHandler extends TestRecognizerHandler {
 
-        public SuiteMiscHandler() {
+        public SimpleSuiteMiscHandler() {
             super("%SUITE_.*"); //NOI18N
         }
 
@@ -362,9 +374,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     /**
      * Captures output meant for logging.
      */
-    static class TestLoggerHandler extends TestRecognizerHandler {
+    static class SimpleTestLoggerHandler extends TestRecognizerHandler {
 
-        public TestLoggerHandler() {
+        public SimpleTestLoggerHandler() {
             super("%TEST_LOGGER%\\slevel=(.+)\\smsg=(.*)"); //NOI18N
         }
 
@@ -375,5 +387,203 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
                 LOGGER.log(level, matcher.group(2));
         }
     }
+
+    
+    //
+    // CppUnit tests output support
+    //
+
+    static class CppUnitHandler extends TestRecognizerHandler {
+
+        private final List<TestRecognizerHandler> handlers;
+
+        private String currentSuiteName;
+        private boolean currentSuiteFinished = false;
+
+        public CppUnitHandler() {
+            super("((.*)::(.+) : .*)|(Run: )"); //NOI18N
+
+            handlers = new ArrayList<TestRecognizerHandler>();
+            handlers.add(new CppUnitTestFinishedHandler());
+            handlers.add(new CppUnitTestFailedHandler());
+            handlers.add(new CppUnitSuiteFinishedHandler());
+        }
+
+        @Override
+        void updateUI(Manager manager, TestSession session) {
+            String line = matcher.group(0);
+            for (TestRecognizerHandler handler : handlers) {
+                if (handler.matches(line)) {
+                    handler.updateUI(manager, session);
+                    break;
+                }
+            }
+        }
+
+        class CppUnitTestFinishedHandler extends TestRecognizerHandler {
+
+            public CppUnitTestFinishedHandler() {
+                super("(.*)::(.+) : OK"); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+
+                String suiteName = matcher.group(1);
+
+                final TestSuite currentSuite = session.getCurrentSuite();
+                if (currentSuite == null) {
+                    manager.testStarted(session);
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                    currentSuiteFinished = false;
+                } else if(!currentSuite.getName().equals(suiteName)) {
+                    if(currentSuite.getName().equals(currentSuiteName) &&
+                            !currentSuiteFinished) {
+                        manager.displayReport(session, session.getReport(0));
+                    }
+
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                    currentSuiteFinished = false;
+                }
+                currentSuiteName = suiteName;
+
+                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                testcase.setTimeMillis(0);
+                testcase.setClassName(suiteName);
+
+                session.addTestCase(testcase);
+            }
+        }
+
+        class CppUnitTestFailedHandler extends TestRecognizerHandler {
+
+            public CppUnitTestFailedHandler() {
+                super("(.*)::(.+) : (.*)"); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+
+                String suiteName = matcher.group(1);
+
+                final TestSuite currentSuite = session.getCurrentSuite();
+                if (currentSuite == null) {
+                    manager.testStarted(session);
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                } else if(!currentSuite.getName().equals(suiteName)) {
+                    if(currentSuite.getName().equals(currentSuiteName) &&
+                            !currentSuiteFinished) {
+                        manager.displayReport(session, session.getReport(0));
+                        currentSuiteFinished = true;
+                    }
+
+                    session.addSuite(new TestSuite(suiteName));
+                    manager.displaySuiteRunning(session, suiteName);
+                }
+                currentSuiteName = suiteName;
+
+                Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
+                testcase.setTimeMillis(0);
+                testcase.setClassName(suiteName);
+
+                testcase.setTrouble(new Trouble(true));
+                String message = matcher.group(3); // NOI18N
+                testcase.getTrouble().setStackTrace(getStackTrace(message ,"")); // NOI18N
+
+                session.addTestCase(testcase);
+            }
+        }
+
+        class CppUnitSuiteFinishedHandler extends TestRecognizerHandler {
+
+            public CppUnitSuiteFinishedHandler() {
+                super("Run: "); //NOI18N
+            }
+
+            @Override
+            void updateUI( Manager manager, TestSession session) {
+                manager.displayReport(session, session.getReport(0));
+                manager.sessionFinished(session);
+                currentSuiteFinished = true;
+            }
+        }
+    }
+
+    
+    //
+    // CppUnit tests output support
+    //
+
+    static class CUnitSuiteStartingHandler extends TestRecognizerHandler {
+
+        private boolean firstSuite = true;
+
+        public CUnitSuiteStartingHandler() {
+            super("Suite: (.+)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            if (firstSuite) {
+                firstSuite = false;
+                manager.testStarted(session);
+            }
+            String suiteName = matcher.group(1);
+            session.addSuite(new TestSuite(suiteName));
+            manager.displaySuiteRunning(session, suiteName);
+        }
+    }
+
+
+    static class CUnitTestFinishedHandler extends TestRecognizerHandler {
+
+        public CUnitTestFinishedHandler() {
+            super("Test: (.*) \\.\\.\\. passed"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
+            testcase.setTimeMillis(0);
+            testcase.setClassName(session.getCurrentSuite().getName());
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class CUnitTestFailedHandler extends TestRecognizerHandler {
+
+        public CUnitTestFailedHandler() {
+            super("Test: (.*) \\.\\.\\. FAILED"); //NOI18N
+        }
+
+        @Override
+        void updateUI(Manager manager, TestSession session) {
+            Testcase testcase = new Testcase(matcher.group(1), CPP_UNIT, session);
+            testcase.setTimeMillis(0);
+            testcase.setClassName(session.getCurrentSuite().getName());
+
+            testcase.setTrouble(new Trouble(true));
+
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
+
+        public CUnitSuiteFinishedHandler() {
+            super("--Run Summary: "); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            manager.displayReport(session, session.getReport(0));
+            manager.sessionFinished(session);
+        }
+    }
+
+
 }
 

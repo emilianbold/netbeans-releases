@@ -134,6 +134,12 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         revalidate();
         repaint();
     }
+
+    public void requestActive () {
+        if (controllerPanel != null) {
+            controllerPanel.requestFocusInWindow();
+        }
+    }
     
     private void onPrev() {
         int idx = controller.getDifferenceIndex();

@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -193,6 +192,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
 
         public void componentClosed() {
+            long time = System.currentTimeMillis();
             final FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
 
             if (storageFile != null && storageFile.isValid()) {
@@ -216,7 +216,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             toolbar = null;
             tc = null;
 
-            LOG.finest("PageFlowEditor componentClosed");
+            LOG.finest("PageFlowEditor componentClosed took: "+ (System.currentTimeMillis() - time) + " ms");
         }
 
         public void componentShowing() {

@@ -98,6 +98,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -110,6 +111,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -141,8 +143,8 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
-    public static final boolean TRACE_MAKE_PROJECT_CREATION = Boolean.getBoolean("cnd.make.project.creation.trace"); // NOI18N
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
 //    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
@@ -150,6 +152,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
     private static final String MAKE_PROJECT_TYPE = "make-project-type"; // NOI18N
     private static MakeTemplateListener templateListener = null;
+    private final MakeProjectType kind;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -168,22 +171,19 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MutableCP sourcepath;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Start of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        this.kind = new MakeProjectType();
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("Create ConfigurationDescriptorProvider@"+System.identityHashCode(projectDescriptorProvider)+" for MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
         lookup = createLookup(aux);
-        helper.addAntProjectListener(this);
+        helper.addAntProjectListener(MakeProject.this);
 
         // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
@@ -202,9 +202,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
-        if (TRACE_MAKE_PROJECT_CREATION){
-            System.err.println("End of creation MakeProject@"+System.identityHashCode(this)+" "+helper.getProjectDirectory().getName()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
     }
 
     private void readProjectExtension(Element data, String key, Set<String> set) {
@@ -213,9 +211,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             nl = nl.item(0).getChildNodes();
             if (nl.getLength() == 1) {
                 String extensions = nl.item(0).getNodeValue();
-                for (String e : extensions.split(",")) { // NOI18N
-                    set.add(e);
-                }
+                set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
     }
@@ -254,17 +250,17 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[]{
+        Lookup lkp = Lookups.fixed(new Object[]{
                     new Info(),
                     aux,
                     helper.createCacheDirectoryProvider(),
                     spp,
                     new MakeActionProvider(this),
-                    new MakeLogicalViewProvider(this, spp),
+                    new MakeLogicalViewProvider(this),
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
                     new MakeArtifactProviderImpl(),
                     new ProjectXmlSavedHookImpl(),
-                    new ProjectOpenedHookImpl(),
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
                     new AntProjectHelperProvider(),
@@ -274,12 +270,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
                     new FolderSearchInfo(projectDescriptorProvider),
-                    new MakeProjectType(),
+                    kind,
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
                 });
+        return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
     @Override
@@ -905,19 +902,37 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     void setDeleted(){
+        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
         isDeleted.set(true);
     }
 
     private synchronized void onProjectClosed(){
-        if (!isDeleted.get()) {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
-            }
+        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        save();
+        if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+            projectDescriptorProvider.getConfigurationDescriptor().closed();
         }
         if (isOpenHookDone) {
             GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
             isOpenHookDone = false;
         }
+    }
+
+    public synchronized void save(){
+        if (!isDeleted.get()) {
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                projectDescriptorProvider.getConfigurationDescriptor().save();
+            }
+        }
+    }
+
+    public synchronized void saveAndMarkDeleted(){
+        if (!isDeleted.get()) {
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                projectDescriptorProvider.getConfigurationDescriptor().save();
+            }
+        }
+        isDeleted.getAndSet(true);
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
@@ -1006,7 +1021,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
     }
-
+    
     private class ToolchainProjectImpl implements ToolchainProject {
 
         @Override
@@ -1029,7 +1044,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         public MutableCP(MakeSources sources) {
             this.sources = sources;
-            this.sources.addChangeListener(WeakListeners.change(this, this.sources));
+            this.sources.addChangeListener(WeakListeners.change(MutableCP.this, this.sources));
         }
 
         @Override
@@ -1093,7 +1108,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
         public PathResourceImpl(PathResourceImplementation delegate) {
             this.delegate = delegate;
-            this.delegate.addPropertyChangeListener(this);
+            this.delegate.addPropertyChangeListener(PathResourceImpl.this);
         }
 
         @Override

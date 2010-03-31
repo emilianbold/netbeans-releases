@@ -268,6 +268,7 @@ public class AutoUpdate extends Task {
                     long crcValue = crc.getValue();
                     if(doUnpack200) {
                         File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 8));
+                        log("Unpacking " + trgt + " to " + dest, Project.MSG_VERBOSE);
                         unpack200(trgt, dest);
                         trgt.delete();
                         crcValue = getFileCRC(dest);
@@ -290,10 +291,9 @@ public class AutoUpdate extends Task {
         }
     }
 
-    private boolean unpack200(File src, File dest) {
-        // Copy of ModuleUpdater.unpack200
-
-        log("Unpacking " + src + " to " + dest, Project.MSG_VERBOSE);
+    //package private access so that it can be used by L10nTask
+    static boolean unpack200(File src, File dest) {
+        // Copy of ModuleUpdater.unpack200        
         String unpack200Executable = new File(System.getProperty("java.home"),
                 "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
         ProcessBuilder pb = new ProcessBuilder(unpack200Executable, src.getAbsolutePath(), dest.getAbsolutePath());

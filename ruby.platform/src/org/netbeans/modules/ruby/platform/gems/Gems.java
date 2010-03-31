@@ -49,10 +49,14 @@ import java.net.URL;
 public final class Gems {
 
     /**
+     * The name of the AR gem.
+     */
+    public static final String ACTIVERECORD = "activerecord"; //NOI18N
+    /**
      * The Rails gems, i.e. rails and its dependencies.
      */
-    private static final String[] RAILS_GEMS = new String[]{"actionmailer", "actionpack", "activerecord", // NOI18N
-        "activeresource", "activesupport", "rails", // NOI18N
+    private static final String[] RAILS_GEMS = new String[]{"actionmailer", "actionpack", ACTIVERECORD, // NOI18N
+        "activeresource", "activesupport", "rails", "railties", // NOI18N
         "activemodel", // NOI18N    activemodel is Rails 3.x only
         "actionwebservice"}; // NOI18N    actionwebservice is Rails 1.x only
 
@@ -63,6 +67,7 @@ public final class Gems {
         "thoughtbot-shoulda", "ZenTest", "cucumber", "mocha"}; // NOI18N
 
     private static final String RAKE_GEM = "rake"; //NOI18N
+
 
     private Gems() {
     }

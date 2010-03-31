@@ -163,6 +163,9 @@ made subject to such option by the copyright holder.
         <property name="run.args" value=""/>
         <property name="run.args.ide" value=""/>
         <property name="run.args.extra" value=""/>
+        <condition property="run.args.mac" value="-J-Xdock:name=${app.name}" else="">
+            <os family="mac"/>
+        </condition>
         <exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
@@ -182,6 +185,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args}"/>
             <arg line="${run.args.ide}"/>
             <arg line="${run.args.extra}"/>
+            <arg line="${run.args.mac}"/>
         </exec>
         <fail>
 The application is already running within the test user directory.

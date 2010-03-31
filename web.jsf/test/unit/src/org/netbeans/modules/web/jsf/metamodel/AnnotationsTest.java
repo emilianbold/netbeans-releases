@@ -125,7 +125,6 @@ public class AnnotationsTest extends CommonTestCase  {
     public void testXmlMergedWithAnnotations() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "WEB-INF/faces-config.xml",
                 getFileContent("data/faces-config.xml"));
-        addTopLevelElements();
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomRenderer.java",
                 "package foo; " +

@@ -42,18 +42,25 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.Writer;
+import java.net.ConnectException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -68,6 +75,13 @@ class SftpSupport {
     private static final  java.util.logging.Logger LOG = Logger.getInstance();
     private static final Object instancesLock = new Object();
     private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<ExecutionEnvironment, SftpSupport>();
+
+    private static AtomicInteger uploadCount = new AtomicInteger(0);
+
+    /** for test purposes only */
+    /*package-local*/ static int getUploadCount() {
+        return uploadCount.get();
+    }
 
     private static SftpSupport getInstance(ExecutionEnvironment execEnv) {
         SftpSupport instance = null;
@@ -85,8 +99,8 @@ class SftpSupport {
             final String srcFileName,
             final ExecutionEnvironment execEnv,
             final String dstFileName,
-            final int mask, final Writer error) {
-            return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error);
+            final int mask, final Writer error, final boolean checkMd5) {
+            return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error, checkMd5);
     }
 
     static Future<Integer> downloadFile(
@@ -125,9 +139,8 @@ class SftpSupport {
                 channel = null;
             }
             if (channel == null) {
-                Session session =
-                    ConnectionManagerAccessor.getDefault().getConnectionSession(
-                    ConnectionManager.getInstance(), execEnv, true);
+                ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+                Session session = cmAccess.getConnectionSession(execEnv, true);
                 channel = (ChannelSftp) session.openChannel("sftp"); // NOI18N
                 channel.connect();
             }
@@ -165,12 +178,18 @@ class SftpSupport {
             } catch (SftpException ex) {
                 logException(ex);
                 rc = 2;
-            } catch(IOException ex) {
+            } catch(ConnectException ex) {
                 logException(ex);
                 rc = 3;
+            } catch(InterruptedIOException ex) {
+                logException(ex);
+                rc = 4;
+            } catch(IOException ex) {
+                logException(ex);
+                rc = 5;
             } catch (CancellationException ex) {
                 // no trace
-                rc = 4;
+                rc = 6;
             }
             LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
             return rc;
@@ -184,18 +203,33 @@ class SftpSupport {
     private class Uploader extends Worker implements Callable<Integer> {
 
         private final int mask;
+        private final boolean checkMd5;
 
-        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error) {
+        public Uploader(String srcFileName, ExecutionEnvironment execEnv, String dstFileName, int mask, Writer error, boolean checkMd5) {
             super(srcFileName, execEnv, dstFileName, error);
             this.mask = mask;
+            this.checkMd5 = checkMd5;
         }
 
         @Override
         protected void work() throws IOException, CancellationException, JSchException, SftpException {
+            if (checkMd5) {
+                Result res = null;
+                try {
+                    res = new Md5checker(execEnv).check(new File(srcFileName), dstFileName);
+                } catch (NoSuchAlgorithmException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (Md5checker.CheckSumException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (res == Result.UPTODATE) {
+                    return;
+                }
+            }
             ChannelSftp cftp = getChannel();
             cftp.put(srcFileName, dstFileName);
             cftp.chmod(mask, dstFileName);
-
+            uploadCount.incrementAndGet();
         }
 
         @Override
@@ -225,9 +259,9 @@ class SftpSupport {
     private Future<Integer> uploadFile(
             final String srcFileName,
             final String dstFileName,
-            final int mask, final Writer error) {
+            final int mask, final Writer error, final boolean checkMd5) {
 
-            Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error);
+            Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error, checkMd5);
             FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
             requestProcessor.post(ftask);
             LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());

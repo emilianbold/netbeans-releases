@@ -43,7 +43,6 @@ import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -71,7 +70,6 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -104,11 +102,13 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         // Fill the Projects combo box
         fillProjectsCombo(projectCB);
         hostComboBox.addItemListener(new java.awt.event.ItemListener() {
+            @Override
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 hostComboBoxItemStateChanged(evt);
             }
         });
         filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
+            @Override
             public void documentChanged(DocumentEvent e) {
                 filterTextChanged();
             }
@@ -167,9 +167,9 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         }
         // Get the process list
         if (showAll) {
-            procList.requestFull(this);
+            procList.requestFull(getFilterRE(), this);
         } else {
-            procList.requestSimple(this);
+            procList.requestSimple(getFilterRE(), this);
         }
     }
 
@@ -187,30 +187,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
      * 
      * @param list A list of lines from a ps command
      */
-    public void processListCallback(List<String> list) {
-        Pattern re = getFilterRE();
-        final Vector<Vector<String>> rows = new Vector<Vector<String>>();
-        for (String line : list) {
-            Vector<String> row = new Vector<String>();
-            StringTokenizer tok = new StringTokenizer(line);
-            while (tok.hasMoreTokens()) {
-                row.add(tok.nextToken());
-            }
-            if (re == null || re.matcher(line).find()) {
-                Vector<String> rowData = null;
-                if (procList.isWindowsPsFound()) {
-                    rowData = reorderWindowsProcLine(row);
-                } else if (procList.isStd()) {
-                    rowData = combineArgs(row);
-                } else {
-                    // too early, the process list is not yet ready
-                }
-                if (rowData != null) {
-                    rows.add(rowData);
-                }
-            }
-        }
+    @Override
+    public void processListCallback(final List<Vector<String>> rows) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (updateColumns) {
                     setupColumns();
@@ -222,67 +202,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
                 }
             }
         });
-    }
-    
-    private Vector<String> reorderWindowsProcLine(Vector<String> oldrow) {
-        StringBuilder tmp = new StringBuilder();
-        Vector<String> nurow = new Vector<String>(oldrow.size() - 2);
-        String status = oldrow.get(0);
-        String stime;
-        int i;
-        
-        if (status.length() == 1 && (status.equals("I") ||  status.equals("C") || status.equals("O"))) { // NOI18N
-            // The status field is optional...
-            nurow.add(0, oldrow.get(6));  // UID
-            nurow.add(1, oldrow.get(4));  // WINPID
-            nurow.add(2, oldrow.get(1));  // PID
-            nurow.add(3, oldrow.get(2));  // PPID
-            nurow.add(4, oldrow.get(7));  // STIME
-            stime = oldrow.get(7);
-            if (Character.isDigit(stime.charAt(0))) {
-                i = 8;
-            } else {
-                stime = stime + ' ' + oldrow.get(8);
-                i = 9;
-            }
-            nurow.add(4, stime);  // STIME
-            while (i < oldrow.size()) {
-                tmp.append(oldrow.get(i++));
-            }
-        } else {
-            nurow.add(0, oldrow.get(5));  // UID
-            nurow.add(1, oldrow.get(3));  // WINPID
-            nurow.add(2, oldrow.get(0));  // PID
-            nurow.add(3, oldrow.get(1));  // PPID
-            stime = oldrow.get(6);
-            if (Character.isDigit(stime.charAt(0))) {
-                i = 7;
-            } else {
-                stime = stime + ' ' + oldrow.get(7);
-                i = 8;
-            }
-            nurow.add(4, stime);  // STIME
-            while (i < oldrow.size()) {
-                tmp.append(oldrow.get(i++));
-            }
-        }
-        nurow.add(5, tmp.toString());  // CMD
-        return nurow;
-    }
-    
-    private Vector<String> combineArgs(Vector<String>oldrow) {
-        Vector<String> nurow = new Vector<String>(oldrow.size());
-        nurow.add(0, oldrow.get(0));
-        nurow.add(1, oldrow.get(1));
-        nurow.add(2, oldrow.get(2));
-        nurow.add(3, oldrow.get(3));
-        nurow.add(4, oldrow.get(4));
-        StringBuilder args = new StringBuilder();
-        for (int i = 5; i < oldrow.size(); i++) {
-            args.append(oldrow.get(i) + ' ');
-        }
-        nurow.add(5, args.toString());
-        return nurow;
     }
     
     private Pattern getFilterRE() {
@@ -328,10 +247,12 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
 
     private class GdbAttachController implements Controller {
         
+        @Override
         public boolean cancel() {
             return true;
         }
 
+        @Override
         public boolean ok() {
             int row = processTable.getSelectedRow();
             if (row >= 0) {
@@ -362,9 +283,11 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
             return projectCB.getItemCount() > 0;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
         }
 
@@ -483,25 +406,23 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     // End of variables declaration//GEN-END:variables
 
     private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {                                              
-        final ExecutionEnvironment exEnv = getCurrentExecutionEnvironment();
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                updateProcessList(true);
-            }
-        });
+        updateProcessList(true);
     }             
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
         public abstract void documentChanged(DocumentEvent e);
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             documentChanged(e);
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             documentChanged(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             documentChanged(e);
         }

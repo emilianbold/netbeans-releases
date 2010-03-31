@@ -39,16 +39,17 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import org.openide.loaders.DataObject;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
 /**
  * @author Alexey Vladykin
  */
-public class QtUiDataNode extends CndDataNode {
+public class QtUiDataNode extends DataNode {
 
-    public QtUiDataNode(DataObject obj) {
-        super(obj, Children.LEAF, ICON);
+    public QtUiDataNode(QtUiDataObject obj) {
+        super(obj, Children.LEAF, obj.getLookup());
+        setIconBaseWithExtension(ICON);
     }
 
     private static final String ICON =

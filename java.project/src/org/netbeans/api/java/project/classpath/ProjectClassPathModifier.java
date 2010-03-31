@@ -379,7 +379,8 @@ public class ProjectClassPathModifier {
                 }
             }
             throw new UnsupportedOperationException("Project in " + FileUtil.getFileDisplayName(project.getProjectDirectory()) + " of " + project.getClass() +
-                    " has a ProjectClassPathModifierImplementation but it will not handle " + classPathType + " for " + FileUtil.getFileDisplayName(projectArtifact)); // NOI18N
+                    " has a ProjectClassPathModifierImplementation but it will not handle " + classPathType + " for " + FileUtil.getFileDisplayName(projectArtifact) +
+                    " extensible source groups: " + sourceGroupsToString(sgs)); // NOI18N
         } else {
             final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pe =
                     project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
@@ -396,7 +397,18 @@ public class ProjectClassPathModifier {
             }
         }
     }
-    
+
+    private static String sourceGroupsToString(final SourceGroup[] sgs) {
+        final StringBuilder sb = new StringBuilder();
+        for(SourceGroup sg : sgs) {
+            if (sb.length()!=0) {
+                sb.append(':'); //NOI18N
+            }
+            sb.append(FileUtil.getFileDisplayName(sg.getRootFolder()));
+        }
+        return sb.toString();
+    }
+
     /**
      * Extensible represents a classpath which may be changed by the
      * {@link ProjectClassPathModifier}. It encapsulates the compilation

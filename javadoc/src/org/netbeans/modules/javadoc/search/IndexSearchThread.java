@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
  */
 
 public abstract class IndexSearchThread implements Runnable  {
+    private static final RequestProcessor RP = new RequestProcessor(IndexSearchThread.class.getName(), 1, false, false);
 
     // PENDING: Add some abstract methods
 
@@ -79,7 +80,7 @@ public abstract class IndexSearchThread implements Runnable  {
         this.ddiConsumer = ddiConsumer;
         this.indexRoot = fo;
         this.caseSensitive = caseSensitive;
-        this.rpTask = RequestProcessor.getDefault().create(this);
+        this.rpTask = RP.create(this);
         
         //this.toFind = toFind;
         //rpTask = RequestProcessor.createRequest( this );

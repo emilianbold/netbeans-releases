@@ -84,7 +84,7 @@ static void work_run_syscpu(int work_id, long micros) {
     struct timeval curtime, endtime;
     gettimeofday(&endtime, 0);
     time_add(&endtime, micros);
-    if (fd = tmpfile()) {
+    if ((fd = tmpfile())) {
         for (;;) {
             gettimeofday(&curtime, 0);
             if (!time_before(&curtime, &endtime)) {
@@ -107,7 +107,7 @@ static void* work_run_getmem(work_t* work) {
             // relax
             break;
         case mem_malloc:
-            TRACE("work %d: Allocating %d bytes of memory with malloc()... ", work->id, work->mem_size);
+            TRACE("work %d: Allocating %ld bytes of memory with malloc()... ", work->id, work->mem_size);
             ptr = malloc(work->mem_size);
             if (ptr) {
                 TRACE("OK\n");
@@ -116,7 +116,7 @@ static void* work_run_getmem(work_t* work) {
             }
             break;
         case mem_mmap:
-            TRACE("work %d: Allocating %d bytes of memory with mmap()... ", work->id, work->mem_size);
+            TRACE("work %d: Allocating %ld bytes of memory with mmap()... ", work->id, work->mem_size);
             ptr = mmap(NULL, work->mem_size, PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
             if (ptr == MAP_FAILED) {
                 ptr = NULL;

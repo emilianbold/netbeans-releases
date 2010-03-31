@@ -69,36 +69,59 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
+ * @todo Put task cancel support in reasonable places
+ *
  * @author Radek Matous
  */
 public class OccurrencesFinderImpl extends OccurrencesFinder {
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
     private int caretPosition;
+    private boolean cancelled;
+
     public void setCaretPosition(int position) {
-        range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
         this.caretPosition = position;
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         return range2Attribs;
     }
 
+    @Override
     public void cancel() {
-        //TODO: implement me 
+        cancelled = true;
     }
     
+    @Override
     public void run(Result result, SchedulerEvent event) {
-        Preferences node = MarkOccurencesSettings.getCurrentNode();
+        //remove the last occurrences - the CSL caches the last found occurences for us
+        range2Attribs = null;
 
+        if(cancelled) {
+            return ;
+        }
+        
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
+        Map<OffsetRange, ColoringAttributes> localRange2Attribs= new HashMap<OffsetRange, ColoringAttributes>();
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
             for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
-                range2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
+                localRange2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
             }
+        }
+
+        if(cancelled) {
+            return ;
+        }
+
+        if(localRange2Attribs.size() > 0) {
+            //store the occurrences if not empty, return null in getOccurrences() otherwise
+            range2Attribs = localRange2Attribs;
         }
     }
     
     static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
+            @Override
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
             }

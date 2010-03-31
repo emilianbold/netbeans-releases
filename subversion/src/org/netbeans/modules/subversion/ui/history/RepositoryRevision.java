@@ -44,6 +44,7 @@ import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import java.io.File;
+import java.io.FileFilter;
 import java.util.*;
 import java.util.ArrayList;
 
@@ -64,7 +65,7 @@ class RepositoryRevision {
      * List of events associated with the revision.
      */ 
     private final List<Event> events = new ArrayList<Event>(1);
-    private File eventsFilter;
+    private FileFilter eventsFilter;
 
     public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl) {
         this.message = message;
@@ -81,7 +82,7 @@ class RepositoryRevision {
      * Filter is disabled by default.
      * @param filter a file which is included in filtered events. If <code>null</code> is passed, filter will be disabled.
      */
-    public void setFilter(File filter) {
+    public void setFilter(FileFilter filter) {
         this.eventsFilter = filter;
     }
 
@@ -106,7 +107,7 @@ class RepositoryRevision {
             retval = new ArrayList<Event>(1);
             for (Event event : events) {
                 File f = event.getFile();
-                if (eventsFilter.equals(event.getFile())) {
+                if (eventsFilter.accept(event.getFile())) {
                     retval.add(event);
                 }
             }

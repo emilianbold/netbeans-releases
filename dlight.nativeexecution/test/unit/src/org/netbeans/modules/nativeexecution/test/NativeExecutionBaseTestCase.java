@@ -47,8 +47,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -56,41 +59,60 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
 
-    static {
-        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+    protected static class TestLogHandler extends Handler {
 
-        log.setLevel(Level.ALL);
+        protected final Logger log;
 
-        log.addHandler(new Handler() {
-
-            @Override
-            public void publish(LogRecord record) {
-                // Log if parent cannot log the message ONLY.
-                if (!log.getParent().isLoggable(record.getLevel())) {
-                    System.err.printf("%s: %s\n", record.getLevel(), record.getMessage()); // NOI18N
-                    if (record.getThrown() != null) {
-                        record.getThrown().printStackTrace(System.err);
-                    }
+        public TestLogHandler(Logger log) {
+            this.log = log;
+        }
+        
+        @Override
+        public void publish(LogRecord record) {
+            // Log if parent cannot log the message ONLY.
+            if (!log.getParent().isLoggable(record.getLevel())) {
+                String message;
+                Object[] params = record.getParameters();
+                if (params == null || params.length == 0) {
+                    message = record.getMessage();
+                } else {
+                    message =  MessageFormat.format(record.getMessage(), record.getParameters());
+                }
+                System.err.printf("%s: %s\n", record.getLevel(), message); // NOI18N
+                if (record.getThrown() != null) {
+                    record.getThrown().printStackTrace(System.err);
                 }
             }
+        }
 
-            @Override
-            public void flush() {
-            }
+        @Override
+        public void flush() {
+        }
 
-            @Override
-            public void close() throws SecurityException {
-            }
-        });
+        @Override
+        public void close() throws SecurityException {
+        }
 
     }
+
+    static {
+        final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
+        log.setLevel(Level.ALL);
+        log.addHandler(new TestLogHandler(log));
+    }
+
     private final ExecutionEnvironment testExecutionEnvironment;
+    private String remoteTmpDir;
 
     public NativeExecutionBaseTestCase(String name) {
         super(name);
@@ -259,7 +281,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return result;
     }
 
-    private File getIdeUtilJar() throws URISyntaxException  {
+    protected File getIdeUtilJar() throws URISyntaxException  {
         return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
@@ -298,5 +320,36 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    protected String createRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();
+        assertEquals("Can not create directory " + dir, 0, rc);
+        return dir;
+    }
+
+    protected void clearRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.rmDir(getTestExecutionEnvironment(), dir, true, new PrintWriter(System.err)).get().intValue();
+        if (rc != 0) {
+            System.err.printf("Can not delete directory %s\n", dir);
+        }
+    }
+
+    protected synchronized  String getRemoteTmpDir() {
+        if (remoteTmpDir == null) {
+            final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+            MacroExpander expander = MacroExpanderFactory.getExpander(local);
+            String id;
+            try {
+                id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
+            } catch (ParseException ex) {
+                id = local.getHost();
+                Exceptions.printStackTrace(ex);
+            }
+            remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
+        }
+        return remoteTmpDir;
     }
 }

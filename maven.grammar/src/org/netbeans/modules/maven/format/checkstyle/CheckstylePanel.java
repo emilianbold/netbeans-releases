@@ -152,6 +152,7 @@ public class CheckstylePanel extends javax.swing.JPanel {
 
         btnLearnMore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnLearnMore.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://maven.apache.org/plugins/maven-checkstyle-plugin"));

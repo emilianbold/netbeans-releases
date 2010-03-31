@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionListener;
@@ -49,6 +50,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +61,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 
 import org.netbeans.modules.project.uiapi.CategoryModel;
 import org.netbeans.modules.project.uiapi.CategoryView;
@@ -772,6 +782,98 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
         //#97998 related
         public Lookup getLookup() {
             return context;
+        }
+    }
+
+    /**
+     * Create a new cell renderer for lists or combo boxes whose model
+     * object type is Charset.
+     * @return A renderer
+     * @since 1.42
+     */
+    public static ListCellRenderer encodingRenderer() {
+        return new EncodingRenderer();
+    }
+
+    /**
+     * Create a new combo box model of all available Charsets
+     * whose initial selection is a Charset with the provided name.
+     * If the provided name is null or not a known character set,
+     * a dummy Charset instance will be used for the selection.
+     *
+     * @param initialCharset The initial character encoding, e.g. "UTF-8" or
+     * Charset.defaultCharset().name()
+     * @return A combo box model of all available character encodings
+     * @since 1.42
+     */
+    public static ComboBoxModel encodingModel(String initialCharset) {
+        return new EncodingModel(initialCharset);
+    }
+
+    private static final class EncodingRenderer extends DefaultListCellRenderer {
+        EncodingRenderer() {
+            //Needed for synth?
+            setName ("ComboBox.listRenderer"); //NOI18N
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean isLeadSelection) {
+            if (value instanceof Charset) {
+                value = ((Charset) value).displayName();
+            }
+            return super.getListCellRendererComponent(list, value, index,
+                    isSelected, isLeadSelection);
+        }
+    }
+
+    private static final class EncodingModel extends DefaultComboBoxModel {
+
+        EncodingModel (String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                } else if (c.aliases().contains(originalEncoding)) { //Mobility - can have hand-entered encoding
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (originalEncoding != null && defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset (originalEncoding);
+                    addElement(defEnc);
+                } catch (IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info(
+                            "IllegalCharsetName: " + originalEncoding); //NOI18N
+                }
+            }
+            if (defEnc == null) {
+                defEnc = Charset.defaultCharset();
+            }
+            setSelectedItem(defEnc);
+        }
+
+        private static final class UnknownCharset extends Charset {
+            UnknownCharset (String name) {
+                super (name, new String[0]);
+            }
+
+            public boolean contains(Charset c) {
+                return false;
+            }
+
+            public CharsetDecoder newDecoder() {
+                throw new UnsupportedOperationException();
+            }
+
+            public CharsetEncoder newEncoder() {
+                throw new UnsupportedOperationException();
+            }
         }
     }
 }

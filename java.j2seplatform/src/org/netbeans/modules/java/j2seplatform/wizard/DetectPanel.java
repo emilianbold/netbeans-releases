@@ -92,6 +92,7 @@ import org.openide.util.ChangeSupport;
 public class DetectPanel extends javax.swing.JPanel {
 
     private static final int COLS = 30;
+    private static final RequestProcessor RP = new RequestProcessor(DetectPanel.class.getName(), 1, false, false);
 
     private NewJ2SEPlatform primaryPlatform;
     private final ChangeSupport cs = new ChangeSupport(this);
@@ -419,7 +420,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 final NewJ2SEPlatform secondaryPlatform = this.iterator.getSecondaryPlatform();
                 component = new DetectPanel(primaryPlatform);
                 component.addChangeListener (this);
-                task = RequestProcessor.getDefault().create(
+                task = RP.create(
                     new Runnable() {
                         public void run() {
                             primaryPlatform.run();

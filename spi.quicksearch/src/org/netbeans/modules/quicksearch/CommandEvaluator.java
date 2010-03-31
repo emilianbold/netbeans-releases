@@ -72,6 +72,8 @@ public class CommandEvaluator {
 
     /** Temporary narrow evaluation to only specified category **/
     private static boolean isCatTemporary;
+
+    private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator"); // NOI18N
     
     /**
      * Runs evaluation.
@@ -196,7 +198,8 @@ public class CommandEvaluator {
             return null;
         }
         
-        return RequestProcessor.getDefault().post(new Runnable() {
+        return RP.post(new Runnable() {
+            @Override
             public void run() {
                 provider.evaluate(request, response);
             }

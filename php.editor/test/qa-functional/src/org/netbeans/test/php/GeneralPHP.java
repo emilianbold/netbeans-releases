@@ -623,4 +623,13 @@ public class GeneralPHP extends JellyTestCase {
             }
         }
     }
+
+    public boolean DeleteFileContent(EditorOperator eoPHP) {
+        eoPHP.setCaretPositionToLine(1);
+        while (eoPHP.getText().length() != 0) {
+            eoPHP.deleteLine(eoPHP.getLineNumber());
+            Sleep(1000);
+        }
+        return true; 
+    }
 }

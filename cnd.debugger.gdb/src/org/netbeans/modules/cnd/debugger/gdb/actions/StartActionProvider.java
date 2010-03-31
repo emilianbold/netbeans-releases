@@ -125,7 +125,7 @@ public class StartActionProvider extends ActionsProvider {
      */
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +59,9 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
 /** 
@@ -135,21 +138,29 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             String prop = evaluator.getProperty(p);
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
-                    File f = PropertyUtils.resolveFile(this.projectFolder, piece);
+                    final File f = PropertyUtils.resolveFile(this.projectFolder, piece);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
                         try {
                             result.add(ClassPathSupport.createResource(entry));
                         } catch (IllegalArgumentException iae) {
                             //Logging for issue #181155
-                            final String log = String.format("File: %s, Property value: %s, exists: %b",
+                            String foStatus;
+                            try {
+                                final FileObject fo = URLMapper.findFileObject(f.toURI().toURL());
+                                foStatus = fo == null ? "not exist" : fo.isValid() ? "valid" : "invalid";   //NOI18N
+                            } catch (MalformedURLException ex) {
+                                foStatus = "malformed"; //NOI18N
+                            }
+                            final String log = String.format("File: %s, Property value: %s, Exists: %b, FileObject: %s", //NOI18N
                                     f.getAbsolutePath(),
                                     piece,
-                                    f.exists());
+                                    f.exists(),
+                                    foStatus);
                             throw new IllegalArgumentException(log, iae);
                         }
                     } else {
-                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");
+                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");   //NOI18N
                     }
                 }
             }

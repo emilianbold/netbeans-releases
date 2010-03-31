@@ -111,6 +111,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         
     }
        
+    @Override
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
@@ -135,6 +136,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         
     }
     
+    @Override
     protected void refresh( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
@@ -160,6 +162,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     private void enable(final boolean enable) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setEnabled(enable);
                 }
@@ -179,6 +182,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     
     // Implementation of ContextAwareAction ------------------------------------
     
+    @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new ProjectAction( command, performer, namePattern, popupPattern, (Icon)getValue( SMALL_ICON ), actionContext );
     }

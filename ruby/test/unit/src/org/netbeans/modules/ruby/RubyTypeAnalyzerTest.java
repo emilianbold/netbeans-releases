@@ -175,7 +175,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     }
 
     public void testBegin() throws Exception {
-        RubyTypeInferencer instance = getInferencer("types2.rb", " @f^iles = ARGV.dup", true);
+        RubyTypeInferencer instance = getInferencer("types2.rb", " @f^iles = ARGV.dup", false);
         assertTypes(instance.inferType("go"), "GetoptLong");
     }
 

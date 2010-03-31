@@ -56,6 +56,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningOutputManager;
@@ -95,11 +97,14 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(Node[] nodes) {        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }        
-        performUpdate(nodes);
+    @Override
+    protected void performContextAction(final Node[] nodes) {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            @Override
+            public void run() {
+                performUpdate(nodes);
+            }
+        });
     }
 
     protected void performUpdate(final Node[] nodes) {

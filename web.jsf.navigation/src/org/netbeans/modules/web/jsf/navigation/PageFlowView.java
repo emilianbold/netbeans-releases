@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -73,11 +74,11 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -315,15 +316,29 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      **/
     public void clearGraph() {
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
+        long time = System.currentTimeMillis();
         Collection<Page> pages = new HashSet<Page>(getScene().getNodes());
         for (Page page : pages) {
             getScene().removeNodeWithEdges(page);
-            page.destroy2();
+            destroyPage(page);
         }
         getScene().validate();
+        LOG.log(Level.FINE, "clearGraph() took: " + (System.currentTimeMillis() - time)+" ms"); //NOI18N
     }
 
+    private static RequestProcessor requestProcessor = new RequestProcessor();
     
+    private static void destroyPage(final Page page) {
+        requestProcessor.post(new Runnable() {
+
+            @Override
+            public void run() {
+                long time = System.currentTimeMillis();
+                page.destroy2();
+                LOG.log(Level.FINE, "Destroy page took: " + (System.currentTimeMillis() - time)+" ms"); //NOI18N
+            }
+        });
+    }
 
     /**
      * Validating the graph is necessary to push a series of modifications to view.

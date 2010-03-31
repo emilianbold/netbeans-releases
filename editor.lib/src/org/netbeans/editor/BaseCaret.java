@@ -266,7 +266,7 @@ AtomicLockListener, FoldHierarchyListener {
 
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
-        public void preferenceChange(PreferenceChangeEvent evt) {
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
             String setingName = evt == null ? null : evt.getKey();
             if (setingName == null || SimpleValueNames.CARET_BLINK_RATE.equals(setingName)) {
                 SettingsConversions.callSettingsChange(BaseCaret.this);
@@ -363,15 +363,17 @@ AtomicLockListener, FoldHierarchyListener {
             }
         
             if (newCaretBounds != null) {
+                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}", new Object [] { caretBounds, newCaretBounds }); //NOI18N
                 caretBounds = newCaretBounds;
                 return true;
             }
         }
+        LOG.log(Level.FINE, "updateCaretBounds: no change, old={0}", caretBounds); //NOI18N
         return false;
     }
 
     /** Called when UI is being installed into JTextComponent */
-    public void install(JTextComponent c) {
+    public @Override void install(JTextComponent c) {
         assert (SwingUtilities.isEventDispatchThread()); // must be done in AWT
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Installing to " + s2s(c)); //NOI18N
@@ -416,12 +418,15 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     /** Called when UI is being removed from JTextComponent */
+    @Override
+    @SuppressWarnings("NestedSynchronizedStatement")
     public void deinstall(JTextComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Deinstalling from " + s2s(c)); //NOI18N
         }
         
         component = null; // invalidate
+        caretBounds = null;
 
         // No idea why the sync is done the way how it is, but the locks must
         // always be acquired in the same order otherwise the code will deadlock
@@ -434,11 +439,15 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
         
-        c.removeMouseMotionListener(this);
-        c.removeMouseListener(this);
-        c.removeFocusListener(listenerImpl);
+        c.removeComponentListener(listenerImpl);
         c.removePropertyChangeListener(this);
+        c.removeFocusListener(listenerImpl);
+        c.removeMouseListener(this);
+        c.removeMouseMotionListener(this);
         
+        EditorUI editorUI = Utilities.getEditorUI(c);
+        editorUI.removePropertyChangeListener(this);
+
         if (weakFHListener != null) {
             FoldHierarchy hierarchy = FoldHierarchy.get(c);
             if (hierarchy != null) {
@@ -496,7 +505,7 @@ AtomicLockListener, FoldHierarchyListener {
             
             Utilities.runInEventDispatchThread(
                 new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         updateType();
                     }
                 }
@@ -505,7 +514,7 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     /** Renders the caret */
-    public void paint(Graphics g) {
+    public @Override void paint(Graphics g) {
         JTextComponent c = component;
         if (c == null) return;
         EditorUI editorUI = Utilities.getEditorUI(c);
@@ -608,7 +617,7 @@ AtomicLockListener, FoldHierarchyListener {
          */
         Utilities.runInEventDispatchThread(
             new Runnable() {
-                public void run() {
+                public @Override void run() {
                     JTextComponent c = component;
                     if (c != null) {
                         BaseDocument doc = Utilities.getDocument(c);
@@ -753,7 +762,8 @@ AtomicLockListener, FoldHierarchyListener {
      * Redefine to Object.equals() to prevent defaulting to Rectangle.equals()
      * which would cause incorrect firing
      */
-    public @Override boolean equals(Object o) {
+    @Override@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    public boolean equals(Object o) {
         return (this == o);
     }
 
@@ -762,19 +772,19 @@ AtomicLockListener, FoldHierarchyListener {
     }
     
     /** Adds listener to track when caret position was changed */
-    public void addChangeListener(ChangeListener l) {
+    public @Override void addChangeListener(ChangeListener l) {
         listenerList.add(ChangeListener.class, l);
     }
 
     /** Removes listeners to caret position changes */
-    public void removeChangeListener(ChangeListener l) {
+    public @Override void removeChangeListener(ChangeListener l) {
         listenerList.remove(ChangeListener.class, l);
     }
 
     /** Notifies listeners that caret position has changed */
     protected void fireStateChanged() {
         Runnable runnable = new Runnable() {
-            public void run() {
+            public @Override void run() {
                 Object listeners[] = listenerList.getListenerList();
                 for (int i = listeners.length - 2; i >= 0 ; i -= 2) {
                     if (listeners[i] == ChangeListener.class) {
@@ -803,7 +813,7 @@ AtomicLockListener, FoldHierarchyListener {
      * Although the caret is visible it may be in a state when it's
      * not physically showing on screen in case when it's blinking.
      */
-    public final boolean isVisible() {
+    public final @Override boolean isVisible() {
         return caretVisible;
     }
 
@@ -850,22 +860,25 @@ AtomicLockListener, FoldHierarchyListener {
         return "visible=" + isVisible() + ", blinkVisible=" + blinkVisible;
     }
 
-    synchronized void resetBlink() {
-        boolean visible = isVisible();
-        synchronized (listenerImpl) {
-            if (flasher != null) {
-                flasher.stop();
-                blinkVisible = true;
-                if (visible) {
-                    if (LOG.isLoggable(Level.FINER)){
-                        LOG.finer("Reset blinking (caret already visible)" + // NOI18N
-                                " - starting the caret blinking timer: " + dumpVisibility() + '\n'); // NOI18N
-                    }
-                    flasher.start();
-                } else {
-                    if (LOG.isLoggable(Level.FINER)){
-                        LOG.finer("Reset blinking (caret not visible)" + // NOI18N
-                                " - caret blinking timer not started: " + dumpVisibility() + '\n'); // NOI18N
+    @SuppressWarnings("NestedSynchronizedStatement")
+    void resetBlink() {
+        synchronized (this) {
+            boolean visible = isVisible();
+            synchronized (listenerImpl) {
+                if (flasher != null) {
+                    flasher.stop();
+                    blinkVisible = true;
+                    if (visible) {
+                        if (LOG.isLoggable(Level.FINER)){
+                            LOG.finer("Reset blinking (caret already visible)" + // NOI18N
+                                    " - starting the caret blinking timer: " + dumpVisibility() + '\n'); // NOI18N
+                        }
+                        flasher.start();
+                    } else {
+                        if (LOG.isLoggable(Level.FINER)){
+                            LOG.finer("Reset blinking (caret not visible)" + // NOI18N
+                                    " - caret blinking timer not started: " + dumpVisibility() + '\n'); // NOI18N
+                        }
                     }
                 }
             }
@@ -873,10 +886,10 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     /** Sets the caret visibility */
-    public void setVisible(final boolean v) {
+    public @Override void setVisible(final boolean v) {
         Utilities.runInEventDispatchThread(
             new Runnable() {
-                public void run() {
+                public @Override void run() {
                     setVisibleImpl(v);
                 }
             }
@@ -884,12 +897,12 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     /** Is the selection visible? */
-    public final boolean isSelectionVisible() {
+    public final @Override boolean isSelectionVisible() {
         return selectionVisible;
     }
 
     /** Sets the selection visibility */
-    public void setSelectionVisible(boolean v) {
+    public @Override void setSelectionVisible(boolean v) {
         if (selectionVisible == v) {
             return;
         }
@@ -916,19 +929,19 @@ AtomicLockListener, FoldHierarchyListener {
     *
     * @param p  the Point to use for the saved position
     */
-    public void setMagicCaretPosition(Point p) {
+    public @Override void setMagicCaretPosition(Point p) {
         magicCaretPosition = p;
     }
 
     /** Get position used to mark begining of the selected block */
-    public final Point getMagicCaretPosition() {
+    public @Override final Point getMagicCaretPosition() {
         return magicCaretPosition;
     }
 
     /** Sets the caret blink rate.
     * @param rate blink rate in milliseconds, 0 means no blink
     */
-    public synchronized void setBlinkRate(int rate) {
+    public @Override synchronized void setBlinkRate(int rate) {
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("setBlinkRate(" + rate + ")" + dumpVisibility() + '\n'); // NOI18N
         }
@@ -955,14 +968,18 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     /** Returns blink rate of the caret or 0 if caret doesn't blink */
-    public synchronized int getBlinkRate() {
-        synchronized (listenerImpl) {
-            return (flasher != null) ? flasher.getDelay() : 0;
+    @Override
+    @SuppressWarnings("NestedSynchronizedStatement")
+    public int getBlinkRate() {
+        synchronized (this) {
+            synchronized (listenerImpl) {
+                return (flasher != null) ? flasher.getDelay() : 0;
+            }
         }
     }
 
     /** Gets the current position of the caret */
-    public int getDot() {
+    public @Override int getDot() {
         if (component != null) {
             try {
                 return caretMark.getOffset();
@@ -976,7 +993,7 @@ AtomicLockListener, FoldHierarchyListener {
     * If there's a selection this position will be different
     * from the caret position.
     */
-    public int getMark() {
+    public @Override int getMark() {
         if (component != null) {
                 try {
                     return selectionMark.getOffset();
@@ -991,7 +1008,7 @@ AtomicLockListener, FoldHierarchyListener {
      * <br/>
      * This method implicitly sets the selection range to zero.
      */
-    public void setDot(int offset) {
+    public @Override void setDot(int offset) {
         // The first call to this method in NB is done when the component
         // is already connected to the component hierarchy but its size
         // is still (0,0,0,0) (although its preferred size is already non-empty).
@@ -1102,7 +1119,7 @@ AtomicLockListener, FoldHierarchyListener {
         setDot(offset, scrollRect, scrollPolicy, true);
     }
 
-    public void moveDot(int offset) {
+    public @Override void moveDot(int offset) {
         moveDot(offset, caretBounds, EditorUI.SCROLL_MOVE);
     }
 
@@ -1150,7 +1167,7 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     // DocumentListener methods
-    public void insertUpdate(DocumentEvent evt) {
+    public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)component.getDocument();
@@ -1179,7 +1196,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
-    public void removeUpdate(DocumentEvent evt) {
+    public @Override void removeUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
             BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1228,11 +1245,11 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
     
-    public void atomicLock(AtomicLockEvent evt) {
+    public @Override void atomicLock(AtomicLockEvent evt) {
         inAtomicLock = true;
     }
     
-    public void atomicUnlock(AtomicLockEvent evt) {
+    public @Override void atomicUnlock(AtomicLockEvent evt) {
         inAtomicLock = false;
         inAtomicUnlock = true;
         try {
@@ -1243,7 +1260,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
     
-    public void changedUpdate(DocumentEvent evt) {
+    public @Override void changedUpdate(DocumentEvent evt) {
         // XXX: used as a backdoor from HighlightingDrawLayer
         if (evt == null) {
             dispatchUpdate(false);
@@ -1251,7 +1268,7 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     // MouseListener methods
-    public void mouseClicked(MouseEvent evt) {
+    public @Override void mouseClicked(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("mouseClicked: " + logMouseEvent(evt));
         }
@@ -1324,7 +1341,7 @@ AtomicLockListener, FoldHierarchyListener {
                         final String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
                         if (pastingString == null) return;
                         doc.runAtomicAsUser (new Runnable () {
-                            public void run () {
+                            public @Override void run () {
                                  try {
                                      doc.insertString(offset, pastingString, null);
                                      setDot(offset+pastingString.length());
@@ -1366,7 +1383,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
     
-    public void mousePressed(MouseEvent evt) {
+    public @Override void mousePressed(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("mousePressed: " + logMouseEvent(evt));
         }
@@ -1382,7 +1399,7 @@ AtomicLockListener, FoldHierarchyListener {
         mousePressedImpl(evt);
     }
 
-    public void mouseReleased(MouseEvent evt) {
+    public @Override void mouseReleased(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("mouseReleased: " + logMouseEvent(evt));
         }
@@ -1393,10 +1410,10 @@ AtomicLockListener, FoldHierarchyListener {
         dndArmedEvent = null;
     }
 
-    public void mouseEntered(MouseEvent evt) {
+    public @Override void mouseEntered(MouseEvent evt) {
     }
 
-    public void mouseExited(MouseEvent evt) {
+    public @Override void mouseExited(MouseEvent evt) {
     }
 
     
@@ -1454,7 +1471,7 @@ AtomicLockListener, FoldHierarchyListener {
     }
     
     // MouseMotionListener methods
-    public void mouseDragged(MouseEvent evt) {
+    public @Override void mouseDragged(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("mouseDragged: " + logMouseEvent(evt)); //NOI18N
         }
@@ -1480,21 +1497,21 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
-    public void mouseMoved(MouseEvent evt) {
+    public @Override void mouseMoved(MouseEvent evt) {
     }
 
-    private static final String logMouseEvent(MouseEvent evt) {
+    private static String logMouseEvent(MouseEvent evt) {
         return "x=" + evt.getX() + ", y=" + evt.getY() //NOI18N
             + ", component=" + s2s(evt.getComponent()) //NOI18N
             + ", source=" + s2s(evt.getSource()); //NOI18N
     }
 
-    private static final String s2s(Object o) {
+    private static String s2s(Object o) {
         return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 
     // PropertyChangeListener methods
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
 
         if ("document".equals(propName)) { // NOI18N
@@ -1550,7 +1567,7 @@ AtomicLockListener, FoldHierarchyListener {
 
     // ActionListener methods
     /** Fired when blink timer fires */
-    public void actionPerformed(ActionEvent evt) {
+    public @Override void actionPerformed(ActionEvent evt) {
         JTextComponent c = component;
         if (c != null) {
             blinkVisible = !blinkVisible;
@@ -1565,7 +1582,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
-    public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+    public @Override void foldHierarchyChanged(FoldHierarchyEvent evt) {
         int caretOffset = getDot();
         int addedFoldCnt = evt.getAddedFoldCount();
         final boolean scrollToView;
@@ -1603,7 +1620,7 @@ AtomicLockListener, FoldHierarchyListener {
         // the view hierarchy and the views so the dispatchUpdate() could be picking obsolete
         // view information.
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 updateAfterFoldHierarchyChange = true;
                 dispatchUpdate(scrollToView); // do not scroll the window
             }
@@ -1617,7 +1634,7 @@ AtomicLockListener, FoldHierarchyListener {
         }
 
         // FocusListener methods
-        public void focusGained(FocusEvent evt) {
+        public @Override void focusGained(FocusEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine(
                         "BaseCaret.focusGained(); doc=" + // NOI18N
@@ -1644,7 +1661,7 @@ AtomicLockListener, FoldHierarchyListener {
             }
         }
 
-        public void focusLost(FocusEvent evt) {
+        public @Override void focusLost(FocusEvent evt) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("BaseCaret.focusLost(); doc=" + // NOI18N
                         component.getDocument().getProperty(Document.TitleProperty) +
@@ -1710,7 +1727,7 @@ AtomicLockListener, FoldHierarchyListener {
     public final void refresh() {
         updateType();
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 updateCaretBounds(); // the line height etc. may have change
             }
         });

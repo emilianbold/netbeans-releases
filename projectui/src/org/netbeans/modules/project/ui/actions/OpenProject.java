@@ -44,7 +44,6 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -165,10 +164,7 @@ public class OpenProject extends BasicAction {
                                 Node[] nodesArray = new Node[ nodes.size() ];
                                 nodes.toArray( nodesArray );
                                 ptLogical.getExplorerManager ().setSelectedNodes (nodesArray);
-                                if (!Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
-                                    ptLogical.open ();
-                                    ptLogical.requestActive ();
-                                }
+                                ProjectUtilities.makeProjectTabVisible();
                             } catch (Exception ignore) {
                                 // may ignore it
                             }

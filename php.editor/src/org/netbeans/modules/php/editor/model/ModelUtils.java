@@ -55,9 +55,12 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -160,6 +163,36 @@ public class ModelUtils {
             String vartype = VariousUtils.extractTypeFroVariableBase(varBase);
             if (vartype != null) {
                 retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
+            }
+        }
+        return retval;
+    }
+
+    @NonNull
+    public static Collection<? extends TypeScope> resolveType(Model model, Assignment varBase) {
+        Collection<? extends TypeScope> retval = Collections.emptyList();
+        VariableScope scp = model.getVariableScope(varBase.getStartOffset());
+        if (scp != null) {
+            String vartype = CodeUtils.extractVariableType(varBase);
+            if (vartype == null) {
+                final Expression rightHandSide = varBase.getRightHandSide();
+                if (rightHandSide instanceof VariableBase) {
+                    vartype = VariousUtils.extractTypeFroVariableBase((VariableBase)rightHandSide);
+                    if (vartype != null) {
+                        return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
+                    }
+                } else if (rightHandSide instanceof StaticDispatch) {
+                    QualifiedName qName = ASTNodeInfo.toQualifiedName(rightHandSide, true);
+                    if (qName != null) {
+                        VariableScope variableScope = model.getVariableScope(rightHandSide.getStartOffset());
+                        NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
+                        Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
+                                variableScope != null ? variableScope : model.getFileScope(), filter.getName());
+                        return filter.filterModelElements(staticTypeName, true);
+                    }
+                }
+            } else {
+                retval = VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
             }
         }
         return retval;

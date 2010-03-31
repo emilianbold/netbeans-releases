@@ -189,12 +189,11 @@ made subject to such option by the copyright holder.
   <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
-      <subant-junit target="conditional-nbm" failonerror="true">
+      <property name="nbms.fail.on.error" value="true"/>
+      <subant-junit target="nbm" failonerror="${nbms.fail.on.error}" report="build/build-nbms.xml">
           <buildpath path="${modules.sorted}"/>
       </subant-junit>
   </target>
-  <target name="nbm"/><!-- dummy target -->
-  <target name="conditional-nbm"/><!-- dummy target -->
 
   <target name="fix-dependencies" depends="init">
       <pathconvert property="modules.fullpath" >
@@ -233,10 +232,15 @@ made subject to such option by the copyright holder.
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
       <property name="jnlp.fail.on.error" value="true"/>
+      <pathconvert property="jnlp.modules.fullpath">
+          <path>
+              <dirset dir="${nb_all}" includes="${config.jnlp.stable}"/>
+          </path>
+          <mapper type="identity"/>
+      </pathconvert>
+      <sortsuitemodules unsortedmodules="${jnlp.modules.fullpath}" sortedmodulesproperty="jnlp.modules.sorted"/>
       <subant-junit target="jnlp" failonerror="${jnlp.fail.on.error}" report="build/build-all-jnlp.xml">
-          <buildpath>
-              <dirset dir=".." includes="${config.jnlp.stable}"/>
-          </buildpath>
+          <buildpath path="${jnlp.modules.sorted}"/>
       </subant-junit>
       <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="nbantext.jar"/>
       <verifyjnlp report="build/verify-jnlp.xml" failonerror="jnlp.fail.on.error">
@@ -1426,13 +1430,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
     if="cluster.name"
   >
+    <fail message="Specify cluster.name property!" unless="cluster.name"/>
     <property name="buildnum" value="dev-${buildnumber}"/>
     <echo message="Packaging sources of ${cluster.name} modules"/>
     <resolve name="cluster-modules" value="${cluster.name}"/>
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${cluster-modules},${harness-modules},ide,nbbuild"/>
+    <dirset 
+        id="source.dirset" dir="${nb_all}"
+        includes="${cluster-modules},${harness-modules},ide,nbbuild,nbi"
+        excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
+    />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1444,6 +1453,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </zipfileset>
       <zipfileset dir="${nb_all}">
           <include name="nbbuild/licenses/CDDL-GPL-2-CP"/>
+          <include name="build.xml"/>
       </zipfileset>
     </zip>
   </target>
@@ -1457,7 +1467,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${allmodules},${harness-modules},nbbuild,ide"/>
+    <dirset id="source.dirset" dir="${nb_all}"
+            includes="${allmodules},${harness-modules},nbbuild,ide,nbi"
+            excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
+    />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1465,6 +1478,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <zipfileset dir="${nb_all}" includes="${source.dirs}">
           <exclude name="*/build/**/*"/>
           <exclude name="nbbuild/netbeans/**"/>
+      </zipfileset>
+      <zipfileset dir="${nb_all}">
+          <include name="build.xml"/>
       </zipfileset>
     </zip>
   </target>
@@ -1474,7 +1490,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" description="Generate summaries of module dependencies.">
-    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
+    <property name="deps.max.friends" value="20"/>
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     

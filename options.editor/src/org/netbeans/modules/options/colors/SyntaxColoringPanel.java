@@ -95,18 +95,20 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private Preview             preview;
     private Task                selectTask;
     private ColorModel          colorModel = null;
-    private String		currentLanguage;
+    private String              currentLanguage;
     private String              currentProfile;
     /** cache Map (String (profile name) > Map (String (language name) > Vector (AttributeSet))). */
-    private Map<String, Map<String, Vector<AttributeSet>>> profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+    private Map<String, Map<String, Vector<AttributeSet>>>
+                                profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
-    private Map<String, Set<String>> toBeSaved = new HashMap<String, Set<String>>();
-    private boolean		listen = false;
-    
+    private Map<String, Set<String>>
+                                toBeSaved = new HashMap<String, Set<String>>();
+    private boolean             listen = false;
+
+
     /** Creates new form SyntaxColoringPanel1 */
     public SyntaxColoringPanel () {
         initComponents ();
-
         setName(loc("Syntax_coloring_tab")); //NOI18N
         // 1) init components
         cbLanguage.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
@@ -117,12 +119,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         bFont.getAccessibleContext ().setAccessibleDescription (loc ("AD_Font"));
         cbForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
         cbForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
-//        bForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground"));
-//        bForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground"));
         cbBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
         cbBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
-//        bBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background"));
-//        bBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background"));
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color_Chooser"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color_Chooser"));
         cbEffectColor.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color"));
@@ -133,20 +131,17 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         cbLanguage.addActionListener (this);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
-	lCategories.setCellRenderer (new CategoryRenderer ());
+        lCategories.setCellRenderer (new CategoryRenderer ());
         lCategories.addListSelectionListener (new ListSelectionListener () {
+            @Override
             public void valueChanged (ListSelectionEvent e) {
                 if (!listen) return;
                 selectTask.schedule (200);
             }
         });
-	tfFont.setEditable (false);
+        tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));
-//        bForeground.addActionListener (this);
-//        bForeground.setMargin (new Insets (0, 0, 0, 0));
-//        bBackground.addActionListener (this);
-//        bBackground.setMargin (new Insets (0, 0, 0, 0));
         cbForeground.addActionListener (this);
         ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
 
@@ -349,6 +344,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     // End of variables declaration//GEN-END:variables
     
 
+    @Override
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
@@ -408,6 +404,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (!listen || evt.getPropertyName() == null ) {
             return;
@@ -438,6 +435,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         }
     }
     
+    @Override
     public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
@@ -469,11 +467,13 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         }
     }
     
+    @Override
     public void cancel () {
         toBeSaved = new HashMap<String, Set<String>>();
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
+    @Override
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved.keySet()) {
@@ -491,10 +491,12 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
+    @Override
     public boolean isChanged () {
         return !toBeSaved.isEmpty ();
     }
     
+    @Override
     public void setCurrentProfile (String currentProfile) {
         String oldProfile = this.currentProfile;
         this.currentProfile = currentProfile;
@@ -510,23 +512,25 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         refreshUI ();
     }
 
-    public void deleteProfile(String profile) {
-        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
-        boolean custom = colorModel.isCustomProfile(profile);
-        for(String language : colorModel.getLanguages()) {
+    @Override
+    public void deleteProfile (String profile) {
+        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>> ();
+        boolean custom = colorModel.isCustomProfile (profile);
+        for (String language : colorModel.getLanguages ()) {
             if (custom) {
-                m.put(language, null);
+                m.put (language, null);
             } else {
-                m.put(language, getDefaults(profile, language));
+                m.put (language, getDefaults (profile, language));
             }
         }
-        profiles.put(profile, m);
-        toBeSaved.put(profile, new HashSet<String>(colorModel.getLanguages()));
+        profiles.put (profile, m);
+        toBeSaved.put (profile, new HashSet<String> (colorModel.getLanguages ()));
         if (!custom) {
-            refreshUI();
+            refreshUI ();
         }
     }
     
+    @Override
     public JComponent getComponent() {
         return this;
     }

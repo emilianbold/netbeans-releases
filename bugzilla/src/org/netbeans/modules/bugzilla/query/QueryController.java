@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -79,6 +80,7 @@ import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
@@ -431,6 +433,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         productParameter.setAlwaysDisabled(true);
     }
 
+    protected void selectFirstProduct() {
+        if(panel.productList.getModel().getSize() > 0) {
+            panel.productList.setSelectedIndex(0);
+        }
+    }
+
     public void insertUpdate(DocumentEvent e) {
         fireDataChanged();
     }
@@ -562,7 +570,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(name == null) {
                         return;
                     }
-                    panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
                 save(name);
@@ -594,30 +601,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private String getSaveName() {
-        String name = null;
-        if(BugzillaUtil.show(
-                panel.savePanel,
-                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
-                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel")))  // NOI18N
-        {
-            name = panel.queryNameTextField.getText();
-            if(name == null || name.trim().equals("")) { // NOI18N
+        QueryNameValidator v = new QueryNameValidator() {
+            @Override
+            public String isValid(String name) {
+                Query[] queries = repository.getQueries();
+                for (Query q : queries) {
+                    if(q.getDisplayName().equals(name)) {
+                        return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
+                    }
+                }
                 return null;
             }
-            Query[] queries = repository.getQueries();
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(name)) {
-                    panel.saveErrorLabel.setVisible(true);
-                    name = getSaveName();
-                    panel.saveErrorLabel.setVisible(false);
-                    break;
-                }
-            }
-        } else {
-            return null;
-        }
-        return name;
+        };
+        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.bugzilla.query.savePanel"));
     }
 
     private void onCancelChanges() {

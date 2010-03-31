@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyEditor;

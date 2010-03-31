@@ -188,7 +188,6 @@ public class DebugSession extends SingleThread {
                 engine.set(nextEngine);
             }
         }
-        assert engine.get() != null;
         IDESessionBridge bridge = getBridge();
         if (bridge != null) {
             bridge.init();

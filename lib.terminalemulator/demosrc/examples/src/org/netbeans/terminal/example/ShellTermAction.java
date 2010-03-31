@@ -43,6 +43,7 @@ package org.netbeans.terminal.example;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 
 /**
@@ -58,7 +59,10 @@ public class ShellTermAction extends AbstractAction {
     public void actionPerformed(ActionEvent evt) {
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
 
+	IOContainer container = TerminalIOProviderSupport.getIOContainer();
+	container = null;	// work with default IO container
+
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeShell(iop, null);
+	support.executeRichCommand(iop, container, Config.getShellConfig());
     }
 }

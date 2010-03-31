@@ -49,9 +49,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -592,8 +594,8 @@ public final class LanguageRegistry implements Iterable<Language> {
                     }
                 }
 
-                if (!foundConfig) {
-                    LOG.warning("No GsfLanguage instance registered in " + subtypes[j].getPath()); //NOI18N
+                if (!foundConfig && warnedPaths.add(subtypes[j].getPath())) {
+                    LOG.log(Level.WARNING, "No GsfLanguage instance registered in {0}", subtypes[j].getPath());
                 }
             }
         }
@@ -601,6 +603,8 @@ public final class LanguageRegistry implements Iterable<Language> {
         LOG.fine("-- Finished reading " + FOLDER + " registry!"); //NOI18N
         return newMap;
     }
+
+    private static final Set<String> warnedPaths = Collections.synchronizedSet(new HashSet<String>());
 
     private void userdirCleanup() {
         // Don't do this check in release builds, it's for dev builds only.

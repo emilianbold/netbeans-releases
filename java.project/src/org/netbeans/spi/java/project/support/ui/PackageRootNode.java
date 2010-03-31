@@ -99,9 +99,9 @@ import org.openidex.search.Utils;
 final class PackageRootNode extends AbstractNode implements Runnable, FileStatusListener {
 
     static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageBadge.gif"); // NOI18N
-        
+    static final RequestProcessor PKG_VIEW_RP = new RequestProcessor(PackageRootNode.class.getName(),1);
     private static Action actions[]; 
-
+        
     private SourceGroup group;
 
     private final FileObject file;
@@ -188,7 +188,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     public void annotationChanged(FileStatusEvent event) {
         if (task == null) {
-            task = RequestProcessor.getDefault().create(this);
+            task = PKG_VIEW_RP.create(this);
         }
 
         if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
