@@ -302,7 +302,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 // FIXUP: ERROR
             }
         } else if (element.equals(LINKERTOOL_ELEMENT)) {
-            currentLinkerConfiguration = ((MakeConfiguration) currentConf).getLinkerConfiguration();
+            if (currentFolderConfiguration != null && currentFolderConfiguration.getLinkerConfiguration() != null) {
+                currentLinkerConfiguration = currentFolderConfiguration.getLinkerConfiguration();
+            } else {
+                currentLinkerConfiguration = ((MakeConfiguration) currentConf).getLinkerConfiguration();
+            }
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration) currentConf).getPackagingConfiguration();
             currentPackagingConfiguration.getFiles().getValue().clear();
@@ -331,7 +335,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentList = currentLinkerConfiguration.getDynamicSearch().getValue();
             }
         } else if (element.equals(LINKER_LIB_ITEMS_ELEMENT)) {
-            currentLibrariesConfiguration = ((MakeConfiguration) currentConf).getLinkerConfiguration().getLibrariesConfiguration();
+            currentLibrariesConfiguration = currentLinkerConfiguration.getLibrariesConfiguration();
         } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
             currentRequiredProjectsConfiguration = ((MakeConfiguration) currentConf).getRequiredProjectsConfiguration();
         } else if (element.equals(MAKE_ARTIFACT_ELEMENT)) {

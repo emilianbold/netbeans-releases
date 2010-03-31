@@ -51,6 +51,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
@@ -84,7 +85,7 @@ public class CvsModuleConfig {
     
     private Map<String, RootSettings> rootsMap;
     private String lastCanceledCommitMessage;
-
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
 
     public CvsModuleConfig() {
         excludedFiles = new FileCollection();
@@ -211,6 +212,20 @@ public class CvsModuleConfig {
 
     public void setLastCanceledCommitMessage(String message) {
         lastCanceledCommitMessage = message;
+    }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
     }
 
     private Map<String, RootSettings> getRootsMap() {

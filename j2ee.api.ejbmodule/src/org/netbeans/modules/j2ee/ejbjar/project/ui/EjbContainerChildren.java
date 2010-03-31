@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -84,6 +85,9 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     private final EjbNodesFactory nodeFactory;
     private final Project project;
     private final java.util.Map<Key, Node> nodesHash = Collections.synchronizedMap(new HashMap<Key, Node>());
+
+    private Task updateTask = null;
+    private static final RequestProcessor rp = new RequestProcessor();
 
     public EjbContainerChildren(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, EjbNodesFactory nodeFactory, Project project) {
         this.ejbModule = ejbModule;
@@ -114,8 +118,12 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         updateKeys();
     }
 
-    private void updateKeys(){
-        RequestProcessor.getDefault().post(new Runnable(){
+    private synchronized void updateKeys(){
+        if (updateTask != null){
+            updateTask.schedule(100);
+            return;
+        }
+        updateTask = rp.post(new Runnable(){
             public void run() {
                 try {
                     Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
@@ -171,7 +179,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                     Exceptions.printStackTrace(ex);
                 }
             }
-        });
+        }, 100);
     }
 
     private void createNodesForKeys(List<Key> keys){

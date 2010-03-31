@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.xml.sax.Attributes;
 
 public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
@@ -96,12 +97,19 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
     public void encode(XMLEncoderStream xes) {
         boolean cCompilerConfigurationModified = folder.getCCompilerConfiguration().getModified();
         boolean ccCompilerConfigurationModified = folder.getCCCompilerConfiguration().getModified();
-        if (cCompilerConfigurationModified || ccCompilerConfigurationModified) {
+        final LinkerConfiguration linkerConfiguration = folder.getLinkerConfiguration();
+        boolean linkerConfigurationModified = linkerConfiguration != null ? linkerConfiguration.getModified() : false;
+        if (cCompilerConfigurationModified || ccCompilerConfigurationModified || linkerConfigurationModified) {
             xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[] {new AttrValuePair(PATH_ATTR, folder.getFolder().getPath())});
-            if (cCompilerConfigurationModified)
+            if (cCompilerConfigurationModified) {
                 CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration());
-            if (ccCompilerConfigurationModified)
+            }
+            if (ccCompilerConfigurationModified) {
                 CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, folder.getCCCompilerConfiguration());
+            }
+            if (linkerConfigurationModified) {
+                CommonConfigurationXMLCodec.writeLinkerConfiguration(xes, folder.getLinkerConfiguration());
+            }
             xes.elementClose(FOLDER_ELEMENT);
         }
     } 
