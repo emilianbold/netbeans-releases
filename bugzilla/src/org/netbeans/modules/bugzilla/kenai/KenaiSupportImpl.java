@@ -93,7 +93,7 @@ public class KenaiSupportImpl extends KenaiSupport {
     public void setFilter(Query query, Filter filter) {
         if(query instanceof BugzillaQuery) { // XXX assert instead of if
             BugzillaQuery bq = (BugzillaQuery) query;
-            bq.setFilter(filter);
+            bq.getController().selectFilter(filter);
         }
     }
 
