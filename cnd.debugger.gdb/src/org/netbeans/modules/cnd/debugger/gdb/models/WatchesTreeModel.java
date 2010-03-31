@@ -327,7 +327,9 @@ public class WatchesTreeModel implements TreeModel, PropertyChangeListener {
             }
             
             if (task == null) {
-                task = RequestProcessor.getDefault().create(new Runnable() {
+                GdbDebugger d = debugger.get();
+                RequestProcessor rp = (d != null) ? d.getRequestProcessor() : RequestProcessor.getDefault();
+                task = rp.create(new Runnable() {
                     public void run() {
                         m.fireTreeChanged();
                     }

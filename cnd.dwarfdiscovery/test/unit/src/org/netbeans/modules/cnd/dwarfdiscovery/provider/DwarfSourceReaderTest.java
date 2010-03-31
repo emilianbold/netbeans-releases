@@ -781,9 +781,9 @@ public class DwarfSourceReaderTest extends NbTestCase {
 
                         @Override
                         protected String normalizePath(String path) {
-                            if (isWindows == Utilities.isWindows()) {
-                                return super.normalizePath(path);
-                            }
+                            //if (isWindows == Utilities.isWindows()) {
+                            //    return super.normalizePath(path);
+                            //}
                             path = path.replace('\\', '/');
                             while (path.indexOf("/..") > 0) {
                                 int i = path.indexOf("/..");
@@ -792,7 +792,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                                 if (beg.endsWith(".")) {
                                     break;
                                 }
-                                int j = beg.lastIndexOf("/");
+                                int j = beg.lastIndexOf('/');
                                 if (j < 0) {
                                     break;
                                 }

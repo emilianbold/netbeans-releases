@@ -90,7 +90,6 @@ public final class ConnectionManager {
     private final HashMap<ExecutionEnvironment, Session> sessions;
     // Actual sessions pool
     private final JSch jsch;
-    private volatile boolean connecting;
     private List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
 
     static {
@@ -115,8 +114,6 @@ public final class ConnectionManager {
                 }
             });
         }
-
-        connecting = false;
 
         try {
             jsch.setKnownHosts(System.getProperty("user.home") + // NOI18N
@@ -193,11 +190,9 @@ public final class ConnectionManager {
      *
      * @param env <tt>ExecutionEnvironment</tt> to connect to.
      * @param password password to be used for identification
-     * @return <tt>true</tt> if this call to the function has initiated a new
-     * connection to the <tt>env</tt>
      * @throws java.lang.Throwable
      */
-    public boolean connectTo(
+    public void connectTo(
             final ExecutionEnvironment env,
             char[] password) throws IOException, CancellationException {
 
@@ -210,7 +205,7 @@ public final class ConnectionManager {
             if (!HostInfoUtils.isHostInfoAvailable(env)) {
                 HostInfoUtils.getHostInfo(env);
             }
-            return true;
+            return;
         }
 
         Session session = getSession(env, false);
@@ -220,14 +215,14 @@ public final class ConnectionManager {
                 HostInfoUtils.getHostInfo(env);
             }
             // just return if already connected ...
-            return true;
+            return;
         }
 
         if (password != null) {
             PasswordManager.getInstance().put(env, password);
         }
 
-        return doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
+        doConnect(env, RemoteUserInfoProvider.getUserInfo(env, false));
     }
 
     private void reconnect(ExecutionEnvironment env) throws IOException {
@@ -257,35 +252,18 @@ public final class ConnectionManager {
      * @return  true only if call to this method initiated new connection...
      * @throws java.lang.Throwable
      */
-    public boolean connectTo(
+    public void connectTo(
             final ExecutionEnvironment env) throws IOException, CancellationException {
 
         if (SwingUtilities.isEventDispatchThread()) {
             // otherwise UI can hang forever
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
         }
+
         synchronized (this) {
-            if (connecting) {
-                return false;
+            if (isConnectedTo(env)) {
+                return;
             }
-
-            connecting = true;
-        }
-
-        try {
-            boolean result = false;
-            /*
-            try {
-            result = connectTo(env, PasswordManager.getInstance().get(env), false);
-            } catch (ConnectException ex) {
-            if (ex.getMessage().equals("Auth fail")) { // NOI18N
-            // Try with user-interaction
-            result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, true));
-            } else {
-            throw ex;
-            }
-            }
-             */
 
             env.prepareForConnection();
 
@@ -294,104 +272,92 @@ public final class ConnectionManager {
 
             if (passwd == null || passwd.length == 0) {
                 // I don't know the password: trying with user-interaction
-                result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
+                doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
             } else {
                 try {
-                    result = connectTo(env, passwd);
+                    connectTo(env, passwd);
                 } catch (ConnectException ex) {
                     if (ex.getMessage().equals("Auth fail")) { // NOI18N
                         // Try with user-interaction
-                        result = doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
+                        doConnect(env, RemoteUserInfoProvider.getUserInfo(env, isUnitTest ? false : true));
                     } else {
                         throw ex;
                     }
                 }
             }
-
-            return result;
-        } finally {
-            connecting = false;
         }
     }
 
-    private boolean doConnect(
+    private void doConnect(
             final ExecutionEnvironment env,
             final UserInfo userInfo) throws IOException, CancellationException {
 
-        try {
-            final ConnectTask task = new ConnectTask(env, userInfo);
-            final Future<Session> connectResult = NativeTaskExecutorService.submit(
-                    task, "Connect to " + env.toString()); // NOI18N
+        final ConnectTask task = new ConnectTask(env, userInfo);
+        final Future<Session> connectResult = NativeTaskExecutorService.submit(
+                task, "Connect to " + env.toString()); // NOI18N
 
-            final Cancellable cancelConnection = new Cancellable() {
+        final Cancellable cancelConnection = new Cancellable() {
 
-                @Override
-                public boolean cancel() {
-                    if (task != null) {
-                        task.cancel();
-                    }
-
-                    if (connectResult != null) {
-                        connectResult.cancel(true);
-                    }
-
-                    return true;
-                }
-            };
-
-            ProgressHandle ph = ProgressHandleFactory.createHandle(
-                    loc("ConnectionManager.Connecting", // NOI18N
-                    env.toString()), cancelConnection);
-
-            ph.start();
-
-            Session session = null;
-
-            try {
-                session = connectResult.get();
-            } catch (InterruptedException ex) {
-                cancelConnection.cancel();
-                throw new CancellationException(ex.getMessage());
-            } catch (ExecutionException ex) {
-                Throwable cause = ex.getCause();
-                if (cause != null) {
-                    if (cause instanceof IOException) {
-                        throw (IOException) cause;
-                    }
-
-                    if (cause instanceof CancellationException) {
-                        throw (CancellationException) cause;
-                    }
-                }
-                // Should not happen
-                throw new IOException(ex.getMessage(), cause);
-            } finally {
-                ph.finish();
-            }
-
-            if (session != null) {
-                synchronized (sessions) {
-                    sessions.put(env, session);
+            @Override
+            public boolean cancel() {
+                if (task != null) {
+                    task.cancel();
                 }
 
-                HostInfoUtils.getHostInfo(env);
-
-                log.log(Level.FINE, "New connection established: {0}", env.toString()); // NOI18N
-
-                RequestProcessor.getDefault().post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        fireConnected(env);
-                    }
-                });
+                if (connectResult != null) {
+                    connectResult.cancel(true);
+                }
 
                 return true;
             }
+        };
 
-            return false;
+        ProgressHandle ph = ProgressHandleFactory.createHandle(
+                loc("ConnectionManager.Connecting", // NOI18N
+                env.toString()), cancelConnection);
+
+        ph.start();
+
+        Session session = null;
+
+        try {
+            session = connectResult.get();
+        } catch (InterruptedException ex) {
+            cancelConnection.cancel();
+            throw new CancellationException(ex.getMessage());
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+            if (cause != null) {
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                }
+
+                if (cause instanceof CancellationException) {
+                    throw (CancellationException) cause;
+                }
+            }
+            // Should not happen
+            throw new IOException(ex.getMessage(), cause);
         } finally {
-            connecting = false;
+            ph.finish();
+        }
+
+        if (session != null) {
+            synchronized (sessions) {
+                sessions.put(env, session);
+            }
+
+            HostInfoUtils.getHostInfo(env);
+
+            log.log(Level.FINE, "New connection established: {0}", env.toString()); // NOI18N
+
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    fireConnected(env);
+                }
+            });
         }
     }
 
@@ -490,12 +456,13 @@ public final class ConnectionManager {
         }
 
         @Override
-        public void invoke() throws IOException, CancellationException {
-            boolean newConnectionEstablished = cm.connectTo(env);
-
-            if (newConnectionEstablished) {
-                onConnect.run();
+        public synchronized void invoke() throws IOException, CancellationException {
+            if (cm.isConnectedTo(env)) {
+                return;
             }
+
+            cm.connectTo(env);
+            onConnect.run();
         }
     }
 
