@@ -120,6 +120,10 @@ NodeActionsProvider {
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke ("DELETE")
         );
+        MOVE_UP_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);     // NOI18N
+        MOVE_DOWN_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE);   // NOI18N
+        RESET_ORDER_ACTION.putValue("DisabledWhenInSortedTable", Boolean.TRUE); // NOI18N
+        
     }
 
     private void bindWithSourcePathProvider() {

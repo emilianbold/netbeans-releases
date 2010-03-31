@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.flickr.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class FlickrResponseSchemaTest extends SchemaTest {
+public class FlickrResponseSchemaTest extends SchemaTestBase {
 
     private FlickrResponseSchemaTest() {
         super();

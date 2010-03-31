@@ -83,7 +83,6 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
         }
 
         Throwable ce = modeler.getCreationException();
-        System.out.println("creationException = "+ce);
         if (ce != null) {
             creationException = ce;
         } else {

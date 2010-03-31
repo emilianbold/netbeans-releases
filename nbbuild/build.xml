@@ -1467,7 +1467,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${allmodules},${harness-modules},nbbuild,ide"/>
+    <dirset id="source.dirset" dir="${nb_all}"
+            includes="${allmodules},${harness-modules},nbbuild,ide,nbi"
+            excludes="nbi/engine/lib,nbi/infra/build/jvm,nbi/infra/sandbox,nbi/infra/server,nbi/infra/utils"
+    />
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1475,6 +1478,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <zipfileset dir="${nb_all}" includes="${source.dirs}">
           <exclude name="*/build/**/*"/>
           <exclude name="nbbuild/netbeans/**"/>
+      </zipfileset>
+      <zipfileset dir="${nb_all}">
+          <include name="build.xml"/>
       </zipfileset>
     </zip>
   </target>

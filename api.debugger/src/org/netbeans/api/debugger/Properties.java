@@ -428,6 +428,7 @@ public abstract class Properties {
         private HashMap properties = new HashMap ();
         private boolean isInitialized = false;
         private HashMap<String, ReentrantReadWriteLock> propertyRWLocks = new HashMap<String, ReentrantReadWriteLock>();
+        private HashMap<String, Integer> propertyRWLockCounts = new HashMap<String, Integer>();
 
 
         public String getProperty (String propertyName, String defaultValue) {
@@ -461,6 +462,13 @@ public abstract class Properties {
                 rwl = new ReentrantReadWriteLock(true);
                 propertyRWLocks.put(propertyName, rwl);
             }
+            Integer c = propertyRWLockCounts.get(propertyName);
+            if (c == null) {
+                c = 1;
+            } else {
+                c = c + 1;
+            }
+            propertyRWLockCounts.put(propertyName, c);
             return rwl;
         }
 
@@ -468,18 +476,12 @@ public abstract class Properties {
             ReentrantReadWriteLock rwl = getRWLock(propertyName);
             ReadLock rl = rwl.readLock();
             rl.lock();
-            synchronized (this) { // put the lock in again in case it was removed in the mean time by another unlock
-                propertyRWLocks.put(propertyName, rwl);
-            }
         }
 
         public void lockWrite(String propertyName) {
             ReentrantReadWriteLock rwl = getRWLock(propertyName);
             WriteLock wl = rwl.writeLock();
             wl.lock();
-            synchronized (this) { // put the lock in again in case it was removed in the mean time by another unlock
-                propertyRWLocks.put(propertyName, rwl);
-            }
         }
 
         public synchronized void unLockRead(String propertyName) {
@@ -488,9 +490,7 @@ public abstract class Properties {
                 throw new IllegalStateException("No lock for property "+propertyName);
             }
             rwl.readLock().unlock();
-            if (rwl.getReadLockCount() == 0 && !rwl.isWriteLocked()) {
-                propertyRWLocks.remove(propertyName);
-            }
+            RWUnlock(propertyName);
         }
 
         public synchronized void unLockWrite(String propertyName) {
@@ -499,8 +499,17 @@ public abstract class Properties {
                 throw new IllegalStateException("No lock for property "+propertyName);
             }
             rwl.writeLock().unlock();
-            if (rwl.getReadLockCount() == 0 && !rwl.isWriteLocked()) {
+            RWUnlock(propertyName);
+        }
+
+        private synchronized void RWUnlock(String propertyName) {
+            Integer c = propertyRWLockCounts.get(propertyName);
+            if (c.intValue() == 1) {
+                propertyRWLockCounts.remove(propertyName);
                 propertyRWLocks.remove(propertyName);
+            } else {
+                c = c - 1;
+                propertyRWLockCounts.put(propertyName, c);
             }
         }
 
