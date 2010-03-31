@@ -440,28 +440,29 @@ public class JPDAStart extends Task implements Runnable {
                         new Listener(first, artificialBreakpoints, listeners, startedSessionRef));
 
                 // Let it start asynchronously so that the script can go on and start the debuggee
+                final Thread[] listeningThreadPtr = new Thread[] { null };
+                final boolean[] listeningStarted = new boolean[] { false };
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        DebuggerManagerListener sessionListener = new DebuggerManagerAdapter() {
-                            @Override
-                            public void sessionAdded(Session session) {
-                                synchronized (startedSessionRef) {
-                                    // TODO: make that more deterministic.
-                                    startedSessionRef[0] = new WeakReference(session);
-                                }
-                            }
-                        };
+                        synchronized (listeningStarted) {
+                            listeningThreadPtr[0] = Thread.currentThread();
+                            listeningStarted[0] = true;
+                            listeningStarted.notifyAll();
+                        }
                         try {
-                            DebuggerManager.getDebuggerManager().addDebuggerListener(sessionListener);
-                            JPDADebugger.startListening (
+                            DebuggerEngine[] engines = JPDADebugger.startListeningAndGetEngines (
                                 flc,
                                 args,
                                 new Object[] { properties }
                             );
+                            startedSessionRef[0] = new WeakReference(engines[0].lookupFirst(null, Session.class));
                         } catch (DebuggerStartException dsex) {
                             // Was not able to start up
                         } finally {
-                            DebuggerManager.getDebuggerManager().removeDebuggerListener(sessionListener);
+                            synchronized (listeningStarted) {
+                                listeningThreadPtr[0] = null;
+                                listeningStarted.notifyAll();
+                            }
                         }
                     }
                 });
@@ -475,12 +476,40 @@ public class JPDAStart extends Task implements Runnable {
                     public void targetFinished(BuildEvent event) {}
                     public void buildStarted(BuildEvent event) {}
                     public void buildFinished(BuildEvent event) {
+                        // First wait until listening actually starts:
+                        logger.fine("buildFinished: waiting for listening start...");
+                        synchronized (listeningStarted) {
+                            if (!listeningStarted[0]) {
+                                try {
+                                    listeningStarted.wait();
+                                } catch (InterruptedException ex) {}
+                            }
+                        }
+                        logger.fine("buildFinished: stopping listening...");
+                        // Then stop it:
                         try {
                             flc.stopListening(args);
                         } catch (java.io.IOException ioex) {
                         } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException iaex) {
                         }
+                        logger.fine("buildFinished: interrupting listening thread...");
+                        // If the listening is still running, interrupt it:
+                        for (int i = 0; i < 10; i++) {
+                            synchronized (listeningStarted) {
+                                logger.fine("buildFinished: listening thread = "+listeningThreadPtr[0]);
+                                if (listeningThreadPtr[0] != null) {
+                                    listeningThreadPtr[0].interrupt();
+                                    try {
+                                        listeningStarted.wait(500);
+                                    } catch (InterruptedException ex) {}
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        // Finally, kill the started session:
                         Session s = startedSessionRef[0].get();
+                        logger.fine("buildFinished: killing session "+s);
                         if (s != null) {
                             s.kill();
                         }

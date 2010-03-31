@@ -52,6 +52,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.project.customizer.ClassicAppletProjectProperties;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.Dependency;
@@ -77,8 +78,10 @@ import org.openide.util.Cancellable;
  * @author Tim Boudreau
  */
 public class JCProjectTest extends AbstractJCProjectTest {
+    public static final String SYSTEM_PROP_UNIT_TEST = "JCProject.test";
     public JCProjectTest() {
         super ("JCProjectTest");
+        System.setProperty (SYSTEM_PROP_UNIT_TEST, "true");
     }
 
     JCProject project;
@@ -228,5 +231,40 @@ public class JCProjectTest extends AbstractJCProjectTest {
             }
         }
         assertTrue (jarFound);
+    }
+
+    public void testUseProxiesCreatesProxiesFolderAndSetsUpProperties() {
+        JCCustomizerProvider prov = project.getLookup().lookup(JCCustomizerProvider.class);
+        assertNotNull (prov);
+        JCProjectProperties props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        assertNotNull (props);
+        assertTrue (props instanceof ClassicAppletProjectProperties);
+        ClassicAppletProjectProperties p = (ClassicAppletProjectProperties) props;
+        assertNull ("Newly create classic project should not have a proxy source folder",
+                project.getProjectDirectory().getFileObject(ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+        EditableProperties pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        String s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertTrue ("Newly created classic project's " + 
+                ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES + 
+                " property should be false or null",  s == null || Boolean.valueOf(s) == false);
+        p.setUseMyProxies(true);
+        p.storeProperties();
+        pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertFalse ("After setting useMyProxies, " +
+                ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES +
+                " should be true", s == null || Boolean.valueOf(s) == false);
+        assertNotNull ("Proxy source dir not created", project.getProjectDirectory().getFileObject (ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+        p.setUseMyProxies(false);
+        p.storeProperties();
+        pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertTrue ("After save, " +ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES+ " should be unset", s == null || Boolean.valueOf(s) == false);
+        assertNotNull ("Setting use my proxies to false should not cause proxy source dir to be deleted",
+                project.getProjectDirectory().getFileObject(ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+
     }
 }

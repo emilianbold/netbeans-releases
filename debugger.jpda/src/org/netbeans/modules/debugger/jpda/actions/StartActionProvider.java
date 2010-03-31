@@ -42,12 +42,14 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
 
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
@@ -65,6 +67,7 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -93,6 +96,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     private JPDADebuggerImpl debuggerImpl;
     private ContextProvider lookupProvider;
     private Thread startingThread;
+    private final Object startingThreadLock = new Object();
     
     
     public StartActionProvider (ContextProvider lookupProvider) {
@@ -147,7 +151,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         debuggerImpl.getRequestProcessor().post(new Runnable() {
             public void run() {
                 //debuggerImpl.setStartingThread(Thread.currentThread());
-                synchronized (StartActionProvider.this) {
+                synchronized (startingThreadLock) {
                     startingThread = Thread.currentThread();
                 }
                 try {
@@ -155,8 +159,9 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                 //} catch (InterruptedException iex) {
                     // We've interrupted ourselves
                 } finally {
-                    synchronized (StartActionProvider.this) {
+                    synchronized (startingThreadLock) {
                         startingThread = null;
+                        startingThreadLock.notifyAll();
                     }
                     //debuggerImpl.unsetStartingThread();
                     actionPerformedNotifier.run();
@@ -262,13 +267,36 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
     }
 
     public boolean cancel() {
-        synchronized (StartActionProvider.this) {
-            if (startingThread != null) {
-                startingThread.interrupt();
-            } else {
-                return true;
+        synchronized (startingThreadLock) {
+            logger.fine("StartActionProvider.cancel(): startingThread = "+startingThread);
+            for (int i = 0; i < 10; i++) { // Repeat several times, it can be called too early
+                if (startingThread != null) {
+                    logger.fine("Interrupting "+startingThread);
+                    startingThread.interrupt();
+                    boolean cancelInterrupted = false;
+                    try {
+                        startingThreadLock.wait(500);
+                    } catch (InterruptedException iex) {
+                        cancelInterrupted = true;
+                    }
+                    AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
+                    logger.fine("Listening cookie = "+cookie+", is listening = "+(cookie instanceof ListeningDICookie));
+                    if (cookie instanceof ListeningDICookie) {
+                        ListeningDICookie lc = (ListeningDICookie) cookie;
+                        try {
+                            lc.getListeningConnector().stopListening(lc.getArgs());
+                        } catch (IOException ex) {
+                        } catch (IllegalConnectorArgumentsException ex) {
+                        }
+                    }
+                    if (cancelInterrupted) {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
             }
+            return startingThread == null;
         }
-        return true;
     }
 }

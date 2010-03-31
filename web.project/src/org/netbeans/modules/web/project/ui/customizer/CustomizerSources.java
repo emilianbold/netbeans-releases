@@ -41,29 +41,20 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +65,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -154,8 +146,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             this.originalEncoding = Charset.defaultCharset().name();
         }
         
-        this.encoding.setModel(new EncodingModel(this.originalEncoding));
-        this.encoding.setRenderer(new EncodingRenderer());
+        this.encoding.setModel(ProjectCustomizer.encodingModel(originalEncoding));
+        this.encoding.setRenderer(ProjectCustomizer.encodingRenderer());
         final String lafid = UIManager.getLookAndFeel().getID();
         if (!"Aqua".equals(lafid)) { // NOI18N
              encoding.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
@@ -640,81 +632,4 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel webInfLabel;
     private javax.swing.JTextField webInfTextField;
     // End of variables declaration//GEN-END:variables
-    
-    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-        
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-        
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-        
-    }
-    
-    private static class EncodingModel extends DefaultComboBoxModel {
-        
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset(originalEncoding);
-                    addElement(defEnc);
-                } catch (java.nio.charset.IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-    
-    private static class UnknownCharset extends Charset {
-        
-        UnknownCharset(String name) {
-            super(name, new String[0]);
-        }
-        
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-        
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-        
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
-    }
 }

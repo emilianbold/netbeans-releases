@@ -59,30 +59,38 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
-public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescriptor> {
+public class StepProblemMessage 
+        implements WizardDescriptor.Panel<WizardDescriptor> {
     
     private final String msg;
     private final Project project;
     private JPanel panel;
-    
-    /** Creates a new instance of StepProblemMessage */
+
+    /**
+     * Creates a new instance of StepProblemMessage.
+     * @param project the project or {@code null}.
+     * @param message text of the message
+     */
     public StepProblemMessage(Project project, String message) {
         this.project = project;
         this.msg = message;
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         //no need for listeners - this panel is always invalid
     }
     
+    @Override
     public Component getComponent() {
         if (panel == null) {
             panel = new JPanel(new GridBagLayout());
             JLabel lblProject = new JLabel(
                     NbBundle.getMessage(StepProblemMessage.class,
                                         "LBL_Project"));                //NOI18N
-            JTextField tfProject = new JTextField(
-                    ProjectUtils.getInformation(project).getDisplayName());
+            String pojectInfo = project == null ? null :
+                    ProjectUtils.getInformation(project).getDisplayName();
+            JTextField tfProject = new JTextField(pojectInfo);
             JComponent message = GuiUtils.createMultilineLabel(msg);
 
             lblProject.setLabelFor(tfProject);
@@ -118,6 +126,7 @@ public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescript
         return panel;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(StepProblemMessage.class);
     }
@@ -125,18 +134,22 @@ public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescript
     /**
      * @return  <code>false</code> - this panel is never valid
      */
+    @Override
     public boolean isValid() {
         return false;
     }
     
+    @Override
     public void readSettings(WizardDescriptor settings) {
         //this panel has no settings
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         //no need for listeners - this panel is always invalid
     }
     
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         //this panel has no settings
     }

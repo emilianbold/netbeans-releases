@@ -1,18 +1,4 @@
-/*
- * TestTask.java
- *
- * Created on July 29, 2006, 11:33 PM
- */
-
 package org.netbeans.modules.loadgenerator.ant;
-
-// IMPORTANT! You need to compile this class against ant.jar. So add the
-// JAR ide/ant/lib/ant.jar from your IDE installation directory (or any
-// other version of Ant you wish to use) to your classpath. Or if
-// writing your own build target, use e.g.:
-// <classpath>
-//     <pathelement location="${ant.home}/lib/ant.jar"/>
-// </classpath>
 
 import java.util.Collection;
 import org.apache.tools.ant.BuildException;
@@ -48,25 +34,6 @@ public class StartLoadgenTask extends Task {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    // To log something:
-    // log("Some message");
-    // log("Serious message", Project.MSG_WARN);
-    // log("Minor message", Project.MSG_VERBOSE);
-    
-    // To signal an error:
-    // throw new BuildException("Problem", location);
-    // throw new BuildException(someThrowable, location);
-    // throw new BuildException("Problem", someThrowable, location);
-    
-    // You can call other tasks too:
-    // Zip zip = (Zip)project.createTask("zip");
-    // zip.setZipfile(zipFile);
-    // FileSet fs = new FileSet();
-    // fs.setDir(baseDir);
-    // zip.addFileset(fs);
-    // zip.init();
-    // zip.setLocation(location);
-    // zip.execute();
   }
   
 }
