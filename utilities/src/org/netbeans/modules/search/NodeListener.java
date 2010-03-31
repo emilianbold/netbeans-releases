@@ -53,6 +53,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,6 +73,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.actions.EditAction;
 import org.openide.cookies.EditCookie;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
@@ -95,6 +97,7 @@ final class NodeListener implements MouseListener, KeyListener,
     NodeListener() {
     }
     
+    @Override
     public void mouseClicked(MouseEvent e) {
         // todo (#pf): we need to solve problem between click and double
         // click - click should be possible only on the check box area
@@ -285,8 +288,9 @@ final class NodeListener implements MouseListener, KeyListener,
                 }
 
                 JMenuItem menuItem = new JMenuItem(
-                        wholeNameBuf.toString().substring(1)); //strip initial '/'
+                      wholeNameBuf.toString().substring(1)); //strip initial '/'
                 menuItem.addActionListener(new ActionListener() {
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             callResultNodesDefaultActions(nbNodes, e);
                         }
@@ -296,10 +300,7 @@ final class NodeListener implements MouseListener, KeyListener,
                 popup = new JPopupMenu();
                 popup.add(menuItem);
             } else {
-                Node nbNode = getNbNode(path, resultModel);
-                if (nbNode != null) {
-                    popup = createFileNodePopupMenu(nbNode);
-                }
+                popup = createFileNodePopupMenu(path, resultModel);
             }
             if (popup != null) {
                 Point location = getPopupMenuLocation(tree, path, e);
@@ -369,7 +370,7 @@ final class NodeListener implements MouseListener, KeyListener,
      * 
      * @param  tree  tree in which the node resides
      * @param  treePath  path to the file node
-     * @param  matchingObj  object containing the file
+     * @param  mo  object containing the file
      * @param  selected  determines the event that caused this method
      *                   to be called
      *                   - {@code true} for selection,
@@ -495,27 +496,27 @@ final class NodeListener implements MouseListener, KeyListener,
      */
     private void setFileNodeSelected(JTree tree,
                                      TreePath treePath,
-                                     MatchingObject matchingObj,
+                                     MatchingObject mo,
                                      boolean selected) {
         assert treePath.getPathCount() == 2;
         
-        autocollapseFileNodeIfNeeded(tree, treePath, matchingObj, selected);
-        matchingObj.setSelected(selected);
-        getResultTreeModel(treePath).fileNodeSelectionChanged(matchingObj, true);
+        autocollapseFileNodeIfNeeded(tree, treePath, mo, selected);
+        mo.setSelected(selected);
+        getResultTreeModel(treePath).fileNodeSelectionChanged(mo, true);
     }
     
     /**
      */
     private void toggleDetailNodeSelection(JTree tree,
                                            ResultModel resultModel, 
-                                           MatchingObject matchingObj,
+                                           MatchingObject mo,
                                            int index) {
-        boolean propagateUp = matchingObj.toggleSubnodeSelection(resultModel, index);
+        boolean propagateUp = mo.toggleSubnodeSelection(resultModel, index);
 
         ResultTreeModel resultTreeModel = getResultTreeModel(tree);
-        resultTreeModel.fireDetailNodeSelectionChanged(matchingObj, index);
+        resultTreeModel.fireDetailNodeSelectionChanged(mo, index);
         if (propagateUp) {
-            resultTreeModel.fileNodeSelectionChanged(matchingObj, false);
+            resultTreeModel.fileNodeSelectionChanged(mo, false);
         }
     }
     
@@ -553,34 +554,39 @@ final class NodeListener implements MouseListener, KeyListener,
         
         Object obj = path.getLastPathComponent();
         
-        MatchingObject matchingObj;
+        MatchingObject mo;
         boolean isFileNode;
         
         if (obj.getClass() == MatchingObject.class) {
-            matchingObj = (MatchingObject) obj;
+            mo = (MatchingObject) obj;
             
             isFileNode = true;
         } else {
             Object parentObj = path.getParentPath().getLastPathComponent();
             assert parentObj.getClass() == MatchingObject.class;
-            matchingObj = (MatchingObject) parentObj;
+            mo = (MatchingObject) parentObj;
             
             isFileNode = false;
         }
-        if (!matchingObj.isObjectValid()) {
+        if (!mo.isObjectValid()) {
             return null;
         }
         
         if (isFileNode) {
-            node = (resultModel==null) ? null : resultModel.getSearchGroup().getNodeForFoundObject(
-                                                            matchingObj.object);
+            node = (resultModel==null) ? null : 
+                resultModel.getSearchGroup().getNodeForFoundObject(mo.object);
         } else {
             assert obj instanceof Node;         //detail node
             node = (Node) obj;
         }
         return node;
     }
-    
+
+    private static MatchingObject getMatchingObject(TreePath path) {
+        Object obj = path.getLastPathComponent();
+        return obj instanceof MatchingObject ? (MatchingObject) obj : null;
+    }
+
     /**
      * Creates a popup-menu for the given file node.
      * 
@@ -588,7 +594,12 @@ final class NodeListener implements MouseListener, KeyListener,
      * @return  created popup-menu; or {@code null} if no popup-menu
      *          is available for the given file node
      */
-    private JPopupMenu createFileNodePopupMenu(Node fileNode) {
+    private JPopupMenu createFileNodePopupMenu(TreePath path,
+                                               ResultModel resultModel) {
+        Node fileNode = getNbNode(path, resultModel);
+        if (fileNode == null) {
+            return null;
+        }
         Action action = getDefaultAction(fileNode);
         if (action == null) {
             return null;
@@ -603,7 +614,32 @@ final class NodeListener implements MouseListener, KeyListener,
         } else {
             popupMenu.add(action);
         }
+
+        CopyTextAction cta = newCopyTextAction(path);
+        if(cta != null) {
+            popupMenu.add(cta);
+        }
+        
         return popupMenu;
+    }
+
+    private CopyTextAction newCopyTextAction(TreePath path) {
+        try {
+            MatchingObject mo = getMatchingObject(path);
+            String filePath = mo.getFile().getCanonicalPath(); // NPE, IOE
+            String ctaName = NbBundle.getBundle(this.getClass()).
+                                  getString("LBL_CopyFilePathAction"); // NOI18N
+            CopyTextAction cta = new CopyTextAction(ctaName);
+            cta.setTextCopy(filePath);
+            return cta;
+        }
+        catch (IOException ex) {
+            // do nothing
+        }
+        catch (NullPointerException ex) {
+            // do nothing
+        }
+        return null;
     }
 
     private static String getMenuItemLabel(Action action) {
@@ -622,7 +658,8 @@ final class NodeListener implements MouseListener, KeyListener,
     /**
      */
     private Action getDefaultAction(Node node) {
-        EditAction editAction = SharedClassObject.findObject(EditAction.class, true);
+        EditAction editAction =
+                SharedClassObject.findObject(EditAction.class, true);
         Action action;
         if (editAction != null) {
             action = editAction.createContextAwareInstance(
@@ -741,30 +778,37 @@ final class NodeListener implements MouseListener, KeyListener,
         this.selectionChangeEnabled = enabled;
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
     
+    @Override
     public void keyReleased(KeyEvent e) {
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
     
+    @Override
     public void mouseExited(MouseEvent e) {
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger()) {
             popupTriggerEventFired(e);
         }
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             popupTriggerEventFired(e);
         }
     }
     
+    @Override
     public void keyPressed(KeyEvent e) {
         final JTree tree = (JTree) e.getSource();
         ResultModel resultModel = getResultModel(tree);
@@ -789,8 +833,10 @@ final class NodeListener implements MouseListener, KeyListener,
 
             List<TreePath> mainNodes;
             if (selectionModel.getSelectionCount() == 1) {
-                final TreePath selectedPath = selectionModel.getLeadSelectionPath();
-                if ((selectedPath == null) || (selectedPath.getParentPath() == null)) {
+                final TreePath selectedPath =
+                        selectionModel.getLeadSelectionPath();
+                if ((selectedPath == null) ||
+                    (selectedPath.getParentPath() == null)) {
                     // empty selection or root node selected
                     return;
                 }
@@ -808,7 +854,8 @@ final class NodeListener implements MouseListener, KeyListener,
             }
             for (TreePath mainNode : mainNodes) {
                 Node nbNode = getNbNode(mainNode, resultModel);
-                callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+                callDefaultAction(nbNode, e.getSource(),
+                                  e.getID(), "enter");   //NOI18N
             }
         } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
                    && (e.getModifiersEx() == 0)) {
@@ -825,6 +872,7 @@ final class NodeListener implements MouseListener, KeyListener,
         }
     }
 
+    @Override
     public void treeWillExpand(TreeExpansionEvent event)
                                             throws ExpandVetoException {
         final TreePath path = event.getPath();
@@ -839,10 +887,12 @@ final class NodeListener implements MouseListener, KeyListener,
         }
     }
 
+    @Override
     public void treeWillCollapse(TreeExpansionEvent event)
                                             throws ExpandVetoException {
     }
 
+    @Override
     public void treeExpanded(TreeExpansionEvent event) {
         final TreePath path = event.getPath();
         if (path.getPathCount() == 2) {
@@ -850,6 +900,7 @@ final class NodeListener implements MouseListener, KeyListener,
         }
     }
 
+    @Override
     public void treeCollapsed(TreeExpansionEvent event) {
         final TreePath path = event.getPath();
         if (path.getPathCount() == 2) {

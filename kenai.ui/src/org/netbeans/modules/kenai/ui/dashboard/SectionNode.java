@@ -68,7 +68,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
     private final String displayName;
     private final String propertyName;
     JLabel lblName;
-    private JLabel lblStatus;
+    private ProgressLabel lblStatus;
     private JLabel lblError;
     private JPanel panel;
     protected final ProjectHandle project;

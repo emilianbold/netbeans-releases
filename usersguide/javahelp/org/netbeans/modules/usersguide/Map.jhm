@@ -479,14 +479,13 @@
 <mapID target="collab_about" url="collab/collab_about.html" />
 
 <!-- Collaborative Development - Kenai topics-->
-<mapID target="kenai_projects" url="collab/about_kenai_projects.html" />
+<mapID target="kenai_projects" url="collab/about_team_servers.html" />
 <mapID target="kenai_create" url="collab/kenai_create.html" />
 <mapID target="kenai_share" url="collab/kenai_share.html" />
 <mapID target="kenai_workingwith" url="collab/kenai_dashboard.html" />
 <mapID target="kenai_quickref" url="collab/kenai_quickref.html" />
 <mapID target="kenai_members" url="collab/kenai_members.html" />
 <mapID target="kenai_chatlogin" url="collab/kenai_chat-login.html" />
-<mapID target="kenai_opening" url="collab/kenai_opening.html" />
 
 
 

@@ -43,7 +43,6 @@
 package org.netbeans.modules.search;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -309,44 +308,6 @@ public final class ResultModel {
     
     /**
      */
-    boolean hasDetails(MatchingObject matchingObject) {
-        prepareCacheFor(matchingObject);
-        if (infoCacheHasDetails != null) {
-            return infoCacheHasDetails.booleanValue();
-        }
-        
-        boolean hasDetails = hasDetailsReal(matchingObject);
-        infoCacheHasDetails = Boolean.valueOf(hasDetails);
-        
-        assert (infoCacheHasDetails == Boolean.TRUE)
-               || (infoCacheHasDetails == Boolean.FALSE);
-        return hasDetails;
-    }
-    
-    /**
-     */
-    private boolean hasDetailsReal(MatchingObject matchingObject) {
-        boolean ret;
-        if (isFullText) {
-            ret = true;
-        } else if (isBasicCriteriaOnly) {
-            ret = false;
-        } else {
-            ret = false;
-            final Object foundObject = matchingObject.object;
-            for (SearchType searchType : searchGroup.getSearchTypes()) {
-                Node[] detailNodes = searchType.getDetails(foundObject);
-                if ((detailNodes != null) && (detailNodes.length != 0)) {
-                    ret = true;
-                    break;
-                }
-            }
-        }
-        return ret;
-    }
-    
-    /**
-     */
     int getDetailsCount(MatchingObject matchingObject) {
         prepareCacheFor(matchingObject);
         if (infoCacheDetailsCount == -1) {
@@ -368,8 +329,8 @@ public final class ResultModel {
      *          available for the given object (usually {@code DataObject})
      */
     private int getDetailsCountReal(MatchingObject matchingObject) {
-        int count = isFullText ? basicCriteria.getDetailsCount(matchingObject.object)
-                               : 0;
+        int count = isFullText ? 
+            basicCriteria.getDetailsCount(matchingObject.object) : 0;
         if (isBasicCriteriaOnly) {
             return count;
         }
@@ -383,11 +344,16 @@ public final class ResultModel {
     }
     
     /**
-     * 
+     * Gets detail nodes associated with the specified {@code MatchingObject}.
+     * @param matchingObject the {@code MatchingObject} or {@code null}.
      * @return  non-empty array of detail nodes
-     *          or {@code null} if there are no detail nodes
+     *          or {@code null} if either there are no associated detail nodes
+     *          or {@code matchingObject} is {@code null}.
      */
     Node[] getDetails(MatchingObject matchingObject) {
+        if(matchingObject == null) {
+            return null;
+        }
         prepareCacheFor(matchingObject);
         Node[] detailNodes;
         if (infoCacheDetailNodes == null) {
@@ -482,7 +448,8 @@ public final class ResultModel {
 
     /** This exception stoped search */
     void searchException(RuntimeException ex) {
-        ErrorManager.Annotation[] annotations = ErrorManager.getDefault().findAnnotations(ex);
+        ErrorManager.Annotation[] annotations =
+                ErrorManager.getDefault().findAnnotations(ex);
         for (int i = 0; i < annotations.length; i++) {
             ErrorManager.Annotation annotation = annotations[i];
             if (annotation.getSeverity() == ErrorManager.USER) {

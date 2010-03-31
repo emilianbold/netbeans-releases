@@ -282,7 +282,7 @@ public class MEKeyTool {
                 if (null == ksFO) {
                     return null;
                 }
-                final String ksPath = ksFO.toString();
+                final String ksPath = FileUtil.toFile(ksFO).toString();
                 return ksPath;
             }
         }
