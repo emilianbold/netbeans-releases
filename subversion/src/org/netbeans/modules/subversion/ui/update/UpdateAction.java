@@ -155,6 +155,9 @@ public class UpdateAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }        
+        if (repositoryUrl == null) {
+            return;
+        }
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);

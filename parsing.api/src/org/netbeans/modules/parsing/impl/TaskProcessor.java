@@ -612,10 +612,10 @@ public class TaskProcessor {
                                         boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
                                         if (changeExpected) {
                                             //Skeep the task, another invalidation is comming
-                                            Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
+                                            Collection<Request> rc = waitingRequests.get (source);
                                             if (rc == null) {
                                                 rc = new LinkedList<Request> ();
-                                                waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                                waitingRequests.put (source, rc);
                                             }
                                             rc.add(r);
                                             continue;

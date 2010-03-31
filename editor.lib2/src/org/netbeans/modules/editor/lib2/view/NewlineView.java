@@ -62,9 +62,6 @@ import javax.swing.text.View;
 
 public final class NewlineView extends EditorView {
 
-    /** The default width should incorporate possible width of the wider caret once it blinks at line's end. */
-    private static final float DEFAULT_WIDTH = 2f;
-
     /** Offset of start offset of this view. */
     private int rawOffset; // 24-super + 4 = 28 bytes
 
@@ -114,13 +111,16 @@ public final class NewlineView extends EditorView {
 
     @Override
     public float getPreferredSpan(int axis) {
+        // Although the width could be e.g. 1 return a default width of a character
+        // since if caret is blinking over the newline character and the caret
+        // is in overwrite mode then this will make the caret fully visible.
         DocumentView documentView = getDocumentView();
         if (axis == View.X_AXIS) {
             return (documentView != null)
                     ? (documentView.isShowNonprintingCharacters()
                         ? documentView.getNewlineCharTextLayout().getAdvance()
-                        : DEFAULT_WIDTH)
-                    : DEFAULT_WIDTH;
+                        : documentView.getDefaultCharWidth())
+                    : 1; // Only return one if not connected to view hierarchy
         } else {
             return (documentView != null) ? documentView.getDefaultLineHeight() : 1;
         }
