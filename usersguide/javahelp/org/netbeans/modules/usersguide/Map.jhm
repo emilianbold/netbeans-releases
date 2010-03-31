@@ -479,6 +479,7 @@
 <mapID target="collab_about" url="collab/collab_about.html" />
 
 <!-- Collaborative Development - Kenai topics-->
+<mapID target="team_addserver" url="collab/team_addserver.html" />
 <mapID target="kenai_projects" url="collab/about_team_servers.html" />
 <mapID target="kenai_create" url="collab/kenai_create.html" />
 <mapID target="kenai_share" url="collab/kenai_share.html" />
