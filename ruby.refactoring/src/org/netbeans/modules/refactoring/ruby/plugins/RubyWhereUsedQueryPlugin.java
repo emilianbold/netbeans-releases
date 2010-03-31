@@ -138,8 +138,6 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 
         FileObject file = tph.getFileObject();
         if (file != null) {
-            set.add(file);
-//            source = RetoucheUtils.createSource(cpInfo, tph.getFileObject());
             if (isFindSubclasses() || isFindDirectSubclassesOnly()) {
                 // No need to do any parsing, we'll be using the index to find these files!
                 set.add(file);
@@ -149,17 +147,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 RubyIndex index = RubyIndex.get(RetoucheUtils.getProjectRoots(file));
                 String fqn = AstUtilities.getFqnName(tph.getPath());
                 subclasses = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
-
-                if (subclasses.size() > 0) {
-//                        for (IndexedClass clz : classes) {
-//                            FileObject fo = clz.getFileObject();
-//                            if (fo != null) {
-//                                set.add(fo);
-//                            }
-//                        }
-                    // For now just parse this particular file!
-                    set.add(file);
-                }
+                return set;
             }
 
             if (tph.getKind() == ElementKind.VARIABLE || tph.getKind() == ElementKind.PARAMETER) {
