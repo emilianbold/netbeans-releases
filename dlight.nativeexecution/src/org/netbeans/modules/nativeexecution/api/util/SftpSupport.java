@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -162,7 +163,7 @@ class SftpSupport {
             this.error = error;
         }
 
-        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException;
+        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException, InterruptedException;
         protected abstract String getTraceName();
 
         @Override
@@ -212,7 +213,7 @@ class SftpSupport {
         }
 
         @Override
-        protected void work() throws IOException, CancellationException, JSchException, SftpException {
+        protected void work() throws IOException, CancellationException, JSchException, SftpException, InterruptedException {
             if (checkMd5) {
                 Result res = null;
                 try {
@@ -220,6 +221,10 @@ class SftpSupport {
                 } catch (NoSuchAlgorithmException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (Md5checker.CheckSumException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 if (res == Result.UPTODATE) {
