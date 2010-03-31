@@ -65,14 +65,14 @@ public class JaxWsModelProvider {
     }
     
     public JaxWsModel getJaxWsModel(InputStream is) throws IOException {
-        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs impl = 
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs impl =
                 org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs.createGraph(is);
-        return (impl==null?null:new JaxWsModel(impl));
+        return (impl==null?null:new JaxWsModelImpl(impl));
     }
-    
+
     public JaxWsModel getJaxWsModel(FileObject fo) throws IOException {
-        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs impl = 
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs impl =
                 org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs.createGraph(fo.getInputStream());
-        return (impl==null?null:new JaxWsModel(impl,fo));
+        return (impl==null?null:new JaxWsModelImpl(impl,fo));
     }
 }
