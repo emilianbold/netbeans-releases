@@ -529,8 +529,7 @@
 <!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
 <mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />
 
-<!-- id for help button in login to netbeans dialog that is invoked when reporting an issue from the Help menu.
-TODO: Not sure if this dialog needs a help button.
-<mapID target="org.netbeans.modules.bugzilla.NBLoginPane" url="collab/issues_about.html" /> -->
+<!-- id for help button in login to netbeans dialog that is invoked when reporting an issue from the Help menu. -->
+<mapID target="org.netbeans.modules.bugzilla.NBLoginPane" url="misc-general/report_nb-issue.html" />
 
 </map>
