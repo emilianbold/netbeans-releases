@@ -842,6 +842,7 @@ public class MakeConfiguration extends Configuration {
 
     public String expandMacros(String val) {
         // Substitute macros
+        val = CndPathUtilitities.expandMacro(val, "${TESTDIR}", MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests"); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilitities.getBaseName(getOutputValue())); // NOI18N
         val = CndPathUtilitities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
