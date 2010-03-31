@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.saas.kit;
+package org.netbeans.modules.websvc.saas.util;
 
 import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
@@ -67,9 +67,9 @@ import org.xml.sax.SAXException;
  *
  * @author lukas
  */
-public class SchemaTest extends NbTestCase {
+public class SchemaTestBase extends NbTestCase {
 
-    private static final Logger LOG = Logger.getLogger(SchemaTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(SchemaTestBase.class.getName());
     private static final SchemaFactory sFactory;
     private static final DocumentBuilderFactory dbf;
     private Schema schema;
@@ -84,16 +84,16 @@ public class SchemaTest extends NbTestCase {
         dbf.setNamespaceAware(true);
     }
 
-    protected SchemaTest() {
+    protected SchemaTestBase() {
         super(""); //NOI18N
     }
 
-    private SchemaTest(String name, String resource) {
+    private SchemaTestBase(String name, String resource) {
         super(name);
         schemaResource = resource;
     }
 
-    private SchemaTest(String name, Schema s, File f) {
+    private SchemaTestBase(String name, Schema s, File f) {
         super(name);
         schema = s;
         this.file = f;
@@ -162,16 +162,16 @@ public class SchemaTest extends NbTestCase {
         }
     }
 
-    protected static TestSuite createTestSuite(SchemaTest t) {
+    protected static TestSuite createTestSuite(SchemaTestBase t) {
         TestSuite ts = new NbTestSuite();
         List<File> testCases = t.getTestCases();
         Collections.sort(testCases);
         for (File f : testCases) {
             assertTrue("dir not allowed", f.isFile()); //NOI18N
-            ts.addTest(new SchemaTest("validate", createSchema(t.getSchemas()), f)); //NOI18N
+            ts.addTest(new SchemaTestBase("validate", createSchema(t.getSchemas()), f)); //NOI18N
         }
         for (String s : t.getSchemas()) {
-            ts.addTest(new SchemaTest("compileSchema", s)); //NOI18N
+            ts.addTest(new SchemaTestBase("compileSchema", s)); //NOI18N
         }
 
         return ts;
@@ -180,7 +180,7 @@ public class SchemaTest extends NbTestCase {
     private static Schema createSchema(String... resources) {
         Schema s = null;
         List<InputStream> iss = new ArrayList<InputStream>(resources.length);
-        Source[] sources = new StreamSource[resources.length + 1];
+        Source[] sources = new StreamSource[resources.length];
         for (int i = 0; i < resources.length; i++) {
             InputStream is = ClassLoader.getSystemResourceAsStream(resources[i]);
             sources[i] = new StreamSource(is);
@@ -198,7 +198,7 @@ public class SchemaTest extends NbTestCase {
                         is.close();
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger(SchemaTest.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SchemaTestBase.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
