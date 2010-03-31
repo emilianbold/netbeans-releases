@@ -765,7 +765,6 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
 
     public InputOutput getIO() {
-        interestingOutputCallback.run();
         return io;
     }
     
