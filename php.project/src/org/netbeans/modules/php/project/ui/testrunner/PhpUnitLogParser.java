@@ -213,7 +213,8 @@ public final class PhpUnitLogParser extends DefaultHandler {
                 stacktraceStarted = true;
                 testCase.addStacktrace(buffer.toString().trim());
             } else if (!stacktraceStarted) {
-                buffer.append(line + "\n"); // NOI18N
+                buffer.append(line);
+                buffer.append("\n"); // NOI18N
             } else {
                 testCase.addStacktrace(line.trim());
             }

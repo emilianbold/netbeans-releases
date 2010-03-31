@@ -76,14 +76,17 @@ public class BrowseTestSources extends JPanel {
         initComponents();
         infoLabel.setText(title);
         testSourcesTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }

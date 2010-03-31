@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
+public final class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
     private static final long serialVersionUID = -5884875643137545L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
@@ -116,8 +116,10 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
         PhpEnvironment.get().readDocumentRoots(new PhpEnvironment.ReadDocumentRootsNotifier() {
+            @Override
             public void finished(final List<DocumentRoot> documentRoots) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         initCopyTargets(documentRoots, copyTarget);
                     }
@@ -126,6 +128,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         }, getSourcesFolderName());
 
         encodingComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Charset enc = (Charset) encodingComboBox.getSelectedItem();
                 String encName;
@@ -179,6 +182,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         if (!"Aqua".equals(lafid)) { // NOI18N
              encodingComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
              encodingComboBox.addItemListener(new ItemListener() {
+                @Override
                  public void itemStateChanged(ItemEvent e) {
                      JComboBox combo = (JComboBox) e.getSource();
                      combo.setPopupVisible(false);
@@ -248,13 +252,16 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         validateFields();
     }
 
+    @Override
     public String getSourcesFolderName() {
         return getSourcesFolder().getName();
     }
 
+    @Override
     public File getSourcesFolder() {
         return FileUtil.normalizeFile(new File(projectFolderTextField.getText()));
     }
+
 
     void validateFields() {
         if (!visible) {
@@ -615,30 +622,36 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     // End of variables declaration//GEN-END:variables
 
     private class DefaultChangeListener implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
             validateFields();
         }
     }
 
     private class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             validateFields();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             validateFields();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             validateFields();
         }
     }
 
     private class DefaultCheckBoxItemListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             validateFields();
         }
     }
 
     private class DefaultComboBoxItemListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 validateFields();
@@ -646,14 +659,17 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerSources.class);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         throw new IllegalStateException();
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         throw new IllegalStateException();
     }

@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik
  */
-public class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
+public final class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
     private static final long serialVersionUID = -1785087654312318594L;
     private static final String APP_FRONTEND = "frontend"; // NOI18N
     private static final String APP_BACKEND = "backend"; // NOI18N
@@ -108,6 +108,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
         otherParamsTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
         generateProjectLabel.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 enableOptionsLabel();
             }
@@ -219,6 +220,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
 
     private void initApp(JCheckBox nameCheckBox, final JLabel paramsLabel, final JTextField paramsTextField, final JTextField nameTextField) {
         nameCheckBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 visibleApp(e.getStateChange() == ItemEvent.SELECTED, paramsLabel, paramsTextField, nameTextField);
             }
@@ -451,18 +453,22 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
     // End of variables declaration//GEN-END:variables
 
     private final class DefaultItemListener implements ItemListener {
+        @Override
         public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }
