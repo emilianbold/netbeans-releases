@@ -66,6 +66,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -319,10 +320,11 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
         roots.putRoots(rootURLs, rootLabels);
         String[] rootPropertyNames = roots.getRootProperties();
         FileObject[] rootFolders = roots.getRoots();
-        assert rootPropertyNames.length == rootFolders.length;
+        //rootPropertyNames will contain anything starting with "src." - this can include unrelated stuff
+        //key off rootFolders, not rootPropertyNames
         List <Integer> foreignRootIndices = new LinkedList<Integer>();
         FileObject projectDir = project.getProjectDirectory();
-        for (int i=0; i < rootPropertyNames.length; i++) {
+        for (int i=0; i < rootFolders.length; i++) {
             String rootProp = rootPropertyNames[i];
             if (FileUtil.isParentOf(projectDir, rootFolders[i])) {
                 String relPath = FileUtil.getRelativePath(projectDir, rootFolders[i]);
