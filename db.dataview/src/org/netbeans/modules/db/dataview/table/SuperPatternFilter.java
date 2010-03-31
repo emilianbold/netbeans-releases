@@ -86,7 +86,7 @@ public class SuperPatternFilter extends Filter {
                 if (filterStr == null || filterStr.length() == 0) {
                     filterStr2 = ".*";
                 } else {
-                    filterStr2 = filterStr.replaceAll("/", "//"); // NOI18N
+                    filterStr2 = Pattern.quote(filterStr);
                 }
                 pattern = Pattern.compile(filterStr2, 0);
                 break;
