@@ -52,6 +52,7 @@ import org.netbeans.modules.php.dbgp.annotations.CallStackAnnotation;
 import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.models.CallStackModel;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.text.Line;
 import org.w3c.dom.Node;
 
@@ -137,24 +138,27 @@ public class StackGetResponse extends DbgpResponse {
     }
 
     public static void updateWatchView( DebugSession session ) {
-        Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
-        for (Watch watch : allWatches) {
-            String expression = watch.getExpression();
-            EvalCommand command = new EvalCommand( session.getTransactionId());
-            command.setData( expression );
-            /* TODO : uncommented but it may cause following problems: 
-             * I found a bug in XDEbug with eval command:
-             * after response to eval request it performs two actions:
-             * 1) Stops script execution ( and debugging ) unexpectedly
-             * 2) Response with unexpected "response" packet that don't contain
-             * "command" attribute with "status" attribute equals to "stopped"
-             * and "reason" equals "ok".
-             * 
-             * XDrbug bug submitted: 
-             * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
-             * 
-             */ 
-            session.sendCommandLater(command);
+        if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
+            Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
+            for (Watch watch : allWatches) {
+                String expression = watch.getExpression();
+                EvalCommand command = new EvalCommand( session.getTransactionId());
+                command.setData( expression );
+                /* TODO : uncommented but it may cause following problems:
+                 * I found a bug in XDEbug with eval command:
+                 * after response to eval request it performs two actions:
+                 * 1) Stops script execution ( and debugging ) unexpectedly
+                 * 2) Response with unexpected "response" packet that don't contain
+                 * "command" attribute with "status" attribute equals to "stopped"
+                 * and "reason" equals "ok".
+                 *
+                 * XDrbug bug submitted:
+                 * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
+                 *
+                 */
+
+                session.sendCommandLater(command);
+            }
         }
     }
 
