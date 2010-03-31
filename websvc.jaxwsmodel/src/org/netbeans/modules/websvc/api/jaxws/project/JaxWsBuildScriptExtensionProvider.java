@@ -41,6 +41,7 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 
 import java.io.IOException;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 
 /**
  *
@@ -50,4 +51,5 @@ public interface JaxWsBuildScriptExtensionProvider {
     static final String JAXWS_EXTENSION = "jaxws"; //NOI18N
     void addJaxWsExtension(AntBuildExtender ext) throws IOException;
     void removeJaxWsExtension(AntBuildExtender ext) throws IOException;
+    void handleJaxWsModelChanges(JaxWsModel model) throws IOException;
 }
