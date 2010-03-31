@@ -165,12 +165,12 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     /** Character (or better line) height. Particular view can use a different
     * character height however most views will probably use this one.
     */
-    private int lineHeight = 1; // prevent possible division by zero
+    private int lineHeight = -1;
 
     private float lineHeightCorrection = 1.0f;
 
     /** Ascent of the line which is maximum ascent of all the fonts used. */
-    private int lineAscent;
+    private int lineAscent = -1;
 
     /** Width of the space in the default coloring's font */
     int defaultSpaceWidth = 1;
@@ -640,11 +640,17 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
 
     public int getLineHeight() {
-        return lineHeight;
+        if (lineHeight == -1 && component != null) {
+            updateLineHeight(component);
+        }
+        return lineHeight > 0 ? lineHeight : 1;
     }
 
     public int getLineAscent() {
-        return lineAscent;
+        if (lineAscent == -1 && component != null) {
+            updateLineHeight(component);
+        }
+        return lineAscent > 0 ? lineAscent : 1;
     }
 
     /**
@@ -708,8 +714,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
         
         Map<String, Coloring> cm = getCMInternal();
-        int maxHeight = 1;
-        int maxAscent = 0;
+        int maxHeight = -1;
+        int maxAscent = -1;
         for(String coloringName : cm.keySet()) {
             if (FontColorNames.STATUS_BAR_COLORING.equals(coloringName) ||
                 FontColorNames.STATUS_BAR_BOLD_COLORING.equals(coloringName)
@@ -717,13 +723,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 //#57112
                 continue;
             }
-            
+
             Coloring c = cm.get(coloringName);
-            
+
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Probing coloring '" + coloringName + "' : " + c);
             }
-            
+
             if (c != null) {
                 Font font = c.getFont();
                 if (font != null && (c.getFontMode() & Coloring.FONT_MODE_APPLY_SIZE) != 0) {
@@ -754,20 +760,55 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             }
         }
 
-        boolean changePreferences = false;
-        if (lineHeight!=1 && lineHeight!=(int)(maxHeight * lineHeightCorrection)){
-            changePreferences = true;
-        }
+        if (BaseKit.LINEWRAP_ENABLED) {
+            maxHeight = -1;
+            View rootView = Utilities.getDocumentView(component);
+            if (rootView != null) {
+                for(int i = 0; i < rootView.getViewCount(); i++) {
+                    View view = rootView.getView(i);
+                    int offset = view.getStartOffset();
+                    Rectangle r = null;
 
-        int oldProp = lineHeight;
+                    try {
+                        r = component.getUI().modelToView(component, offset);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.INFO, null, ble);
+                    }
+
+                    if (r == null) {
+                        break;
+                    }
+
+                    if (LOG.isLoggable(Level.FINE)) {
+                        if (maxHeight < r.getHeight()) {
+                            try {
+                                LOG.fine("Updating maxHeight from " //NOI18N
+                                    + maxHeight + " to " + r.getHeight() // NOI18N
+                                    + ", line=" + i // NOI18N
+                                    + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
+                                );
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.FINE, null, ble);
+                            }
+                        }
+                    }
+
+                    maxHeight = Math.max(maxHeight, (int) r.getHeight());
+                }
+            }
+        }
         
-        // Apply lineHeightCorrection
-        lineHeight = (int)(maxHeight * lineHeightCorrection);
-        lineAscent = (int)(maxAscent * lineHeightCorrection);
-        if (changePreferences) {
-            firePropertyChange(LINE_HEIGHT_CHANGED_PROP, new Integer(oldProp), new Integer(lineHeight));
+        if (maxAscent > 0) {
+            lineAscent = (int)(maxAscent * lineHeightCorrection);
         }
-
+        
+        if (maxHeight > 0) {
+            int oldLineHeight = lineHeight;
+            lineHeight = (int)(maxHeight * lineHeightCorrection);
+            if (oldLineHeight != lineHeight && oldLineHeight != -1) {
+                firePropertyChange(LINE_HEIGHT_CHANGED_PROP, new Integer(oldLineHeight), new Integer(lineHeight));
+            }
+        }
     }
     
     /**
@@ -1004,7 +1045,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
         
         try {
-            yTo = ui.getYFromPos(endPos) + lineHeight;
+            yTo = ui.getYFromPos(endPos) + getLineHeight();
         } catch (BadLocationException e) {
             Utilities.annotateLoggable(e);
             yTo = (int) ui.getRootView(component).getPreferredSpan(View.Y_AXIS);
@@ -1220,13 +1261,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
             cnvFI = (scrollFindInsets.top < 0)
                 ? (- bounds.height * scrollFindInsets.top / 100)
-                : scrollFindInsets.top * lineHeight;
+                : scrollFindInsets.top * getLineHeight();
 
             int ny = Math.max(r.y - cnvFI, 0);
 
             cnvFI = (scrollFindInsets.bottom < 0)
                 ? (- bounds.height * scrollFindInsets.bottom / 100)
-                : scrollFindInsets.bottom * lineHeight;
+                : scrollFindInsets.bottom * getLineHeight();
 
             r.height += (r.y - ny) + cnvFI;
             r.y = ny;
@@ -1331,7 +1372,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 newY = r.y;
                 newY -= (scrollJumpInsets.top < 0)
                         ? (bounds.height * (-scrollJumpInsets.top) / 100 )
-                        : scrollJumpInsets.top * lineHeight;
+                        : scrollJumpInsets.top * getLineHeight();
                 break;
             case SCROLL_SMALLEST:
                 newY = r.y;
@@ -1349,7 +1390,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 newY = (r.y + r.height) - bounds.height;
                 newY += (scrollJumpInsets.bottom < 0)
                         ? (bounds.height * (-scrollJumpInsets.bottom) / 100 )
-                        : scrollJumpInsets.bottom * lineHeight;
+                        : scrollJumpInsets.bottom * getLineHeight();
                 break;
             case SCROLL_SMALLEST:
                 newY = (r.y + r.height) - bounds.height;
@@ -1382,7 +1423,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             try {
                 Rectangle caretRect = component.modelToView(component.getCaretPosition());
                 bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
-                        + (caretPercentFromWindowTop * lineHeight) / 100;
+                        + (caretPercentFromWindowTop * getLineHeight()) / 100;
                 Utilities.runInEventDispatchThread(new Runnable() {
                     public @Override void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
@@ -1403,7 +1444,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         if (c != null) {
             Rectangle bounds = getExtentBounds();
             bounds.y += (percentFromWindowTop * bounds.height) / 100
-                        - (percentFromWindowTop * lineHeight) / 100;
+                        - (percentFromWindowTop * getLineHeight()) / 100;
             try {
                 int offset = ((BaseTextUI)c.getUI()).getPosFromY(bounds.y);
                 if (offset >= 0) {
