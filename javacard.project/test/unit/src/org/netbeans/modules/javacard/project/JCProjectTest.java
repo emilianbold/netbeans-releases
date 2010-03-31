@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.javacard.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.table.DefaultTableModel;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -297,5 +300,49 @@ public class JCProjectTest extends AbstractJCProjectTest {
         assertNull (fo);
         assertEquals ("${use.my.proxies}", project.evaluator().evaluate("${use.my.proxies}"));
         assertFalse(pr.containsKey("use.my.proxies"));
+    }
+
+    public void testSourceClasspathFiresChanges() throws Exception {
+        FileObject newRoot = project.getProjectDirectory().createFolder ("stuff");
+        File newRootFile = FileUtil.toFile(newRoot);
+        assertNotNull (newRootFile);
+        JCProjectProperties props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        ClassPath path = project.getSourceClassPath();
+        assertNotNull (path);
+        class PCL implements PropertyChangeListener {
+            boolean changed;
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ClassPath.PROP_ROOTS.equals (evt.getPropertyName())) {
+                    changed = true;
+                }
+            }
+
+            void assertChanged () {
+                boolean old = changed;
+                changed = false;
+                assertTrue ("Source classpath should have fired a change", old);
+            }
+
+            void assertNotChanged() {
+                assertFalse ("Unexpected change fired", changed);
+            }
+        }
+        PCL pcl = new PCL();
+        path.addPropertyChangeListener(pcl);
+        pcl.assertNotChanged();
+
+        DefaultTableModel srcTable = props.SOURCE_ROOTS_MODEL;
+        srcTable.addRow(new Object[] { newRootFile, "Stuff" });
+        props.storeProperties();
+        assertSame ("Classpath identity should not change", path,
+                project.getSourceClassPath());
+
+        pcl.assertChanged();
+
+        props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        srcTable = props.SOURCE_ROOTS_MODEL;
+        assertEquals (2, srcTable.getRowCount());
+
     }
 }
