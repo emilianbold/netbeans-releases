@@ -425,15 +425,22 @@ public class GdbProxy {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
+    public MICommand break_insertCMD(int flags,
+                                     boolean temporary,
+                                     String name,
+                                     String threadID,
+                                     boolean pending) {
         StringBuilder cmd = new StringBuilder();
 
         cmd.append("-break-insert "); // NOI18N
         if (temporary) {
             cmd.append("-t "); // NOI18N
         }
-        // This will make pending breakpoint if specified location can not be parsed now
-        cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        
+        if (pending) {
+            // This will make pending breakpoint if specified location can not be parsed now
+            cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        }
 
         // Temporary fix for Windows
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
@@ -461,18 +468,18 @@ public class GdbProxy {
      * @return token number
      */
     public void break_insert(String name) {
-        break_insertCMD(0, false, name, null).send();
+        break_insertCMD(0, false, name, null, true).send();
     }
 
     /**
      * Insert temporary breakpoint
      */
     public void break_insert_temporary(String name) {
-        break_insertCMD(0, true, name, null).send();
+        break_insertCMD(0, true, name, null, true).send();
     }
 
-    public CommandBuffer break_insert_temporaryEx(String name) {
-        return engine.sendCommandEx(break_insertCMD(0, true, name, null).getText());
+    public CommandBuffer break_insert_temporaryEx(String name, boolean pending) {
+        return engine.sendCommandEx(break_insertCMD(0, true, name, null, pending).getText());
     }
 
     /**
