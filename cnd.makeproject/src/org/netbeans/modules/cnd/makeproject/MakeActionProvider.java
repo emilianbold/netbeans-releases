@@ -910,7 +910,7 @@ public final class MakeActionProvider implements ActionProvider {
             for (int i = 0; i < getProjectDescriptor().getProjectItems().length; i++) {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
-                if (!itemConfiguration.getExcluded().getValue() &&
+                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue() &&
                         (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;
