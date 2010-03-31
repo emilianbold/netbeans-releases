@@ -76,7 +76,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private FileObject projectDirectory;
-    private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfgigurationXMLReader", 10);
+    private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
