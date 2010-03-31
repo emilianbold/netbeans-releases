@@ -175,18 +175,19 @@ public class J2EEUtils {
             // Use the same provider as the existing persistence unit
             provider = ProviderUtil.getProvider(persistence.getPersistenceUnit(0));
         } else {
-            // The first persistence unit - use TopLink provider
+            // The first persistence unit - use EclipseLink provider
             // (it is delivered as a part of NetBeans J2EE support)
+            //provider = ProviderUtil.ECLIPSELINK_PROVIDER;
             provider = ProviderUtil.TOPLINK_PROVIDER;
         }
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection, persistence.getVersion());
         unit.setTransactionType("RESOURCE_LOCAL"); // NOI18N
 
-        // TopLink/Derby combination doesn't like empty username and password,
+        // TopLink(Eclipselink may too, TODO: verify)/Derby combination doesn't like empty username and password,
         // but we can use dummy (app/app) values in this case, see issue 121427.
         if ((nullOrEmpty(connection.getUser()) || nullOrEmpty(connection.getPassword()))
-                && ProviderUtil.TOPLINK_PROVIDER.equals(provider)
+                && (ProviderUtil.TOPLINK_PROVIDER.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider))
                 && connection.getDriverClass().startsWith("org.apache.derby.jdbc.")) { // NOI18N
             String userPropName = provider.getJdbcUsername();
             String passwdPropName = provider.getJdbcPassword();
@@ -281,9 +282,33 @@ public class J2EEUtils {
         try {
             ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
             FileObject fob = classPath.findResource("oracle/toplink/essentials/ejb/cmp3/EntityManagerFactoryProvider.class"); // NOI18N
+            if(fob == null){
+                fob =classPath.findResource("oracle/toplink/essentials/PersistenceProvider.class");//alternative
+            }
             if (fob == null) {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                         new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))); // NOI18N
+                return ClassPathUtils.updateProject(fileInProject, cs);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
+        return false;
+    }
+    /**
+     * Updates project classpath with the EclipseLink library.
+     *
+     * @param fileInProject file in the project whose classpath should be updated.
+     * @return <code>true</code> if the classpath has been updated,
+     * returns <code>false</code> otherwise.
+     */
+    public static boolean updateProjectForEclipseLink(FileObject fileInProject) {
+        try {
+            ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+            FileObject fob = classPath.findResource("org/eclipse/persistence/jpa/PersistenceProvider.class"); // NOI18N
+            if (fob == null) {
+                ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
+                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("eclipselink"))); // NOI18N
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
@@ -490,7 +515,9 @@ public class J2EEUtils {
      */
     public static void updateProjectForUnit(FileObject fileInProject, PersistenceUnit unit, JDBCDriver driver) {
         // Make sure that TopLink JAR files are on the classpath (if using TopLink)
-        if (ProviderUtil.TOPLINK_PROVIDER.equals(ProviderUtil.getProvider(unit))) {
+        if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(ProviderUtil.getProvider(unit)) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(ProviderUtil.getProvider(unit))) {//the same for eclipselink
+            updateProjectForEclipseLink(fileInProject);
+        }    else    if (ProviderUtil.TOPLINK_PROVIDER.equals(ProviderUtil.getProvider(unit))) {
             updateProjectForTopLink(fileInProject);
         }
 

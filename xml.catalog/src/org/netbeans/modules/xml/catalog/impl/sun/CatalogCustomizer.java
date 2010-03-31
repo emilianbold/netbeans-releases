@@ -64,7 +64,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         initComponents ();
         
         // A11Y
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_CatalogCustomizer"));        
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_CatalogCustomizer"));
         
         locationLabel.setDisplayedMnemonic((NbBundle.getMessage(CatalogCustomizer.class, "CatalogCustomizer.locationLabel.mne")).charAt(0));
         locationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_locationTextField"));
