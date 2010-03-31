@@ -254,6 +254,7 @@ public class FileChooserBuilderTest extends NbTestCase {
         return null;
     }
 
+    @RandomlyFails // #182734: have a button
     public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException, InvocationTargetException {
         FileChooserBuilder instance = new FileChooserBuilder("i");
         instance.setDirectoriesOnly(true);
@@ -323,7 +324,7 @@ public class FileChooserBuilderTest extends NbTestCase {
             }
 
         });
-        assertNotNull(btn.get());
+        assertNotNull("have a button", btn.get());
         assertTrue(btn.get().isEnabled());
         EventQueue.invokeAndWait(new Runnable() {
             @Override

@@ -70,8 +70,10 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     public static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
     public static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
-    private Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N
-
+    private static final Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N
+    private static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(<!--)?(.*?)(-->)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
+    private static final int CDATA_BODY_GROUP_INDEX = 2; //                                        ^^^^
+    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
@@ -104,8 +106,26 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 state.put(IN_STYLE, Boolean.TRUE);
                 //jumped into style
                 int sourceStart = ts.offset();
-                int sourceEnd = sourceStart + htmlToken.length();
-                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                int length = htmlToken.length();
+
+                //filter out <![CDATA ]]> tokens and <!-- --> comment tokens, the code may looks like:
+                //    <head>
+                //      <style type="text/css"><![CDATA[
+                //      <!--
+                //      body { }
+                //      }
+                //      -->
+                //      ]]></style>
+                //    </head><body/>
+                //  </html>
+
+                Matcher matcher = CDATA_FILTER_PATTERN.matcher(htmlToken.text());
+                if (matcher.matches()) {
+                    sourceStart += matcher.start(CDATA_BODY_GROUP_INDEX);
+                    length = matcher.end(CDATA_BODY_GROUP_INDEX) - matcher.start(CDATA_BODY_GROUP_INDEX);
+                }
+
+                embeddings.add(snapshot.create(sourceStart, length, CSS_MIME_TYPE));
             } else {
                 //jumped out of the style
                 state.remove(IN_STYLE);

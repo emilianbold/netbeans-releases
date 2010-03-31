@@ -1000,8 +1000,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
             }
-            else if(apiWebServicesClientSupport.isBroken(EjbJarProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
+            else if(WebServicesClientSupport.isBroken(EjbJarProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
             }
         }
         
