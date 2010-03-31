@@ -41,6 +41,7 @@ package org.netbeans.modules.nativeexecution.api.execution;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -97,13 +98,17 @@ public final class NativeExecutionService {
             processBuilder.getEnvironment().put("TERM", "dumb"); // NOI18N
         }
 
-        FutureTask<Integer> runTask = new FutureTask<Integer>(new Callable<Integer>() {
+        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        Callable<Integer> callable = new Callable<Integer>() {
 
             @Override
             public Integer call() throws Exception {
                 try {
-                    final NativeProcess process = processBuilder.call();
-
+                    final NativeProcess process;
+                    synchronized (processRef) {
+                        process = processBuilder.call();
+                        processRef.set(process);
+                    }
                     if (descriptor.frontWindow) {
                         SwingUtilities.invokeLater(new Runnable() {
 
@@ -112,18 +117,33 @@ public final class NativeExecutionService {
                                 descriptor.inputOutput.select();
                             }
                         });
-                        
+
                     }
 
                     PtySupport.connect(descriptor.inputOutput, process);
                     return process.waitFor();
                 } finally {
                     if (descriptor.postExecution != null) {
-                        descriptor.postExecution.run();
+                        synchronized (processRef) {
+                            descriptor.postExecution.run();
+                        }
                     }
                 }
             }
-        });
+        };
+        FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                synchronized (processRef) {
+                    boolean ret = super.cancel(mayInterruptIfRunning);
+                    NativeProcess process = processRef.get();
+                    if (process != null) {
+                        process.destroy();
+                    }
+                    return ret;
+                }
+            }
+        };
 
         NativeTaskExecutorService.submit(runTask, "start process in term"); // NOI18N
 
