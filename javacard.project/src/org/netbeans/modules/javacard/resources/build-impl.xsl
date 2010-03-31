@@ -650,7 +650,7 @@ run   - Builds and deploys the application and starts the browser.
             </xsl:if>
 
             <target name="create-static-pages" depends="-init">
-                <copy todir="${{build.dir}}">
+                <copy todir="${{build.dir}}" failonerror="false">
                     <xsl:choose>
                         <xsl:when test="$webproject">
                             <fileset dir="${{staticpages.dir}}"/>
@@ -1081,7 +1081,7 @@ run   - Builds and deploys the application and starts the browser.
         <xsl:param name="includes" select="'${includes}'"/>
         <xsl:param name="includes2"/>
         <xsl:param name="excludes"/>
-        <xsl:for-each select="$roots/jcproj:root">
+        <xsl:for-each select="$roots/jcproj:root[@id != 'src.proxies.dir']">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir">
                     <xsl:text>${</xsl:text>
