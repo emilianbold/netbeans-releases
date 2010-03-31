@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  * Just as simple wrapper for the standard new file iterator as possible.
@@ -109,7 +110,11 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 Templates.setTargetName(wizard, name);
             }
         }
-        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
+        String targetName = Templates.getTargetName(wizard);
+        if (dir.getFileObject(targetName) != null) {
+            throw new IOException(NbBundle.getMessage(NewFileWizardIterator.class, "TXT_FileExists", targetName));
+        }
+        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, targetName, wizardProps);
 
         return Collections.singleton(createdFile.getPrimaryFile());
     }
