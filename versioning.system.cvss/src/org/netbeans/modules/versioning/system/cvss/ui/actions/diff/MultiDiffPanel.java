@@ -773,6 +773,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (currentType == Setup.DIFFTYPE_ALL) return;
             currentType = Setup.DIFFTYPE_ALL;
         }
+        CvsModuleConfig.getDefault().setLastUsedModificationContext(currentType);
         refreshTask.schedule(0);
     }
 

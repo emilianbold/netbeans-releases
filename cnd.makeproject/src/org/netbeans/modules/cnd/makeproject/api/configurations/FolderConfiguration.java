@@ -56,6 +56,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     // Tools
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
+    private LinkerConfiguration linkerConfiguration = null;
 
     public FolderConfiguration(Configuration configuration, CCompilerConfiguration parentCCompilerConfiguration, CCCompilerConfiguration parentCCCompilerConfiguration, Folder folder) {
         // General
@@ -64,6 +65,12 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         // Compilers
         cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCompilerConfiguration);
         ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), parentCCCompilerConfiguration);
+        if(folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
+            linkerConfiguration = new LinkerConfiguration((MakeConfiguration) configuration);
+            if(folder.isTest()) {
+                linkerConfiguration.getOutput().setValue("${TESTDIR}/" + folder.getPath()); // NOI18N
+            }
+        }
         clearChanged();
     }
 
@@ -102,6 +109,15 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         return ccCompilerConfiguration;
     }
 
+    // Linker
+    public void setLinkerConfiguration(LinkerConfiguration linkerConfiguration) {
+        this.linkerConfiguration = linkerConfiguration;
+    }
+
+    public LinkerConfiguration getLinkerConfiguration() {
+        return linkerConfiguration;
+    }
+
     // interface ConfigurationAuxObject
     @Override
     public boolean shared() {
@@ -132,6 +148,9 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public void assignValues(FolderConfiguration folderConfiguration) {
         getCCompilerConfiguration().assign(folderConfiguration.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
+        if(getLinkerConfiguration() != null && folderConfiguration.getLinkerConfiguration() != null) {
+            getLinkerConfiguration().assign(folderConfiguration.getLinkerConfiguration());
+        }
     }
 
     @Override
@@ -151,6 +170,9 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
         getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
         getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+        if(getLinkerConfiguration() != null && i.getLinkerConfiguration() != null) {
+            getLinkerConfiguration().assign(i.getLinkerConfiguration());
+        }
     }
 
     public FolderConfiguration copy(MakeConfiguration makeConfiguration) {
@@ -165,6 +187,9 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         FolderConfiguration i = new FolderConfiguration(getConfiguration(), (CCompilerConfiguration) getCCompilerConfiguration().getMaster(), (CCCompilerConfiguration) getCCCompilerConfiguration().getMaster(), getFolder());
         i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+        if(getLinkerConfiguration() != null) {
+            i.setLinkerConfiguration(getLinkerConfiguration().clone());
+        }
         return i;
     }
 
