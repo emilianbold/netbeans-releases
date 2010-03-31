@@ -22,24 +22,29 @@
 <p><b>To start a remote debugging session:</b></p>
 <ol>
   <li>On the computer where the application is located, start the application in debugging 
-    mode. See your VM documentation for instructions on starting an application in 
-    debugging mode. For the Sun Microsystems Java Virtual Machine, the options 
-    can be found at:
+    mode. </li>
+  <li>On the computer where the IDE is running, open the projects that contain 
+    the source for the application. </li>
+  <li>Choose Debug &gt; Attach Debugger to open the Attach dialog box.</li>
+  <li>Select the appropriate Connector from the drop-down list and enter any required process information. 
+    Click OK. </li>
+</ol>
+
+<p><strong>Notes.</strong></p>
+<ul>
+  <li>For details on the JPDA transport and connector options, see the JPDA documentation on Connection and Invocation for your JDK at the Java Platform Debugger Architecture Home
+    at the following location.
+
     <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
             <param name="content" value="http://java.sun.com/products/jpda/doc/conninv.html">
             <param name="text" value="<html><u>http://java.sun.com/products/jpda/doc/conninv.html</u></html>">
             <param name="textFontSize" value="medium">
             <param name="textColor" value="blue">
-    </object></p> </li>
-  <li>On the computer where the IDE is running, open the projects that contain 
-    the source for the application. </li>
-  <li>Choose Debug  &gt; Attach Debugger.</li>
-  <li>Select the connector type and enter any required process information, then 
-    click OK. See your VM documentation for information about the connectors it 
-    provides. 
-    <!--TODO need a troubleshooting section here -->
-  </li>
-</ol>
+    </object></p></li>
+  <li>The instructions for starting an application in debugging mode and the method for connecting to the VM will depend on your VM.
+      See your VM documentation for further details.</li>
+
+    </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
