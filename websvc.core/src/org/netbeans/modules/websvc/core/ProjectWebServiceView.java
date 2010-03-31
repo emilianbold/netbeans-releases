@@ -52,8 +52,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.netbeans.api.project.Project;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /**
  * This API displays the web service and client nodes in this project.
@@ -62,24 +60,24 @@ import org.openide.util.LookupListener;
 public final class ProjectWebServiceView {
 
     private static final Lookup.Result<ProjectWebServiceViewProvider> implementations;
-    private static final LookupListener lookupListener;
+//    private static final LookupListener lookupListener;
     private static Map<Project, ProjectWebServiceView> views;
-    
 
     static {
         implementations = Lookup.getDefault().lookup(new Lookup.Template<ProjectWebServiceViewProvider>(ProjectWebServiceViewProvider.class));
-        lookupListener = new LookupListener() {
-
-            public void resultChanged(LookupEvent ev) {
-                if (views == null) {
-                    return;
-                }
-                for (ProjectWebServiceView view : views.values()) {
-                    view.updateImpls(true);
-                }
-            }
-        };
-        implementations.addLookupListener(lookupListener);
+//        lookupListener = new LookupListener() {
+//
+//            @Override
+//            public void resultChanged(LookupEvent ev) {
+//                if (views == null) {
+//                    return;
+//                }
+//                for (ProjectWebServiceView view : views.values()) {
+//                    view.updateImpls(true);
+//                }
+//            }
+//        };
+//        implementations.addLookupListener(lookupListener);
     }
 
     /**
@@ -104,7 +102,7 @@ public final class ProjectWebServiceView {
     private ProjectWebServiceView(Project project) {
         this.project = new WeakReference<Project>(project);
         serviceListener = new ChangeListenerDelegate(ViewType.SERVICE);
-        clientListener = new ChangeListenerDelegate(ViewType.CLIENT);
+        clientListener = new ChangeListenerDelegate(ViewType.CLIENT);       
     }
 
     List<ProjectWebServiceViewImpl> getWebServiceViews() {
@@ -335,16 +333,16 @@ public final class ProjectWebServiceView {
      * @param project Project for which WebServiceViews are to be created.
      * @return list of WebServiceViews.
      */
-    private static List<ProjectWebServiceViewImpl> createWebServiceViews(Project project) {
+    private List<ProjectWebServiceViewImpl> createWebServiceViews(Project project) {
         Collection<? extends ProjectWebServiceViewProvider> providers = getProviders().allInstances();
         if (providers == null || providers.isEmpty()) {
             return Collections.<ProjectWebServiceViewImpl>emptyList();
         }
-        List<ProjectWebServiceViewImpl> views = new ArrayList<ProjectWebServiceViewImpl>();
+        List<ProjectWebServiceViewImpl> viewImpls = new ArrayList<ProjectWebServiceViewImpl>();
         for (ProjectWebServiceViewProvider provider : providers) {
-            views.add(provider.createProjectWebServiceView(project));
+            viewImpls.add(provider.createProjectWebServiceView(project));
         }
-        return views;
+        return viewImpls;
     }
 
     /**
@@ -371,10 +369,10 @@ public final class ProjectWebServiceView {
      * @param viewType type of nodes (service or client).
      * @return array of nodes representing Web Services/Clients in given project.
      */
-    private static Node[] createWebServiceNodes(Project project, ViewType viewType) {
-        List<ProjectWebServiceViewImpl> impls = createWebServiceViews(project);
+    private Node[] createWebServiceNodes(Project project, ViewType viewType) {
+        List<ProjectWebServiceViewImpl> viewImpls = createWebServiceViews(project);
         List<Node> result = new ArrayList<Node>();
-        for (ProjectWebServiceViewImpl view : impls) {
+        for (ProjectWebServiceViewImpl view : viewImpls) {
             if (!view.isViewEmpty(viewType)) {
                 result.addAll(Arrays.<Node>asList(view.createView(viewType)));
             }
