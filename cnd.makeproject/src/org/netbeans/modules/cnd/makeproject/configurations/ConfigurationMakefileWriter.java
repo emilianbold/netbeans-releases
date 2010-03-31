@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConf
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
@@ -621,15 +622,33 @@ public class ConfigurationMakefileWriter {
             }
             if (!tests.isEmpty()) {
                 for (Folder folder : tests) {
-                    String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+                    LinkerConfiguration testLinkerConfiguration = folder.getFolderConfiguration(conf).getLinkerConfiguration();
 
-                    String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
-                    LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
+                    String output = testLinkerConfiguration.getOutputValue();
+
+                    List<LinkerConfiguration> linkerConfigurations = new ArrayList<LinkerConfiguration>();
+                    linkerConfigurations.add(testLinkerConfiguration);
+//                    LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
+//                    if(linkerConfiguration != null) {
+//                        linkerConfigurations.add(linkerConfiguration);
+//                    }
+                    Folder parentFolder = folder.getParent();
+                    while (parentFolder != null) {
+                        FolderConfiguration folderConfiguration = parentFolder.getFolderConfiguration(conf);
+                        if (folderConfiguration != null) {
+                            LinkerConfiguration linkerConfiguration = folderConfiguration.getLinkerConfiguration();
+                            if (linkerConfiguration != null) {
+                                linkerConfigurations.add(linkerConfiguration);
+                            }
+                        }
+                        parentFolder = parentFolder.getParent();
+                    }
+
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     output = CppUtils.normalizeDriveLetter(cs, output);
                     String command = ""; // NOI18N
-                    if (linkerConfiguration.getTool().getModified()) {
-                        command += linkerConfiguration.getTool().getValue() + " "; // NOI18N
+                    if (testLinkerConfiguration.getTool().getModified()) {
+                        command += testLinkerConfiguration.getTool().getValue() + " "; // NOI18N
                     } else if (conf.hasCPPFiles(projectDescriptor)) {
                         command += "${LINK.cc}" + " "; // NOI18N
                     } else if (conf.hasFortranFiles(projectDescriptor)) {
@@ -637,18 +656,22 @@ public class ConfigurationMakefileWriter {
                     } else {
                         command += "${LINK.c}" + " "; // NOI18N
                     }
-                    command += "-o " + target + " "; // NOI18N
+                    command += "-o " + output + " "; // NOI18N
                     command += "$^" + " "; // NOI18N
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N
-                    String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
-                    for (int i = 0; i < additionalDependencies.length; i++) {
-                        bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
+
+                    List<String> additionalDependencies = new ArrayList<String>();
+                    for (LinkerConfiguration lc : linkerConfigurations) {
+                        additionalDependencies.addAll(lc.getAdditionalDependencies().getValuesAsList());
                     }
-                    for (LibraryItem lib : linkerConfiguration.getLibrariesConfiguration().getValue()) {
-                        String libPath = lib.getPath();
-                        if (libPath != null && libPath.length() > 0) {
-                            bw.write(output + ": " + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(cs, libPath)) + "\n\n"); // NOI18N
-                        }
+                    for (String dep : additionalDependencies) {
+                        bw.write(output + ": " + dep + "\n\n"); // NOI18N
+                    }
+
+                    for (LinkerConfiguration lc : linkerConfigurations) {
+                        String libraryItems = lc.getLibraryItems();
+                        if(libraryItems != null && !libraryItems.isEmpty())
+                        command += libraryItems + " "; // NOI18N
                     }
 
                     String objectFiles = ""; // NOI18N
@@ -663,8 +686,9 @@ public class ConfigurationMakefileWriter {
                     }
                     objectFiles += "${OBJECTFILES:%.o=%_nomain.o}"; // NOI18N
 
-                    bw.write(target + ": " + objectFiles + "\n"); // NOI18N
-                    bw.write("\t${MKDIR} -p ${TESTDIR}/" + folder.getParent().getPath() + "\n"); // NOI18N
+                    bw.write(output + ": " + objectFiles + "\n"); // NOI18N
+                    String folders = CndPathUtilitities.getDirName(output);
+                    bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
                     bw.write("\t" + command + "\n\n"); // NOI18N
                 }
             }
@@ -818,13 +842,7 @@ public class ConfigurationMakefileWriter {
                             BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                             target = compilerConfiguration.getOutputFile(items[i], conf, false);
                             if (compiler != null && compiler.getDescriptor() != null) {
-                                String fromLinker = ""; // NOI18N
-                                if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-                                    if (conf.getLinkerConfiguration().getPICOption().getValue()) {
-                                        fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
-                                    }
-                                }
-                                command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
+                                command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
                                 if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                                     command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                                 }
@@ -998,11 +1016,11 @@ public class ConfigurationMakefileWriter {
             bw.write("\t@if [ \"${TEST}\" = \"\" ]; \\\n"); // NOI18N
             bw.write("\tthen  \\\n"); // NOI18N
             for (Folder folder : getTests(projectDescriptor)) {
-                String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+                String target = folder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                 bw.write("\t    " + target + " || true; \\\n"); // NOI18N
             }
             bw.write("\telse  \\\n"); // NOI18N
-            bw.write("\t    ${TESTDIR}/${TEST} || true; \\\n"); // NOI18N
+            bw.write("\t    ./${TEST} || true; \\\n"); // NOI18N
             bw.write("\tfi\n\n"); // NOI18N
         }
     }
@@ -1195,10 +1213,9 @@ public class ConfigurationMakefileWriter {
     private static String getTestTargetFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
         StringBuilder testTargets = new StringBuilder();
         if (conf.isCompileConfiguration()) {
-            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             for (Folder folder : getTests(projectDescriptor)) {
                 testTargets.append(" \\\n\t"); // NOI18N
-                String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+                String target = folder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                 testTargets.append(target);
             }
         }
