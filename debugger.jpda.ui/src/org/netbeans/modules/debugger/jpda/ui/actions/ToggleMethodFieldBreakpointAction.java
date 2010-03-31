@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
@@ -60,11 +59,8 @@ import org.netbeans.modules.debugger.jpda.ui.breakpoints.ClassBreakpointPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.FieldBreakpointPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.MethodBreakpointPanel;
 
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.Utilities;
 
 
 /**
@@ -121,17 +117,13 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
      */
     
     public void actionPerformed (ActionEvent evt) {
-        Task[] toggleBpTaskPtr = new Task[] { null };
-        if (!submitFieldOrMethodOrClassBreakpoint(toggleBpTaskPtr)) {
-            Task toggleBpTask = DebuggerManager.getDebuggerManager().getActionsManager().postAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
-            synchronized (toggleBpTaskPtr) {
-                toggleBpTaskPtr[0] = toggleBpTask;
-                toggleBpTaskPtr.notify();
-            }
+        if (!submitFieldOrMethodOrClassBreakpoint()) {
+            // Do the toggle BP action directly in this AWT so that it gets the correct current line number.
+            DebuggerManager.getDebuggerManager().getActionsManager().doAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         }
     }
     
-    private boolean submitFieldOrMethodOrClassBreakpoint(final Task[] toggleBpTaskPtr) {
+    private boolean submitFieldOrMethodOrClassBreakpoint() {
         // 1) get class name & element info
         final String[] classDeclaration = new String[] { null };
         java.awt.IllegalComponentStateException cdex;
@@ -214,24 +206,11 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                     if (cdn != null) {
                         cn = cdn;
                         fn = mn = ms = null;
+                    } else if (fn == null && mn == null) {
+                        return ; // line breakpoint only, which was submitted already.
                     }
-                    if (submitFieldOrMethodOrClassBreakpoint(cn, fn, mn, ms, url, ln)) {
+                    if (submitFieldOrMethodOrClassBreakpoint(cn, fn, mn, ms, null, ln)) {
                         // We've submitted a field or method breakpoint, so delete the line one:
-                        Task toggleBpTask = null;
-                        if (toggleBpTaskPtr != null) {
-                            synchronized (toggleBpTaskPtr) {
-                                if (toggleBpTaskPtr[0] == null) {
-                                    try {
-                                        toggleBpTaskPtr.wait();
-                                    } catch (InterruptedException ex) {}
-                                    toggleBpTask = toggleBpTaskPtr[0];
-                                }
-                            }
-                        }
-                        // Wait for the line breakpoint to be actually submitted
-                        if (toggleBpTask != null) {
-                            toggleBpTask.waitFinished();
-                        }
                         LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
                             url, ln
                         );
@@ -302,7 +281,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         } else {
             return false;
         }
-        if (b == null) {
+        if (b == null && url != null) {
             b = ToggleBreakpointActionProvider.findBreakpoint(url, line);
         }
         DebuggerManager d = DebuggerManager.getDebuggerManager();
