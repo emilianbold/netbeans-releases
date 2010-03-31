@@ -82,7 +82,7 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
 
         for (int pass = 0; pass < 7; pass++) {
             if (pass % 3 == 1) {
-                ProcessUtils.execute(env, "cp", "/usr/bin/ls", remotePath);
+                ProcessUtils.execute(env, "cp", "/bin/ls", remotePath);
                 uploadCount++;
             }
             long currTime = System.currentTimeMillis();
@@ -90,7 +90,7 @@ public class UploadWithMd5CheckTest extends NativeExecutionBaseTestCase {
             firstTime = System.currentTimeMillis() - currTime;
             assertEquals("Error copying " + localFile + " file to " + env + ":" + remotePath, 0, rc);
             assertTrue("File " + env + ":" + remotePath + " should exist at this moment", HostInfoUtils.fileExists(env, remotePath));
-            assertEquals("Uploads count", uploadCount, SftpSupport.getUploadCount());
+            assertEquals("Uploads count on pass " + pass, uploadCount, SftpSupport.getUploadCount());
             System.err.printf("Copying (pass %d) %s to %s took %d ms\n", pass, localFile.getAbsolutePath(), remotePath, firstTime);
         }
         clearRemoteTmpDir();
