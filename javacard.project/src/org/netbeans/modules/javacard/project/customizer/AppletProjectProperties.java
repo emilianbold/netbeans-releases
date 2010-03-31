@@ -171,7 +171,7 @@ public class AppletProjectProperties extends JCProjectProperties {
                         fo = FileUtil.createData(project.getProjectDirectory(),
                                 JCConstants.APPLET_DESCRIPTOR_PATH);
                     }
-                    if (fo != null) {
+                    if (fo != null && System.getProperty("JCProject.test") == null) {
                         InputStream in = fo.getInputStream();
                         try {
                             PEH peh = new PEH();
