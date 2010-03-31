@@ -29,6 +29,8 @@ package org.netbeans.modules.html.editor.gsf.embedding;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -50,6 +52,11 @@ public class CssEmbeddingProviderTest extends TestBase {
         checkVirtualSource("testfiles/embedding/test1.html");
     }
 
+    public void testIssue174241() throws Exception {
+        checkVirtualSource("testfiles/embedding/testIssue174241.html");
+        checkVirtualSource("testfiles/embedding/testIssue174241_1.html");
+    }
+
     private void checkVirtualSource(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
@@ -64,7 +71,7 @@ public class CssEmbeddingProviderTest extends TestBase {
         assertNotNull(providers);
         assertEquals(1, providers.size());
 
-        CssEmbeddingProvider provider = (CssEmbeddingProvider)providers.iterator().next();
+        CssEmbeddingProvider provider = (CssEmbeddingProvider) providers.iterator().next();
 
         List<Embedding> embeddings = provider.getEmbeddings(snapshot);
         assertNotNull(embeddings);

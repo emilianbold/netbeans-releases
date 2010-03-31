@@ -749,10 +749,10 @@ public class FormatVisitor extends DefaultVisitor {
 	ts.movePrevious();
 	addFormatToken(formatTokens);
 	super.visit(program);
-	path.removeFirst();
 	while (ts.moveNext()) {
 	    addFormatToken(formatTokens);
 	}
+	path.removeFirst();
     }
 
     @Override
