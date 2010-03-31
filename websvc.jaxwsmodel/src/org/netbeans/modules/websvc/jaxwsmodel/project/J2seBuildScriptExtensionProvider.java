@@ -45,6 +45,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -88,6 +89,7 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
         if (extension!=null) {
             ProjectManager.mutex().writeAccess(new Runnable() {
+                @Override
                 public void run() {
                     ext.removeExtension(JAXWS_EXTENSION);
                 }
@@ -97,7 +99,7 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
             ProjectManager.getDefault().saveProject(project);
         }
         FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
-        if (jaxws_build!=null) {
+        if (jaxws_build != null) {
             FileLock fileLock = jaxws_build.lock();
             if (fileLock!=null) {
                 try {
@@ -119,6 +121,23 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
         EditableProperties props = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.remove(COMPILE_ON_SAVE_UNSUPPORTED);
         WSUtils.storeEditableProperties(project,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+    }
+
+    @Override
+    public void handleJaxWsModelChanges(JaxWsModel model) throws IOException {
+        AntBuildExtender ext = project.getLookup().lookup(AntBuildExtender.class);
+        if (ext != null) {
+            FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
+            if (model.getClients().length == 0) {
+                // remove nbproject/jaxws-build.xml
+                // remove the jaxws extension
+                removeJaxWsExtension(ext);
+            } else {
+                // re-generate nbproject/jaxws-build.xml
+                // add jaxws extension
+                addJaxWsExtension(ext);
+            }
+        }
     }
 
 }
