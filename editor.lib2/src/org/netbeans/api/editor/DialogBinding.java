@@ -46,33 +46,99 @@ import org.openide.util.Parameters;
  */
 public final class DialogBinding {
 
+    // -----------------------------------------------------------------------
+    // Public implementation
+    // -----------------------------------------------------------------------
+
     /**
      * Bind given component and given file together.
+     *
      * @param fileObject to bind
      * @param offset position at which content of the component will be virtually placed
      * @param length how many characters replace from the original file
      * @param component component to bind
      */
-    public static void bindComponentToFile(final FileObject fileObject, int offset, int length, final JTextComponent component) {
+    public static void bindComponentToFile(FileObject fileObject, int offset, int length, JTextComponent component) {
         Parameters.notNull("fileObject", fileObject); //NOI18N
         Parameters.notNull("component", component); //NOI18N
-        if (!fileObject.isValid() || !fileObject.isData())
+        if (!fileObject.isValid() || !fileObject.isData()) {
             return;
+        }
+        if (offset < 0 || offset > fileObject.getSize()) {
+            throw new IllegalArgumentException("Invalid offset=" + offset + "; file.size=" + fileObject.getSize()); //NOI18N
+        }
+        if (length < 0 || offset + length > fileObject.getSize()) {
+            throw new IllegalArgumentException("Invalid lenght=" + length + "; offset=" + offset + ", file.size=" + fileObject.getSize()); //NOI18N
+        }
         bind(component, null, fileObject, offset, -1, -1, length, fileObject.getMIMEType());
     }
 
     /**
      * Bind given component and given document together.
+     *
      * @param document to bind
      * @param offset position at which content of the component will be virtually placed
      * @param length how many characters replace from the original document
      * @param component component to bind
      */
-    public static void bindComponentToDocument(final Document document, int offset, int length, final JTextComponent component) {
+    public static void bindComponentToDocument(Document document, int offset, int length, JTextComponent component) {
         Parameters.notNull("document", document); //NOI18N
         Parameters.notNull("component", component); //NOI18N
+        if (offset < 0 || offset > document.getLength()) {
+            throw new IllegalArgumentException("Invalid offset=" + offset + "; file.size=" + document.getLength()); //NOI18N
+        }
+        if (length < 0 || offset + length > document.getLength()) {
+            throw new IllegalArgumentException("Invalid lenght=" + length + "; offset=" + offset + ", file.size=" + document.getLength()); //NOI18N
+        }
         bind(component, document, null, offset, -1, -1, length, (String)document.getProperty("mimeType")); //NOI18N
     }
+
+    /**
+     * Bind given component and given file together.
+     * 
+     * @param fileObject to bind
+     * @param line an index (zero based) of the line where to place the component's content
+     * @param column position (number of characters) at the line where to place the content
+     * @param length how many characters replace from the original file
+     * @param component component to bind
+     *
+     * @since 1.24
+     */
+    public static void bindComponentToFile(FileObject fileObject, int line, int column, int length, JTextComponent component) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        Parameters.notNull("component", component); //NOI18N
+        if (!fileObject.isValid() || !fileObject.isData()) {
+            return;
+        }
+        if (line < 0 || column < 0) {
+            throw new IllegalArgumentException("Invalid line=" + line + " or column=" + column); //NOI18N
+        }
+        bind(component, null, fileObject, -1, line, column, length, fileObject.getMIMEType());
+    }
+
+    /**
+     * Bind given component and given document together.
+     *
+     * @param document to bind
+     * @param line an index (zero based) of the line where to place the component's content
+     * @param column position (number of characters) at the line where to place the content
+     * @param length how many characters replace from the original document
+     * @param component component to bind
+     *
+     * @since 1.24
+     */
+    public static void bindComponentToDocument(Document document, int line, int column, int length, JTextComponent component) {
+        Parameters.notNull("document", document); //NOI18N
+        Parameters.notNull("component", component); //NOI18N
+        if (line < 0 || column < 0) {
+            throw new IllegalArgumentException("Invalid line=" + line + " or column=" + column); //NOI18N
+        }
+        bind(component, document, null, -1, line, column, length, (String)document.getProperty("mimeType")); //NOI18N
+    }
+
+    // -----------------------------------------------------------------------
+    // Private implementation
+    // -----------------------------------------------------------------------
 
     // -J-Dorg.netbeans.api.editor.DialogBinding.level=FINE
     private static final Logger LOG = Logger.getLogger(DialogBinding.class.getName());

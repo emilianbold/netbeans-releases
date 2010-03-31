@@ -104,6 +104,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added-line-column-based-dialog-bindings">
+            <summary>Adding line/column based dialog bindings</summary>
+            <version major="1" minor="24"/>
+            <date day="26" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Added <code>DialogBinding.bindComponentToFile(FileObject fileObject, int line, int column, int length, JTextComponent component)</code>
+                and <code>DialogBinding.bindComponentToDocument(Document document, int line, int column, int length, JTextComponent component)</code>.
+            </description>
+            <issue number="181523"/>
+        </change>
+
         <change id="added-toggleNonPrintableCharacters">
             <summary>EditorActionNames.toggleNonPrintableCharacters added.</summary>
             <version major="1" minor="20"/>
