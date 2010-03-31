@@ -1565,7 +1565,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             if (doc != null) {
 
                 if (settingName == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(settingName)) {
-                    textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, EditorPreferencesDefaults.defaultTextLeftMarginWidth);
+                    textLeftMarginWidth = 0; // prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, EditorPreferencesDefaults.defaultTextLeftMarginWidth);
                 }
 
                 if (settingName == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(settingName)) {

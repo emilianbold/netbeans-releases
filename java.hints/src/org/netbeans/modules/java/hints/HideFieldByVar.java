@@ -45,8 +45,8 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class HideFieldByVar extends HideField {
-    /** Creates a new instance of AddOverrideAnnotation */
     public HideFieldByVar() {
+        super("LocalVariableHidesMemberVariable");
     }
     
     @Override
