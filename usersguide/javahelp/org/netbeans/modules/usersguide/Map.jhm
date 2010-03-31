@@ -479,6 +479,7 @@
 <mapID target="collab_about" url="collab/collab_about.html" />
 
 <!-- Collaborative Development - Kenai topics-->
+<mapID target="team_addserver" url="collab/team_addserver.html" />
 <mapID target="kenai_projects" url="collab/about_team_servers.html" />
 <mapID target="kenai_create" url="collab/kenai_create.html" />
 <mapID target="kenai_share" url="collab/kenai_share.html" />
@@ -528,8 +529,7 @@
 <!-- JIRA csh topic for dialog invoked when JIRA is not installed but user clicks My Issues or All Issues in Kenai Dashboard. JIRA support requires adding a plugin from Beta UC -->
 <mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />
 
-<!-- id for help button in login to netbeans dialog that is invoked when reporting an issue from the Help menu.
-TODO: Not sure if this dialog needs a help button.
-<mapID target="org.netbeans.modules.bugzilla.NBLoginPane" url="collab/issues_about.html" /> -->
+<!-- id for help button in login to netbeans dialog that is invoked when reporting an issue from the Help menu. -->
+<mapID target="org.netbeans.modules.bugzilla.NBLoginPane" url="misc-general/report_nb-issue.html" />
 
 </map>

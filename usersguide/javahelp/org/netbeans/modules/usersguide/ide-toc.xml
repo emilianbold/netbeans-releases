@@ -55,6 +55,7 @@
 <tocitem text="Collaborative Development">
           <tocitem text="About Collaborative Development" target="collab_about" />
           <tocitem text="Using a Team Server" target="kenai_projects" />
+          <tocitem text="Adding a Team Server" target="team_addserver" />
           <tocitem text="Sharing a Local Project" target="kenai_share" />
           <tocitem text="Creating and Opening Projects" target="kenai_create" />
           <tocitem text="Team Project Tasks: Quick Reference" target="kenai_quickref" />

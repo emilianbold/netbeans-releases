@@ -301,8 +301,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                  SwingUtilities.invokeAndWait(awtTask);
             }
         } catch (InterruptedException e) {
-            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.FINE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
+            return;
         } catch (InvocationTargetException e) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);

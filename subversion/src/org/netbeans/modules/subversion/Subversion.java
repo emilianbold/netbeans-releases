@@ -291,7 +291,7 @@ public class Subversion {
             }
         }
 
-        assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!"; // NOI18N
+//        assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!"; // NOI18N
         if (repositoryUrl == null) {
             // XXX #168094 logging
             // preventing NPE in getClient(repositoryUrl, support)
