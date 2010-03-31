@@ -54,6 +54,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -355,6 +356,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -375,6 +377,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
 
         t[0] = rp.post(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
@@ -398,7 +401,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            Jira.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
             JiraCommand cmd = new JiraCommand() {
@@ -439,7 +442,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             repository.getExecutor().execute(cmd);
         } finally {
             if(Jira.LOG.isLoggable(Level.FINE)) {
-                Jira.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                Jira.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
     }
@@ -578,6 +581,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.tableSummaryLabel.setText(
                     NbBundle.getMessage(
@@ -647,18 +651,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.projectLabel.setEnabled(false);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
@@ -666,6 +674,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if(e.getSource() == panel.projectList) {
             onProjectChanged(e);
@@ -673,6 +682,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         fireDataChanged();            // XXX do we need this ???
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
 //        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
 //            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
@@ -682,10 +692,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //        }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
@@ -732,14 +744,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() != KeyEvent.VK_ENTER) {
             return;
@@ -957,6 +972,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -966,6 +982,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
         t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
@@ -989,6 +1006,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onWeb() {
         final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 URL url;
                 try {
@@ -1029,6 +1047,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onMarkSeen() {
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
@@ -1046,6 +1065,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     remove();
                 }
@@ -1082,7 +1102,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 if(values[i] instanceof Project) {
                     projects[i] = (Project) values[i];
                 } else {
-                    Jira.LOG.warning("project list item [" + values[i] + " has wrong type [" + values[i].getClass() + "]. Try to reload attributes." );
+                    Jira.LOG.log(Level.WARNING, "project list item [{0} has wrong type [{1}]. Try to reload attributes.", new Object[]{values[i], values[i].getClass()});
                 }
             }
         }
@@ -1115,9 +1135,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             Version[] vs = p.getVersions();
             if(vs != null) {
-                for (Version v : vs) {
-                    versions.add(v);
-                }
+                versions.addAll(Arrays.asList(vs));
             }
         }
 
@@ -1242,6 +1260,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
+        @Override
         public void run() {
             startQuery();
             try {
@@ -1260,6 +1279,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             task.schedule(0);
         }
 
+        @Override
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
@@ -1268,6 +1288,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return true;
         }
 
+        @Override
         public void notifyData(final Issue issue) {
             if(!query.contains(issue)) {
                 // XXX this is quite ugly - the query notifies an archoived issue
@@ -1285,11 +1306,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
+        @Override
         public void started() {
             counter = 0;
             setIssueCount(counter);
         }
 
+        @Override
         public void finished() { }
 
     }
