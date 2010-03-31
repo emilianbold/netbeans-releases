@@ -101,7 +101,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             if (set.getName().equals("MinGW")) {
                 MinGWSet = set;
             }
-            if (set.getName().equals("Cygwin")) {
+            if (set.getName().equals("Cygwin_4.x")) {
+                CygwinSet = set;
+            }
+            if (set.getName().equals("Cygwin") &&  CygwinSet == null) {
                 CygwinSet = set;
             }
         }

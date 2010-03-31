@@ -95,6 +95,19 @@ public class LinkerConfiguration implements AllOptionsProvider {
         tool = new StringConfiguration(null, ""); // NOI18N
     }
 
+    public boolean getModified() {
+        return getOutput().getModified() ||
+        getAdditionalLibs().getModified() ||
+        getDynamicSearch().getModified() ||
+        getStripOption().getModified() ||
+        getPICOption().getModified() ||
+        getNorunpathOption().getModified() ||
+        getNameassignOption().getModified() ||
+        getAdditionalDependencies().getModified() ||
+        getTool().getModified() ||
+        getLibrariesConfiguration().getModified();
+    }
+
     private String getAdditionalDependenciesPredefined() {
         String pd = "${BUILD_SUBPROJECTS} ${OBJECTFILES}"; // NOI18N
         return pd;
@@ -325,7 +338,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Sheet
-    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf, boolean isQtMode) {
+    public Sheet getGeneralSheet(Project project, MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf, boolean isQtMode, boolean inheritablePropertiesOnly) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         LinkerDescriptor linker = null;
@@ -347,7 +360,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
         set1.setDisplayName(getString("GeneralTxt"));
         set1.setShortDescription(getString("GeneralHint"));
         if (!isQtMode) {
-            set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+            if(!inheritablePropertiesOnly) {
+                set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+            }
             set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
@@ -356,18 +371,20 @@ public class LinkerConfiguration implements AllOptionsProvider {
         sheet.put(set1);
         if (!isQtMode) {
             Sheet.Set set2 = new Sheet.Set();
-            set2.setName("Options"); // NOI18N
-            set2.setDisplayName(getString("OptionsTxt"));
-            set2.setShortDescription(getString("OptionsHint"));
-            set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-            if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
-                set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                    set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
-                    set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+            if(!inheritablePropertiesOnly) {
+                set2.setName("Options"); // NOI18N
+                set2.setDisplayName(getString("OptionsTxt"));
+                set2.setShortDescription(getString("OptionsHint"));
+                set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
+                if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                    set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
+                    if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                        set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
+                        set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+                    }
                 }
+                sheet.put(set2);
             }
-            sheet.put(set2);
             Sheet.Set set3 = new Sheet.Set();
             texts = new String[]{getString("AdditionalDependenciesTxt1"), getString("AdditionalDependenciesHint"), getString("AdditionalDependenciesTxt2"), getString("InheritedValuesTxt")};
             set3.setName("Input"); // NOI18N
@@ -376,13 +393,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set3.put(new OptionsNodeProp(getAdditionalDependencies(), null, new AdditionalDependenciesOptions(), null, ",", texts)); // NOI18N
             sheet.put(set3);
             Sheet.Set set4 = new Sheet.Set();
-            set4.setName("Tool"); // NOI18N
-            set4.setDisplayName(getString("ToolTxt1"));
-            set4.setShortDescription(getString("ToolHint1"));
-            if (linkDriver != null) {
-                set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+            if(!inheritablePropertiesOnly) {
+                set4.setName("Tool"); // NOI18N
+                set4.setDisplayName(getString("ToolTxt1"));
+                set4.setShortDescription(getString("ToolHint1"));
+                if (linkDriver != null) {
+                    set4.put(new StringNodeProp(getTool(), linkDriver, "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+                }
+                sheet.put(set4);
             }
-            sheet.put(set4);
         }
 
         texts = new String[]{getString("LibrariesTxt1"), getString("LibrariesHint"), getString("LibrariesTxt2"), getString("AllOptionsTxt2")};

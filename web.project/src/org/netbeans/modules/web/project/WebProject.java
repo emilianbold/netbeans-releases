@@ -82,6 +82,7 @@ import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor.Task;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1023,7 +1024,7 @@ public final class WebProject implements Project, AntProjectListener {
             try {
                 getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Void>() {
                     public Void run(EjbJarMetadata metadata) throws Exception {
-                        enterpriseBeansListener = new EnterpriseBeansListener();
+                        enterpriseBeansListener = new EnterpriseBeansListener(WebProject.this);
                         metadata.getRoot().getEnterpriseBeans().addPropertyChangeListener(enterpriseBeansListener);
                         return null;
                     }
@@ -2189,13 +2190,25 @@ public final class WebProject implements Project, AntProjectListener {
         }
     }
 
-    private class EnterpriseBeansListener implements PropertyChangeListener{
-        public void propertyChange(final PropertyChangeEvent evt) {
-            RequestProcessor.getDefault().post(new Runnable() {
+    private static class EnterpriseBeansListener implements PropertyChangeListener{
+        private static final RequestProcessor rp = new RequestProcessor();
+        private Task upgradeTask = null;
+        private WebProject project;
+
+        public EnterpriseBeansListener(WebProject project) {
+            this.project = project;
+        }
+
+        public synchronized void propertyChange(final PropertyChangeEvent evt) {
+            if (upgradeTask != null){
+                upgradeTask.schedule(100);
+                return;
+            }
+            upgradeTask = rp.post(new Runnable() {
                 public void run() {
-                    WebProjectUtilities.upgradeJ2EEProfile(WebProject.this);
+                    WebProjectUtilities.upgradeJ2EEProfile(project);
                 }
-            });
+            }, 100);
         }
     }
 
