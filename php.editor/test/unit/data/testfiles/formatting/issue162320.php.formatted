@@ -1,11 +1,12 @@
 <?
+
 if (true) {
   // test
   echo 1;
 }
 
 class class_name {
-  
+
   /**
    * PHPDoc
    */
@@ -13,6 +14,6 @@ class class_name {
     // cmt
     echo 1;
   }
-}
 
+}
 ?>

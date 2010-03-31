@@ -80,7 +80,7 @@ import org.netbeans.modules.terminal.api.IOConnect;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.netbeans.modules.terminal.api.IOVisibilityControl;
 
-import org.netbeans.modules.terminal.ui.TermAdvancedOption;
+import org.netbeans.modules.terminal.TermAdvancedOption;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -109,14 +109,6 @@ import org.openide.util.lookup.Lookups;
  * @author ivan
  */
 public final class Terminal extends JComponent {
-
-//    /**
-//     * Communicates state changes to container (TermTopComponent).
-//     */
-//    interface TerminalListener {
-//        void reaped(Terminal who);
-//        void setTitle(Terminal who, String title);
-//    }
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 

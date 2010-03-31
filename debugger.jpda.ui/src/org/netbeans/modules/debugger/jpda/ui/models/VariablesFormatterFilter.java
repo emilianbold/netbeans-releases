@@ -288,7 +288,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                             java.lang.reflect.Method evaluateMethod = ov.getClass().getMethod("evaluate", String.class);
                             evaluateMethod.setAccessible(true);
                             Variable ret = (Variable) evaluateMethod.invoke(ov, expandTestCode);
-                            childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
+                            if (ret != null) {
+                                childrenExpandTest.put(ov, !"true".equals(ret.getValue()));
+                            }
                         } catch (java.lang.reflect.InvocationTargetException itex) {
                             Throwable t = itex.getTargetException();
                             if (t instanceof InvalidExpressionException) {

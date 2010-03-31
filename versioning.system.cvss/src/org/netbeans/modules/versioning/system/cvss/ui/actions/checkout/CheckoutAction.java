@@ -173,7 +173,7 @@ public final class CheckoutAction extends SystemAction {
         final String modules = wizard.getModules();
         final String workDir = wizard.getWorkingDir();
         final String cvsRoot = wizard.getCvsRoot();
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 checkout(cvsRoot, modules, tag, workDir, true, null);
             }

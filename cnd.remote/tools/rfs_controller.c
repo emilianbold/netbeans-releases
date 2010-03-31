@@ -231,6 +231,16 @@ static int create_dir(const char* path) {
     return true; // TODO: check 
 }
 
+static int create_lnk(const char* path, const char* lnk_src) {
+    trace("\tcreating a symlink %s -> %s\n", path, lnk_src);
+    int rc = symlink(lnk_src, path);
+    if (rc != 0) {
+        // TODO: report errors? then check existence first
+        trace("\t\terror creating a symlink %s -> %s\n", path, lnk_src);
+    }
+    return true; // TODO: check
+}
+
 static int create_file(const char* path, int size) {
     trace("\tcreating file %s %d\n", path, size);
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
@@ -285,6 +295,7 @@ static enum file_state char_to_state(char c) {
         case UNCONTROLLED:
         case MODIFIED:
         case DIRECTORY:
+        case LINK:
         case INEXISTENT:
             return c;
         default:
@@ -297,7 +308,7 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
     if (*state == -1) {
         return false;
     }
-    if (*state == DIRECTORY) { // directory
+    if (*state == DIRECTORY || *state == LINK) { // directory
         // format is as in printf("D %s", path)
         *path = buffer + 2;
         *file_size = 0;
@@ -391,6 +402,10 @@ static int init_files() {
             break;
         } else if (state == DIRECTORY) { // directory
             create_dir(path);
+        } else if (state == LINK) { // symbolic link
+            char lnk_src[bufsize]; // it is followed by a line that contains the link source
+            fgets(lnk_src, sizeof lnk_src, stdin);
+            create_lnk(path, lnk_src);
         } else { // plain file
             int touch = false;
             if (state == INITIAL) {

@@ -221,6 +221,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
+    public boolean isProtectedModeOwner(final Thread thread) {
+        return getWorker().isProtectedModeOwner(thread);
+    }
+
     public boolean isIndexer() {
         return inIndexer.get() == Boolean.TRUE;
     }
@@ -3287,7 +3291,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 assert work != null;
                 if (!allCancelled) {
                       if (wait && Utilities.holdsParserLock()) {
-                        if (protectedMode == 0) {
+                        if (protectedOwners.isEmpty()) {
                             enforceWork = true;
                         } else {
                             // XXX: #176049, this may happen now when versioning uses
@@ -3321,7 +3325,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
                         }
                         
-                        if (!scheduled && protectedMode == 0) {
+                        if (!scheduled && protectedOwners.isEmpty()) {
                             scheduled = true;
                             Utilities.scheduleSpecialTask(this);
                         }
@@ -3368,20 +3372,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public boolean isWorking() {
             synchronized (todo) {
-                return scheduled || protectedMode > 0;
+                return scheduled || !protectedOwners.isEmpty();
             }
         }
 
         public void enterProtectedMode() {
             synchronized (todo) {
-                protectedMode++;
-                LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedMode); //NOI18N
+                protectedOwners.add(Thread.currentThread().getId());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedOwners.size()); //NOI18N
+                }
             }
         }
 
         public void exitProtectedMode(Runnable followupTask) {
             synchronized (todo) {
-                if (protectedMode <= 0) {
+                if (protectedOwners.isEmpty()) {
                     throw new IllegalStateException("Calling exitProtectedMode without enterProtectedMode"); //NOI18N
                 }
 
@@ -3392,11 +3398,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     followupTasks.add(followupTask);
                 }
+                protectedOwners.remove(Thread.currentThread().getId());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedOwners.size()); //NOI18N
+                }
 
-                protectedMode--;
-                LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedMode); //NOI18N
-
-                if (protectedMode == 0) {
+                if (protectedOwners.isEmpty()) {
                     // in normal mode again, restart all delayed jobs
                     final List<Runnable> tasks = followupTasks;
 
@@ -3428,7 +3435,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public boolean isInProtectedMode() {
             synchronized (todo) {
-                return protectedMode > 0;
+                return !protectedOwners.isEmpty();
+            }
+        }
+
+        public boolean isProtectedModeOwner (final Thread thread) {
+            synchronized (todo) {
+                return protectedOwners.contains(thread.getId());
             }
         }
 
@@ -3524,7 +3537,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean scheduled = false;
         private boolean allCancelled = false;
         private boolean cancelled = false;
-        private int protectedMode = 0;
+        private List<Long> protectedOwners = new LinkedList<Long>();
         private List<Runnable> followupTasks = null;
 
         private void _run() {
@@ -3578,7 +3591,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private Work getWork () {
             synchronized (todo) {
                 Work w;
-                if (!cancelled && protectedMode == 0 && todo.size() > 0) {
+                if (!cancelled && protectedOwners.isEmpty() && todo.size() > 0) {
                     w = todo.remove(0);
                 } else {
                     w = null;

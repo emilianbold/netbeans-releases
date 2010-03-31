@@ -39,12 +39,14 @@
 
 package org.netbeans.modules.php.symfony.commands;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -146,6 +148,11 @@ public class HelpLineProcessorTest extends NbTestCase {
 
         @Override
         public PhpModuleProperties getProperties() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

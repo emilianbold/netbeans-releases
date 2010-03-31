@@ -388,7 +388,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
     }
 
-    static class JarSource extends Source {
+    static class JarSource extends Source implements ArchiveResources {
         private String resPrefix;
         private File file;
 
@@ -408,6 +408,7 @@ public class JarClassLoader extends ProxyClassLoader {
             this.file = file;
         }
 
+        @Override
         public String getPath() {
             return file.getPath();
         }
@@ -481,6 +482,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         
+        @Override
         protected URL doGetResource(String name) throws IOException  {
             byte[] buf = archive.getData(this, name);
             if (buf == null) return null;
@@ -488,14 +490,16 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return new URL(resPrefix + new URI(null, name, null).getRawPath());
             } catch (URISyntaxException x) {
-                throw (IOException) new IOException(name + " in " + resPrefix + ": " + x.toString()).initCause(x);
+                throw new IOException(name + " in " + resPrefix + ": " + x.toString(), x);
             }
         }
         
+        @Override
         protected byte[] readClass(String path) throws IOException {
             return archive.getData(this, path);
         }
         
+        @Override
         public byte[] resource(String path) throws IOException {
             if (nonexistentResources.contains(path)) {
                 return null;
@@ -530,6 +534,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
 
+        @Override
         protected void listCoveredPackages(Set<String> known, StringBuffer save) {
             try {
                 JarFile src = getJarFile("pkg");

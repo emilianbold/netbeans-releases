@@ -95,6 +95,7 @@ import org.openide.util.RequestProcessor.Task;
 public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(CompilerSetManagerImpl.class.getName(), 1);
 
     //private static final HashMap<ExecutionEnvironment, CompilerSetManagerImpl> managers = new HashMap<ExecutionEnvironment, CompilerSetManagerImpl>();
     //private static final Object MASTER_LOCK = new Object();
@@ -144,7 +145,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             });
             log.log(Level.FINE, "CSM.init: initializing remote compiler set @{0} for: {1}", new Object[]{System.identityHashCode(CompilerSetManagerImpl.this), toString()});
             progressHandle.start();
-            RequestProcessor.getDefault().post(new NamedRunnable(progressMessage) {
+            RP.post(new NamedRunnable(progressMessage) {
                 protected @Override void runImpl() {
                     threadRef.set(Thread.currentThread());
                     try {
@@ -305,7 +306,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", executionEnvironment.getDisplayName()); // NOI18N
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
         progressHandle.start();
-        initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+        initializationTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 initCompilerSetsImpl(dirlist);
@@ -572,7 +573,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 CompilerSetReporter.report("CSM_Done"); //NOI18N
             }
             // NB: function itself is synchronized!
-            initializationTask = RequestProcessor.getDefault().post(new Runnable() {
+            initializationTask = RP.post(new Runnable() {
 
                 @SuppressWarnings("unchecked")
                 @Override

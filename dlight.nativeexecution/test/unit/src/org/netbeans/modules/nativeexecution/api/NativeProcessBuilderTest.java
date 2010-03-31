@@ -105,7 +105,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
      * Test of setExecutable method, of class NativeProcessBuilder.
      */
     @Test
-    public void testSetExecutable() throws CancellationException, IOException {
+    public void testSetExecutable() throws CancellationException, IOException, InterruptedException {
         System.out.println("setExecutable: ..."); // NOI18N
         ExecutionEnvironment ee;
 
@@ -129,7 +129,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         }
     }
 
-    private void testSetCommandLine(ExecutionEnvironment ee) throws IOException {
+    private void testSetCommandLine(ExecutionEnvironment ee) throws IOException, InterruptedException {
         if (ee == null) {
             System.out.println("null ExecutionEnvironment - skip"); // NOI18N
             return;
@@ -251,7 +251,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         return null;
     }
 
-    private void testSetExecutable(ExecutionEnvironment ee) throws IOException {
+    private void testSetExecutable(ExecutionEnvironment ee) throws IOException, InterruptedException {
         if (ee == null) {
             System.out.println("null ExecutionEnvironment - skip"); // NOI18N
             return;
@@ -364,7 +364,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
      * Test of setCommandLine method, of class NativeProcessBuilder.
      */
     @Test
-    public void testSetCommandLine() throws IOException {
+    public void testSetCommandLine() throws IOException, InterruptedException {
         System.out.println("setCommandLine: ..."); // NOI18N
         ExecutionEnvironment ee;
 

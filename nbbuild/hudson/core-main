@@ -1,112 +1,83 @@
 #!/bin/sh
 
-[ "$action" = "build" ] || [ "$action" = "sync" ] || exit 101
-
 ANT_OPTS="-Xmx512m"
 export ANT_OPTS
 
-testmodule() {
-    ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true -Dcontinue.after.failing.tests=true || exit
-}
-
-if [ "$action" = "build" ]; then
-    ant build || exit
-    ant commit-validation -Dcontinue.after.failing.tests=true || exit
-    ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
-    testmodule ant.freeform
-    testmodule api.java
-    testmodule api.java.classpath
-    testmodule api.progress
-    testmodule api.visual
-    testmodule apisupport.crudsample
-    testmodule apisupport.feedreader
-    testmodule apisupport.harness
-    testmodule apisupport.osgidemo
-    testmodule apisupport.paintapp
-    testmodule apisupport.project
-    testmodule autoupdate.services
-    testmodule autoupdate.ui
-    testmodule core.execution
-    testmodule core.ide
-    testmodule core.kit
-    testmodule core.multiview
-    testmodule core.netigso
-    testmodule core.output2
-    testmodule core.startup
-    testmodule core.ui
-    testmodule core.windows
-    testmodule editor.mimelookup
-    testmodule editor.mimelookup.impl
-    testmodule favorites
-    testmodule java.api.common
-    testmodule java.freeform
-    testmodule java.j2seplatform
-    testmodule java.j2seproject
-    testmodule java.platform
-    testmodule java.project
-    testmodule javahelp
-    testmodule keyring
-    testmodule masterfs
-    testmodule maven
-    testmodule maven.embedder
-    testmodule maven.indexer
-    testmodule maven.model
-    testmodule nbjunit
-    testmodule o.apache.tools.ant.module
-    testmodule o.n.bootstrap
-    testmodule o.n.core
-    testmodule o.n.insane
-    testmodule o.n.swing.tabcontrol
-    testmodule openide.actions
-    testmodule openide.awt
-    testmodule openide.compat
-    testmodule openide.dialogs
-    testmodule openide.execution
-    testmodule openide.explorer
-    testmodule openide.filesystems
-    testmodule openide.loaders
-    testmodule openide.modules
-    testmodule openide.nodes
-    testmodule openide.options
-    testmodule openide.text
-    testmodule openide.util
-    testmodule openide.util.enumerations
-    testmodule openide.windows
-    testmodule options.api
-    testmodule options.keymap
-    testmodule progress.ui
-    testmodule project.ant
-    testmodule project.libraries
-    testmodule projectapi
-    testmodule projectimport.eclipse.core
-    testmodule projectui
-    testmodule projectuiapi
-    testmodule queries
-    testmodule sendopts
-    testmodule settings
-    testmodule spi.quicksearch
-    testmodule tasklist.todo
-    testmodule tasklist.ui
-fi
-
-if [ "$action" = "sync" ]; then
-    [ -n "$push_username" ] || exit 102
-    [ -n "$push_password" ] || exit 103
-    HGMERGE=merge
-    export HGMERGE
-    if [ -z "$push_repo" ]; then
-        push_repo="core-main"
-    fi
-    rm -rf real.workspace
-    hg clone . real.workspace || exit 1
-    cd real.workspace
-    HEADS=`hg heads --template "{node}\n" | wc -l`
-    if [ $HEADS = 2 ]; then
-      hg merge
-      hg ci -u "$push_username"@netbeans.org -m "Automated merge"
-      hg up -C
-    fi
-    hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/"$push_repo"
-    hg push https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
-    exit 0
-fi
+ant build || exit
+ant commit-validation -Dcontinue.after.failing.tests=true || exit
+ant -Dtest-unit-sys-prop.ignore.random.failures=true localtest || exit
+ant -Dtest-unit-sys-prop.ignore.random.failures=true -Dtest.type=test-unit -Dtest.modules=\
+ant.freeform,\
+api.java,\
+api.java.classpath,\
+api.progress,\
+api.visual,\
+apisupport.crudsample,\
+apisupport.feedreader,\
+apisupport.harness,\
+apisupport.osgidemo,\
+apisupport.paintapp,\
+apisupport.project,\
+autoupdate.services,\
+autoupdate.ui,\
+core.execution,\
+core.ide,\
+core.kit,\
+core.multiview,\
+core.netigso,\
+core.output2,\
+core.startup,\
+core.ui,\
+core.windows,\
+editor.mimelookup,\
+editor.mimelookup.impl,\
+favorites,\
+java.api.common,\
+java.freeform,\
+java.j2seplatform,\
+java.j2seproject,\
+java.platform,\
+java.project,\
+javahelp,\
+keyring,\
+masterfs,\
+maven,\
+maven.embedder,\
+maven.indexer,\
+maven.model,\
+nbjunit,\
+o.apache.tools.ant.module,\
+o.n.bootstrap,\
+o.n.core,\
+o.n.insane,\
+o.n.swing.tabcontrol,\
+openide.actions,\
+openide.awt,\
+openide.compat,\
+openide.dialogs,\
+openide.execution,\
+openide.explorer,\
+openide.filesystems,\
+openide.loaders,\
+openide.modules,\
+openide.nodes,\
+openide.options,\
+openide.text,\
+openide.util,\
+openide.util.enumerations,\
+openide.windows,\
+options.api,\
+options.keymap,\
+progress.ui,\
+project.ant,\
+project.libraries,\
+projectapi,\
+projectimport.eclipse.core,\
+projectui,\
+projectuiapi,\
+queries,\
+sendopts,\
+settings,\
+spi.quicksearch,\
+tasklist.todo,\
+tasklist.ui test || exit

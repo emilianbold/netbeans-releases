@@ -70,6 +70,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.project.uiapi.SavingProjectDataPanel;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -183,7 +184,9 @@ public class J2EEValidation extends JellyTestCase {
         Node jspNode = new Node(projectRootNode, webPagesLabel+"|index.jsp"); // NOI18N
         // insert error statement
         editor.insert("<%= nonExistentVar %>", 12, 1);
-        
+
+        WatchProjects.waitScanFinished();
+
         CompileJavaAction compileAction = new CompileJavaAction();
         compileAction.perform(jspNode);
         // "SampleWebProject (compile-single-jsp)"

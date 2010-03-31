@@ -107,7 +107,6 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.terminal.api</package>
-                <package>org.netbeans.modules.terminal.ui</package>
             </public-packages>
         </data>
     </configuration>

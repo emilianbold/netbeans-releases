@@ -26,13 +26,20 @@
     with your module:
      
     <ul>    
-        <li><b>Libraries.</b> To bundle a class library so that it
-        appears in the user's Library Manager, you need a Java SE library descriptor.
-        <p>A Java SE library descriptor is an XML file that, when registered in the <tt>layer.xml</tt> file,
-        adds a new class library to the IDE's
-        Library Manager. Whenever the module containing the library descriptor 
-        is enabled, the library is present in the Library Manager. For example,
-        Struts support provides the Struts libraries in the Library Manager.
+        <li><b>Libraries.</b> External JARs can be included in your NetBeans
+        Platform modules in various ways:
+        <ul>
+            <li>If you are extending the IDE, you can add a new library
+                to the Library Manager, which enables the user to add
+                the library to the classpath of their application.
+                For this you need a Java SE library
+                descriptor, which the IDE can create for you.
+            <li>If you are creating extensions to the IDE or
+                are creating your own applications on the NetBeans Platform,
+                you can include external JARs, NetBeans modules, and OSGi bundles.
+                You can also include groups and combinations of these items.
+                The IDE provides support for all of these scenarios.
+        </ul>
         <p>For details, see <a href="../filelevel_create/create_j2se_library_desc.html">Bundling a Library</a>.
         
     

@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.google.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class GeocoderResponseSchemaTest extends SchemaTest {
+public class GeocoderResponseSchemaTest extends SchemaTestBase {
 
     public GeocoderResponseSchemaTest() {
         super();

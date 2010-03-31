@@ -352,6 +352,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (objectReference != null) {
                     type = objectReference.referenceType();
                 } else {
+                    Assert.error(arg0, "invokeInstanceMethodAsStatic", methodName);
                     type = (ReferenceType) evaluationContext.getFrame().location().declaringType();
                 }
             }

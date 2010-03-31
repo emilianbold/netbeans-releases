@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;

@@ -54,7 +54,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -68,7 +67,6 @@ import javax.swing.JTable;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -87,6 +85,7 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -190,7 +189,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     }
     
     private void updateEncodingCombo() {
-        encodingComboBox.setModel(new EncodingModel());
+        String enc = model.getEncoding();
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(enc));
     }
     
     private String getSourceLevelValue(int index) {
@@ -478,7 +478,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         encodingLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Name")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Desc")); // NOI18N
 
-        encodingComboBox.setRenderer(new EncodingRenderer());
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 encodingComboBoxActionPerformed(evt);
@@ -1030,65 +1030,6 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
             if (sf.label.length() == 0) {
                 sf.label = getDefaultLabel(sf.location, tests);
             }
-        }
-        
-    }
-    
-    private class EncodingModel extends DefaultComboBoxModel {
-        public EncodingModel() {
-            Object selEnc = null;
-            if (model.getEncoding() == null) {
-                addElement(ProjectModel.NO_ENCODING);
-                selEnc = ProjectModel.NO_ENCODING;
-            }
-            for (Charset cset : Charset.availableCharsets().values()) {
-                if (cset.name().equals(model.getEncoding())) {
-                    selEnc = cset;
-                }
-                addElement(cset);
-            }
-            if (isWizard) {
-                setSelectedItem(FileEncodingQuery.getDefaultEncoding());
-            } else {
-                if (selEnc != null) {
-                    setSelectedItem(selEnc);
-                }
-            }
-        }
-    }
-    
-    private static class EncodingRenderer extends DefaultListCellRenderer implements UIResource {
-        
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-        
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, 
-                int index, boolean isSelected, boolean cellHasFocus) {
-            setName("ComboBox.listRenderer"); // NOI18N
-            String dispName = null;
-            if (value instanceof Charset) {
-                dispName = ((Charset) value).displayName();
-            } else {
-                dispName = value.toString();
-            }
-            setText(dispName);
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-        
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
         
     }

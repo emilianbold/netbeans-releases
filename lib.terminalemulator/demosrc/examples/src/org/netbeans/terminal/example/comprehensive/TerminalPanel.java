@@ -11,7 +11,12 @@
 
 package org.netbeans.terminal.example.comprehensive;
 
-import org.netbeans.terminal.example.AllowClose;
+import org.netbeans.terminal.example.Config;
+import org.netbeans.terminal.example.Config.AllowClose;
+import org.netbeans.terminal.example.Config.Provider;
+import org.netbeans.terminal.example.Config.DispatchThread;
+import org.netbeans.terminal.example.Config.Execution;
+import org.netbeans.terminal.example.Config.IOShuttling;
 
 /**
  *
@@ -19,50 +24,44 @@ import org.netbeans.terminal.example.AllowClose;
  */
 public final class TerminalPanel extends javax.swing.JPanel {
 
-    public static enum Provider {
-	DEFAULT,
-	TERM,
-    }
-
-    public static enum DispatchThread {
-	EDT,
-	RP,
-    }
-
-    public static enum Execution {
-	RICH,
-	NATIVE,
-    }
-
-    public static enum IOShuttling {
-	INTERNAL,
-	EXTERNAL,
-    }
-
     /** Creates new form TerminalPanel */
     public TerminalPanel() {
         initComponents();
     }
 
-    public String getCommand() {
+    public Config getConfig() {
+	return new Config(
+		getCommand(),
+		getContainerProvider(),
+		getIOProvider(),
+		getAllowClose(),
+		getThread(),
+		getExecution(),
+		getIOShuttling(),
+		isRestartable(),
+		isHUPOnClose()
+		);
+    }
+
+    private String getCommand() {
 	return commandTextField.getText();
     }
 
-    public Provider getContainerProvider() {
+    private Provider getContainerProvider() {
 	if (containerProviderRadioButton_DEFAULT.isSelected())
 	    return Provider.DEFAULT;
 	else
 	    return Provider.TERM;
     }
 
-    public Provider getIOProvider() {
+    private Provider getIOProvider() {
 	if (ioProviderRadioButton_DEFAULT.isSelected())
 	    return Provider.DEFAULT;
 	else
 	    return Provider.TERM;
     }
 
-    public AllowClose getAllowClose() {
+    private AllowClose getAllowClose() {
 	if (allowCloseRadioButton_ALWAYS.isSelected())
 	    return AllowClose.ALWAYS;
 	else if (allowCloseRadioButton_NEVER.isSelected())
@@ -73,29 +72,29 @@ public final class TerminalPanel extends javax.swing.JPanel {
 	    return AllowClose.ALWAYS;
     }
 
-    public DispatchThread getThread() {
+    private DispatchThread getThread() {
 	if (threadRadioButton_EDT.isSelected())
 	    return DispatchThread.EDT;
 	else
 	    return DispatchThread.RP;
     }
 
-    public Execution getExecution() {
+    private Execution getExecution() {
 	if (executionRadioButton_RICH.isSelected())
 	    return Execution.RICH;
 	else
 	    return Execution.NATIVE;
     }
 
-    public boolean isRestartable() {
+    private boolean isRestartable() {
 	return restartableCheckBox.isSelected();
     }
 
-    public boolean isHUPOnClose() {
+    private boolean isHUPOnClose() {
 	return hupOnCloseCheckBox.isSelected();
     }
 
-    public IOShuttling getIOShuttling() {
+    private IOShuttling getIOShuttling() {
 	if (ioShutlingRadioButton_INTERNAL.isSelected())
 	    return IOShuttling.INTERNAL;
 	else

@@ -214,9 +214,15 @@ final class OutputUtils {
                                     line.lastIndexOf(')'));
 
         /* Get the method name and the class name: */
+        String clsName, methodName;
         int lastDotIndex = beforeBrackets.lastIndexOf('.');
-        String clsName = beforeBrackets.substring(0, lastDotIndex);
-        String methodName = beforeBrackets.substring(lastDotIndex + 1);
+        if (lastDotIndex != -1) {
+            clsName = beforeBrackets.substring(0, lastDotIndex);
+            methodName = beforeBrackets.substring(lastDotIndex + 1);
+        } else {
+            clsName = beforeBrackets;
+            methodName = "";
+        }
 
         /* Get the file name and line number: */
         String fileName = null;

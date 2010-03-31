@@ -118,6 +118,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
 
+    private static final RequestProcessor RP = new RequestProcessor("DirChooser Update Worker"); // NOI18N
+
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
     private JPanel centerPanel;
@@ -1100,7 +1102,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
     private void initUpdateWorker () {
         updateWorker = new UpdateWorker();
-        RequestProcessor.getDefault().post(updateWorker);
+        RP.post(updateWorker);
         fileChooser.addActionListener(updateWorker);
     }
     

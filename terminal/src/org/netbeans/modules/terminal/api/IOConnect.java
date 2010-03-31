@@ -49,7 +49,7 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOConnect {
 
-    public static final String PROP_CONNECTED = "IOConnect.PROP_CONNECTED";
+    public static final String PROP_CONNECTED = "IOConnect.PROP_CONNECTED"; // NOI18N
 
     private static IOConnect find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
@@ -72,7 +72,7 @@ public abstract class IOConnect {
      * IOTerm.disconnect() or disconnectAll() are called.
      * <b>
      * Only a "disconnected" IO is eligible for reuse via
-     * {@link IOPRovider.getIO(String, boolean)}
+     * {@link org.openide.windows.IOProvider#getIO(String, boolean)}
      * @param io
      */
     public static boolean isConnected(InputOutput io) {
@@ -87,7 +87,7 @@ public abstract class IOConnect {
      * Disconnects all of getIn() and getOut() and any streams connected
      * via IOTerm.connect().
      * @param io
-     * @param continuation See {@link IOTerm.disconnect}.
+     * @param continuation See {@link IOTerm#disconnect}.
      */
     public static void disconnectAll(InputOutput io, Runnable continuation) {
 	IOConnect ioc = find(io);

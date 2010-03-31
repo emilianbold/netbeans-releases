@@ -96,7 +96,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -130,6 +130,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
     private File nativeProjectFolder;
     private File projectFolder;
     private String projectName;
@@ -361,7 +362,7 @@ public class ImportProject implements PropertyChangeListener {
                 //if (setAsMain) {
                 //    OpenProjects.getDefault().setMainProject(makeProject);
                 //}
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -398,7 +399,7 @@ public class ImportProject implements PropertyChangeListener {
                 if (runMake) {
                     makeProject(true, null);
                 } else {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {

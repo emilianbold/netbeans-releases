@@ -195,3 +195,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-openide-util-lookup" value="${javadoc.web.root}/org-openide-util-lookup"/>
 <property name="javadoc.docs.org-netbeans-modules-terminal" value="${javadoc.web.root}/org-netbeans-modules-terminal"/>
 <property name="javadoc.docs.org-netbeans-modules-dlight-nativeexecution" value="${javadoc.web.root}/org-netbeans-modules-dlight-nativeexecution"/>
+<property name="javadoc.docs.org-netbeans-core-netigso" value="${javadoc.web.root}/org-netbeans-core-netigso"/>

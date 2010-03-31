@@ -245,7 +245,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     /* OLD
     @Override
     protected void addImpl(Component comp, Object constraints, int index) {
-//        System.out.printf("TermTopComponent.addImpl(%s, %s, %s)\n", comp, constraints, index);
         if (comp instanceof JTabbedPane) {
             assert comp == tabbedPane;
             super.addImpl(comp, BorderLayout.CENTER, index);

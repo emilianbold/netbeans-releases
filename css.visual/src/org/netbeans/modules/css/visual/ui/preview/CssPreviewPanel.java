@@ -179,16 +179,23 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
 
         @Override
         public void publish(LogRecord record) {
+            Level level = record.getLevel();
             if (LOG_FINE) {
-                //set log level to INFO to prevent the exceptions
+                //set log level to FILE to prevent the exceptions
                 //popping up in a netbeans exceptions dialog
                 record.setLevel(Level.FINE);
                 LOGGER.log(record);
+            } else {
+                //just swallow the log record if FINE logging disabled
+            }
+
+            //log the important messages with INFO level and show them in the status bar
+            if(level.intValue() >= Level.WARNING.intValue()) {
                 //log the exception message to output
                 LOGGER.log(Level.INFO, record.getMessage());
                 //...and to the status bar
+                StatusDisplayer.getDefault().setStatusText(record.getMessage());
             }
-            StatusDisplayer.getDefault().setStatusText(record.getMessage());
         }
 
         @Override
