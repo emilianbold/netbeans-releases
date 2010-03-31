@@ -1359,12 +1359,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
      * @param enable
      */
     void enableFields(boolean enable) {
-//        summaryComboBox.setEnabled(enable);
-//        commentComboBox.setEnabled(enable);
-//        keywordsComboBox.setEnabled(enable);
-//        summaryTextField.setEnabled(enable);
-//        commentTextField.setEnabled(enable);
-//        keywordsTextField.setEnabled(enable);
         summaryLabel.setEnabled(enable);
         whiteboardLabel.setEnabled(enable);
         commentLabel.setEnabled(enable);
@@ -1372,28 +1366,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         keywordsButton.setEnabled(enable);
         
         productLabel.setEnabled(enable);
-//        productList.setEnabled(enable);
         componentLabel.setEnabled(enable);
-//        componentList.setEnabled(enable);
         versionLabel.setEnabled(enable);
-//        versionList.setEnabled(enable);
         statusLabel.setEnabled(enable);
         severityLabel.setEnabled(enable);
-//        statusList.setEnabled(enable);
         resolutionLabel.setEnabled(enable);
-//        resolutionList.setEnabled(enable);
         priorityLabel.setEnabled(enable);
         tmLabel.setEnabled(enable);
         issueTypeLabel.setEnabled(enable);
-//        priorityList.setEnabled(enable);
 
         peopleLabel.setEnabled(enable);
-//        peopleComboBox.setEnabled(enable);
         peopleTextField.setEnabled(enable);
-//        bugAssigneeCheckBox.setEnabled(enable);
-//        reporterCheckBox.setEnabled(enable);
-//        ccCheckBox.setEnabled(enable);
-//        commenterCheckBox.setEnabled(enable);
 
         searchButton.setEnabled(enable);
         saveButton.setEnabled(enable);
@@ -1402,15 +1385,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         refreshConfigurationButton.setEnabled(enable);
 
         changedLabel.setEnabled(enable);
-//        changedFromTextField.setEnabled(enable);
         changedAndLabel.setEnabled(enable);
-//        changedToTextField.setEnabled(enable);
         changedWhereLabel.setEnabled(enable);
-//        changedList.setEnabled(enable);
         changedBlaBlaLabel.setEnabled(enable);
         changedHintLabel.setEnabled(enable);
         refreshCheckBox.setEnabled(enable);
-//        newValueTextField.setEnabled(enable);
     }
 
     void switchQueryFields(boolean showAdvanced) {
