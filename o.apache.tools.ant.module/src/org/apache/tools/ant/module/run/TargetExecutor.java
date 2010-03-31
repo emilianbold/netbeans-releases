@@ -93,6 +93,8 @@ import org.w3c.dom.Element;
  */
 public final class TargetExecutor implements Runnable {
 
+    private static final RequestProcessor RP = new RequestProcessor(TargetExecutor.class.getName());
+
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
@@ -367,7 +369,7 @@ public final class TargetExecutor implements Runnable {
             task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
-        RequestProcessor.getDefault().post(wrapper);
+        RP.post(wrapper);
         return wrapper;
     }
     
