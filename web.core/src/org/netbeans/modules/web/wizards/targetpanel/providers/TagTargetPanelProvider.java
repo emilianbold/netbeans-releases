@@ -461,8 +461,14 @@ class TagUIManager extends XmlOptionPanelManager {
         }    
         
         if (getWebModule()!=null) {
-            if (target==null || !target.startsWith(TAG_FILE_FOLDER))
-                field.setText(TAG_FILE_FOLDER+"/"); // NOI18N
+            boolean isWebInfLocation = panel.getComponent().getSelectedFolder().
+                equals("WEB-INF");  // NOI18N
+            String folder = "";
+            if (!isWebInfLocation) {
+                folder = "WEB-INF/";    //NOI18N
+            }
+            if (target==null || !target.startsWith(folder+TAG_FILE_FOLDER))
+                field.setText(folder+TAG_FILE_FOLDER+"/"); // NOI18N
             else
                 field.setText(target);
         } else {

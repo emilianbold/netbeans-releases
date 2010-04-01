@@ -136,6 +136,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (!changed) {
             changed = true;

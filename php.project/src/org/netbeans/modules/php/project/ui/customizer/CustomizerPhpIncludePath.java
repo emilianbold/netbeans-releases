@@ -66,9 +66,11 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         initComponents();
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            @Override
             public File getCurrentDirectory() {
                 return LastUsedFolders.getIncludePath();
             }
+            @Override
             public void setCurrentDirectory(File currentDirectory) {
                 LastUsedFolders.setIncludePath(currentDirectory);
             }
@@ -185,6 +187,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
     private JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerPhpIncludePath.class);
     }
