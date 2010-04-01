@@ -92,7 +92,7 @@ public class RestServicesNodeFactory implements NodeFactory {
         private static final String NO_SERVICES = "no_rest_services";   //NOI18N
         private Project project;
         private List<String> result = new ArrayList<String>();
-        private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+        private RequestProcessor.Task updateNodeTask = new RequestProcessor("RestServicesNodeFactory-request-processor").create(new Runnable() {
 
             public void run() {
                 fireChange();
@@ -196,7 +196,7 @@ public class RestServicesNodeFactory implements NodeFactory {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
+            updateNodeTask.schedule(100);
         }
     }
 }

@@ -80,9 +80,9 @@ public class WsdlModeler {
     private EntityResolver entityResolver;
     private Set<String> bindingFiles;
     private String packageName;
-    private List<WsdlModelListener> modelListeners;
+    private final List<WsdlModelListener> modelListeners;
     private List<WsdlChangeListener> wsdlChangeListeners;
-    RequestProcessor.Task task, task1;
+    RequestProcessor.Task task;
     int listenersSize;
     protected Properties properties;
     private Throwable creationException;
@@ -92,7 +92,7 @@ public class WsdlModeler {
         this.wsdlUrl = wsdlUrl;
         modelListeners = Collections.synchronizedList(new ArrayList<WsdlModelListener>());
         wsdlChangeListeners = new ArrayList<WsdlChangeListener>();
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        task = new RequestProcessor("WsdlModeler-request-processor").create(new Runnable() { //NOI18N
 
             public void run() {
                 generateWsdlModel();
@@ -150,7 +150,7 @@ public class WsdlModeler {
     }
 
     public void generateWsdlModel(WsdlModelListener listener, final WsdlErrorHandler errorHandler) {
-        task = RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.Task task1 = RequestProcessor.getDefault().create(new Runnable() {
 
             public void run() {
                 generateWsdlModel(errorHandler);
@@ -158,7 +158,7 @@ public class WsdlModeler {
             }
         }, true);
         addWsdlModelListener(listener);
-        task.run();
+        task1.run();
     }
 
     public void generateWsdlModel(WsdlModelListener listener) {
@@ -173,12 +173,10 @@ public class WsdlModeler {
             } catch (InterruptedException ex) {
             }
             addWsdlModelListener(listener);
-            task.schedule(0);
+            task.schedule(100);
         } else {
             addWsdlModelListener(listener);
-            if (task.isFinished()) {
-                task.schedule(0);
-            }
+            task.schedule(100);
         }
     }
 
