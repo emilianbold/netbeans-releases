@@ -47,10 +47,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ant.freeform.Actions;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileObject;
@@ -65,7 +65,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -158,7 +157,7 @@ public final class View implements LogicalViewProvider {
         
         @Override
         public Action[] getActions(boolean context) {
-            return Actions.createContextMenu(p);
+            return CommonProjectActions.forType("org-netbeans-modules-ant-freeform"); // NOI18N
         }
         
         @Override

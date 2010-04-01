@@ -434,7 +434,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     continue;
                 }
                 if (fo.getPath().startsWith("NativeProjects/Actions/")) {
-                    // I should probably report a bug for NativeProjects
+                    // XXX should perhaps be replaced
                     continue;
                 }
                 if (fo.getPath().startsWith("contextmenu/uml/")) {

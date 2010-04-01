@@ -63,6 +63,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
@@ -76,12 +79,15 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
 
@@ -443,16 +449,59 @@ public final class Actions implements ActionProvider {
         }
         TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
+
+    public static final class Custom extends AbstractAction implements ContextAwareAction {
+        public Custom() {
+            setEnabled(false);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+        public @Override Action createContextAwareInstance(Lookup actionContext) {
+            Collection<? extends FreeformProject> projects = actionContext.lookupAll(FreeformProject.class);
+            if (projects.size() != 1) {
+                return this;
+            }
+            final FreeformProject p = projects.iterator().next();
+            class A extends AbstractAction implements Presenter.Popup {
+                public @Override void actionPerformed(ActionEvent e) {
+                    assert false;
+                }
+                public @Override JMenuItem getPopupPresenter() {
+                    class M extends JMenuItem implements DynamicMenuContent {
+                        public @Override JComponent[] getMenuPresenters() {
+                            Action[] actions = contextMenuCustomActions(p);
+                            JComponent[] comps = new JComponent[actions.length];
+                            for (int i = 0; i < actions.length; i++) {
+                                if (actions[i] != null) {
+                                    JMenuItem item = new JMenuItem();
+                                    org.openide.awt.Actions.connect(item, actions[i], true);
+                                    comps[i] = item;
+                                } else {
+                                    comps[i] = new JSeparator();
+                                }
+                            }
+                            return comps;
+                        }
+                        public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
+                            return getMenuPresenters();
+                        }
+                    }
+                    return new M();
+                }
+            }
+            return new A();
+        }
+    }
     
     /**
      * Build the context menu for a project.
      * @param p a freeform project
      * @return a list of actions (or null for separators)
      */
-    public static Action[] createContextMenu(FreeformProject p) {
+    private static Action[] contextMenuCustomActions(FreeformProject p) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(CommonProjectActions.newFileAction());
-        // Requested actions.
         Element genldata = p.getPrimaryConfigurationData();
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
         if (viewEl != null) {
@@ -479,25 +528,6 @@ public final class Actions implements ActionProvider {
                 }
             }
         }
-        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        // Back to generic actions.
-        actions.add(null);
-        actions.add(CommonProjectActions.setAsMainProjectAction());
-        actions.add(CommonProjectActions.openSubprojectsAction());
-        actions.add(CommonProjectActions.closeProjectAction());
-        actions.add(null);
-        actions.add(CommonProjectActions.renameProjectAction());
-        actions.add(CommonProjectActions.moveProjectAction());
-        actions.add(CommonProjectActions.copyProjectAction());
-        actions.add(CommonProjectActions.deleteProjectAction());
-        actions.add(null);
-        actions.add(SystemAction.get(FindAction.class));
-        
-        // honor #57874 contract, see #58624:
-        actions.addAll(Utilities.actionsForPath("Projects/Actions"));
-        
-        actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
     
