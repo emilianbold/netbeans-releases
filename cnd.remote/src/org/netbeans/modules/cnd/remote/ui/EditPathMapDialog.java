@@ -261,6 +261,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private synchronized void initTableModel(final ServerRecord host) {
         PathMapTableModel tableModel = cache.get(host);
         if (tableModel == null) {
+            enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
             handleProgress(true);
             tableModel = new PathMapTableModel();
             RequestProcessor.getDefault().post(new Runnable() {
@@ -278,9 +279,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                         }
                     });
                 }
-            });
-            enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
-
+            });            
             cache.put(host, tableModel);
         }
 
