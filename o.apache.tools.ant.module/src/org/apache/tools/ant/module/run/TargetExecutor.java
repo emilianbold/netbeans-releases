@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -425,10 +426,10 @@ public final class TargetExecutor implements Runnable {
         assert ras != null;
         try {
             
-        final boolean[] displayed = new boolean[] {AntSettings.getAlwaysShowOutput()};
+        final AtomicBoolean displayed = new AtomicBoolean(AntSettings.getAlwaysShowOutput());
         
         if (outputStream == null) {
-            if (displayed[0]) {
+            if (displayed.get()) {
                 io.select();
             }
         }
@@ -465,8 +466,7 @@ public final class TargetExecutor implements Runnable {
         final Runnable interestingOutputCallback = new Runnable() {
             public void run() {
                 // #58513: display output now.
-                if (!displayed[0]) {
-                    displayed[0] = true;
+                if (!displayed.getAndSet(true)) {
                     io.select();
                 }
             }
