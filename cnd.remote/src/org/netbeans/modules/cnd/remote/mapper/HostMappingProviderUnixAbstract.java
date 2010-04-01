@@ -42,7 +42,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,27 +69,65 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     protected abstract String fetchPath(String[] values);
 
+    @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
         String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
+        //System.err.println("findMappings for "+execEnv);
         if (hostName != null) {
             RunFacade runner = RunFacade.getInstance(execEnv);
             if (runner.run(getShareCommand())) { //NOI18N
                 List<String> paths = parseOutput(execEnv, new StringReader(runner.getOutput()));
                 for (String path : paths) {
+                    //System.err.println("Path "+path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
                     String netPath = NET + hostName + path;
                     if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
                         if (execEnv.isLocal()) {
+                            //System.err.println(path+"->"+netPath);
                             mappings.put(path, netPath);
                         } else {
+                            //System.err.println(netPath+"->"+path);
                             mappings.put(netPath, path);
+                        }
+                    }
+                    if (!mappings.containsKey(path) && execEnv.isLocal()) {
+                        String host = getIP();
+                        System.err.println("IP="+host);
+                        if (host != null && host.length()>0) {
+                            netPath = NET + host + path;
+                            //System.err.println("Try to ls for "+netPath);
+                            if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
+                                mappings.put(path, netPath);
+                                //System.err.println(path+"->"+netPath);
+                            }
                         }
                     }
                 }
             }
         }
         return mappings;
+    }
+
+    private String getIP() {
+        String host = null;
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface nextElement = networkInterfaces.nextElement();
+                if (!nextElement.isLoopback()) {
+                    for (InterfaceAddress addr : nextElement.getInterfaceAddresses()) {
+                        String s = addr.getAddress().getHostAddress();
+                        if (s.indexOf('.') > 0 && s.indexOf('.') < 5) {
+                            host = s;
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return host;
     }
 
     private static final String NET = "/net/"; // NOI18N

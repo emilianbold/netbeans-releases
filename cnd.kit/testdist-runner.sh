@@ -14,7 +14,9 @@ unzip -qo testdist.zip
 cd unit
 MODULES=`ls -d dlight/* cnd/* ide/*terminal* ide/*nativeex* | paste -s -d : -`
 cd ..
-${ANT:-ant} -f all-tests.xml -Dbasedir="${WORKSPACE}/unit" \
--Dnetbeans.dest.dir="${WORKSPACE}/netbeans" -Dmodules.list="${MODULES}" \
--Dtest.disable.fails=true -Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m" \
--Djava.io.tmpdir="/var/tmp/hudson${EXECUTOR_NUMBER}"
+${ANT:-ant} -f all-tests.xml \
+-Dbasedir="${WORKSPACE}/unit" \
+-Dnetbeans.dest.dir="${WORKSPACE}/netbeans" \
+-Dmodules.list="${MODULES}" \
+-Dtest.disable.fails=true \
+-Dtest.run.args="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx512m -Djava.io.tmpdir=/var/tmp/hudson${EXECUTOR_NUMBER}"
