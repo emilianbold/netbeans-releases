@@ -73,7 +73,7 @@ import org.openide.windows.InputOutput;
  * @author Vladimir Voskresensky
  */
 abstract class TerminalAction implements ActionListener {
-
+    private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 1); // NOI18N
     @Override
     public void actionPerformed(ActionEvent e) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
@@ -149,7 +149,7 @@ abstract class TerminalAction implements ActionListener {
                         }
                     }
                 };
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
         }
     }
