@@ -74,7 +74,6 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
     
     @Override
     protected void projectOpened() {
-        System.out.println("projectOpen "+prj);
         AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
         final JaxWsBuildScriptExtensionProvider extProvider = prj.getLookup().lookup(JaxWsBuildScriptExtensionProvider.class);
         if (ext != null && extProvider != null) {
