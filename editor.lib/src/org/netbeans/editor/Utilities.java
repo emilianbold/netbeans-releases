@@ -41,18 +41,31 @@
 
 package org.netbeans.editor;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Rectangle;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -65,6 +78,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.View;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
@@ -1540,4 +1554,75 @@ public class Utilities {
 	}
 	return null;
     }
+
+    /**
+     * Creates a single line editor pane. Can be called from AWT event thread only.
+     *
+     * @param mimeType The mimetype of the editor's content.
+     *
+     * @return Two components, the first one is a visual <code>JComponent</code> and
+     *   the second one is the editor <code>JTextComponent</code>.
+     *
+     * @since 2.7
+     */
+    public static JComponent [] createSingleLineEditor(String mimeType) {
+        assert SwingUtilities.isEventDispatchThread()
+                : "Utilities.createSingleLineEditor must be called from AWT thread only"; // NOI18N
+
+        EditorKit kit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
+        if (kit == null) {
+            throw new IllegalArgumentException("No EditorKit for '" + mimeType + "' mimetype."); //NOI18N
+        }
+
+        JEditorPane editorPane = new JEditorPane();
+        editorPane.setEditorKit(kit);
+
+        editorPane.putClientProperty(
+            "HighlightsLayerExcludes", //NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+        );
+        getEditorUI(editorPane).textLimitLineVisible = false;
+
+        KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+        InputMap im = editorPane.getInputMap();
+        im.put(enterKs, NO_ACTION);
+        im.put(escKs, NO_ACTION);
+        im.put(tabKs, NO_ACTION);
+
+        editorPane.setBorder (
+            new CompoundBorder (editorPane.getBorder(),
+            new EmptyBorder (0, 0, 0, 0))
+        );
+
+        JTextField referenceTextField = new JTextField("M"); //NOI18N
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+
+        JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setBorder(referenceTextField.getBorder());
+        sp.setBackground(referenceTextField.getBackground());
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(referenceTextField.getBackground());
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(editorPane, gridBagConstraints);
+        sp.setViewportView(panel);
+
+        int preferredHeight = referenceTextField.getPreferredSize().height;
+        if (sp.getPreferredSize().height < preferredHeight) {
+            sp.setPreferredSize(referenceTextField.getPreferredSize());
+        }
+        sp.setMinimumSize(sp.getPreferredSize());
+
+        return new JComponent [] { sp, editorPane };
+    }
+
+    private static final String NO_ACTION = "no-action"; //NOI18N
 }

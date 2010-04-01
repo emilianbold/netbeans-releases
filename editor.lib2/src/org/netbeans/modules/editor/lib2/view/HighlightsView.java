@@ -210,11 +210,22 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 ? TextHitInfo.afterOffset(charIndex)
                 : TextHitInfo.beforeOffset(charIndex);
 	float[] locs = textLayout.getCaretInfo(hit);
+        float width;
+        if (charIndex < textLength) {
+            TextHitInfo endHit = (bias == Position.Bias.Forward)
+                    ? TextHitInfo.afterOffset(charIndex + 1)
+                    : TextHitInfo.beforeOffset(charIndex + 1);
+            float endLocs[] = textLayout.getCaretInfo(endHit);
+            width = endLocs[0] - locs[0];
+        } else {
+            width = 1;
+        }
+
         Rectangle2D.Double bounds = ViewUtils.shape2Bounds(alloc);
 	bounds.setRect(
                 bounds.getX() + locs[0],
                 bounds.getY(),
-                1, // ?? glyphpainter2 uses 1 but shouldn't be a char width ??
+                width,
                 bounds.getHeight()
         );
         return bounds;
