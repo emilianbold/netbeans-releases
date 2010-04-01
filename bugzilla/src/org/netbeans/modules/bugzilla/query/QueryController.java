@@ -324,7 +324,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(panel.urlPanel.isVisible()) {
             return panel.urlTextField.getText();
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (QueryParameter p : parameters.values()) {
                 sb.append(p.get());
             }
@@ -340,6 +340,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -361,6 +362,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         });
 
         t[0] = rp.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     if(forceRefresh) {
@@ -383,7 +385,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void populate(final String urlParameters) {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-            Bugzilla.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
             BugzillaCommand cmd = new BugzillaCommand() {
@@ -428,7 +430,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             repository.getExecutor().execute(cmd);
         } finally {
             if(Bugzilla.LOG.isLoggable(Level.FINE)) {
-                Bugzilla.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
     }
@@ -585,6 +587,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onSave(final boolean refresh) {
        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Bugzilla.LOG.fine("on save start");
                 String name = query.getDisplayName();
@@ -698,6 +701,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -707,6 +711,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
         t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
@@ -733,6 +738,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final String urlString = repoURL + (params != null && !params.equals("") ? params : ""); // NOI18N
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 URL url;
                 try {
@@ -798,6 +804,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onMarkSeen() {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
@@ -819,6 +826,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     remove();
                 }
@@ -971,6 +979,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 String msg =
                     count == 1 ?
@@ -1036,6 +1045,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 handle = null;
             }
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
@@ -1093,6 +1103,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             });
         }
 
+        @Override
         public void run() {
             startQuery();
             try {
@@ -1111,6 +1122,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             task.schedule(0);
         }
 
+        @Override
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
@@ -1119,6 +1131,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return true;
         }
 
+        @Override
         public void notifyData(final Issue issue) {
             if(!query.contains(issue)) {
                 // XXX this is quite ugly - the query notifies an archoived issue
@@ -1136,11 +1149,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
+        @Override
         public void started() {
             counter = 0;
             setIssueCount(counter);
         }
 
+        @Override
         public void finished() { }
     }
 

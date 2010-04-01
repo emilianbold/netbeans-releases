@@ -97,6 +97,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.selenium = selenium;
     }
 
+    @Override
     public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (resources != null) {
@@ -116,14 +117,17 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         }
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
             invalidate();
@@ -205,10 +209,12 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
+        @Override
         public URL[] getRoots() {
             return new URL[]{root};
         }
 
+        @Override
         public boolean includes(URL root, String resource) {
             if (matcher == null) {
                 File rootFile = new File(URI.create(root.toExternalForm()));
@@ -220,18 +226,22 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             return matcher.matches(resource, true);
         }
 
+        @Override
         public ClassPathImplementation getContent() {
             return null;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
             // listen only on IGNORE_PATH, VisibilityQuery changes should be checked by parsing & indexing automatically

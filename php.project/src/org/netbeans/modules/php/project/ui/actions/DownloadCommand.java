@@ -79,6 +79,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     @Override
     protected Runnable getContextRunnable(final Lookup context) {
         return new Runnable() {
+            @Override
             public void run() {
                 invokeActionImpl(context);
             }
@@ -105,6 +106,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         download(remoteClient, remoteLog, downloadOperationMonitor, projectName, true, sources, selectedFiles, null, getProject());
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }

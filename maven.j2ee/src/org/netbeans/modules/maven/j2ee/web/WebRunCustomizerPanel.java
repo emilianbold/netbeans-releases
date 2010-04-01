@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.model.pom.Dependency;
@@ -80,7 +81,6 @@ import org.openide.util.Exceptions;
  * @author  mkleint
  */
 public class WebRunCustomizerPanel extends javax.swing.JPanel {
-    private static final String PROP_CLIENT_URL_PART = "netbeans.deploy.clientUrlPart"; //NOI18N
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
     private Project project;
     private ModelHandle handle;
@@ -187,8 +187,8 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         isDebugCompatible = checkMapping(debug);
         isProfileCompatible = checkMapping(profile);
 
-        oldUrl = isRunCompatible ? run.getProperties().getProperty(PROP_CLIENT_URL_PART) : //NOI18N
-                                   debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
+        oldUrl = isRunCompatible ? run.getProperties().getProperty(CLIENTURLPART) : //NOI18N
+                                   debug.getProperties().getProperty(CLIENTURLPART); //NOI18N
         
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
@@ -379,17 +379,17 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String newUrl = txtRelativeUrl.getText().trim();
         if (!newUrl.equals(oldUrl)) {
             if (isRunCompatible) {
-                run.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
+                run.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(run, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isDebugCompatible) {
-                debug.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
+                debug.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isProfileCompatible) {
-                profile.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
+                profile.getProperties().setProperty( CLIENTURLPART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(profile, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }

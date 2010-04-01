@@ -242,10 +242,12 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     private JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public String getProjectName() {
         return projectNameTextField.getText().trim();
     }
 
+    @Override
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
@@ -256,34 +258,42 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         return localServerComponent.getLocalServer().getSrcRoot();
     }
 
+    @Override
     public LocalServer getSourcesLocation() {
         return localServerComponent.getLocalServer();
     }
 
+    @Override
     public MutableComboBoxModel getLocalServerModel() {
         return localServerComponent.getLocalServerModel();
     }
 
+    @Override
     public void setLocalServerModel(MutableComboBoxModel localServers) {
         localServerComponent.setLocalServerModel(localServers);
     }
 
+    @Override
     public void selectSourcesLocation(LocalServer localServer) {
         localServerComponent.selectLocalServer(localServer);
     }
 
+    @Override
     public PhpVersion getPhpVersion() {
         return (PhpVersion) phpVersionComboBox.getSelectedItem();
     }
 
+    @Override
     public void setPhpVersion(PhpVersion phpVersion) {
         phpVersionComboBox.setSelectedItem(phpVersion);
     }
 
+    @Override
     public Charset getEncoding() {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
+    @Override
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
     }
@@ -307,9 +317,11 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     }
 
     private static class BrowseSources implements LocalServerController.BrowseHandler {
+        @Override
         public File getCurrentDirectory() {
             return LastUsedFolders.getSources();
         }
+        @Override
         public void locationChanged(File location) {
             LastUsedFolders.setSources(location);
         }

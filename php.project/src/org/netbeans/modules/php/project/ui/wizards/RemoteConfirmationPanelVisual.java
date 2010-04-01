@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RemoteConfirmationPanelVisual extends JPanel {
+public final class RemoteConfirmationPanelVisual extends JPanel {
     static enum State { FETCHING, NO_FILES, FILES };
 
     private static final long serialVersionUID = 3753241413078222434L;

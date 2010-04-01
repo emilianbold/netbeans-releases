@@ -136,5 +136,5 @@ public abstract class PhpModuleCustomizerExtender {
      * @see Change
      * @see PhpModule#getPreferences(Class, boolean)
      */
-    public abstract EnumSet<PhpModule.Change> save(PhpModule phpModule);
+    public abstract EnumSet<Change> save(PhpModule phpModule);
 }
