@@ -7,21 +7,24 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
-    <meta content="Helen" name="generator">
-    <title>Configuring C and C++ Project Settings</title>
+     
+    <title>Configuring Project Options for C/C++/Fortran Projects</title>
   </head>
   <body>
     <h2>
-       Configuring C and C++ Project Settings
+       Configuring Project Options for C/C++/Fortran Projects
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-       You can use the Options window to configure default settings for your C and C++ projects.
+       You can use the Options window to configure some general project options for your
+       C, C++, and Fortran projects. These options affect all your C/C++/Fortan projects,
+       and are mostly related to makefiles and behavior related to building and running
+       your projects.
     </p>
     <p>
-       <b>To configure C and C++ project settings:</b>
+       <b>To configure general project options:</b>
     </p>
     <ol>
       <li>
@@ -71,6 +74,21 @@ Use is subject to license terms.
         created with existing sources, which might place sources and binaries in the same location.
         Deselect this option to more easily see your C/C++ source files and header files.
       </li>
+    <li>
+        <b>Show profiler indicators during run (new projects only).</b> If selected, profiler tools
+        such as CPU Usage and Memory Usage are set up to run by default when newly created projects
+        are run. The tools that are shown are determined by the <a href="ManagingProjectConfigurations.html"
+        Profile Configuration</a> selected in Tools &gt; Profiler Tools.
+      </li>
+  <li>
+        <b>Show warning dialog about missing makefiles due to mismatched platforms.</b> If
+        selected, the IDE will warn you if you attempt to run a project that was created on a
+        platform that is not the same as your current development host's platform. If you use
+        project configurations to build on multiple platforms, you might want to disable the
+        missing makefiles warning.
+      </li>
+   
+  
     </ul>
     <table>
       <tr>
@@ -83,12 +101,11 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-           <a href="ConfiguringBuildTools.html">Configuring C and C++ Build Tools</a><br>
-           <a href="ConfiguringParsingSettings.html">Configuring C and C++ Parser Settings</a><br>
-           <a href="ConfiguringCodeStyle.html">Configuring C and C++ Formatting Style</a><br>
-           <a href="ConfiguringSemanticHighlighting.html">Configuring C and C++ Semantic
-          Highlighting</a><br>
-           <a href="ConfiguringFileExtensions.html">Configuring C and C++ File Extensions</a><br>
+           <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran Projects</a><br>
+           <a href="ConfiguringParsingSettings.html">Configuring Code Assistance Settings for C and C++ Projects</a><br>
+           <a href="ConfiguringCodeStyle.html">Configuring Formatting Style for C/C++/Fortran Projects</a><br>
+           <a href="ConfiguringSemanticHighlighting.html">Configuring Highlighting for C/C++/Fortran Projects</a><br>
+           <a href="ConfiguringFileExtensions.html">Configuring  File Extensions for C/C++/Fortran Projects</a><br>
            <a href="SettingCandC++ProjectProperties.html">Setting Project Properties</a> 
         </td>
       </tr>

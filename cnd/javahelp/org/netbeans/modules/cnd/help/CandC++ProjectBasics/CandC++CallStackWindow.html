@@ -17,47 +17,48 @@ type="text/css">
 The Call Stack window lists the sequence of function calls made during 
 execution of the current thread. By default, the Call Stack window 
 opens automatically whenever you start a debugging session.
-You can open the Call Stack window by by choosing Window &gt; 
+You can open the Call Stack window by choosing Window &gt; 
 Debugging &gt; Call Stack.
 </p>
 <p>
 If you open the Call Stack window when a debugging session is 
 running, it closes automatically when you end the debugging session.
-If you open the window when no debugging session is running, it 
+If you open the window when no debugging session is running, the window
 stays open until you close it.
 </p>
 <p>
 The information given for each call includes the name of the function, 
 followed by the filename and line number of the function's currently
-executing statement. If the filename and line number are displayed 
-in blue underlined text, then the text is linked to the source code
-for that function.
+executing statement. If you double-click the function, the editor
+jumps to the function in your source code.
 </p>
 The initial function, <tt>main()</tt> for C and C++ programs, is at the
-bottom of the Call Stack window. The function executing when the 
+bottom of the Call Stack window. The function that was executing when the
 program stopped is at the top of the window. This function is known 
 as the stopped-in function.
 </p>
 <p>One call is the current call. By default, this call is the most 
 recent call made by the current thread. When you select a different 
-current thread, the Call Stack window is updated to show the calls 
-for that thread and the values of variables in the Local Variables 
+current thread in the Threads window, the Call Stack window is updated
+to show the calls 
+for that thread. The values of variables in the Variables
 window are adjusted for the context of the current call.
 </p>
 <h3>Icons</h3>
-The following table describes the icons displayed to the left of the 
+<p>The following table describes the icons displayed to the left of the
 call name.
+</p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column shows  
 the icon. The right column describes the icon.">
 <tr valign="top">
 <th scope="col" align="left">Icon</th>
 <th scope="col" align="left">Description</th>
 </tr>
-<tr valign="top">
+<tr align="center">
 <td><img src="../images/CurrentFrame.gif"></td>
 <td>The current call on the call stack</td>
 </tr>
-<tr valign="top">
+<tr align="center">
 <td><img src="../images/CallStack.gif"></td>
 <td>A call other than the current call</td>
 </tr>
