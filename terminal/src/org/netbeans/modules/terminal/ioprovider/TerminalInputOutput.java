@@ -92,6 +92,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private final Terminal terminal;
     private final StreamTerm term;
+    private final TermListener termListener;
+
     private OutputWriter outputWriter;
     private OutputWriter errWriter;
 
@@ -583,10 +585,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         term = terminal.term();
 
-        if (! (term instanceof ActiveTerm))
+        if (! (term instanceof ActiveTerm)) {
+	    termListener = null;
             return;
+	}
 
-	term.addListener(new MyTermListener());
+	termListener = new MyTermListener();
+	term.addListener(termListener);
 
         ActiveTerm at = (ActiveTerm) term;
 
@@ -618,6 +623,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
 
     void dispose() {
+        final ActiveTerm at = (ActiveTerm) term;
+        at.setActionListener(null);
+	term.removeListener(termListener);
 	if (outputWriter != null) {
 	    // LATER outputWriter.dispose();
 	    outputWriter = null;

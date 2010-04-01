@@ -114,13 +114,15 @@ public final class Terminal extends JComponent {
 
     private final IOContainer ioContainer;
     private final TerminalInputOutput tio;	// back pointer
-    private final Action[] actions;
     private final String name;
+    private final MouseAdapter mouseAdapter;
 
     private final CallBacks callBacks = new CallBacks();
 
-    private final StreamTerm term;
-    private final FindState findState;
+    // Not final so we can dispose of them
+    private Action[] actions;
+    private StreamTerm term;
+    private FindState findState;
 
     private static final Preferences prefs =
         NbPreferences.forModule(TermAdvancedOption.class);
@@ -129,12 +131,16 @@ public final class Terminal extends JComponent {
 
     private String title;
 
-    private boolean visibleInContainer;		// AKA ! weak closed
+    // AKA ! weak closed
+    private boolean visibleInContainer;
 
     // AKA ! stream closed
     private boolean outConnected;
     private boolean errConnected;
     private boolean extConnected;
+
+    // AKA stron closed
+    private boolean disposed;
 
     // properties managed by IOvisibility
     private boolean closable = true;
@@ -221,7 +227,7 @@ public final class Terminal extends JComponent {
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
-        term.getScreen().addMouseListener(new MouseAdapter() {
+        mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) {
@@ -231,7 +237,8 @@ public final class Terminal extends JComponent {
                     postPopupMenu(p);
                 }
             }
-        } );
+        };
+        term.getScreen().addMouseListener(mouseAdapter);
 
         // Tell term about keystrokes we use for menu accelerators so
         // it passes them through.
@@ -251,9 +258,21 @@ public final class Terminal extends JComponent {
     }
 
     void dispose() {
+	if (disposed)
+	    return;
+	disposed = true;
+
+        term.getScreen().removeMouseListener(mouseAdapter);
+	actions = null;
+	findState = null;
+	term = null;
         termOptions.removePropertyChangeListener(termOptionsPCL);
 	tio.dispose();
 	TerminalIOProvider.dispose(tio);
+    }
+
+    boolean isDisposed() {
+	return disposed;
     }
 
     public IOContainer.CallBacks callBacks() {
