@@ -40,34 +40,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
    -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="html">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
-                </folder>
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
-                </folder>
-            </folder>
-            <folder name="xml">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
-                </folder>
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="Spellcheckers">
-        <file name="HTML">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
-        </file>
-        <file name="XML">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
-        </file>
-    </folder>
-</filesystem>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="spellchecker.bindings.properties" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.spellchecker.bindings.properties</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>
