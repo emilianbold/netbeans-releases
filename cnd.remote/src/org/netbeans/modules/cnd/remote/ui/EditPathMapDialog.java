@@ -464,7 +464,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }// </editor-fold>//GEN-END:initComponents
 
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
-
+        enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
         handleProgress(true);
         RequestProcessor.getDefault().post(new Runnable() {
 
@@ -486,7 +486,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 });
             }
         });
-        enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
+        
 
     }//GEN-LAST:event_restoreActionPerformed
 
