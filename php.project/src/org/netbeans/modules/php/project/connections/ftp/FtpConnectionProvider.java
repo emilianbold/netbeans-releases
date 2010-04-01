@@ -88,14 +88,17 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return new FtpConnectionProvider();
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(FtpConnectionProvider.class, "LBL_Ftp");
     }
 
+    @Override
     public Set<String> getPropertyNames() {
         return PROPERTIES;
     }
 
+    @Override
     public RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration) {
         configuration.putValue(TYPE, FTP_CONNECTION_TYPE);
         configuration.putValue(HOST, ""); // NOI18N
@@ -112,6 +115,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return new FtpConfiguration(configuration);
     }
 
+    @Override
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
         if (accept(configuration)) {
             return new FtpConfiguration(configuration);
@@ -119,6 +123,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return null;
     }
 
+    @Override
     public RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io) {
         if (remoteConfiguration instanceof FtpConfiguration) {
             return new FtpClient((FtpConfiguration) remoteConfiguration, io);
@@ -126,6 +131,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return null;
     }
 
+    @Override
     public RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration) {
         if (accept(configuration)) {
             return new FtpConfigurationPanel();

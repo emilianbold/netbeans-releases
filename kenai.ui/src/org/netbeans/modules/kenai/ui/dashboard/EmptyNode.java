@@ -106,7 +106,8 @@ public class EmptyNode extends LeafNode {
             if( loadingCounter < 0 )
                 loadingCounter = 0;
             if (loadingCounter == 0) {
-                progress.stop();
+                if (progress!=null)
+                    progress.stop();
             }
             fireContentChanged();
         }

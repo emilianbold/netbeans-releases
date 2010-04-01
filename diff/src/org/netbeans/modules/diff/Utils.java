@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.diff;
+
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- * @author Radek Matous, Tomas Mysik
+ *
+ * @author ondra
  */
-public class DebugProjectCommand extends Command implements Displayable {
+public class Utils {
 
-    public static final String ID = ActionProvider.COMMAND_DEBUG;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(DebugProjectCommand.class, "LBL_DebugProject");
+    private static RequestProcessor parallelRP;
 
-    public DebugProjectCommand(PhpProject project) {
-        super(project);
+    public static Task createParallelTask (Runnable runnable) {
+        RequestProcessor rp = getParallelRequestProcessor();
+        return rp.create(runnable);
     }
 
-    @Override
-    public void invokeAction(final Lookup context) {
-        ConfigAction configAction = getConfigAction();
-        if (!configAction.isValid(isScriptSelected())) {
-            // property not set yet
-            return;
+    public static Task postParallel (Runnable runnable) {
+        RequestProcessor rp = getParallelRequestProcessor();
+        return rp.post(runnable);
+    }
+
+    private static RequestProcessor getParallelRequestProcessor() {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Diff.ParallelTasks", 5); //NOI18N
         }
-        configAction.debugProject();
+        return parallelRP;
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isDebugProjectEnabled();
-    }
-
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return DISPLAY_NAME;
+    private Utils () {
+        
     }
 }

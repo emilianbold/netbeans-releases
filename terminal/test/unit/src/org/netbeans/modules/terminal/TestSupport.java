@@ -40,15 +40,20 @@
 package org.netbeans.modules.terminal;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -59,16 +64,31 @@ import org.openide.windows.InputOutput;
  */
 public class TestSupport extends NbTestCase {
 
-    private JComponent actualContainer;
-
     private JFrame frame;
 
+    protected Action dummyAction;
     protected IOProvider ioProvider;
     protected IOContainer ioContainer;
+    protected JComponent actualContainer;
     protected InputOutput io;
+
     protected boolean defaultContainer = false;
     // LATER: my IOContainer doesn't do well with output2 IOProvider
     protected boolean defaultProvider = false;
+
+    static class DummyAction extends AbstractAction {
+	public DummyAction() {
+	    super("Dummy");
+	    String iconResource = "org/netbeans/modules/terminal/sunsky.png";
+	    ImageIcon icon = ImageUtilities.loadImageIcon(iconResource, false);
+	    this.putValue(SMALL_ICON, icon);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+	    throw new UnsupportedOperationException("Not supported yet.");
+	}
+    }
 
     public TestSupport(String testName) {
 	super(testName);
@@ -109,16 +129,25 @@ public class TestSupport extends NbTestCase {
 	    assertNotNull ("Could not find IOProvider", ioProvider);
 	    assertTrue("Got default IOProvider", ioProvider != IOProvider.getDefault());
 	}
-	io = ioProvider.getIO("test", null, ioContainer);
+
+	dummyAction = new DummyAction();
+	Action[] actions = new Action[] {dummyAction};
+
+	io = ioProvider.getIO("test", actions, ioContainer);
 	assertNotNull ("Could not get InputOutput", io);
 	io.select();
+	sleep(1);	// give select time to take effect
     }
 
     @Override
     protected void tearDown() throws Exception {
 	System.out.printf("TestSupport.tearDown()\n");
 
-	io.closeInputOutput();
+	// some tests null it out
+	if (io != null)
+	    io.closeInputOutput();
+	if (dummyAction != null)
+	    dummyAction = null;
 	io = null;
 	ioProvider = null;
 	ioContainer = null;

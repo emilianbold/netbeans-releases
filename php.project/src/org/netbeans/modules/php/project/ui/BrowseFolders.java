@@ -116,6 +116,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         folderPanel.add(btv, BorderLayout.CENTER);
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -279,6 +280,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             super.removeNotify();
         }
 
+        @Override
         protected Node[] createNodes(Key key) {
             FileObject fObj = key.folder;
             SourceGroup grp = key.group;
@@ -354,6 +356,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
     }
 
     private static class FileObjectComparator implements Comparator<FileObject> {
+        @Override
         public int compare(FileObject fo1, FileObject fo2) {
             return fo1.getName().compareTo(fo2.getName());
         }
@@ -364,15 +367,16 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         public static final String COMMAND_CANCEL = "CANCEL"; // NOI18N
 
         private final BrowseFolders browsePanel;
-        private final Class target;
+        private final Class<?> target;
 
         private FileObject result;
 
-        public OptionsListener(BrowseFolders browsePanel, Class target) {
+        public OptionsListener(BrowseFolders browsePanel, Class<?> target) {
             this.browsePanel = browsePanel;
             this.target = target;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
             if (COMMAND_SELECT.equals(command)) {
@@ -410,29 +414,36 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
             this.fo = fo;
         }
 
+        @Override
         public FileObject getRootFolder() {
             return fo;
         }
 
+        @Override
         public String getName() {
             return fo.getNameExt();
         }
 
+        @Override
         public String getDisplayName() {
             return fo.getNameExt();
         }
 
+        @Override
         public Icon getIcon(boolean opened) {
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override
+        public boolean contains(FileObject file) {
             return FileUtil.isParentOf(fo, file);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }

@@ -84,18 +84,22 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         registerListeners();
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
+    @Override
     public JComponent getComponent() {
         return this;
     }
 
+    @Override
     public boolean isValidConfiguration() {
         String err = RemoteValidator.validateHost(hostTextField.getText());
         if (err != null) {
@@ -136,6 +140,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         return true;
     }
 
+    @Override
     public String getError() {
         return error;
     }
@@ -144,6 +149,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         this.error = error;
     }
 
+    @Override
     public String getWarning() {
         return warning;
     }

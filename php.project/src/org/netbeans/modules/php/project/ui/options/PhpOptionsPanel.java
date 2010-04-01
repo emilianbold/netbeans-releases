@@ -102,9 +102,11 @@ public class PhpOptionsPanel extends JPanel {
         DefaultListModel listModel = PathUiSupport.createListModel(
                 GlobalIncludePathSupport.getInstance().itemsIterator());
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            @Override
             public File getCurrentDirectory() {
                 return LastUsedFolders.getIncludePath();
             }
+            @Override
             public void setCurrentDirectory(File currentDirectory) {
                 LastUsedFolders.setIncludePath(currentDirectory);
             }
@@ -195,7 +197,7 @@ public class PhpOptionsPanel extends JPanel {
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
                 PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
-        StringBuilder path = new StringBuilder();
+        StringBuilder path = new StringBuilder(200);
         for (String s : paths) {
             path.append(s);
         }
@@ -511,22 +513,27 @@ public class PhpOptionsPanel extends JPanel {
 
     private void phpInterpreterSearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterSearchButtonActionPerformed
         String phpInterpreter = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+            @Override
             public List<String> detect() {
                 return PhpEnvironment.get().getAllPhpInterpreters();
             }
 
+            @Override
             public String getWindowTitle() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersTitle");
             }
 
+            @Override
             public String getListTitle() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreters");
             }
 
+            @Override
             public String getPleaseWaitPart() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpretersPleaseWaitPart");
             }
 
+            @Override
             public String getNoItemsFound() {
                 return NbBundle.getMessage(PhpOptionsPanel.class, "LBL_NoPhpInterpretersFound");
             }
@@ -570,14 +577,17 @@ public class PhpOptionsPanel extends JPanel {
 
     private final class DefaultDocumentListener implements DocumentListener {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }

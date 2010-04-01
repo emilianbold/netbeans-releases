@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  * Just as simple wrapper for the standard new file iterator as possible.
@@ -78,6 +79,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     private WizardDescriptor.Panel<WizardDescriptor>[] wizardPanels;
     private int index;
 
+    @Override
     public Set<FileObject> instantiate() throws IOException {
         FileObject dir = Templates.getTargetFolder(wizard);
         FileObject template = Templates.getTemplate(wizard);
@@ -108,11 +110,16 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 Templates.setTargetName(wizard, name);
             }
         }
-        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
+        String targetName = Templates.getTargetName(wizard);
+        if (dir.getFileObject(targetName) != null) {
+            throw new IOException(NbBundle.getMessage(NewFileWizardIterator.class, "TXT_FileExists", targetName));
+        }
+        DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, targetName, wizardProps);
 
         return Collections.singleton(createdFile.getPrimaryFile());
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         FileObject targetFolder = Templates.getTargetFolder(wizard);
@@ -158,10 +165,12 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         return res;
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         wizardPanels = null;
     }
 
+    @Override
     public String name() {
         return ""; // NOI18N
     }
@@ -169,6 +178,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Get the current panel.
      * @return the panel
      */
+    @Override
     public Panel<WizardDescriptor> current() {
         return wizardPanels[index];
     }
@@ -176,6 +186,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Test whether there is a next panel.
      * @return <code>true</code> if so
      */
+    @Override
     public boolean hasNext() {
         return index < wizardPanels.length - 1;
     }
@@ -183,6 +194,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     /** Test whether there is a previous panel.
      * @return <code>true</code> if so
      */
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
@@ -191,6 +203,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
      * I.e. increment its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -202,6 +215,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
      * I.e. decrement its index, need not actually change any GUI itself.
      * @exception NoSuchElementException if the panel does not exist
      */
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -209,9 +223,11 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 

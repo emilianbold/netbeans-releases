@@ -69,10 +69,12 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
         "Templates/Other/Folder" // NOI18N
     };
 
+    @Override
     public String[] getRecommendedTypes() {
         return TYPES;
     }
 
+    @Override
     public String[] getPrivilegedTemplates() {
         return PRIVILEGED_NAMES;
     }
