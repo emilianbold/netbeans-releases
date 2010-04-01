@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
+public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593389531357591271L;
     public static final String NO_CONFIG = "no-config"; // NOI18N
     public static final String MISSING_CONFIG = "missing-config"; // NOI18N
@@ -146,6 +146,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
         // remote connection
         ComboBoxSelectedItemConvertor remoteConfigurationConvertor = new ComboBoxSelectedItemConvertor() {
+            @Override
             public String convert(JComboBox comboBox) {
                 RemoteConfiguration remoteConfiguration = (RemoteConfiguration) comboBox.getSelectedItem();
                 assert remoteConfiguration != null;
@@ -156,6 +157,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 remoteConnectionComboBox, remoteConfigurationConvertor));
         // remote upload
         ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
+            @Override
             public String convert(JComboBox comboBox) {
                 UploadFiles uploadFiles = (UploadFiles) comboBox.getSelectedItem();
                 assert uploadFiles != null;
@@ -168,6 +170,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         // upload directory hint
         remoteConnectionComboBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     updateRemoteConnectionHint();
@@ -175,12 +178,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
         uploadDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -685,6 +691,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return value;
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsRemoteWeb.this.getDefaultValue(getPropName());
         }
@@ -720,6 +727,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             this.comboBoxConvertor = comboBoxConvertor;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String value = comboBoxConvertor.convert(field);
             RunAsRemoteWeb.this.putValue(propName, value);
@@ -737,6 +745,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             this.propName = propName;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String value = Boolean.toString(field.isSelected());
             RunAsRemoteWeb.this.putValue(propName, value);
@@ -752,6 +761,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #171722
@@ -797,6 +807,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #175236

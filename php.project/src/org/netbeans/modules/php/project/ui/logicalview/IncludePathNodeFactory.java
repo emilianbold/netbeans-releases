@@ -76,11 +76,12 @@ import org.openide.util.NbBundle;
 @NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=200)
 public class IncludePathNodeFactory implements NodeFactory {
 
-    /** Creates a new instance of SourcesNodeFactory */
     public IncludePathNodeFactory() {
     }
 
-    public NodeList createNodes(Project p) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public NodeList<Node> createNodes(Project p) {
         final PhpProject project = p.getLookup().lookup(PhpProject.class);
         return NodeFactorySupport.fixedNodeList(new DummyNode(new IncludePathRootNode(project)) {
             @Override
@@ -104,7 +105,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(IncludePathNodeFactory.class, "LBL_IncludePath");//NOI18N
+            return NbBundle.getMessage(IncludePathNodeFactory.class, "LBL_IncludePath"); // NOI18N
         }
 
         @Override
@@ -117,9 +118,11 @@ public class IncludePathNodeFactory implements NodeFactory {
             return getIcon(type);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             // #148927 possible deadlock
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setChildren(createChildren(project));
                 }

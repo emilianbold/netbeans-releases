@@ -179,6 +179,7 @@ final class TransferFilterTable extends JTable {
                 }
             });
             getModel().addUpdateUnitListener(new TransferFileTableChangeListener() {
+                @Override
                 public void updateUnitsChanged() {
                     assert sortingRenderer != null : "Sorting renderer cannot be null.";
                     setSelectedRow();
@@ -186,6 +187,7 @@ final class TransferFilterTable extends JTable {
                     sortingRenderer.sort();
                     scroolToUnit(selectedUnit);
                 }
+                @Override
                 public void filterChanged() {
                 }
             });

@@ -69,6 +69,7 @@ public class TestProjectCommand extends Command implements Displayable {
         return getConfigAction().isRunProjectEnabled();
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }

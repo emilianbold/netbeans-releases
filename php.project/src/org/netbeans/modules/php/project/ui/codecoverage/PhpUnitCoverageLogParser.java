@@ -60,7 +60,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Parser of PHPUnit XML coverage files (version 3.x).
  * @author Tomas Mysik
  */
-public class PhpUnitCoverageLogParser extends DefaultHandler {
+public final class PhpUnitCoverageLogParser extends DefaultHandler {
     enum Content { COVERAGE, FILE, CLASS };
     private static final Logger LOGGER = Logger.getLogger(PhpUnitCoverageLogParser.class.getName());
 

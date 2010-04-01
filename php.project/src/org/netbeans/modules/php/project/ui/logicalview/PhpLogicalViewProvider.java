@@ -92,10 +92,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         this.project = project;
     }
 
+    @Override
     public Node createLogicalView() {
         return new PhpLogicalViewRootNode(project);
     }
 
+    @Override
     public Node findPath(Node root, Object target) {
         Project p = root.getLookup().lookup(Project.class);
         if (p == null) {
@@ -262,8 +264,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
 
         private static Children createChildren(PhpProject project) {
-           return NodeFactorySupport.createCompositeChildren(project,
-                    "Projects/org-netbeans-modules-php-project/Nodes");//NOI18N
+           return NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-php-project/Nodes"); // NOI18N
         }
 
         private static class FrameworkMenu extends AbstractAction implements Presenter.Popup {
@@ -281,10 +282,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 this.frameworkActions = frameworkActions;
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 assert false;
             }
 
+            @Override
             public JMenuItem getPopupPresenter() {
                 return new FrameworkSubMenu(name, frameworkActions);
             }
@@ -335,6 +338,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             this.project = project;
             this.category = category;
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
         }

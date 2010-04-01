@@ -114,7 +114,7 @@ public final class PhpProjectUtils {
 
         FileObject fileObject = FileUtil.toFileObject(new File(path));
         if (fileObject == null) {
-            LOGGER.info("FileObject not found for " + path);
+            LOGGER.log(Level.INFO, "FileObject not found for {0}", path);
             return;
         }
 
@@ -122,19 +122,20 @@ public final class PhpProjectUtils {
         try {
             dataObject = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException ex) {
-            LOGGER.info("DataObject not found for " + path);
+            LOGGER.log(Level.INFO, "DataObject not found for {0}", path);
             return;
         }
 
         LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) {
-            LOGGER.info("LineCookie not found for " + path);
+            LOGGER.log(Level.INFO, "LineCookie not found for {0}", path);
             return;
         }
         Set lineSet = lineCookie.getLineSet();
         try {
             final Line currentLine = lineSet.getCurrent(line - 1);
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                 }
@@ -183,6 +184,7 @@ public final class PhpProjectUtils {
         try {
             // seems to be synchronous but no info in javadoc
             baseDoc.runAtomic(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         reformat.reformat(0, baseDoc.getLength());

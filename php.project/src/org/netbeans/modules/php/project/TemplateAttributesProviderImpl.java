@@ -74,6 +74,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         this.encodingQuery = encodingQuery;
     }
 
+    @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String, String> values = new HashMap<String, String>();
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -104,7 +105,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
             Logger.getLogger(TemplateAttributesProviderImpl.class.getName()).log(Level.FINE, "", ex);
         }
 
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return null;
         }
         return Collections.singletonMap("project", values); // NOI18N
