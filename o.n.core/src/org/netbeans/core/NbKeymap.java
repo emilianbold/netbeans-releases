@@ -82,6 +82,8 @@ import org.openide.util.lookup.ServiceProvider;
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
 
     private static final RequestProcessor RP = new RequestProcessor("NbKeyMap", 1); //NOI18N
+    //for unit testing only
+    private RequestProcessor.Task refreshTask;
 
     private static final Action BROKEN = new AbstractAction("<broken>") { // NOI18N
         public void actionPerformed(ActionEvent e) {
@@ -149,7 +151,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     };
 
     private void refreshBindings() {
-        RP.post(new Runnable() {
+        refreshTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 doRefreshBindings();
@@ -160,6 +162,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     private synchronized void doRefreshBindings() {
         bindings = null;
         bindings();
+    }
+
+    //for unit testing only
+    void waitFinished() throws InterruptedException {
+        if( null != refreshTask )
+            refreshTask.waitFinished(5000);
     }
 
     private synchronized Map<KeyStroke,Binding> bindings() {
