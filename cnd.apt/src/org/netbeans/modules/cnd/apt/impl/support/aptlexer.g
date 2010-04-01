@@ -802,11 +802,9 @@ protected CPP_COMMENT
 	;
 
 FORTRAN_COMMENT options { constText=true; } :
-    {lang == Language.FORTRAN && inputState.getColumn() == 1}?
-    ("! " | ("c "|"C ") | "* ")
-    (   '\\' EndOfLine {deferredNewline();}
-        | ~('\n' | '\r')
-    )*
+    {lang == Language.FORTRAN && inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ')}?
+    ('!' | ('c'|'C') | '*')
+    (~('\n' | '\r'))*
     {$setType(FORTRAN_COMMENT);}
     ;
 
