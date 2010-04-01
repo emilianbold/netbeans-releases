@@ -88,12 +88,15 @@ public class AskForUrlPanel extends JPanel {
 
         urlComboBoxEditor = (JTextField) urlComboBox.getEditor().getEditorComponent();
         urlComboBoxEditor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateFields();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateFields();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }

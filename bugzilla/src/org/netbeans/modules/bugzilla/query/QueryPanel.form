@@ -1746,8 +1746,8 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="gotoIssueButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="idTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="idTextField" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

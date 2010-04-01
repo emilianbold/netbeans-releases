@@ -66,6 +66,12 @@ public class HelperUtility {
         pattern = searchPattern;
     }
 
+    /**
+     *
+     * @param env
+     * @return the ready-to-use remote path for the utility
+     * @throws IOException
+     */
     public final String getPath(final ExecutionEnvironment env) throws IOException {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
@@ -101,6 +107,8 @@ public class HelperUtility {
                         result = remoteFile;
                     }
                     cache.put(env, result);
+                } catch (IOException ex) {
+                    throw ex;
                 } catch (Exception ex) {
                     throw new IOException(ex);
                 }

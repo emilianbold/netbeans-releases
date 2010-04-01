@@ -47,7 +47,6 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +65,7 @@ import java.io.*;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.diff.Utils;
 
 /**
  * Patch export facility.
@@ -75,20 +75,24 @@ import java.awt.event.ActionEvent;
 public class ExportPatch {
 
     private static final FileFilter unifiedFilter = new FileFilter() {
+        @Override
         public boolean accept(File f) {
             return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ExportPatch.class, "FileFilter_Unified");
         }
     };
 
     private static final FileFilter normalFilter = new FileFilter() {
+        @Override
         public boolean accept(File f) {
             return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ExportPatch.class, "FileFilter_Normal");
         }
@@ -121,6 +125,7 @@ public class ExportPatch {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
         chooser.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String state = (String)e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
@@ -148,7 +153,8 @@ public class ExportPatch {
                     DiffModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent());
 
                     final File out = destination;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Utils.postParallel(new Runnable() {
+                        @Override
                         public void run() {
                             exportDiff(base, modified, out, selectedFileFilter);
                         }

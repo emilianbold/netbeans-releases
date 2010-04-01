@@ -118,6 +118,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {
@@ -138,6 +139,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {
@@ -158,6 +160,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
+            @Override
             public Boolean call() throws Exception {
                 LOGGER.log(Level.FINE, "Running DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
                 if (!isValid(source)) {

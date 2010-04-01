@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -192,7 +193,7 @@ public final class DocumentView extends EditorBoxView
      */
     private float defaultLineHeight;
 
-    private float defaultBaselineOffset;
+    private float defaultAscent;
 
     private float defaultUnderlineOffset;
 
@@ -477,7 +478,8 @@ public final class DocumentView extends EditorBoxView
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             updateDefaultFontAndColors(result);
-            result.addLookupListener(lookupListener);
+            result.addLookupListener(WeakListeners.create(LookupListener.class,
+                    lookupListener, result));
         }
 
         if (prefs == null) {
@@ -564,20 +566,24 @@ public final class DocumentView extends EditorBoxView
             // but it also has an important effect that it allows eliminate problems
             // caused by using a [float,float] point that does not fit into views boundaries
             // maintained as doubles.
-            defaultLineHeight = (float) (Math.ceil(defaultLineHeight * 10) / 10);
-            defaultBaselineOffset = textLayout.getAscent(); // textLayout.getBaselineOffsets()[textLayout.getBaseline()];
+            defaultLineHeight = ViewUtils.cutFractions(defaultLineHeight);
+            defaultAscent = textLayout.getAscent();
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
-            defaultCharWidth = (float) textLayout.getBounds().getWidth();
+            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getBounds().getWidth());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Font: " + defaultFont + "\nline-height=" + defaultLineHeight + // NOI18N
+                FontMetrics fm = textComponent.getFontMetrics(defaultFont);
+                LOG.fine("Font: " + defaultFont + "\nLine-height=" + defaultLineHeight + // NOI18N
                         ", ascent=" + textLayout.getAscent() + ", descent=" + textLayout.getDescent() + // NOI18N
-                        ", leading=" + textLayout.getLeading() + "\nchar-width=" + defaultCharWidth + // NOI18N
+                        ", leading=" + textLayout.getLeading() + "\nChar-width=" + defaultCharWidth + // NOI18N
                         ", underlineOffset=" + defaultUnderlineOffset + // NOI18N
-                        ", font-metrics-height=" + textComponent.getFontMetrics(defaultFont).getHeight()); // NOI18N
+                        "\nFontMetrics (for comparison): fm-line-height=" + // NOI18N
+                        fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
+                        ", fm-descent=" + fm.getDescent() + "\n"
+                );
             }
         }
     }
@@ -747,9 +753,9 @@ public final class DocumentView extends EditorBoxView
         return defaultLineHeight;
     }
 
-    public float getDefaultBaselineOffset() {
+    public float getDefaultAscent() {
         checkSettingsInfo();
-        return defaultBaselineOffset;
+        return defaultAscent;
     }
 
     public float getDefaultUnderlineOffset() {

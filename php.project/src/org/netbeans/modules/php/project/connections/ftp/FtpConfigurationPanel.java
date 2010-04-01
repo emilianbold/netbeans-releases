@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
+public final class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
     private static final long serialVersionUID = 62342689756412730L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -80,18 +80,22 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         registerListeners();
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
 
+    @Override
     public JComponent getComponent() {
         return this;
     }
 
+    @Override
     public boolean isValidConfiguration() {
         String err = RemoteValidator.validateHost(hostTextField.getText());
         if (err != null) {
@@ -122,6 +126,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         return true;
     }
 
+    @Override
     public String getError() {
         return error;
     }
@@ -130,6 +135,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         this.error = error;
     }
 
+    @Override
     public String getWarning() {
         return warning;
     }
@@ -161,6 +167,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
         // internals
         anonymousCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 setEnabledLoginCredentials();
             }
@@ -432,6 +439,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         passiveModeCheckBox.setSelected(passiveMode);
     }
 
+    @Override
     public void read(Configuration cfg) {
         setHostName(cfg.getValue(FtpConnectionProvider.HOST));
         setPort(cfg.getValue(FtpConnectionProvider.PORT));
@@ -443,6 +451,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         setPassiveMode(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE)));
     }
 
+    @Override
     public void store(Configuration cfg) {
         cfg.putValue(FtpConnectionProvider.HOST, getHostName());
         cfg.putValue(FtpConnectionProvider.PORT, getPort());
@@ -455,12 +464,15 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }
@@ -470,6 +482,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     private final class DefaultActionListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             fireChange();
         }

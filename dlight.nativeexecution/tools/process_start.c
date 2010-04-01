@@ -60,7 +60,8 @@
 static pid_t pty_fork();
 
 int main(int argc, char* argv[]) {
-    pid_t pid;
+    pid_t pid, w;
+    int status;
     char *pty = NULL;
 
     int c;
@@ -167,7 +168,12 @@ int main(int argc, char* argv[]) {
     // Flush out the PID message before we take away stdout
     fflush(stdout);
 
-    waitpid(pid, NULL, 0);
-}
+    w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+    
+    if (w != -1 && WIFEXITED(status)) {
+        exit(WEXITSTATUS(status));
+    }
 
+    exit(EXIT_FAILURE);
+}
 

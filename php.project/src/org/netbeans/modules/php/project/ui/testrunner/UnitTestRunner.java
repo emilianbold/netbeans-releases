@@ -180,6 +180,7 @@ public final class UnitTestRunner {
     private static final class PhpOutputLineHandler implements OutputLineHandler {
         private static final LineConvertor CONVERTOR = LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
 
+        @Override
         public void handleLine(OutputWriter out, String text) {
             LineProcessors.printing(out, CONVERTOR, true).processLine(text);
         }
