@@ -36,49 +36,52 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.railsprojects.classpath;
 
-package org.netbeans.modules.terminal.api;
-
-import java.awt.Dimension;
-import org.openide.util.Lookup;
-import org.openide.windows.InputOutput;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
 /**
- * Capability of an InputOutput which provides notification of
- * size changes.
- * @author ivan
+ * Implementation which lets you merge a set of ClassPathImplementations
+ *
+ * @author Tor Norbye
  */
-public abstract class IOResizable {
+public class GroupClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+    private SourcePathImplementation[] implementations;
 
-    /**
-     * Use IONotifier with PROP_SIZE and IOResizable.Size as values
-     */
-    public static final String PROP_SIZE = "IOResizable.PROP_SIZE"; // NOI18N
-
-    public static final class Size {
-	public final Dimension cells;
-	public final Dimension pixels;
-
-	public Size(Dimension cells, Dimension pixels) {
-	    this.cells = cells;
-	    this.pixels = pixels;
-	}
+    GroupClassPathImplementation(SourcePathImplementation[] implementations) {
+        this.implementations = implementations;
     }
 
-    private static IOResizable find(InputOutput io) {
-        if (io instanceof Lookup.Provider) {
-            Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOResizable.class);
+    public List<? extends PathResourceImplementation> getResources() {
+        List<PathResourceImplementation> combined = new ArrayList<PathResourceImplementation>(20);
+        for (SourcePathImplementation implementation : implementations) {
+            List<? extends PathResourceImplementation> l = implementation.getResources();
+            combined.addAll(l);
         }
-        return null;
+
+        return combined;
     }
 
-    /**
-     * Checks whether this feature is supported for provided IO
-     * @param io IO to check on
-     * @return true if supported
-     */
-    public static boolean isSupported(InputOutput io) {
-        return find(io) != null;
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        for (SourcePathImplementation implementation : implementations) {
+            implementation.addPropertyChangeListener(listener);
+        }
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        for (SourcePathImplementation implementation : implementations) {
+            implementation.removePropertyChangeListener(listener);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        for (SourcePathImplementation implementation : implementations) {
+            propertyChange(evt);
+        }
     }
 }

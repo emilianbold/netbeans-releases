@@ -80,7 +80,8 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     private AID originalPackageAID;
     private AID packageAID;
-    boolean useMyProxies;
+    private boolean useMyProxies;
+    private boolean wasUseMyProxies;
 
     public ClassicAppletProjectProperties(JCProject project) {
         super(project);
@@ -138,7 +139,9 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
     @Override
     protected void onBeforeStoreProperties() throws IOException {
         super.onBeforeStoreProperties();
-        updateProxies(this, useMyProxies, SOURCE_ROOTS_MODEL);
+        if ((wasUseMyProxies != useMyProxies) || (useMyProxies && project.getProjectDirectory().getFileObject(PROXY_SOURCE_DIR) == null)) {
+            updateProxies(this, useMyProxies, SOURCE_ROOTS_MODEL);
+        }
     }
 
     static void updateProxies (JCProjectProperties props, boolean useMyProxies, DefaultTableModel srcRootsModel) throws IOException {
@@ -174,7 +177,6 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 for (int i= 0; i < max; i++) {
                     File test = (File) ((Vector<?>)(v.elementAt(i))).elementAt(0);
                     boolean match = test.getAbsolutePath().equals(f.getAbsolutePath());
-                    System.err.println(test + " against " + f + " match? " + match);
                     if (match) {
                         toRemove = i;
                         break;
@@ -185,9 +187,15 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
                 }
             }
         }
-        if (created || proxies.getChildren().length == 0) {
+        if (created || (proxies != null && isEmpty(proxies))) {
             offerToGenerateProxies(props.getProject());
         }
+    }
+
+    private static boolean isEmpty (FileObject proxies) {
+        //XXX scan for classes that implement import javacard.framework.Shareable
+        //and map them back to classes in the src dirs.
+        return false;
     }
 
     private static void offerToGenerateProxies(JCProject project) {
@@ -236,24 +244,28 @@ public final class ClassicAppletProjectProperties extends AppletProjectPropertie
 
     @Override
     protected boolean doStoreProperties(EditableProperties props) throws IOException {
-        props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
-        if (useMyProxies) {
-            props.setProperty (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR,
-                    PROXY_SOURCE_DIR);
-        } else if (PROXY_SOURCE_DIR.equals(props.getProperty(ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR))) {
-            props.remove (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR);
-            props.remove (ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        boolean result = false;
+        if (result = (wasUseMyProxies != useMyProxies)) {
+            props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES, String.valueOf(useMyProxies));
+            if (useMyProxies) {
+                props.setProperty (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR,
+                        PROXY_SOURCE_DIR);
+            } else if (PROXY_SOURCE_DIR.equals(props.getProperty(ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR))) {
+                props.remove (ProjectPropertyNames.PROJECT_PROP_PROXY_SRC_DIR);
+                props.remove (ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+            }
         }
-        if (packageAID != null && !packageAID.equals(originalPackageAID)) {
+        if (result |= (packageAID != null && !packageAID.equals(originalPackageAID))) {
             props.setProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID, packageAID.toString());
             rewriteManifest();
         }
-        return true;
+        return result;
     }
 
     @Override
     protected void onInit(PropertyEvaluator eval) {
         useMyProxies = Boolean.parseBoolean(project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES));
+        wasUseMyProxies = useMyProxies;
         String aidString = project.evaluator().getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_PACKAGE_AID);
         if (aidString != null) {
             try {

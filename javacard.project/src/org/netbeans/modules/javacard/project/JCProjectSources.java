@@ -52,7 +52,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -61,8 +60,11 @@ import javax.swing.event.ChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
+import org.openide.util.Exceptions;
 
 /**
  * Sources of Java Card project.
@@ -82,7 +84,6 @@ public class JCProjectSources implements Sources, ChangeListener,
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots}
      **/
     private boolean externalRootsRegistered;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JCProject project;
 
     JCProjectSources(JCProject project, AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -188,14 +189,14 @@ public class JCProjectSources implements Sources, ChangeListener,
         }
     }
 
-
+    private final Set<ChangeListener> listeners = Collections.synchronizedSet(new HashSet<ChangeListener>());
     public void addChangeListener(ChangeListener changeListener) {
-        changeSupport.addChangeListener(changeListener);
+        listeners.add(changeListener);
     }
 
 
     public void removeChangeListener(ChangeListener changeListener) {
-        changeSupport.removeChangeListener(changeListener);
+        listeners.remove(changeListener);
     }
 
     private void fireChange() {
@@ -205,7 +206,17 @@ public class JCProjectSources implements Sources, ChangeListener,
                 delegate = null;
             }
         }
-        changeSupport.fireChange();
+        ChangeListener[] l = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+        for (ChangeListener cl : l) {
+            try {
+                cl.stateChanged(new ChangeEvent(this));
+            } catch (IllegalStateException e) {
+                //http://netbeans.org/bugzilla/show_bug.cgi?id=182740
+                //"Too many request processors" exception during project
+                //metadata creation leaves metadata files locked and unreadable
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
 
 

@@ -76,6 +76,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     private static int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private FileObject projectDirectory;
+    private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
@@ -106,7 +107,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         }
         String path = FileUtil.toFile(projectDirectory).getPath();
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
-        Task task = RequestProcessor.getDefault().post(new NamedRunnable("Reading project configuraion") { //NOI18N
+        Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected @Override void runImpl() {
                 try {
@@ -226,7 +227,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     // Attach listeners to all disk folders
     private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
-        Task task = RequestProcessor.getDefault().post(new Runnable() {
+        Task task = REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 long time = System.currentTimeMillis();
