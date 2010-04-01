@@ -96,16 +96,20 @@ abstract class TerminalAction implements ActionListener {
                     }
 
                     private void doWork() {
-                        try {
-                            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                            try {
                                 ConnectionManager.getInstance().connectTo(env);
-                            }
-                            if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                                HostInfoUtils.getHostInfo(env);
-                            } else {
+                            } catch (IOException ex) {
+                                String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+                                String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                                return;
+                            } catch (CancellationException ex) {
                                 return;
                             }
+                        }
 
+                        try {
                             final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 

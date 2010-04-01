@@ -40,6 +40,7 @@ package org.netbeans.modules.nativeexecution.api.pty;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -48,7 +49,7 @@ import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
@@ -58,6 +59,8 @@ import org.openide.windows.InputOutput;
  * @author ak119685
  */
 public final class PtySupport {
+
+    private static final java.util.logging.Logger log = Logger.getInstance();
 
     static {
         PtyImplAccessor.setDefault(new Accessor());
@@ -146,7 +149,8 @@ public final class PtySupport {
                 try {
                     pty = creator.allocate(env);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    log.log(Level.WARNING, ex.getMessage());
+                    return null;
                 }
 
                 if (pty != null) {
