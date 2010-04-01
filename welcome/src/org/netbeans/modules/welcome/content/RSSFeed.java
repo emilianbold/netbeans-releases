@@ -126,6 +126,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     private int maxDescriptionChars = -1;
     private boolean foregroundColorFlag;
 
+    private static final RequestProcessor RP = new RequestProcessor("StartPage"); //NOI18N
+
 
     /** Returns file for caching of content. 
      * Enclosing folder is created if it does not exist yet.
@@ -330,7 +332,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 });
 
                 //schedule feed reload
-                reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
+                reloadTimer = RP.post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
 
             } catch( UnknownHostException uhE ) {
                 SwingUtilities.invokeLater( new Runnable() {
@@ -477,7 +479,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             if( System.currentTimeMillis() - lastReload >= RSS_FEED_TIMER_RELOAD_MILLIS ) {
                 reload();
             } else {
-                reloadTimer = RequestProcessor.getDefault().post( new Reload(),
+                reloadTimer = RP.post( new Reload(),
                         Math.max(1, (int)(RSS_FEED_TIMER_RELOAD_MILLIS - (System.currentTimeMillis() - lastReload))) );
             }
         }
