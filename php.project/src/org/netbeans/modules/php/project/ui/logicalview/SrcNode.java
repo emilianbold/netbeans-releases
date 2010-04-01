@@ -285,8 +285,8 @@ public class SrcNode extends FilterNode {
                 Action action = it.next();
                 //hard code string WhereUsedAction chosen not need to depend on refactoring
                 //just for this minority issue
-                if (action != null &&
-                        action.getClass().getName().indexOf("WhereUsedAction") != -1) {//NOI18N
+                if (action != null
+                        && action.getClass().getName().indexOf("WhereUsedAction") != -1) { // NOI18N
                     it.remove();
                     break;
                 }

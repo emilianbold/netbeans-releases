@@ -64,6 +64,7 @@ public class JumpToCallStackAction extends AbstractAction {
         return super.getValue(key);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Matcher matcher = PhpUnit.LINE_PATTERN.matcher(callstackFrameInfo);
         if (matcher.matches()) {

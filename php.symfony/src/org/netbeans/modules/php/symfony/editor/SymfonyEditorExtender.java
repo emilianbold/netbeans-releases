@@ -173,10 +173,11 @@ public class SymfonyEditorExtender extends EditorExtender {
             super.visit(node);
         }
 
+        @Override
         public void visit(Assignment assignment) {
             super.visit(assignment);
             if (assignment.getLeftHandSide() instanceof FieldAccess) {
-                final FieldAccess node = (FieldAccess)assignment.getLeftHandSide();
+                final FieldAccess node = (FieldAccess) assignment.getLeftHandSide();
                 if (action != null
                         && className != null
                         && methodName != null
@@ -196,7 +197,7 @@ public class SymfonyEditorExtender extends EditorExtender {
                         }
                     }
                 }
-            }            
+            }
         }
 
         public Set<PhpVariable> getPhpVariables() {

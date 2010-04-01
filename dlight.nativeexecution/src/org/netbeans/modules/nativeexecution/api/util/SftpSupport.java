@@ -61,7 +61,11 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -72,11 +76,10 @@ class SftpSupport {
     //
     // Static stuff
     //
-
-    private static final  java.util.logging.Logger LOG = Logger.getInstance();
+    private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+    private static final java.util.logging.Logger LOG = Logger.getInstance();
     private static final Object instancesLock = new Object();
     private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<ExecutionEnvironment, SftpSupport>();
-
     private static AtomicInteger uploadCount = new AtomicInteger(0);
 
     /** for test purposes only */
@@ -101,7 +104,7 @@ class SftpSupport {
             final ExecutionEnvironment execEnv,
             final String dstFileName,
             final int mask, final Writer error, final boolean checkMd5) {
-            return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error, checkMd5);
+        return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error, checkMd5);
     }
 
     static Future<Integer> downloadFile(
@@ -109,16 +112,13 @@ class SftpSupport {
             final ExecutionEnvironment execEnv,
             final String dstFileName,
             final Writer error) {
-            return getInstance(execEnv).downloadFile(srcFileName, dstFileName, error);
+        return getInstance(execEnv).downloadFile(srcFileName, dstFileName, error);
     }
-
     //
     // Instance stuff
     //
-
-    private final ExecutionEnvironment execEnv;    
+    private final ExecutionEnvironment execEnv;
     private final RequestProcessor requestProcessor;
-
     // its's ok to hav a single one since we have only single-threaded request processor
     private ChannelSftp channel;
     private final Object channelLock = new Object();
@@ -128,7 +128,6 @@ class SftpSupport {
         // we've got some sftp issues => only 1 task at a moment
         requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
     }
-
 
     private ChannelSftp getChannel() throws IOException, CancellationException, JSchException {
         synchronized (channelLock) {
@@ -164,6 +163,7 @@ class SftpSupport {
         }
 
         protected abstract void work() throws JSchException, SftpException, IOException, CancellationException, InterruptedException;
+
         protected abstract String getTraceName();
 
         @Override
@@ -174,18 +174,30 @@ class SftpSupport {
                 work();
                 rc = 0;
             } catch (JSchException ex) {
-                logException(ex);
-                rc = 1;
+                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
+                    // This is a known issue... but we cannot
+                    // do anything with this ;(
+                    if (isUnitTest) {
+                        logException(ex);
+                    } else {
+                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
+                        DialogDisplayer.getDefault().notifyLater(message);
+                    }
+                    rc = 7;
+                } else {
+                    logException(ex);
+                    rc = 1;
+                }
             } catch (SftpException ex) {
                 logException(ex);
                 rc = 2;
-            } catch(ConnectException ex) {
+            } catch (ConnectException ex) {
                 logException(ex);
                 rc = 3;
-            } catch(InterruptedIOException ex) {
+            } catch (InterruptedIOException ex) {
                 logException(ex);
                 rc = 4;
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 logException(ex);
                 rc = 5;
             } catch (CancellationException ex) {
@@ -266,11 +278,11 @@ class SftpSupport {
             final String dstFileName,
             final int mask, final Writer error, final boolean checkMd5) {
 
-            Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error, checkMd5);
-            FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
-            requestProcessor.post(ftask);
-            LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());
-            return ftask;
+        Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error, checkMd5);
+        FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());
+        return ftask;
     }
 
     private Future<Integer> downloadFile(
@@ -278,11 +290,10 @@ class SftpSupport {
             final String dstFileName,
             final Writer error) {
 
-            Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
-            FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
-            requestProcessor.post(ftask);
-            LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
-            return ftask;
+        Downloader downloader = new Downloader(srcFileName, execEnv, dstFileName, error);
+        FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
+        requestProcessor.post(ftask);
+        LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
+        return ftask;
     }
-
 }

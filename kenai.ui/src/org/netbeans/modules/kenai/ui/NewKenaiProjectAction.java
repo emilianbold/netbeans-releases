@@ -68,6 +68,7 @@ public final class NewKenaiProjectAction implements ActionListener {
     }
 
     public NewKenaiProjectAction() {
+        this.kenai = Utilities.getPreferredKenai();
     }
 
 

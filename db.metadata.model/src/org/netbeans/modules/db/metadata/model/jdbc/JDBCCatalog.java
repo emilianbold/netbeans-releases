@@ -130,36 +130,40 @@ public class JDBCCatalog extends CatalogImplementation {
         try {
             if (jdbcMetadata.getDmd().supportsSchemasInTableDefinitions()) {
                 ResultSet rs = jdbcMetadata.getDmd().getSchemas();
-                int columnCount = rs.getMetaData().getColumnCount();
-                if (columnCount < 2) {
-                    LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
-                }
-                boolean supportsCatalog = jdbcMetadata.getDmd().supportsCatalogsInTableDefinitions();
-                try {
-                    while (rs.next()) {
-                        String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
-                        // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
-                        // only returns a TABLE_SCHEM column.
-                        String catalogName = columnCount > 1 && supportsCatalog ? rs.getString("TABLE_CATALOG") : name; // NOI18N
-                        LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
-                        LOGGER.log(Level.FINEST, "MetadataUtilities.equals(catalogName=''{0}'', name=''{1}'') returns {2}",
-                                new Object[] {catalogName, name, MetadataUtilities.equals(catalogName, name)});
-                        if (MetadataUtilities.equals(catalogName, name)) {
-                            if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
-                                defaultSchema = createJDBCSchema(defaultSchemaName, true, false).getSchema();
-                                newSchemas.put(defaultSchema.getName(), defaultSchema);
-                                LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
-                            } else {
-                                Schema schema = createJDBCSchema(schemaName, false, false).getSchema();
-                                newSchemas.put(schemaName, schema);
-                                LOGGER.log(Level.FINE, "Created schema {0}", schema);
+                if (rs != null) {
+                    int columnCount = rs.getMetaData().getColumnCount();
+                    if (columnCount < 2) {
+                        LOGGER.fine("DatabaseMetaData.getSchemas() not JDBC 3.0-compliant");
+                    }
+                    boolean supportsCatalog = jdbcMetadata.getDmd().supportsCatalogsInTableDefinitions();
+                    try {
+                        while (rs.next()) {
+                            String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                            // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
+                            // only returns a TABLE_SCHEM column.
+                            String catalogName = columnCount > 1 && supportsCatalog ? rs.getString("TABLE_CATALOG") : name; // NOI18N
+                            LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
+                            LOGGER.log(Level.FINEST, "MetadataUtilities.equals(catalogName=''{0}'', name=''{1}'') returns {2}",
+                                    new Object[] {catalogName, name, MetadataUtilities.equals(catalogName, name)});
+                            if (MetadataUtilities.equals(catalogName, name)) {
+                                if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
+                                    defaultSchema = createJDBCSchema(defaultSchemaName, true, false).getSchema();
+                                    newSchemas.put(defaultSchema.getName(), defaultSchema);
+                                    LOGGER.log(Level.FINE, "Created default schema {0}", defaultSchema);
+                                } else {
+                                    Schema schema = createJDBCSchema(schemaName, false, false).getSchema();
+                                    newSchemas.put(schemaName, schema);
+                                    LOGGER.log(Level.FINE, "Created schema {0}", schema);
+                                }
                             }
                         }
+                    } finally {
+                        if (rs != null) {
+                            rs.close();
+                        }
                     }
-                } finally {
-                    if (rs != null) {
-                        rs.close();
-                    }
+                } else {
+                    LOGGER.info(this + " returns null from jdbcMetadata.getDmd().getSchemas().");
                 }
             }
             if (newSchemas.isEmpty() && !jdbcMetadata.getDmd().supportsSchemasInTableDefinitions()) {

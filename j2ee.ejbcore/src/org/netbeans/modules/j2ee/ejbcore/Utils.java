@@ -42,15 +42,18 @@
 package org.netbeans.modules.j2ee.ejbcore;
 
 import java.util.ArrayList;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import java.io.File;
@@ -243,8 +246,15 @@ public class Utils {
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {
-                isEJBModule = true;
+            if (j2eeModuleProvider != null){
+                    Type type = j2eeModuleProvider.getJ2eeModule().getType();
+                    EjbJar[] ejbJars = EjbJar.getEjbJars(allProjects[i]);
+                    Profile profile = ejbJars.length > 0 ? ejbJars[0].getJ2eeProfile() : null;
+
+                    if (J2eeModule.Type.EJB.equals(type) || (J2eeModule.Type.WAR.equals(type) &&
+                                (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_6_FULL.equals(profile)))){
+                        isEJBModule = true;
+                    }
             }
 
             // If the caller project is NOT a freeform project, include all EJB modules
