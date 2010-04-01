@@ -72,6 +72,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.xml.XMLConstants;
@@ -965,11 +966,15 @@ public final class ParseProjectXml extends Task {
             
             if (depJar.isFile()) { // might be false for m.run.cp if DO_NOT_RECURSE and have a runtime-only dep
                 Attributes attr;
-                JarFile jarFile = new JarFile(depJar, false);
                 try {
-                    attr = jarFile.getManifest().getMainAttributes();
-                } finally {
-                    jarFile.close();
+                    JarFile jarFile = new JarFile(depJar, false);
+                    try {
+                        attr = jarFile.getManifest().getMainAttributes();
+                    } finally {
+                        jarFile.close();
+                    }
+                } catch (ZipException x) {
+                    throw new BuildException("Could not open " + depJar + ": " + x, x, getLocation());
                 }
 
                 if (!dep.matches(attr)) { // #68631

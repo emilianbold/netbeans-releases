@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.ruby;
 import java.awt.Color;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -396,11 +398,26 @@ public class RetoucheUtils {
 //        return getClasspathInfoFor(ctx.getFileObject());
 //    }
 //
+
+    public static Collection<FileObject> getProjectRoots(FileObject fileInProject) {
+        Project owner = FileOwnerQuery.getOwner(fileInProject);
+        // XXX won't owner always be a RubyBaseProject?
+        if (owner instanceof RubyBaseProject) {
+            Collection<FileObject> result =  new HashSet<FileObject>();
+            result.addAll(Arrays.asList(((RubyBaseProject) owner).getSourceRootFiles()));
+            result.addAll(Arrays.asList(((RubyBaseProject) owner).getTestSourceRootFiles()));
+            return result;
+        } else {
+            // fallback
+            return QuerySupport.findRoots(fileInProject,
+                    null, Collections.<String>emptySet(), Collections.<String>emptySet());
+        }
+    }
+
     public static Set<FileObject> getRubyFilesInProject(FileObject fileInProject) {
         Set<FileObject> files = new HashSet<FileObject>(100);
-        // XXX: user ruby specific classpath IDs
-        Collection<FileObject> sourceRoots = QuerySupport.findRoots(fileInProject, 
-                null, Collections.<String>emptySet(), Collections.<String>emptySet());
+        Project owner = FileOwnerQuery.getOwner(fileInProject);
+        Collection<FileObject> sourceRoots = getProjectRoots(fileInProject);
         for (FileObject root : sourceRoots) {
             String name = root.getName();
             // Skip non-refactorable parts in renaming
@@ -412,6 +429,7 @@ public class RetoucheUtils {
 
         return files;
     }
+
     
     private static void addRubyFiles(Set<FileObject> files, FileObject f) {
         if (f.isFolder()) {

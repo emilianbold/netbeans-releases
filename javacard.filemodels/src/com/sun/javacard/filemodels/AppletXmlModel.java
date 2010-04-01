@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  * @author Tim Boudreau
  */
 public final class AppletXmlModel extends FileModel<AppletXmlAppletEntry> {
-
+    private final Logger LOG = Logger.getLogger(AppletXmlModel.class.getName());
     private static final String HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<applet-app xmlns=\"http://java.sun.com/xml/ns/javacard\"\n" +
             "           xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
@@ -136,29 +136,38 @@ public final class AppletXmlModel extends FileModel<AppletXmlAppletEntry> {
             org.w3c.dom.Node child;
 
             NodeList applets = doc.getElementsByTagName("applet"); //NOI18N
+            LOG.log(Level.FINEST, "Parse document {0}", doc); //NOI18N
             int len = applets.getLength();
             int ix = 0;
             for (int i = 0; i < len; i++) {
                 String displayName = null;
                 String clazz = null;
                 String aidString = null;
+                String description = null;
                 parent = applets.item(i);
                 NodeList kids = parent.getChildNodes();
                 int kl = kids.getLength();
                 for (int j = 0; j < kl; j++) {
                     child = kids.item(j);
                     if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        if ("display-name".equals(child.getNodeName())) { //NOI18N
+                        String name = child.getNodeName();
+                        LOG.log(Level.FINER, "Enter element node {0}", name);
+                        if ("display-name".equals(name)) { //NOI18N
                             displayName = child.getTextContent();
-                        } else if ("applet-class".equals(child.getNodeName())) { //NOI18N
+                        } else if ("applet-class".equals(name)) { //NOI18N
                             clazz = child.getTextContent();
-                        } else if ("applet-AID".equals(child.getNodeName())) { //NOI18N
+                        } else if ("applet-AID".equals(name)) { //NOI18N
                             aidString = child.getTextContent();
+                        } else if ("description".equals(name)) {
+                            description = child.getTextContent();
+                            //XXX handle
                         } else {
-                            handler.unrecognizedElementEncountered(child.getNodeName());
+                            LOG.log(Level.FINER, "Unknown element {0}", name); //NOI18N
+                            handler.unrecognizedElementEncountered(name);
                         }
                     }
                 }
+                LOG.log (Level.FINE, "Element: {0} {1} {2}", new Object[] { displayName, clazz, aidString }); //NOI18N
                 if (displayName != null && clazz != null) {
                     AppletXmlAppletEntry info = getByName(displayName);
                     AID aid = null;
@@ -178,9 +187,9 @@ public final class AppletXmlModel extends FileModel<AppletXmlAppletEntry> {
                         } else {
                             cl = clazz;
                         }
-                        Logger.getLogger(AppletXmlModel.class.getName()).log(Level.INFO,
-                                "Invalid AID in applet.xml " + aidString + " - " +
-                                "generating random one " + aid, ex == null ? new Exception() : ex);
+                        LOG.log(Level.INFO,
+                                "Invalid AID in applet.xml " + aidString + " - " + //NOI18N
+                                "generating random one " + aid, ex == null ? new Exception() : ex); //NOI18N
                     }
                     if (info == null) {
                         info = new AppletXmlAppletEntry(displayName, clazz, aid, ix);
