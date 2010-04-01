@@ -53,6 +53,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.diff.Utils;
 
 /**
  * Editor pane with added decorations (diff lines).
@@ -71,7 +72,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     private int                 charWidth;
 
     public DecoratedEditorPane(DiffContentPanel master) {
-        repaintTask = RequestProcessor.getDefault().create(new RepaintPaneTask());
+        repaintTask = Utils.createParallelTask(new RepaintPaneTask());
         setBorder(null);
         this.master = master;
         master.getMaster().addPropertyChangeListener(this);

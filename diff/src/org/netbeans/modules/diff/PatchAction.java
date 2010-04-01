@@ -64,7 +64,6 @@ import org.openide.DialogDisplayer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
-import org.openide.util.RequestProcessor;
 
 /**
  * Patch Action. It asks for a patch file and applies it to the selected file.
@@ -112,7 +111,7 @@ public class PatchAction extends NodeAction {
         if (fo != null) {
             final File patch = getPatchFor(fo);
             if (patch == null) return ;
-            RequestProcessor.getDefault().post(new Runnable () {
+            Utils.postParallel(new Runnable () {
                 public void run() {
                     performPatch(patch, FileUtil.toFile(fo));
                 }

@@ -47,7 +47,6 @@ import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +65,7 @@ import java.io.*;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.diff.Utils;
 
 /**
  * Patch export facility.
@@ -148,7 +148,7 @@ public class ExportPatch {
                     DiffModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent());
 
                     final File out = destination;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Utils.postParallel(new Runnable() {
                         public void run() {
                             exportDiff(base, modified, out, selectedFileFilter);
                         }
