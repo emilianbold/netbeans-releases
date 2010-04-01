@@ -41,6 +41,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.security.SignatureException;
 import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.sps.impl.SPSLocalImpl;
 import org.netbeans.modules.nativeexecution.sps.impl.SPSRemoteImpl;
@@ -62,9 +63,9 @@ public final class SolarisPrivilegesSupportProvider {
                 try {
                     result = SPSLocalImpl.getNewInstance(execEnv);
                 } catch (SignatureException ex) {
-                    Logger.getInstance().severe("Resource signature is wrong: " + ex.getMessage()); // NOI18N
+                    Logger.getInstance().log(Level.SEVERE, "Resource signature is wrong: {0}", ex.getMessage()); // NOI18N
                 } catch (MissingResourceException ex) {
-                    Logger.getInstance().severe("Resource not found: " + ex.getMessage()); // NOI18N
+                    Logger.getInstance().log(Level.SEVERE, "Resource not found: {0}", ex.getMessage()); // NOI18N
                 }
             } else {
                 result = SPSRemoteImpl.getNewInstance(execEnv);

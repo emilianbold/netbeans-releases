@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class DBReadWriteHelper {
 
-    private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
+    private static final Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
     public static Object readResultSet(ResultSet rs, DBColumn col, int index) throws SQLException {
@@ -80,7 +80,7 @@ public class DBReadWriteHelper {
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Boolean(bdata);
+                    return bdata;
                 }
             }
             case Types.TIME: {

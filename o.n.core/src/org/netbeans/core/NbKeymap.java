@@ -73,12 +73,17 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Keymap.class)
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
+
+    private static final RequestProcessor RP = new RequestProcessor("NbKeyMap", 1); //NOI18N
+    //for unit testing only
+    private RequestProcessor.Task refreshTask;
 
     private static final Action BROKEN = new AbstractAction("<broken>") { // NOI18N
         public void actionPerformed(ActionEvent e) {
@@ -145,9 +150,24 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         }
     };
 
-    private synchronized void refreshBindings() {
+    private void refreshBindings() {
+        refreshTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                doRefreshBindings();
+            }
+        });
+    }
+
+    private synchronized void doRefreshBindings() {
         bindings = null;
         bindings();
+    }
+
+    //for unit testing only
+    void waitFinished() throws InterruptedException {
+        if( null != refreshTask )
+            refreshTask.waitFinished(5000);
     }
 
     private synchronized Map<KeyStroke,Binding> bindings() {

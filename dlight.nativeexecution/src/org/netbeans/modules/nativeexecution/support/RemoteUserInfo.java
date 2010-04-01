@@ -98,7 +98,8 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             boolean[] echo) {
         if (prompt.length == 1 && !echo[0]) {
             // this is a password request
-            return new String[]{new String(pm.get(env))};
+            char[] chars = pm.get(env);
+            return chars == null ? null : new String[]{new String(pm.get(env))};
         } else {
             return null;
         }
