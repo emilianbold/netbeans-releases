@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -105,7 +106,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
      */
     private void define(String macroText, boolean isSystem) {
         macroText = DEFINE_PREFIX + macroText;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText);
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
