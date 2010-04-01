@@ -31,7 +31,7 @@ rm -rf ./dist/mountpoint/*
 echo "Running rsync..."
 rsync -a ./dist_dmg/ --exclude .DS_Store ./dist/mountpoint/
 echo "Running diskutil rename..."
-diskutil rename ./dist/mountpoint "$volname"
+diskutil rename `pwd`/dist/mountpoint "$volname"
 echo "Running hdiutil detach..."
 hdiutil detach -verbose ./dist/mountpoint
 
