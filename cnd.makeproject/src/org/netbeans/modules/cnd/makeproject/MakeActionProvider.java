@@ -1259,10 +1259,10 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
-                String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET",
+                String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", // NOI18N
                         csname, conf.getDevelopmentHost().getDisplayName(false));
                 for(String error : errsNoBTA) {
-                    message +="\n"+error;
+                    message +="\n"+error; // NOI18N
                 }
                 NotifyDescriptor nd = new NotifyDescriptor.Message(message);
                 DialogDisplayer.getDefault().notify(nd);
