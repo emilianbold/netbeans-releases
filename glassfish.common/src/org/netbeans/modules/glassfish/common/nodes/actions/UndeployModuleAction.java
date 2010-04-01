@@ -59,10 +59,13 @@ import org.openide.util.actions.NodeAction;
  */
 public class UndeployModuleAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] nodes) {
         if((nodes == null) || (nodes.length < 1)) {
             return;
         }
+
+        RequestProcessor undeployer = new RequestProcessor("gf-undeployer");
         
         for(Node node : nodes) {
             UndeployModuleCookie uCookie = node.getCookie(UndeployModuleCookie.class);
@@ -72,13 +75,16 @@ public class UndeployModuleAction extends NodeAction {
                 final Node pNode = node.getParentNode().getParentNode();
                 final Node fnode = node;
 
-                RequestProcessor.getDefault().post(new Runnable() {
+                undeployer.post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             result.get(ServerUtilities.ACTION_TIMEOUT, ServerUtilities.ACTION_TIMEOUT_UNIT);
                         } catch(TimeoutException ex) {
                             Logger.getLogger("glassfish").log(Level.WARNING, "Undeploy action timed out for " + fnode.getDisplayName());
-                        } catch(Exception ex) {
+                        } catch (InterruptedException ie) {
+                            // we can ignore this
+                        }catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                         }
                         if(pNode != null) {
@@ -94,8 +100,11 @@ public class UndeployModuleAction extends NodeAction {
                 });
             }
         }
+        undeployer.shutdown();
+        undeployer = null;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for(Node node : nodes) {
             UndeployModuleCookie cookie = node.getCookie(UndeployModuleCookie.class);
@@ -107,6 +116,7 @@ public class UndeployModuleAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(UndeployModuleAction.class, "LBL_UndeployAction");
     }
@@ -116,6 +126,7 @@ public class UndeployModuleAction extends NodeAction {
         return false;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
