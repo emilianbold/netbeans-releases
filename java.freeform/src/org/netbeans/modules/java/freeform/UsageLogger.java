@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.freeform;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -150,7 +151,11 @@ class UsageLogger {
             if (antScript != null) {
                 AntProjectCookie apc = DataObject.find(antScript).getLookup().lookup(AntProjectCookie.class);
                 if (apc != null) {
-                    targets = TargetLister.getTargets(apc).size();
+                    try {
+                        targets = TargetLister.getTargets(apc).size();
+                    } catch (IOException ioe) {
+                        //pass - Broken build.xml which may happen for freeform, targets = 0 and log usage
+                    }
                 }
             }
         }
