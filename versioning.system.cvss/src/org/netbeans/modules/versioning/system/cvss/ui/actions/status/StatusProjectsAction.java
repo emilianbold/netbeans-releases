@@ -82,7 +82,7 @@ public class StatusProjectsAction extends SystemAction {
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projects.length; i++) {
                 Project project = projects[i];
-                if (Utils.isVersionedProject(project)) {
+                if (Utils.isVersionedProject(project, false)) {
                     return true;
                 }
             }
