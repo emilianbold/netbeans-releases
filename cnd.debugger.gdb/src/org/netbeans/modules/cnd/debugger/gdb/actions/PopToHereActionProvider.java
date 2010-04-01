@@ -46,7 +46,6 @@ import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.util.RequestProcessor;
 
 /**
  * Pop the current stack.
@@ -58,7 +57,7 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
     /** Creates a new instance of PopToHereActionProvider */
     public PopToHereActionProvider(ContextProvider lookupProvider) {
         super(lookupProvider);
-        getDebugger().addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
+        setProviderToDisableOnLazyAction(this);
     }
     
     /**
@@ -76,11 +75,7 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
      * @param action an action which has been called
      */
     public void doAction(Object action) {
-        if (getDebugger() != null) {
-            if (action == ActionsManager.ACTION_POP_TOPMOST_CALL) {
-                getDebugger().popTopmostCall();
-            }
-        }
+        getDebugger().popTopmostCall();
     }
     
     /**
@@ -95,7 +90,7 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
      */
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        doLazyAction(new Runnable() {
             public void run() {
                 try {
                     doAction(action);

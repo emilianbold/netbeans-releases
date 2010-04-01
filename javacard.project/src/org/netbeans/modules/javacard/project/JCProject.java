@@ -56,6 +56,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -105,11 +106,13 @@ import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -238,6 +241,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     new JCProjectActionProvider(this),
                     new JCProjectOperations(this),
                     new JCCustomizerProvider(this, eval, genFilesHelper, antHelper),
+                    new CacheDirectoryProviderImpl(),
                     refHelper.createSubprojectProvider(),
                     encodingQuery,
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
@@ -530,7 +534,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     public ClassPath getSourceClassPath() {
         synchronized (pml) {
             if (sourcePath == null) {
-               sourcePath = ClassPathSupport.createClassPath(getRoots().getRoots());
+                sourcePath = ClassPathFactory.createClassPath(new SourceRootsClasspathImpl(getRoots()));
             }
             return sourcePath;
         }
@@ -584,7 +588,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         synchronized (classpathClosureLock) {
             classpathClosureString = sb.toString();
         }
-        System.err.println("Classpath closure as string is " + sb);
         return sb.toString();
     }
 
@@ -1111,6 +1114,18 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         }
     }
 
+    private final class CacheDirectoryProviderImpl implements CacheDirectoryProvider {
+        private static final String CACHE_DIR = "nbproject/private/cache";
+        @Override
+        public FileObject getCacheDirectory() throws IOException {
+            FileObject fo = getProjectDirectory().getFileObject(CACHE_DIR);
+            if (fo == null) {
+                fo = FileUtil.createFolder (fo, CACHE_DIR);
+            }
+            return fo;
+        }
+    }
+
     private final class RecommendedTempatesImpl implements
             RecommendedTemplates, PrivilegedTemplates {
 
@@ -1634,7 +1649,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         public File getTargetArtifact() {
             String path = evaluator().evaluate("${" + ProjectPropertyNames.PROJECT_PROP_DIST_JAR + "}"); //NOI18N
             path.replace ('/', File.separatorChar); //NOI18N
-            System.err.println("PATH EVALUATES TO " + path);
             return new File(path).getAbsoluteFile();
         }
     }

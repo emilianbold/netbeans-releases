@@ -114,7 +114,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
 
         settings.saveSettings();
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 switchBranch(nodes, context, settings);
             }

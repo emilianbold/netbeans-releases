@@ -151,6 +151,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
 
+    @Override
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
@@ -195,10 +196,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return FileType.UNKNOWN;
     }
 
+    @Override
     public List<FileObject> getIncludePath() {
         return new ArrayList<FileObject>(getPlatformPath());
     }
 
+    @Override
     public FileObject resolveFile(FileObject directory, String fileName) {
         FileObject resolved = directory.getFileObject(fileName);
         if (resolved != null) {
@@ -269,6 +272,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return cp;
     }
 
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(PhpSourcePath.BOOT_CP)) {
             return getBootClassPath();
@@ -305,6 +309,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return null;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (dirCache) {
             dirCache.remove(evt.getPropertyName());

@@ -461,7 +461,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
-    private static final RequestProcessor RP = RequestProcessor.getDefault();
+    private static final RequestProcessor RP = new RequestProcessor(Evaluator.class.getName());
     private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
 
         private final PropertyEvaluator eval;

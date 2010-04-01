@@ -197,7 +197,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
-        prepareTask = RequestProcessor.getDefault().post(dpt);
+        prepareTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(dpt);
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -745,7 +745,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                     setDiffIndex(0, 0);
                     commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
-                    prepareTask = RequestProcessor.getDefault().post(dpt);
+                    prepareTask = CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(dpt);
                 }
             }
         };
@@ -773,6 +773,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (currentType == Setup.DIFFTYPE_ALL) return;
             currentType = Setup.DIFFTYPE_ALL;
         }
+        CvsModuleConfig.getDefault().setLastUsedModificationContext(currentType);
         refreshTask.schedule(0);
     }
 

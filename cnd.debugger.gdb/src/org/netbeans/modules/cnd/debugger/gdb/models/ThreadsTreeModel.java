@@ -194,7 +194,7 @@ public class ThreadsTreeModel implements TreeModel {
                     propertyName.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = debugger.getRequestProcessor().create(new Refresher());
                     }
                     task.schedule(200);
                 }

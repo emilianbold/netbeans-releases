@@ -99,13 +99,4 @@ public class ExeObject extends MultiDataObject {
 	// If you add context help, change to:
 	// return new HelpCtx(ExeObject.class);
     }
-
-    /*
-     * Return name with extension so renaming etc works
-     */
-    @Override
-    public String getName() {
-	String ename = getPrimaryFile().getNameExt();
-	return ename;
-    }
 }

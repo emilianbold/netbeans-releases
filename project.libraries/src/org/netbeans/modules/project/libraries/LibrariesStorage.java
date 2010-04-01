@@ -185,7 +185,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 } catch (SAXException e) {
                     //The library is broken, probably edited by user
                     //just log as warning
-                    LOG.warning(String.format("File %s contains broken library descriptor.", FileUtil.getFileDisplayName(descriptorFile)));
+                    LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(descriptorFile), e.getMessage()));
                 } catch (ParserConfigurationException e) {
                     Exceptions.printStackTrace(e);
                 } catch (IOException e) {
@@ -412,8 +412,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 }
             }            
         } catch (SAXException e) {
-            //Newly created library is broken, rather exception
-            Exceptions.printStackTrace(e);
+            //The library is broken, probably edited by user or unknown provider (FoD), log as warning
+            LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(fo), e.getMessage()));
         } catch (ParserConfigurationException e) {
             Exceptions.printStackTrace(e);
         } catch (IOException e) {
@@ -473,8 +473,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     Exceptions.printStackTrace(Exceptions.attachMessage(e,message));
                 }                
             } catch (SAXException se) {
-                //Changed library is broken, rather exception
-                Exceptions.printStackTrace(se);
+                //The library is broken, probably edited by user, log as warning
+                LOG.warning(String.format("Cannot load library from file %s, reason: %s", FileUtil.getFileDisplayName(definitionFile), se.getMessage()));
             } catch (ParserConfigurationException pce) {
                 Exceptions.printStackTrace(pce);
             } catch (IOException ioe) {

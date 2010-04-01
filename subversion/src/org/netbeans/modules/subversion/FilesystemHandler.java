@@ -499,7 +499,7 @@ class FilesystemHandler extends VCSInterceptor {
                 }
 
                 if (parent != null) {
-                    assert SvnUtils.isManaged(parent);  // see implsMove above
+                    assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
                     // a direct cache call could, because of the synchrone svnMoveImplementation handling,
                     // trigger an reentrant call on FS => we have to check manually
                     if (!hasMetadata(parent)) {

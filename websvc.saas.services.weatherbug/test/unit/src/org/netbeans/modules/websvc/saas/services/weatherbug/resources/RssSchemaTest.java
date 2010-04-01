@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.weatherbug.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class RssSchemaTest extends SchemaTest {
+public class RssSchemaTest extends SchemaTestBase {
 
     private RssSchemaTest() {
         super();

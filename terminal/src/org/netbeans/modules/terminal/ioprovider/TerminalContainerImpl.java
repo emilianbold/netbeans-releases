@@ -245,7 +245,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
     /* OLD
     @Override
     protected void addImpl(Component comp, Object constraints, int index) {
-//        System.out.printf("TermTopComponent.addImpl(%s, %s, %s)\n", comp, constraints, index);
         if (comp instanceof JTabbedPane) {
             assert comp == tabbedPane;
             super.addImpl(comp, BorderLayout.CENTER, index);
@@ -385,16 +384,18 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	    }
 
 	}
+	tabToCb.remove(comp);
 
 
 	// SHOULD check if callers of this function assume that it
 	// always succeeds.
 
 	if (soleComponent != null) {
-	    // removing tha last one
+	    // removing the last one
 	    assert soleComponent == comp;
 	    super.remove(soleComponent);
 	    soleComponent = null;
+	    updateBars(null);
 	    updateWindowName(null);
 	    // LATER checkTabSelChange();
 	    setFocusable(true);

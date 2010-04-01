@@ -108,7 +108,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -243,7 +242,6 @@ public final class MakeActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.setDeleted();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }
@@ -665,7 +663,7 @@ public final class MakeActionProvider implements ActionProvider {
                 if (targetFolder.isTest()) {
                     CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                     if(compilerSet != null) {
-                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + '/' + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, targetFolder.getPath())); // NOI18N
+                        path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                         path = conf.expandMacros(path);
                         path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
                     }
@@ -863,7 +861,8 @@ public final class MakeActionProvider implements ActionProvider {
                 if(compilerSet == null) {
                     continue;
                 }
-                String target = "${TESTDIR}/" + CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, folder.getPath())); // NOI18N
+                String target = folder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
+                target = conf.expandMacros(target);
 
                 MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                 String buildCommand;
@@ -910,7 +909,7 @@ public final class MakeActionProvider implements ActionProvider {
             for (int i = 0; i < getProjectDescriptor().getProjectItems().length; i++) {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
-                if (!itemConfiguration.getExcluded().getValue() &&
+                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue() &&
                         (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;

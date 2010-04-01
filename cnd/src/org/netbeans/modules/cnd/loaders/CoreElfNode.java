@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.loaders;
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 

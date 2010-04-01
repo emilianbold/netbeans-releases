@@ -106,6 +106,7 @@ import org.openide.util.Utilities;
  * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
 public class DirectoryChooserUI extends BasicFileChooserUI {
+    private static final String DIALOG_IS_CLOSING = "JFileChooserDialogIsClosingProperty";
 
     private static final Dimension horizontalStrut1 = new Dimension(25, 1);
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
@@ -117,6 +118,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static final int ACCESSORY_WIDTH = 250;
     
     private static final Logger LOG = Logger.getLogger(DirectoryChooserUI.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor("DirChooser Update Worker"); // NOI18N
 
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
@@ -1100,8 +1103,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
     private void initUpdateWorker () {
         updateWorker = new UpdateWorker();
-        RequestProcessor.getDefault().post(updateWorker);
-        fileChooser.addActionListener(updateWorker);
+        RP.post(updateWorker);
+        //fileChooser.addActionListener(updateWorker);
+        fileChooser.addPropertyChangeListener(DIALOG_IS_CLOSING, updateWorker); //NOI18N
     }
     
     private void markStartTime () {
@@ -2458,7 +2462,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
 
-    private class UpdateWorker implements Runnable, ActionListener {
+    private class UpdateWorker implements Runnable, PropertyChangeListener {
         private String lastUpdatePathName = null;
         private boolean workerShouldStop = false;
         private LinkedBlockingDeque<File> updateQueue = new LinkedBlockingDeque<File>();
@@ -2513,8 +2517,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            fileChooser.removeActionListener(this);
+        public void propertyChange(PropertyChangeEvent evt) {
+            fileChooser.removePropertyChangeListener(DIALOG_IS_CLOSING, this);
             workerShouldStop = true;
             try {
                 updateQueue.put(new File("dummy")); //NOI18N

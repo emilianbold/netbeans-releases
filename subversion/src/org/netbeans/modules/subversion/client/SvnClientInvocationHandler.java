@@ -269,8 +269,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return !method.getName().equals("update") &&           // NOI18N
                !method.getName().equals("revert") &&           // NOI18N
                !method.getName().equals("switchToUrl") &&      // NOI18N
-               !method.getName().equals("commit") &&           // NOI18N
-               !method.getName().equals("commitAcrossWC") &&   // NOI18N
                !method.getName().equals("remove") &&           // NOI18N
                !method.getName().equals("mkdir") &&            // NOI18N
                !method.getName().equals("checkout") &&         // NOI18N

@@ -40,9 +40,12 @@
 package org.netbeans.modules.kenai.ui.treelist;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -277,12 +280,12 @@ public abstract class TreeListNode {
             listener.contentChanged(this);
     }
 
-    final protected JLabel createProgressLabel() {
+    final protected ProgressLabel createProgressLabel() {
         return createProgressLabel(NbBundle.getMessage(TreeListNode.class, "LBL_LoadingInProgress")); //NOI18N
     }
 
-    final protected JLabel createProgressLabel( String text ) {
-        return new ProgressLabel(text);
+    final protected ProgressLabel createProgressLabel( String text ) {
+        return new ProgressLabel(text, this);
     }
 
     final int getNestingDepth() {
@@ -349,23 +352,42 @@ public abstract class TreeListNode {
         }
     }
 
-    private class ProgressLabel extends TreeLabel {
+    public static final class ProgressLabel extends TreeLabel {
         private int frame = 0;
         private Timer t;
         final BusyPainter painter;
+        private final Reference<TreeListNode> ref;
 
-        public ProgressLabel( String text ) {
+        public ProgressLabel( String text, TreeListNode nd ) {
             super( text );
+            ref = new WeakReference <TreeListNode> (nd);
             painter = new BusyPainter(16);
             PainterIcon icon = new PainterIcon(new Dimension(16, 16));
             icon.setPainter(painter);
             setIcon(icon );
             t = new Timer(100, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    frame = (frame+1)%painter.getPoints();
-                    painter.setFrame(frame);
-                    ProgressLabel.this.repaint();
-                    fireContentChanged();
+                    //#183004 - The timer is never explicitly stopped (no
+                    //guarantee that setVisible(false) will ever be called
+                    //again.  This way, if the node it was rendering becomes
+                    //unreferenced, this label can be collected.  Since it is
+                    //no longer an inner class, although it may continue
+                    //running on a timer, it will not hold a reference to the
+                    //owning node
+                    TreeListNode nd = ref.get();
+                    if (nd == null) {
+                        t.stop();
+                        Container p = getParent();
+                        if (p != null) {
+                            p.remove(ProgressLabel.this);
+                        }
+                        return;
+                    } else {
+                        frame = (frame+1)%painter.getPoints();
+                        painter.setFrame(frame);
+                        ProgressLabel.this.repaint();
+                        nd.fireContentChanged();
+                    }
                 }
             });
             t.setRepeats(true);
@@ -384,6 +406,34 @@ public abstract class TreeListNode {
                 }
             }
         }
-    }
 
+        /**
+         * Stop the timer.  Make sure to call this method if you do not
+         * explicitly call setVisible(false) on this label.  Otherwise, its
+         * timer will keep running and it will be referenced forever.
+         */
+        public void stop() {
+            t.stop();
+        }
+
+        //The usual cell-renderer performance overrides
+        public void repaint() {
+            //do nothing
+        }
+
+        @Override
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+            //do nothing
+        }
+
+        @Override
+        public void validate() {
+            //do nothing
+        }
+
+        @Override
+        public void invalidate() {
+            //do nothing
+        }
+    }
 }

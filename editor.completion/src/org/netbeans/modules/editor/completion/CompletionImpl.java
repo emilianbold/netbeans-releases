@@ -760,8 +760,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             commonText = text;
                         } else {
                             // Get the largest common part
-                            int minLen = Math.min(text.length(), commonText.length());
-                            for (int commonInd = 0; commonInd < minLen; commonInd++) {
+                            if (text.length() < commonText.length())
+                                commonText = commonText.subSequence(0, text.length());
+                            for (int commonInd = 0; commonInd < commonText.length(); commonInd++) {
                                 if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
                                     if (commonInd == 0) {
                                         commonText = null;

@@ -226,7 +226,8 @@ public final class UpdateUnitProviderImpl {
             for (FileObject auType : auTypeFolder.getChildren()) {
                 // check first if already exist
                 try {
-                    if (!getPreferences().nodeExists(auType.getName())) {
+                    if (!getPreferences().nodeExists(auType.getName()) &&
+                            !getPreferences().nodeExists(auType.getName() + REMOVED_MASK)) {
                         try {
                             UpdateProvider p = AutoupdateCatalogFactory.createUpdateProvider(auType);
                             if (p != null) {
@@ -321,6 +322,13 @@ public final class UpdateUnitProviderImpl {
     }    
     
     /*private because tests*/ static UpdateProvider loadProvider (String codeName) {
+        try {
+            if(getPreferences ().nodeExists(codeName + REMOVED_MASK)) {
+                return null;
+            }
+        } catch (BackingStoreException e) {
+            err.log(Level.INFO, e.getMessage(), e);
+        }
         Preferences providerPreferences = getPreferences ().node (codeName);
         assert providerPreferences != null : "Preferences node " + codeName + " found.";
         
@@ -357,6 +365,13 @@ public final class UpdateUnitProviderImpl {
         assert providerPreferences != null : "Preferences node " + p.getName () + " found.";
         
         providerPreferences.put (ENABLED, Boolean.valueOf (isEnabled).toString ());
+        try {
+        if(getPreferences().nodeExists(p.getName() + REMOVED_MASK)) {
+            getPreferences().node(p.getName() + REMOVED_MASK).removeNode();
+        }
+        } catch (BackingStoreException x) {
+            err.log (Level.INFO, x.getMessage(), x);
+        }
     }
     
     private static String loadDisplayName (UpdateProvider p) {

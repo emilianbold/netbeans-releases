@@ -1521,4 +1521,28 @@ public class SvnUtils {
         // open project selection
         ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
     }
+
+    /*
+     * Refreshes all parents for given files
+     * XXX move to versioning.utils if needed in other modules
+     */
+    public static void refreshFS (File... files) {
+        final Set<File> parents = new HashSet<File>();
+        for (File f : files) {
+            File parent = f.getParentFile();
+            if (parent != null) {
+                parents.add(parent);
+                Subversion.LOG.log(Level.FINE, "scheduling for fs refresh: [{0}]", parent); // NOI18N
+            }
+        }
+        if (parents.size() > 0) {
+            // let's give the filesystem some time to wake up and to realize that the file has really changed
+            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                }
+            }, 100);
+        }
+    }
 }

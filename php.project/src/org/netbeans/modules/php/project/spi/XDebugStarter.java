@@ -52,7 +52,7 @@ import org.openide.util.Cancellable;
  */
 public interface XDebugStarter {
     /**
-     * Starts session
+     * Starts session.
      */
     void start(Project project, Callable<Cancellable> run, Properties properties);
 
@@ -62,7 +62,7 @@ public interface XDebugStarter {
     boolean isAlreadyRunning();
 
     /**
-     * Stops session
+     * Stops session.
      */
     void stop();
 

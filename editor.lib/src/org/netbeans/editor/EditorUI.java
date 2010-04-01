@@ -47,7 +47,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
 import java.beans.PropertyChangeListener;
@@ -166,12 +165,12 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     /** Character (or better line) height. Particular view can use a different
     * character height however most views will probably use this one.
     */
-    private int lineHeight = 1; // prevent possible division by zero
+    private int lineHeight = -1;
 
     private float lineHeightCorrection = 1.0f;
 
     /** Ascent of the line which is maximum ascent of all the fonts used. */
-    private int lineAscent;
+    private int lineAscent = -1;
 
     /** Width of the space in the default coloring's font */
     int defaultSpaceWidth = 1;
@@ -228,7 +227,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     Insets scrollFindInsets;
 
     /** EditorUI properties */
-    Hashtable props = new Hashtable(11);
+    private final HashMap<Object, Object> props = new HashMap<Object, Object>(11);
 
     boolean textLimitLineVisible;
 
@@ -309,6 +308,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      * @param lineNumberEnabled if set to false the line numbers will not be printed.
      *  If set to true the visibility of line numbers depends on lineNumberVisibleSetting.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public EditorUI(BaseDocument printDoc, boolean usePrintColoringMap, boolean lineNumberEnabled) {
         this.printDoc = printDoc;
         listener.preferenceChange(null);
@@ -488,7 +488,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     protected void settingsChangeImpl(String settingName) {
     }
     
-    public void stateChanged(ChangeEvent evt) {
+    public @Override void stateChanged(ChangeEvent evt) {
         SwingUtilities.invokeLater(
             new Runnable() {
                 
@@ -524,7 +524,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     return new boolean [] { false, false };
                 }
                 
-                public void run() {
+                public @Override void run() {
                     JTextComponent c = component;
                     if (c != null && c.hasFocus()) { // do nothing if the component does not have focus, see #110715
                         BaseKit kit = Utilities.getKit(c);
@@ -599,7 +599,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
 
         if ("document".equals(propName)) { // NOI18N
@@ -640,11 +640,17 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
 
     public int getLineHeight() {
-        return lineHeight;
+        if (lineHeight == -1 && component != null) {
+            updateLineHeight(component);
+        }
+        return lineHeight > 0 ? lineHeight : 1;
     }
 
     public int getLineAscent() {
-        return lineAscent;
+        if (lineAscent == -1 && component != null) {
+            updateLineHeight(component);
+        }
+        return lineAscent > 0 ? lineAscent : 1;
     }
 
     /**
@@ -708,8 +714,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
         
         Map<String, Coloring> cm = getCMInternal();
-        int maxHeight = 1;
-        int maxAscent = 0;
+        int maxHeight = -1;
+        int maxAscent = -1;
         for(String coloringName : cm.keySet()) {
             if (FontColorNames.STATUS_BAR_COLORING.equals(coloringName) ||
                 FontColorNames.STATUS_BAR_BOLD_COLORING.equals(coloringName)
@@ -717,13 +723,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 //#57112
                 continue;
             }
-            
+
             Coloring c = cm.get(coloringName);
-            
+
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Probing coloring '" + coloringName + "' : " + c);
             }
-            
+
             if (c != null) {
                 Font font = c.getFont();
                 if (font != null && (c.getFontMode() & Coloring.FONT_MODE_APPLY_SIZE) != 0) {
@@ -754,20 +760,55 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             }
         }
 
-        boolean changePreferences = false;
-        if (lineHeight!=1 && lineHeight!=(int)(maxHeight * lineHeightCorrection)){
-            changePreferences = true;
-        }
+        if (BaseKit.LINEWRAP_ENABLED) {
+            maxHeight = -1;
+            View rootView = Utilities.getDocumentView(component);
+            if (rootView != null) {
+                for(int i = 0; i < rootView.getViewCount(); i++) {
+                    View view = rootView.getView(i);
+                    int offset = view.getStartOffset();
+                    Rectangle r = null;
 
-        int oldProp = lineHeight;
+                    try {
+                        r = component.getUI().modelToView(component, offset);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.INFO, null, ble);
+                    }
+
+                    if (r == null) {
+                        break;
+                    }
+
+                    if (LOG.isLoggable(Level.FINE)) {
+                        if (maxHeight < r.getHeight()) {
+                            try {
+                                LOG.fine("Updating maxHeight from " //NOI18N
+                                    + maxHeight + " to " + r.getHeight() // NOI18N
+                                    + ", line=" + i // NOI18N
+                                    + ", text=" + component.getDocument().getText(offset, view.getEndOffset() - offset) //NOI18N
+                                );
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.FINE, null, ble);
+                            }
+                        }
+                    }
+
+                    maxHeight = Math.max(maxHeight, (int) r.getHeight());
+                }
+            }
+        }
         
-        // Apply lineHeightCorrection
-        lineHeight = (int)(maxHeight * lineHeightCorrection);
-        lineAscent = (int)(maxAscent * lineHeightCorrection);
-        if (changePreferences) {
-            firePropertyChange(LINE_HEIGHT_CHANGED_PROP, new Integer(oldProp), new Integer(lineHeight));
+        if (maxAscent > 0) {
+            lineAscent = (int)(maxAscent * lineHeightCorrection);
         }
-
+        
+        if (maxHeight > 0) {
+            int oldLineHeight = lineHeight;
+            lineHeight = (int)(maxHeight * lineHeightCorrection);
+            if (oldLineHeight != lineHeight && oldLineHeight != -1) {
+                firePropertyChange(LINE_HEIGHT_CHANGED_PROP, new Integer(oldLineHeight), new Integer(lineHeight));
+            }
+        }
     }
     
     /**
@@ -1004,7 +1045,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
         
         try {
-            yTo = ui.getYFromPos(endPos) + lineHeight;
+            yTo = ui.getYFromPos(endPos) + getLineHeight();
         } catch (BadLocationException e) {
             Utilities.annotateLoggable(e);
             yTo = (int) ui.getRootView(component).getPreferredSpan(View.Y_AXIS);
@@ -1109,7 +1150,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(
                 new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         updateTextMargin();
                     }
                 }
@@ -1173,7 +1214,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     public void scrollRectToVisible(final Rectangle r, final int scrollPolicy) {
         Utilities.runInEventDispatchThread(
             new Runnable() {
-                public void run() {
+                public @Override void run() {
                     scrollRectToVisibleFragile(r, scrollPolicy);
                 }
             }
@@ -1220,13 +1261,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
             cnvFI = (scrollFindInsets.top < 0)
                 ? (- bounds.height * scrollFindInsets.top / 100)
-                : scrollFindInsets.top * lineHeight;
+                : scrollFindInsets.top * getLineHeight();
 
             int ny = Math.max(r.y - cnvFI, 0);
 
             cnvFI = (scrollFindInsets.bottom < 0)
                 ? (- bounds.height * scrollFindInsets.bottom / 100)
-                : scrollFindInsets.bottom * lineHeight;
+                : scrollFindInsets.bottom * getLineHeight();
 
             r.height += (r.y - ny) + cnvFI;
             r.y = ny;
@@ -1280,7 +1321,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 r.width = bounds.width; // could be different algorithm
                 return scrollRectToVisibleImpl(r, scrollPolicy, bounds);            
             } catch (BadLocationException ble){
-                ble.printStackTrace();
+                LOG.log(Level.WARNING, null, ble);
             }
         }
 
@@ -1331,7 +1372,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 newY = r.y;
                 newY -= (scrollJumpInsets.top < 0)
                         ? (bounds.height * (-scrollJumpInsets.top) / 100 )
-                        : scrollJumpInsets.top * lineHeight;
+                        : scrollJumpInsets.top * getLineHeight();
                 break;
             case SCROLL_SMALLEST:
                 newY = r.y;
@@ -1349,7 +1390,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 newY = (r.y + r.height) - bounds.height;
                 newY += (scrollJumpInsets.bottom < 0)
                         ? (bounds.height * (-scrollJumpInsets.bottom) / 100 )
-                        : scrollJumpInsets.bottom * lineHeight;
+                        : scrollJumpInsets.bottom * getLineHeight();
                 break;
             case SCROLL_SMALLEST:
                 newY = (r.y + r.height) - bounds.height;
@@ -1382,9 +1423,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             try {
                 Rectangle caretRect = component.modelToView(component.getCaretPosition());
                 bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
-                        + (caretPercentFromWindowTop * lineHeight) / 100;
+                        + (caretPercentFromWindowTop * getLineHeight()) / 100;
                 Utilities.runInEventDispatchThread(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
                     }
                 });
@@ -1403,7 +1444,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         if (c != null) {
             Rectangle bounds = getExtentBounds();
             bounds.y += (percentFromWindowTop * bounds.height) / 100
-                        - (percentFromWindowTop * lineHeight) / 100;
+                        - (percentFromWindowTop * getLineHeight()) / 100;
             try {
                 int offset = ((BaseTextUI)c.getUI()).getPosFromY(bounds.y);
                 if (offset >= 0) {
@@ -1531,7 +1572,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     private class Listener implements PreferenceChangeListener {
 
-        public void preferenceChange(PreferenceChangeEvent evt) {
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
             // ignore events that come after uninstalling the EditorUI from a component
             if (prefs == null) {
                 disableLineNumbers = false;
@@ -1565,7 +1606,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             if (doc != null) {
 
                 if (settingName == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(settingName)) {
-                    textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, EditorPreferencesDefaults.defaultTextLeftMarginWidth);
+                    textLeftMarginWidth = 0; // prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, EditorPreferencesDefaults.defaultTextLeftMarginWidth);
                 }
 
                 if (settingName == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(settingName)) {
@@ -1605,7 +1646,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                     }
 
                     Utilities.runInEventDispatchThread(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             JTextComponent c = component;
                             if (c != null) {
                                 updateComponentProperties();
@@ -1632,7 +1673,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             // Postponing menu creation in order to give other listeners chance
             // to do their job. See IZ #140127 for details.
             SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     showPopupMenu(evt.getX(), evt.getY());
                 }
             });
@@ -1643,22 +1684,22 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     // MouseListener implementation
     // -----------------------------------------------------------------------
     
-    public void mouseClicked(MouseEvent evt) {
+    public @Override void mouseClicked(MouseEvent evt) {
     }
 
-    public void mousePressed(MouseEvent evt) {
+    public @Override void mousePressed(MouseEvent evt) {
         getWordMatch().clear();
         showPopupMenuForPopupTrigger(evt);
     }
     
-    public void mouseReleased(MouseEvent evt) {
+    public @Override void mouseReleased(MouseEvent evt) {
         showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
     }
 
-    public void mouseEntered(MouseEvent evt) {
+    public @Override void mouseEntered(MouseEvent evt) {
     }
 
-    public void mouseExited(MouseEvent evt) {
+    public @Override void mouseExited(MouseEvent evt) {
     }
     
     // -----------------------------------------------------------------------

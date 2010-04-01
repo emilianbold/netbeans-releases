@@ -93,7 +93,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(ResolveConflictsAction.class, "MSG_MoveAwayLocalFileConflict", file.getName())));
             } else {
-                RequestProcessor.getDefault().post(new Runnable() {
+                CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                     public void run() {
                         ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
                         rce.exec(file);

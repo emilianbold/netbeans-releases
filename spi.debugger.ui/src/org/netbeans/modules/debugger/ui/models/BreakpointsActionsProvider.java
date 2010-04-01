@@ -173,6 +173,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    private static RequestProcessor deleteRP = new RequestProcessor("Breakpoint Delete", 1);    // NOI18N
     private static final Action DELETE_ACTION = Models.createAction (
         NbBundle.getBundle (BreakpointsActionsProvider.class).getString
             ("CTL_BreakpointAction_Delete_Label"),
@@ -181,7 +182,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (final Object[] nodes) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                deleteRP.post(new Runnable() {
                     public void run() {
                         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
                         int i, k = nodes.length;

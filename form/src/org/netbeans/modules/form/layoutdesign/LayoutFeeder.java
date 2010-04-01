@@ -2865,8 +2865,12 @@ class LayoutFeeder implements LayoutConstants {
 
         group.getCurrentSpace().positions[dimension][alignment] += gapSize;
 
-        for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
-            LayoutInterval sub = (LayoutInterval) it.next();
+        List<LayoutInterval> originalGroup = new LinkedList<LayoutInterval>();
+        for (Iterator<LayoutInterval> it=group.getSubIntervals(); it.hasNext(); ) {
+            originalGroup.add(it.next());
+        }
+
+        for (LayoutInterval sub : originalGroup) {
             LayoutInterval gapClone = LayoutInterval.cloneInterval(gap, null);
             if (sub.isSequential()) {
                 sub.getCurrentSpace().positions[dimension][alignment] += gapSize;

@@ -68,7 +68,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author  Radek Matous, Tomas Mysik
  */
-public class RunAsScript extends RunAsPanel.InsidePanel {
+public final class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559447897914071L;
     private final PhpProject project;
     private final JLabel[] labels;
@@ -112,6 +112,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         // php cli
         defaultInterpreterCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 boolean selected = defaultInterpreterCheckBox.isSelected();
                 interpreterBrowseButton.setEnabled(!selected);
@@ -127,11 +128,13 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             }
         });
         phpInterpreterListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                     if (defaultInterpreterCheckBox.isSelected()) {
                         // #143315
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 interpreterTextField.setText(getDefaultPhpInterpreter());
                                 composeHint();
@@ -183,6 +186,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         return runAsCombo;
     }
 
+    @Override
     protected void loadFields() {
         for (int i = 0; i < textFields.length; i++) {
             String val = getValue(propertyNames[i]);
@@ -193,6 +197,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
     }
 
+    @Override
     protected void validateFields() {
         String phpInterpreter = interpreterTextField.getText().trim();
         String indexFile = indexFileTextField.getText();
@@ -218,6 +223,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsScript.this.getDefaultValue(getPropName());
         }

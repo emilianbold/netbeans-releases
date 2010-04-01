@@ -132,6 +132,7 @@ public final class RunAsPanel extends JPanel {
         }
 
         //active configuration was changed
+        @Override
         public final void stateChanged(ChangeEvent e) {
             String initPanelName = getValue(PhpProjectProperties.RUN_AS);
             if ((initPanelName == null && isDefault()) || (initPanelName != null && initPanelName.equals(getRunAsType().name()))) {
@@ -217,14 +218,17 @@ public final class RunAsPanel extends JPanel {
 
             protected abstract String getDefaultValue();
 
+            @Override
             public final void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public final void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
 
+            @Override
             public final void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }

@@ -92,6 +92,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private final Terminal terminal;
     private final StreamTerm term;
+    private final TermListener termListener;
+
     private OutputWriter outputWriter;
     private OutputWriter errWriter;
 
@@ -323,33 +325,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
     */
 
-    private class MyIOResizable extends IOResizable {
-
-	// We need a map to help us remove TermListeners from 'term'
-	// based on IOResizable.Listener.
-	private Map<Listener, TermListener> listenerMap =
-		new HashMap<Listener, TermListener>();
-
-	@Override
-	protected void addListener(final Listener listener) {
-	    TermListener termListener = new TermListener() {
-		@Override
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		    // propagate size change notifications from Term
-		    // to Listener
-		    listener.sizeChanged(cells, pixels);
-		}
-	    };
-	    term.addListener(termListener);
-	    listenerMap.put(listener, termListener);
-	}
-
-	@Override
-	protected void removeListener(Listener listener) {
-	    TermListener termListener = listenerMap.remove(listener);
-	    if (termListener != null)
-		term.removeListener(termListener);
-	}
+    private static final class MyIOResizable extends IOResizable {
     }
 
     private class MyIOEmulation extends IOEmulation {
@@ -583,10 +559,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         term = terminal.term();
 
-        if (! (term instanceof ActiveTerm))
+        if (! (term instanceof ActiveTerm)) {
+	    termListener = null;
             return;
+	}
 
-	term.addListener(new MyTermListener());
+	termListener = new MyTermListener();
+	term.addListener(termListener);
 
         ActiveTerm at = (ActiveTerm) term;
 
@@ -618,6 +597,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
 
     void dispose() {
+        final ActiveTerm at = (ActiveTerm) term;
+        at.setActionListener(null);
+	term.removeListener(termListener);
 	if (outputWriter != null) {
 	    // LATER outputWriter.dispose();
 	    outputWriter = null;

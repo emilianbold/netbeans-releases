@@ -50,7 +50,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.JarClassLoader.JarSource;
 
 /**
  * A shared startup-needed resource archive.
@@ -92,7 +91,7 @@ class Archive implements Stamps.Updater {
     // these two collections are guarded either by the gatheringLock
     // or by the "gathering" volatile flag transitions
     private Map<String,Boolean> requests = new LinkedHashMap<String, Boolean>();
-    private Map<String,JarSource> knownSources = new HashMap<String,JarSource>();
+    private Map<String,ArchiveResources> knownSources = new HashMap<String,ArchiveResources>();
 
     private volatile boolean active;
     // These two collections are guarded by the "active" volatile flag transition.
@@ -171,18 +170,19 @@ class Archive implements Stamps.Updater {
         dos.write(data);
     }
     
-    public byte[] getData(JarSource source, String name) throws IOException {
+    @SuppressWarnings("element-type-mismatch")
+    public byte[] getData(ArchiveResources source, String name) throws IOException {
         Entry e = null;
+        String srcId = source.getIdentifier();
         Map<Entry, Entry> ents = entries;
         if (active) {
-            Integer src = sources.get(source.getIdentifier());
+            Integer src = sources.get(srcId);
             if (src == null) {
                 e = null;
             } else {
                 e = ents.get(new Template(src, name)); // or null
             }
             if (e == null && gathering) {
-                String srcId = source.getIdentifier();
                 StringBuilder sb = new StringBuilder(srcId.length() + name.length());
                 String key = sb.append(srcId).append(name).toString();
 
@@ -221,6 +221,7 @@ class Archive implements Stamps.Updater {
         cache.scheduleSave(this, "all-resources.dat", prepopulated);
     }
 
+    @Override
     public void flushCaches(DataOutputStream dos) throws IOException {
         stopGathering();
         stopServing();
@@ -237,7 +238,7 @@ class Archive implements Stamps.Updater {
         // is already cleared
         for (String s:requests.keySet()) {
             String[] parts = s.split("(?<=!/)");
-            JarSource src = knownSources.get(parts[0]);
+            ArchiveResources src = knownSources.get(parts[0]);
             assert src != null : "Could not find " + s + " in " + knownSources;
             byte[] data = src.resource(parts[1]);
             Integer srcId = sources.get(parts[0]);
@@ -245,7 +246,7 @@ class Archive implements Stamps.Updater {
                 srcId = sources.size();
                 sources.put(parts[0], srcId);
                 dos.write(1);
-                writeString(dos, src.getIdentifier());
+                writeString(dos, parts[0]);
             }
             
             dos.write(2);
@@ -268,6 +269,7 @@ class Archive implements Stamps.Updater {
         sources = null;
     }
 
+    @Override
     public void cacheReady() {
         // nothing needs to be done
     }
@@ -372,6 +374,4 @@ class Archive implements Stamps.Updater {
             return code;
         }
     }
-
 }
-

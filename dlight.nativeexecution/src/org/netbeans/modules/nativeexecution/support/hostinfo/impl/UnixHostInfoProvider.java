@@ -78,6 +78,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
     }
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         if (hostinfoScript == null) {
             return null;
@@ -149,7 +150,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         try {
             final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(cm, execEnv, true);
+                    getConnectionSession(execEnv, true);
 
             if (session != null) {
                 ChannelExec echannel = null;

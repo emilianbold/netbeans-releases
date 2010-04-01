@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -252,6 +251,10 @@ public class GdbDebugger implements PropertyChangeListener {
 
     public ContextProvider getLookup() {
         return lookupProvider;
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return gdbEngineProvider.getRequestProcessor();
     }
 
     public void startDebugger() {
@@ -467,10 +470,15 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
                     continueAfterFirstStop = false; // step into project
                 }
-                gdb.break_insert_temporary("main"); // NOI18N
+
+                // see IZ 178072 - do not set two main breakpoints
+                boolean mainSet = false;
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
-                    gdb.break_insert_temporary("WinMain"); // NOI18N
+                    // WinAPI apps don't have a "main" function. Use "WinMain" on Windows.
+                    mainSet = gdb.break_insert_temporaryEx("WinMain", false).isOK(); // NOI18N
+                }
+                if (!mainSet) {
+                    gdb.break_insert_temporary("main"); // NOI18N
                 }
 
                 String inRedir = "";
@@ -931,6 +939,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 }
             }
         }
@@ -1520,6 +1530,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     } else if (HostInfoUtils.fileExists(execEnv, KILL_PATH2)) {
                         killcmd.add(KILL_PATH2);
                     }
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -1576,7 +1588,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private String untilBptId = null;
 
     private String setUntilBpt(String loc) {
-        final CommandBuffer res = gdb.break_insert_temporaryEx(loc);
+        final CommandBuffer res = gdb.break_insert_temporaryEx(loc, true);
         if (res.isOK()) {
             String response = res.getResponse();
             if (response.length() >= 6) { // cut bkpt={ prefix
@@ -2010,7 +2022,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * thread and CommandBuffer.waitForCompletion() doesn't work on that thread.
      */
     private void checkSharedLibs() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 String share = gdb.info_share(true).getResponse();
@@ -2184,9 +2196,8 @@ public class GdbDebugger implements PropertyChangeListener {
             String fullname = map.get("fullname"); // NOI18N
             String file = map.get("file"); // NOI18N
             String line = map.get("line"); // NOI18N
-            String func = map.get("func"); // NOI18N
-            if (number != null && ((number.equals("1")) || // NOI18N
-                    (number.equals("2") && func != null && func.equals("WinMain") && platform == PlatformTypes.PLATFORM_WINDOWS))) { // NOI18N
+            // first breakpoint in main (WinMain on Windows)
+            if ("1".equals(number)) { // NOI18N
                 firstBPfullname = fullname;
                 firstBPfile = file;
                 firstBPline = line;
@@ -2329,6 +2340,8 @@ public class GdbDebugger implements PropertyChangeListener {
                 return true;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                // don't log InterruptedException
             }
         } 
         return false;

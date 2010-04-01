@@ -192,11 +192,12 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Node node) {
+    public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
         Project project = lookup.lookup(Project.class);
-        return isVersionedProject(project);
+        return isVersionedProject(project, checkStatus);
     }
 
     /**
@@ -206,8 +207,9 @@ public class Utils {
      *  <li> the project contains at least one CVS versioned source group
      * </ul>
      * otherwise <code>false</code>.
+     * @param checkStatus if set to true, cache.getStatus is called and can take significant amount of time
      */
-    public static boolean isVersionedProject(Project project) {
+    public static boolean isVersionedProject(Project project, boolean checkStatus) {
         if (project != null) {
             FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
@@ -216,7 +218,11 @@ public class Utils {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {
-                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                    if (checkStatus && (cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        return true;
+                    } else if (!checkStatus && CvsVersioningSystem.isManaged(f)) {
+                        return true;
+                    }
                 }
             }
         }

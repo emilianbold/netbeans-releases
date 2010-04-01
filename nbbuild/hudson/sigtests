@@ -1,6 +1,15 @@
 #!/bin/sh
 
-sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtest/snapshot
+if [ -z "$JOB_URL" ]; then
+  JOB_URL=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/
+fi
+
+sigtest_prev=nbbuild/build/prevsigtest/snapshot
+(
+  mkdir -p $sigtest_prev && cd $sigtest_prev/.. && \
+  wget "$JOB_URL""lastSuccessfulBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip" &&
+  unzip snapshot.zip
+) || exit 1
 echo SigTest: Previous Snapshots
 ls $sigtest_prev
 echo SigTest: Checking All Changes

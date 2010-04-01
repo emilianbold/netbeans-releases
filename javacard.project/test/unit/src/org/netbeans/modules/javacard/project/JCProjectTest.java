@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.javacard.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.table.DefaultTableModel;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,6 +55,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.project.customizer.ClassicAppletProjectProperties;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.Dependency;
@@ -77,8 +81,10 @@ import org.openide.util.Cancellable;
  * @author Tim Boudreau
  */
 public class JCProjectTest extends AbstractJCProjectTest {
+    public static final String SYSTEM_PROP_UNIT_TEST = "JCProject.test";
     public JCProjectTest() {
         super ("JCProjectTest");
+        System.setProperty (SYSTEM_PROP_UNIT_TEST, "true");
     }
 
     JCProject project;
@@ -228,5 +234,115 @@ public class JCProjectTest extends AbstractJCProjectTest {
             }
         }
         assertTrue (jarFound);
+    }
+
+    public void testUseProxiesCreatesProxiesFolderAndSetsUpProperties() {
+        JCCustomizerProvider prov = project.getLookup().lookup(JCCustomizerProvider.class);
+        assertNotNull (prov);
+        JCProjectProperties props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        assertNotNull (props);
+        assertTrue (props instanceof ClassicAppletProjectProperties);
+        ClassicAppletProjectProperties p = (ClassicAppletProjectProperties) props;
+        assertNull ("Newly create classic project should not have a proxy source folder",
+                project.getProjectDirectory().getFileObject(ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+        EditableProperties pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        String s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertTrue ("Newly created classic project's " + 
+                ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES + 
+                " property should be false or null",  s == null || Boolean.valueOf(s) == false);
+        p.setUseMyProxies(true);
+        assertTrue (p.isUseMyProxies());
+        p.storeProperties();
+        pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertFalse ("After setting useMyProxies, " +
+                ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES +
+                " should be true", s == null || Boolean.valueOf(s) == false);
+        assertNotNull ("Proxy source dir not created", project.getProjectDirectory().getFileObject (ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+        p = (ClassicAppletProjectProperties) JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        p.setUseMyProxies(false);
+        assertFalse (p.isUseMyProxies());
+        p.storeProperties();
+        p = (ClassicAppletProjectProperties) JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        assertNotNull (pr);
+        s = pr.getProperty(ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES);
+        assertTrue ("After save, " +ProjectPropertyNames.PROJECT_PROP_CLASSIC_USE_MY_PROXIES+ " should be unset: " + s, s == null || Boolean.valueOf(s) == false);
+        assertNotNull ("Setting use my proxies to false should not cause proxy source dir to be deleted",
+                project.getProjectDirectory().getFileObject(ClassicAppletProjectProperties.PROXY_SOURCE_DIR));
+
+    }
+
+    public void testStorePropertiesDoesNotRewriteProxiesIfNoChangeToUseMyProperties() throws Exception {
+        JCCustomizerProvider prov = project.getLookup().lookup(JCCustomizerProvider.class);
+        assertNotNull (prov);
+        JCProjectProperties props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        assertNotNull (props);
+        assertTrue (props instanceof ClassicAppletProjectProperties);
+        ClassicAppletProjectProperties p = (ClassicAppletProjectProperties) props;
+        p.setUseMyProxies(true);
+        assertTrue (p.isUseMyProxies());
+        p.setUseMyProxies(false);
+        p.storeProperties();
+        EditableProperties pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        FileObject fo = project.getProjectDirectory().getFileObject("proxies");
+        assertNull (fo);
+        assertEquals ("${use.my.proxies}", project.evaluator().evaluate("${use.my.proxies}"));
+        assertFalse(pr.containsKey("use.my.proxies"));
+
+        props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        p.setPlatformName("junk");
+        p.storeProperties();
+        pr = project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        fo = project.getProjectDirectory().getFileObject("proxies");
+        assertNull (fo);
+        assertEquals ("${use.my.proxies}", project.evaluator().evaluate("${use.my.proxies}"));
+        assertFalse(pr.containsKey("use.my.proxies"));
+    }
+
+    public void testSourceClasspathFiresChanges() throws Exception {
+        FileObject newRoot = project.getProjectDirectory().createFolder ("stuff");
+        File newRootFile = FileUtil.toFile(newRoot);
+        assertNotNull (newRootFile);
+        JCProjectProperties props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        ClassPath path = project.getSourceClassPath();
+        assertNotNull (path);
+        class PCL implements PropertyChangeListener {
+            boolean changed;
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ClassPath.PROP_ROOTS.equals (evt.getPropertyName())) {
+                    changed = true;
+                }
+            }
+
+            void assertChanged () {
+                boolean old = changed;
+                changed = false;
+                assertTrue ("Source classpath should have fired a change", old);
+            }
+
+            void assertNotChanged() {
+                assertFalse ("Unexpected change fired", changed);
+            }
+        }
+        PCL pcl = new PCL();
+        path.addPropertyChangeListener(pcl);
+        pcl.assertNotChanged();
+
+        DefaultTableModel srcTable = props.SOURCE_ROOTS_MODEL;
+        srcTable.addRow(new Object[] { newRootFile, "Stuff" });
+        props.storeProperties();
+        assertSame ("Classpath identity should not change", path,
+                project.getSourceClassPath());
+
+        pcl.assertChanged();
+
+        props = JCCustomizerProvider.createProjectProperties(project.kind(), project, project.evaluator(), project.getAntProjectHelper());
+        srcTable = props.SOURCE_ROOTS_MODEL;
+        assertEquals (2, srcTable.getRowCount());
+
     }
 }

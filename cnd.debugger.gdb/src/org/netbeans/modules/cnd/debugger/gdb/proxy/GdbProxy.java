@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
  */
 public class GdbProxy {
     private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
+    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -424,15 +425,22 @@ public class GdbProxy {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public MICommand break_insertCMD(int flags, boolean temporary, String name, String threadID) {
+    public MICommand break_insertCMD(int flags,
+                                     boolean temporary,
+                                     String name,
+                                     String threadID,
+                                     boolean pending) {
         StringBuilder cmd = new StringBuilder();
 
         cmd.append("-break-insert "); // NOI18N
         if (temporary) {
             cmd.append("-t "); // NOI18N
         }
-        // This will make pending breakpoint if specified location can not be parsed now
-        cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        
+        if (pending) {
+            // This will make pending breakpoint if specified location can not be parsed now
+            cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
+        }
 
         // Temporary fix for Windows
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
@@ -460,18 +468,18 @@ public class GdbProxy {
      * @return token number
      */
     public void break_insert(String name) {
-        break_insertCMD(0, false, name, null).send();
+        break_insertCMD(0, false, name, null, true).send();
     }
 
     /**
      * Insert temporary breakpoint
      */
     public void break_insert_temporary(String name) {
-        break_insertCMD(0, true, name, null).send();
+        break_insertCMD(0, true, name, null, true).send();
     }
 
-    public CommandBuffer break_insert_temporaryEx(String name) {
-        return engine.sendCommandEx(break_insertCMD(0, true, name, null).getText());
+    public CommandBuffer break_insert_temporaryEx(String name, boolean pending) {
+        return engine.sendCommandEx(break_insertCMD(0, true, name, null, pending).getText());
     }
 
     /**
@@ -553,7 +561,7 @@ public class GdbProxy {
     }
 
     public void stack_list_arguments(int showValues) {
-        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
+        stack_list_arguments(showValues, 0, STACK_MAX_DEPTH);
     }
 
     /**
@@ -579,12 +587,12 @@ public class GdbProxy {
 
     /** Request a stack dump from gdb */
     public void stack_list_frames() {
-        engine.sendCommand("-stack-list-frames "); // NOI18N
+        engine.sendCommand("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
     }
 
     /** Request a stack dump from gdb */
     public CommandBuffer stack_list_framesEx() {
-        return engine.sendCommandEx("-stack-list-frames "); // NOI18N
+        return engine.sendCommandEx("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
     }
     
     public void gdb_set(String command, Object value) {

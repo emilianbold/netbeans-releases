@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${export.apichanges}"/>
         
         <property name="javadoc.fail.on.error" value="true"/>
-        <subant-junit target="netbeans-javadoc" failonerror="${javadoc.fail.on.error}" report="${nb_all}/nbbuild/build/build-all-javadoc.xml">
+        <subant-junit target="javadoc" failonerror="${javadoc.fail.on.error}" report="${nb_all}/nbbuild/build/build-all-javadoc.xml">
             <buildpath path="${modules.sorted}"/>
         </subant-junit>
 

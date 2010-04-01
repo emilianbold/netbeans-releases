@@ -36,10 +36,11 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.pty;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
@@ -49,7 +50,9 @@ import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation
 import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -63,6 +66,7 @@ import org.openide.windows.InputOutput;
  */
 @ServiceProvider(service = IOConnector.class)
 public class IOConnectorImpl implements IOConnector {
+
     private static final RequestProcessor rp = new RequestProcessor("IOConnectorImpl", 2); // NOI18N
 
     public IOConnectorImpl() {
@@ -80,7 +84,7 @@ public class IOConnectorImpl implements IOConnector {
         if ((ptyImpl == null) && IOEmulation.isSupported(io)) {
             IOEmulation.setDisciplined(io);
         }
-        
+
         if (ptyImpl == null || !(ptyImpl instanceof PtyImplementation)) {
             IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
         } else {
@@ -88,10 +92,11 @@ public class IOConnectorImpl implements IOConnector {
             IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
 
             if (IOResizable.isSupported(io)) {
-                IOResizable.addListener(io, new ResizeListener(impl));
+                IONotifier.addPropertyChangeListener(io, new ResizeListener(impl));
             }
 
-            RequestProcessor.getDefault().post(new Reaper(io, process, impl));
+            NativeTaskExecutorService.submit(new Reaper(io, process, impl),
+                    "IOConnectorImpl reaper for " + pty.getSlaveName()); // NOI18N
         }
 
         return true;
@@ -117,13 +122,13 @@ public class IOConnectorImpl implements IOConnector {
         IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
 
         if (IOResizable.isSupported(io)) {
-            IOResizable.addListener(io, new ResizeListener(impl));
+            IONotifier.addPropertyChangeListener(io, new ResizeListener(impl));
         }
 
         return true;
     }
 
-    private static class ResizeListener implements IOResizable.Listener {
+    private static class ResizeListener implements PropertyChangeListener {
 
         private Task task = null;
         private Dimension cells;
@@ -148,18 +153,25 @@ public class IOConnectorImpl implements IOConnector {
         }
 
         @Override
-        public synchronized void sizeChanged(Dimension cells, Dimension pixels) {
-            if (cells == null || pixels == null) {
-                throw new NullPointerException();
-            }
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (IOResizable.PROP_SIZE.equals(evt.getPropertyName())) {
+                IOResizable.Size newVal = (IOResizable.Size) evt.getOldValue();
+                if (newVal != null) {
+                    Dimension newCells = newVal.cells;
+                    Dimension newPixels = newVal.pixels;
+                    if (newCells == null || newPixels == null) {
+                        throw new NullPointerException();
+                    }
 
-            if (cells.equals(this.cells) && pixels.equals(this.pixels)) {
-                return;
-            }
+                    if (newCells.equals(this.cells) && newPixels.equals(this.pixels)) {
+                        return;
+                    }
 
-            this.cells = new Dimension(cells);
-            this.pixels = new Dimension(pixels);
-            task.schedule(1000);
+                    this.cells = new Dimension(newCells);
+                    this.pixels = new Dimension(newPixels);
+                    task.schedule(1000);
+                }
+            }
         }
     }
 
@@ -178,27 +190,23 @@ public class IOConnectorImpl implements IOConnector {
         @Override
         public void run() {
             try {
-                Thread.currentThread().setName("pty_open reaper for " + process.getPID()); // NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                process.waitFor();
+            } catch (InterruptedException ex) {
             }
 
             try {
-                process.waitFor();
                 pty.close();
-//                SwingUtilities.invokeLater(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        io.closeInputOutput();
-//                    }
-//                });
-
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
             }
+
+//            SwingUtilities.invokeLater(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    io.closeInputOutput();
+//                }
+//            });
         }
     }
 }

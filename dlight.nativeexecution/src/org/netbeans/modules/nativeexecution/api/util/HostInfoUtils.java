@@ -87,13 +87,19 @@ public final class HostInfoUtils {
      * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
      *        in.
      * @param fname name of file to check for
+     *
      * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
-     * @throws IOException if host, identified by this execution
+     *
+     * @throws ConnectException if host, identified by this execution
      * environment is not connected or operation was terminated.
+     *
+     * @throws InterruptedException if the thread was interrupted.
+     *
+     * @throws IOException if the process could not be created
      */
     public static boolean fileExists(final ExecutionEnvironment execEnv,
             final String fname)
-            throws IOException {
+            throws ConnectException, IOException, InterruptedException {
         boolean fileExists = false;
 
         if (execEnv.isLocal()) {
@@ -106,11 +112,7 @@ public final class HostInfoUtils {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("test").setArguments("-e", fname); // NOI18N
 
-            try {
-                fileExists = npb.call().waitFor() == 0;
-            } catch (InterruptedException ex) {
-                throw new IOException(ex.getMessage());
-            }
+            fileExists = npb.call().waitFor() == 0;
         }
 
         return fileExists;
