@@ -102,7 +102,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         float span = (axis == View.X_AXIS)
             ? textLayout.getAdvance()
             : textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
-        return span;
+        return ViewUtils.cutFractions(span);
     }
 
     @Override
@@ -348,7 +348,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                             LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
                                     "\", XY["+ ViewUtils.toStringPrec1(allocBounds.getX()) + ";" +
                                     ViewUtils.toStringPrec1(allocBounds.getY()) + "(B" + // NOI18N
-                                    ViewUtils.toStringPrec1(docView.getDefaultBaselineOffset()) + // NOI18N
+                                    ViewUtils.toStringPrec1(docView.getDefaultAscent()) + // NOI18N
                                     ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                         }
                     }
@@ -363,7 +363,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
         // Paint background
         JTextComponent textComponent = docView.getTextComponent();
         Color componentBackground = textComponent.getBackground();
-        float baselineOffset = docView.getDefaultBaselineOffset();
+        float ascent = docView.getDefaultAscent();
         ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
         if (!componentBackground.equals(g.getColor())) { // Not yet cleared by BasicTextUI.paintBackground()
             // clearRect() uses g.getBackground() color
@@ -400,7 +400,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
-                float underlineOffset = docView.getDefaultUnderlineOffset() + baselineOffset;
+                float underlineOffset = docView.getDefaultUnderlineOffset() + ascent;
                 int y = (int)(allocBounds.getY() + underlineOffset + 0.5);
                 int wavePixelCount = (int) allocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
@@ -434,7 +434,7 @@ public class HighlightsView extends EditorView implements TextLayoutView {
     static void paintTextLayout(Graphics2D g, Rectangle2D.Double bounds,
             DocumentView docView, TextLayout textLayout)
     {
-        float baselineOffset = docView.getDefaultBaselineOffset();
+        float baselineOffset = docView.getDefaultAscent();
         float x = (float) bounds.getX();
         float y = (float) bounds.getY();
         // TextLayout is unable to do a partial render

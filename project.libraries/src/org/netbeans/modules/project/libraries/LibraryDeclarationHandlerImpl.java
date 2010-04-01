@@ -143,10 +143,12 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             update = true;
         }
         else {
+            if (this.libraryType == null) {
+                throw new SAXParseException("Unspecified library type for: "+this.libraryName, null); //NOI18N
+            }
             LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
             if (provider == null) {
-                LibrariesStorage.LOG.warning("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType);
-                return;
+                throw new SAXParseException("LibraryDeclarationHandlerImpl: Cannot create library: "+this.libraryName+" of unknown type: " + this.libraryType,null);
             }
             this.library = provider.createLibrary();
             update = false;
