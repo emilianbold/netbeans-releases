@@ -100,8 +100,6 @@ public class UndeployModuleAction extends NodeAction {
                 });
             }
         }
-        undeployer.shutdown();
-        undeployer = null;
     }
 
     @Override
