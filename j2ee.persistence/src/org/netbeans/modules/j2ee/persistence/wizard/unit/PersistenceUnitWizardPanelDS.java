@@ -419,7 +419,8 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     // End of variables declaration//GEN-END:variables
 
     private void updateWarning() {
-        Provider prov = (Provider) providerCombo.getSelectedItem();
+        Object provObj = providerCombo.getSelectedItem();
+        Provider prov = (Provider) (provObj instanceof Provider ? provObj : null);
         String warning = null;
         if(prov != null){
             if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
