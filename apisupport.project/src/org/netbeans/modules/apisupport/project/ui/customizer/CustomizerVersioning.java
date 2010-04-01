@@ -173,7 +173,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         // check major release version
         if (!checkMajorReleaseVersion()) {
             category.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
-            category.setValid(true);
+            category.setValid(false);
+            // XXX check also specificationVerValue
         } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().size() < 1) {
             category.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
             category.setValid(false);
