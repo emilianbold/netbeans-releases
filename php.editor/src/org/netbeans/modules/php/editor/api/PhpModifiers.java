@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.editor.api;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -94,6 +93,9 @@ public final class PhpModifiers extends Modifier {
         for (int mode : bitmask) {
             this.mod |= mode;
         }
+        if (!Modifier.isPrivate(mod) && !Modifier.isProtected(mod)) {
+            mod |= Modifier.PUBLIC;
+        }
     }
     public Set<org.netbeans.modules.csl.api.Modifier> toModifiers() {
         Set<org.netbeans.modules.csl.api.Modifier> retval = new HashSet<org.netbeans.modules.csl.api.Modifier>();
@@ -109,6 +111,9 @@ public final class PhpModifiers extends Modifier {
         if (isStatic()) {
             retval.add(org.netbeans.modules.csl.api.Modifier.STATIC);
         }
+        if (isAbstract()) {
+            retval.add(org.netbeans.modules.csl.api.Modifier.ABSTRACT);
+        }
         return retval;
     }    
     public int toFlags() {
@@ -116,7 +121,7 @@ public final class PhpModifiers extends Modifier {
     }
 
     public boolean isPublic() {
-        return Modifier.isPublic(mod) || (!Modifier.isPrivate(mod) && !Modifier.isProtected(mod));
+        return Modifier.isPublic(mod);
     }
 
     public boolean isPrivate(){
@@ -156,34 +161,4 @@ public final class PhpModifiers extends Modifier {
         hash = 13 * hash + this.mod;
         return hash;
     }
-
-    private static int[] convertStringToBitmask(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
-        ArrayList<Integer> mods = new ArrayList<Integer>();
-        for (org.netbeans.modules.csl.api.Modifier modifier : modifiers) {
-            switch (modifier) {
-                case PRIVATE:
-                    mods.add(PhpModifiers.PRIVATE);
-                    break;
-                case PROTECTED:
-                    mods.add(PhpModifiers.PROTECTED);
-                    break;
-                case PUBLIC:
-                    mods.add(PhpModifiers.PUBLIC);
-                    break;
-                case STATIC:
-                    mods.add(PhpModifiers.STATIC);
-                    break;
-            }
-        }
-        int[] retval = new int[mods.size()];
-        for (int i = 0; i < mods.size(); i++) {
-            retval[i] = mods.get(i);
-        }
-        return retval;
-    }
-    /*
-     * not used
-     public static PhpModifiers create(Set<org.netbeans.modules.csl.api.Modifier> modifiers) {
-        return bitMasks(convertStringToBitmask(modifiers));
-    }*/
 }
