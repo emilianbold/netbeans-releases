@@ -500,7 +500,7 @@ public final class Actions implements ActionProvider {
      * @param p a freeform project
      * @return a list of actions (or null for separators)
      */
-    private static Action[] contextMenuCustomActions(FreeformProject p) {
+    static Action[] contextMenuCustomActions(FreeformProject p) {
         List<Action> actions = new ArrayList<Action>();
         Element genldata = p.getPrimaryConfigurationData();
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
