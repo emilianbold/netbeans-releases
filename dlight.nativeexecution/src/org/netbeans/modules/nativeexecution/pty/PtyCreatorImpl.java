@@ -67,6 +67,10 @@ public class PtyCreatorImpl implements PtyAllocator {
 
         final String ptyOpenUtilityPath = PtyOpenUtility.getInstance().getPath(env);
 
+        if (ptyOpenUtilityPath == null) {
+            return null;
+        }
+
         try {
             if (env.isLocal()) {
                 ProcessBuilder pb = new ProcessBuilder(ptyOpenUtilityPath);

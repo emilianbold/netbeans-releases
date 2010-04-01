@@ -170,6 +170,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         checkDebuggerState();
     }
 
+    public static RequestProcessor getRequestProcessor() {
+        return rp;
+    }
+
     public void pasteExpression(String expr) {
         codePane.setText(expr);
         codeText = expr;
