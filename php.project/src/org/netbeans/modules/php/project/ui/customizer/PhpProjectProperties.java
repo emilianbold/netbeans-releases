@@ -82,7 +82,7 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik, Radek Matous
  */
-public class PhpProjectProperties implements ConfigManager.ConfigProvider {
+public final class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final int DEFAULT_DEBUG_PROXY_PORT = 9001;
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
@@ -229,18 +229,22 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         activeConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
     }
 
+    @Override
     public String[] getConfigProperties() {
         return CFG_PROPS;
     }
 
+    @Override
     public Map<String, Map<String, String>> getConfigs() {
         return runConfigs;
     }
 
+    @Override
     public String getActiveConfig() {
         return activeConfig;
     }
 
+    @Override
     public void setActiveConfig(String configName) {
         activeConfig = configName;
     }
@@ -448,6 +452,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         try {
             // store properties
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     saveProperties();
 

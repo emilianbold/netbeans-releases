@@ -50,12 +50,12 @@ import com.jcraft.jsch.UserInfo;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -109,14 +109,14 @@ public class SftpClient implements RemoteClient {
         int port = configuration.getPort();
         int timeout = configuration.getTimeout() * 1000;
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Connecting to " + host + " [timeout: " + timeout + " ms]");
+            LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {host, timeout});
         }
         String username = configuration.getUserName();
         String password = configuration.getPassword();
         String knownHostsFile = configuration.getKnownHostsFile();
         String identityFile = configuration.getIdentityFile();
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Login as " + username);
+            LOGGER.log(Level.FINE, "Login as {0}", username);
         }
 
         JSch jsch = null;
@@ -154,13 +154,14 @@ public class SftpClient implements RemoteClient {
 
     }
 
+    @Override
     public void connect() throws RemoteException {
         init();
         assert sftpClient.isConnected();
         try {
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Remote server version is " + sftpClient.getServerVersion());
+                LOGGER.log(Level.FINE, "Remote server version is {0}", sftpClient.getServerVersion());
             }
         } catch (SftpException exc) {
             // can be ignored
@@ -168,6 +169,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public void disconnect() throws RemoteException {
         if (sftpSession == null) {
             // nothing to do
@@ -189,15 +191,18 @@ public class SftpClient implements RemoteClient {
     }
 
     /** not supported by JSCh */
+    @Override
     public String getReplyString() {
         return null;
     }
 
     /** not supported by JSCh */
+    @Override
     public String getNegativeReplyString() {
         return null;
     }
 
+    @Override
     public boolean isConnected() {
         if (sftpClient == null) {
             return false;
@@ -205,6 +210,7 @@ public class SftpClient implements RemoteClient {
         return sftpClient.isConnected();
     }
 
+    @Override
     public String printWorkingDirectory() throws RemoteException {
         try {
             sftpLogger.info("PWD"); // NOI18N
@@ -220,6 +226,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
             sftpLogger.info("STOR " + remote); // NOI18N
@@ -235,10 +242,12 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean deleteFile(String pathname) throws RemoteException {
         return delete(pathname, false);
     }
 
+    @Override
     public boolean deleteDirectory(String pathname) throws RemoteException {
         return delete(pathname, true);
     }
@@ -262,6 +271,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean rename(String from, String to) throws RemoteException {
         try {
             sftpLogger.info("RNFR " + from); // NOI18N
@@ -278,6 +288,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
         String pwd = null;
@@ -287,7 +298,7 @@ public class SftpClient implements RemoteClient {
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirListing"));
 
             @SuppressWarnings("unchecked")
-            Vector<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
+            Collection<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
             result = new ArrayList<RemoteFile>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
                 result.add(new RemoteFileImpl(entry));
@@ -302,6 +313,7 @@ public class SftpClient implements RemoteClient {
         return result;
     }
 
+    @Override
     public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
             sftpLogger.info("RETR " + remote); // NOI18N
@@ -317,6 +329,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("CWD " + pathname); // NOI18N
@@ -332,6 +345,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean makeDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("MKD " + pathname); // NOI18N
@@ -347,6 +361,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public int getPermissions(String path) throws RemoteException {
         int permissions = -1;
         try {
@@ -365,6 +380,7 @@ public class SftpClient implements RemoteClient {
         return permissions;
     }
 
+    @Override
     public boolean setPermissions(int permissions, String path) throws RemoteException {
         try {
             sftpLogger.info(String.format("chmod %d %s", permissions, path)); // NOI18N
@@ -380,6 +396,7 @@ public class SftpClient implements RemoteClient {
         }
     }
 
+    @Override
     public boolean exists(String parent, String name) throws RemoteException {
         String fullPath = parent + "/" + name; // NOI18N
         try {
@@ -395,7 +412,7 @@ public class SftpClient implements RemoteClient {
         assert path != null && path.trim().length() > 0;
 
         @SuppressWarnings("unchecked")
-        Vector<ChannelSftp.LsEntry> files = sftpClient.ls(path);
+        List<ChannelSftp.LsEntry> files = sftpClient.ls(path);
         // in fact, the size of the list should be exactly 1
         LOGGER.fine(String.format("Exactly 1 file should be found for %s; found %d", path, files.size()));
         if (files.size() > 0) {
@@ -470,18 +487,22 @@ public class SftpClient implements RemoteClient {
             this.entry = entry;
         }
 
+        @Override
         public String getName() {
             return entry.getFilename();
         }
 
+        @Override
         public boolean isDirectory() {
             return entry.getAttrs().isDir();
         }
 
+        @Override
         public boolean isFile() {
             return !isDirectory();
         }
 
+        @Override
         public long getSize() {
             return entry.getAttrs().getSize();
         }
@@ -499,10 +520,12 @@ public class SftpClient implements RemoteClient {
             this.io = io;
         }
 
+        @Override
         public boolean isEnabled(int level) {
             return level >= com.jcraft.jsch.Logger.INFO;
         }
 
+        @Override
         public void log(int level, String message) {
             assert io != null;
             OutputWriter writer = null;
@@ -514,7 +537,7 @@ public class SftpClient implements RemoteClient {
             writer.println(message.trim());
             writer.flush();
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Command listener: " + message.trim());
+                LOGGER.log(Level.FINE, "Command listener: {0}", message.trim());
             }
         }
 
@@ -559,6 +582,7 @@ public class SftpClient implements RemoteClient {
             this.configuration = configuration;
         }
 
+        @Override
         public boolean promptYesNo(String message) {
             NotifyDescriptor descriptor = new NotifyDescriptor(
                     message,
@@ -570,28 +594,34 @@ public class SftpClient implements RemoteClient {
             return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
         }
 
+        @Override
         public String getPassphrase() {
             return passphrase;
         }
 
+        @Override
         public boolean promptPassphrase(String message) {
             passphrase = getPasswordForCertificate(configuration);
             return passphrase != null;
         }
 
+        @Override
         public String getPassword() {
             return passwd;
         }
 
+        @Override
         public boolean promptPassword(String message) {
             passwd = getPasswordForUser(configuration);
             return passwd != null;
         }
 
+        @Override
         public void showMessage(String message) {
             showMessageForConfiguration(configuration, message);
         }
 
+        @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction,
                 String[] prompt, boolean[] echo) {
 

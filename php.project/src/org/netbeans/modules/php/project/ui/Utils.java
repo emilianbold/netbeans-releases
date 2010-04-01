@@ -44,24 +44,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.AbstractList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -111,6 +101,7 @@ public final class Utils {
      * @param url URL, can be <code>null</code>.
      * @return <code>true</code> if the URL is valid, <code>false</code> otherwise.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public static boolean isValidUrl(String url) {
         if (url == null) {
             return false;
@@ -255,18 +246,6 @@ public final class Utils {
         return null;
     }
 
-    public static List getAllItems(final JComboBox comboBox) {
-        return new AbstractList() {
-            public Object get(int i) {
-                return comboBox.getItemAt(i);
-            }
-
-            public int size() {
-                return comboBox.getItemCount();
-            }
-        };
-    }
-
     public static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
@@ -303,7 +282,7 @@ public final class Utils {
      * <p>
      * File is not {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
      * @param file File to check.
-     * @return <code>true</true> if the provided File has valid file name.
+     * @return <code>true</code> if the provided File has valid file name.
      * @see #isValidFileName(java.lang.String)
      */
     public static boolean isValidFileName(File file) {
@@ -430,7 +409,7 @@ public final class Utils {
      * Validate that the text contains only ASCII characters. If not, return an error message.
      * @param text the text to validate, can be <code>null</code>.
      * @param propertyName property name of the given text, e.g. "Project folder name".
-     * @return an error message in case that the text contains non-ASCII characters, <code>null</null> otherwise.
+     * @return an error message in case that the text contains non-ASCII characters, <code>null</code> otherwise.
      * @see #isAsciiPrintable(char)
      */
     public static String validateAsciiText(String text, String propertyName) {
@@ -608,7 +587,7 @@ public final class Utils {
             secure = unifyPath(preselected);
             if (removeExtension) {
                 // e.g. searching in nodes => no file extension can be there
-                int idx = secure.lastIndexOf("."); // NOI18N
+                int idx = secure.lastIndexOf('.'); // NOI18N
                 if (idx != -1) {
                     secure = secure.substring(0, idx);
                 }

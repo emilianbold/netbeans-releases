@@ -174,8 +174,8 @@ public final class SourceRoots {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
                     }
+                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
                 }
-                return sourceRootNames.toArray(new String[sourceRootNames.size()]);
             }
         });
     }
@@ -204,7 +204,7 @@ public final class SourceRoots {
     public FileObject[] getRoots() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
                 public FileObject[] run() {
-                    synchronized (this) {
+                    synchronized (SourceRoots.this) {
                         // local caching
                         if (sourceRoots == null) {
                             URL [] rootURLs = getRootURLs();
@@ -221,8 +221,8 @@ public final class SourceRoots {
                             }
                             sourceRoots = Collections.unmodifiableList(result);
                         }
+                        return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
-                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
         });
     }

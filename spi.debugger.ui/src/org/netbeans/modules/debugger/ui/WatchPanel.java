@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.debugger.ui;
 
-import java.awt.AWTKeyStroke;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -49,22 +48,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -74,7 +62,7 @@ import org.openide.text.NbDocument;
 public class WatchPanel {
 
     private JPanel panel;
-    private JEditorPane editorPane;
+    private JTextComponent editorPane;
     private String expression;
 
     public WatchPanel(String expression) {
@@ -94,23 +82,20 @@ public class WatchPanel {
         panel.setLayout (new BorderLayout ());
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
         panel.add (BorderLayout.NORTH, textLabel);
+
+        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+
         //Add JEditorPane and context
-        editorPane = new JEditorPane();//expression); // NOI18N
+        JComponent [] editorComponents = Utilities.createSingleLineEditor(file.getMIMEType());
+        editorPane = (JTextComponent) editorComponents[1];
+        DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         editorPane.setText(expression);
 
-        setupContext(editorPane,
-                     EditorContextDispatcher.getDefault().getMostRecentFile(),
-                     EditorContextDispatcher.getDefault().getMostRecentLineNumber());
         editorPane.setText (expression);
         editorPane.selectAll ();
 
-        JScrollPane sp = createScrollableLineEditor(editorPane);
-        int h = sp.getPreferredSize().height;
-        int w = Math.min(70*editorPane.getFontMetrics(editorPane.getFont()).charWidth('a'),
-                         org.openide.windows.WindowManager.getDefault().getMainWindow().getSize().width);
-        sp.setPreferredSize(new Dimension(w, h));
-
-        panel.add (BorderLayout.CENTER, sp);
+        panel.add (BorderLayout.CENTER, editorComponents[0]);
         editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
         editorPane.setBorder (
             new CompoundBorder (editorPane.getBorder (),
@@ -128,114 +113,6 @@ public class WatchPanel {
         editorPane.requestFocus ();
         return panel;
     }
-
-    private static void setupUI(final JEditorPane editorPane) {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-                if (eui == null) {
-                    return;
-                }
-                editorPane.putClientProperty(
-                    "HighlightsLayerExcludes", //NOI18N
-                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
-                );
-                // Do not draw text limit line
-                try {
-                    java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
-                    textLimitLineField.setAccessible(true);
-                    textLimitLineField.set(eui, false);
-                } catch (Exception ex) {}
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            runnable.run();
-        } else {
-            SwingUtilities.invokeLater(runnable);
-        }
-    }
-
-    private static void setupContext(JEditorPane editorPane, FileObject file, int line) {
-        if (line < 1) {
-            line = 1;
-        }
-        StyledDocument doc;
-        if (file == null) {
-            return;
-        }
-        try {
-            DataObject dobj = DataObject.find (file);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return;
-            }
-            try {
-                doc = ec.openDocument();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return;
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // null dobj
-            return;
-        }
-        try {
-            int offset = NbDocument.findLineOffset(doc, line - 1); // findLineOffset() expects zero based line numbers
-            //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
-            DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
-        } catch (IndexOutOfBoundsException ioobex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
-        }
-        setupUI(editorPane);
-    }
-
-    private static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
-        // Remove control keys:
-        KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-        InputMap im = editorPane.getInputMap();
-        im.put(enterKs, "none");
-        im.put(escKs, "none");
-        im.put(tabKs, "none");
-        
-        final JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder(),
-            new EmptyBorder (0, 0, 0, 0))
-        );
-
-        JTextField referenceTextField = new JTextField("M");
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(referenceTextField.getBackground());
-        sp.setBorder(referenceTextField.getBorder());
-        sp.setBackground(referenceTextField.getBackground());
-
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(editorPane, gridBagConstraints);
-        sp.setViewportView(panel);
-
-        int preferredHeight = referenceTextField.getPreferredSize().height;
-        if (sp.getPreferredSize().height < preferredHeight) {
-            sp.setPreferredSize(referenceTextField.getPreferredSize());
-        }
-        sp.setMinimumSize(sp.getPreferredSize());
-
-        setupUI(editorPane);
-
-        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
-        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
-        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
-        return sp;
-    }
-
 
     public String getExpression() {
         return editorPane.getText().trim();

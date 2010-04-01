@@ -75,7 +75,6 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     }
 
     // abstract methods
-    public abstract String getProjectName();
     public abstract void setProjectName(String projectName);
     public abstract String getSourcesFolder();
     public abstract LocalServer getSourcesLocation();
@@ -114,14 +113,17 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
     }
 
     // listeners
+    @Override
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         processUpdate();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         processUpdate();
     }
@@ -130,10 +132,12 @@ public abstract class ConfigurableProjectPanel extends JPanel implements Project
         changeSupport.fireChange();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         changeSupport.fireChange();
     }

@@ -74,6 +74,7 @@ public final class PhpOptions {
     private PhpOptions() {
         propertyChangeSupport = new PropertyChangeSupport(this);
         getPhpOptions().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
                 String key = evt.getKey();
                 String newValue = evt.getNewValue();

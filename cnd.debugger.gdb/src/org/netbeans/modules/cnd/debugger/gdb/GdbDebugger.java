@@ -470,10 +470,15 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
                     continueAfterFirstStop = false; // step into project
                 }
-                gdb.break_insert_temporary("main"); // NOI18N
+
+                // see IZ 178072 - do not set two main breakpoints
+                boolean mainSet = false;
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
-                    gdb.break_insert_temporary("WinMain"); // NOI18N
+                    // WinAPI apps don't have a "main" function. Use "WinMain" on Windows.
+                    mainSet = gdb.break_insert_temporaryEx("WinMain", false).isOK(); // NOI18N
+                }
+                if (!mainSet) {
+                    gdb.break_insert_temporary("main"); // NOI18N
                 }
 
                 String inRedir = "";
@@ -1583,7 +1588,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private String untilBptId = null;
 
     private String setUntilBpt(String loc) {
-        final CommandBuffer res = gdb.break_insert_temporaryEx(loc);
+        final CommandBuffer res = gdb.break_insert_temporaryEx(loc, true);
         if (res.isOK()) {
             String response = res.getResponse();
             if (response.length() >= 6) { // cut bkpt={ prefix
@@ -2191,9 +2196,8 @@ public class GdbDebugger implements PropertyChangeListener {
             String fullname = map.get("fullname"); // NOI18N
             String file = map.get("file"); // NOI18N
             String line = map.get("line"); // NOI18N
-            String func = map.get("func"); // NOI18N
-            if (number != null && ((number.equals("1")) || // NOI18N
-                    (number.equals("2") && func != null && func.equals("WinMain") && platform == PlatformTypes.PLATFORM_WINDOWS))) { // NOI18N
+            // first breakpoint in main (WinMain on Windows)
+            if ("1".equals(number)) { // NOI18N
                 firstBPfullname = fullname;
                 firstBPfile = file;
                 firstBPline = line;

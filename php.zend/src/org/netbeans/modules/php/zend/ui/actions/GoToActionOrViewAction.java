@@ -176,7 +176,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RP.submit(new Runnable() {
+            RP.execute(new Runnable() {
                 @Override
                 public void run() {
                     FileObject action = ZendUtils.getAction(fo);
@@ -219,7 +219,7 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RP.submit(new Runnable() {
+            RP.execute(new Runnable() {
                 @Override
                 public void run() {
                     EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);

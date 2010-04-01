@@ -454,10 +454,12 @@ public final class ProjectPropertiesSupport {
 
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     // store properties
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
                         public Void run() throws IOException {
                             AntProjectHelper helper = project.getHelper();
 

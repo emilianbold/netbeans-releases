@@ -323,33 +323,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
     */
 
-    private class MyIOResizable extends IOResizable {
-
-	// We need a map to help us remove TermListeners from 'term'
-	// based on IOResizable.Listener.
-	private Map<Listener, TermListener> listenerMap =
-		new HashMap<Listener, TermListener>();
-
-	@Override
-	protected void addListener(final Listener listener) {
-	    TermListener termListener = new TermListener() {
-		@Override
-		public void sizeChanged(Dimension cells, Dimension pixels) {
-		    // propagate size change notifications from Term
-		    // to Listener
-		    listener.sizeChanged(cells, pixels);
-		}
-	    };
-	    term.addListener(termListener);
-	    listenerMap.put(listener, termListener);
-	}
-
-	@Override
-	protected void removeListener(Listener listener) {
-	    TermListener termListener = listenerMap.remove(listener);
-	    if (termListener != null)
-		term.removeListener(termListener);
-	}
+    private static final class MyIOResizable extends IOResizable {
     }
 
     private class MyIOEmulation extends IOEmulation {

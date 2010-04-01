@@ -160,6 +160,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             return null;
         }
 
+        processBuilder = processBuilder.redirectErrorStream(true);
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
@@ -175,21 +176,30 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
-                if (freshCommands.isEmpty()) {
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(ZendCommandSupport.class, "MSG_NoCommands"),
+            }
+            NotifyDescriptor descriptor = null;
+            if (freshCommands.isEmpty()) {
+                descriptor = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(ZendCommandSupport.class, "MSG_NoCommandsRegisterProvider"),
+                        NotifyDescriptor.YES_NO_OPTION);
+                if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+                    ZendScript.registerNetBeansProvider();
+                }
+                // #180425
+                String error = lineProcessor.getError();
+                if (StringUtils.hasText(error)) {
+                    descriptor = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(ZendCommandSupport.class, "MSG_DisplayOutput"),
                             NotifyDescriptor.YES_NO_OPTION);
                     if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-                        ZendScript.registerNetBeansProvider();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error));
                     }
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        String error = lineProcessor.getError();
-                        if (StringUtils.hasText(error)) {
-                            LOGGER.fine(error);
-                        }
+                        LOGGER.fine(error);
                     }
                 }
             }
+
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {

@@ -48,9 +48,9 @@ import java.io.Serializable;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import sun.swing.DefaultLookup;
 
 
 public class CheckBoxRenderrer extends JCheckBox implements ListCellRenderer, Serializable {
@@ -68,7 +68,7 @@ public class CheckBoxRenderrer extends JCheckBox implements ListCellRenderer, Se
     }
 
     private Border getNoFocusBorder () {
-        Border border = DefaultLookup.getBorder (this, ui, "List.cellNoFocusBorder");
+        Border border = UIManager.getBorder("List.cellNoFocusBorder");
         if (System.getSecurityManager () != null) {
             if (border != null) {
                 return border;
@@ -99,8 +99,8 @@ public class CheckBoxRenderrer extends JCheckBox implements ListCellRenderer, Se
         JList.DropLocation dropLocation = list.getDropLocation ();
         if (dropLocation != null && !dropLocation.isInsert () && dropLocation.getIndex () == index) {
 
-            bg = DefaultLookup.getColor (this, ui, "List.dropCellBackground");
-            fg = DefaultLookup.getColor (this, ui, "List.dropCellForeground");
+            bg = UIManager.getColor("List.dropCellBackground");
+            fg = UIManager.getColor("List.dropCellForeground");
 
             isSelected = true;
         }
@@ -123,10 +123,10 @@ public class CheckBoxRenderrer extends JCheckBox implements ListCellRenderer, Se
         Border border = null;
         if (cellHasFocus) {
             if (isSelected) {
-                border = DefaultLookup.getBorder (this, ui, "List.focusSelectedCellHighlightBorder");
+                border = UIManager.getBorder("List.focusSelectedCellHighlightBorder");
             }
             if (border == null) {
-                border = DefaultLookup.getBorder (this, ui, "List.focusCellHighlightBorder");
+                border = UIManager.getBorder("List.focusCellHighlightBorder");
             }
         } else {
             border = getNoFocusBorder ();

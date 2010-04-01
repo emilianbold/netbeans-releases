@@ -262,7 +262,7 @@ public class AntSettings {
     }
 
     public static boolean getAlwaysShowOutput() {
-        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, true);
+        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, /* #87801 */false);
     }
 
     public static void setAlwaysShowOutput(boolean b) {
