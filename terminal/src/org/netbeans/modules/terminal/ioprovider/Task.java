@@ -61,15 +61,20 @@ import org.openide.xml.XMLUtil;
      * Schedule this task to be performed on the EDT, or perform it now.
      */
     public final void dispatch() {
-	if (SwingUtilities.isEventDispatchThread())
-	    perform();
-	else
+	if (! SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
 		@Override
 		public void run() {
-		    perform();
+		    dispatch();
 		}
 	    });
+	    return;
+	}
+	if (terminal().isDisposed()) {
+	    // closeInputOutput has been called
+	    return;
+	}
+	perform();
     }
 
     protected abstract void perform();
@@ -116,6 +121,8 @@ import org.openide.xml.XMLUtil;
 
 	@Override
 	public void perform() {
+	    if (terminal().isDisposed())
+		return;
 	    if (!terminal().isVisibleInContainer()) {
 		container().add(terminal(), terminal().callBacks());
 		container().setToolbarActions(terminal(), terminal().getActions());
