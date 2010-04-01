@@ -414,6 +414,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbverification</friend>
                 <friend>org.netbeans.modules.j2ee.jboss4</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
@@ -424,12 +425,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.tomcat5</friend>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.web.beans</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.freeform</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.struts</friend>
-                <friend>org.netbeans.modules.web.beans</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.restapi</friend>

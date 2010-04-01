@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -106,29 +107,13 @@ public abstract class EJBProblemFinder {
             if (prj == null) {
                 return;
             }
-            J2eeModuleProvider provider = (J2eeModuleProvider) prj.getLookup().lookup(J2eeModuleProvider.class);
-            if (provider != null) {
-                J2eeModule module = provider.getJ2eeModule();
-                if (module != null) {
-                    if (J2eeModule.Type.EJB.equals(module.getType())) {
-                        isEjb = true;
-                    }
-                }
-            }
             
-            if (!isEjb) {
-                return; // File doesn't belong to EJB project
+            J2eeProjectCapabilities projCap = J2eeProjectCapabilities.forProject(prj);
+            if (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported()){
+                return;
             }
 
             EjbJar ejbModule = EjbJar.getEjbJar(file);
-            Profile profile = ejbModule.getJ2eeProfile();
-            if (ejbModule == null ||
-                    !(Profile.JAVA_EE_5.equals(profile)
-                    || Profile.JAVA_EE_6_FULL.equals(profile)
-                    || Profile.JAVA_EE_6_WEB.equals(profile))) {
-                return; // EJB version is not supported
-            }
-            
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();
