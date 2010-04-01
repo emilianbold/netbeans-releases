@@ -185,6 +185,7 @@ public final class PhpSourcePath {
     // PhpSourcePathImplementation implementation for file which does not belong to any project
     private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
+        @Override
         public FileType getFileType(FileObject file) {
             for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
                 if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
@@ -199,10 +200,12 @@ public final class PhpSourcePath {
             return FileType.UNKNOWN;
         }
 
+        @Override
         public List<FileObject> getIncludePath() {
             return new ArrayList<FileObject>(getPlatformPath());
         }
 
+        @Override
         public FileObject resolveFile(FileObject directory, String fileName) {
             FileObject resolved = directory.getFileObject(fileName);
             if (resolved != null) {

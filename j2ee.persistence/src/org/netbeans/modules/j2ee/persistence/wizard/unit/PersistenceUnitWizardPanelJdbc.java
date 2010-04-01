@@ -198,7 +198,8 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         errorMessage.setText(msg);
     }
     private void updateWarning() {
-        Provider prov = (Provider) libraryCombo.getSelectedItem();
+        Object provObj = libraryCombo.getSelectedItem();
+        Provider prov = (Provider) (provObj instanceof Provider ? provObj : null);
         String warning = null;
         if(prov != null){
             if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){

@@ -62,6 +62,7 @@ public abstract class PhpEnvironment {
 
     static final String HTDOCS = "htdocs"; //NOI18N
     static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir, String name) {
             return name.toLowerCase().startsWith("apache"); // NOI18N
         }
@@ -100,6 +101,7 @@ public abstract class PhpEnvironment {
     public DocumentRoot readDocumentRoots(final ReadDocumentRootsNotifier notifier, final String projectName) {
         assert notifier != null;
         RequestProcessor.Task readDocumentRootsTask = READ_DOCUMENT_ROOTS_THREAD.create(new Runnable() {
+            @Override
             public void run() {
                 List<DocumentRoot> documentRoots = getDocumentRoots(projectName);
                 assert documentRoots != null;
@@ -251,7 +253,7 @@ public abstract class PhpEnvironment {
      * Return "htdocs" directory or null.
      */
     static File findHtDocsDirectory(File startDir, FilenameFilter filenameFilter) {
-        LOGGER.fine("Searching for htdocs in " + startDir);
+        LOGGER.log(Level.FINE, "Searching for htdocs in {0}", startDir);
         String[] subDirNames = startDir.list(filenameFilter);
         if (subDirNames == null || subDirNames.length == 0) {
             return null;

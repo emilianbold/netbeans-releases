@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -65,6 +63,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @see BaseAction
@@ -73,7 +72,7 @@ import org.openide.util.NbBundle;
 public final class GoToActionOrViewAction extends TextAction implements ContextAwareAction {
     private static final long serialVersionUID = -1231423139431663L;
 
-    static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    static final RequestProcessor RP = new RequestProcessor(GoToActionOrViewAction.class.getName());
 
     private static final GoToActionOrViewAction INSTANCE = new GoToActionOrViewAction();
     private static final int DEFAULT_OFFSET = 0;
@@ -98,11 +97,13 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
         return NbBundle.getMessage(GoToActionOrViewAction.class, "LBL_GoToActionOrView");
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         FileObject fo = FileUtils.getFileObject(actionContext);
         return getGoToAction(fo, getOffset(actionContext));
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         FileObject fo = NbEditorUtilities.getFileObject(getTextComponent(e).getDocument());
         Action action = getGoToAction(fo, getTextComponent(e).getCaretPosition());
@@ -178,7 +179,8 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            EXECUTOR.submit(new Runnable() {
+            RP.execute(new Runnable() {
+                @Override
                 public void run() {
                     FileObject action = SymfonyUtils.getAction(fo);
                     if (action != null) {
@@ -229,7 +231,8 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            EXECUTOR.submit(new Runnable() {
+            RP.execute(new Runnable() {
+                @Override
                 public void run() {
                     EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
                     PhpBaseElement phpElement = editorSupport.getElement(fo, offset);

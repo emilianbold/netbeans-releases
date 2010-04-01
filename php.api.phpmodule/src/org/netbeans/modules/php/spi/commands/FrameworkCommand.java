@@ -135,6 +135,7 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         return hash;
     }
 
+    @Override
     public int compareTo(FrameworkCommand o) {
         if (commands.length == 0 || o.commands.length == 0) {
             assert displayName != null : "displayName not null";
@@ -148,15 +149,15 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
     public String toString() {
         StringBuilder buffer = new StringBuilder(200);
         buffer.append(getClass().getName());
-        buffer.append(" [displayName: ");
+        buffer.append(" [displayName: "); // NOI18N
         buffer.append(displayName);
-        buffer.append(", commands: ");
+        buffer.append(", commands: "); // NOI18N
         buffer.append(commands);
-        buffer.append(", description: ");
+        buffer.append(", description: "); // NOI18N
         buffer.append(description);
-        buffer.append(", help: ");
+        buffer.append(", help: "); // NOI18N
         buffer.append(help);
-        buffer.append("]");
+        buffer.append("]"); // NOI18N
         return buffer.toString();
     }
 }

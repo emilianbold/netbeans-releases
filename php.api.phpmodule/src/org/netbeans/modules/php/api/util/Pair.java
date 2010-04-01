@@ -75,6 +75,6 @@ public final class Pair<P, K> {
 
     @Override
     public String toString() {
-        return String.format("Pair [%s, %s]", first, second);
+        return String.format("Pair [%s, %s]", first, second); // NOI18N
     }
 }

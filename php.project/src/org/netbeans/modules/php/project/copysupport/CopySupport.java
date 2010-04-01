@@ -112,8 +112,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         remoteConnections.addChangeListener(WeakListeners.change(this, remoteConnections));
 
         initTask = COPY_SUPPORT_RP.create(new Runnable() {
-           public void run() {
-               init();
+            @Override
+            public void run() {
+                init();
             }
         });
     }
@@ -124,6 +125,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     private static RequestProcessor.Task createCopyTask() {
         return COPY_SUPPORT_RP.create(new Runnable() {
+            @Override
             public void run() {
                 Callable<Boolean> operation = OPERATIONS_QUEUE.poll();
                 while (operation != null) {
@@ -307,6 +309,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName, fe));
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event PROPERTY CHANGE for opened project {0}", project.getName());
@@ -314,6 +317,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (projectOpened) {
             LOGGER.log(Level.FINE, "Processing event STATE CHANGE (remote connections) for opened project {0}", project.getName());
@@ -410,6 +414,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 this.remoteHandler = remoteHandler;
             }
 
+            @Override
             public Boolean call() throws Exception {
                 Boolean localRetval = callLocal();
                 Boolean remoteRetval = callRemote();
@@ -499,26 +504,32 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return sources;
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             copySupport.fileFolderCreated(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             copySupport.fileDataCreated(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             copySupport.fileChanged(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             copySupport.fileDeleted(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             copySupport.fileRenamed(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             copySupport.fileAttributeChanged(fe);
         }

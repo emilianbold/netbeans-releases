@@ -94,12 +94,15 @@ public class SymfonyOptionsPanel extends JPanel {
         errorLabel.setText(" "); // NOI18N
 
         symfonyTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 processUpdate();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 processUpdate();
             }
@@ -395,22 +398,27 @@ public class SymfonyOptionsPanel extends JPanel {
 
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
          String symfonyScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+            @Override
             public List<String> detect() {
                 return FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME);
             }
 
+            @Override
             public String getWindowTitle() {
                 return NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyScriptsTitle");
             }
 
+            @Override
             public String getListTitle() {
                 return NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyScripts");
             }
 
+            @Override
             public String getPleaseWaitPart() {
                 return NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyScriptsPleaseWaitPart");
             }
 
+            @Override
             public String getNoItemsFound() {
                 return NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_NoSymfonyScriptsFound");
             }

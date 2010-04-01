@@ -245,10 +245,12 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     private JTextField sourcesTextField;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public String getProjectName() {
         return projectNameTextField.getText().trim();
     }
 
+    @Override
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
@@ -260,32 +262,40 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     }
 
     // because of compatibility with ConfigureNewProjectPanelVisual
+    @Override
     public LocalServer getSourcesLocation() {
         return new LocalServer(sourcesTextField.getText());
     }
 
+    @Override
     public MutableComboBoxModel getLocalServerModel() {
         return null;
     }
 
+    @Override
     public void setLocalServerModel(MutableComboBoxModel localServers) {
     }
 
+    @Override
     public void selectSourcesLocation(LocalServer localServer) {
     }
 
+    @Override
     public PhpVersion getPhpVersion() {
         return (PhpVersion) phpVersionComboBox.getSelectedItem();
     }
 
+    @Override
     public void setPhpVersion(PhpVersion phpVersion) {
         phpVersionComboBox.setSelectedItem(phpVersion);
     }
 
+    @Override
     public Charset getEncoding() {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
+    @Override
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
     }
