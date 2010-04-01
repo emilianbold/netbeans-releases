@@ -42,19 +42,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Exceptions;
@@ -64,6 +65,7 @@ import org.openide.util.Exceptions;
  * @author Sergey Grinev
  */
 public abstract class HostMappingProviderUnixAbstract implements HostMappingProvider {
+    private static final Logger log = RemoteUtil.LOGGER;
 
     protected abstract String getShareCommand();
 
@@ -73,33 +75,32 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
         String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
-        //System.err.println("findMappings for "+execEnv);
+        log.log(Level.FINE, "Find Mappings for {0}", execEnv);
         if (hostName != null) {
             RunFacade runner = RunFacade.getInstance(execEnv);
             if (runner.run(getShareCommand())) { //NOI18N
                 List<String> paths = parseOutput(execEnv, new StringReader(runner.getOutput()));
                 for (String path : paths) {
-                    //System.err.println("Path "+path);
+                    log.log(Level.FINE, "Path {0}", path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
                     String netPath = NET + hostName + path;
                     if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
                         if (execEnv.isLocal()) {
-                            //System.err.println(path+"->"+netPath);
+                            log.log(Level.FINE, "{0}->{1}", new Object[]{path, netPath});
                             mappings.put(path, netPath);
                         } else {
-                            //System.err.println(netPath+"->"+path);
+                            log.log(Level.FINE, "{0}->{1}", new Object[]{netPath, path});
                             mappings.put(netPath, path);
                         }
                     }
                     if (!mappings.containsKey(path) && execEnv.isLocal()) {
                         String host = getIP();
-                        System.err.println("IP="+host);
                         if (host != null && host.length()>0) {
+                            log.log(Level.FINE, "IP={0}", host);
                             netPath = NET + host + path;
-                            //System.err.println("Try to ls for "+netPath);
                             if (HostInfoProvider.fileExists(otherExecEnv, netPath)) {
                                 mappings.put(path, netPath);
-                                //System.err.println(path+"->"+netPath);
+                                log.log(Level.FINE, "{0}->{1}", new Object[]{path, netPath});
                             }
                         }
                     }
