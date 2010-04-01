@@ -269,6 +269,12 @@ public class PushAction extends ContextAction {
                 return;
             }
 
+            if(hooks != null && context != null) {
+                for (HgHook hgHook : hooks) {
+                    hgHook.afterPush(context);
+                }
+            }
+
             if (list != null && !list.isEmpty()) {
 
                 if (!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1))) {
@@ -343,12 +349,6 @@ public class PushAction extends ContextAction {
                             bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
                         } else {
                             HgUtils.notifyUpdatedFiles(pushFile, list);
-                        }
-                    }
-
-                    if(hooks != null && context != null) {
-                        for (HgHook hgHook : hooks) {
-                            hgHook.afterPush(context);
                         }
                     }
 
