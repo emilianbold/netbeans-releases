@@ -653,6 +653,8 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                 assert epromFile != null : "ClearEprom should not be able to " + //NOI18N
                         "be invoked if no eprom file exists"; //NOI18N
                 epromFile.delete();
+                RICard.this.removeCapability(this);
+                RICard.this.removeCapability(epromFileCap);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
