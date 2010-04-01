@@ -65,6 +65,7 @@ import org.netbeans.Stamps;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -76,9 +77,13 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ServiceProvider(service = NetigsoFramework.class)
+@ServiceProviders({
+    @ServiceProvider(service = NetigsoFramework.class),
+    @ServiceProvider(service = Netigso.class)
+})
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
+    private static final ThreadLocal<Boolean> SELF_QUERY = new ThreadLocal<Boolean>();
     private static final String[] EMPTY = {};
 
     private Framework framework;
@@ -162,13 +167,18 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             Set<String> pkgs = new HashSet<String>();
             String[] knownPkgs = registered.get(m.getCodeNameBase());
             if (knownPkgs == EMPTY) {
-                Enumeration en = b.findEntries("", "", true);
-                while (en.hasMoreElements()) {
-                    URL url = (URL) en.nextElement();
-                    if (url.getFile().startsWith("/META-INF")) {
-                        continue;
+                try {
+                    SELF_QUERY.set(true);
+                    Enumeration en = b.findEntries("", "", true);
+                    while (en.hasMoreElements()) {
+                        URL url = (URL) en.nextElement();
+                        if (url.getFile().startsWith("/META-INF")) {
+                            continue;
+                        }
+                        pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                     }
-                    pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+                } finally {
+                    SELF_QUERY.set(false);
                 }
                 registered.put(m.getCodeNameBase(), pkgs.toArray(new String[0]));
                 Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
@@ -377,6 +387,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     public byte[] fromArchive(long bundleId, String resource, ArchiveResources ar) throws IOException {
+        if (Boolean.TRUE.equals(SELF_QUERY.get())) {
+            return ar.resource(resource);
+        }
         return fromArchive(ar, resource);
     }
 
