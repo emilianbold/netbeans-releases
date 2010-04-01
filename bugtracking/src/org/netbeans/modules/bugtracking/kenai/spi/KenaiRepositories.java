@@ -95,7 +95,7 @@ abstract class KenaiRepositories {
      * @return
      */
     public Repository getRepository(KenaiProject kp, boolean forceCreate) {
-        Repository repository = repositoriesMap.get(kp.getName());
+        Repository repository = repositoriesMap.get(kp.getWebLocation().toString());
         if(repository != null) {
             return repository;
         }
@@ -109,7 +109,7 @@ abstract class KenaiRepositories {
                 repository = support.createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
-                    repositoriesMap.put(kp.getName(), repository);
+                    repositoriesMap.put(kp.getWebLocation().toString(), repository);
                     return repository;
                 }
             }
