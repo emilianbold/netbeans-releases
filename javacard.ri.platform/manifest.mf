@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.javacard.ri.platform/1
 OpenIDE-Module-Layer: org/netbeans/modules/javacard/ri/platform/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javacard/ri/platform/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.21
+OpenIDE-Module-Specification-Version: 1.22
 

@@ -638,6 +638,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
 
         public void clear() {
             rp.post(this);
+            RICard.this.removeCapability(this);
         }
 
         public void run() {
@@ -653,10 +654,14 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                 assert epromFile != null : "ClearEprom should not be able to " + //NOI18N
                         "be invoked if no eprom file exists"; //NOI18N
                 epromFile.delete();
-                RICard.this.removeCapability(this);
-                RICard.this.removeCapability(epromFileCap);
+                synchronized (this) {
+                    notifyAll(); //for unit tests
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+                if (RICard.this.getCapability(ClearEpromCapability.class) == null) {
+                    RICard.this.addCapability(this);
+                }
             }
         }
     }
