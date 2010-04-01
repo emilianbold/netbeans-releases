@@ -42,9 +42,9 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 5/10 Compiler Collection" family="SunStudio"/>
+    <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 6/10 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_sparc"/>
     <default_locations>
-        <platform os="sun_sparc" directory="/opt/solstudioex1005/bin"/>
+        <platform os="sun_sparc" directory="/opt/solstudioex1006/bin"/>
     </default_locations>
 </toolchaindefinition>
