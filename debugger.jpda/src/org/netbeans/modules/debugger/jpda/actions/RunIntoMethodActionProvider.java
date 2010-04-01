@@ -84,6 +84,7 @@ import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -455,6 +456,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     EventRequestWrapper.enable(brReq);
                 } catch (ObjectCollectedExceptionWrapper ocex) {
                     // Unlikely to be thrown.
+                    debugger.getOperator().unregister(brReq);
+                    return false;
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
                     debugger.getOperator().unregister(brReq);
                     return false;
                 }

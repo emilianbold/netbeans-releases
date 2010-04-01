@@ -77,6 +77,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -243,6 +244,10 @@ implements Executor {
                 // Thread was collected...
                 getDebuggerImpl ().getOperator ().unregister(stepRequest);
                 return ;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
+                getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                return ;
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
@@ -380,6 +385,10 @@ implements Executor {
                         EventRequestWrapper.enable(stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
+                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        stepRequest = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
                         getDebuggerImpl ().getOperator ().unregister(stepRequest);
                         stepRequest = null;
                     }

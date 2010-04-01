@@ -72,6 +72,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -356,6 +357,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     }
                 } catch (InternalExceptionWrapper e) {
                 } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
                 } catch (VMDisconnectedExceptionWrapper e) {
                     return ;
                 }
@@ -368,6 +371,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         entryReq = null;
                     } catch (ObjectCollectedExceptionWrapper e) {
                         entryReq = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
+                        entryReq = null;
                     }
                 }
                 if (exitReq != null) {
@@ -376,6 +382,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     } catch (InternalExceptionWrapper e) {
                         exitReq = null;
                     } catch (ObjectCollectedExceptionWrapper e) {
+                        exitReq = null;
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
                         exitReq = null;
                     }
                 }
