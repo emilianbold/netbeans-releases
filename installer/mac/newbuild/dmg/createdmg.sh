@@ -27,6 +27,14 @@ bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > ./dist/template.sparseimag
 mkdir ./dist/mountpoint
 echo "Running hdiutil mount..."
 hdiutil mount -verbose -mountpoint ./dist/mountpoint ./dist/template.sparseimage
+if [ $? -eq 1 ] ; then
+   #hotfix: for some reason current template.sparseimage is not correctly mounted from the first time
+   #the following error message is shown: "mount failed - no mountable file systems" on 10.6
+   #running it again do the trick
+   #something wrong with the current template.sparseimage - probably needs to be re-created 
+   hdiutil mount -verbose -mountpoint ./dist/mountpoint ./dist/template.sparseimage
+fi
+
 rm -rf ./dist/mountpoint/*
 echo "Running rsync..."
 rsync -a ./dist_dmg/ --exclude .DS_Store ./dist/mountpoint/
