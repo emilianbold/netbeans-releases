@@ -99,6 +99,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     
     private void setFontHeightWidth(final Font font) {
         FONT_RP.post(new Runnable() {
+            @Override
             public void run() {
                 FontMetrics metrics = getFontMetrics(font);
                 charWidth = metrics.charWidth('m');
@@ -122,6 +123,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         }
     }
 
+    @Override
     protected void paintComponent(Graphics gr) {
         super.paintComponent(gr);
         if (currentDiff == null) return;
@@ -233,13 +235,16 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         repaintTask.schedule(150);
     }
     
     private class RepaintPaneTask implements Runnable {
+        @Override
         public void run() {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     repaint();
                 }

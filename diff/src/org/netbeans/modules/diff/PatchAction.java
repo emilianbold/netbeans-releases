@@ -80,10 +80,12 @@ public class PatchAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PatchAction.class, "CTL_PatchActionName");
     }
 
+    @Override
     public boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
             FileObject fo = DiffAction.getFileFromNode(nodes[0]);
@@ -102,16 +104,19 @@ public class PatchAction extends NodeAction {
     /**
      * @return false to run in AWT thread.
      */
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
+    @Override
     public void performAction(Node[] nodes) {
         final FileObject fo = DiffAction.getFileFromNode(nodes[0]);
         if (fo != null) {
             final File patch = getPatchFor(fo);
             if (patch == null) return ;
             Utils.postParallel(new Runnable () {
+                @Override
                 public void run() {
                     performPatch(patch, FileUtil.toFile(fo));
                 }
@@ -231,9 +236,11 @@ public class PatchAction extends NodeAction {
 
         // setup filters, default one filters patch files
         FileFilter patchFilter = new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(PatchAction.class, "CTL_PatchDialog_FileFilter");
             }
@@ -335,6 +342,7 @@ public class PatchAction extends NodeAction {
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
     }
@@ -350,6 +358,7 @@ public class PatchAction extends NodeAction {
             this.chooser = chooser;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e){
             String command  = e.getActionCommand();
             if(command == JFileChooser.APPROVE_SELECTION){
