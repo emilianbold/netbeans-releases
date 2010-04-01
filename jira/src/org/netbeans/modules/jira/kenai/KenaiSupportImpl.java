@@ -43,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -81,7 +82,7 @@ public class KenaiSupportImpl extends KenaiSupport {
         String host = loc.getHost();
         int idx = location.indexOf("/browse/");
         if (idx <= 0) {
-            Jira.LOG.warning("can't get issue tracker url from [" + project.getName() + ", " + location + "]"); // NOI18N
+            Jira.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{project.getName(), location}); // NOI18N
             return null;
         }
         String url = location.substring(0, idx);
@@ -94,8 +95,7 @@ public class KenaiSupportImpl extends KenaiSupport {
         KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
         if(repo.getConfiguration() == null) {
             // something went wrong, can't use the repo anyway => return null
-            Jira.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
-                    + project.getDisplayName() + "," + project.getName() + "]");                            // NOI18N
+            Jira.LOG.log(Level.FINE, "KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject [{0},{1}]", new Object[]{project.getDisplayName(), project.getName()});                            // NOI18N
             return null;
         }
         synchronized (repositories) {
