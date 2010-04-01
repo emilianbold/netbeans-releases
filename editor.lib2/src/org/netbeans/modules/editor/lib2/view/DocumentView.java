@@ -477,7 +477,8 @@ public final class DocumentView extends EditorBoxView
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             updateDefaultFontAndColors(result);
-            result.addLookupListener(lookupListener);
+            result.addLookupListener(WeakListeners.create(LookupListener.class,
+                    lookupListener, result));
         }
 
         if (prefs == null) {
