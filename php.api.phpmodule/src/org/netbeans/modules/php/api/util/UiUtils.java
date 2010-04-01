@@ -106,9 +106,11 @@ public final class UiUtils {
         final Throwable cause = exc.getCause();
         assert cause != null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                informAndOpenOptions(new NotifyDescriptor.Exception(
-                        cause, NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage())), optionsSubcategory);
+                informAndOpenOptions(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage()), NotifyDescriptor.ERROR_MESSAGE),
+                        optionsSubcategory);
             }
         });
     }

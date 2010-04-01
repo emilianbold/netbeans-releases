@@ -154,7 +154,6 @@ public final class Deployment {
 
             DeploymentHelper.deployJdbcDrivers(jmp, progress);
 
-            boolean serverReady = false;
             TargetServer targetserver = new TargetServer(deploymentTarget);
 
             // Only call getTargets() if we really need to.

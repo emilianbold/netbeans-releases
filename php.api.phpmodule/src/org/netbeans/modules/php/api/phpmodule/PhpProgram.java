@@ -71,6 +71,7 @@ public abstract class PhpProgram {
      * @since 1.10
      */
     public static final InputProcessorFactory ANSI_STRIPPING_FACTORY = new InputProcessorFactory() {
+        @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.ansiStripping(defaultProcessor);
         }

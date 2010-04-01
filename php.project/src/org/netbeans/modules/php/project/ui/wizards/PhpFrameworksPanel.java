@@ -78,6 +78,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return steps;
     }
 
+    @Override
     public Component getComponent() {
         if (frameworksPanel == null) {
             frameworksPanel = new PhpFrameworksPanelVisual(this, createExtenders());
@@ -85,10 +86,12 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return frameworksPanel;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(PhpFrameworksPanel.class);
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
@@ -96,6 +99,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         frameworksPanel.addPhpFrameworksListener(this);
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent();
         frameworksPanel.removePhpFrameworksListener(this);
@@ -103,6 +107,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         descriptor.putProperty(EXTENDERS, frameworksPanel.getSelectedExtenders());
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
@@ -143,18 +148,22 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }

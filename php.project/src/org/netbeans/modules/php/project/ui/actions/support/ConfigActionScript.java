@@ -157,15 +157,18 @@ class ConfigActionScript extends ConfigAction {
             startFile = getStartFile(context);
         }
 
+        @Override
         public PhpProject getProject() {
             return project;
         }
 
+        @Override
         public FileObject getStartFile() {
             assert startFile != null;
             return FileUtil.toFileObject(startFile);
         }
 
+        @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
             assert startFile != null;
             RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
@@ -178,6 +181,7 @@ class ConfigActionScript extends ConfigAction {
                     .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
         }
 
+        @Override
         public ExternalProcessBuilder getProcessBuilder() {
             assert startFile != null;
             ExternalProcessBuilder builder = program.getProcessBuilder()
@@ -192,11 +196,13 @@ class ConfigActionScript extends ConfigAction {
             return builder;
         }
 
+        @Override
         public String getOutputTabTitle() {
             assert startFile != null;
-            return String.format("%s - %s", program.getProgram(), startFile.getName());
+            return String.format("%s - %s", program.getProgram(), startFile.getName()); // NOI18N
         }
 
+        @Override
         public boolean isValid() {
             return program.isValid() && startFile != null;
         }
@@ -215,6 +221,7 @@ class ConfigActionScript extends ConfigAction {
 
     static final class PhpLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
+        @Override
         public LineConvertor newLineConvertor() {
             LineConvertor[] lineConvertors = new LineConvertor[PhpInterpreter.LINE_PATTERNS.length];
             int i = 0;

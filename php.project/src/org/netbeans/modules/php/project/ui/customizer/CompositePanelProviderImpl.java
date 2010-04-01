@@ -42,7 +42,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
@@ -84,6 +83,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         }
     }
 
+    @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ProjectCustomizer.Category toReturn = null;
         final ProjectCustomizer.Category[] categories = null;
@@ -133,6 +133,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         return toReturn;
     }
 
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
         PhpProjectProperties uiProps = context.lookup(PhpProjectProperties.class);
