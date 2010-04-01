@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -110,13 +112,6 @@ import org.openide.util.Utilities;
             requiredToolsLabel.setVisible(false); // Required Tools label!
             requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
-
-        btCBrowse.setEnabled(false);
-        btCppBrowse.setEnabled(false);
-        btFortranBrowse.setEnabled(false);
-        btAsBrowse.setEnabled(false);
-        btMakeBrowse.setEnabled(false);
-        btDebuggerBrowse.setEnabled(false);
         tfMakePath.setEditable(false);
         tfDebuggerPath.setEditable(false);
         tfQMakePath.setEditable(false);
@@ -226,7 +221,7 @@ import org.openide.util.Utilities;
     void preChangeCompilerSet(CompilerSet cs) {
         if (cs == null) {
             lbFamilyValue.setText(""); // NOI18N
-            updateToolsControls(false, false, false, true);
+            updateToolsControls(false, false, true);
             return;
         }
         if (cs.isUrlPointer()) {
@@ -474,15 +469,7 @@ import org.openide.util.Utilities;
         }
     }
 
-    void updateToolsControls(boolean enableText, boolean enableBrowse, boolean enableVersions, boolean cleanText) {
-        btCBrowse.setEnabled(enableBrowse);
-        btCppBrowse.setEnabled(enableBrowse);
-        btFortranBrowse.setEnabled(enableBrowse);
-        btAsBrowse.setEnabled(enableBrowse);
-        btMakeBrowse.setEnabled(enableBrowse);
-        btDebuggerBrowse.setEnabled(enableBrowse);
-        btQMakeBrowse.setEnabled(enableBrowse);
-        btCMakeBrowse.setEnabled(enableBrowse);
+    void updateToolsControls(boolean enableText, boolean enableVersions, boolean cleanText) {
         updateTextField(tfMakePath, enableText, cleanText);
         updateTextField(tfDebuggerPath, enableText, cleanText);
         updateTextField(tfBaseDirectory, false, cleanText);
@@ -547,8 +534,17 @@ import org.openide.util.Utilities;
     }
 
     private boolean selectCompiler(JTextField tf) {
-        String seed = tfBaseDirectory.getText();
-        FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
+        String seed = tf.getText();
+        if (seed.length() > 0 && ! seed.endsWith("/")) { //NOI18N
+            int pos = seed.lastIndexOf("/"); //NOI18N
+            if (pos > 0) {
+                seed = seed.substring(0, pos);
+            }
+        }
+        JFileChooser fileChooser = new FileChooserBuilder(manager.getExecutionEnvironment()).createFileChooser(seed);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setDialogTitle(ToolsPanel.getString("SELECT_TOOL_TITLE"));
+        //fileChooser.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return false;
