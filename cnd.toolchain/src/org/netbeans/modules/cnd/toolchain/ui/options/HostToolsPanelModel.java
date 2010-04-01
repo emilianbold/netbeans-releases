@@ -71,39 +71,42 @@ public final class HostToolsPanelModel extends ToolsPanelModel {
     
     @Override
     public void setDebuggerRequired(boolean value) {
-//        CppSettings.getDefault().setGdbRequired(value);
     }
     
     @Override
     public boolean isCRequired() {
-        return false; //return CppSettings.getDefault().isCRequired();
+        return false;
     }
     
     @Override
     public void setCRequired(boolean value) {
-//        CppSettings.getDefault().setCRequired(value);
     }
     
     @Override
     public boolean isCppRequired() {
-        return false; //return CppSettings.getDefault().isCppRequired();
+        return false;
     }
     
     @Override
     public void setCppRequired(boolean value) {
-//        CppSettings.getDefault().setCppRequired(value);
     }
     
     @Override
     public boolean isFortranRequired() {
         return false;
-        //return CppSettings.getDefault().isFortranEnabled();
-        //return CppSettings.getDefault().isFortranRequired();
     }
     
     @Override
     public void setFortranRequired(boolean value) {
-//        CppSettings.getDefault().setFortranRequired(value);
+    }
+
+    @Override
+    public void setQMakeRequired(boolean value) {
+    }
+
+    @Override
+    public boolean isQMakeRequired() {
+        return false;
     }
 
     @Override

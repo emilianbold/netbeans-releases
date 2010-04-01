@@ -101,6 +101,7 @@ import org.openide.util.Utilities;
         cbCRequired.setName("c"); // NOI18N
         cbCppRequired.setName("c++"); // NOI18N
         cbFortranRequired.setName("fortran"); // NOI18N
+        cbQMakeRequired.setName("qmake"); // NOI18N
         cbAsRequired.setName("assembler"); // NOI18N
     }
 
@@ -125,11 +126,13 @@ import org.openide.util.Utilities;
             cbCRequired.setEnabled(true);
             cbCppRequired.setEnabled(true);
             cbFortranRequired.setEnabled(true);
+            cbQMakeRequired.setEnabled(true);
             cbAsRequired.setEnabled(true);
         } else {
             cbCRequired.setEnabled(false);
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
+            cbQMakeRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
 
@@ -139,6 +142,7 @@ import org.openide.util.Utilities;
         cbCRequired.setSelected(manager.getModel().isCRequired());
         cbCppRequired.setSelected(manager.getModel().isCppRequired());
         cbFortranRequired.setSelected(manager.getModel().isFortranRequired());
+        cbQMakeRequired.setSelected(manager.getModel().isQMakeRequired());
         cbAsRequired.setSelected(manager.getModel().isAsRequired());
     }
 
@@ -152,6 +156,7 @@ import org.openide.util.Utilities;
         cbCppRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbCRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbFortranRequired.setVisible(manager.getModel().showRequiredBuildTools());
+        cbQMakeRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbAsRequired.setVisible(manager.getModel().showRequiredBuildTools());
     }
 
@@ -211,6 +216,9 @@ import org.openide.util.Utilities;
             }
             if (model.isAsRequired() != cbAsRequired.isSelected()) {
                 model.setAsRequired(cbAsRequired.isSelected());
+            }
+            if (model.isQMakeRequired() != cbQMakeRequired.isSelected()) {
+                model.setFortranRequired(cbQMakeRequired.isSelected());
             }
         }
     }
@@ -426,8 +434,9 @@ import org.openide.util.Utilities;
         boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
         boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
         boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
         boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
-        return makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid;
+        return makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid && qmakeValid;
     }
 
     void getErrors(List<String> errors) {
@@ -436,6 +445,7 @@ import org.openide.util.Utilities;
         boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
         boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
         boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
         boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
             if (!isPathFieldValid(tfMakePath)) {
@@ -455,6 +465,9 @@ import org.openide.util.Utilities;
         }
         if (cbFortranRequired.isSelected() && !fortranValid) {
             errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedFortranCompiler")); // NOI18N
+        }
+        if (cbQMakeRequired.isSelected() && !qmakeValid) {
+            errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedQMake")); // NOI18N
         }
         if (cbAsRequired.isSelected() && !asValid) {
             errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedAssembler")); // NOI18N
@@ -760,6 +773,7 @@ import org.openide.util.Utilities;
         cbFortranRequired.addItemListener(this);
         cbAsRequired = new javax.swing.JCheckBox();
         cbFortranRequired.addItemListener(this);
+        cbQMakeRequired = new javax.swing.JCheckBox();
         lbBaseDirectory = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
         lbAsCommand = new javax.swing.JLabel();
@@ -1011,6 +1025,9 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         requiredToolsPanel.add(cbAsRequired, gridBagConstraints);
 
+        cbQMakeRequired.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbQMakeRequired.text")); // NOI18N
+        requiredToolsPanel.add(cbQMakeRequired, new java.awt.GridBagConstraints());
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 15;
@@ -1226,6 +1243,7 @@ import org.openide.util.Utilities;
     private javax.swing.JCheckBox cbDebuggerRequired;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbMakeRequired;
+    private javax.swing.JCheckBox cbQMakeRequired;
     private javax.swing.JLabel lbAsCommand;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
