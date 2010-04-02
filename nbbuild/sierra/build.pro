@@ -51,7 +51,7 @@
     <!-- property name="netbeans.user" value=".netbeans/dev"/-->
     <!-- property name="netbeans.zip"  value="netbeans-6.9.zip"/-->
 
-    <NetBeans the latest nightly -->
+    <!-- NetBeans the latest nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
