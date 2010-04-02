@@ -134,7 +134,7 @@ public class PasswordDlg extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.cbRememberPwd.text")); // NOI18N
 
-        jLabel0.setLabelFor(tfHost);
+        jLabel0.setLabelFor(tfUser);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel0, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.jLabel0.text")); // NOI18N
 
         tfUser.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background") /*NOI18N*/);

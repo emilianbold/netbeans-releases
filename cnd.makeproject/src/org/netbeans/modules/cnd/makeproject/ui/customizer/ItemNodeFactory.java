@@ -96,10 +96,8 @@ public class ItemNodeFactory {
 
     // Fortran Compiler Node
     public static CustomizerNode createFortranCompilerDescription(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        final CompilerSet cs = context.compilerSet();
-        String compilerName = cs.getTool(PredefinedToolKind.FortranCompiler).getName();
-        String compilerDisplayName = cs.getTool(PredefinedToolKind.FortranCompiler).getDisplayName();
+        String compilerName = "fortran"; // NOI18N
+        String compilerDisplayName = PredefinedToolKind.FortranCompiler.getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
                 compilerName,  compilerDisplayName, null, lookup);
         return fortranCompilerCustomizerNode;
@@ -107,10 +105,8 @@ public class ItemNodeFactory {
 
     // Assembler Compiler Node
     public static CustomizerNode createAssemblerDescription(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        final CompilerSet cs = context.compilerSet();
-        String compilerName = cs.getTool(PredefinedToolKind.Assembler).getName();
-        String compilerDisplayName = cs.getTool(PredefinedToolKind.Assembler).getDisplayName();
+        String compilerName = "as"; // NOI18N
+        String compilerDisplayName = PredefinedToolKind.Assembler.getDisplayName();
         CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
                 compilerName, compilerDisplayName, null, lookup);
         return assemblerCustomizerNode;
@@ -118,10 +114,8 @@ public class ItemNodeFactory {
 
     // CC Compiler Node
     public static CustomizerNode createCCCompilerDescription(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        final CompilerSet cs = context.compilerSet();
-        String compilerName = cs.getTool(PredefinedToolKind.CCCompiler).getName();
-        String compilerDisplayName = cs.getTool(PredefinedToolKind.CCCompiler).getDisplayName();
+        String compilerName = "cpp"; // NOI18N
+        String compilerDisplayName = PredefinedToolKind.CCCompiler.getDisplayName();
         CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
                 compilerName, compilerDisplayName, null, lookup);
         return ccCompilerCustomizerNode;
@@ -132,18 +126,14 @@ public class ItemNodeFactory {
                 "Custom Build Step", getString("LBL_Config_Custom_Build"), null, lookup); // NOI18N
     }
 
-
     // C Compiler Node
     public static CustomizerNode createCCompilerDescription(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        final CompilerSet cs = context.compilerSet();
-        String compilerName = cs.getTool(PredefinedToolKind.CCompiler).getName();
-        String compilerDisplayName = cs.getTool(PredefinedToolKind.CCompiler).getDisplayName();
+        String compilerName = "c"; // NOI18N
+        String compilerDisplayName = PredefinedToolKind.CCompiler.getDisplayName();
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
                 compilerName, compilerDisplayName, null, lookup);
         return cCompilerCustomizerNode;
     }
-
 
     private static String getString(String s) {
         return NbBundle.getBundle(MakeCustomizer.class).getString(s);
