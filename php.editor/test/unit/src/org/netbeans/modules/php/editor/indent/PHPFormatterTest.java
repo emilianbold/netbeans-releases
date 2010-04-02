@@ -1558,6 +1558,34 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/comment06.php", options);
     }
 
+    // the html tests doesn't work properly, the results are deferent then in the ide. i don't know why. 
+    public void testHtml01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/html01.php", options);
+    }
+
+    public void testHtml02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.initialIndent, 4);
+	reformatFileContents("testfiles/formatting/html/html02.php", options);
+    }
+
+    public void testHtml03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.initialIndent, 4);
+	reformatFileContents("testfiles/formatting/html/html03.php", options);
+    }
+
+    public void testHtml04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/html04.php", options);
+    }
+
+    public void testIssue175229() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
