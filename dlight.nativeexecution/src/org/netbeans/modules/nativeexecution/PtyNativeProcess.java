@@ -44,8 +44,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
@@ -91,7 +93,14 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         List<String> newArgs = new ArrayList<String>();
         newArgs.add("-p"); // NOI18N
         newArgs.add(pty.getSlaveName());
-        newArgs.add(info.getExecutable());
+
+        String processExecutable = info.getExecutable();
+        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+            // process_start requires Unix style executable path
+            processExecutable = WindowsSupport.getInstance().convertToShellPath(processExecutable);
+        }
+        newArgs.add(processExecutable);
+
         newArgs.addAll(info.getArguments());
 
         // TODO: Clone Info!!!!

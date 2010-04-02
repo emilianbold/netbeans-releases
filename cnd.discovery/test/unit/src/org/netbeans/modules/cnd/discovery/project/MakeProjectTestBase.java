@@ -407,7 +407,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     private String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {
-        String zipName = urlName.substring(urlName.lastIndexOf(File.separator)+1);
+        String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
         File fileDataPath = CndCoreTestUtils.getDownloadBase();
@@ -425,7 +425,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
         if (fileCreatedFolder.list().length == 0){
             if (!new File(fileDataPath, tarName).exists()) {
-                execute(tools, "wget", dataPath, urlName);
+                execute(tools, "wget", dataPath, "-q", urlName);
                 execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);

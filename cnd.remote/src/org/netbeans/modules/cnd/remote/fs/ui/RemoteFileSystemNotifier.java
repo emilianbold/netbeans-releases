@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.fs.ui;
 
 import java.awt.Dialog;
@@ -66,6 +65,7 @@ import org.openide.util.RequestProcessor;
 public class RemoteFileSystemNotifier {
 
     public interface Callback {
+
         /**
          * Is called as soon as the host has been connected.
          * It is always called in a specially created thread
@@ -76,11 +76,13 @@ public class RemoteFileSystemNotifier {
     }
 
     private class Listener implements ConnectionListener {
+
         @Override
         public void connected(ExecutionEnvironment env) {
             if (RemoteFileSystemNotifier.this.env.equals(env)) {
                 ConnectionManager.getInstance().removeConnectionListener(this);
                 RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+
                     @Override
                     protected void runImpl() {
                         notification.clear();
@@ -89,10 +91,11 @@ public class RemoteFileSystemNotifier {
                 });
             }
         }
-        @Override
-        public void disconnected(ExecutionEnvironment env) {}
-    }
 
+        @Override
+        public void disconnected(ExecutionEnvironment env) {
+        }
+    }
     private final ExecutionEnvironment env;
     private final Callback callback;
     private boolean shown;
@@ -105,7 +108,7 @@ public class RemoteFileSystemNotifier {
     }
 
     public void showIfNeed() {
-        synchronized(this) {
+        synchronized (this) {
             if (shown) {
                 return;
             } else {
@@ -120,19 +123,18 @@ public class RemoteFileSystemNotifier {
 
     private void show() {
         ActionListener onClickAction = new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (PasswordManager.getInstance().isRememberPassword(env)){
-                    final char[] passWord = PasswordManager.getInstance().get(env);
-                    if (passWord != null) {
-                        RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
-                            @Override
-                            protected void runImpl() {
-                                connect(passWord);
-                            }
-                        });
-                        return;
-                    }
+                if (PasswordManager.getInstance().isRememberPassword(env)) {
+                    RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+
+                        @Override
+                        protected void runImpl() {
+                            connect();
+                        }
+                    });
+                    return;
                 }
                 showConnectDialog();
             }
@@ -156,12 +158,13 @@ public class RemoteFileSystemNotifier {
                 DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {            
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+
                 @Override
                 protected void runImpl() {
-                    PasswordManager.getInstance().setRememberPassword(env, panel.isRememberPassword());
-                    connect(panel.getPassword());
+                    PasswordManager.getInstance().storePassword(env, panel.getPassword(), panel.isRememberPassword());
+                    connect();
                 }
             });
         } else {
@@ -169,15 +172,11 @@ public class RemoteFileSystemNotifier {
         }
     }
 
-    private void connect(char[] password) {
+    private void connect() {
         boolean connected = false;
         try {
-            if (password == null || password.length == 0) {
-                ConnectionManager.getInstance().connectTo(env);
-            } else {
-                ConnectionManager.getInstance().connectTo(env, password);
-            }
-            connected = true;            
+            ConnectionManager.getInstance().connectTo(env);
+            connected = true;
             // callback.connected(); // we now use listener instead
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -188,9 +187,9 @@ public class RemoteFileSystemNotifier {
             reShow();
         }
     }
-    
+
     private void reShow() {
-        synchronized(this) {
+        synchronized (this) {
             shown = false;
         }
         show();

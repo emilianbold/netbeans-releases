@@ -46,6 +46,8 @@
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -65,6 +68,7 @@ import org.openide.util.NbBundle;
 public class HostPropertiesDialog extends JPanel {
 
     private final ServerRecord serverRecord;
+    private boolean forceCleanWasDone = false;
 
     public static boolean invokeMe(RemoteServerRecord record) {
         HostPropertiesDialog pane = new HostPropertiesDialog(record);
@@ -114,6 +118,15 @@ public class HostPropertiesDialog extends JPanel {
         tfHost.setText(serverRecord.getServerName());
         tfUser.setText(serverRecord.getUserName());
         rememberPassword.setSelected(serverRecord.isRememberPassword());
+        rememberPassword.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!rememberPassword.isSelected() && !forceCleanWasDone) {
+                    forceCleanWasDone = true;
+                    PasswordManager.getInstance().forceClearPassword(HostPropertiesDialog.this.serverRecord.getExecutionEnvironment());
+                }
+            }
+        });
         tfPort.setText("" + serverRecord.getExecutionEnvironment().getSSHPort());
         SyncUtils.arrangeComboBox(cbSync, serverRecord.getExecutionEnvironment());
         cbSync.setSelectedItem(serverRecord.getSyncFactory());
