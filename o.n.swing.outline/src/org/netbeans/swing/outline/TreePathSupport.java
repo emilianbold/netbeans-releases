@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeWillExpandListener;
@@ -99,6 +100,7 @@ public final class TreePathSupport {
      * this path if a parent node containing it is later collapsed).  Fires
      * TreeWillExpand and TreeExpansion events. */
     public void expandPath (TreePath path) {
+        assert SwingUtilities.isEventDispatchThread();
         if (layout.isExpanded(path)) {
             //It's already expanded, don't waste cycles firing bogus events
             return;
@@ -119,6 +121,7 @@ public final class TreePathSupport {
      * this path if a parent node containing it is later collapsed).  Fires
      * TreeWillExpand and TreeExpansion events. */
     public void collapsePath (TreePath path) {
+        assert SwingUtilities.isEventDispatchThread();
         if (!layout.isExpanded(path)) {
             //It's already collapsed, don't waste cycles firing bogus events
             return;
@@ -189,6 +192,7 @@ public final class TreePathSupport {
     
     
     public boolean hasBeenExpanded(TreePath path) {
+        assert SwingUtilities.isEventDispatchThread();
 	return (path != null && layout.isExpanded(path));
     }
 
@@ -200,6 +204,7 @@ public final class TreePathSupport {
      *               true if all nodes in the path are expanded
      */
     public boolean isExpanded(TreePath path) {
+        assert SwingUtilities.isEventDispatchThread();
 	if(path == null)
 	    return false;
 
@@ -235,6 +240,7 @@ public final class TreePathSupport {
     }    
     
     public TreePath[] getExpandedDescendants(TreePath parent) {
+        assert SwingUtilities.isEventDispatchThread();
         TreePath[] result = new TreePath[0];
 	if(isExpanded(parent)) {
             TreePath path;
