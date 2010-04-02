@@ -233,6 +233,11 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         assertTypes("unless_type.rb", "var.i^", "var", "Array", "Hash");
     }
 
+    public void testForType() throws Exception {
+        assertTypes("for_type.rb", "tmp^ = i", "i", false, "Fixnum");
+        assertTypes("for_type.rb", "s^ = j", "j", false, "String");
+    }
+
     public void testEqualsType() throws Exception {
         assertTypes("equals_type.rb", "var.t^", "var", "TrueClass", "FalseClass");
         assertTypes("equals_type.rb", "var2.t^", "var2", "TrueClass", "FalseClass");
