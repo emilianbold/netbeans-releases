@@ -79,12 +79,6 @@ import org.openide.util.Utilities;
     }
 
     @Override
-    public String getAbsolutePath() {
-        return fo == null ? super.getAbsolutePath() : fo.getPath();
-    }
-
-
-    @Override
     public File getParentFile() {
         if (fo == null) {
             return null;
@@ -100,7 +94,7 @@ import org.openide.util.Utilities;
 
     @Override
     public String getAbsolutePath() {
-        String res = super.getAbsolutePath();
+        String res = fo == null ? super.getAbsolutePath() : fo.getPath();
         if (res != null && Utilities.isWindows()) {
             res = res.replace('\\', '/'); // NOI18N
             while (res.startsWith("//")) { // NOI18N
