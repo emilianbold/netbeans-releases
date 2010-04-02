@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -69,14 +69,17 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     // ------------------------------------------------------------------------
     //  DecoratorFactor implementation
     // ------------------------------------------------------------------------
+    @Override
     public boolean isTypeSupported(String type) {
         return decoratorMap.containsKey(type);
     }
 
+    @Override
     public Decorator getDecorator(String type) {
         return decoratorMap.get(type);
     }
 
+    @Override
     public Map<String, Decorator> getAllDecorators() {
         return Collections.unmodifiableMap(decoratorMap);
     }
@@ -103,7 +106,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
     };
     
@@ -115,7 +118,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static final Decorator EJB_JAR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
 

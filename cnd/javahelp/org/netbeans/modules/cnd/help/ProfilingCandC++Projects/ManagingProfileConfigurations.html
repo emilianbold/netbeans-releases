@@ -7,32 +7,31 @@ Use is subject to license terms.
   <head>
    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
-    <title>Managing C/C++ Profiling Configurations</title>
+    <title>Managing C/C++/Fortran Profiling Configurations</title>
   </head>
   <body>
     <h2>
-       Managing C/C++ Profile Configurations
+       Managing C/C++/Fortran Profile Configurations
     </h2>
     <p>
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-      Profile configurations provide a way to quickly select the C/C++ profiling tools that you want to be displayed
-      each time you run your C/C++ project. </p>
+      Profile configurations provide a way to quickly select the C/C++/Fortran profiling tools that you want to be displayed
+      each time you run your C, C++, or Fortran project. </p>
     <p>
-      By default, each profile configuration is set up to include only those profiling tools that can run in a given development environment,
+     By default, each profile configuration is set up to include only those profiling tools that can run in a given development environment,
      which is indicated in the name of the configuration. The profiling tools use underlying features of the operating system
      to gather data about the running project.  Several advanced tools require the use of DTrace technology, which is available
-     only in the Solaris 10 OS and the OpenSolaris OS.  Some of the advanced tools can use Sun Studio software to gather
-     information, so they are supported on Solaris OSes and Linux when Sun Studio tools are present.</p>
+     only in the Solaris 10, OpenSolaris, and Oracle Solaris operating systems.  Some of the advanced tools can use Oracle Solaris Studio software to gather
+     information, so they are supported on Solaris OSes and Linux when Oracle Solaris Studio tools are present.</p>
 
     <p>You can modify any of the profile configurations to add or remove individual tools.  However, you can only add tools
     that will work for the environment indicated.</p>
     <p>If none of the available profile configurations suit your needs, you can also create your own profile configuration
         to specify your own set of tools that you want to use.</p>
 
-    
-    <b>To view the tools in each profile configuration:</b>
+    <p><b>To view the tools in each profile configuration:</b></p>
     <ol><li>Select Tools &gt; Profiler Tools to open the Profiler Tools Manager.
             <br>
         The Profiler Tools Manager can also be accessed from a project's Project Properties dialog box by
@@ -41,7 +40,7 @@ Use is subject to license terms.
         Each tool included in the configuration is shown with a check mark.  Tools that are not
         supported for the configuration are not selectable. </li></ol>
 
-    <b>To modify an existing profile configuration:</b>
+    <p><b>To modify an existing profile configuration:</b></p>
       <ol><li>Select Tools &gt; Profiler Tools to open the Profiler Tools Manager.
         </li>
         <li>Select a configuration from the Profiler Configuration list.<br>
@@ -51,7 +50,7 @@ Use is subject to license terms.
         When you use this profiler configuration for any project, the modified list of
         tools are run.</li>
       </ol>
-    <b>To add a profile configuration:</b>
+    <p><b>To add a profile configuration:</b></p>
  <ol><li>Select Tools &gt; Profiler Tools to open the Profiler Tools Manager.
         </li>
         <li>Select Manage Configurations... in the Profiler Configuration list.</li>
@@ -81,8 +80,8 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="OverviewOfCandC++Profiling.html">Overview of C and C++ Profiling</a><br>
-           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++ Project Properties Dialog Box: Profile</a>
+          <a href="OverviewOfCandC++Profiling.html">Overview of C/C++/Fortran Profiling</a><br>
+           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
         </td>
       </tr>
     </table>
