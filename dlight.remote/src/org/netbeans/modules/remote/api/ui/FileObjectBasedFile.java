@@ -73,11 +73,21 @@ import org.openide.filesystems.FileObject;
     }
 
     @Override
+    public String getPath() {
+        return fo == null ? super.getPath() : fo.getPath();
+    }
+
+    @Override
+    public String getAbsolutePath() {
+        return fo == null ? super.getAbsolutePath() : fo.getPath();
+    }
+
+
+    @Override
     public File getParentFile() {
         if (fo == null) {
             return null;
         }
-
         FileObject parent = fo.getParent();
         return parent == null ? null : new FileObjectBasedFile(parent);
     }

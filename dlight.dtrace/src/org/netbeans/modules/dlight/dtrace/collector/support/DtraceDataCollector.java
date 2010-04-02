@@ -386,8 +386,8 @@ public final class DtraceDataCollector
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
                 scriptPath = hostInfo.getTempDir() + "/" + briefName; // NOI18N
                 Future<Integer> copyResult = CommonTasksSupport.uploadFile(
-                        scriptFile.getAbsolutePath(), execEnv, scriptPath, 0777, null);
-                copyResult.get();
+                        scriptFile.getAbsolutePath(), execEnv, scriptPath, 0777, null, true);
+                copyResult.get(); // TODO: error processing!!!
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {

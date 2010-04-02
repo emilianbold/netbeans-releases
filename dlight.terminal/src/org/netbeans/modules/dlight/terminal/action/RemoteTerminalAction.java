@@ -51,6 +51,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public final class RemoteTerminalAction extends TerminalAction {
+
     private final RemoteInfoDialog cfgPanel;
 
     public RemoteTerminalAction() {
@@ -72,11 +73,7 @@ public final class RemoteTerminalAction extends TerminalAction {
         }
 
         final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
-        PasswordManager.getInstance().setRememberPassword(env, cfgPanel.rememberPassword());
-        PasswordManager.getInstance().put(env, cfgPanel.getPassword());
-        if (!cfgPanel.rememberPassword()) {
-            cfgPanel.clearPassword();
-        }
+        PasswordManager.getInstance().storePassword(env, cfgPanel.getPassword(), cfgPanel.rememberPassword());
         return env;
     }
 }

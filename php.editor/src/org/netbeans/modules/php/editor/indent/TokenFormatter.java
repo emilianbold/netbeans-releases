@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -351,8 +352,9 @@ public class TokenFormatter {
 		Long start = System.currentTimeMillis();
 
 		int delta = 0;
-		int indent = 0;
-		int lastIndent = 0;
+		int indent = docOptions.initialIndent;
+		int lastPHPIndent = 0;
+		int htmlIndent = -1;
 		int index = 0;
 		int newLines = 0;
 		int countSpaces = 0;
@@ -365,8 +367,7 @@ public class TokenFormatter {
 		String oldText = null;
 		int changeOffset = -1;
 		FormatToken.AnchorToken lastAnchor = null;
-		System.out.println("start " + formatContext.startOffset());
-		System.out.println("end " + formatContext.endOffset());
+
 		while (index < formatTokens.size()) {
 		    formatToken = formatTokens.get(index);
 		    oldText = null;						//NOI18N
@@ -385,7 +386,6 @@ public class TokenFormatter {
 			while (index < formatTokens.size() && (formatToken.isWhitespace()
 				|| formatToken.getId() == FormatToken.Kind.INDENT
 				|| formatToken.getId() == FormatToken.Kind.ANCHOR)) {
-
 			    if (oldText == null && formatToken.getOldText() != null) {
 				oldText = formatToken.getOldText();
 			    }
@@ -448,37 +448,37 @@ public class TokenFormatter {
 				    break;
 				case WHITESPACE_BEFORE_IF_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.ifBracePlacement, newLines, 0, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.ifBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
 				case WHITESPACE_BEFORE_FOR_RIGHT_BRACE:
 				    indentRule = true;
-   				    ws = countWhiteSpaceBeforeRightBrace(docOptions.forBracePlacement, newLines, 0, indent, oldText);
+   				    ws = countWhiteSpaceBeforeRightBrace(docOptions.forBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
 				case WHITESPACE_BEFORE_WHILE_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.whileBracePlacement, newLines, 0, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.whileBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
 				case WHITESPACE_BEFORE_SWITCH_RIGHT_BACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.switchBracePlacement, newLines, 0, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.switchBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
 				case WHITESPACE_BEFORE_CATCH_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.catchBracePlacement, newLines, 0, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.catchBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
 				case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.otherBracePlacement, newLines, 0, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.otherBracePlacement, newLines, 0, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
@@ -501,7 +501,7 @@ public class TokenFormatter {
 				    break;
 				case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
@@ -513,7 +513,7 @@ public class TokenFormatter {
 				    break;
 				case WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE:
 				    indentRule = true;
-				    ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, oldText);
+				    ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, index - 1);
 				    newLines = ws.lines;
 				    countSpaces = ws.spaces;
 				    break;
@@ -795,7 +795,7 @@ public class TokenFormatter {
 				    break;
 				case WHITESPACE_BEFORE_OPEN_PHP_TAG:
 				    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
-				    lastIndent = indent;
+
 				    if (oldText == null) {
 					try {
 					    int offset = formatToken.getOffset() + delta;
@@ -806,16 +806,19 @@ public class TokenFormatter {
 					    if (suggestedIndent == null) {
 						suggestedIndent = new Integer(0);
 					    }
-						int lineOffset = Utilities.getRowStart(doc, offset);
-						int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
-						if (firstNW == offset) {
-						    countSpaces = suggestedIndent.intValue();
-						    indentOfOpenTag = countSpaces;
-						    indentRule = true;
-						    changeOffset = lineOffset - delta;
-						    oldText = doc.getText(lineOffset, firstNW - lineOffset);
-						    indent = suggestedIndent.intValue();
-						}
+					    int lineOffset = Utilities.getRowStart(doc, offset);
+					    int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
+					    if (firstNW == offset) {
+						indentRule = true;
+						changeOffset = lineOffset - delta;
+						oldText = doc.getText(lineOffset, firstNW - lineOffset);
+						htmlIndent = suggestedIndent.intValue();
+//						if (indent < suggestedIndent.intValue()) {
+						    indent = suggestedIndent.intValue() + docOptions.initialIndent;
+//						}
+						countSpaces = htmlIndent;
+						indentOfOpenTag = countSpaces;
+					    }
 					} catch (BadLocationException ex) {
 					    Exceptions.printStackTrace(ex);
 					}
@@ -851,12 +854,18 @@ public class TokenFormatter {
 						}
 						else {
 //						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+						    if (isAfterLineComment(formatTokens, index)) {
+							// there should be logic, which will remove whitespaces at the end of line comment in the case // comment ?>
+							countSpaces = 0;
+						    } else {
 						    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
+						    }
 						}
+						indent = suggestedIndent;
     					    } else {
 						if (!isCloseAndOpenTagOnOneLine(index)) {
 						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
-						    countSpaces = indent;
+						    countSpaces = indentOfOpenTag;
 						} else {
 						    newLines = 0;
 						    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
@@ -869,13 +878,13 @@ public class TokenFormatter {
 				    else {
 					if (!isCloseAndOpenTagOnOneLine(index)) {
 					    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
-					    countSpaces = indent;
+					    countSpaces = indentOfOpenTag;
 					} else {
 					    newLines = 0;
 					    countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
 					}
 				    }
-				    indent = lastIndent;
+				    lastPHPIndent = indent;
 				    break;
 				case WHITESPACE_AFTER_CLOSE_PHP_TAG:
 //				    if (index < formatTokens.size() -1
@@ -980,28 +989,79 @@ public class TokenFormatter {
 			    if (wsBetweenBraces) {
 				newText = createWhitespace(1, indent + docOptions.indentSize) + createWhitespace(1, indent);
 			    }
-			    
-			    index--;
 			}
-		    }
+			index--;
+		    } else {
 
-		    switch (formatToken.getId()) {
-			case INDENT:
-			    indent += ((FormatToken.IndentToken) formatToken).getDelta();
-			    break;
-			case COMMENT:
-			case DOC_COMMENT:
-			    oldText = formatToken.getOldText() != null ? formatToken.getOldText() : "";
-			    changeOffset = formatToken.getOffset();
-			    newText = formatComment(index, indent, oldText);
-			    if (newText.equals(oldText)) {
-				newText = null;
-			    }
-			    break;
-			case ANCHOR:
-			    lastAnchor = (FormatToken.AnchorToken) formatToken;
-			    lastAnchor.setAnchorColumn(column);
-			    break;
+			switch (formatToken.getId()) {
+			    case INDENT:
+				indent += ((FormatToken.IndentToken) formatToken).getDelta();
+				break;
+			    case COMMENT:
+			    case DOC_COMMENT:
+				oldText = formatToken.getOldText() != null ? formatToken.getOldText() : "";
+				changeOffset = formatToken.getOffset();
+				newText = formatComment(index, indent, oldText);
+				if (newText.equals(oldText)) {
+				    newText = null;
+				}
+				break;
+			    case ANCHOR:
+				lastAnchor = (FormatToken.AnchorToken) formatToken;
+				lastAnchor.setAnchorColumn(column);
+				break;
+			    case HTML:
+				if (htmlIndent > -1) {
+				    oldText = formatToken.getOldText();
+				    int lineOffset = formatToken.getOffset() + delta;
+				    try {
+					int firstLine = Utilities.getLineOffset(doc, lineOffset);
+					int lastLine = Utilities.getLineOffset(doc, lineOffset + oldText.length());
+					int indexInST = 0;
+					for (StringTokenizer st = new StringTokenizer(oldText, "\n", true); st.hasMoreTokens();) { //NOI18N
+					    String token = st.nextToken();
+					    int currentOffset = formatToken.getOffset() + delta + indexInST;
+					    indexInST = indexInST + token.length();
+					    int currentLine = Utilities.getLineOffset(doc, currentOffset);
+					    if (firstLine < currentLine  /*&& (currentLine < lastLine || token.trim().length() > 0)*/) {
+						int lineIndent = Utilities.getRowIndent(doc, currentOffset + 1);
+						int phpIndent = indent - docOptions.initialIndent;
+						int finalIndent = lineIndent + phpIndent;
+						if (lineIndent < finalIndent) {
+						    delta = replaceString(doc, currentOffset - delta, "", createWhitespace(0, finalIndent - lineIndent), delta);
+						}
+//						else if (lineIndent > indent) {
+//						    delta = replaceString(doc, currentOffset - delta, createWhitespace(0, lineIndent - finalIndent), "", delta);
+//						}
+					    }
+
+					}
+
+				    } catch (BadLocationException ex) {
+					Exceptions.printStackTrace(ex);
+				    }
+				    oldText = null;
+				    newText = null;
+				}
+    //			    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+    //			    if (suggestedLineIndents != null) {
+    //				try {
+    //				    int startLine = Utilities.getLineOffset(doc, formatToken.getOffset());
+    //				    int endLine = Utilities.getLineOffset(doc, formatToken.getOffset() + formatToken.getOldText().length());
+    //				    for (int i = startLine; i <= endLine; i++) {
+    //					Integer original = suggestedLineIndents.get(i);
+    //					oldText =
+    //					//suggestedLineIndents.put(new Integer(i), column)
+    //
+    //				    }
+    //				    System.out.println("-----");
+    //				}
+    //				catch (BadLocationException e) {
+    //				    LOGGER.throwing(this.getClass().getName(), "HTML in php formatter", e); // NOI18N
+    //				}
+    //			    }
+				break;
+			}
 		    }
 
 		    delta = replaceString(doc, changeOffset, oldText, newText, delta);
@@ -1065,11 +1125,21 @@ public class TokenFormatter {
 		return new Whitespace(lines, spaces);
 	    }
 
-	    private Whitespace countWhiteSpaceBeforeRightBrace(CodeStyle.BracePlacement placement, int currentLine, int addLine, int indent, CharSequence text) {
+	    private Whitespace countWhiteSpaceBeforeRightBrace(CodeStyle.BracePlacement placement, int currentLine, int addLine, int indent, int currentIndex) {
 		int lines = 0;
 		int spaces = 0;
 		lines = addLines(currentLine, addLine);
-		spaces = placement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize :indent;
+		// check whether the } is not before open php tag in html
+		int index = currentIndex;
+		while (index > 0 && (formatTokens.get(index).isWhitespace()
+			|| formatTokens.get(index).getId() == FormatToken.Kind.INDENT)) {
+		    index--;
+		}
+		if (lines == 0 && formatTokens.get(index).getId() == FormatToken.Kind.OPEN_TAG) {
+		    spaces = 1;
+		} else {
+		    spaces = placement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize :indent;
+		}
 		return new Whitespace(lines, spaces);
 	    }
 
@@ -1087,6 +1157,20 @@ public class TokenFormatter {
 		    spaces = placeSpaceBefore ? 1 : 0;
 		}
 		return new Whitespace(lines, spaces);
+	    }
+
+	    private int countIndentAfter(int currentIndex) {
+		int value = 0;
+
+		while (currentIndex < formatTokens.size()
+			&& formatTokens.get(currentIndex).isWhitespace()) {
+		    currentIndex++;
+		}
+
+		if (currentIndex < formatTokens.size() && formatTokens.get(currentIndex).getId() == FormatToken.Kind.INDENT) {
+		    value = ((FormatToken.IndentToken)formatTokens.get(currentIndex)).getDelta();
+		}
+		return value;
 	    }
 
 	    private boolean isOpenAndCloseTagOnOneLine(int currentIndex) {
