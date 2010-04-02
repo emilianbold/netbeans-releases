@@ -533,7 +533,7 @@ import org.openide.util.Utilities;
         }
     }
 
-    private boolean selectCompiler(JTextField tf) {
+    private boolean selectTool(JTextField tf, boolean checkBaseFolder) {
         String seed = tf.getText();
         if (seed.length() > 0 && ! seed.endsWith("/")) { //NOI18N
             int pos = seed.lastIndexOf("/"); //NOI18N
@@ -549,27 +549,12 @@ import org.openide.util.Utilities;
         if (ret == JFileChooser.CANCEL_OPTION) {
             return false;
         }
-        if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-            NotifyDescriptor nb = new NotifyDescriptor.Message(ToolsPanel.getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
-            DialogDisplayer.getDefault().notify(nb);
-            return false;
-        }
-        String aPath = fileChooser.getSelectedFile().getPath();
-        if (Utilities.isWindows()) {
-            if (aPath.endsWith(".lnk")) { // NOI18N
-                aPath = aPath.substring(0, aPath.length() - 4);
+        if (checkBaseFolder) {
+            if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
+                NotifyDescriptor nb = new NotifyDescriptor.Message(ToolsPanel.getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+                DialogDisplayer.getDefault().notify(nb);
+                return false;
             }
-        }
-        tf.setText(aPath); // compiler set is updated by textfield's listener
-        return true;
-    }
-
-    private boolean selectTool(JTextField tf) {
-        String seed = tf.getText();
-        FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return false;
         }
         String aPath = fileChooser.getSelectedFile().getPath();
         if (Utilities.isWindows()) {
@@ -1186,35 +1171,35 @@ import org.openide.util.Utilities;
     }// </editor-fold>//GEN-END:initComponents
 
     private void btMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeBrowseActionPerformed
-        selectTool(tfMakePath);
+        selectTool(tfMakePath, false);
 }//GEN-LAST:event_btMakeBrowseActionPerformed
 
     private void btDebuggerBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btDebuggerBrowseActionPerformed
-        selectTool(tfDebuggerPath);
+        selectTool(tfDebuggerPath, false);
 }//GEN-LAST:event_btDebuggerBrowseActionPerformed
 
     private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
-        selectCompiler(tfCPath);
+        selectTool(tfCPath, true);
 }//GEN-LAST:event_btCBrowseActionPerformed
 
     private void btCppBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppBrowseActionPerformed
-        selectCompiler(tfCppPath);
+        selectTool(tfCppPath, true);
 }//GEN-LAST:event_btCppBrowseActionPerformed
 
     private void btFortranBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranBrowseActionPerformed
-        selectCompiler(tfFortranPath);
+        selectTool(tfFortranPath, true);
 }//GEN-LAST:event_btFortranBrowseActionPerformed
 
     private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
-        selectCompiler(tfAsPath);
+        selectTool(tfAsPath, true);
 }//GEN-LAST:event_btAsBrowseActionPerformed
 
     private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed
-        selectTool(tfQMakePath);
+        selectTool(tfQMakePath, false);
 }//GEN-LAST:event_btQMakeBrowseActionPerformed
 
     private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCMakeBrowseActionPerformed
-        selectTool(tfCMakePath);
+        selectTool(tfCMakePath, false);
 }//GEN-LAST:event_btCMakeBrowseActionPerformed
 
     private void btInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btInstallActionPerformed

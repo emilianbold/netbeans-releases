@@ -78,7 +78,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public FileObject getFileObject(String relativePath) {
-        if (relativePath.charAt(0) == '/') { //NOI18N
+        if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
         String remoteAbsPath = remotePath + '/' + relativePath;
@@ -108,7 +108,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // TODO: clear CndUtils cache
             return null;
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }

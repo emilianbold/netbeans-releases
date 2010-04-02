@@ -140,7 +140,12 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         @Override
         public boolean promptPassword(String message) {
             synchronized (lock) {
+                if (pm.get(env) != null) {
+                    return true;
+                }
+                
                 boolean result;
+
                 PasswordDlg pwdDlg = new PasswordDlg();
 
                 synchronized (lock) {
@@ -149,8 +154,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
                 if (result) {
                     char[] clearPassword = pwdDlg.getPassword();
-                    pm.setRememberPassword(env, pwdDlg.isRememberPassword());
-                    pm.put(env, clearPassword);
+                    pm.storePassword(env, clearPassword, pwdDlg.isRememberPassword());
                     Arrays.fill(clearPassword, (char) 0);
                     pwdDlg.clearPassword();
                     return true;
