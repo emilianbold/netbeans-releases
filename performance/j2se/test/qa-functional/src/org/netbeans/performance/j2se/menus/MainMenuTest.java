@@ -114,7 +114,7 @@ public class MainMenuTest extends PerformanceTestCase {
         testMenu("org.netbeans.modules.project.ui.Bundle","Menu/BuildProject");
     }
     
-    public void testRunMenu(){
+    public void testMenuRun(){
         testMenu("org.netbeans.modules.project.ui.Bundle","Menu/RunProject");
     }
     
