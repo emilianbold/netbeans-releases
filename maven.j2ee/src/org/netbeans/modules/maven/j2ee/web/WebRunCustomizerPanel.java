@@ -117,7 +117,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Profile prf = (Profile)value;
                 String val = "Web";
-                if (prf.equals(Profile.JAVA_EE_6_FULL)) {
+                if (Profile.JAVA_EE_6_FULL.equals(prf)) {
                     val = "Full";
                 }
                 return super.getListCellRendererComponent(list, val, index, isSelected, cellHasFocus);
