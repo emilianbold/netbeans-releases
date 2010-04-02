@@ -54,6 +54,7 @@ public final class Profile {
 
     public static final Comparator<Profile> UI_COMPARATOR = new Comparator<Profile>() {
 
+        @Override
         public int compare(Profile o1, Profile o2) {
             return -(o1.order - o2.order);
         }
@@ -74,8 +75,6 @@ public final class Profile {
 
     private final int order;
 
-    private final String canonicalName;
-
     // cache
     private final String propertiesString;
 
@@ -83,7 +82,6 @@ public final class Profile {
 
     private Profile(int order, String canonicalName, String profile, String bundleKey) {
         this.order = order;
-        this.canonicalName = canonicalName;
         this.bundleKey = bundleKey;
 
         StringBuilder builder = new StringBuilder(canonicalName);
