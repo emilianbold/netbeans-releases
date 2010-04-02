@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1086,10 +1087,11 @@ public final class ClassPath {
 
 
         public synchronized void removeAllRoots () {
-            for (File root : roots) {
+            for (final Iterator<File> it = roots.iterator(); it.hasNext();) {
+                final File root = it.next();
+                it.remove();
                 FileUtil.removeFileChangeListener(this, root);
             }
-            this.roots.clear();
         }
 
         public void fileFolderCreated(FileEvent fe) {
@@ -1116,7 +1118,12 @@ public final class ClassPath {
         }
 
         public void run() {
-            removeAllRoots();
+            try {
+                removeAllRoots();
+            } catch (final IllegalArgumentException iae) {
+                //pass - ignore, the FU.removeFileChangeListener holds listeners
+                //in the WeakHashMap and this may be already removed -> IAE.
+            }
         }
 
         private void processEvent (FileEvent fe) {
