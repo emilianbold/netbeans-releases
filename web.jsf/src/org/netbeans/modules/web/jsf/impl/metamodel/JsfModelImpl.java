@@ -352,12 +352,14 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         return (ElementFinder<T>)FINDERS.get( clazz);
     }
 
+    private RequestProcessor requestProcessor = new RequestProcessor();
+
     private void registerChangeListeners() {
         unit.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 // if unit has changed then update model in some other thread:
-                RequestProcessor.getDefault().post(new Runnable() {
+                requestProcessor.post(new Runnable() {
                     @Override
                     public void run() {
                         initModels();
