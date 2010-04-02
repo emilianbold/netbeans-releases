@@ -78,6 +78,8 @@ import org.openide.util.RequestProcessor;
  */
 public final class ConnectionManager {
 
+    public static final String SSH_KNOWN_HOSTS_FILE = System.getProperty("ssh.knonwhosts.file", System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
+    public static final String SSH_KEYS_FILE = System.getProperty("ssh.keys.file", System.getProperty("user.home") + "/.ssh/id_rsa"); // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
     private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
@@ -116,10 +118,15 @@ public final class ConnectionManager {
         }
 
         try {
-            jsch.setKnownHosts(System.getProperty("user.home") + // NOI18N
-                    "/.ssh/known_hosts"); // NOI18N
+            jsch.setKnownHosts(SSH_KNOWN_HOSTS_FILE);
         } catch (JSchException ex) {
             log.log(Level.WARNING, "Unable to setKnownHosts for jsch. {0}", ex.getMessage()); // NOI18N
+        }
+
+        try {
+            jsch.addIdentity(SSH_KEYS_FILE);
+        } catch (JSchException ex) {
+            log.log(Level.WARNING, "Unable to addIdentity for jsch. {0}", ex.getMessage()); // NOI18N
         }
     }
 
