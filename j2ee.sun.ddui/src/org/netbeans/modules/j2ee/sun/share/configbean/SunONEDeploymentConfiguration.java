@@ -106,7 +106,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
     private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
     
 
-    /** Create an instance of SunONEDeploymentConfiguration for GlassFish V2
+    /** Create an instance of SunONEDeploymentConfiguration for GF V2
      *  and earlier servers.
      *
      * @param module J2eeModule instance for the project represented by this config.
@@ -117,7 +117,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
         super(module);
     }
 
-    /** Create an instance of SunONEDeploymentConfiguration for Sun webserver.
+    /** Create an instance of SunONEDeploymentConfiguration for Webserver.
      *
      * @param module J2eeModule instance for the project represented by this config.
      * @param webServerDDName short name for web server sun dd
