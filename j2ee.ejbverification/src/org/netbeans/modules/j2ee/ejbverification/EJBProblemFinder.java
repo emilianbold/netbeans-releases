@@ -109,7 +109,7 @@ public abstract class EJBProblemFinder {
             }
             
             J2eeProjectCapabilities projCap = J2eeProjectCapabilities.forProject(prj);
-            if (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported()){
+            if (projCap == null || (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported())){
                 return;
             }
 

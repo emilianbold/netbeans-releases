@@ -45,16 +45,16 @@
     <property name="netbeans.prox" value="false"/>
     <property name="netbeans.type" value="java"/>
 
-    <!-- NetBeans the latest nightly -->
-    <!-- property name="netbeans.host" value="http://smetiste.czech.sun.com"/-->
-    <!-- property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/-->
-    <!-- property name="netbeans.user" value=".netbeans/dev"/-->
-
     <!-- NetBeans the latest stable nightly -->
+    <!-- property name="netbeans.host" value="http://smetiste.czech.sun.com"/-->
+    <!-- property name="netbeans.path" value="builds/netbeans/trunk/daily/2010-03-17_02-01-09/zip"/-->
+    <!-- property name="netbeans.user" value=".netbeans/dev"/-->
+    <!-- property name="netbeans.zip"  value="netbeans-6.9.zip"/-->
+
+    <!-- NetBeans the latest nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
-    <property name="netbeans.path" value="builds/netbeans/trunk/daily/2010-03-17_02-01-09/zip"/>
+    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
-    <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
 
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>

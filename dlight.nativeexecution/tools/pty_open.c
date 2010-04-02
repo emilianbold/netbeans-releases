@@ -10,7 +10,7 @@
 #include <termios.h>
 #endif
 
-#if !defined __APPLE__
+#if !defined __APPLE__ && !defined __CYGWIN__
 #include <stropts.h>
 #else
 #include <sys/select.h>

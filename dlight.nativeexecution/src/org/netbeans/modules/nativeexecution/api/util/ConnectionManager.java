@@ -175,19 +175,6 @@ public final class ConnectionManager {
      * @throws CancellationException
      */
     public void connectTo(final ExecutionEnvironment env) throws IOException, CancellationException {
-        connectTo(env, PasswordManager.getInstance().get(env));
-    }
-
-    /**
-     *
-     * @param env <tt>ExecutionEnvironment</tt> to connect to.
-     * @param password password to be used for identification
-     * @throws java.lang.Throwable
-     */
-    public synchronized void connectTo(
-            final ExecutionEnvironment env,
-            final char[] password) throws IOException, CancellationException {
-
         if (SwingUtilities.isEventDispatchThread()) {
             // otherwise UI can hang forever
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
@@ -195,10 +182,6 @@ public final class ConnectionManager {
 
         if (isConnectedTo(env)) {
             return;
-        }
-
-        if (password != null) {
-            PasswordManager.getInstance().put(env, password);
         }
 
         int attempts = 2;
@@ -380,8 +363,7 @@ public final class ConnectionManager {
                     return null;
                 }
 
-                char[] passwd = PasswordManager.getInstance().get(env);
-                boolean askForPassword = !isUnitTest && passwd == null;
+                boolean askForPassword = !isUnitTest;
                 UserInfo userInfo = RemoteUserInfoProvider.getUserInfo(env, askForPassword);
 
                 newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());

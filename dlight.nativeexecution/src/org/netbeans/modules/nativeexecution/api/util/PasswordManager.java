@@ -67,6 +67,11 @@ public final class PasswordManager {
         return instance;
     }
 
+    /**
+     *
+     * @param execEnv
+     * @return password from memory or from Keyring if user selected "remember password" in previous IDE invocation
+     */
     public char[] get(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
@@ -86,7 +91,25 @@ public final class PasswordManager {
         return null;
     }
 
-    public void put(ExecutionEnvironment execEnv, char[] password) {
+    /**
+     * Store password in memory. If user select "remember password" option password is stored in Keyring.
+     *
+     * @param execEnv
+     * @param password
+     * @param rememberPassword
+     */
+    public void storePassword(ExecutionEnvironment execEnv, char[] password, boolean rememberPassword) {
+        setRememberPassword(execEnv, rememberPassword);
+        put(execEnv, password);
+    }
+
+    /**
+     * Update password in memory. If user selected "remember password" option before password is updated in Keyring.
+     *
+     * @param execEnv
+     * @param password
+     */
+    private void put(ExecutionEnvironment execEnv, char[] password) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
             if (password != null) {
@@ -102,6 +125,11 @@ public final class PasswordManager {
         }
     }
 
+    /**
+     * Remove password from memory and Keyring
+     *
+     * @param execEnv
+     */
     public void clearPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
@@ -111,6 +139,11 @@ public final class PasswordManager {
         Keyring.delete(KEY_PREFIX + key);
     }
 
+    /**
+     * Remove passwords for hosts that are not in list.
+     *
+     * @param envs
+     */
     public void setServerList(List<ExecutionEnvironment> envs) {
         Set<String> keys = new HashSet<String>();
         for(ExecutionEnvironment env : envs) {
@@ -135,14 +168,27 @@ public final class PasswordManager {
         }
     }
 
+    /**
+     * User intention of "remember password"
+     * @param execEnv
+     * @return true if user checked "remember password" option.
+     */
     public boolean isRememberPassword(ExecutionEnvironment execEnv){
         String key = execEnv.toString();
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         return stored;
     }
 
+    /**
+     * Store user intention of "remember password"
+     * @param execEnv
+     * @param rememberPassword
+     */
     public void setRememberPassword(ExecutionEnvironment execEnv, boolean rememberPassword) {
         String key = execEnv.toString();
+        if (!rememberPassword) {
+            Keyring.delete(KEY_PREFIX + key);
+        }
         NbPreferences.forModule(PasswordManager.class).putBoolean(STORE_PREFIX + key, rememberPassword);
     }
 }

@@ -80,6 +80,7 @@
 
         <zip destfile="${cache}/latest/${build.name}_${env.BUILD_NUMBER}_${time.stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
+                <include name="netbeans/apisupport/**"/>
                 <include name="netbeans/bin/**"/>
                 <include name="netbeans/enterprise/**"/>
                 <include name="netbeans/etc/**"/>
