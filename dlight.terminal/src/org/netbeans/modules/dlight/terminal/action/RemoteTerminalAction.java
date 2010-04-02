@@ -73,7 +73,6 @@ public final class RemoteTerminalAction extends TerminalAction {
         }
 
         final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
-        PasswordManager.getInstance().storePassword(env, cfgPanel.getPassword(), cfgPanel.rememberPassword());
         return env;
     }
 }

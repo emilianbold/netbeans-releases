@@ -43,6 +43,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.Icon;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
@@ -148,4 +150,11 @@ import org.openide.filesystems.FileSystem;
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public Icon getSystemIcon(File f) {
+        return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");//NOI18N
+    }
+
+
 }

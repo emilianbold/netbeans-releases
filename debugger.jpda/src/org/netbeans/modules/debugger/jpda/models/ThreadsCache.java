@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
@@ -131,6 +132,9 @@ public class ThreadsCache implements Executor {
             } catch (InternalExceptionWrapper e) {
                 this.vm = null;
             } catch (ObjectCollectedExceptionWrapper e) {
+                this.vm = null;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
                 this.vm = null;
             }
             _allThreads = new ArrayList<ThreadReference>(allThreads);

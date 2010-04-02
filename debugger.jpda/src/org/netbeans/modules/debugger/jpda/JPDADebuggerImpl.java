@@ -99,6 +99,7 @@ import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
@@ -1924,7 +1925,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (!EventRequestWrapper.isEnabled (l.get (i)))
                 l.remove (i);
             else
-                EventRequestWrapper.disable (l.get (i));
+                try {
+                    EventRequestWrapper.disable(l.get(i));
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                } catch (InvalidRequestStateExceptionWrapper ex) {
+                }
         operator.breakpointsDisabled();
         logger.fine ("disableAllBreakpoints() end.");
         return l;
@@ -1945,6 +1950,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 // Something in the request was collected.
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
+            } catch (InvalidRequestStateExceptionWrapper ex) {
             } catch (InternalExceptionWrapper ex) {
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return ;

@@ -97,6 +97,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -414,6 +415,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     } catch (VMDisconnectedExceptionWrapper e) {
                     } catch (InternalExceptionWrapper e) {
                     } catch (ObjectCollectedExceptionWrapper e) {
+                    } catch (InvalidRequestStateExceptionWrapper irse) {
+                        Exceptions.printStackTrace(irse);
                     }
                 }
             } // for
