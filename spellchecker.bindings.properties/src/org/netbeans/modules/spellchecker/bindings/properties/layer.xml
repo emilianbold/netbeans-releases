@@ -44,17 +44,9 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="html">
+            <folder name="x-properties">
                 <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
-                </folder>
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
-                </folder>
-            </folder>
-            <folder name="xml">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
+                    <file name="org-netbeans-modules-spellchecker-bindings-properties-PropertiesTokenListProvider.instance" />
                 </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
@@ -63,11 +55,8 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Spellcheckers">
-        <file name="HTML">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
-        </file>
-        <file name="XML">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.htmlxml.Bundle"/>
+        <file name="Properties">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.properties.Bundle"/>
         </file>
     </folder>
 </filesystem>

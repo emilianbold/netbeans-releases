@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
@@ -59,6 +60,8 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 /**
  * View factory returning highlights views. It is specific in that it always
  * covers the whole document area by views even if there are no particular highlights
+ * <br/>
+ * Currently the factory coalesces highlights change requests from non-AWT thread.
  *
  * @author Miloslav Metelka
  */
@@ -90,6 +93,14 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private int highlightEndOffset;
 
     private AttributeSet highlightAttributes;
+
+    private int affectedStartOffset = Integer.MAX_VALUE;
+
+    private int affectedEndOffset;
+
+    /*private*/ final Object affectedRangeMonitor = new String("affected-range-lock"); // NOI18N
+
+    private Runnable affectedRangePendingRunnable;
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
@@ -216,13 +227,70 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         int startOffset = event.getStartOffset();
         int endOffset = event.getEndOffset();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + ">\n"); // NOI18N
-            if (LOG.isLoggable(Level.FINER)) {
+            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + // NOI18N
+                    ">, thread:" + Thread.currentThread() + "\n"); // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
                 LOG.log(Level.INFO, "Highlight Change Thread Dump", new Exception());
             }
         }
         if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
-            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
+            // Coalesce non-awt events
+            extendAffectedRange(startOffset, endOffset);
+            if (SwingUtilities.isEventDispatchThread()) {
+                checkFireAffectedAreaChange();
+            } else {
+                // Post affected range update
+                synchronized (affectedRangeMonitor) {
+                    affectedRangePendingRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean lastPending;
+                            synchronized (affectedRangeMonitor) {
+                                lastPending = (affectedRangePendingRunnable == this);
+                            }
+                            if (lastPending) {
+                                checkFireAffectedAreaChange();
+                            }
+                        }
+                    };
+                    SwingUtilities.invokeLater(affectedRangePendingRunnable);
+                }
+            }
+        }
+    }
+
+    void checkFireAffectedAreaChange() {
+        int[] range = getAndClearAffectedRange();
+        if (range != null) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.fine("coallesced-event: <" + range[0] + ',' + range[1] + ">\n"); // NOI18N
+            }
+            fireEvent(Collections.singletonList(createChange(range[0], range[1])));
+        }
+    }
+
+    void extendAffectedRange(int startOffset, int endOffset) {
+        synchronized (affectedRangeMonitor) {
+            if (affectedStartOffset == Integer.MAX_VALUE) {
+                affectedStartOffset = startOffset;
+                affectedEndOffset = endOffset;
+            } else {
+                affectedStartOffset = Math.min(affectedStartOffset, startOffset);
+                affectedEndOffset = Math.max(affectedEndOffset, endOffset);
+            }
+        }
+    }
+
+    int[] getAndClearAffectedRange() {
+        synchronized (affectedRangeMonitor) {
+            int[] range;
+            if (affectedStartOffset == Integer.MAX_VALUE) {
+                range = null;
+            } else {
+                range = new int[] { affectedStartOffset, affectedEndOffset };
+                affectedStartOffset = Integer.MAX_VALUE;
+            }
+            return range;
         }
     }
 

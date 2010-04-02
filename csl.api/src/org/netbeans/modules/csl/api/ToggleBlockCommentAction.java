@@ -239,11 +239,29 @@ public class ToggleBlockCommentAction extends BaseAction {
         int[] commentRange = getCommentRange(comments, _from);
         if (commentRange == null) {
             //comment
-            comment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+            if (!forceDirection(false)) {
+                comment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+            } else {
+                target.getToolkit().beep();
+            }
         } else if (comments.length > 0) {
-            //uncomment
-            uncomment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+            if (!forceDirection(true)) {
+                //uncomment
+                uncomment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+            } else {
+                target.getToolkit().beep();
+            }
         }
+    }
+
+    private boolean forceDirection(boolean comment) {
+        Object force = comment ?
+            getValue("force-comment") : // NOI18N
+            getValue("force-uncomment");  // NOI18N
+        if (force instanceof Boolean) {
+            return ((Boolean)force).booleanValue();
+        }
+        return false;
     }
 
     private void comment(JTextComponent target, BaseDocument doc, CommentHandler commentHandler, int[] comments, int from, int to, boolean lineSelection) throws BadLocationException {
@@ -518,9 +536,17 @@ public class ToggleBlockCommentAction extends BaseAction {
             boolean comment = !allComments(doc, startPos, lineCount, lineCommentString);
 
             if (comment) {
-                comment(doc, startPos, lineCount, lineCommentString);
+                if (!forceDirection(false)) {
+                    comment(doc, startPos, lineCount, lineCommentString);
+                 } else {
+                    target.getToolkit().beep();
+                 }
             } else {
-                uncomment(doc, startPos, lineCount, lineCommentString);
+                if (!forceDirection(true)) {
+                    uncomment(doc, startPos, lineCount, lineCommentString);
+                } else {
+                    target.getToolkit().beep();
+                }
             }
         }
     }
