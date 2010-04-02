@@ -47,7 +47,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.openide.util.NbBundle;
 import static java.lang.Math.max;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.WEST;
