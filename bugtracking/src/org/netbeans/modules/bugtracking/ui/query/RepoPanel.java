@@ -186,10 +186,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
         }
     }
 
-    private static String getText(String key) {
-        return NbBundle.getMessage(RepoPanel.class, key);
-    }
-
     @Override
     protected void notifyChildrenOfVisibleWidth() {
         if (queriesPanel.hasQueries()) {
