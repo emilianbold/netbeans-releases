@@ -83,6 +83,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return singleton;
     }
     
+    @Override
     public boolean isModuleSupported(String glassfishHome, Properties asenvProps) {
 
         // Do some moderate sanity checking to see if this v3 build looks ok.
@@ -99,6 +100,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return false;
     }
 
+    @Override
     public Object createModule(Lookup instanceLookup) {
         // When creating JavaEE support, also ensure this instance is added to j2eeserver
         InstanceProperties ip = null;
@@ -136,6 +138,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             final String installRoot = commonModule.getInstanceProperties().get(
                     GlassfishModule.INSTALL_FOLDER_ATTR);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
                     ensureCometSupport(glassfishRoot);
@@ -426,6 +429,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             this.libType = libType;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (singleton) {
             if (null != name) {
@@ -457,8 +461,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            final RequestProcessor cleaner = new RequestProcessor("listener-remover");
+            cleaner.post(new Runnable() {
 
+                @Override
                 public void run() {
                     synchronized (singleton) {
                     if (null != lmgr) {
@@ -467,6 +473,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         name = null;
                     }
                     }
+                    cleaner.shutdown();
                 }
             });
         }
