@@ -505,7 +505,7 @@ public class JiraRepository extends Repository {
                 configuration = createConfiguration(client);
 
                 boolean needRefresh = !client.getCache().hasDetails();
-                Jira.LOG.log(Level.FINEST, "configuration refresh : needRefresh = {0} forceRefresh={1}", new Object[]{needRefresh, forceRefresh});
+                Jira.LOG.log(Level.FINE, "configuration refresh {0} : needRefresh = {1} forceRefresh={2}", new Object[]{getUrl(), needRefresh, forceRefresh});
                 if(forceRefresh || needRefresh) {
                     Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
                 }
