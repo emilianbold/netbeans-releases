@@ -73,7 +73,7 @@ import org.openide.windows.InputOutput;
  * @author Vladimir Voskresensky
  */
 abstract class TerminalAction implements ActionListener {
-    private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
     @Override
     public void actionPerformed(ActionEvent e) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
@@ -110,7 +110,7 @@ abstract class TerminalAction implements ActionListener {
                         }
 
                         try {
-                            final InputOutput io = term.getIO(env.getDisplayName(), getActions(), ioContainer);
+                            final InputOutput io = term.getIO(env.getDisplayName(), null, ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
                             npb.addNativeProcessListener(new ChangeListener() {

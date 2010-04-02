@@ -235,9 +235,14 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         }
 
         actionBar.removeAll();
-        for (JButton b : buttons) {
-            actionBar.add(b);
-        }
+	if (buttons.length != 0) {
+	    actionBar.setVisible(true);
+	    for (JButton b : buttons) {
+		actionBar.add(b);
+	    }
+	} else {
+	    actionBar.setVisible(false);
+	}
         actionBar.revalidate();
         actionBar.repaint();
     }
