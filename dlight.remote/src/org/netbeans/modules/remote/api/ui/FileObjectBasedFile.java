@@ -42,6 +42,7 @@ package org.netbeans.modules.remote.api.ui;
 import java.io.File;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,12 +79,6 @@ import org.openide.filesystems.FileObject;
     }
 
     @Override
-    public String getAbsolutePath() {
-        return fo == null ? super.getAbsolutePath() : fo.getPath();
-    }
-
-
-    @Override
     public File getParentFile() {
         if (fo == null) {
             return null;
@@ -95,6 +90,18 @@ import org.openide.filesystems.FileObject;
     @Override
     public boolean isFile() {
         return !isDirectory();
+    }
+
+    @Override
+    public String getAbsolutePath() {
+        String res = fo == null ? super.getAbsolutePath() : fo.getPath();
+        if (res != null && Utilities.isWindows()) {
+            res = res.replace('\\', '/'); // NOI18N
+            while (res.startsWith("//")) { // NOI18N
+                res = res.substring(1);
+            }
+        }
+        return res;
     }
 
     @Override
