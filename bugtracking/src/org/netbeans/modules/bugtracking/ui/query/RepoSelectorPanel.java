@@ -110,6 +110,7 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
     /*
      * To make it work correctly with GroupLayout.
      */
+    @Override
     public int getBaseline(int width, int height) {
         return getBaseline();
     }
@@ -133,10 +134,12 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
         return Math.max(a, Math.max(b, c));
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         final Component c = e.getComponent();
         if (c instanceof JComponent) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     RepoSelectorPanel.this.scrollRectToVisible(c.getBounds());
                 }
@@ -144,6 +147,7 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
         }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         //do nothing
     }
