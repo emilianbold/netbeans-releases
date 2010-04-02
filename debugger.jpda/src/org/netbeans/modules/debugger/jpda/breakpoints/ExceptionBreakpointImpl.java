@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -61,6 +62,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ExceptionEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.ExceptionRequestWrapper;
+import org.openide.util.Exceptions;
 
 /**
 * Implementation of breakpoint on method.
@@ -106,6 +108,8 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
                 return ;
             } catch (InternalExceptionWrapper e) {
             } catch (ObjectCollectedExceptionWrapper e) {
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
             }
         }
     }

@@ -42,6 +42,7 @@
 package org.openide.awt;
 
 import javax.swing.JComponent;
+import org.openide.util.Utilities;
 
 /**
  * Dynamic result of a {@link org.openide.util.actions.Presenter.Menu} or {@link org.openide.util.actions.Presenter.Popup}. If the presenters return
@@ -66,4 +67,17 @@ public interface DynamicMenuContent {
      * @return a new set of items to show in menu. Can be either an updated old set of instances or a completely new one.
      */
     public JComponent[] synchMenuPresenters(JComponent[] items);
+
+    /**
+     * Marker for actions which should be hidden rather than merely disabled.
+     * {@link Utilities#actionsToPopup(Action[],Lookup)} will skip over any disabled
+     * actions which have this property set to true, unless they implement
+     * {@link org.openide.util.actions.Presenter.Popup}.
+     * This is a convenient way to make context menu items disappear when disabled;
+     * for more complex cases you still need to have a popup presenter with dynamic
+     * menu content.
+     * @since org.openide.awt 7.22
+     */
+    String HIDE_WHEN_DISABLED = "hideWhenDisabled"; // NOI18N
+
 }

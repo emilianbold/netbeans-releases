@@ -47,6 +47,27 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="HIDE_WHEN_DISABLED">
+        <api name="awt"/>
+        <summary><code>HIDE_WHEN_DISABLED</code></summary>
+        <version major="7" minor="22"/>
+        <date day="1" month="4" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes">
+            <p>
+                Actions formerly implementing <code>DynamicMenuContent</code> solely to
+                conditionally hide an action are encouraged to use the new API.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                New action property which makes it simple to conditionally hide,
+                rather than merely grey out, a context menu item.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="DynamicMenuContent"/>
+        <issue number="182488"/>
+    </change>
     <change id="Notification.SILENT">
         <api name="awt"/>
         <summary>Support for silent notifications</summary>

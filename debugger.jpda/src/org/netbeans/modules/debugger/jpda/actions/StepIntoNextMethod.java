@@ -68,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -264,6 +265,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                     return false;
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return false;
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    return false;
+                } catch (ObjectCollectedExceptionWrapper oce) {
+                    return false;
                 }
             //}
 
@@ -414,6 +419,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                             getDebuggerImpl().getOperator().unregister(stepIntoRequest);
                             stepIntoRequest = null;
                             return null;
+                        } catch (InvalidRequestStateExceptionWrapper irse) {
+                            getDebuggerImpl().getOperator().unregister(stepIntoRequest);
+                            stepIntoRequest = null;
+                            return null;
                         }
                     } catch (VMDisconnectedExceptionWrapper e) {
                         stepIntoRequest = null;
@@ -472,6 +481,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 return null;
             } catch (ObjectCollectedExceptionWrapper ocex) {
                 // the thread named in the request was collected.
+                getDebuggerImpl().getOperator().unregister(stepRequest);
+                stepRequest = null;
+                return null;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
                 getDebuggerImpl().getOperator().unregister(stepRequest);
                 stepRequest = null;
                 return null;

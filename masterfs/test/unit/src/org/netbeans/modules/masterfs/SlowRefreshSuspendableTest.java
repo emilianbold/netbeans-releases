@@ -49,16 +49,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
-public class SlowRefreshTest extends NbTestCase {
+public class SlowRefreshSuspendableTest extends NbTestCase {
     private Logger LOG;
     private FileObject testFolder;
 
-    public SlowRefreshTest(String testName) {
+    public SlowRefreshSuspendableTest(String testName) {
         super(testName);
     }
 
@@ -71,6 +73,7 @@ public class SlowRefreshTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
 
+
         LOG = Logger.getLogger("test." + getName());
         Logger.getLogger("org.openide.util.Mutex").setUseParentHandlers(false);
 
@@ -79,9 +82,10 @@ public class SlowRefreshTest extends NbTestCase {
         testFolder = FileUtil.toFileObject(dir);
         assertNotNull("Test folder created", testFolder);
 
+        System.setSecurityManager(new FileChangedManager());
     }
 
-    public void testChangeInChildrenNoticed() throws Exception {
+    public void testRefreshCanBeSuspended() throws Exception {
         long lm = System.currentTimeMillis();
         FileObject fileObject1 = testFolder.createData("fileObject1");
         assertNotNull("Just to initialize the stamp", lm);
@@ -126,9 +130,10 @@ public class SlowRefreshTest extends NbTestCase {
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 
         Runnable r = (Runnable)obj;
-        class AE extends ActionEvent {
+        class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
-
+            boolean finished;
+            
             public AE() {
                 super("", 0, "");
             }
@@ -144,18 +149,44 @@ public class SlowRefreshTest extends NbTestCase {
                 files.add((FileObject)arr[2]);
                 super.setSource(newSource);
             }
+
+            @Override
+            public void run() {
+                try {
+                    File busyFile = File.createTempFile("xyz", ".abc");
+                    LOG.log(Level.INFO, "Created {0}", busyFile);
+                    for (int i = 0; i  < 2000; i ++) {
+                        assertTrue("Can be read", busyFile.canRead());
+                        LOG.log(Level.INFO, "Touched {0}", i);
+                    }
+                    busyFile.delete();
+                    LOG.log(Level.INFO, "deleted {0}", busyFile);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                finished = true;
+                LOG.info("finished");
+            }
         }
         AE counter = new AE();
+
+        // starts 5s of disk checking
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(counter);
+
         // connect together
         r.equals(counter);
 
+        Thread.sleep(100);
+
+        LOG.info("Staring refresh");
         // do the refresh
         r.run();
+        LOG.info("Refresh finished");
+
+        assertTrue("Background I/O access needs to stop before we finish our task", counter.finished);
 
         assertEquals("Change notified", 1, listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
-
-        assertEquals("Files checked: " + counter.files, 2, counter.files.size());
     }
 }

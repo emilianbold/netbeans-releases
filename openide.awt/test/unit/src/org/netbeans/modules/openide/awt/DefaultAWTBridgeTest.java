@@ -36,43 +36,56 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.terminal.action;
 
-import java.awt.Dialog;
-import org.netbeans.modules.dlight.terminal.ui.RemoteInfoDialog;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.openide.awt;
 
-/**
- *
- * @author Vladimir Voskresensky
- */
-public final class RemoteTerminalAction extends TerminalAction {
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
+import org.netbeans.junit.NbTestCase;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.util.actions.ActionPresenterProvider;
 
-    private final RemoteInfoDialog cfgPanel;
+public class DefaultAWTBridgeTest extends NbTestCase {
 
-    public RemoteTerminalAction() {
-        cfgPanel = new RemoteInfoDialog(System.getProperty("user.name"));
+    public DefaultAWTBridgeTest(String n) {
+        super(n);
     }
 
-    @Override
-    protected ExecutionEnvironment getEnvironment() {
-        String title = NbBundle.getMessage(RemoteTerminalAction.class, "RemoteConnectionTitle");
-        DialogDescriptor dd = new DialogDescriptor(cfgPanel, title, // NOI18N
-                true, DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION, null);
-
-        Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
-        cfgDialog.setVisible(true);
-
-        if (dd.getValue() != DialogDescriptor.OK_OPTION) {
-            return null;
+    public void testHideWhenDisabled() throws Exception {
+        class NoOpAction extends AbstractAction {
+            NoOpAction(String n) {
+                super(n);
+            }
+            public @Override void actionPerformed(ActionEvent e) {}
         }
-
-        final ExecutionEnvironment env = cfgPanel.getExecutionEnvironment();
-        return env;
+        Action a = new NoOpAction("a1");
+        assertEquals(Collections.singletonList("a1"), popupMenu(a));
+        a = new NoOpAction("a2");
+        a.setEnabled(false);
+        assertEquals(Collections.singletonList("a2[disabled]"), popupMenu(a));
+        a = new NoOpAction("a3");
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        assertEquals(Collections.singletonList("a3"), popupMenu(a));
+        a = new NoOpAction("a4");
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        a.setEnabled(false);
+        assertEquals(Collections.emptyList(), popupMenu(a));
     }
+    private static List<String> popupMenu(Action a) {
+        ActionPresenterProvider app = new DefaultAWTBridge();
+        Component[] comps = app.convertComponents(app.createPopupPresenter(a));
+        List<String> r = new ArrayList<String>();
+        for (Component comp : comps) {
+            JMenuItem mi = (JMenuItem) comp;
+            r.add(mi.getText() + (mi.isEnabled() ? "" : "[disabled]"));
+        }
+        return r;
+    }
+
 }

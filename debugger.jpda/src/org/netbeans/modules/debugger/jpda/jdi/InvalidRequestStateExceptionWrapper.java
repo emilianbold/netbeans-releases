@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,33 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.deep;
-
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
-
-
-import org.netbeans.modules.cnd.antlr.collections.AST;
+package org.netbeans.modules.debugger.jpda.jdi;
 
 /**
- * Implements CsmExpressionStatement
- * @author Vladimir Kvashin
+ * Wrapper for InvalidRequestStateException JDI exception.
+ * The calling code must count with this exception being thrown.
  */
-public class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
-    
-    public ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
-    }
-    
-    @Override
-    public CsmStatement.Kind getKind() {
-        return CsmStatement.Kind.EXPRESSION;
+public final class InvalidRequestStateExceptionWrapper extends Exception {
+
+    public InvalidRequestStateExceptionWrapper(com.sun.jdi.request.InvalidRequestStateException ex) {
+        super(ex);
     }
 
     @Override
-    public CsmExpression getExpression() {
-        return null;
+    public com.sun.jdi.request.InvalidRequestStateException getCause() {
+        return (com.sun.jdi.request.InvalidRequestStateException) super.getCause();
     }
 
 }
