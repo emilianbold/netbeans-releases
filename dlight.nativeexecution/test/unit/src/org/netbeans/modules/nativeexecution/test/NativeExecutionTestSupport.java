@@ -186,9 +186,8 @@ public class NativeExecutionTestSupport {
 
         if (result != null) {
             if (passwd != null) {
-                PasswordManager.getInstance().put(result, passwd);
+                PasswordManager.getInstance().storePassword(result, passwd, false);
             }
-            //ConnectionManager.getInstance().connectTo(result, passwd, false);
         }
 
         spec2env.put(mspec, result);
