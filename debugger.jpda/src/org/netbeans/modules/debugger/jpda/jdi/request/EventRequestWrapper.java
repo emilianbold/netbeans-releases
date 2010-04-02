@@ -69,7 +69,7 @@ public final class EventRequestWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void disable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void disable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
         try {
             a.disable();
         } catch (com.sun.jdi.InternalException ex) {
@@ -77,11 +77,15 @@ public final class EventRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void enable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static void enable(com.sun.jdi.request.EventRequest a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
         try {
             a.enable();
         } catch (com.sun.jdi.InternalException ex) {
@@ -91,6 +95,8 @@ public final class EventRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
         }
     }
 
@@ -143,7 +149,7 @@ public final class EventRequestWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void setEnabled(com.sun.jdi.request.EventRequest a, boolean b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static void setEnabled(com.sun.jdi.request.EventRequest a, boolean b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
         try {
             a.setEnabled(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -153,6 +159,8 @@ public final class EventRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
         }
     }
 

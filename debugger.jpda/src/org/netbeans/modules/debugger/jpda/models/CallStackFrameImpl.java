@@ -70,6 +70,7 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -594,6 +595,9 @@ public class CallStackFrameImpl implements CallStackFrame {
             } catch (InternalExceptionWrapper e) {
                 return null;
             } catch (IllegalThreadStateExceptionWrapper e) {
+                return null;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
                 return null;
             } catch (InvalidStackFrameExceptionWrapper e) {
                 Exceptions.printStackTrace(e);
