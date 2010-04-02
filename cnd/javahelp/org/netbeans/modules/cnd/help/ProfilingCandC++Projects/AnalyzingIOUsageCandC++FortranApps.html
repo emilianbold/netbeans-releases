@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+    <title>Analyzing I/O Usage of C/C++/Fortran Applications</title>
+  </head>
+  <body>
+    <h2>
+       Analyzing I/O Usage of C/C++/Fortran Applications
+    </h2>
+    <p>
+       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+    </p> 
+    <p>
+     The IDE provides the I/O Usage tool for observing the input/output behavior
+     of C/C++/Fortran projects. The tool shows an overall graphical view of the reads
+     and writes of your project, and a more detailed view of individual files that
+     are read from and written to.
+    </p>
+    <p>The input/output data is collected with DTrace, a tool for tracing the activities
+            of running programs in the Oracle Solaris 10 and OpenSolaris operating systems.
+            For this reason, it can only run on these platforms.</p>
+    <p><b>Tip:</b> If you have access to a remote system running Oracle Solaris 10 or OpenSolaris, you can configure
+        it as a <a href="../WorkingWithCandC++Projects/RemoteDevelopment.html">remote development host</a> in the IDE and then
+        use that system to build and run your project.</p>
+      <p>In order to use the I/O Usage tool, the Solaris user account that you use when you run the IDE
+          must have sufficient DTrace privileges to observe system behavior. See
+          <a href="EnablingDTraceForProfilingCandC++FortranApps.html">Enabling DTrace For Profiling C/C++/Fortran Applications</a>.
+
+      <p><b>To profile your application's I/O activity:</b></p>
+      <ol>
+            <li>
+                Right click the project name and select Properties to open the Project Properties dialog box.
+            </li>
+            <li>Click the Build node.</li>
+            <li>Optionally, in the Development Host list, select a remote host running Oracle Solaris
+            or OpenSolaris.</li>
+
+            <li>Click the Profile node.</li>
+            <li>Select the checkbox for Show profiling indicators during run.</li>
+            <li>In the Profile Configuration list, select C/C++ DTrace Extended.</li>
+            <li>Click OK.</li>
+          <li>
+              Run the project by right-clicking the project node and selecting Run.<br>
+              The <a href="RunMonitorWindowforCandC++Fort.html">Run Monitor window</a> opens,
+              showing all the profiling tools.
+          </li>
+          <li>In the Run Monitor window, find the I/O Usage tool and click the I/O Details
+          button.<br>
+          The I/O Usage details tab opens, displaying standard input, standard output, and temporary files that
+            the program reads from and writes to.</li>
+
+
+
+            <li>Click filenames in the I/O Details tab to see the functions that have opened and closed the file.
+                The function names are displayed in the panel to the right of the file table. </li>
+            <li>Double-click a function in the right panel to open the source file where the function is called.
+                </li>
+      </ol>
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="ManagingProfileConfigurations.html">Managing C/C++/Fortran Profile Configurations</a><br>
+          <a href="ProfilingCandC++Projects.html">Profiling C/C++/Fortran Projects</a><br>
+           <a href="../WorkingWithCandC++Projects/ProjectPropsProfile.html">C/C++/Fortran Project Properties Dialog Box: Profile</a>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

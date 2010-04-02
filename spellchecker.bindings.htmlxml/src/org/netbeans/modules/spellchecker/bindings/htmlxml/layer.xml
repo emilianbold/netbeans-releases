@@ -48,10 +48,16 @@ made subject to such option by the copyright holder.
                 <folder name="TokenListProvider">
                     <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
                 </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                </folder>
             </folder>
             <folder name="xml">
                 <folder name="TokenListProvider">
                     <file name="org-netbeans-modules-spellchecker-bindings-htmlxml-HtmlXmlTokenListProvider.instance" />
+                </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
                 </folder>
             </folder>
         </folder>

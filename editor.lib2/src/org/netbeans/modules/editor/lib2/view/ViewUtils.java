@@ -289,4 +289,26 @@ public final class ViewUtils {
         }
     }
 
+    /**
+     * Round given float number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     *
+     * @param f
+     * @return
+     */
+    public static float cutFractions(float f) {
+        return (float) (Math.ceil(f * 8f) / 8f);
+    }
+
+    /**
+     * Round given double number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     *
+     * @param d
+     * @return
+     */
+    public static float cutFractions(double d) {
+        return (float) (Math.ceil(d * 8d) / 8d);
+    }
+
 }
