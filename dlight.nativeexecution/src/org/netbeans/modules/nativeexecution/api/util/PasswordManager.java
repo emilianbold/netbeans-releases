@@ -109,7 +109,7 @@ public final class PasswordManager {
      * @param execEnv
      * @param password
      */
-    public void put(ExecutionEnvironment execEnv, char[] password) {
+    private void put(ExecutionEnvironment execEnv, char[] password) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
             if (password != null) {

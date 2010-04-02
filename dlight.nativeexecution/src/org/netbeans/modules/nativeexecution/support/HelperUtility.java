@@ -97,13 +97,11 @@ public class HelperUtility {
                         final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
 
-//                        if (!HostInfoUtils.fileExists(env, remoteFile)) {
-                            Future<Integer> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, null);
-                            Integer uploadResult = uploadTask.get();
-                            if (uploadResult != 0) {
-                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
-                            }
-//                        }
+                        Future<Integer> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, null, true);
+                        Integer uploadResult = uploadTask.get();
+                        if (uploadResult != 0) {
+                            throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
+                        }
                         result = remoteFile;
                     }
                     cache.put(env, result);
