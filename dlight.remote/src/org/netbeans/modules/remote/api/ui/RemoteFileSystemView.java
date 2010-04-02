@@ -153,7 +153,7 @@ import org.openide.filesystems.FileSystem;
 
     @Override
     public Icon getSystemIcon(File f) {
-        return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");
+        return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");//NOI18N
     }
 
 

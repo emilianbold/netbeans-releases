@@ -130,7 +130,7 @@ class SiteDocsNode extends FilterNode {
             toReturn[1] = null;
             NetbeansActionMapping mapp = new NetbeansActionMapping();
             mapp.addGoal("site"); //NOI18N
-            toReturn[2] = impl.createCustomMavenAction(org.openide.util.NbBundle.getMessage(SiteDocsNode.class, "BTN_Generate_Site"), mapp);
+            toReturn[2] = impl.createCustomMavenAction(org.openide.util.NbBundle.getMessage(SiteDocsNode.class, "BTN_Generate_Site"), mapp, true);
             mapp = new NetbeansActionMapping();
             mapp.addGoal("site:deploy"); //NOI18N
             toReturn[3] = impl.createCustomMavenAction(org.openide.util.NbBundle.getMessage(SiteDocsNode.class, "BTN_Deploy_Site"), mapp, false);

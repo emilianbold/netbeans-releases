@@ -66,6 +66,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -78,6 +79,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.WatchpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 
@@ -156,6 +158,8 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             } catch (ObjectCollectedExceptionWrapper e) {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return ;
+            } catch (InvalidRequestStateExceptionWrapper irse) {
+                Exceptions.printStackTrace(irse);
             }
         }
         if (submitted) {

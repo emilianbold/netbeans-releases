@@ -40,20 +40,26 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
 
 final class RefreshSlow implements Runnable {
     private ActionEvent ref;
-    private long micro;
-    private long took;
-    private int count;
+    private boolean ignoreIO;
 
     public RefreshSlow() {
         super();
     }
 
+    @Override
     public void run() {
-        RootObj.invokeRefreshFor(this, File.listRoots());
+        if (!ignoreIO) {
+            ignoreIO = true;
+            FileChangedManager.idleIO(50, this);
+        } else {
+            RootObj.invokeRefreshFor(this, File.listRoots());
+            ignoreIO = false;
+        }
     }
 
     void progress(int index, int size, FileObject obj) {
@@ -76,22 +82,14 @@ final class RefreshSlow implements Runnable {
     }
 
     void before() {
-        micro = System.currentTimeMillis();
     }
 
     boolean after() {
-        took += (System.currentTimeMillis() - micro);
-        count++;
-        if (took > 10) {
-            try {
-                long how = count / 10;
-                count = 0;
-                Thread.sleep(how);
-            } catch (InterruptedException ex) {
-                return false;
-            }
-            took = 0;
+        try {
+            FileChangedManager.waitIOLoadLowerThan(50);
+            return true;
+        } catch (InterruptedException ex) {
+            return false;
         }
-        return true;
     }
 }

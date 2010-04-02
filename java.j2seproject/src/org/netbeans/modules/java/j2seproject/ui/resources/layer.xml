@@ -93,6 +93,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Actions">
+        <folder name="Project">
+            <file name="org-netbeans-modules-java-j2seproject-ui-J2SELogicalViewProvider$BrokenLinksActionFactory.instance"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Nodes">
@@ -100,9 +105,117 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
             </folder>
-            
             <folder name="Lookup"/>
-            
+            <folder name="Actions">
+                <file name="org-netbeans-modules-project-ui-NewFile$WithSubMenu.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile$WithSubMenu.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="sep-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-RebuildProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-JavadocProject.instance"/>
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="sep-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="700"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-RunProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
+                    <attr name="position" intvalue="800"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugProjectAction.instance"/>
+                    <attr name="position" intvalue="900"/>
+                </file>
+                <file name="org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-ProfileProjectActionPopup.instance"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-TestProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+                    <attr name="position" intvalue="1100"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"/>
+                    <attr name="position" intvalue="1200"/>
+                </file>
+                <file name="sep-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1300"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
+                    <attr name="position" intvalue="1400"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>
+                    <attr name="position" intvalue="1500"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
+                    <attr name="position" intvalue="1600"/>
+                </file>
+                <file name="sep-4.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="1700"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-RenameProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RenameProject.instance"/>
+                    <attr name="position" intvalue="1800"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-MoveProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-MoveProject.instance"/>
+                    <attr name="position" intvalue="1900"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CopyProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CopyProject.instance"/>
+                    <attr name="position" intvalue="2000"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-DeleteProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DeleteProject.instance"/>
+                    <attr name="position" intvalue="2100"/>
+                </file>
+                <file name="sep-5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2200"/>
+                </file>
+                <file name="org-openide-actions-FindAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+                    <attr name="position" intvalue="2300"/>
+                </file>
+                <file name="general.shadow">
+                    <attr name="originalFile" stringvalue="Projects/Actions"/>
+                    <attr name="position" intvalue="2400"/>
+                </file>
+                <file name="sep-6.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="2500"/>
+                </file>
+                <file name="org-netbeans-modules-java-j2seproject-ui-J2SELogicalViewProvider$BrokenLinksActionFactory.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-java-j2seproject-ui-J2SELogicalViewProvider$BrokenLinksActionFactory.instance"/>
+                    <attr name="position" intvalue="2600"/>
+                </file>
+                <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
+                    <attr name="position" intvalue="2700"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     <folder name="ProjectXMLCatalog">

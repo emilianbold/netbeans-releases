@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="800"/>
+                        <attr name="position" intvalue="1750"/>
                     </file>
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
@@ -190,7 +190,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="800"/>
+                        <attr name="position" intvalue="1750"/>
                     </file>
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>

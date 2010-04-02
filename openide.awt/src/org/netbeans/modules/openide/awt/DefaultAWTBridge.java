@@ -59,7 +59,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.actions.ActionPresenterProvider;
 
-/** Default implementaiton of presenters for various action types.
+/** Default implementation of presenters for various action types.
  */
 @ServiceProvider(service=ActionPresenterProvider.class)
 public final class DefaultAWTBridge extends ActionPresenterProvider {
@@ -76,17 +76,18 @@ public final class DefaultAWTBridge extends ActionPresenterProvider {
         return new Actions.MenuItem (action, true);
     }
     
-    public JMenuItem createPopupPresenter(Action action) {
+    public @Override JMenuItem createPopupPresenter(Action action) {
+        JMenuItem item;
         if (action instanceof BooleanStateAction) {
             BooleanStateAction b = (BooleanStateAction)action;
-            return new Actions.CheckboxMenuItem (b, false);
-        }
-        if (action instanceof SystemAction) {
+            item = new Actions.CheckboxMenuItem (b, false);
+        } else if (action instanceof SystemAction) {
             SystemAction s = (SystemAction)action;
-            return new Actions.MenuItem (s, false);
+            item = new Actions.MenuItem (s, false);
+        } else {
+            item = new Actions.MenuItem (action, false);
         }
-            
-        return new Actions.MenuItem (action, false);
+        return item;
     }
     
     public Component createToolbarPresenter(Action action) {
@@ -105,7 +106,13 @@ public final class DefaultAWTBridge extends ActionPresenterProvider {
         return new JPopupMenu();
     }  
     
-    public Component[] convertComponents(Component comp) {
+    public @Override Component[] convertComponents(Component comp) {
+        if (comp instanceof JMenuItem) {
+            JMenuItem item = (JMenuItem) comp;
+            if (Boolean.TRUE.equals(item.getClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !item.isEnabled()) {
+                return new Component[0];
+            }
+        }
          if (comp instanceof DynamicMenuContent) {
             Component[] toRet = ((DynamicMenuContent)comp).getMenuPresenters();
             boolean atLeastOne = false;
