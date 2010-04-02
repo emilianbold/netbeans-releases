@@ -149,8 +149,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
                 if (result) {
                     char[] clearPassword = pwdDlg.getPassword();
-                    pm.setRememberPassword(env, pwdDlg.isRememberPassword());
-                    pm.put(env, clearPassword);
+                    pm.storePassword(env, clearPassword, pwdDlg.isRememberPassword());
                     Arrays.fill(clearPassword, (char) 0);
                     pwdDlg.clearPassword();
                     return true;

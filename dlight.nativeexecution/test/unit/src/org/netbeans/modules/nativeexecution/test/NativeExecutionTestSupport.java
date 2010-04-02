@@ -113,11 +113,13 @@ public class NativeExecutionTestSupport {
                     defaultTestExecutionEnvironment = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "127.0.0.1"); // NOI18N
                 }
                 if (defaultTestExecutionEnvironment != null) {
-                    if (connect) {
-                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd);
-                    } else if(passwd != null && passwd.length > 0) {
-                        PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd);
+                    if(passwd != null && passwd.length > 0) {
+                        PasswordManager.getInstance().storePassword(defaultTestExecutionEnvironment, passwd, false);
                     }
+                    
+                    if (connect) {
+                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment);
+                    } 
                 }
             }
         }
