@@ -126,7 +126,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
-    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 2);//NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 10);//NOI18N
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
