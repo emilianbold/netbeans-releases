@@ -140,7 +140,12 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         @Override
         public boolean promptPassword(String message) {
             synchronized (lock) {
+                if (pm.get(env) != null) {
+                    return true;
+                }
+                
                 boolean result;
+
                 PasswordDlg pwdDlg = new PasswordDlg();
 
                 synchronized (lock) {
