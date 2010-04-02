@@ -7,7 +7,7 @@ Use is subject to license terms.
 <head>
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
 type="text/css">
-<title>Projects Dialog Box</title>
+<title>Packaging an Application</title>
 </head>
 <body>
 <h2>Packaging an Application</h2>
@@ -17,17 +17,22 @@ or Solaris SVR4 package.
 </p>
 <p><b>To package your completed project:</b></p>
 <ol>
-<li>Right-click the project and choose Properties.</li>
+<li>Right-click the project in the Projects window and choose Properties.</li>
 <li>In the Project Properties dialog box, select the Packaging node.</li>
-<li>Select the package type from the drop-down list.</li>
+<li>Select the package type from the drop-down list. The tool listed in the dialog box
+is updated to match the package type.</li>
 <li>Change the output path if you want to use a different 
-destination directory or filename for the package.</li>
-<li>Click the Packaging Files browse button to specify the files to include in the package.</li>
-</ul>
+destination directory or filename for the package. By default the output path is in
+a <tt>dist</tt> subdirectory of the project.</li>
+<li>Click the Packaging Files browse button to specify the files to include in the package.
 </li>
-<li>Turn off verbose package build information if you wish by clicking the checkbox.</li>
+<li>Change the tool if you want to use a different command to produce the selected
+package type.</li>
+<li>Type any additional options that you want to use on the command line for the tool when
+making the packages.</li>
+<li>Turn off verbose package build information if you want, by deselecting the checkbox.</li>
 <li>Click OK.</li>
-<li>To build your package, right-click the project and choose Build Package.
+<li>To build your package, right-click the project in the Projects window and choose Build Package.
 </li>
 </ol>
 <hr>

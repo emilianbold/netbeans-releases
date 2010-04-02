@@ -150,11 +150,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     private File detectConfigure(String path){
-        File configure = new File(path+File.separator+"configure");
+        File configure = new File(path, "configure");
         if (configure.exists()) {
             return configure;
         }
-        configure = new File(path+File.separator+"CMakeLists.txt");
+        configure = new File(path, "CMakeLists.txt");
         if (configure.exists()) {
             return configure;
         }
@@ -167,7 +167,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
             }
         }
-        return new File(path+File.separator+"configure");
+        return new File(path, "configure");
     }
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
@@ -203,7 +203,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             final String path = download(URL, additionalScripts, tools)+subFolder;
 
             final File configure = detectConfigure(path);
-            final File makeFile = new File(path+File.separator+"Makefile");
+            final File makeFile = new File(path, "Makefile");
             if (!configure.exists()) {
                 if (!makeFile.exists()){
                     assertTrue("Cannot find configure or Makefile in folder "+path, false);
@@ -407,14 +407,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     private String download(String urlName, List<String> additionalScripts, Map<String, String> tools) throws IOException {
-        String zipName = urlName.substring(urlName.lastIndexOf('/')+1);
+        String zipName = urlName.substring(urlName.lastIndexOf(File.separator)+1);
         String tarName = zipName.substring(0, zipName.lastIndexOf('.'));
         String packageName = tarName.substring(0, tarName.lastIndexOf('.'));
         File fileDataPath = CndCoreTestUtils.getDownloadBase();
         String dataPath = fileDataPath.getAbsolutePath();
 
-        String createdFolder = dataPath+"/"+packageName;
-        File fileCreatedFolder = new File(createdFolder);
+        File fileCreatedFolder = new File(fileDataPath, packageName);
+        String createdFolder = fileCreatedFolder.getAbsolutePath();
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
@@ -424,14 +424,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             }
         }
         if (fileCreatedFolder.list().length == 0){
-            if (!new File(dataPath+"/"+tarName).exists()) {
+            if (!new File(fileDataPath, tarName).exists()) {
                 execute(tools, "wget", dataPath, urlName);
                 execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);
             execAdditionalScripts(createdFolder, additionalScripts, tools);
         } else {
-            final File configure = new File(createdFolder+File.separator+"configure");
+            final File configure = new File(fileCreatedFolder, "configure");
             final File makeFile = detectConfigure(createdFolder);
             if (!configure.exists()) {
                 if (!makeFile.exists()){

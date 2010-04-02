@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
@@ -471,7 +470,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 errorMsg = NbBundle.getMessage(ToolsPanel.class, key, execEnv.toString());
             }
             lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
-            updateToolsControls(false, false, false, true);
+            updateToolsControls(false, false, true);
             return;
         }
         if (currentCompilerSet != null && currentCompilerSet != cs) {
@@ -600,17 +599,16 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
             boolean baseDirValid = getToolCollectionPanel().isBaseDirValid();
             boolean enableText = baseDirValid || (isRemoteHostSelected() && isHostValidForEditing());
-            boolean enableBrowse = baseDirValid && !isRemoteHostSelected();
             boolean enableVersions = (baseDirValid || isRemoteHostSelected()) && isHostValidForEditing();
-            updateToolsControls(enableText, enableBrowse, enableVersions, false);
+            updateToolsControls(enableText, enableVersions, false);
 
             return valid == ValidState.VALID;
         }
     }
 
-    private void updateToolsControls(boolean enableText, boolean enableBrowse, boolean enableVersions, boolean cleanText) {
+    private void updateToolsControls(boolean enableText, boolean enableVersions, boolean cleanText) {
         btVersions.setEnabled(enableVersions);
-        getToolCollectionPanel().updateToolsControls(enableText, enableBrowse, enableVersions, cleanText);
+        getToolCollectionPanel().updateToolsControls(enableText, enableVersions, cleanText);
     }
 
     /**

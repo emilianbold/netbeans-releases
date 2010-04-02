@@ -7,23 +7,23 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    <meta content="Helen" name="generator">
-    <title>About C and C++ Projects</title>
+     
+    <title>About C/C++/Fortran Projects</title>
   </head>
   <body>
     <h2>
-       About C and C++ Projects
+       About C/C++/Fortran Projects
     </h2>
     <p>
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-       A C or C++ project is a group of C or C++ source files, and the settings with which you
+       A project is a group of C, C++, or Fortran source files, and the settings with which you
       build, run, and debug those source files. In the IDE, all development has to take place
       within a project.
     </p>
     <p>
-       The IDE stores all of the information about your C or C++ project in makefiles, a properties
+       The IDE stores all of the information about your project in makefiles, a properties
       file, and a few XML configuration files. You can build and run your projects outside the IDE
       exactly the same as inside the IDE.
     </p>
@@ -58,17 +58,19 @@ Use is subject to license terms.
       instructions on how to compile and run your application. The settings you specify in the New
       Project wizard as well as in the Project Properties dialog box are used to tell the IDE how
       your makefile manages your source code and must be consistent with the settings in your
-      makefile.
+      makefile. The C/C++ Project With Existing Sources template works for Fortran sources also.
     </p>
     <p>
        With a C/C++ Application, Dynamic Library, or Static Library project, the IDE controls all
       aspects of how your application is built, run, and debugged. You specify project settings
       when creating the project and in the Project Properties dialog box. The IDE generates a
-      makefile in which all of your settings are stored.
+      makefile in which all of your settings are stored. The C/C++ Application, C/C++ Dynamic Library,
+      and C/C++ Static Library templates also work for Fortran projects.
     </p>
      <p>
        With a C/C++ Qt Application, Qt Dynamic Library, or Qt Static Library project, the IDE uses
-       an IDE-generated makefile and qmake .pro file to build your project.  See
+       an IDE-generated makefile and qmake .pro file to build your project. These templates can
+       only be used with C and C++ because the qmake build system does not natively support Fortran. See
        <a href="AboutQtProjects.html">About Qt Projects</a> for more information.
     </p>
     <table summary="related topics">
@@ -82,9 +84,9 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>         
-            <a href="WorkingWithCandC++Projects.html">Working With C and C++ Projects</a><br>
+            <a href="WorkingWithCandC++Projects.html">Working With C/C++ and Fortran Projects</a><br>
            <a href="ProjectTasks.html">C and C++ Project Tasks: Quick Reference</a><br>
-            <a href="AboutQtProjects.html">About Qt Projects</a><br>
+            <a href="AboutQtProjects.html">About Qt C/C++ Projects</a><br>
               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.netbeans.org/kb/docs/cnd/qt-applications.html">
                     <param name="text" value="<html><u>Working with Qt Applications tutorial (Web document)</u></html>">
