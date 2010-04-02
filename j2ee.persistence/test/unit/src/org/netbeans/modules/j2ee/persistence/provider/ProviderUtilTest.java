@@ -80,7 +80,7 @@ public class ProviderUtilTest extends NbTestCase {
     }
     
     public void testGetProvider1() {
-        persistenceUnit1.setProvider(ProviderUtil.HIBERNATE_PROVIDER.getProviderClass());
+        persistenceUnit1.setProvider(ProviderUtil.HIBERNATE_PROVIDER2_0.getProviderClass());
         assertEquals(ProviderUtil.HIBERNATE_PROVIDER, ProviderUtil.getProvider(persistenceUnit1));
     }
     
