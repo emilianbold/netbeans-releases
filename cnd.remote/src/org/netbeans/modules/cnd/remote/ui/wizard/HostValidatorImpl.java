@@ -95,7 +95,10 @@ public class HostValidatorImpl implements HostValidator {
                     env.getHost()));
         }
         try {
-            PasswordManager.getInstance().storePassword(env, password, rememberPassword);
+            if (password != null && password.length > 0) {
+                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
+            }
+
             ConnectionManager.getInstance().connectTo(env);
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
