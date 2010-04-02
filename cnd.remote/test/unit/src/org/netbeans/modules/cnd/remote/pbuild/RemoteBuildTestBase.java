@@ -173,11 +173,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         RemoteServerRecord rec = (RemoteServerRecord) ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
         rec.setSyncFactory(syncFactory);
         assertNotNull("Null ServerRecord for " + env, rec);
-        String home = RemoteUtil.getHomeDirectory(env);
-        String root = home + "/netbeans/.remote";
-        Future<Integer> rmDirTask = CommonTasksSupport.rmDir(env, root, true, new PrintWriter(System.err));
-        assertEquals("Can not remove " + env.getDisplayName() + ':' + root, 0, rmDirTask.get().intValue());
-        assertFalse(HostInfoUtils.fileExists(env, root));
+        clearRemoteSyncRoot();
     }
 
     protected MakeProject prepareSampleProject(Sync sync, Toolchain toolchain, String sampleName,  String projectDir)
@@ -187,7 +183,6 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertEquals("Wrong sync factory:", sync.ID, ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
         setDefaultCompilerSet(toolchain.ID);
         assertEquals("Wrong tools collection", toolchain.ID, CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
-        clearRemoteSyncRoot();
         String prjDir = ((projectDir == null) ? sampleName : projectDir) + "_" + sync.ID;
         FileObject projectDirFO = prepareSampleProject(sampleName, prjDir);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
