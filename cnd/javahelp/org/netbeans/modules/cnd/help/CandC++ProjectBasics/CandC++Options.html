@@ -5,9 +5,9 @@ Use is subject to license terms.
  -->
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <meta content="Helen" name="generator">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+     
     <title>Options Window: C/C++</title>
   </head>
   <body>
@@ -26,7 +26,7 @@ Use is subject to license terms.
       projects. These options are used as default values for new C and C++ projects. Some of these
       settings can be overridden on individual projects by <a href=
       "../WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html">setting project
-      properties</a> .
+      properties</a>.
     </p>
     <ul>
       <li>
@@ -36,7 +36,7 @@ Use is subject to license terms.
         <a href="#projectoptionstab">Project Options</a>
       </li>
       <li>
-          <a href="#codeassistancetab"> Code Assistance</a>
+        <a href="#codeassistancetab"> Code Assistance</a>
       </li>
       <li>
         <a href="#highlightingtab">Highlighting</a>
@@ -64,7 +64,8 @@ Use is subject to license terms.
       </li>
       <li>
         To set a host as the default development host, click Edit. In the Development Host Manager
-        dialog box, select the host, click Set as Default, then click OK.
+        dialog box, select the host, click Set as Default, then click OK. This host is used by
+        default for new projects.
       </li>
       <li>
         To remove a remote host, click Edit. In the Development Host Manager dialog box, select the
@@ -83,9 +84,8 @@ Use is subject to license terms.
         typing in the Name field. To change the way project files are shared with the remote host,
         select the file synchronization method in the Synchronization list. If the project files
         are in a shared folder accessible from the local host and remote host, select File System
-        Sharing. If sharing the files is not possible, select scp to use the secure copy command to
-        copy the files. The files are copied to your .netbeans directory by default. This can be
-        changed with the Path Mapper.
+        Sharing. If sharing the files is not possible, select Smart Secure Copy to copy the files.
+        The files are copied to your <tt>.netbeans</tt> directory on the remote host.
       </li>
     </ul>
     <p>
@@ -98,10 +98,11 @@ Use is subject to license terms.
     <ul>
       <li>
         To add a collection to the list, click Add and specify the base directory in the Add New
-        Tool Set dialog box. The Tool Set Family and Tool Set Name are filled in automatically. You
-        can specify a different name for the collection. If you change the family, make sure that
-        the family you specify is the correct family for the collection or the compiler flags might
-        not be valid.
+        Tool Set dialog box. The base directory is usually a <tt>bin</tt> subdirectory. The Tool
+        Set Family and Tool Set Name are filled in automatically by the IDE after it analyzes the
+        tools in the base directory. You can specify a different name for the collection. If you
+        change the family, make sure that the family you specify is the correct family for the
+        collection or the compiler flags might not be valid.
       </li>
       <li>
         To remove a collection from the list, select the collection and click Remove.
@@ -111,7 +112,8 @@ Use is subject to license terms.
         directory, tool set family, or tool set name in the dialog box.
       </li>
       <li>
-        To make a collection the default, select the collection and click Default.
+        To make a collection the default, select the collection and click Default. The default
+        collection is used by default for new projects.
       </li>
     </ul>
     <p>
@@ -120,19 +122,20 @@ Use is subject to license terms.
       path only works on the local host.
     </p>
     <p>
-       <b>C Compiler.</b> The C compiler to use for building projects. The default compiler is the
-      first one found in the base directory. You can type a different path to a compiler, or click
-      the browse button to navigate to a different compiler on the local host.
-    </p>
-    <p>
-       <b>C++ Compiler.</b> The C++ compiler to use for building projects. The default compiler is
-      the first one found in the base directory. You can type a different path to a compiler, or
+       <b>C Compiler.</b> The C compiler command to use for building projects. The default compiler
+      is the first one found in the base directory. You can type a different path to a compiler, or
       click the browse button to navigate to a different compiler on the local host.
     </p>
     <p>
-       <b>Fortran Compiler.</b> The Fortran compiler to use for building projects. The default
+       <b>C++ Compiler.</b> The C++ compiler command to use for building projects. The default
       compiler is the first one found in the base directory. You can type a different path to a
       compiler, or click the browse button to navigate to a different compiler on the local host.
+    </p>
+    <p>
+       <b>Fortran Compiler.</b> The Fortran compiler command to use for building projects. The
+      default compiler is the first one found in the base directory. You can type a different path
+      to a compiler, or click the browse button to navigate to a different compiler on the local
+      host.
     </p>
     <p>
        <b>Assembler.</b> The assembler utility to use to translate assembly language projects into
@@ -151,16 +154,17 @@ Use is subject to license terms.
       or click the browse button and navigate to a different command on the local host.
     </p>
     <p>
-       <!--these might move somewhere else
-      <p>
-      <b>QMake Command.</b> The command to use for building Qt projects.  You can type the path to a qmake command,
-      or click the browse button and navigate to a different command on the local host.
-      </p>
-      <p>
-      <b>CMake Command.</b> The command to use for CMake cross-compiler projects.
-      You can type a path to the cmake command,  or click the browse button and navigate to a different command on the local host.
-      </p>
-      -->
+       <!--these might move somewhere else-->
+    </p>
+    <p>
+       <b>QMake Command.</b> The path to the qmake command, which is used to generate makefiles for
+      Qt projects. You can type the path to a qmake command, or click the browse button and
+      navigate to a different command on the local host.
+    </p>
+    <p>
+       <b>CMake Command.</b> The path to the cmake command to use for projects with existing
+      sources that use the CMake cross compiler. You can type a path to the cmake command, or click
+      the browse button and navigate to a different command on the local host.
     </p>
     <p>
        The <b>Versions...</b> button displays the version numbers of each tool in the selected Tool
@@ -210,6 +214,11 @@ Use is subject to license terms.
         are run. The tools that are shown are determined by the Profile Configuration selected in
         Tools &gt; Profiler Tools.
       </li>
+      <li>
+        <b>Show warning dialog about missing makefiles due to mismatched platforms.</b> If
+        selected, the IDE will warn you if you attempt to run a project that was created on a
+        platform that is not the same as your current development host's platform.
+      </li>
     </ul>
     <h3>
        <a name="codeassistancetab"></a> Code Assistance Tab
@@ -258,12 +267,24 @@ Use is subject to license terms.
         <b>Highlight Syntax Errors.</b> If this option is selected, syntax errors are highlighted.
       </li>
       <li>
-        <b>Highlight Unresolved Include Files.</b> If this option is highlighted, include files
-        that cannot be resolved are highlighted.
+        <b>Highlight Unresolved Include Files.</b> If this option is selected, include files that
+        cannot be resolved are highlighted.
       </li>
       <li>
-        <b>Highlight Unresolved Identifiers.</b> If this option is highlighted, unresolved
+        <b>Highlight Unresolved Identifiers.</b> If this option is seielcted, unresolved
         identifiers are highlighted.
+      </li>
+      <li>
+        <b>Reparse on File Change.</b> If this option is selected, your project is reparsed
+        whenever files are modified. Normally this option should be enabled for code assistance to
+        work correctly. However, if the project is very large, reparsing might cause delays, so you
+        can deselect this option and reparse manually. Right-click the project and select Code
+        Assistance &gt; Reparse Project.
+      </li>
+      <li>
+        <b>Show Overridden Annotations.</b> If this option is selected, the IDE shows popup
+        annotations in the Source Editor when your cursor is on a method that is overridden in some
+        descendant classes, or if the method overrides some parent method.
       </li>
     </ul>
     <h3>
@@ -297,7 +318,7 @@ Use is subject to license terms.
     <p>
        &nbsp;
     </p>
-    <table border="0" cellpadding="20">
+    <table cellpadding="20" border="0">
       <tr>
         <td>
           &nbsp;

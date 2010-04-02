@@ -39,8 +39,8 @@
 	<mapID target="warn" url="images/warn.gif"/>
 	<mapID target="webPages" url="images/webPages.gif"/>
 	<mapID target="webProjectIcon" url="images/webProjectIcon.gif"/>
-	<mapID target="CandC++Overview" url="GettingStarted/CandC++Overview.html"/>
-	<mapID target="KeyCandC++Concepts" url="GettingStarted/KeyCandC++Concepts.html"/>
+	<mapID target="IDEToolsOverview" url="GettingStarted/IDEToolsCandC++Development.html"/>
+	<mapID target="CandC++ProjectsMakefiles" url="GettingStarted/CandC++ProjectsMakefiles.html"/>
 	<mapID target="SettingProjectProperties" url="WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html"/>
 	<mapID target="ManagingProjectConfigurations" url="WorkingWithCandC++Projects/ManagingProjectConfigurations.html"/>
 	<mapID target="UsingCodeFolding" url="EditingSourceFiles/CandC++CodeFolding.html"/>
@@ -77,14 +77,12 @@
 	<mapID target="AddingFilesandFolders" url="WorkingWithCandC++Projects/AddingFilesAndFolders.html"/>
 	<mapID target="BuildingCorC++Project" url="CandC++ProjectBasics/BuildingCorC++Project.html"/>
 	<mapID target="RunningCorC++Project" url="CandC++ProjectBasics/RunningCorC++Project.html"/>
-	<mapID target="CandC++BuildingTasks" url="CandC++ProjectBasics/CandC++BuildingTasks.html"/>
+	<mapID target="CandC++BuildingTasks" url="WorkingWithCandC++Projects/CandC++BuildingTasks.html"/>
 	<mapID target="CreatingDependencies" url="CandC++ProjectBasics/CreatingDependencies.html"/>
 	<mapID target="SettingMainCorC++Project." url="WorkingWithCandC++Projects/SettingMainCorC++Project.html"/>
 	<mapID target="LinkerOptions" url="CandC++ProjectBasics/LinkerOptions.html"/>
 	<mapID target="CompilingSingleCandC++File" url="CandC++ProjectBasics/CompilingSingleCandC++File.html"/>
 	<mapID target="CompilerOptions" url="CandC++ProjectBasics/CompilerOptions.html"/>
-	<mapID target="SettingCompletionBoxDelay" url="EditingSourceFiles/SettingCompletionBoxDelay.html"/>
-	<mapID target="DisablingAutoCodeCompletion" url="EditingSourceFiles/DisablingAutoCodeCompletion.html"/>
 	<mapID target="AddtlLibraryDirectories" url="CandC++ProjectBasics/AddtlLibraryDirectories.html"/>
 	<mapID target="RuntimeSearchDirectories" url="CandC++ProjectBasics/RuntimeSearchDirectories.html"/>
 	<mapID target="AddtlIncludeDirectories" url="CandC++ProjectBasics/AddtlIncludeDirectories.html"/>
@@ -100,8 +98,6 @@
 	<mapID target="EditingSourceFiles" url="EditingSourceFiles/EditingSourceFiles.html"/>
 	<mapID target="Configuring" url="WorkingWithCandC++Projects/ConfiguringProjectSettings.html"/>
 	<mapID target="UsingPairCompletion" url="EditingSourceFiles/UsingPairCompletion.html"/>
-	<mapID target="AbbreviationsQuickRef" url="EditingSourceFiles/AbbreviationsQuickRef.html"/>
-	<mapID target="CreatingCodeTemplates" url="EditingSourceFiles/CreatingCodeTemplates.html"/>
 	<mapID target="DebuggingCorC++Project" url="CandC++ProjectBasics/DebuggingCorC++Project.html"/>
 	<mapID target="WorkingWithDebugging" url="CandC++ProjectBasics/WorkingWithDebugging.html"/>
 	<mapID target="CandC++DebuggingTasks" url="CandC++ProjectBasics/CandC++DebuggingTasks.html"/>
@@ -162,11 +158,6 @@
 	<mapID target="CandC++SessionsWindow" url="CandC++ProjectBasics/CandC++SessionsWindow.html"/>
 	<mapID target="CandC++WatchesWindow" url="CandC++ProjectBasics/CandC++WatchesWindow.html"/>
 	<mapID target="CorC++VariablesandExpressions" url="CandC++ProjectBasics/CorC++VariablesandExpressions.html"/>
-	<mapID target="CandC++Overview1" url="GettingStarted/CandC++Overview.html"/>
-	<mapID target="KeyCandC++Concepts1" url="GettingStarted/KeyCandC++Concepts.html"/>
-	<mapID target="AboutCandC++Projects1" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
-	<mapID target="CandC++BuildingTasks1" url="WorkingWithCandC++Projects/CandC++BuildingTasks.html"/>
-	<mapID target="CompilingSingleCandC++File1" url="WorkingWithCandC++Projects/CompilingSingleCandC++File.html"/>
 	<mapID target="WorkingWithCandC++Projects1" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
 	<mapID target="TypeView" url="EditingSourceFiles/TypeView.html"/>
 	<mapID target="IncludeView" url="EditingSourceFiles/IncludeView.html"/>
@@ -294,10 +285,26 @@
 	<mapID target="tree" url="images/tree.png"/>
 	<mapID target="who_includes" url="images/who_includes.png"/>
 	<mapID target="who_is_included" url="images/who_is_included.png"/>
-	<mapID target="Configuring1" url="WorkingWithCandC++Projects/Configuring.html"/>
 	<mapID target="RunningCorC++Project1" url="WorkingWithCandC++Projects/RunningCorC++Project.html"/>
 	<mapID target="ManagingProfileConfigurations" url="ProfilingCandC++Projects/ManagingProfileConfigurations.html"/>
 	<mapID target="OverviewOfCandC++Profiling" url="ProfilingCandC++Projects/OverviewOfCandC++Profiling.html"/>
 	<mapID target="ProfilingThreadedCandC++Apps" url="ProfilingCandC++Projects/ProfilingThreadedCandC++Apps.html"/>
 	<mapID target="ProjectPropsQt" url="WorkingWithCandC++Projects/ProjectPropsQt.html"/>
+	<mapID target="RemoteDevelopmentFileSharing" url="WorkingWithCandC++Projects/RemoteDevelopmentFileSharing.html"/>
+	<mapID target="AnalyzingCPUUsageCandC++FortanApps" url="ProfilingCandC++Projects/AnalyzingCPUUsageCandC++FortanApps.html"/>
+	<mapID target="AnalyzingIOUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingIOUsageCandC++FortranApps.html"/>
+	<mapID target="AnalyzingMemoryUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingMemoryUsageCandC++FortranApps.html"/>
+	<mapID target="AnalyzingThreadMicrostatesCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingThreadMicrostatesCandC++FortranApps.html"/>
+	<mapID target="AnalyzingThreadUsageCandC++FortranApps" url="ProfilingCandC++Projects/AnalyzingThreadUsageCandC++FortranApps.html"/>
+	<mapID target="EnablingDTraceForProfilingCandC++FortranApps" url="ProfilingCandC++Projects/EnablingDTraceForProfilingCandC++FortranApps.html"/>
+	<mapID target="RunMonitorWindowforCandC++Fort" url="ProfilingCandC++Projects/RunMonitorWindowforCandC++Fort.html"/>
+	<mapID target="AutoLocalVariables" url="images/AutoLocalVariables.png"/>
+	<mapID target="EvaluatorInVariables" url="images/EvaluatorInVariables.png"/>
+	<mapID target="WatchesInVariables" url="images/WatchesInVariables.png"/>
+	<mapID target="importantFiles" url="images/importantFiles.png"/>
+	<mapID target="logicalFolder" url="images/logicalFolder.png"/>
+	<mapID target="newWatch" url="images/newWatch.png"/>
+	<mapID target="visibleColumns" url="images/visibleColumns.png"/>
+	<mapID target="EditingFortranSourceFiles" url="EditingSourceFiles/EditingFortranSourceFiles.html"/>
+	<mapID target="ConfiguringProjectDefaults" url="WorkingWithCandC++Projects/ConfiguringProjectDefaults.html"/>
 </map>

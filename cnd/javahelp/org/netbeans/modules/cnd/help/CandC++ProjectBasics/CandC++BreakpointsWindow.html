@@ -22,9 +22,9 @@ debugging session is running, it stays open until you close it.
 </p>
 <p>
 By default, each entry contains a short text description of the 
-breakpoint and a boolean flag indicating whether the breakpoint is 
+breakpoint and a checkbox to indicate whether the breakpoint is
 enabled or disabled. You can enable or disable a breakpoint directly 
-in the Breakpoints window by changing the Enabled property.
+in the Breakpoints window using the checkbox.
 </p>
 <h3>Icons</h3>
 The icon to the left of the breakpoint summary indicates the type 
@@ -65,13 +65,14 @@ breakpoint in the source code.</td>
 it in this window.</td>
 </tr>
 <tr valign="top">
-<td>Delete</td>
-<td>Deletes the selected breakpoint.
-</td>
+    <td>Move Into Group</td>
+    <td>Lets you create a group for listing the breakpoints in
+        in this window, or move the selected breakpoint into a group you previously
+        created.
 </tr>
 <tr valign="top">
 <td>New breakpoint</td>
-<td>Creates a new breakpoint.</td>
+<td>Opens a dialog box enabling you to create a new breakpoint.</td>
 </tr>
 <tr valign="top">
 <td>Enable All</td>
@@ -80,6 +81,11 @@ it in this window.</td>
 <tr valign="top">
 <td>Disable All</td>
 <td>Disables all breakpoints in this window.</td>
+</tr>
+<tr valign="top">
+<td>Delete</td>
+<td>Deletes the selected breakpoint.
+</td>
 </tr>
 <tr valign="top">
 <td>Delete All</td>
@@ -95,13 +101,6 @@ dialog box.
 <td>Customize</td>
 <td>Opens a dialog box enabling you to specify behavior of the 
 breakpoint.</td>
-</tr>
-<tr valign="top">
-<td>List Options</td>
-<td>Enables you to customize the display of the Breakpoints window,
-including adding and removing columns of information, reordering 
-the columns, and sorting the columns. 
-</td>
 </tr>
 </table>
 <table summary="related topics">
