@@ -126,6 +126,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor.RequestProcessor", 2);//NOI18N
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
@@ -615,7 +616,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
+        RequestProcessor.Task task = RP.post(saveRunnable);
         task.waitFinished();
         return saveRunnable.ret;
     }
