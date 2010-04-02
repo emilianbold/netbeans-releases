@@ -42,6 +42,7 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,8 +55,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
@@ -978,6 +984,41 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         lockFo = FileUtil.toFileObject(lockFile);        
         String msg = (lockFo != null) ? lockFo.toString() : "";
         assertNull(msg,lockFo);
+    }
+
+    public void testDeletedFileDoesNotReturnInputStream() throws Exception {
+        final FileObject testFo = FileUtil.createData(root,"testfile.data");
+        final File testFile = FileUtil.toFile(testFo);
+        final Logger LOGGER = Logger.getLogger(FileObj.class.getName());
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if ("FileObj.getInputStream_after_is_valid".equals(record.getMessage())) {
+                    testFile.delete();
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        final Level originalLevel = LOGGER.getLevel();
+        LOGGER.setLevel(Level.FINEST);
+        try {
+            LOGGER.addHandler(handler);
+            try {
+                testFo.getInputStream();
+                assertTrue("Exception not thrown by deleted file getInputStream()", false);
+            } catch (FileNotFoundException e) {
+                //pass - expected exception
+            } finally {
+                LOGGER.removeHandler(handler);
+            }
+        } finally {
+            LOGGER.setLevel(originalLevel);
+        }
     }
     
     private class IgnoreDirFileSystem extends LocalFileSystem {

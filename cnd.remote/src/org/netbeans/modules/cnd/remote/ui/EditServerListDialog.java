@@ -329,6 +329,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (o instanceof JButton) {
             JButton b = (JButton) o;
             if (b.getActionCommand().equals(CMD_ADD)) {
+                cacheManager.setHosts(getHosts());
                 ServerRecord result = CreateHostWizardIterator.invokeMe(cacheManager);
                 if (result != null) {
                     if (!model.contains(result)) {

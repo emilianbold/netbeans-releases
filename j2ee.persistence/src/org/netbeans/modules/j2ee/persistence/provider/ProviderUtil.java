@@ -43,14 +43,12 @@ package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -62,7 +60,6 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Property;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
-import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -82,7 +79,8 @@ import org.openide.util.Parameters;
 public class ProviderUtil {
     
     // known providers
-    public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
+    public static final Provider HIBERNATE_PROVIDER = new HibernateProvider(Persistence.VERSION_1_0);
+    public static final Provider HIBERNATE_PROVIDER2_0 = new HibernateProvider(Persistence.VERSION_2_0);
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
     public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider(Persistence.VERSION_2_0);
     public static final Provider ECLIPSELINK_PROVIDER1_0 = new EclipseLinkProvider(Persistence.VERSION_1_0);
@@ -498,6 +496,10 @@ public class ProviderUtil {
         return top_provider == null ? DEFAULT_PROVIDER : top_provider;
     }
 
+    public static String getVersion(Provider provider){
+        return provider.getVersion();
+    }
+
      /**
      * Gets the all versions of persistence providers of the given persistence unit
      *
@@ -744,7 +746,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER,
+            ECLIPSELINK_PROVIDER, ECLIPSELINK_PROVIDER1_0, TOPLINK_PROVIDER, HIBERNATE_PROVIDER2_0, HIBERNATE_PROVIDER,
             KODO_PROVIDER, DATANUCLEUS_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

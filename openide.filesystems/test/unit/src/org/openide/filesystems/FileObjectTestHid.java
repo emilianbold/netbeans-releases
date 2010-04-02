@@ -1166,19 +1166,30 @@ public class FileObjectTestHid extends TestBaseHid {
      * without unnecessary disk accesses and whether cache is freed when
      * undelying file is modified.
      */
+    static Object holder;
     public void testGetMIMETypeCached() throws IOException {
         checkSetUp();
         FileObject fo = getTestFile1(root);
+        holder = fo;
+        FileObject fo2 = getTestFile2(root);
         FileSystemFactoryHid.setServices(this, MR.class);
+        assertEquals("MIME type properly", fo.getExt(), fo.getMIMEType());
+        Reference<Object> ref = new WeakReference<Object>(MR.tested);
+        MR.tested = null;
 
         StatFiles accessCounter = new StatFiles();
         accessCounter.register();
         for (int i = 0; i < 100; i++) {
-            assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
-            assertNotNull("MIMEResolver not accessed at all.", MR.tested);
+            assertEquals("Wrong MIME type OK (" + i + ")", fo.getExt(), fo.getMIMEType());
+            if (MR.tested != null) {
+                MR.access.printStackTrace();
+                assertNull("But without access to resolver (" + i + ")", MR.tested);
+            }
+//            assertNotGC("CachedObject cannot be GCed while fo exists", ref);
         }
         accessCounter.unregister();
         accessCounter.getResults().assertResult(2, StatFiles.READ);
+
         
         if(fo.canWrite()) {
             String beforeRename = fo.getMIMEType();
@@ -1194,12 +1205,33 @@ public class FileObjectTestHid extends TestBaseHid {
             MR.tested = null;
             assertEquals("Wrong MIME type recognized.", fo.getExt(), fo.getMIMEType());
             assertNotNull("After file modification cache must be cleaned and MIMEResolver accessed.", MR.tested);
+
+            ref = new WeakReference<Object>(MR.tested);
+            MR.tested = null;
+
+            assertNotNull("Returns something", fo2.getMIMEType());
+            if (ref.get() == MR.tested) {
+                fail("Surprising these two shall be different: " + ref.get() + " and " + MR.tested);
+            }
+            assertGC("Now the old cached fo can be GCed now", ref);
         }
     }
 
+    @RandomlyFails // NB-Core-Build #4274
+    public void testGetMIMETypeCachedInAtomicAction() throws IOException {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                testGetMIMETypeCached();
+            }
+        });
+    }
+
     public static final class MR extends MIMEResolver {
-        public static FileObject tested;
+        static Exception access;
+        static FileObject tested;
         
+        @Override
         public String findMIMEType(FileObject fo) {
             try {
                 return f(fo);
@@ -1213,6 +1245,7 @@ public class FileObjectTestHid extends TestBaseHid {
             is.read(arr);
             is.close();
             tested = fo;
+            access = new Exception("Access for " + fo);
             return fo.getExt();
         }
     }

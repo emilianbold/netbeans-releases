@@ -47,18 +47,24 @@ public class InlinedStyleInfo {
 
     private String tag;
     private String tagsClass;
+    private String tagsId;
     private String attr;
     private String inlinedCssValue;
     private OffsetRange valueRange;
-    private int attributeStartOffset;
+    private int attributeStartOffset; //<div style=|"color:red"/>
+    private int classValueAppendOffset; // <div class="my|" />
 
-    public InlinedStyleInfo(String tag, String tagsClass, String attr, int attributeStartOffset, OffsetRange range, String inlinedCssValue) {
+    public InlinedStyleInfo(String tag, String tagsClass, String tagId, String attr, 
+            int attributeStartOffset, int classValueAppendOffset, OffsetRange range,
+            String inlinedCssValue) {
         this.tag = tag;
         this.tagsClass = tagsClass;
+        this.tagsId = tagId;
         this.attr = attr;
         this.valueRange = range;
         this.attributeStartOffset = attributeStartOffset;
         this.inlinedCssValue = inlinedCssValue;
+        this.classValueAppendOffset = classValueAppendOffset;
     }
 
     public boolean isValueQuoted() {
@@ -73,6 +79,10 @@ public class InlinedStyleInfo {
         return attributeStartOffset;
     }
 
+    public int getClassValueAppendOffset() {
+        return classValueAppendOffset;
+    }
+    
     public OffsetRange getRange() {
         return valueRange;
     }
@@ -83,6 +93,10 @@ public class InlinedStyleInfo {
 
     public String getTagsClass() {
         return tagsClass;
+    }
+
+    public String getTagsId() {
+        return tagsId;
     }
 
     public String getInlinedCssValue() {

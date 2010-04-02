@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,6 +70,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.jaxwsmodel.project.TransformerUtils;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
@@ -412,7 +414,7 @@ public class WSUtils {
     }
     
     public static FileObject findJaxWsFileObject(Project project) {
-        return project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml");
+        return project.getProjectDirectory().getFileObject(TransformerUtils.JAX_WS_XML_PATH);
     }
     
     /** copy jax-ws.xml from default filesystem to nbproject directory,
@@ -584,6 +586,27 @@ public class WSUtils {
             }
         });
         return webInf.getFileObject("jax-ws-catalog.xml");
+    }
+
+
+    public static boolean hasClients(FileObject jaxWsFo) throws IOException {
+        BufferedReader br = null;
+        boolean found = false;
+        try {
+            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("<client>")) { //NOI18N
+                    found = true;
+                    break;
+                }
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+        return found;
     }
 
 }

@@ -53,6 +53,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @deprecated Replaced by actions in Artifact viewer window, see #164992
@@ -67,24 +68,35 @@ public class OpenScmURLAction extends AbstractAction {
         putValue(NAME, NbBundle.getMessage(OpenScmURLAction.class, "LBL_OpenURL"));
         this.artifact = artifact;
         this.repos = repos;
-
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        Scm scm = ActionsUtil.readMavenProject(artifact, repos).getScm();
-        try {
-
-            URLDisplayer.getDefault().showURL(new URL(scm.getUrl()));
-        } catch (MalformedURLException ex) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(OpenScmURLAction.class, "ERR_Url", scm.getUrl()),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
     }
 
     @Override
-    public boolean isEnabled() {
-        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
-        return readMavenProject != null && readMavenProject.getScm() != null && readMavenProject.getScm().getUrl() != null;
+    public void actionPerformed(ActionEvent e) {
+        //TODO report somehow in ui, allow to cancel?
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                Scm scm = ActionsUtil.readMavenProject(artifact, repos).getScm();
+                if (scm != null && scm.getUrl() != null) {
+                    try {
+
+                        URLDisplayer.getDefault().showURL(new URL(scm.getUrl()));
+                    } catch (MalformedURLException ex) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(OpenScmURLAction.class, "ERR_Url", scm.getUrl()),
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                    }
+                }
+            }
+        });
     }
+
+//TODO - this call is fairly expensive at times. comment out for now.
+        //enable only if url persent
+
+//    @Override
+//    public boolean isEnabled() {
+//        MavenProject readMavenProject = ActionsUtil.readMavenProject(artifact, repos);
+//        return readMavenProject != null && readMavenProject.getScm() != null && readMavenProject.getScm().getUrl() != null;
+//    }
 }

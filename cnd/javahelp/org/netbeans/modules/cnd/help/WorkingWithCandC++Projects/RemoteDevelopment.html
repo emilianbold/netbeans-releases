@@ -7,22 +7,22 @@ Use is subject to license terms.
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <meta content="Helen" name="generator">
-    <title>Doing Remote Development</title>
+     
+    <title>Using a Remote Development Host</title>
   </head>
   <body>
     <h2>
-       Doing Remote Development
+       Using a Remote Development Host
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-       You can build, run, and debug projects on the local host (the system from which you started
+      You can build, run, and debug projects on the local host (the system from which you started
       the IDE) or on a remote host running a Linux or Solaris operating system.
     </p>
     <p>
-       When you create a project, the current development host is selected as the development host
+      When you create a project, the default development host is selected as the development host
       for the project. You can change the development host for the project on the Build panel of
       the Project Properties dialog box. You can also right-click a project node and select Set
       Remote Development Host.
@@ -40,16 +40,17 @@ Use is subject to license terms.
         Keep the project on a shared folder or filesystem that is visible on both the local host
         and the remote host. Typically such a filesystem is shared using NFS or Samba. You can
         define the mapping between local and remote paths to project source files when you define
-        the remote host.
+        the remote host. See <a href="RemoteDevelopmentFileSharing.html">File Sharing with Remote Development Hosts</a>.
       </li>
       <li>
-        Use the Smart Secure Copy option to copy files to the remote host.
+        Use the Smart Secure Copy option to copy files to the remote host. The files will be copied
+        to the .netbeans/remote subdirectory located in your home user directory on the remote host.
       </li>
     </ul>
     <p>
        You can select the file synchronization strategy when you define the remote host, after you
       connect to the host in the New Remote Development Host wizard. You can change the
-      synchronization any time by going to the Manage Hosts dialog (right-click project node, and
+      synchronization any time by going to the Manage Hosts dialog. Right-click project node, and
       select Set Remote Development Host &gt; Manage Hosts. Select the hostname and click
       Properties.
     </p>
@@ -78,8 +79,9 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran Projects</a><br>
            <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+           <a href="RemoteDevelopmentFileSharing.html">File Sharing with Remote Development Hosts</a><br>
                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
                     <param name="text" value="<html><u>C/C++ Remote

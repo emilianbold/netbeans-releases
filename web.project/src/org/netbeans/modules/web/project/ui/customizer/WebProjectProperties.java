@@ -485,6 +485,10 @@ final public class WebProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+
+            if (COMPILE_JSP_MODEL.isSelected()) {
+                WebProject.makeSureProjectHasJspCompilationLibraries(refHelper);
+            }
             
             Profile j2eeProfile = project.getAPIWebModule().getJ2eeProfile();
             FileObject webInf = project.getAPIWebModule().getWebInf();

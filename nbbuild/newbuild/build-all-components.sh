@@ -43,7 +43,7 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines,vars
 ERROR_CODE=$?
 
 create_test_result "build.IDE" "Build IDE" $ERROR_CODE
@@ -69,7 +69,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 for TEST_SUITE in mobility.project j2ee.kit; do
-    ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfish -Dtest-qa-functional-sys-prop.http.port=8090 -Dtest-qa-functional-sys-prop.wtk.dir=/space test
+    ant -f ${TEST_SUITE}/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$NB_ALL/nbbuild/build/test/results -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/space/glassfishv3/glassfish -Dtest-qa-functional-sys-prop.http.port=8090 -Dtest-qa-functional-sys-prop.wtk.dir=/space test
     ERROR_CODE=$?
 
     create_test_result "test.$TEST_SUITE" "Tests $TEST_SUITE" $ERROR_CODE
@@ -187,46 +187,6 @@ fi
 #Remove file created during commit validation
 rm -rf $NB_ALL/nbbuild/netbeans/nb?.*/servicetag
 
-#Build XML modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.xml -Dbuild.compiler.debuglevel=source,lines
-ERROR_CODE=$?
-
-create_test_result "build.XML.modules" "Build XML modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build XML modules"
-#    exit $ERROR_CODE;
-fi
-
-#Build UML modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.uml -Dbuild.compiler.debuglevel=source,lines
-ERROR_CODE=$?
-
-create_test_result "build.UML.modules" "Build UML modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build UML modules"
-#    exit $ERROR_CODE;
-fi
-
-#Build VisualWeb modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.visualweb -Dbuild.compiler.debuglevel=source,lines
-ERROR_CODE=$?
-
-create_test_result "build.VisualWeb.modules" "Build VisualWeb modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build VisualWeb modules"
-#    exit $ERROR_CODE;
-fi
-
-#Build the NB stableuc modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
-ERROR_CODE=$?
-
-create_test_result  "build.stableuc.modules" "Build stableuc modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build stableuc modules"
-#    exit $ERROR_CODE;
-fi
-
 #Build JNLP
 ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
 ERROR_CODE=$?
@@ -236,16 +196,6 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build JNLP"
 #    exit $ERROR_CODE;
 fi
-
-#Build all FU the NBMs
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=full -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
-#ERROR_CODE=$?
-
-#create_test_result "build.NBMs" "Build NBMs" $ERROR_CODE
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build NBMs"
-#    exit $ERROR_CODE;
-#fi
 
 #Build all NBMs for stable UC - IDE + UC-only
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines

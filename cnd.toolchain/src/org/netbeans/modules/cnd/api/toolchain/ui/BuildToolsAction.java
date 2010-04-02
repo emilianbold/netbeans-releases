@@ -72,7 +72,6 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
     private String name;
     private JButton jOK = null;
     private ToolsPanel tp;
-    private ToolsPanelModel model;
     
     public BuildToolsAction() {
         name = NbBundle.getMessage(BuildToolsAction.class, "LBL_BuildToolsName"); // NOI18N
@@ -107,10 +106,6 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
                 ev.getSource() instanceof ToolsPanel) {
             jOK.setEnabled(((Boolean) ev.getNewValue()).booleanValue());
         }
-    }
-    
-    public ToolsPanelModel getModel() {
-        return model;
     }
     
     /**

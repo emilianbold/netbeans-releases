@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javacard.common.JCConstants;
 
 /**
  * Enum of project subtypes.  Use toString() to get the value expected in

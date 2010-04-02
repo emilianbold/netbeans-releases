@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -85,13 +85,15 @@ public class ResourcesHelper {
                     if (dm instanceof Hk2DeploymentManager) {
                         GlassfishModule commonSupport = ((Hk2DeploymentManager) dm).getCommonServerSupport();
                         String gfdir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-                        String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-                        if (commonSupport.getServerState() != ServerState.RUNNING) {
-                            // TODO : need to account for remote domain here?
-                            DomainEditor de = new DomainEditor(gfdir, domain, false);
-                            de.createSampleDatasource();
-                        } else {
-                            registerSampleResource(commonSupport);
+                        if (null != gfdir) {
+                            String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
+                            if (commonSupport.getServerState() != ServerState.RUNNING) {
+                                // TODO : need to account for remote domain here?
+                                DomainEditor de = new DomainEditor(gfdir, domain, false);
+                                de.createSampleDatasource();
+                            } else {
+                                registerSampleResource(commonSupport);
+                            }
                         }
                     }
                 }

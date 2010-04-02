@@ -104,6 +104,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
+        @Override
         public void run() {
             Runnable toRun = RUNNABLES.poll();
             while (toRun != null) {
@@ -143,6 +144,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         RUNNABLES.add(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
                 handle.start();
@@ -215,6 +217,7 @@ public final class CreateTestsAction extends NodeAction {
         final Set<FileObject> failed = new HashSet<FileObject>();
         final Set<File> toOpen = new HashSet<File>();
         FileUtil.runAtomicAction(new Runnable() {
+            @Override
             public void run() {
                 try {
                     final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
@@ -233,7 +236,7 @@ public final class CreateTestsAction extends NodeAction {
         });
 
         if (!failed.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(50);
             for (FileObject file : failed) {
                 sb.append(file.getNameExt());
                 sb.append("\n"); // NOI18N
@@ -285,7 +288,7 @@ public final class CreateTestsAction extends NodeAction {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(sourceFo);
-        if (classes.size() == 0) {
+        if (classes.isEmpty()) {
             // run phpunit in order to have some output
             generateSkeleton(phpUnit, configFiles, sourceFo.getName(), sourceFo, workingDirectory, paramSkeleton);
             failed.add(sourceFo);
@@ -441,7 +444,7 @@ public final class CreateTestsAction extends NodeAction {
         }
 
         if (!generatedFile.delete()) {
-            LOGGER.info("Cannot delete generated file " + generatedFile);
+            LOGGER.log(Level.INFO, "Cannot delete generated file {0}", generatedFile);
         }
         return testFile;
     }

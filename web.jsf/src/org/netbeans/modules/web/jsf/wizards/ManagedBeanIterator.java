@@ -179,15 +179,20 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
 
         if (isAnnotate && (Utilities.isJavaEE6(wizard) || (JSFUtils.isJSF20(wm) && JSFUtils.isJavaEE5(wizard)))) {
             HashMap<String, String> templateProperties = new HashMap<String, String>();
+            String targetName =  Templates.getTargetName( wizard );
             if (JSFUtils.isCDIEnabled(wm)) {
                 templateProperties.put("CDIEnabled", "true");
                 templateProperties.put("classAnnotation", "@Named(value=\""+beanName+"\")");   //NOI18N
                 templateProperties.put("scopeAnnotation", NAMED_SCOPE.get((NamedScope)scope).toString());    //NOI18N
             } else {
-                templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
+                if (targetName.equalsIgnoreCase(beanName) && targetName.substring(0, 1).toLowerCase().equals(beanName.substring(0, 1))) {
+                    templateProperties.put("classAnnotation", "@ManagedBean");   //NOI18N
+                } else {
+                    templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
+                }
                 templateProperties.put("scopeAnnotation", FACES_SCOPE.get((Scope)scope).toString());    //NOI18N
             }
-            dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ),templateProperties  );
+            dobj = dTemplate.createFromTemplate( df,targetName,templateProperties  );
         } else {
             FileObject fo = dir.getFileObject(configFile); //NOI18N
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();

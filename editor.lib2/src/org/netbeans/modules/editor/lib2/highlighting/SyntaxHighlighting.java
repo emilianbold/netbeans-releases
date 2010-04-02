@@ -124,7 +124,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     // ----------------------------------------------------------------------
 
     public @Override void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-        if (evt.type() == TokenHierarchyEventType.ACTIVITY || evt.type() == TokenHierarchyEventType.LANGUAGE_PATHS) {
+        if (evt.type() == TokenHierarchyEventType.LANGUAGE_PATHS) {
             // ignore
             return;
         }

@@ -1204,13 +1204,13 @@ exists or setup the property manually. For example like this:
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspctask.classpath}}:${{jspcompilation.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{libs.jsp-compiler.classpath}}:${{libs.jsp-compilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspcompilation.classpath}}"/>
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}"/>
                 
             </target>
             
@@ -1234,13 +1234,13 @@ exists or setup the property manually. For example like this:
                     <arg value="-compilerSourceVM ${{javac.source}}"/>
                     <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <arg value="-javaEncoding ${{source.encoding}}"/> <!-- #72175 -->
-                    <classpath path="${{java.home}}/../lib/tools.jar:${{jspctask.classpath}}:${{jspcompilation.classpath}}"/>
+                    <classpath path="${{java.home}}/../lib/tools.jar:${{libs.jsp-compiler.classpath}}:${{libs.jsp-compilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspcompilation.classpath}}">
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{libs.jsp-compilation.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>

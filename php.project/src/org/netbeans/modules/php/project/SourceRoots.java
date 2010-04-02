@@ -166,8 +166,9 @@ public final class SourceRoots {
      */
     public FileObject[] getRoots() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+                @Override
                 public FileObject[] run() {
-                    synchronized (this) {
+                    synchronized (SourceRoots.this) {
                         // local caching
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
@@ -187,8 +188,8 @@ public final class SourceRoots {
                             }
                             sourceRoots = Collections.unmodifiableList(result);
                         }
+                        return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
-                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
         });
     }
@@ -199,8 +200,9 @@ public final class SourceRoots {
      */
     public URL[] getRootURLs() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<URL[]>() {
+            @Override
             public URL[] run() {
-                synchronized (this) {
+                synchronized (SourceRoots.this) {
                     // local caching
                     if (sourceRootURLs == null) {
                         List<URL> result = new ArrayList<URL>();
@@ -227,8 +229,8 @@ public final class SourceRoots {
                         }
                         sourceRootURLs = Collections.unmodifiableList(result);
                     }
+                    return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
                 }
-                return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
         });
     }
@@ -342,7 +344,12 @@ public final class SourceRoots {
         }
     }
 
+    public void fireChange() {
+        resetCache(null);
+    }
+
     private final class ProjectMetadataListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             resetCache(evt.getPropertyName());
         }

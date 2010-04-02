@@ -50,6 +50,7 @@ import org.openide.util.Lookup;
 /**
  *
  * @author hanz
+ * @since 1.3
  */
 public class Spellchecker {
 

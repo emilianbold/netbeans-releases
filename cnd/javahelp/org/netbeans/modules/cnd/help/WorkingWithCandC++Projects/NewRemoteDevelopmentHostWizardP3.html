@@ -7,7 +7,7 @@ Use is subject to license terms.
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <meta name="generator" content="Helen">
+     
     <title>New Remote Development Host Wizard: Summary</title>
   </head>
   <body>
@@ -18,17 +18,18 @@ Use is subject to license terms.
        <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
     </p>
     <p>
-       The New Remote Development Host summary page lets you specify some settings to be used in
+      The New Remote Development Host summary page lets you specify some settings to be used in
       the IDE for the remote host before you click Finish to complete adding the remote development
       host.
     </p>
     <p>
        <b>Display Name</b>: Type the name you want to display for this host. The display name is
-      used anywhere the development host is listed in the IDE.
+      used anywhere the development host is listed in the IDE. By default, the display name is
+      <i>username@hostname</i> which indicates the user name you used to log in and the remote host name.
     </p>
     <p>
-       <b>Default toolchain</b>: Select the toolchain you want the IDE to use on the remote
-      development host. The options in the list indicate what the IDE was able to locate on the
+       <b>Default Tool Collection</b>: Select the tool collection that you want the IDE to use on the remote
+      development host. The options in the list indicate the tool collections that the IDE was able to locate on the
       remote server. If you know that a set of tools should be available on the host, but it is not
       listed here, you might need to tell the IDE where to find it after you finish setting up the
       host. See <a href="../WorkingWithCandC++Projects/ConfiguringBuildTools.html">Configuring
@@ -36,12 +37,22 @@ Use is subject to license terms.
     </p>
     <p>
        <b>Synchronization</b>: Select the type of file synchronization you want to use to make the
-      project files accessible to the remote server. Synchronization is not needed if you are using
-      a shared file system. If file sharing is not an option, you can use the secure copy (scp)
-      command to copy the files to the remote host.
+      project files accessible to the remote server. The options are Smart Secure Copy and 
+      File System Sharing (no synchronization). The default option is Smart Secure Copy, which
+      uses SSH protocol to transfer the project files to your .netbeans directory on the remote host.
+      If the local host
+      and the remote host share access to the file system where the project files are located,
+      you can select File System Sharing.
     </p>
+    <p>Click Finish to complete the wizard.</p>
+    <p>The Development Host Manager dialog is displayed, with the new remote host added to the
+    list of development hosts.</p>
+    <p><b>Note:</b> If the projects you build on the remote host are graphical applications,
+        select the host in the Development Host Manager dialog and click Properties. Select
+        Enable X11 Forwarding and click OK. This allows you to run the application on
+        the remote host, and have the windows shown on your local desktop.</p>
     <table>
-      <tr>
+        <tr>
         <th colspan="2" align="left">
           <a name="seealso">See also</a> 
         </th>
@@ -51,7 +62,7 @@ Use is subject to license terms.
           &nbsp;
         </td>
         <td>
-          <a href="RemoteDevelopment.html">Doing Remote Development</a><br>
+          <a href="RemoteDevelopment.html">Using a Remote Development Host</a><br>
            
         </td>
       </tr>

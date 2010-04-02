@@ -653,4 +653,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    
+  <folder name="org-netbeans-api-project-libraries">
+    <folder name="Libraries">
+      <file name="jsp-compiler.xml" url="jsp-compiler.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/web/core/Bundle#jsp-compiler"/>
+      </file>
+      <file name="jsp-compilation.xml" url="jsp-compilation.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/web/core/Bundle#jsp-compilation"/>
+      </file>
+    </folder>
+  </folder>
+  
 </filesystem>

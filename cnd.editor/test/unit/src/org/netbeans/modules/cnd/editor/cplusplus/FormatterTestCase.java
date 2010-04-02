@@ -5110,4 +5110,24 @@ public class FormatterTestCase extends EditorBase {
                 + "    }\n"
                 + "}\n");
     }
+
+    //  Bug 176820 -  Erroneous formatting of typecasting of reference
+    public void testIZ176820() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i=(int *) &a;\n"+
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "void m(char *a)\n" +
+                "{\n"+
+                "    int *i;\n" +
+                "    i = (int *) &a;\n"+
+                "}\n"
+                    );
+    }
 }

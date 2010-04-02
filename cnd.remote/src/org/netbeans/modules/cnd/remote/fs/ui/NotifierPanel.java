@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.fs.ui;
 import java.util.List;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +57,7 @@ public class NotifierPanel extends javax.swing.JPanel {
         txtFilesList.setBackground(getBackground());
         tfHost.setText(env.getHost());
         tfUser.setText(env.getUser());
+        cbRememberPwd.setSelected(PasswordManager.getInstance().isRememberPassword(env));
         String envString = RemoteUtil.getDisplayName(env);
         lblFiles.setText(NbBundle.getMessage(getClass(), "NotifierPanel.lblFiles.parameterized.text", envString));
     }

@@ -40,12 +40,14 @@
  */
 
 package org.netbeans.modules.openfile;
+
 import java.awt.Component;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
-import java.net.URL;
+import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +67,9 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -77,24 +81,37 @@ import org.openide.util.actions.Presenter;
  *
  * @author Dafe Simonek
  */
-public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener, ChangeListener {
+public class RecentFileAction extends AbstractAction
+        implements Presenter.Menu, PopupMenuListener, ChangeListener {
 
     /** property of menu items where we store fileobject to open */
-    private static final String URL_PROP = "RecentFileAction.Recent_URL";
+    private static final String PATH_PROP =
+                     "RecentFileAction.Recent_File_Path";              // NOI18N
+
+    private static final String OFMSG_PATH_IS_NOT_DEFINED =
+                     NbBundle.getMessage(RecentFileAction.class,
+                                         "OFMSG_PATH_IS_NOT_DEFINED"); // NOI18N
+
+    private static final String OFMSG_FILE_NOT_EXISTS =
+                     NbBundle.getMessage(RecentFileAction.class,
+                                         "OFMSG_FILE_NOT_EXISTS");     // NOI18N
+
 
     private JMenu menu;
     
     public RecentFileAction() {
-        super(NbBundle.getMessage(RecentFileAction.class, "LBL_RecentFileAction_Name")); // NOI18N
+        super(NbBundle.getMessage(RecentFileAction.class,
+                                  "LBL_RecentFileAction_Name")); // NOI18N
     }
     
     /********* Presenter.Menu impl **********/
     
+    @Override
     public JMenuItem getMenuPresenter() {
         if (menu == null) {
             menu = new UpdatingMenu(this);
             menu.setMnemonic(NbBundle.getMessage(RecentFileAction.class,
-                                                 "MNE_RecentFileAction_Name").charAt(0));
+                              "MNE_RecentFileAction_Name").charAt(0)); // NOI18N
             // #115277 - workaround, PopupMenuListener don't work on Mac 
             if (!Utilities.isMac()) {
                 menu.getPopupMenu().addPopupMenuListener(this);
@@ -110,6 +127,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     /* Fills submenu when popup is about to be displayed.
      * Note that argument may be null on Mac due to #115277 fix
      */
+    @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
         fillSubMenu();
     }
@@ -117,16 +135,19 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     /* Clears submenu when popup is about to be hidden.
      * Note that argument may be null on Mac due to #115277 fix
      */
+    @Override
     public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
         menu.removeAll();
     }
     
+    @Override
     public void popupMenuCanceled(PopupMenuEvent arg0) {
     }
 
     /******** ChangeListener impl *********/
 
     /** Delegates to popupMenuListener based on menu current selection status */ 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (menu.isSelected()) {
             popupMenuWillBecomeVisible(null);
@@ -141,30 +162,36 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
 
         for (final HistoryItem hItem : files) {
             // create and configure menu item
+            File f = new File (hItem.getPath());
+            if (!f.exists()) {
+                continue;
+            }
             final JMenuItem jmi = new JMenuItem(hItem.getFileName());
-            jmi.putClientProperty(URL_PROP, hItem.getURL());
+            jmi.putClientProperty(PATH_PROP, hItem.getPath());
             jmi.addActionListener(this);
             menu.add(jmi);
 
-            //get icon on another thread
-            new Runnable(){
-                public void run() {
-                    FileObject fo = RecentFiles.convertURL2File(hItem.getURL());
-                    Icon icon = null;
-                    try {
-                        DataObject dObj = DataObject.find(fo);
-                        icon = new ImageIcon(dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-                    } catch (DataObjectNotFoundException ex) {
-                        // should not happen, log and skip to next
-                        Logger.getLogger(RecentFiles.class.getName()).log(
-                                Level.INFO, ex.getMessage(), ex);
-                    }
-                    jmi.setIcon(icon);
-                }
-            }.run();
+            String path = hItem.getPath();
+            Icon icon = getIcon(path);
+            jmi.setIcon(icon);
         }
         
         ensureSelected();
+    }
+
+    private Icon getIcon(String path) {
+        FileObject fo = RecentFiles.convertPath2File(path);
+        try {
+            DataObject dObj = DataObject.find(fo);
+            return new ImageIcon(
+                 dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+        } catch (DataObjectNotFoundException ex) {
+            // should not happen, log and skip to next
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO,
+                                                              ex.getMessage(),
+                                                              ex);
+            return null;
+        }
     }
 
     /** Workaround for JDK bug 6663119, it ensures that first item in submenu
@@ -182,7 +209,8 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         
         Point loc = MouseInfo.getPointerInfo().getLocation();
         SwingUtilities.convertPointFromScreen(loc, menu);
-        MenuElement[] selPath = MenuSelectionManager.defaultManager().getSelectedPath();
+        MenuElement[] selPath =
+                MenuSelectionManager.defaultManager().getSelectedPath();
         
         // apply workaround only when mouse is not hovering over menu
         // (which signalizes mouse driven menu traversing) and only
@@ -203,18 +231,39 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
      * Note that method works as action handler for individual submenu items
      * created in fillSubMenu, not for whole RecentFileAction.
      */
+    @Override
     public void actionPerformed(ActionEvent evt) {
         Object source = evt.getSource();
         if (source instanceof JMenuItem) {
             JMenuItem menuItem = (JMenuItem) source;
-            URL url = (URL) menuItem.getClientProperty(URL_PROP);
-            if (url != null) {
-                OpenFile.open(RecentFiles.convertURL2File(url), -1);
+            String path = (String) menuItem.getClientProperty(PATH_PROP);
+            String msg = openFile(path);
+            if (msg != null) {
+                StatusDisplayer.getDefault().setStatusText(msg);
+                Toolkit.getDefaultToolkit().beep();
+                RecentFiles.pruneHistory();
             }
         }
         // TODO: Processing of pressing of a shortcut key that can be associated
         // with this action. Note, in this case, any UI component can be passed
         // as the source.
+    }
+
+    /**
+     * Open a file.
+     * @param path the path to the file or {@code null}.
+     * @return error message or {@code null} on success.
+     */
+    private String openFile(String path) {
+        if(path == null || path.length() == 0) {
+            return OFMSG_PATH_IS_NOT_DEFINED;
+        }
+        File f = new File(path);
+        if (!f.exists()) {
+            return OFMSG_FILE_NOT_EXISTS;
+        }
+        File nf = FileUtil.normalizeFile(f);
+        return OpenFile.open(FileUtil.toFileObject(nf), -1);
     }
     
     /** Menu that checks its enabled state just before is populated */
@@ -226,11 +275,13 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             super(action);
         }
     
+        @Override
         public JComponent[] getMenuPresenters() {
             setEnabled(RecentFiles.hasRecentFiles());
             return content;
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return getMenuPresenters();
         }

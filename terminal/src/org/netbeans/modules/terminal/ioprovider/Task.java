@@ -39,8 +39,13 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import java.io.CharConversionException;
+import javax.swing.Action;
+
 import javax.swing.SwingUtilities;
+
 import org.openide.windows.IOContainer;
+import org.openide.xml.XMLUtil;
 
 /**
  * Perform a Task on the EDT.
@@ -56,15 +61,20 @@ import org.openide.windows.IOContainer;
      * Schedule this task to be performed on the EDT, or perform it now.
      */
     public final void dispatch() {
-	if (SwingUtilities.isEventDispatchThread())
-	    perform();
-	else
+	if (! SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
 		@Override
 		public void run() {
-		    perform();
+		    dispatch();
 		}
 	    });
+	    return;
+	}
+	if (terminal().isDisposed()) {
+	    // closeInputOutput has been called
+	    return;
+	}
+	perform();
     }
 
     protected abstract void perform();
@@ -92,6 +102,8 @@ import org.openide.windows.IOContainer;
 	@Override
 	public void perform() {
 	    container().add(terminal(), terminal().callBacks());
+	    container().setToolbarActions(terminal(), terminal().getActions());
+	    terminal().setVisibleInContainer(true);
 	    /* OLD bug #181064
 	    container().open();
 	    container().requestActive();
@@ -109,7 +121,63 @@ import org.openide.windows.IOContainer;
 
 	@Override
 	public void perform() {
+	    if (terminal().isDisposed())
+		return;
+	    if (!terminal().isVisibleInContainer()) {
+		container().add(terminal(), terminal().callBacks());
+		container().setToolbarActions(terminal(), terminal().getActions());
+		terminal().setVisibleInContainer(true);
+	    }
 	    container().select(terminal());
+	}
+    }
+
+    static class DeSelect extends Task {
+
+	public DeSelect(IOContainer container, Terminal terminal) {
+	    super(container, terminal);
+	}
+
+	@Override
+	public void perform() {
+	    container().setToolbarActions(terminal(), new Action[0]);
+	    container().remove(terminal());
+	}
+    }
+
+    static class StrongClose extends Task {
+
+	public StrongClose(IOContainer container, Terminal terminal) {
+	    super(container, terminal);
+	}
+
+	@Override
+	public void perform() {
+	    terminal().close();
+	    terminal().dispose();
+	}
+    }
+
+    static class UpdateName extends Task {
+
+	public UpdateName(IOContainer container, Terminal terminal) {
+	    super(container, terminal);
+	}
+
+	@Override
+	public void perform() {
+	    String newTitle = terminal().getTitle();
+	    if (terminal().isConnected()) {
+		String escaped;
+		try {
+		    escaped = XMLUtil.toAttributeValue(newTitle);
+		} catch (CharConversionException ex) {
+		    escaped = newTitle;
+		}
+
+		newTitle = "<html><b>" + escaped + "</b></html>";	// NOI18N
+	    }
+	    container().setTitle(terminal(), newTitle);
 	}
     }
 }

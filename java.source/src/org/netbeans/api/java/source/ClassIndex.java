@@ -52,7 +52,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -75,7 +75,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -118,11 +117,10 @@ public final class ClassIndex {
     //INV: Never null
     //@GuardedBy (this)
     private final Set<ClassIndexImpl> depsIndeces;
-    
-    private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
-    private final SPIListener spiListener = new SPIListener ();    
-    
-    
+
+    private final Collection<ClassIndexListener> listeners = new ConcurrentLinkedQueue<ClassIndexListener>();
+    private final SPIListener spiListener = new SPIListener ();
+
     /**
      * Encodes a type of the name kind used by 
      * {@link ClassIndex#getDeclaredTypes} method.

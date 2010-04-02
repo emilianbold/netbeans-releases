@@ -80,6 +80,8 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     private boolean bGettingRevisions = false;
     private Set<String> revisions;
     private static final String HG_TIP = "tip"; // NOI18N
+    private final MessageInfoFetcher defaultMessageInfoFetcher;
+    private MessageInfoFetcher messageInfofetcher;
 
     /** Creates new form ReverModificationsPanel */
      public ChangesetPickerPanel(File repo, File[] files) {
@@ -89,6 +91,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
         initComponents();
         jPanel1.setVisible(false);
         revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
+        defaultMessageInfoFetcher = new MessageInfoFetcher();
     }
 
     public File[] getRootFiles () {
@@ -146,6 +149,10 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
 
     protected String getRevisionLabel (RepositoryRevision rev) {
         return new StringBuilder(rev.getLog().getRevision()).append(" (").append(rev.getLog().getCSetShortID()).append(")").toString(); //NOI18N
+    }
+
+    protected void setInitMessageInfoFetcher (MessageInfoFetcher fetcher) {
+        this.messageInfofetcher = fetcher;
     }
 
     /** This method is called from within the constructor to
@@ -244,6 +251,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             limit = Mercurial.HG_FETCH_ALL_REVISIONS;
         }
         if (bGetMore && !bGettingRevisions) {
+            messageInfofetcher = defaultMessageInfoFetcher;
             fetchRevisionLimit = limit;
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport hgProgressSupport = new HgProgressSupport() {
@@ -304,7 +312,9 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));
-        messages = HgCommand.getLogMessagesNoFileInfo(repository, setRoots, fetchRevisionLimit, logger);
+        MessageInfoFetcher fetcher = getMessageInfoFetcher();
+        messages = fetcher.getMessageInfo(repository, setRoots, fetchRevisionLimit, logger);
+        String id = HgCommand.getCurrentHeadChangeset(repository, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -316,7 +326,12 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             size = messages.length;
             int i = 0 ;
             while(i < size){
-                targetRevsSet.add(messages[i].getRevision() + " (" + messages[i].getCSetShortID() + ")"); // NOI18N
+                StringBuilder sb = new StringBuilder().append(messages[i].getRevision()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
+                if (id.equals(messages[i].getCSetShortID())) {
+                    sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
+                }
+                sb.append(")"); //NOI18N
+                targetRevsSet.add(sb.toString());
                 i++;
             }
         }
@@ -335,6 +350,14 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         bGettingRevisions = false;
     }
 
+    private MessageInfoFetcher getMessageInfoFetcher() {
+        MessageInfoFetcher f = messageInfofetcher;
+        if (f == null) {
+            f = defaultMessageInfoFetcher;
+        }
+        return f;
+    }
+
     private class RefreshViewTask implements Runnable {
         public void run() {
             setupModels();
@@ -349,5 +372,10 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JComboBox revisionsComboBox;
     protected javax.swing.JLabel revisionsLabel;
     // End of variables declaration//GEN-END:variables
-    
+
+    protected static class MessageInfoFetcher {
+        protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
+            return HgCommand.getLogMessagesNoFileInfo(repository, setRoots, fetchRevisionLimit, logger);
+        }
+    }
 }

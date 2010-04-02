@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.perfan.spi.datafilter.CollectedObjectsFilter;
@@ -60,6 +61,7 @@ public class ErprintSession {
     private final SunStudioFiltersProvider dataFiltersProvider;
     private String filterString;
     private volatile boolean ready;
+    private volatile boolean error;
     private volatile boolean stopped;
 
     private ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
@@ -88,6 +90,7 @@ public class ErprintSession {
     public static final ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
         final ErprintSession session = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
         session.ready = false;
+        session.error = false;
         session.stopped = false;
 
         Runnable r = new Runnable() {
@@ -106,8 +109,14 @@ public class ErprintSession {
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
+                    } catch (ConnectException ex) {
+                        //Exceptions.printStackTrace(ex);
+                        session.error = true;
+                        return;
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        //Exceptions.printStackTrace(ex);
+                        session.error = true;
+                        return;
                     }
                 }
             }
@@ -149,6 +158,9 @@ public class ErprintSession {
         while (!ready) {
             if (Thread.interrupted()) {
                 throw new IOException("Interrupted during warmup"); // NOI18N
+            }
+            if (error) {
+                throw new IOException("Error during warmup"); // NOI18N
             }
 
             try {

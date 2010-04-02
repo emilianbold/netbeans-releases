@@ -147,6 +147,13 @@ public final class MIMENames {
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE);
     }
 
+    public static boolean isHeaderOrCpp(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE);
+    }
+
     public static boolean isHeaderOrCppOrC(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;

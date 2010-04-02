@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
@@ -60,6 +60,8 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 /**
  * View factory returning highlights views. It is specific in that it always
  * covers the whole document area by views even if there are no particular highlights
+ * <br/>
+ * Currently the factory coalesces highlights change requests from non-AWT thread.
  *
  * @author Miloslav Metelka
  */
@@ -68,8 +70,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
-
-    private int offset;
 
     private Element lineElementRoot;
 
@@ -94,6 +94,14 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     private AttributeSet highlightAttributes;
 
+    private int affectedStartOffset = Integer.MAX_VALUE;
+
+    private int affectedEndOffset;
+
+    /*private*/ final Object affectedRangeMonitor = new String("affected-range-lock"); // NOI18N
+
+    private Runnable affectedRangePendingRunnable;
+
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
         highlightsContainer = HighlightingManager.getInstance().getHighlights(textComponent(), null);
@@ -102,11 +110,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void restart(int startOffset) {
-        this.offset = startOffset;
         Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
-        lineIndex = lineElementRoot.getElementIndex(offset);
+        lineIndex = lineElementRoot.getElementIndex(startOffset);
         fetchLineInfo();
 
         highlightsSequence = highlightsContainer.getHighlights(startOffset, doc.getLength());
@@ -141,9 +148,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
         if (length <= 0) {
             throw new IllegalStateException("startOffset=" + startOffset // NOI18N
-                    + ", length=" + length + "highlight: <" + highlightStartOffset // NOI18N
+                    + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
                     + "," + highlightEndOffset // NOI18N
-                    + ">, newlineOffset=" + newlineOffset); // NOI18N
+                    + ">, newlineOffset=" + newlineOffset + ", docText.length()=" + docText.length()); // NOI18N
         }
         boolean tabs = (docText.charAt(startOffset) == '\t');
         for (int i = 1; i < length; i++) {
@@ -217,13 +224,74 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     @Override
     public void highlightChanged(HighlightsChangeEvent event) {
+        int startOffset = event.getStartOffset();
+        int endOffset = event.getEndOffset();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("highlightChanged: event:<" + event.getStartOffset() + ',' + event.getEndOffset() + ">\n"); // NOI18N
-            if (LOG.isLoggable(Level.FINER)) {
+            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + // NOI18N
+                    ">, thread:" + Thread.currentThread() + "\n"); // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
                 LOG.log(Level.INFO, "Highlight Change Thread Dump", new Exception());
             }
         }
-        fireEvent(Collections.singletonList(createChange(event.getStartOffset(), event.getEndOffset())));
+        if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
+            // Coalesce non-awt events
+            extendAffectedRange(startOffset, endOffset);
+            if (SwingUtilities.isEventDispatchThread()) {
+                checkFireAffectedAreaChange();
+            } else {
+                // Post affected range update
+                synchronized (affectedRangeMonitor) {
+                    affectedRangePendingRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean lastPending;
+                            synchronized (affectedRangeMonitor) {
+                                lastPending = (affectedRangePendingRunnable == this);
+                            }
+                            if (lastPending) {
+                                checkFireAffectedAreaChange();
+                            }
+                        }
+                    };
+                    SwingUtilities.invokeLater(affectedRangePendingRunnable);
+                }
+            }
+        }
+    }
+
+    void checkFireAffectedAreaChange() {
+        int[] range = getAndClearAffectedRange();
+        if (range != null) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.fine("coallesced-event: <" + range[0] + ',' + range[1] + ">\n"); // NOI18N
+            }
+            fireEvent(Collections.singletonList(createChange(range[0], range[1])));
+        }
+    }
+
+    void extendAffectedRange(int startOffset, int endOffset) {
+        synchronized (affectedRangeMonitor) {
+            if (affectedStartOffset == Integer.MAX_VALUE) {
+                affectedStartOffset = startOffset;
+                affectedEndOffset = endOffset;
+            } else {
+                affectedStartOffset = Math.min(affectedStartOffset, startOffset);
+                affectedEndOffset = Math.max(affectedEndOffset, endOffset);
+            }
+        }
+    }
+
+    int[] getAndClearAffectedRange() {
+        synchronized (affectedRangeMonitor) {
+            int[] range;
+            if (affectedStartOffset == Integer.MAX_VALUE) {
+                range = null;
+            } else {
+                range = new int[] { affectedStartOffset, affectedEndOffset };
+                affectedStartOffset = Integer.MAX_VALUE;
+            }
+            return range;
+        }
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {

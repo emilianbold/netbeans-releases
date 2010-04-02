@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,18 +42,29 @@
 package org.netbeans.modules.spellchecker.options;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -61,13 +72,21 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.spellchecker.ComponentPeer;
 import org.netbeans.modules.spellchecker.DefaultLocaleQueryImplementation;
 import org.netbeans.modules.spellchecker.DictionaryProviderImpl;
 import org.netbeans.modules.spellchecker.options.DictionaryInstallerPanel.DictionaryDescription;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -79,7 +98,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
     private List<DictionaryDescription> addedDictionaries = new ArrayList<DictionaryDescription>();
 
     private SpellcheckerOptionsPanelController c;
-    private static final Icon errorIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/spellchecker/resources/error.gif"));
+    private static final Icon errorIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/spellchecker/resources/error.gif"));
     
     /**
      * Creates new form SpellcheckerOptionsPanel
@@ -104,30 +123,30 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                     String locale = document.getText(0, document.getLength());
 
                     if (locale.length() == 0) {
-                        setError("Locale is empty");
+                        setError("ERR_LocaleIsEmpty");
                         return;
                     }
 
                     String[] components = locale.split("_");
 
                     if (components.length > 3) {
-                        setError("Invalid locale");
+                        setError("ERR_InvalidLocale");
                         return;
                     }
 
                     if (!Arrays.asList(Locale.getISOLanguages()).contains(components[0])) {
-                        setError("Unknown language");
+                        setError("ERR_UnknownLanguage");
                         return;
                     }
 
                     if (components.length > 1) {
                         if (!Arrays.asList(Locale.getISOCountries()).contains(components[1])) {
-                            setError("Unknown country");
+                            setError("ERR_UnknownCountry");
                             return;
                         }
 
                         if (!Arrays.asList(Locale.getAvailableLocales()).contains(new Locale(components[0], components[1]))) {
-                            setError("Unsupported locale");
+                            setError("ERR_UnsupportedLocale");
                             return;
                         }
                     }
@@ -145,11 +164,46 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             }
             public void changedUpdate(DocumentEvent e) {}
         });
+        List<String> cathegories = loadCategories ();
+        DefaultListModel model = new DefaultListModel ();
+        for (String category : cathegories)
+            model.addElement (category);
+        lUseIn.setModel (model);
+        lUseIn.setCellRenderer (new CheckBoxRenderrer ());
+        lUseIn.addKeyListener (new KeyAdapter () {
+
+            @Override
+            public void keyTyped (KeyEvent e) {
+                if (e.getKeyChar () == KeyEvent.VK_SPACE) {
+                    int i = lUseIn.getSelectedIndex ();
+                    if (i < 0) return;
+                    String name = (String) lUseIn.getModel ().getElementAt (i);
+                    if (name.charAt (0) == '+')
+                        ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
+                    else
+                        ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
+                }
+            }
+        });
+        lUseIn.addMouseListener (new MouseAdapter () {
+
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                if (e.getClickCount () != 2) return;
+                int i = lUseIn.getSelectedIndex ();
+                if (i < 0) return;
+                String name = (String) lUseIn.getModel ().getElementAt (i);
+                if (name.charAt (0) == '+')
+                    ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
+                else
+                    ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
+            }
+        });
     }
 
     private void setError(String error) {
         c.setValid(error == null);
-        errorText.setText(error != null ? error : "");
+        errorText.setText(error != null ? NbBundle.getMessage(SpellcheckerOptionsPanel.class, error) : "");
         errorText.setIcon(error != null ? errorIcon : null);
     }
     
@@ -209,6 +263,36 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         if (selectedLocale != null) {
             DefaultLocaleQueryImplementation.setDefaultLocale(selectedLocale);
         }
+
+        // save categories:
+        FileObject root = FileUtil.getConfigFile ("Spellcheckers");
+        if (root != null) {
+            Set<String> hidden = new HashSet<String> ();
+            ListModel model = lUseIn.getModel ();
+            for (int i = 0; i < model.getSize (); i++) {
+                String n = (String) model.getElementAt (i);
+                if (n.charAt (0) == '-')
+                    hidden.add (n.substring (1));
+            }
+            FileObject[] children = root.getChildren ();
+            for (FileObject fileObject : children) {
+                String name = null;
+                try {
+                    name = fileObject.getFileSystem ().getStatus ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
+                } catch (FileStateInvalidException ex) {
+                    name = fileObject.getName ();
+                }
+                try {
+                    fileObject.setAttribute ("Hidden", Boolean.valueOf (hidden.contains (name)));
+                } catch (IOException ex) {
+                }
+            }
+        }
+        for (JTextComponent component : EditorRegistry.componentList ()) {
+            ComponentPeer componentPeer = (ComponentPeer) component.getClientProperty (ComponentPeer.class);
+            if (componentPeer != null)
+                componentPeer.reschedule ();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -216,127 +300,154 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
+        dictionariesListPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         installedLocalesList = new javax.swing.JList();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
+        defaultLocalePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         defaultLocale = new javax.swing.JComboBox();
         errorText = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lUseIn = new javax.swing.JList();
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Dictionaries"));
+        dictionariesListPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.dictionariesListPanel.border.title"))); // NOI18N
 
         installedLocalesList.setModel(getInstalledDictionariesModel());
         installedLocalesList.setVisibleRowCount(4);
         jScrollPane1.setViewportView(installedLocalesList);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton4, "Add...");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton5, "Remove");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "SpellcheckerOptionsPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+                removeButtonActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout dictionariesListPanelLayout = new javax.swing.GroupLayout(dictionariesListPanel);
+        dictionariesListPanel.setLayout(dictionariesListPanelLayout);
+        dictionariesListPanelLayout.setHorizontalGroup(
+            dictionariesListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dictionariesListPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(jButton5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jButton4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(118, 118, 118))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(dictionariesListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jButton4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton5))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE))
+        dictionariesListPanelLayout.setVerticalGroup(
+            dictionariesListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dictionariesListPanelLayout.createSequentialGroup()
+                .addGroup(dictionariesListPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(dictionariesListPanelLayout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeButton))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale_Panel", new Object[] {}))); // NOI18N
+        defaultLocalePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale_Panel", new Object[] {}))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale", new Object[] {})); // NOI18N
 
         defaultLocale.setEditable(true);
         defaultLocale.setModel(getLocaleModel());
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout defaultLocalePanelLayout = new javax.swing.GroupLayout(defaultLocalePanel);
+        defaultLocalePanel.setLayout(defaultLocalePanelLayout);
+        defaultLocalePanelLayout.setHorizontalGroup(
+            defaultLocalePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(defaultLocalePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(defaultLocalePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(errorText)
+                    .addComponent(defaultLocale, 0, 251, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        defaultLocalePanelLayout.setVerticalGroup(
+            defaultLocalePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(defaultLocalePanelLayout.createSequentialGroup()
+                .addGroup(defaultLocalePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(defaultLocale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(errorText)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Use_in"))); // NOI18N
+
+        lUseIn.setVisibleRowCount(5);
+        jScrollPane2.setViewportView(lUseIn);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(errorText)
-                    .add(defaultLocale, 0, 251, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(defaultLocale, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorText)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(dictionariesListPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(defaultLocalePanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dictionariesListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(defaultLocalePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         for (Object o : installedLocalesList.getSelectedValues()) {
             removedDictionaries.add((Locale) o);
         }
         updateLocales();
-    }//GEN-LAST:event_jButton5ActionPerformed
+    }//GEN-LAST:event_removeButtonActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         DictionaryInstallerPanel panel = new DictionaryInstallerPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, "Add Dictionary");
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_AddDictionary"));
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 
         d.setVisible(true);
@@ -348,19 +459,22 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             removedDictionaries.remove(desc.getLocale());
             updateLocales();
         }
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_addButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JComboBox defaultLocale;
+    private javax.swing.JPanel defaultLocalePanel;
+    private javax.swing.JPanel dictionariesListPanel;
     private javax.swing.JLabel errorText;
     private javax.swing.JList installedLocalesList;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JList lUseIn;
+    private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
     
     private ListModel getInstalledDictionariesModel() {
@@ -385,12 +499,63 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         
         return dlm;
     }
-    
+
+    private static List<String> loadCategories () {
+        //Repository.getDefault ().findResource ("Spellcheckers");
+        List<String> result = new ArrayList<String> ();
+        FileObject root = FileUtil.getConfigFile ("Spellcheckers");
+        if (root != null) {
+            FileObject[] children = root.getChildren ();
+            for (FileObject fileObject : children) {
+                String name = null;
+                try {
+                    name = fileObject.getFileSystem ().getStatus ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
+                } catch (FileStateInvalidException ex) {
+                    name = fileObject.getName ();
+                }
+                Boolean b = (Boolean) fileObject.getAttribute ("Hidden");
+                if (b != null && b) {
+                    result.add ("-" + name); // hidden
+                } else {
+                    result.add ("+" + name);
+                }
+            }
+        }
+        Collections.sort (result, CategoryComparator);
+        return result;
+    }
+
+    private static final Comparator<String> CategoryComparator = new Comparator<String> () {
+
+        public int compare (String o1, String o2) {
+            return o1.substring (1).compareTo (o2.substring (1));
+        }
+    };
+
     private static class LocaleComparator implements Comparator<Locale> {
         
         public int compare(Locale o1, Locale o2) {
             return o1.toString().compareTo(o2.toString());
         }
         
+    }
+
+    private static class AListRenderrer implements ListCellRenderer {
+
+        private JCheckBox comboBox = new JCheckBox ();
+
+        public Component getListCellRendererComponent (
+            JList               list,
+            Object              value,
+            int                 index,
+            boolean             isSelected,
+            boolean             cellHasFocus
+        ) {
+            String name = (String) value;
+            comboBox.setText (name.substring (1));
+            comboBox.setSelected (name.charAt (0) == '+');
+            return comboBox;
+        }
+
     }
 }

@@ -66,6 +66,12 @@ public class HelperUtility {
         pattern = searchPattern;
     }
 
+    /**
+     *
+     * @param env
+     * @return the ready-to-use remote path for the utility
+     * @throws IOException
+     */
     public final String getPath(final ExecutionEnvironment env) throws IOException {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException(env.toString() + " is not connected"); // NOI18N
@@ -91,16 +97,18 @@ public class HelperUtility {
                         final String fileName = new File(localFile).getName();
                         final String remoteFile = hinfo.getTempDir() + '/' + fileName;
 
-                        if (!HostInfoUtils.fileExists(env, remoteFile)) {
+//                        if (!HostInfoUtils.fileExists(env, remoteFile)) {
                             Future<Integer> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, null);
                             Integer uploadResult = uploadTask.get();
                             if (uploadResult != 0) {
                                 throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
                             }
-                        }
+//                        }
                         result = remoteFile;
                     }
                     cache.put(env, result);
+                } catch (IOException ex) {
+                    throw ex;
                 } catch (Exception ex) {
                     throw new IOException(ex);
                 }

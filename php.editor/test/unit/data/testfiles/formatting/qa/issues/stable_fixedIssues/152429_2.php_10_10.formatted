@@ -19,5 +19,4 @@ function two() {
 function three() {
           echo "three";
 }
-
 ?>

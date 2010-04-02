@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -50,7 +48,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
@@ -69,18 +66,18 @@ final class WrapInfo extends GapList<WrapLine> {
 
     private static final long serialVersionUID  = 0L;
 
-    double majorAxisChildrenSpan; // 32 bytes = 24-super + 8
+    double childrenWidth; // 32 bytes = 24-super + 8
 
-    float minorAxisChildrenSpan; // 36 bytes = 32 + 4
+    float childrenHeight; // 36 bytes = 32 + 4
 
-    WrapInfo(double majorAxisChildrenSpan, float minorAxisChildrenSpan) {
+    WrapInfo(double childrenWidth, float childrenHeight) {
         super(2);
-        this.majorAxisChildrenSpan = majorAxisChildrenSpan;
-        this.minorAxisChildrenSpan = minorAxisChildrenSpan;
+        this.childrenWidth = childrenWidth;
+        this.childrenHeight = childrenHeight;
     }
 
     float preferredHeight() {
-        return size() * minorAxisChildrenSpan;
+        return size() * childrenHeight;
     }
 
     void paintWrapLines(ParagraphViewChildren children, ParagraphView paragraphView,
@@ -92,12 +89,10 @@ final class WrapInfo extends GapList<WrapLine> {
             return;
         }
         TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
-        JTextComponent textComponent = docView.getTextComponent();
-        float baselineOffset = docView.getDefaultBaselineOffset();
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
         double allocOrigX = allocBounds.x;
-        allocBounds.y += startIndex * minorAxisChildrenSpan;
-        allocBounds.height = minorAxisChildrenSpan; // Stays for whole rendering
+        allocBounds.y += startIndex * childrenHeight;
+        allocBounds.height = childrenHeight; // Stays for whole rendering
         int lastWrapLineIndex = size() - 1;
         for (int i = startIndex; i < endIndex; i++) {
             WrapLine wrapLine = get(i);
@@ -141,7 +136,7 @@ final class WrapInfo extends GapList<WrapLine> {
                 }
             }
             allocBounds.x = allocOrigX;
-            allocBounds.y += minorAxisChildrenSpan;
+            allocBounds.y += childrenHeight;
         }
     }
 
@@ -149,8 +144,8 @@ final class WrapInfo extends GapList<WrapLine> {
         if (LOG.isLoggable(Level.FINER)) {
             String err = findIntegrityError(paragraphView);
             if (err != null) {
-                String msg = "WrapInfo INTEGRITY ERROR!";
-                LOG.finer(msg + "\n" + err + "\n");
+                String msg = "WrapInfo INTEGRITY ERROR! - " + err;
+                LOG.finer(msg + "\n");
                 LOG.finer(toString(paragraphView)); // toString() impl should append newline
                 // For finest level stop throw real ISE otherwise just log the stack
                 if (LOG.isLoggable(Level.FINEST)) {
@@ -237,8 +232,8 @@ final class WrapInfo extends GapList<WrapLine> {
     public String appendInfo(StringBuilder sb, ParagraphView paragraphView, int indent) { // Expected to append newline at end
         sb.append("\n");
         ArrayUtilities.appendSpaces(sb, indent);
-        sb.append("childrenSpan:[").append(majorAxisChildrenSpan);
-        sb.append(",").append(minorAxisChildrenSpan);
+        sb.append("childrenSpan:[").append(childrenWidth);
+        sb.append(",").append(childrenHeight);
         sb.append("], realSpan:[");
         if (paragraphView != null) {
             sb.append(paragraphView.getMajorAxisSpan()).append(",");

@@ -61,7 +61,7 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-final class ViewUtils {
+public final class ViewUtils {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUtils.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUtils.class.getName());
@@ -287,6 +287,28 @@ final class ViewUtils {
             throw new IllegalArgumentException("Illegal bounds: <" + p0 + "," + p1 + // NOI18N
                     "> outside of <" + startOffset + "," + (startOffset+length) + ">"); // NOI18N
         }
+    }
+
+    /**
+     * Round given float number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     *
+     * @param f
+     * @return
+     */
+    public static float cutFractions(float f) {
+        return (float) (Math.ceil(f * 8f) / 8f);
+    }
+
+    /**
+     * Round given double number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     *
+     * @param d
+     * @return
+     */
+    public static float cutFractions(double d) {
+        return (float) (Math.ceil(d * 8d) / 8d);
     }
 
 }

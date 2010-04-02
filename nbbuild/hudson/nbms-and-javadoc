@@ -11,12 +11,13 @@ fi
 
 keystore=$SECRET/NBstore
 storepass=`cat $SECRET/storepass`
-# XXX could use <subant-junit> to prevent compilation error in one module from stopping others
-# (though neither <repeat> in build-clusters nor <nbmerge> in build-one-cluster use <subant>)
-ant -emacs -Dcluster.config=experimental \
-    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false \
-    verify-libs-and-licenses build-nozip build-nbms || exit
+ant verify-libs-and-licenses || exit
+ant -f autoupdate.services/build.xml # build first to ensure DTD validation works
+ant -Dcluster.config=experimental \
+    -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
+    build-nbms create-license-summary create-netbeans-import finish-build || exit
 
+rm -rv nbbuild/netbeans/ergonomics nbbuild/nbms/ergonomics # not going to have been built reasonably anyway
 ant -Dcluster.config=minimal -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 ant -Dcluster.config=full -Dzip.dir=`pwd`/nbbuild/dist zip-cluster-config || exit
 (cd nbbuild/netbeans; for cluster in *; do if [ -d $cluster/update_tracking ]; then zip -rq ../dist/$BUILD_TAG-$cluster.zip $cluster; fi; done)
@@ -25,12 +26,6 @@ ant -Dtest.fail.on.error=false build-test-dist
 
 ant -Dtest.config=commit -Dcontinue.after.failing.tests=true -f o.n.core/build.xml test
 ant -Dold.updates=${JOB_URL}lastStableBuild/artifact/nbbuild/nbms/updates.xml generate-uc-catalog verify-update-descriptor || exit
-ant -Djnlp.codebase=${BUILD_URL}artifact/nbbuild/build/jnlp/ \
-    -Djnlp.signjar.keystore=$keystore \
-    -Djnlp.signjar.alias=nb_ide \
-    -Djnlp.signjar.password=$storepass \
-    -Djnlp.fail.on.error=false \
-    build-jnlp || exit
 
 ant clean-untracked-files
 

@@ -129,7 +129,7 @@ public final class ClassImplSpecialization extends ClassImpl implements CsmTempl
 //	return qName;
 //    }
     @Override
-    protected String getQualifiedNamePostfix() {
+    public String getQualifiedNamePostfix() {
         return super.getQualifiedNamePostfix() + qualifiedNameSuffix.toString();
     }
 

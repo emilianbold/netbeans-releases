@@ -54,6 +54,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -105,6 +106,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -113,7 +116,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -145,7 +147,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private UserSearch reporterUserSearch;
     private UserSearch assigneeUserSearch;
-    
+
     private static SimpleDateFormat dateRangeDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
 
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
@@ -177,6 +179,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
+        panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -201,7 +204,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.ratioMaxTextField.getDocument().addDocumentListener(this);
 
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
-                    
+
         if(query.isSaved()) {
             setAsSaved();
         }
@@ -212,7 +215,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
             postPopulate((FilterDefinition) jiraFilter, false);
         }
     }
-
 
     private static boolean isNamedFilter(JiraFilter jiraFilter) {
         return jiraFilter instanceof NamedFilter;
@@ -351,10 +353,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void postPopulate(final FilterDefinition filterDefinition, final boolean forceRefresh) {
-        enableFields(false);
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -365,8 +367,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating");    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
-        panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
+
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                enableFields(false);
+                panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
+            }
+        });
+
         t[0] = rp.post(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
@@ -375,9 +386,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     }
                     populate(filterDefinition);
                 } finally {
-                    enableFields(true);
-                    handle.finish();
-                    panel.showRetrievingProgress(false, null, !query.isSaved());
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableFields(true);
+                            handle.finish();
+                            panel.showRetrievingProgress(false, null, !query.isSaved());
+                        }
+                    });
                 }
             }
         });
@@ -385,43 +401,48 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void populate(final FilterDefinition filterDefinition) {
         if(Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine("Starting populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+            Jira.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
             JiraCommand cmd = new JiraCommand() {
                 @Override
                 public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-                    JiraConfiguration jc = repository.getConfiguration();
+                    final JiraConfiguration jc = repository.getConfiguration();
                     if(jc == null) {
                         // XXX nice errro msg?
                         return;
                     }
 
-                    populateList(panel.projectList, jc.getProjects());
-                    if (jc.getProjects().length == 1) {
-                        panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
-                    } else if (filterDefinition != null) {
-                        ProjectFilter pf = filterDefinition.getProjectFilter();
-                        if (pf != null && pf.getProjects().length == 1) {
-                            panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
-                        }
-                    }
-                    populateList(panel.typeList, jc.getIssueTypes());
-                    populateList(panel.statusList, jc.getStatuses());
-                    populateList(panel.resolutionList, jc.getResolutions());
-                    populateList(panel.priorityList, jc.getPriorities());
-                    reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
-                    assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            populateList(panel.projectList, jc.getProjects());
+                            if (jc.getProjects().length == 1) {
+                                panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
+                            } else if (filterDefinition != null) {
+                                ProjectFilter pf = filterDefinition.getProjectFilter();
+                                if (pf != null && pf.getProjects().length == 1) {
+                                    panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
+                                }
+                            }
+                            populateList(panel.typeList, jc.getIssueTypes());
+                            populateList(panel.statusList, jc.getStatuses());
+                            populateList(panel.resolutionList, jc.getResolutions());
+                            populateList(panel.priorityList, jc.getPriorities());
+                            reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
+                            assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
 
-                    if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
-                        setFilterDefinition(filterDefinition);
-                    }
+                            if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
+                                setFilterDefinition(filterDefinition);
+                            }
+                        }
+                    });
                 }
             };
             repository.getExecutor().execute(cmd);
         } finally {
             if(Jira.LOG.isLoggable(Level.FINE)) {
-                Jira.LOG.fine("Finnished populate query controller" + (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
+                Jira.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
             }
         }
     }
@@ -499,7 +520,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setDateRangeFilter((DateRangeFilter) fd.getCreatedDateFilter(), panel.createdFromTextField, panel.createdToTextField);
         setDateRangeFilter((DateRangeFilter) fd.getUpdatedDateFilter(), panel.updatedFromTextField, panel.updatedToTextField);
         setDateRangeFilter((DateRangeFilter) fd.getDueDateFilter(),     panel.dueFromTextField,     panel.dueToTextField);
-       
+
     }
 
     private void setDateRangeFilter(DateRangeFilter dateRangeFilter, JTextField fromTxt, JTextField toTxt) {
@@ -556,17 +577,18 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 onRefresh();
             }
         }
-    }   
+    }
 
     protected void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.tableSummaryLabel.setText(
-                        NbBundle.getMessage(
-                            QueryController.class,
-                            NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                            new Object[] { count }
-                        )
+                    NbBundle.getMessage(
+                        QueryController.class,
+                        NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
+                        new Object[] { count }
+                    )
                 );
             }
         });
@@ -609,7 +631,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     @Override
     public void applyChanges() {
-        
+
     }
 
     protected void enableFields(boolean bl) {
@@ -628,19 +650,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.projectList.setEnabled(false);
         panel.projectLabel.setEnabled(false);
     }
-    
+
+    @Override
     public void insertUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         fireDataChanged();
         if(e.getSource() == panel.filterComboBox) {
@@ -648,6 +674,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if(e.getSource() == panel.projectList) {
             onProjectChanged(e);
@@ -655,6 +682,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         fireDataChanged();            // XXX do we need this ???
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
 //        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
 //            String lastChangeFrom = JiraConfig.getInstance().getLastChangeFrom();
@@ -664,10 +692,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
 //        }
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         // do nothing
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
@@ -699,6 +729,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onReloadAttributes();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
+        } else if (e.getSource() == panel.findIssuesButton) {
+            onFindIssues();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -712,14 +744,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         // do nothing
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() != KeyEvent.VK_ENTER) {
             return;
@@ -749,7 +784,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(name == null) {
                         return;
                     }
-                    panel.queryNameTextField.setText("");                       // NOI18N
                 }
                 assert name != null;
                 save(name, firstTime);
@@ -762,30 +796,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private String getSaveName() {
-        String name = null;
-        if(JiraUtils.show(
-                panel.savePanel,
-                NbBundle.getMessage(QueryController.class, "LBL_SaveQuery"),    // NOI18N
-                NbBundle.getMessage(QueryController.class, "LBL_Save"),         // NOI18N
-                new HelpCtx("org.netbeans.modules.jira.query.savePanel")))  // NOI18N
-        {
-            name = panel.queryNameTextField.getText();
-            if(name == null || name.trim().equals("")) { // NOI18N
+        QueryNameValidator v = new QueryNameValidator() {
+            @Override
+            public String isValid(String name) {
+                Query[] queries = repository.getQueries();
+                for (Query q : queries) {
+                    if(q.getDisplayName().equals(name)) {
+                        return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
+                    }
+                }
                 return null;
             }
-            Query[] queries = repository.getQueries();
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(name)) {
-                    panel.saveErrorLabel.setVisible(true);
-                    name = getSaveName();
-                    panel.saveErrorLabel.setVisible(false);
-                    break;
-                }
-            }
-        } else {
-            return null;
-        }
-        return name;
+        };
+        return SaveQueryPanel.show(v, new HelpCtx("org.netbeans.modules.jira.query.savePanel")); // NOI18N
     }
 
     private void save(String name, boolean firstTime) {
@@ -809,9 +832,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         setAsSaved();
     }
 
-    public void selectFilter(Filter filter) {
+    public void selectFilter(final Filter filter) {
         if(filter != null) {
-            panel.filterComboBox.setSelectedItem(filter);
+
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
             Issue[] issues = query.getIssues();
             int c = 0;
@@ -820,7 +843,19 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     if(filter.accept(issue)) c++;
                 }
             }
-            setIssueCount(c);
+            final int issueCount = c;
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    panel.filterComboBox.setSelectedItem(filter);
+                    setIssueCount(issueCount);
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
+            }
         }
         issueTable.setFilter(filter);
     }
@@ -839,7 +874,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
         panel.refreshCheckBox.setVisible(true);
-    } 
+    }
 
     protected String getLastRefresh() throws MissingResourceException {
         long l = query.getLastRefresh();
@@ -937,6 +972,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(t[0] != null) {
                     return t[0].cancel();
@@ -946,6 +982,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {key}), c); // NOI18N
         t[0] = Jira.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
             public void run() {
                 handle.start();
                 try {
@@ -969,6 +1006,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     private void onWeb() {
         final String repoURL = repository.getTaskRepository().getRepositoryUrl() + "/secure/IssueNavigator.jspa"; // NOI18N //XXX need constants
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 URL url;
                 try {
@@ -997,11 +1035,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onRefresh(final boolean autoRefresh) {
-        if(refreshTask == null) {            
+        if(refreshTask == null) {
             refreshTask = new QueryTask();
         }
         refreshTask.post(autoRefresh);
-    }    
+    }
 
     private void onModify() {
         panel.setModifyVisible(true);
@@ -1009,6 +1047,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     private void onMarkSeen() {
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Issue[] issues = query.getIssues();
                 for (Issue issue : issues) {
@@ -1026,6 +1065,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Jira.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     remove();
                 }
@@ -1062,7 +1102,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 if(values[i] instanceof Project) {
                     projects[i] = (Project) values[i];
                 } else {
-                    Jira.LOG.warning("project list item [" + values[i] + " has wrong type [" + values[i].getClass() + "]. Try to reload attributes." );
+                    Jira.LOG.log(Level.WARNING, "project list item [{0} has wrong type [{1}]. Try to reload attributes.", new Object[]{values[i], values[i].getClass()});
                 }
             }
         }
@@ -1095,9 +1135,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             Version[] vs = p.getVersions();
             if(vs != null) {
-                for (Version v : vs) {
-                    versions.add(v);
-                }
+                versions.addAll(Arrays.asList(vs));
             }
         }
 
@@ -1113,7 +1151,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.affectsVersionsLabel.setVisible(versionsArray.length != 0);
         panel.componentsScrollPane.setVisible(componentsArray.length != 0);
         panel.componentsLabel.setVisible(componentsArray.length != 0);
-            
+
         panel.byDetailsPanel.validate();
     }
 
@@ -1128,6 +1166,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(modifiable) {
             postPopulate(getFilterDefinition(), true);
         }
+    }
+
+    private void onFindIssues() {
+        Query.openNew(repository);
     }
 
     private void onCloneQuery() {
@@ -1153,7 +1195,6 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         private void startQuery() {
-            enableFields(false);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         QueryController.class,
@@ -1163,9 +1204,16 @@ public class QueryController extends BugtrackingController implements DocumentLi
                                 query.getDisplayName() :
                                 repository.getDisplayName()}),
                     this);
-            panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
-            handle.start();
-            QueryController.this.renderer.resetDefaultRowHeight();
+
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    enableFields(false);
+                    panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+                    handle.start();
+                    QueryController.this.renderer.resetDefaultRowHeight();
+                }
+            });
         }
 
         private void finnishQuery() {
@@ -1178,7 +1226,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                 public void run() {
                     panel.setQueryRunning(false);
                     panel.setLastRefresh(getLastRefresh());
-                    panel.showNoContentPanel(false);                    
+                    panel.showNoContentPanel(false);
                     enableFields(true);
                 }
             });
@@ -1193,15 +1241,26 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void executeQuery() {
-            panel.setQueryRunning(true);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    panel.setQueryRunning(true);
+                }
+            });
             try {
                 query.refresh(getJiraFilter(), autoRefresh);
             } finally {
-                panel.setQueryRunning(false);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        panel.setQueryRunning(false);
+                    }
+                });
                 task = null;
             }
         }
 
+        @Override
         public void run() {
             startQuery();
             try {
@@ -1220,6 +1279,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             task.schedule(0);
         }
 
+        @Override
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
@@ -1228,6 +1288,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             return true;
         }
 
+        @Override
         public void notifyData(final Issue issue) {
             if(!query.contains(issue)) {
                 // XXX this is quite ugly - the query notifies an archoived issue
@@ -1236,15 +1297,22 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
             setIssueCount(++counter);
             if(counter == 1) {
-                panel.showNoContentPanel(false);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        panel.showNoContentPanel(false);
+                    }
+                });
             }
         }
 
+        @Override
         public void started() {
             counter = 0;
             setIssueCount(counter);
         }
 
+        @Override
         public void finished() { }
 
     }

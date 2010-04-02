@@ -351,9 +351,15 @@ public final class DashboardImpl extends Dashboard {
 
             public void run() {
                 synchronized (LOCK) {
+                    Runnable selectAndExpand = new Runnable() {
+                        @Override
+                        public void run() {
+                            selectAndExpand(((ProjectHandleImpl) project).getKenaiProject());
+                        }
+                    };
                     if (openProjects.contains(project)) {
                         if (select) {
-                            selectAndExpand(((ProjectHandleImpl) project).getKenaiProject());
+                            SwingUtilities.invokeLater(selectAndExpand);
                         }
                         return;
                     }
@@ -370,12 +376,7 @@ public final class DashboardImpl extends Dashboard {
                     if (isOpened()) {
                         switchContent();
                         if (select) {
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    selectAndExpand(((ProjectHandleImpl) project).getKenaiProject());
-                                }
-                            });
+                            SwingUtilities.invokeLater(selectAndExpand);
                         }
                     }
                 }

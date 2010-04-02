@@ -110,7 +110,7 @@ public class ReportNBIssueAction extends SystemAction {
             }
             return true;
         }
-        repo.setAuthentication(null, null, null, null); // reset 
+        repo.setCredentials(null, null, null, null); // reset
         return false;
     }
 }

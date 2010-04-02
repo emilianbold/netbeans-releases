@@ -258,7 +258,7 @@ public class ProjectNodeFactory {
         } else if (debuggerNodes.size() == 1) {
             res.addAll(debuggerNodes);
         } else {
-            res.add(createNotFoundNode("Debug")); // NOI18N
+            //res.add(createNotFoundNode("Debug")); // NOI18N
         }
         return res;
     }

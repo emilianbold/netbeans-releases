@@ -130,7 +130,8 @@ public class ReferencedSchemaModelChildren<C extends SchemaModelReference>
 		{
 			refModel = null;
 		}
-		if (refModel != null && refModel.getState() != Model.State.NOT_WELL_FORMED)
+		if (refModel != null && refModel.getRootComponent() != null &&
+                refModel.getState() != Model.State.NOT_WELL_FORMED)
 		{
 			Node refNode = getContext().getFactory().createNode(refModel.getSchema());
 			Node dummyNode = new DummySchemaNode(refNode);

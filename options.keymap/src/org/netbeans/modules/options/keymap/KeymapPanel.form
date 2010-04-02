@@ -18,7 +18,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" alignment="1" pref="562" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="1" pref="570" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -27,12 +27,12 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lProfile" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbProfile" pref="317" max="32767" attributes="0"/>
+                              <Component id="cbProfile" pref="340" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="manageButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace pref="47" max="32767" attributes="0"/>
+                              <EmptySpace pref="84" max="32767" attributes="0"/>
                               <Component id="searchLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="searchField" linkSize="1" min="-2" pref="120" max="-2" attributes="0"/>
@@ -116,6 +116,9 @@
               <Connection code="sorter" type="code"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new KeymapTable()"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

@@ -87,6 +87,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Utilities class.
@@ -1260,5 +1261,33 @@ public final class Utils {
             ret += hex + (i < md5digest.length - 1 ? ":" : ""); // NOI18N
         }
         return ret;
+    }
+
+    /**
+     * Returns files from all opened top components
+     * @return set of opened files
+     */
+    public static Set<File> getOpenFiles() {
+        TopComponent[] comps = TopComponent.getRegistry().getOpened().toArray(new TopComponent[0]);
+        Set<File> openFiles = new HashSet<File>(comps.length);
+        for (TopComponent tc : comps) {
+            Node[] nodes = tc.getActivatedNodes();
+            if (nodes == null) {
+                continue;
+            }
+            for (Node node : nodes) {
+                File file = node.getLookup().lookup(File.class);
+                if (file == null) {
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        file = FileUtil.toFile(fo);
+                    }
+                }
+                if (file != null) {
+                    openFiles.add(file);
+                }
+            }
+        }
+        return openFiles;
     }
 }

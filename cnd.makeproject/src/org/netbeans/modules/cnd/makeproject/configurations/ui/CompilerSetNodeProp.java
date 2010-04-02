@@ -40,32 +40,48 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class CompilerSetNodeProp extends Node.Property<String> {
 
     private CompilerSet2Configuration configuration;
+    private final DevelopmentHostConfiguration hostConfiguration;
+    private volatile boolean supportDefault = true;
     private boolean canWrite;
     //private String txt1;
     private String txt2;
     private String txt3;
     private String oldname;
 
-    public CompilerSetNodeProp(CompilerSet2Configuration configuration, boolean canWrite, String txt1, String txt2, String txt3) {
+    public CompilerSetNodeProp(CompilerSet2Configuration configuration, DevelopmentHostConfiguration hostConf, boolean canWrite, String txt1, String txt2, String txt3) {
         super(String.class);
         this.configuration = configuration;
+        this.hostConfiguration = hostConf;
         this.canWrite = canWrite;
         //this.txt1 = txt1;
         this.txt2 = txt2;
         this.txt3 = txt3;
         oldname = configuration.getOption();
-        configuration.setCompilerSetNodeProp(this);
+        configuration.setCompilerSetNodeProp(CompilerSetNodeProp.this);
     }
 
     public String getOldname() {
@@ -91,10 +107,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return configuration.getCompilerSetName().getValue();
     }
 
+    @Override
     public void setValue(String v) {
         configuration.setValue(v);
     }
@@ -106,7 +124,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
     @Override
     public boolean supportsDefaultValue() {
-        return true;
+        return supportDefault;
     }
 
     @Override
@@ -114,10 +132,12 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return !configuration.getCompilerSetName().getModified();
     }
 
+    @Override
     public boolean canWrite() {
         return canWrite;
     }
 
+    @Override
     public boolean canRead() {
         return true;
     }
@@ -131,8 +151,8 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         return new CompilerSetEditor();
     }
 
-    private class CompilerSetEditor extends PropertyEditorSupport {
-
+    private class CompilerSetEditor extends PropertyEditorSupport implements ExPropertyEditor {
+        private PropertyEnv env;
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -151,6 +171,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
         @Override
         public String[] getTags() {
+            supportDefault = true;
             List<String> list = new ArrayList<String>();
             // TODO: this works unpredictable on switching development hosts
             // TODO: should be resolved later on
@@ -167,6 +188,48 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
         public void repaint() {
             firePropertyChange();
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return true;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+            supportDefault = false;
+            return new CompilerSetEditorCustomizer(env);
+        }
+
+        @Override
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
+        }
+    }
+
+    private final class CompilerSetEditorCustomizer extends JPanel implements VetoableChangeListener {
+        private final VetoableChangeListener delegate;
+        private final JComponent tpc;
+        public CompilerSetEditorCustomizer(PropertyEnv propertyEnv) {
+            this.setLayout(new BorderLayout());
+            this.setBorder(new EmptyBorder(6,6,0,6));
+            tpc = ToolsPanelSupport.getToolsPanelComponent(hostConfiguration.getExecutionEnvironment(), getValue());
+            delegate = (VetoableChangeListener) tpc.getClientProperty(ToolsPanelSupport.OK_LISTENER_KEY);
+            add(tpc, BorderLayout.CENTER);
+            this.putClientProperty("title", NbBundle.getMessage(CompilerSetNodeProp.class, "CompilerSetEditorCustomizerTitile", hostConfiguration.getExecutionEnvironment().getDisplayName()));
+            propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            propertyEnv.addVetoableChangeListener(CompilerSetEditorCustomizer.this);
+        }
+
+        @Override
+        public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+            if (delegate != null) {
+                delegate.vetoableChange(evt);
+            }
+            String toolchain = (String) tpc.getClientProperty(ToolsPanelSupport.SELECTED_TOOLCHAIN_KEY);
+            if (toolchain != null) {
+                setValue(toolchain);
+            }
         }
     }
 }

@@ -183,7 +183,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                         cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots, helper, evaluator));
                         break;
                     case TEST:
-                        cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots));
+                        cp = ClassPathFactory.createClassPath(
+                                new GroupClassPathImplementation(
+                                new SourcePathImplementation[]{
+                                    new SourcePathImplementation(this.testSourceRoots),
+                                    new SourcePathImplementation(this.sourceRoots, helper, evaluator)
+                                }));
                         break;
                 }
                 cache.put(type.getCacheType(), cp);

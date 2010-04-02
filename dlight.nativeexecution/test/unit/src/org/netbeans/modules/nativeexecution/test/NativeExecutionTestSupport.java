@@ -114,9 +114,9 @@ public class NativeExecutionTestSupport {
                 }
                 if (defaultTestExecutionEnvironment != null) {
                     if (connect) {
-                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd, false);
+                        ConnectionManager.getInstance().connectTo(defaultTestExecutionEnvironment, passwd);
                     } else if(passwd != null && passwd.length > 0) {
-                        PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd, false);
+                        PasswordManager.getInstance().put(defaultTestExecutionEnvironment, passwd);
                     }
                 }
             }
@@ -184,7 +184,7 @@ public class NativeExecutionTestSupport {
 
         if (result != null) {
             if (passwd != null) {
-                PasswordManager.getInstance().put(result, passwd, false);
+                PasswordManager.getInstance().put(result, passwd);
             }
             //ConnectionManager.getInstance().connectTo(result, passwd, false);
         }

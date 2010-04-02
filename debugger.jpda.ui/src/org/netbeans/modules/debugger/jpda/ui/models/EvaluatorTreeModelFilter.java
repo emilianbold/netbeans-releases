@@ -53,7 +53,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.RequestProcessor;
 
 public class EvaluatorTreeModelFilter implements TreeModelFilter {
 
@@ -110,7 +109,7 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
             ls[i].modelChanged (ev);
         }
         // Select
-        RequestProcessor.getDefault().post(new Runnable() {
+        CodeEvaluator.getRequestProcessor().post(new Runnable() {
             public void run() {
                 ModelEvent ev = new ModelEvent.SelectionChanged(EvaluatorTreeModelFilter.this, result);
                 for (int i = 0; i < ls.length; i++) {

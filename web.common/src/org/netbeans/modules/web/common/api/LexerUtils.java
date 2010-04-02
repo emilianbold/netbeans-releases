@@ -78,6 +78,9 @@ public class LexerUtils {
     public static TokenSequence getJoinedTokenSequence(Document doc, int offset, Language language) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence();
+        if(ts == null) {
+            return null;
+        }
         ts.move(offset);
 
         while(ts.moveNext() || ts.movePrevious()) {

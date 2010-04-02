@@ -129,6 +129,8 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
     private static final String DELIMITER = " : ";
 
+    private static final RequestProcessor RP = new RequestProcessor("Dependency Panel"); //NOI18N
+
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
 
@@ -1238,7 +1240,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
     }
 
 
-    private class DefAction extends AbstractAction implements ContextAwareAction {
+    private class DefAction extends AbstractAction implements ContextAwareAction, Runnable {
         private final boolean close;
         private final Lookup lookup;
 
@@ -1272,12 +1274,7 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
                     //reset completion.
                     AddDependencyPanel.this.artifactCompleter.setLoading(true);
                     AddDependencyPanel.this.versionCompleter.setLoading(true);
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            AddDependencyPanel.this.populateArtifact();
-                            AddDependencyPanel.this.populateVersion();
-                        }
-                    });
+                    RP.post(this);
                 }
             } else {
                 AddDependencyPanel.this.setFields("","",""); //NOI18N
@@ -1289,6 +1286,12 @@ public class AddDependencyPanel extends javax.swing.JPanel implements ActionList
 
         public Action createContextAwareInstance(Lookup actionContext) {
             return new DefAction(close, actionContext);
+        }
+
+        @Override
+        public void run() {
+            AddDependencyPanel.this.populateArtifact();
+            AddDependencyPanel.this.populateVersion();
         }
 
     }

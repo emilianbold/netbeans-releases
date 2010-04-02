@@ -85,7 +85,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).getNodes().length > 0;
+        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE).length > 0;
     }
 
     /**
@@ -132,11 +132,12 @@ public class CommitAction extends AbstractSystemAction {
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));  // NOI18N
         dialog.setVisible(true);
         final String message = settings.getCommitMessage().trim();
-        if (!message.isEmpty()) {
-            CvsModuleConfig.getDefault().setLastCommitMessage(message);
+        if (descriptor.getValue() != commit && !message.isEmpty()) {
+            CvsModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }
         if (descriptor.getValue() != commit) return;
 
+        CvsModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
         saveExclusions(settings);
 
         cmd.setMessage(message);

@@ -62,11 +62,11 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-orm-3.0.0.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-oxm-3.0.0.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-test-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-transaction-3.0.0.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-tx-3.0.0.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-web-3.0.0.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-portlet-3.0.0.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-3.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-struts-3.0.0.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-struts-3.0.0.RELEASE.jar!/</resource> 
     </volume>
     <volume>
         <type>src</type>
@@ -92,10 +92,10 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-orm/3.0.0.RELEASE/spring-orm-3.0.0.RELEASE.pom</resource>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-oxm/3.0.0.RELEASE/spring-oxm-3.0.0.RELEASE.pom</resource>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-test/3.0.0.RELEASE/spring-test-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-transaction/3.0.0.RELEASE/spring-transaction-3.0.0.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-tx/3.0.0.RELEASE/spring-tx-3.0.0.RELEASE.pom</resource>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-web/3.0.0.RELEASE/spring-web-3.0.0.RELEASE.pom</resource>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc-portlet/3.0.0.RELEASE/spring-webmvc-portlet-3.0.0.RELEASE.pom</resource>
         <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc/3.0.0.RELEASE/spring-webmvc-3.0.0.RELEASE.pom</resource>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring-webmvc-struts/3.0.0.RELEASE/spring-webmvc-struts-3.0.0.RELEASE.pom</resource>
+        <resource>http://repo1.maven.org/maven2/org/springframework/spring-struts/3.0.0.RELEASE/spring-struts-3.0.0.RELEASE.pom</resource> 
     </volume>
 </library>

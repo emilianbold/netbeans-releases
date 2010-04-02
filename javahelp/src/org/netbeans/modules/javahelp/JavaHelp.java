@@ -853,7 +853,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     */
     private static void warnBadID(String id) {
         // PLEASE DO NOT COMMENT OUT...localized warning
-        Installer.log.fine(NbBundle.getMessage(JavaHelp.class, "MSG_jh_id_not_found", id));
+        Installer.log.warning(NbBundle.getMessage(JavaHelp.class, "MSG_jh_id_not_found", id));
     }
 
     /** Display something in a JHelp.

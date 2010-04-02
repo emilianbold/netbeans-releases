@@ -102,6 +102,8 @@ public class KenaiSearchPanel extends JPanel {
 
     private static Kenai kenai;
 
+    private RequestProcessor rp = new RequestProcessor("Kenai Search Panel", 3); //NOI18N
+
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel, Kenai k) {
 
@@ -520,7 +522,7 @@ public class KenaiSearchPanel extends JPanel {
         revalidate();
         repaint();
         ph.start();
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = "&filter=" + type; //NOI18N
@@ -626,7 +628,7 @@ public class KenaiSearchPanel extends JPanel {
             repaint();
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
                 Iterator<KenaiProject> projectsIterator = null;
                 String searchPattern = searchTextField.getText();
@@ -743,7 +745,7 @@ public class KenaiSearchPanel extends JPanel {
             this.projects = projects;
             this.pattern = pattern;
             this.kpList = kpLst;
-            RequestProcessor.getDefault().post(this);
+            rp.post(this);
         }
 
         public void run() {

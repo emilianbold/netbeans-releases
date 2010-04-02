@@ -109,9 +109,11 @@ final class OverridingMethodsImpl implements OverridingMethods {
             }
             RubyIndex index = RubyIndex.get(info);
             Set<IndexedMethod> overriding = new LinkedHashSet<IndexedMethod>();
+            Set<String> subClassNames = new HashSet<String>(subclzs.size());
             for (IndexedClass subClz : subclzs) {
-                overriding.addAll(index.getMethods(methodElement.getName(), subClz.getFqn(), Kind.EXACT));
+                subClassNames.add(subClz.getFqn());
             }
+            overriding.addAll(index.getMethods(methodElement.getName(), subClassNames, Kind.EXACT));
             return asLocations(overriding);
         }
 

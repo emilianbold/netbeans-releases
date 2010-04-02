@@ -79,6 +79,7 @@ public class DebugProjectCommand extends Command implements Displayable {
         return ID;
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }

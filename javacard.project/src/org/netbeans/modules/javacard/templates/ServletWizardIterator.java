@@ -185,8 +185,11 @@ public final class ServletWizardIterator implements WizardDescriptor.Instantiati
                         WebXMLRefactoringSupport web = WebXMLRefactoringSupport.fromFile(FileUtil.toFile(webObj));
                         web.addServletInfo(servletName, className, urlPattern);
                         OutputStream out = webObj.getOutputStream();
-                        XMLUtil.write(web.getDocument(), out, "UTF-8");
-                        out.close();
+                        try {
+                            XMLUtil.write(web.getDocument(), out, "UTF-8");
+                        } finally {
+                            out.close();
+                        }
                     } catch (FileAlreadyLockedException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IOException ex) {
