@@ -101,7 +101,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public int run() {
         if (!isFailedOrCancelled()) {
-            RemoteUtil.LOGGER.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + executionEnvironment);
+            RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport<Init>: Running [{0}] on {1}", new Object[]{cmd, executionEnvironment});
             if (SwingUtilities.isEventDispatchThread()) {
                 String text = "Running remote command in EDT: " + cmd; //NOI18N
                 if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
@@ -148,13 +148,13 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 //                } catch (InterruptedException e) {
 //                }
                 int rc = process.waitFor();
-                RemoteUtil.LOGGER.fine("RemoteCommandSupport: " + cmd + " on " + executionEnvironment + " finished; rc=" + rc);
+                RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport: {0} on {1} finished; rc={2}", new Object[]{cmd, executionEnvironment, rc});
                 String errMsg;
                 while ((errMsg = remoteProcessErr.readLine()) != null) {
                     if (errMsg != null) {
                         err.append(errMsg).append('\n');
                         if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                            RemoteUtil.LOGGER.finest("RemoteCommandSupport ERROR: " + errMsg);
+                            RemoteUtil.LOGGER.log(Level.FINEST, "RemoteCommandSupport ERROR: {0}", errMsg);
                         }
                     }
                 }
@@ -168,7 +168,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 // log just for information, it's quite normal
                 RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("IO failure during running " + cmd);
+                RemoteUtil.LOGGER.log(Level.WARNING, "IO failure during running {0} at {1}", new Object[]{cmd, env});
             } finally {
                 if (remoteProcessOut != null) {
                     try {
