@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.masterfs;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
@@ -123,6 +126,28 @@ public class SlowRefreshTest extends NbTestCase {
         assertTrue("It is instance of runnable:  " + obj, obj instanceof Runnable);
 
         Runnable r = (Runnable)obj;
+        class AE extends ActionEvent {
+            List<FileObject> files = new ArrayList<FileObject>();
+
+            public AE() {
+                super("", 0, "");
+            }
+
+            @Override
+            public void setSource(Object newSource) {
+                assertTrue(newSource instanceof Object[]);
+                Object[] arr = (Object[])newSource;
+                assertEquals("Three elements", 3, arr.length);
+                assertTrue("first is int", arr[0] instanceof Integer);
+                assertTrue("2nd is int", arr[1] instanceof Integer);
+                assertTrue("3rd is fileobject", arr[2] instanceof FileObject);
+                files.add((FileObject)arr[2]);
+                super.setSource(newSource);
+            }
+        }
+        AE counter = new AE();
+        // connect together
+        r.equals(counter);
 
         // do the refresh
         r.run();
@@ -130,5 +155,7 @@ public class SlowRefreshTest extends NbTestCase {
         assertEquals("Change notified", 1, listener.cnt);
         assertEquals("Right file", file, FileUtil.toFile(listener.event.getFile()));
         assertEquals("Right source", file.getParentFile(), FileUtil.toFile((FileObject)listener.event.getSource()));
+
+        assertEquals("Files checked: " + counter.files, 2, counter.files.size());
     }
 }

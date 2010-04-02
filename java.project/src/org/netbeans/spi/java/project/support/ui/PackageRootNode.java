@@ -206,11 +206,11 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
-                SystemAction.get( FileSystemAction.class ),
-                null,
                 SystemAction.get( FindAction.class ),
                 null,
                 SystemAction.get( PasteAction.class ),
+                null,
+                SystemAction.get( FileSystemAction.class ),
                 null,
                 SystemAction.get( ToolsAction.class ),
             };

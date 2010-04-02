@@ -180,8 +180,15 @@ public class Generate {
 
         Map<String, Set<Class>> EventRequestExceptions = new LinkedHashMap<String, Set<Class>>();
         // ObjectCollectedException can be thrown
-        EventRequestExceptions.put("enable", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
-        EventRequestExceptions.put("setEnabled", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EventRequestExceptions.put("disable", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
+        EventRequestExceptions.put("enable", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
+        EventRequestExceptions.put("setEnabled", new LinkedHashSet<Class>(Arrays.asList(
+                new Class [] { com.sun.jdi.ObjectCollectedException.class,
+                               com.sun.jdi.request.InvalidRequestStateException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequest.class.getName(), EventRequestExceptions);
 
         Map<String, Set<Class>> EventSetExceptions = new LinkedHashMap<String, Set<Class>>();

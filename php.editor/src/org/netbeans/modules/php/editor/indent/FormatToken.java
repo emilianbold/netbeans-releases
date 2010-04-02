@@ -55,6 +55,7 @@ public class FormatToken {
 	OPEN_TAG,
 	CLOSE_TAG,
 	INIT_TAG, // special tag, that will contain some initional information
+	HTML,
 
 	INDENT,
 	WHITESPACE,
@@ -202,7 +203,8 @@ public class FormatToken {
 		&& kind != Kind.DOC_COMMENT_END
 		&& kind != Kind.OPEN_TAG
 		&& kind != Kind.CLOSE_TAG
-		&& kind != Kind.INIT_TAG;
+		&& kind != Kind.INIT_TAG
+		&& kind != Kind.HTML;
     }
 
     @Override

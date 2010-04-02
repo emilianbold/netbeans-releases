@@ -83,6 +83,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
@@ -234,11 +235,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         return VirtualMachineWrapper.eventRequestManager (vm);
     }
 
-    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    protected void addEventRequest (EventRequest r) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
         addEventRequest(r, false);
     }
     
-    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
         logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -278,6 +279,9 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             getDebugger ().getOperator ().unregister (r);
             throw e;
         } catch (VMDisconnectedExceptionWrapper e) {
+            getDebugger ().getOperator ().unregister (r);
+            throw e;
+        } catch (InvalidRequestStateExceptionWrapper e) {
             getDebugger ().getOperator ().unregister (r);
             throw e;
         }
@@ -392,6 +396,8 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             return true; // Stop here
         } catch (VMDisconnectedExceptionWrapper iex) {
             return false; // Let it go
+        } catch (InvalidRequestStateExceptionWrapper irsex) {
+            return false; // Deleted - let it go
         }
     }
 

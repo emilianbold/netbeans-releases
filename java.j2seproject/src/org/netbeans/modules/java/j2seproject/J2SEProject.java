@@ -92,7 +92,6 @@ import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -122,7 +121,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -315,7 +313,6 @@ public final class J2SEProject implements Project, AntProjectListener {
 
     private Lookup createLookup(final AuxiliaryConfiguration aux,
             final J2SEActionProvider actionProvider) {
-        final SubprojectProvider spp = refHelper.createSubprojectProvider();        
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
             cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
@@ -326,9 +323,9 @@ public final class J2SEProject implements Project, AntProjectListener {
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
-            spp,
+            refHelper.createSubprojectProvider(),
             actionProvider,
-            new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
+            new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),

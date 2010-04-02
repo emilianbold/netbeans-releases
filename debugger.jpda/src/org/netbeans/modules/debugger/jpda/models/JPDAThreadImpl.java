@@ -90,6 +90,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
@@ -1072,7 +1073,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     }
                     stepsDeletedDuringMethodInvoke = stepsToDelete;
                 } catch (InternalExceptionWrapper iew) {
-                } catch (VMDisconnectedExceptionWrapper dew) {}
+                } catch (VMDisconnectedExceptionWrapper dew) {
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                } catch (ObjectCollectedExceptionWrapper oce) {}
             }
             methodInvoking = true;
             unsuspendedStateWhenInvoking = !isSuspended();
@@ -1122,6 +1125,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         try {
                             EventRequestWrapper.enable(sr);
                         } catch (ObjectCollectedExceptionWrapper ex) {
+                            continue;
+                        } catch (InvalidRequestStateExceptionWrapper irse) {
                             continue;
                         }
                         if (logger.isLoggable(Level.FINE)) logger.fine("ENABLED Step Request: "+sr);
@@ -1704,6 +1709,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (ObjectCollectedExceptionWrapper ocex) {
             debugger.getOperator().unregister(monitorEnteredRequest);
             throw ocex;
+        } catch (InvalidRequestStateExceptionWrapper irse) {
+            Exceptions.printStackTrace(irse);
         }
     }
 

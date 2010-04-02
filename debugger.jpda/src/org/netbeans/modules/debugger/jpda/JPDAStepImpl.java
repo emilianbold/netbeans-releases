@@ -84,6 +84,7 @@ import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
@@ -105,6 +106,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
@@ -188,6 +190,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     requestsToCancel.add(stepRequest);
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
+                    debuggerImpl.getOperator().unregister(stepRequest);
+                    stepRequest = null;
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    debuggerImpl.getOperator().unregister(stepRequest);
+                    stepRequest = null;
+                } catch (InvalidRequestStateExceptionWrapper ex) {
                     debuggerImpl.getOperator().unregister(stepRequest);
                     stepRequest = null;
                 }
@@ -345,7 +353,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
                 BreakpointRequestWrapper.addThreadFilter(brReq, trRef);
                 EventRequestWrapper.putProperty(brReq, "thread", trRef); // NOI18N
-                EventRequestWrapper.enable(brReq);
+                try {
+                    EventRequestWrapper.enable(brReq);
+                } catch (InvalidRequestStateExceptionWrapper ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 tr.setInStep(true, brReq);
                 requestsToCancel.add(brReq);
             }
@@ -372,6 +384,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             requestsToCancel.add(boundaryStepRequest);
         } catch (IllegalThreadStateException itsex) {
             // the thread named in the request has died.
+            ((JPDADebuggerImpl) debugger).getOperator().unregister(boundaryStepRequest);
+            boundaryStepRequest = null;
+            return false;
+        } catch (InvalidRequestStateExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
             ((JPDADebuggerImpl) debugger).getOperator().unregister(boundaryStepRequest);
             boundaryStepRequest = null;
             return false;
@@ -646,6 +663,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         } catch (IllegalThreadStateException itsex) {
                             // the thread named in the request has died.
                             debuggerImpl.getOperator ().unregister (stepRequest);
+                        } catch (InvalidRequestStateExceptionWrapper irse) {
+                            Exceptions.printStackTrace(irse);
                         }
                         return true;
                     }
@@ -720,6 +739,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 } catch (ObjectCollectedExceptionWrapper ocex) {
                     // the thread named in the request was collected.
                     debuggerImpl.getOperator ().unregister (stepRequest);
+                } catch (InvalidRequestStateExceptionWrapper irse) {
+                    Exceptions.printStackTrace(irse);
                 }
             } finally {
                 t.accessLock.readLock().unlock();

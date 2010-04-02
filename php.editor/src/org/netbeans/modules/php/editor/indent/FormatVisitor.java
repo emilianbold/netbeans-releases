@@ -895,11 +895,11 @@ public class FormatVisitor extends DefaultVisitor {
 	    case PHP_OPENTAG:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
-		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
+//		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG, ts.offset() + ts.token().length()));
 		break;
 	    case PHP_CLOSETAG:
-		tokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.initialIndent));
+//		tokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.initialIndent));
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.CLOSE_TAG, ts.offset(), ts.token().text().toString()));
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
@@ -1093,6 +1093,19 @@ public class FormatVisitor extends DefaultVisitor {
 		if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
 		    token.setHasHTML(true);
 		}
+		int startOffset = ts.offset();
+		StringBuilder sb = new StringBuilder(ts.token().text());
+		// merge all html following tokens to one format token;
+		while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
+		    sb.append(ts.token().text());
+		}
+		
+		if (ts.moveNext()) {
+		    ts.movePrevious();
+		    ts.movePrevious();
+		    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
+		}
+		break;
 	    default:
 		tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
 	}

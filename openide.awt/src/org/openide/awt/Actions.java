@@ -190,6 +190,7 @@ public class Actions {
             ((Actions.MenuItem)item).setBridge(b);
         }
         b.updateState(null);
+        item.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
     }
 
     /** Attaches checkbox menu item to boolean state action.

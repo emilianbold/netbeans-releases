@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -105,7 +106,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     
     
     public static Action createReloadAction() {
-        return ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
+        Action a = ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        return a;
     }
 
     public synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {

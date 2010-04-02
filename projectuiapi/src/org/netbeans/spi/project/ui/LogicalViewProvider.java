@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.project.ui;
 
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.nodes.Node;
 
 /**
@@ -64,6 +65,7 @@ public interface LogicalViewProvider {
      * <em>As of <code>org.netbeans.modules.projectuiapi/1 1.31</code></em>
      * </p>
      * @return a node displaying the contents of the project in an intuitive way
+     * @see CommonProjectActions#forType
      */
     Node createLogicalView();
     
