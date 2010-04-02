@@ -1330,7 +1330,7 @@ public final class ModuleList {
         if (e != null) {
             return e;
         }
-        if (!isNetBeansOrg(home)) {
+        if (home == null || !isNetBeansOrg(home)) {
             return null;
         }
             File nbdestdir = findNetBeansOrgDestDir(home);
@@ -1385,7 +1385,7 @@ public final class ModuleList {
      * @return all known module entries
      */
     public Set<ModuleEntry> getAllEntries() {
-        if (isNetBeansOrg(home)) {
+        if (home != null && isNetBeansOrg(home)) {
             try {
                 scanNetBeansOrgStableSources();
             } catch (IOException x) {
