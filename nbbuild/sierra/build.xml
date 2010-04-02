@@ -68,8 +68,6 @@
 
         <delete dir="${home}/nbbuild/netbeans"/>
         <unzip src="${cache}/netbeans/${netbeans.zip}" dest="${home}/nbbuild"/>
-
-        <replace file="${home}/nbbuild/netbeans/etc/netbeans.conf" token="${netbeans.user}" value="${sierra.user}"/>
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>
 
