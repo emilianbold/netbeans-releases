@@ -47,8 +47,11 @@
 #include <windows.h>
 #include <string>
 
+bool isWow64();
 bool disableFolderVirtualization(HANDLE hProcess);
 bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, std::string &value);
+bool getStringFromRegistryEx(HKEY rootKey, const char *keyName, const char *valueName, std::string &value,bool read64bit);
+bool getStringFromRegistry64bit(HKEY rootKey, const char *keyName, const char *valueName, std::string &value);
 bool getDwordFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, DWORD &value);
 bool dirExists(const char *path);
 bool fileExists(const char *path);
