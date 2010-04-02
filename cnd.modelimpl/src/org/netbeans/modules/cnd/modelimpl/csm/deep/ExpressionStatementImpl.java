@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 
-import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
@@ -59,10 +58,12 @@ public class ExpressionStatementImpl extends StatementBase implements CsmExpress
         super(ast, file, scope);
     }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.EXPRESSION;
     }
 
+    @Override
     public CsmExpression getExpression() {
         return null;
     }
