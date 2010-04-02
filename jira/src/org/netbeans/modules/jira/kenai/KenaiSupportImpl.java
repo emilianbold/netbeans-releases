@@ -41,8 +41,6 @@ package org.netbeans.modules.jira.kenai;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
@@ -58,8 +56,6 @@ import org.openide.util.Exceptions;
  * @author Tomas Stupka
  */
 public class KenaiSupportImpl extends KenaiSupport {
-
-    private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
 
     public KenaiSupportImpl() {
     }
@@ -97,9 +93,6 @@ public class KenaiSupportImpl extends KenaiSupport {
             // something went wrong, can't use the repo anyway => return null
             Jira.LOG.log(Level.FINE, "KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject [{0},{1}]", new Object[]{project.getDisplayName(), project.getName()});                            // NOI18N
             return null;
-        }
-        synchronized (repositories) {
-            repositories.add(repo);
         }
         return repo;
         
