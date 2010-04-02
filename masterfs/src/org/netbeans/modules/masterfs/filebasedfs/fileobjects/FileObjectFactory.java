@@ -301,7 +301,11 @@ public final class FileObjectFactory {
             }
         } else {
             if (foForFile == null) {
-                exist = touchExists(file, realExists);
+                if (caller == Caller.GetParent) {
+                    exist = true;
+                } else {
+                    exist = touchExists(file, realExists);
+                }
             } else if (foForFile.isValid()) {
                 if (parent == null) {
                     exist = (realExists == -1) ? true : touchExists(file, realExists);
