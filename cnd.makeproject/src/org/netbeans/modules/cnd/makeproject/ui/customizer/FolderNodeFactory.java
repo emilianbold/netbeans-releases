@@ -55,14 +55,10 @@ public class FolderNodeFactory {
     }
 
     public static  Node createRootNodeFolder(Lookup lookup) {
-        MakeContext context = lookup.lookup(MakeContext.class);
-        int compilerSet = context.selectedCompilerSet();
         ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
         descriptions.add(createGeneralFolderDescription(lookup));
-        if (compilerSet >= 0) {
-            descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
-            descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
-        }
+        descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
+        descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
 
         Folder folder = lookup.lookup(Folder.class);
         if(folder != null && (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder())) {
