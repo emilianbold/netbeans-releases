@@ -354,7 +354,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
             switch (hostInfo.getOSFamily()) {
                 case WINDOWS:
-                    return false;
+                    // for now pty mode only supported with Cygwin
+                    Shell shell = WindowsSupport.getInstance().getActiveShell();
+                    return shell.type == Shell.ShellType.CYGWIN;
                 case MACOSX:
                     return true;
                 case LINUX:
