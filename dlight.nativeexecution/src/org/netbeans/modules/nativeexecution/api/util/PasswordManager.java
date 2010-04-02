@@ -57,6 +57,7 @@ public final class PasswordManager {
     private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
     private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
+    private boolean keyringIsActivated = false;
 
     private static PasswordManager instance = new PasswordManager();
 
@@ -82,6 +83,7 @@ public final class PasswordManager {
         }
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (stored) {
+            keyringIsActivated = true;
             char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
             if (keepPasswordsInMemory && keyringPassword != null) {
                  cache.put(key, String.valueOf(keyringPassword));
@@ -120,6 +122,7 @@ public final class PasswordManager {
         }
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
+            keyringIsActivated = true;
             Keyring.save(KEY_PREFIX + key, password,
                     NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor",execEnv.getDisplayName())); // NOI18N
         }
@@ -131,6 +134,22 @@ public final class PasswordManager {
      * @param execEnv
      */
     public void clearPassword(ExecutionEnvironment execEnv) {
+        String key = execEnv.toString();
+        if (keepPasswordsInMemory) {
+            cache.remove(key);
+        }
+        NbPreferences.forModule(PasswordManager.class).remove(STORE_PREFIX + key);
+        if (keyringIsActivated) {
+            Keyring.delete(KEY_PREFIX + key);
+        }
+    }
+
+    /**
+     * Remove password from memory and Keyring
+     *
+     * @param execEnv
+     */
+    public void forceClearPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
         if (keepPasswordsInMemory) {
             cache.remove(key);
@@ -156,7 +175,9 @@ public final class PasswordManager {
             for (String aKey : allKeys) {
                 if (!keys.contains(aKey)){
                     if (aKey.startsWith(STORE_PREFIX)) {
-                        Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
+                        if (keyringIsActivated) {
+                            Keyring.delete(KEY_PREFIX+aKey.substring(STORE_PREFIX.length()));
+                        }
                         if (keepPasswordsInMemory) {
                             cache.remove(aKey.substring(STORE_PREFIX.length()));
                         }
@@ -187,7 +208,9 @@ public final class PasswordManager {
     public void setRememberPassword(ExecutionEnvironment execEnv, boolean rememberPassword) {
         String key = execEnv.toString();
         if (!rememberPassword) {
-            Keyring.delete(KEY_PREFIX + key);
+            if (keyringIsActivated) {
+                Keyring.delete(KEY_PREFIX + key);
+            }
         }
         NbPreferences.forModule(PasswordManager.class).putBoolean(STORE_PREFIX + key, rememberPassword);
     }
