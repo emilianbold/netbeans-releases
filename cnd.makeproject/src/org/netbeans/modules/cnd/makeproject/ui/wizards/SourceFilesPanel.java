@@ -79,13 +79,13 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         defaultTextFieldFg = excludePatternTextField.getForeground();
 
-        if (!showTestFolders) {
-            addButton1.setVisible(false);
-            deleteButton1.setVisible(false);
-            jSeparator1.setVisible(false);
-            scrollPane1.setVisible(false);
-            sourceFilesLabel1.setVisible(false);
-        }
+//        if (!showTestFolders) {
+//            addButton1.setVisible(false);
+//            deleteButton1.setVisible(false);
+//            jSeparator1.setVisible(false);
+//            scrollPane1.setVisible(false);
+//            sourceFilesLabel1.setVisible(false);
+//        }
 
         scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 
@@ -188,19 +188,19 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             deleteButton.setEnabled(true);
         }
 
-        addButton1.setEnabled(true);
-        if (testData.isEmpty() || testFileTable.getSelectedRow() < 0) {
-            deleteButton1.setEnabled(false);
-        } else {
-            deleteButton1.setEnabled(true);
-        }
+//        addButton1.setEnabled(true);
+//        if (testData.isEmpty() || testFileTable.getSelectedRow() < 0) {
+//            deleteButton1.setEnabled(false);
+//        } else {
+//            deleteButton1.setEnabled(true);
+//        }
     }
 
     private void refresh() {
         scrollPane.setViewportView(sourceFileTable = new SourceFileTable(sourceData, getString("TABLE_COLUMN_SOURCE_TXT")));
         sourceFilesLabel.setLabelFor(sourceFileTable);
-        scrollPane1.setViewportView(testFileTable = new SourceFileTable(testData, getString("TABLE_COLUMN_TEST_TXT")));
-        sourceFilesLabel1.setLabelFor(testFileTable);
+//        scrollPane1.setViewportView(testFileTable = new SourceFileTable(testData, getString("TABLE_COLUMN_TEST_TXT")));
+//        sourceFilesLabel1.setLabelFor(testFileTable);
         validateSelection();
     }
 
@@ -299,12 +299,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         excludePatternLabel = new javax.swing.JLabel();
         excludePatternTextField = new javax.swing.JTextField();
         seeAlsoLabel = new javax.swing.JLabel();
-        sourceFilesLabel1 = new javax.swing.JLabel();
-        scrollPane1 = new javax.swing.JScrollPane();
-        list1 = new javax.swing.JList();
-        addButton1 = new javax.swing.JButton();
-        deleteButton1 = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
 
         sourceFilesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFileFoldersMN").charAt(0));
         sourceFilesLabel.setLabelFor(list);
@@ -335,25 +329,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.seeAlsoLabel.text")); // NOI18N
 
-        sourceFilesLabel1.setLabelFor(list1);
-        sourceFilesLabel1.setText(bundle.getString("SourceFileFoldersLbl")); // NOI18N
-
-        scrollPane1.setViewportView(list1);
-
-        addButton1.setText(bundle.getString("AddButtonTxt")); // NOI18N
-        addButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButton1ActionPerformed(evt);
-            }
-        });
-
-        deleteButton1.setText(bundle.getString("DeleteButtonTxt")); // NOI18N
-        deleteButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButton1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -363,23 +338,18 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                    .addComponent(sourceFilesLabel1)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                    .addComponent(excludePatternTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .addComponent(excludePatternTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(deleteButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(deleteButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(seeAlsoLabel)
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addContainerGap(130, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(sourceFilesLabel)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -391,25 +361,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deleteButton))
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(excludePatternLabel)
-                .addGap(2, 2, 2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludePatternTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(seeAlsoLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sourceFilesLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addButton1)
-                        .addGap(4, 4, 4)
-                        .addComponent(deleteButton1)
-                        .addContainerGap())
-                    .addComponent(scrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -464,29 +423,15 @@ public class SourceFilesPanel extends javax.swing.JPanel {
        addFile(sourceData);
     }//GEN-LAST:event_addButtonActionPerformed
 
-    private void addButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButton1ActionPerformed
-        addFile(testData);
-    }//GEN-LAST:event_addButton1ActionPerformed
-
-    private void deleteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButton1ActionPerformed
-        deleteFile(testData, testFileTable);
-    }//GEN-LAST:event_deleteButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JButton addButton1;
     private javax.swing.JButton deleteButton;
-    private javax.swing.JButton deleteButton1;
     private javax.swing.JLabel excludePatternLabel;
     private javax.swing.JTextField excludePatternTextField;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JList list;
-    private javax.swing.JList list1;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JLabel sourceFilesLabel;
-    private javax.swing.JLabel sourceFilesLabel1;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String s) {

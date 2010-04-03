@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -200,7 +200,7 @@ public class ParentManagedDDBeanTableModel extends InnerTableModel {
     }
 
     
-    /** New interface added for migration to Sun DD API model.  If the backing
+    /** New interface added for migration to sun-* DD API model.  If the backing
      *  model stores the properties in a parent property, then this is the factory
      *  for creating instances of the parent to store each row, as added by the
      *  user.
