@@ -380,6 +380,18 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             Color rightBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.RightBorderLineColor);
             Color topBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.TopBorderLineColor);
             Color bottomBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.BottomBorderLineColor);
+            Color textLimitLineColor = docView.getTextLimitLineColor();
+            boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
+            int textLimitWidth = docView.getTextLimitWidth();
+            int defaultCharWidth = (int)docView.getDefaultCharWidth();
+
+            if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
+                int lineX = textLimitWidth * defaultCharWidth;
+                if (lineX >= xInt && lineX <= endXInt){
+                    g.setColor(textLimitLineColor);
+                    g.drawLine(lineX, yInt, lineX, endYInt);
+                }
+            }
             if (leftBorderLineColor != null) {
                 g.setColor(leftBorderLineColor);
                 g.drawLine(xInt, yInt, xInt, endYInt);

@@ -207,6 +207,8 @@ public final class DocumentView extends EditorBoxView
 
     private boolean customBackground;
 
+    private Color defaultLimitLine;
+
     private LineWrapType lineWrapType;
 
     private TextLayout newlineTextLayout;
@@ -511,6 +513,7 @@ public final class DocumentView extends EditorBoxView
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
         Color backColor = textComponent.getBackground();
+        Color limitLineColor = Color.PINK;
         if (result != null) {
             FontColorSettings fcs = result.allInstances().iterator().next();
             AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
@@ -526,11 +529,19 @@ public final class DocumentView extends EditorBoxView
                 }
                 renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
             }
+            attributes = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
+            if (attributes != null) {
+                Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
+                if (c != null) {
+                    limitLineColor = c;
+                }
+            }
         }
 
         defaultFont = font;
         defaultForeground = foreColor;
         defaultBackground = backColor;
+        defaultLimitLine = limitLineColor;
 
         if (!customFont) {
             textComponent.setFont(defaultFont);
@@ -776,6 +787,21 @@ public final class DocumentView extends EditorBoxView
     LineWrapType getLineWrapType() {
         checkSettingsInfo();
         return lineWrapType;
+    }
+
+    Color getTextLimitLineColor() {
+        checkSettingsInfo();
+        return defaultLimitLine;
+    }
+
+    boolean isTextLimitLineDrawn() {
+        checkSettingsInfo();
+        return prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+    }
+
+    int getTextLimitWidth() {
+        checkSettingsInfo();
+        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
     }
 
     TextLayout getNewlineCharTextLayout() {
