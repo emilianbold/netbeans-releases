@@ -2155,6 +2155,7 @@ public class CasualDiff {
             printer.print(makeAround[0].fixedText());
         }
         int oldIndex = 0;
+        boolean wasLeadingDelete = false;
         boolean wasComma = false;
         for (int j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
@@ -2178,6 +2179,7 @@ public class CasualDiff {
                         printer.print(";");
                     }
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
+                    wasLeadingDelete = false;
                     break;
                 }
                 // insert new element
@@ -2188,10 +2190,11 @@ public class CasualDiff {
                         }
                     }
                     printer.print(item.element);
+                    wasLeadingDelete = false;
                     break;
                 }
                 case DELETE:
-                    oldIndex++;
+                    wasLeadingDelete |= oldIndex++ == 0;
                     tokenSequence.move(getBounds(item.element)[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     pos = tokenSequence.offset();
@@ -2201,7 +2204,7 @@ public class CasualDiff {
                     oldIndex++;
                     int[] bounds = getBounds(item.element);
                     tokenSequence.move(bounds[0]);
-                    if (oldIndex != 1) {
+                    if (oldIndex != 1 && !wasLeadingDelete) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
                     tokenSequence.moveNext();
@@ -2214,6 +2217,7 @@ public class CasualDiff {
                         end = tokenSequence.offset();
                     }
                     copyTo(start, pos = end, printer);
+                    wasLeadingDelete = false;
                     break;
                 default:
                     break;

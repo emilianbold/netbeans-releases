@@ -41,6 +41,8 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
+import java.io.File;
 import java.util.*;
 import java.io.IOException;
 import javax.lang.model.element.Modifier;
@@ -70,6 +72,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
         suite.addTest(new Method1Test("testMethodParameterChange"));
         suite.addTest(new Method1Test("testMethodThrows"));
         suite.addTest(new Method1Test("testMethodReturnType"));
+        suite.addTest(new Method1Test("test159944"));
         // suite.addTest(new Method1Test("testMethodBody"));
         // suite.addTest(new Method1Test("testParameterizedMethod"));
         // suite.addTest(new Method1Test("testAddRemoveInOneTrans"));
@@ -242,6 +245,51 @@ public class Method1Test extends GeneratorTestMDRCompat {
         assertFiles("testMethodReturnType.pass");
     }
     
+    public void test159944() throws Exception {
+        String test =
+                "class Test {\n" +
+                "    void m() {\n" +
+                "        plus(|1, Math.abs(2));\n" +
+                "    }\n" +
+                "}";
+        String golden =
+                "class Test {\n" +
+                "    void m() {\n" +
+                "        plus(Math.abs(2), 1);\n" +
+                "    }\n" +
+                "}";
+        File file = new File(getWorkDir(), "Test.java");
+        final int indexA = test.indexOf("|");
+        assertTrue(indexA != -1);
+        TestUtilities.copyStringToFile(file, test.replace("|", ""));
+        JavaSource src = getJavaSource(file);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(indexA).getLeaf();
+                assertEquals(Kind.METHOD_INVOCATION, node.getKind());
+                TreeMaker make = copy.getTreeMaker();
+                MethodInvocationTree original = (MethodInvocationTree) node;
+                List<? extends ExpressionTree> oldArgs = original.getArguments();
+                List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>();
+                newArgs.add(oldArgs.get(1));
+                newArgs.add(oldArgs.get(0));
+                @SuppressWarnings("unchecked")
+                MethodInvocationTree modified = make.MethodInvocation(
+                        (List<? extends ExpressionTree>) original.getTypeArguments(),
+                        original.getMethodSelect(), newArgs);
+                System.out.println("original: " + node);
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(file);
+        assertEquals(golden, res);
+    }
+
     /**
      * Tests method body.
      */
