@@ -108,7 +108,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
-    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test)$"; // NOI18N
+    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;

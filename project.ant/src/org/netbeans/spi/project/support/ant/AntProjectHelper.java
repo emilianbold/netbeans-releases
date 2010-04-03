@@ -48,9 +48,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -604,10 +604,10 @@ public final class AntProjectHelper {
                     pendingHook = p.getLookup().lookupAll(ProjectXmlSavedHook.class);
                     // might still be null
                 }
-                Iterator<String> it = modifiedMetadataPaths.iterator();
-                while (it.hasNext()) {
+                Set<String> toBeCleared = new HashSet<String>();
+                try {
+                for (String path : new TreeSet<String>(modifiedMetadataPaths)) {
                     try {
-                        String path = it.next();
                         if (path.equals(PROJECT_XML_PATH)) {
                             assert projectXml != null;
                             locks.add(saveXml(projectXml, path));
@@ -622,7 +622,11 @@ public final class AntProjectHelper {
                         LOG.log(Level.INFO, null, x);
                     }
                     // As metadata files are saved, take them off the modified list.
-                    it.remove();
+                    toBeCleared.add(path);
+                }
+                } finally {
+                    modifiedMetadataPaths.removeAll(toBeCleared);
+                    LOG.log(Level.FINE, "saved {0} and have left {1}", new Object[] {toBeCleared, modifiedMetadataPaths});
                 }
                 if (pendingHook != null && pendingHookCount == 0) {
                     try {

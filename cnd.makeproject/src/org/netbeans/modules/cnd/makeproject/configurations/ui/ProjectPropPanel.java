@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
 
     private SourceRootChooser sourceRootChooser;
-    private TestRootChooser testRootChooser;
+//    private TestRootChooser testRootChooser;
     private Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     private String originalEncoding;
@@ -71,9 +71,9 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
         ignoreFoldersTextField.setText(makeConfigurationDescriptor.getFolderVisibilityQuery().getRegEx());
-        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
-            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
-        }
+//        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
+//            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
+//        }
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
 //        makeCustomizerProvider.addActionListener(this);
 
@@ -116,9 +116,9 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         ((MakeProject) project).setSourceEncoding(encName);
 
         makeConfigurationDescriptor.setSourceRoots(sourceRootChooser.getListData());
-        if (testRootChooser != null) {
-            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
-        }
+//        if (testRootChooser != null) {
+//            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
+//        }
         makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
     }
 
@@ -151,34 +151,34 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         }
     }
 
-    private static class TestRootChooser extends DirectoryChooserInnerPanel {
-
-        public TestRootChooser(String baseDir, List<String> feed) {
-            super(baseDir, feed);
-            getCopyButton().setVisible(false);
-            getEditButton().setVisible(false);
-        }
-
-        @Override
-        public String getListLabelText() {
-            return getString("ProjectPropPanel.testRootLabel.text");
-        }
-
-        @Override
-        public char getListLabelMnemonic() {
-            return getString("ProjectPropPanel.testRootLabel.mn").charAt(0);
-        }
-
-        @Override
-        public char getAddButtonMnemonics() {
-            return getString("ADD_BUTTON_MN").charAt(0);
-        }
-
-        @Override
-        public String getAddButtonText() {
-            return getString("ADD_BUTTON_TXT");
-        }
-    }
+//    private static class TestRootChooser extends DirectoryChooserInnerPanel {
+//
+//        public TestRootChooser(String baseDir, List<String> feed) {
+//            super(baseDir, feed);
+//            getCopyButton().setVisible(false);
+//            getEditButton().setVisible(false);
+//        }
+//
+//        @Override
+//        public String getListLabelText() {
+//            return getString("ProjectPropPanel.testRootLabel.text");
+//        }
+//
+//        @Override
+//        public char getListLabelMnemonic() {
+//            return getString("ProjectPropPanel.testRootLabel.mn").charAt(0);
+//        }
+//
+//        @Override
+//        public char getAddButtonMnemonics() {
+//            return getString("ADD_BUTTON_MN").charAt(0);
+//        }
+//
+//        @Override
+//        public String getAddButtonText() {
+//            return getString("ADD_BUTTON_TXT");
+//        }
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
