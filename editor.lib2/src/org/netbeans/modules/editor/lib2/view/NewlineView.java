@@ -159,6 +159,23 @@ public final class NewlineView extends EditorView {
                     if (!componentBackground.equals(g.getColor())) {
                         ViewUtils.fillRect(g, mutableBounds);
                     }
+                    
+                    // Paint the textLimit line
+                    int xInt = (int) mutableBounds.getX();
+                    int yInt = (int) mutableBounds.getY();
+                    int endXInt = (int) (mutableBounds.getX() + mutableBounds.getWidth() - 1);
+                    int endYInt = (int) (mutableBounds.getY() + mutableBounds.getHeight() - 1);
+                    Color textLimitLineColor = docView.getTextLimitLineColor();
+                    boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
+                    int textLimitWidth = docView.getTextLimitWidth();
+                    int defaultCharWidth = (int)docView.getDefaultCharWidth();
+                    if (drawTextLimitLine && textLimitWidth > 0) {
+                        int lineX = textLimitWidth * defaultCharWidth;
+                        if (lineX >= xInt && lineX <= endXInt){
+                            g.setColor(textLimitLineColor);
+                            g.drawLine(lineX, yInt, lineX, endYInt);
+                        }
+                    }
 
                     // Possibly paint pilcrow sign
                     TextLayout textLayout;
