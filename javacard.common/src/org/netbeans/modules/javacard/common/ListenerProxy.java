@@ -142,7 +142,7 @@ public abstract class ListenerProxy<T> {
         }
     }
 
-    private static final class Fire implements Runnable {
+    private final class Fire implements Runnable {
 
         private final String name;
         private final PropertyChangeListener[] ls;
@@ -158,7 +158,7 @@ public abstract class ListenerProxy<T> {
 
         @Override
         public void run() {
-            PropertyChangeEvent pce = new PropertyChangeEvent(this, name, old, nue);
+            PropertyChangeEvent pce = new PropertyChangeEvent(ListenerProxy.this, name, old, nue);
             for (PropertyChangeListener p : ls) {
                 try {
                     p.propertyChange(pce);
