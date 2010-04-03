@@ -73,7 +73,6 @@ public class RfsGnuRemoteBuildTest extends RemoteBuildTestBase {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_single");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        clearRemoteSyncRoot();
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
@@ -81,7 +80,6 @@ public class RfsGnuRemoteBuildTest extends RemoteBuildTestBase {
     public void testBuildRfsSampleArgsGNU_Multy() throws Exception {
         setDefaultCompilerSet("GNU");
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_rfs_gnu_multy");
-        clearRemoteSyncRoot();
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
