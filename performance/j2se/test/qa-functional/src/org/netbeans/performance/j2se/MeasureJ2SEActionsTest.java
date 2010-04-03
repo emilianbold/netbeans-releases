@@ -61,8 +61,8 @@ public class MeasureJ2SEActionsTest {
         System.setProperty("suitename", MeasureJ2SEActionsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness J2SE Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavoritesTest.class)
-        .addTest(SearchTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesInComponentInspectorTest.class)
+//        .addTest(SearchTest.class)
 //  needs to be fixed      .addTest(CloseAllEditorsTest.class)
 //  needs to be fixed      .addTest(CloseEditorTest.class)
 //  needs to be fixed      .addTest(CloseEditorModifiedTest.class)
@@ -71,7 +71,7 @@ public class MeasureJ2SEActionsTest {
 // commented until IZ 159587 is fixed        .addTest(CreateNBProjectTest.class)
         .addTest(CreateProjectTest.class)
         // needs to be fixed .addTest(DeleteFolderTest.class)
-        .addTest(ExpandNodesInComponentInspectorTest.class)
+        .addTest(AddToFavoritesTest.class)
         .addTest(ExpandNodesProjectsViewTest.class)
         .addTest(JavaCompletionInEditorTest.class)
         .addTest(OpenFilesTest.class)
