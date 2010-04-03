@@ -45,7 +45,9 @@ import java.util.Arrays;
 import java.util.concurrent.CancellationException;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.support.ui.CertPassphraseDlg;
 import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -55,6 +57,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     private final static PasswordManager pm = PasswordManager.getInstance();
     private final ExecutionEnvironment env;
+    private volatile String password = null;
 
     public RemoteUserInfo(ExecutionEnvironment env) {
         this.env = env;
@@ -67,13 +70,16 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     @Override
     public String getPassword() {
-        char[] clearPassword = pm.get(env);
-        return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
+        return password;
     }
 
     @Override
     public boolean promptPassword(String arg0) {
-        return true;
+        if (pm.get(env) != null) {
+            password = new String(pm.get(env));
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -112,6 +118,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         private final Component parent;
         private final ExecutionEnvironment env;
         private volatile Component parentWindow = null;
+        private volatile String passphrase = null;
 
         public Interractive(ExecutionEnvironment env) {
             this.env = env;
@@ -128,13 +135,14 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
         @Override
         public String getPassphrase() {
-            return null;
+            String result = passphrase;
+            passphrase = null;
+            return result;
         }
 
         @Override
         public String getPassword() {
-            char[] clearPassword = pm.get(env);
-            return clearPassword == null ? "" : String.valueOf(clearPassword); // NOI18N
+            return new String(pm.get(env));
         }
 
         @Override
@@ -143,7 +151,7 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 if (pm.get(env) != null) {
                     return true;
                 }
-                
+
                 boolean result;
 
                 PasswordDlg pwdDlg = new PasswordDlg();
@@ -166,7 +174,23 @@ final class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
         @Override
         public boolean promptPassphrase(String arg0) {
-            return true;
+            synchronized (lock) {
+                boolean result;
+
+                CertPassphraseDlg pwdDlg = new CertPassphraseDlg();
+
+                synchronized (lock) {
+                    result = pwdDlg.askPassword(env, ConnectionManager.SSH_KEYS_FILE);
+                }
+
+                if (result) {
+                    passphrase = new String(pwdDlg.getPassword());
+                    pwdDlg.clearPassword();
+                    return true;
+                } else {
+                    throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
+                }
+            }
         }
 
         @Override

@@ -37,52 +37,21 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.customizer;
+package org.netbeans.modules.dlight.terminal.action;
 
-import java.util.ArrayList;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 
 /**
  *
- * @author as204739
+ * @author Vladimir Voskresensky
  */
-public class FolderNodeFactory {
-    private FolderNodeFactory() {
+public class ShowTerminalAction implements ActionListener {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        instance.open();
+        instance.requestActive();
     }
-
-    public static  Node createRootNodeFolder(Lookup lookup) {
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
-        descriptions.add(createGeneralFolderDescription(lookup));
-        descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
-        descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
-
-        Folder folder = lookup.lookup(Folder.class);
-        if(folder != null && (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder())) {
-            descriptions.add(createLinkerDescription(lookup));
-        }
-
-        CustomizerNode rootDescription = new CustomizerNode(
-                "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
-
-        return new PropertyNode(rootDescription);
-    }
-
-    private static CustomizerNode createGeneralFolderDescription(Lookup lookup) {
-        return new GeneralFolderCustomizerNode(
-                "GeneralItem", getString("LBL_Config_General"), null, lookup); // NOI18N
-    }
-
-    // Linker
-    private static CustomizerNode createLinkerDescription(Lookup lookup) {
-        return new LinkerGeneralCustomizerNode("Linker", getString("LBL_LINKER_NODE"), null, lookup); // NOI18N
-    }
-
-    private static String getString(String s) {
-        return NbBundle.getBundle(MakeCustomizer.class).getString(s);
-    }
-
 }

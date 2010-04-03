@@ -287,47 +287,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     @Override
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
-        /*String name = "jdbc/" + beanName; // NOI18N
-        String jndiName = name;
-        try {
-            if(databaseInfo != null) {
-                String vendorName = convertToValidName(databaseInfo);
-                if(vendorName != null) {
-                    name = vendorName;
-                }
-                
-                if(vendorName.equals("derby_embedded")){  //NOI18N
-                    NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-                    DialogDisplayer.getDefault().notify(d);
-                    return null;
-                }
-                // Return if resource already defined
-                String poolName = generatePoolName(name, dir, databaseInfo);
-                if(poolName == null) {
-                    return null;
-                } else {
-                    name = poolName;
-                }
-
-                jndiName = "jdbc/" + name;
-
-                createCPPoolResource(name, jndiName, databaseInfo, dir);
-                createJDBCResource(name, jndiName, databaseInfo, dir);
-
-                if(this.showMsg) {
-                    String mess = MessageFormat.format(bundle.getString("LBL_UnSupportedDriver"), new Object [] { jndiName }); // NOI18N
-                    showInformation(mess);
-                    this.showMsg = false;
-                }
-            }
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-        
-        return jndiName;
-         */
         return null;
     }
     

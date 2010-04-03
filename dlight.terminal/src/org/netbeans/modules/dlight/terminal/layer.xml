@@ -6,6 +6,7 @@
             <file name="LocalTerminalAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.dlight.terminal.action.LocalTerminalAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#CTL_LocalTerminal"/>
+                <attr name="ShortDescription" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#LocalTerminalShortDescr"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/terminal/action/local_term.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
@@ -13,7 +14,16 @@
             <file name="RemoteTerminalAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.dlight.terminal.action.RemoteTerminalAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#CTL_RemoteTerminalAction"/>
+                <attr name="ShortDescription" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#RemoteTerminalShortDescr"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/terminal/action/remote_term.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
+            <file name="ShowTerminalTCAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.modules.dlight.terminal.action.ShowTerminalAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#CTL_ShowTerminalAction"/>
+                <attr name="ShortDescription" bundlevalue="org.netbeans.modules.dlight.terminal.action.Bundle#ShowTerminalShortDescr"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/dlight/terminal/action/local_term.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
             </file>
@@ -32,13 +42,9 @@
     <folder name="Menu">
         <folder name="Window">
             <folder name="Output">
-                <file name="org-netbeans-modules-dlight-terminal-action-LocalTerminal.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/LocalTerminalAction.instance"/>
+                <file name="org-netbeans-modules-dlight-terminal-action-ShowTerminal.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
                     <attr name="position" intvalue="2600"/>
-                </file>
-                <file name="org-netbeans-modules-dlight-terminal-action-RemoteTerminalAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/RemoteTerminalAction.instance"/>
-                    <attr name="position" intvalue="2700"/>
                 </file>
             </folder>
         </folder>

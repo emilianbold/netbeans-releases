@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.sun.validation;
 
 import org.netbeans.modules.j2ee.sun.validation.util.ObjectFactory;
-import org.netbeans.modules.j2ee.sun.validation.ValidationManager;
 
 
 /**
