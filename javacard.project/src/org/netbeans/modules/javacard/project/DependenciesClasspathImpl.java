@@ -42,8 +42,6 @@ package org.netbeans.modules.javacard.project;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -53,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -192,6 +192,11 @@ final class DependenciesClasspathImpl extends ListenerProxy<JCProject> implement
                 return new URL[0];
             }
             ResolvedDependency d = rd.get(dep.getID());
+            if (d == null) {
+                //temporary workaround for mis-created project deps
+                Logger.getLogger(DependenciesClasspathImpl.class.getName()).log (Level.WARNING, "Unresolvable dependency {0} in {1}", new Object[] { dep, get() });
+                return new URL[0];
+            }
             assert d != null : "Dependency " + dep + " resolves to null";
             
             List<URL> urls = new ArrayList<URL>();
