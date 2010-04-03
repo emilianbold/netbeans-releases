@@ -72,12 +72,6 @@ Example:
 Example:
 <pre class="java">Type type = myNode.getLookup().lookup(Type.class);</pre>
 </li>
-<li>Abbreviation: <strong>rp</strong>
-<p>Description: Create code for using org.openide.util.RequestProcessor.</p><p>Expands to:
-</p><pre class="java">${rp type=&quot;org.openide.util.RequestProcessor&quot; default=&quot;RequestProcessor&quot; editable=&quot;false&quot;}.getDefault().post(${toRun instanceof=&quot;java.lang.Runnable&quot; default=&quot;new Runnable() {<br />        public void run() {<br />        }<br />    }&quot;});</pre>
-Example:
-<pre class="java">RequestProcessor.getDefault().post(new Runnable() {<br /><br />    public void run() {<br />    }<br />});</pre>
-</li>
 <li>Abbreviation: <strong>stat</strong>
 <p>Description: Create code for writing text obtained from a Bundle.properties file into the status bar.</p><p>Expands to:
 </p><pre class="java">${coltype type=&quot;org.openide.awt.StatusDisplayer&quot; default=&quot;StatusDisplayer&quot; editable=&quot;false&quot;}.getDefault().setStatusText(${bundletype type=&quot;org.openide.util.NbBundle&quot; default=&quot;NbBundle&quot; editable=&quot;false&quot;}.getMessage(getClass(), &quot;${KEY}&quot;));<br />${cursor}</pre>
