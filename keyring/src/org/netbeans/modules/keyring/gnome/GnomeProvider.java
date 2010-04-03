@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.keyring.gnome;
 
+import com.sun.jna.Pointer;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
@@ -54,16 +55,13 @@ public class GnomeProvider implements KeyringProvider {
     private static final Logger LOG = Logger.getLogger(GnomeProvider.class.getName());
     private static final String KEY = "key"; // NOI18N
 
-    private static GnomeKeyringPasswordSchema SCHEMA;
-
-    public boolean enabled() {
+    public @Override boolean enabled() {
         if (Boolean.getBoolean("netbeans.keyring.no.native")) {
             LOG.fine("native keyring integration disabled");
             return false;
         }
-        if (System.getenv("GNOME_KEYRING_PID") == null) { // NOI18N
-            // XXX is this going to be set on all Gnome platforms?
-            LOG.fine("GNOME_KEYRING_PID not set");
+        if (System.getenv("GNOME_KEYRING_SOCKET") == null) { // NOI18N
+            LOG.fine("GNOME_KEYRING_SOCKET not set");
             return false;
         }
         String appName;
@@ -81,12 +79,6 @@ public class GnomeProvider implements KeyringProvider {
             if (!LIBRARY.gnome_keyring_is_available()) {
                 return false;
             }
-            SCHEMA = new GnomeKeyringPasswordSchema();
-            SCHEMA.item_type = 0; // GNOME_KEYRING_ITEM_GENERIC_SECRET
-            SCHEMA.attributes[0] = new GnomeKeyringPasswordSchemaAttribute();
-            SCHEMA.attributes[0].name = KEY;
-            SCHEMA.attributes[0].type = 0; // GNOME_KEYRING_ATTRIBUTE_TYPE_STRING
-            SCHEMA.attributes[1] = null;
             // #178571: try to read some key just to make sure gnome_keyring_find_password_sync is bound:
             read("NoNeXiStEnT"); // NOI18N
             return true;
@@ -96,20 +88,68 @@ public class GnomeProvider implements KeyringProvider {
         }
     }
 
-    public char[] read(String key) {
-        // XXX try to use the char[] directly; not sure how to do this with JNA
-        String[] password = {null};
-        error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_find_password_sync(SCHEMA, password, KEY, key));
-        return password[0] != null ? password[0].toCharArray() : null;
+    public @Override char[] read(String key) {
+        Pointer[] found = new Pointer[1];
+        Pointer attributes = LIBRARY.g_array_new(0, 0, GnomeKeyringAttribute_SIZE);
+        try {
+            LIBRARY.gnome_keyring_attribute_list_append_string(attributes, KEY, key);
+            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_find_items_sync(GNOME_KEYRING_ITEM_GENERIC_SECRET, attributes, found));
+        } finally {
+            LIBRARY.gnome_keyring_attribute_list_free(attributes);
+        }
+        if (found[0] == null) {
+            return null;
+        }
+        try {
+            if (LIBRARY.g_list_length(found[0]) > 0) {
+                GnomeKeyringFound result = LIBRARY.g_list_nth_data(found[0], 0);
+                return result.secret.toCharArray();
+            } else {
+                return null;
+            }
+        } finally {
+            LIBRARY.gnome_keyring_found_list_free(found[0]);
+        }
     }
 
-    public void save(String key, char[] password, String description) {
-        error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_store_password_sync(
-                SCHEMA, null, description != null ? description : key, new String(password), KEY, key));
+    public @Override void save(String key, char[] password, String description) {
+        Pointer attributes = LIBRARY.g_array_new(0, 0, GnomeKeyringAttribute_SIZE);
+        try {
+            LIBRARY.gnome_keyring_attribute_list_append_string(attributes, KEY, key);
+            int[] item_id = new int[1];
+            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_create_sync(
+                    null, GNOME_KEYRING_ITEM_GENERIC_SECRET, description != null ? description : key, attributes, new String(password), true, item_id));
+        } finally {
+            LIBRARY.gnome_keyring_attribute_list_free(attributes);
+        }
     }
 
-    public void delete(String key) {
-        error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_delete_password_sync(SCHEMA, KEY, key));
+    public @Override void delete(String key) {
+        Pointer[] found = new Pointer[1];
+        Pointer attributes = LIBRARY.g_array_new(0, 0, GnomeKeyringAttribute_SIZE);
+        try {
+            LIBRARY.gnome_keyring_attribute_list_append_string(attributes, KEY, key);
+            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_find_items_sync(GNOME_KEYRING_ITEM_GENERIC_SECRET, attributes, found));
+        } finally {
+            LIBRARY.gnome_keyring_attribute_list_free(attributes);
+        }
+        if (found[0] == null) {
+            return;
+        }
+        int id;
+        try {
+            if (LIBRARY.g_list_length(found[0]) > 0) {
+                GnomeKeyringFound result = LIBRARY.g_list_nth_data(found[0], 0);
+                id = result.item_id;
+            } else {
+                id = 0;
+            }
+        } finally {
+            LIBRARY.gnome_keyring_found_list_free(found[0]);
+        }
+        if (id > 0) {
+            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_delete_sync(null, id));
+        }
     }
 
     private static String[] ERRORS = {
@@ -126,7 +166,7 @@ public class GnomeProvider implements KeyringProvider {
     };
     private static void error(int code) {
         if (code != 0 && code != 9) {
-            LOG.warning("gnome-keyring error: " + ERRORS[code]);
+            LOG.log(Level.WARNING, "gnome-keyring error: {0}", ERRORS[code]);
         }
     }
 
