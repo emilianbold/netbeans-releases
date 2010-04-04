@@ -161,9 +161,11 @@ public class JCProjectTest extends AbstractJCProjectTest {
     public void testDependencies() throws Exception {
         FileObject srcDir = project.getProjectDirectory().getFileObject("src");
         assertNotNull(srcDir);
-
         ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
-        assertEquals (1, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
+
+        assertEquals (1, prov.findClassPath(srcDir, ClassPath.SOURCE).getRoots().length);
+
+        assertEquals (0, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
 
         ResolvedDependencies deps = project.syncGetResolvedDependencies();
         assertTrue (deps.all().isEmpty());
@@ -207,7 +209,7 @@ public class JCProjectTest extends AbstractJCProjectTest {
         ClassPath path = prov.findClassPath(srcDir, ClassPath.COMPILE);
 
         FileObject[] roots = path.getRoots();
-        assertEquals (2, roots.length);
+        assertEquals (1, roots.length);
 
         FileObject clazz = path.findResource(act);
         assertNotNull (clazz);
@@ -216,6 +218,7 @@ public class JCProjectTest extends AbstractJCProjectTest {
         assertNotNull (cp);
         assertTrue (cp.length() > 0);
         assertEquals (fakeLib, new File(cp));
+        assertEquals (1, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
     }
 
     public void testAntArtifactProvider() throws Exception {
