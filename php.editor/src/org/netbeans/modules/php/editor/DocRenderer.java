@@ -40,6 +40,7 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -173,7 +174,11 @@ class DocRenderer {
 
     }
 
-    private static class PHPDocExtractor extends UserTask {
+    static final class PHPDocExtractor extends UserTask {
+        // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
+        private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
+        private static final Pattern REPLACE_CODE_PATTERN = Pattern.compile("(?<=(</|<))code>", Pattern.CASE_INSENSITIVE); // NOI18N
+        private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
 
         private CCDocHtmlFormatter header;
         private StringBuilder phpDoc;
@@ -240,7 +245,7 @@ class DocRenderer {
             StringBuilder returnValue = new StringBuilder();
             StringBuilder others = new StringBuilder();
 
-            phpDoc.append(pHPDocBlock.getDescription());
+            phpDoc.append(processPhpDoc(pHPDocBlock.getDescription()));
 
             // list PHPDoc tags
             phpDoc.append("<br />\n"); //NOI18N
@@ -251,7 +256,7 @@ class DocRenderer {
                     case PARAM:
                         PHPDocParamTagData tagData = new PHPDocParamTagData(tag.getValue());
                         String pline = String.format("<tr><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
-                                TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, tagData.description);
+                                TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, processPhpDoc(tagData.description));
 
                         params.append(pline);
                         break;
@@ -271,14 +276,14 @@ class DocRenderer {
 
                             if (rparts.length > 1) {
                                 String desc = rparts[1];
-                                returnValue.append(desc);
+                                returnValue.append(processPhpDoc(desc));
                             }
                         }
 
                         break;
                     default:
                         String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                tag.getKind().toString(), tag.getValue());
+                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue()));
 
                         others.append(oline);
                         break;
@@ -308,7 +313,14 @@ class DocRenderer {
                 phpDoc.append("<table>\n" + others + "</table>\n"); //NOI18N
             }
         }
-        
+
+        // because of unit tests
+        static String processPhpDoc(String phpDoc) {
+            String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
+            notags = REPLACE_CODE_PATTERN.matcher(notags).replaceAll("pre>"); // NOI18N
+            return REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
+        }
+
          @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ParserResult presult = (ParserResult)resultIterator.getParserResult();
