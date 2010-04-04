@@ -709,77 +709,20 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 ")"; //NOI18N
     }
 
-    private final ClassPath getLibClassPath() {
+    final ClassPath getLibClassPath() {
         synchronized (pml) {
             if (libPath == null) {
-                try {
-                    ResolvedDependencies deps = this.syncGetResolvedDependencies();
-                    List <URL> urls = new ArrayList<URL>();
-                    for (ResolvedDependency d : deps.all()) {
-                        if (!d.isValid()) {
-                            continue;
-                        }
-                        File f = d.resolveFile(ArtifactKind.ORIGIN);
-                        if (d.getKind().isProjectDependency()) {
-                            FileObject fo = FileUtil.toFileObject(f);
-                            if (fo != null) {
-                                Project p = FileOwnerQuery.getOwner(fo);
-                                if (p != null) {
-                                    URL url = p.getProjectDirectory().getURL();
-                                    AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
-                                    for (AntArtifact a : prov.getBuildArtifacts()) {
-                                        if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(a.getType())) {
-                                            URI[] uris = a.getArtifactLocations();
-                                            for (URI u : uris) {
-                                                url = new URL(u.toString());
-                                                if (FileUtil.isArchiveFile(url)) {
-                                                    url = FileUtil.getArchiveRoot(url);
-                                                    urls.add (url);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (f != null) {
-                                URL url = f.toURI().toURL();
-                                if (FileUtil.isArchiveFile(url)) {
-                                    url = FileUtil.getArchiveRoot(url);
-                                }
-                                if (url != null) {
-                                    urls.add (url);
-                                }
-                            }
-                        }
-                    }
-                    libPath = ClassPathSupport.createClassPath(
-                            urls.toArray(new URL[urls.size()]));
-                } catch (SAXException ex) {
-                    libPath = ClassPathSupport.createClassPath("");
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    libPath = ClassPathSupport.createClassPath("");
-                    Exceptions.printStackTrace(ex);
-                }
+                libPath = ClassPathFactory.createClassPath(
+                        new DependenciesClasspathImpl(this));
             }
-            return libPath;
         }
+        return libPath;
     }
 
     private final ClassPath getBootClassPath() {
         synchronized (pml) {
             if (bootPath == null) {
-                String platformName = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
-                if (platformName != null) {
-                    JavacardPlatform platform = JCUtil.findPlatformNamed(platformName);
-                    if (platform != null && platform.isValid()) {
-                        bootPath = platform.getBootstrapLibraries(kind);
-                    } else {
-                        bootPath = ClassPathSupport.createClassPath("");
-                    }
-
-                }
+                bootPath = ClassPathFactory.createClassPath(new BootClassPathImpl(this));
             }
             return bootPath;
         }
@@ -854,8 +797,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         synchronized (pml) {
             unregisterGlobalPaths();
             bootPath =
-                    null;
-            libPath =
                     null;
             compileTimePath =
                     null;
@@ -1436,6 +1377,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         return result;
     }
 
+    Dependencies syncGetDependencies() throws SAXException, IOException {
+        DependenciesProviderImpl depsProv = getLookup().lookup(DependenciesProviderImpl.class);
+        //PENDING:  This may need some caching - can be called frequently by
+        //classpaths and trigger a re-read
+        return depsProv.sync();
+    }
+
     private final class DependenciesProviderImpl implements DependenciesProvider {
 
         public Cancellable requestDependencies(Receiver receiver) {
@@ -1510,10 +1458,15 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
     ResolvedDependencies createResolvedDependencies() throws Exception {
         //Used by project updater outside EQ
-        DependenciesResolver resolver = new DependenciesResolver(getProjectDirectory(), evaluator());
-        return new ResolvedDependenciesImpl(new DependenciesProviderImpl().sync(), resolver);
+        return createResolvedDependencies (new DependenciesProviderImpl().sync());
     }
 
+    ResolvedDependencies createResolvedDependencies (Dependencies deps) {
+        DependenciesResolver resolver = new DependenciesResolver(getProjectDirectory(), evaluator());
+        return new ResolvedDependenciesImpl(deps, resolver);
+    }
+
+    static final Logger LOGGER = Logger.getLogger (JCProject.class.getName());
     private class ResolvedDependenciesImpl extends ResolvedDependencies implements Mutex.ExceptionAction<Void> {
 
         ResolvedDependenciesImpl(Dependencies deps, DependenciesResolver resolver) {
@@ -1522,13 +1475,15 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         @Override
         protected void doSave() throws IOException {
+            LOGGER.log (Level.FINE, "Save dependencies on {0} {1}", new Object[] { JCProject.this, this }); //NOI18N
             if (!isModified()) {
+                LOGGER.log (Level.FINEST, "Abort save unmodified changes", new Object[] { JCProject.this, this }); //NOI18N
                 return;
             }
             try {
                 ProjectManager.mutex().writeAccess(this);
             } catch (MutexException ex) {
-                IOException ioe = new IOException("Could not save dependency changes");
+                IOException ioe = new IOException("Could not save dependency changes"); //NOI18N
                 ioe.initCause(ex);
                 throw ioe;
             } finally {
@@ -1540,6 +1495,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             synchronized (classpathClosureLock) {
                 classpathClosureString = null;
             }
+            LOGGER.log (Level.FINER, "Begin save of deps {0} on {1}", new Object[] { JCProject.this, this }); //NOI18N
             Element config = antHelper.getPrimaryConfigurationData(true);
             resolver.save(JCProject.this, this, config);
             antHelper.putPrimaryConfigurationData(config, true);
@@ -1552,13 +1508,16 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             //Clean up properties for deleted dependencies
             orig.removeAll(curr);
             for (Dependency d : orig.all()) {
+                LOGGER.log (Level.FINER, "Clean up dependencies for {0} {1}", new Object[] { d, d.getKind() }); //NOI18N
                 for (ArtifactKind k : d.getKind().supportedArtifacts()) {
                     String prop = d.getPropertyName(k);
                     if (pub.getProperty(prop) != null) {
                         pubChanged |= true;
+                        LOGGER.log (Level.FINEST, "Remove public property  {0} ", new Object[] { prop }); //NOI18N
                         pub.remove(prop);
                     }
                     if (priv.getProperty(prop) != null) {
+                        LOGGER.log (Level.FINEST, "Remove private property  {0} ", new Object[] { prop }); //NOI18N
                         privChanged |= true;
                         priv.remove(prop);
                     }
@@ -1567,14 +1526,17 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             //Update all dependencies
             for (ResolvedDependency dep : all()) {
                 Dependency d = dep.getDependency();
+                LOGGER.log (Level.FINEST, "Update dependency {0} ", new Object[] { d }); //NOI18N
                 for (ArtifactKind kind : d.getKind().supportedArtifacts()) {
                     String propName = d.getPropertyName(kind);
                     Path path = dep.getAntPath(kind);
                     if (path != null) {
                         if (!path.isRelative()) {
+                            LOGGER.log (Level.FINEST, "Set private property {0}={1}", new Object[] { propName, path }); //NOI18N
                             priv.setProperty(propName, path.toString());
                             privChanged = true;
                         } else {
+                            LOGGER.log (Level.FINEST, "Set public property {0}={1}", new Object[] { propName, path }); //NOI18N
                             pub.setProperty(propName, path.toString());
                             pubChanged = true;
                         }
@@ -1583,9 +1545,11 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             }
 
             if (privChanged) {
+                LOGGER.log (Level.FINEST, "Write private properties"); //NOI18N
                 antHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
             }
             if (pubChanged) {
+                LOGGER.log (Level.FINEST, "Write public properties"); //NOI18N
                 antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
             }
             

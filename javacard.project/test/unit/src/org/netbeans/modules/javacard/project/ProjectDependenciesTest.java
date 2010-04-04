@@ -189,7 +189,7 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
 
         ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
         assertNotNull (prov);
-        assertEquals (3, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
+        assertEquals (2, prov.findClassPath(srcDir, ClassPath.COMPILE).getRoots().length);
 
         DependenciesProvider.Receiver r = new DependenciesProvider.Receiver() {
 
