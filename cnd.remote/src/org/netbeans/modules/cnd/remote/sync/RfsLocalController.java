@@ -169,14 +169,15 @@ class RfsLocalController implements Runnable {
 
     private static class FileGatheringInfo {
         public final File file;
-        public final String relPath;
-        public FileGatheringInfo(File file, String relPath) {
+        public final String remotePath;
+        public FileGatheringInfo(File file, String remotePath) {
             this.file = file;
-            this.relPath = relPath;
+            this.remotePath = remotePath;
+            CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: " + remotePath);
         }
         @Override
         public String toString() {
-            return relPath;
+            return remotePath;
         }
     }
 
@@ -213,7 +214,7 @@ class RfsLocalController implements Runnable {
             public int compare(FileGatheringInfo f1, FileGatheringInfo f2) {
                 if (f1.file.isDirectory() || f2.file.isDirectory()) {
                     if (f1.file.isDirectory() && f2.file.isDirectory()) {
-                        return f1.relPath.compareTo(f2.relPath);
+                        return f1.remotePath.compareTo(f2.remotePath);
                     } else {
                         return f1.file.isDirectory() ? -1 : +1;
                     }
@@ -227,7 +228,7 @@ class RfsLocalController implements Runnable {
         RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathering files took {1} ms", (System.currentTimeMillis() - time));
         time = System.currentTimeMillis();
         for (FileGatheringInfo info : filesToFeed) {
-            sendFileInitRequest(info.file, info.relPath);
+            sendFileInitRequest(info.file, info.remotePath);
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
