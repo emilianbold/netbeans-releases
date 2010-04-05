@@ -51,8 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -61,7 +59,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 
 /**
  * Open the selected file(s) with the system default tool.
@@ -81,16 +78,17 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
         return new ContextAction(context);
     }
     
-    private static final class ContextAction extends AbstractAction implements Presenter.Popup {
+    private static final class ContextAction extends AbstractAction {
         
         private final Set<File> files;
         
         public ContextAction(Lookup context) {
             super(NbBundle.getMessage(SystemOpenAction.class, "CTL_SystemOpenAction"));
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             files = new HashSet<File>();
             for (DataObject d : context.lookupAll(DataObject.class)) {
                 File f = FileUtil.toFile(d.getPrimaryFile());
-                if (f == null) {
+                if (f == null || /* #144575 */Utilities.isWindows() && !f.getName().contains(".")) {
                     files.clear();
                     break;
                 }
@@ -98,54 +96,26 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             }
         }
 
+        public @Override boolean isEnabled() {
+            return !files.isEmpty() && Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN);
+        }
+
         public @Override void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(new Runnable() { // #176879: asynch
                 public @Override void run() {
-                    if (!Desktop.isDesktopSupported()) {
-                        return;
-                    }
                     Desktop desktop = Desktop.getDesktop();
-                    if (!desktop.isSupported(Desktop.Action.OPEN)) {
-                        return;
-                    }
                     for (File f : files) {
                         try {
                             desktop.open(f);
                         } catch (IOException x) {
                             Logger.getLogger(SystemOpenAction.class.getName()).log(Level.INFO, null, x);
-                            // XXX or perhaps notify user of problem
+                            // XXX or perhaps notify user of problem; but not very useful on Unix at least (#6940853)
                         }
                     }
                 }
             });
         }
 
-        public @Override JMenuItem getPopupPresenter() {
-            class Menu extends JMenuItem implements DynamicMenuContent {
-                public Menu() {
-                    super(ContextAction.this);
-                }
-                public @Override JComponent[] getMenuPresenters() {
-                    if (!files.isEmpty()) {
-                        if (Utilities.isWindows()) { // #144575
-                            for (File f : files) {
-                                if (!f.getName().contains(".")) {
-                                    return new JComponent[0];
-                                }
-                            }
-                        }
-                        return new JComponent[] {Menu.this};
-                    } else {
-                        return new JComponent[0];
-                    }
-                }
-                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
-                    return getMenuPresenters();
-                }
-            }
-            return new Menu();
-        }
-        
     }
     
 }

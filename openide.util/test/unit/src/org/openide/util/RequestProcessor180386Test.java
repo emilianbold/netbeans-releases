@@ -106,6 +106,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue(r.hasRun);
     }
 
+    @RandomlyFails // NB-Core-Build #4352: notRun.empty
     public void testSomeTasksNotRunIfShutDown() throws Exception {
         final Object lock = new Object();
         int count = 10;
