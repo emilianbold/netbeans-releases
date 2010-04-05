@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
@@ -104,7 +106,7 @@ public class RIPlatform extends JavacardPlatform {
         getDefault();
     }
     private Cards cards = new CardsImpl();
-    public RIPlatform(Properties props) {        
+    public RIPlatform(Properties props) {
         this.props = props;
         if (props instanceof ObservableProperties) {
             pcl = new PCL();
@@ -336,6 +338,11 @@ public class RIPlatform extends JavacardPlatform {
                 if (f.getName().endsWith(".jar")) { //NOI18N
                     String jarURL = "jar:" + url + "!/"; //NOI18N
                     url = new URL (jarURL);
+                } else if (!url.toString().endsWith("/")) {
+                    //path to src/ subdir in some distros will not exist
+                    //Manually append a / so SimplePathResourceImplementation
+                    //does not throw an exception
+                    url = new URL (url.toString() + "/");
                 }
                 urls.add (url);
             } catch (MalformedURLException ex) {
