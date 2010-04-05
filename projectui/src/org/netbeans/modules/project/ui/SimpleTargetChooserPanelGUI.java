@@ -42,6 +42,8 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -50,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,8 +72,8 @@ import org.openide.util.NbBundle;
  */
 public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
-    /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
+    /** preferred dimension of the panels */
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private static final String NEW_FILE_PREFIX = 
         NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix" ); // NOI18N
@@ -84,9 +87,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private boolean isFolder;
     
     /** Creates new form SimpleTargetChooserGUI */
+    @SuppressWarnings("LeakingThisInConstructor")
     public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder ) {
         this.project = project;
-        this.folders=folders;
+        this.folders = folders.clone();
         this.isFolder = isFolder;
         initComponents();
         
@@ -107,7 +111,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
-    public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
+    final void initValues(FileObject template, FileObject preselectedFolder, String documentName) {
         assert project != null;
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -406,9 +410,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private void updateCreatedFolder() {
         
         SourceGroup sg = (SourceGroup)locationComboBox.getSelectedItem();
-        if (sg == null) return;
+        if (sg == null) {
+            return;
+        }
         FileObject root = sg.getRootFolder();
-        if (root == null) return;
+        if (root == null) {
+            return;
+        }
             
         String folderName = folderTextField.getText().trim();
         String documentName = documentNameTextField.getText().trim();
@@ -427,7 +435,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
    
     // ActionListener implementation -------------------------------------------
     
-    public void actionPerformed(java.awt.event.ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
             // Show the browse dialog             
@@ -453,15 +461,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     // DocumentListener implementation -----------------------------------------
     
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void changedUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }    
     
-    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void insertUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }
     
-    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+    public @Override void removeUpdate(DocumentEvent e) {
         updateCreatedFolder();
     }
     
@@ -474,7 +482,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             setOpaque( true );
         }
         
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;
                 String projectDisplayName = ProjectUtils.getInformation( project ).getDisplayName();
@@ -483,13 +491,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                     setText( groupDisplayName );
                 }
                 else {
-                    setText( MessageFormat.format( PhysicalView.GroupNode.GROUP_NAME_PATTERN,
-                        new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                    /*
-                    setText( MessageFormat.format(
-                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
-                        new Object[] { groupDisplayName, projectDisplayName } ) );
-                    */
+                    setText(MessageFormat.format(PhysicalView.GroupNode.GROUP_NAME_PATTERN,
+                            groupDisplayName, projectDisplayName, group.getRootFolder().getName()));
                 }
                 
                 setIcon( group.getIcon( false ) );
