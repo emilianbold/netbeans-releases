@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,22 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.jellytools.actions;
 
-import org.netbeans.jellytools.Bundle;
+package org.netbeans.modules.php.editor;
 
-/** Used to call "Clean Project" popup menu item on project's root node.
- * @see Action
- * @see org.netbeans.jellytools.nodes.ProjectRootNode
- * @author Jiri.Skrivanek@sun.com
- */
-public class CleanJavaProjectAction extends Action {
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.junit.NbTestCase;
 
-    private static final String cleanProjectPopup = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CleanProjectAction_Name_popup");
+public class DocRendererTest extends NbTestCase {
 
-    /** creates new CleanProjectAction instance */
-    public CleanJavaProjectAction() {
-        super(null, cleanProjectPopup);
+    public DocRendererTest(String name) {
+        super(name);
+    }
+
+    public void testProcessPhpDoc() {
+        // text => result
+        final Map<String, String> testCases = new LinkedHashMap<String, String>();
+        testCases.put(
+                "<b>test1</b>",
+                "<b>test1</b>");
+        testCases.put(
+                "<b>te\nst2</b>",
+                "<b>te\nst2</b>");
+        testCases.put(
+                "<b>te\n\r\nst3</b>",
+                "<b>te<br><br>st3</b>");
+        testCases.put(
+                "<b>te\n\n\nst4</b>",
+                "<b>te<br><br>st4</b>");
+        testCases.put(
+                "<b1>test5</ b>",
+                "&lt;b1>test5</ b>");
+        testCases.put(
+                "<code>test6</code>",
+                "<pre>test6</pre>");
+        testCases.put(
+                "<input>",
+                "&lt;input>");
+
+        for (Map.Entry<String, String> entry : testCases.entrySet()) {
+            String expected = entry.getValue();
+            String processed = DocRenderer.PHPDocExtractor.processPhpDoc(entry.getKey());
+            if (!expected.equals(processed)) {
+                System.err.println("[" + processed + "] => [" + expected + "]");
+            }
+            assertEquals(expected, processed);
+        }
     }
 }

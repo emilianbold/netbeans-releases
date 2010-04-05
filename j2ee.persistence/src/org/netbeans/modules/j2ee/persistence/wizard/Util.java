@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -87,12 +89,10 @@ import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPa
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelDS;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelJdbc;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -298,6 +298,7 @@ public class Util {
                 null);
         panel.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
@@ -327,6 +328,8 @@ public class Util {
                 if (lib != null) {
                     addLibraryToProject(project, lib);
                 }
+                JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(puJdbc.getPersistenceConnection().getDriverClass());
+                PersistenceLibrarySupport.addDriver(project, driver[0]);
             }
         }
         String version = lib != null ? PersistenceUtils.getJPAVersion(lib) : PersistenceUtils.getJPAVersion(project);//use library if possible it will provide better result, TODO: may be usage of project should be removed and use 1.0 is no library was found
@@ -487,6 +490,7 @@ public class Util {
 
     /**
      * add pu to the project, add persistence libraries if appropriate and known
+     * add db libraries for connection if it's not conteiner managed project
      * @param project
      * @param pu
      */
@@ -501,6 +505,10 @@ public class Util {
                 } else if (selectedProvider.getAnnotationProcessor() != null){
                     Util.addLibraryToProject(project, lib, JavaClassPathConstants.PROCESSOR_PATH);
                 }
+            }
+            if(!isContainerManaged(project)){
+                JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(ProviderUtil.getConnection(persistenceUnit).getDriverClass());
+                PersistenceLibrarySupport.addDriver(project, driver[0]);
             }
        }
 
@@ -625,10 +633,12 @@ public class Util {
      */
     private static class DefaultPersistenceProviderSupplier implements PersistenceProviderSupplier {
 
+        @Override
         public List<Provider> getSupportedProviders() {
             return Collections.<Provider>emptyList();
         }
 
+        @Override
         public boolean supportsDefaultProvider() {
             return false;
         }
