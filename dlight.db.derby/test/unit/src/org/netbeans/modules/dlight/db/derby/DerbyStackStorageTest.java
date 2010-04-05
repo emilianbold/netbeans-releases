@@ -60,7 +60,7 @@ public class DerbyStackStorageTest extends CommonStackDataStorageTests {
     }
 
     protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown();
+        return ((SQLStackDataStorage)db).shutdown(true);
     }
 
     protected void flush(StackDataStorage db) {
