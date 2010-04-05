@@ -1857,9 +1857,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void onFakeRegisration(IncludeImpl include, ClassImpl cls) {
         synchronized (fakeIncludeRegistrations) {
-            CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
-            CsmUID<ClassImpl> classUid = UIDCsmConverter.declarationToUID(cls);
-            fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, classUid));
+            if(include != null && cls != null) {
+                CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
+                CsmUID<ClassImpl> classUid = UIDCsmConverter.declarationToUID(cls);
+                if(includeUid != null && classUid != null) {
+                    fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, classUid));
+                }
+            }
         }
     }
 
