@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -429,7 +430,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         walker.visit();
         // we do not remember cache entry because it is stopped before end of file
         // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
         if (ts != null) {
             ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
             StringBuilder sb = new StringBuilder(""); // NOI18N

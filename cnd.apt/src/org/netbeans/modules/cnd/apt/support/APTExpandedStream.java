@@ -552,7 +552,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             return new ArrayList<APTToken>();
         }
         String text = leftText + rightText;
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
         List<APTToken> tokens = APTUtils.toList(ts);
         return tokens;
     }
