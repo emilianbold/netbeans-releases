@@ -78,8 +78,8 @@ import org.openide.util.RequestProcessor;
  */
 public final class ConnectionManager {
 
-    public static final String SSH_KNOWN_HOSTS_FILE = System.getProperty("ssh.knonwhosts.file", System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
-    public static final String SSH_KEYS_FILE = System.getProperty("ssh.keys.file", System.getProperty("user.home") + "/.ssh/id_rsa"); // NOI18N
+    public static final String SSH_KNOWN_HOSTS_FILE;
+    public static final String SSH_KEYS_FILE;
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
     private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
@@ -90,13 +90,37 @@ public final class ConnectionManager {
     // Map that contains all connected sessions;
     private static final HashMap<ExecutionEnvironment, Session> sessions = new HashMap<ExecutionEnvironment, Session>();
     // Actual sessions pool
-    private static final JSch jsch = new JSch();
+    private static final JSch jsch;
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
+        String defaultKnonwHosts = System.getProperty("user.home") + "/.ssh/known_hosts"; // NOI18N
+        String defaultKeys = System.getProperty("user.home") + "/.ssh/id_rsa"; // NOI18N
+        SSH_KNOWN_HOSTS_FILE = System.getProperty("ssh.knonwhosts.file", defaultKnonwHosts);
+        SSH_KEYS_FILE = System.getProperty("ssh.keys.file", defaultKeys);
+
+        jsch = new JSch();
+
+        try {
+            jsch.setKnownHosts(SSH_KNOWN_HOSTS_FILE);
+        } catch (JSchException ex) {
+            if (!SSH_KNOWN_HOSTS_FILE.equals(defaultKnonwHosts)) {
+                log.log(Level.WARNING, "Unable to setKnownHosts for jsch. {0}", ex.getMessage()); // NOI18N
+            }
+        }
+
+        try {
+            jsch.addIdentity(SSH_KEYS_FILE);
+        } catch (JSchException ex) {
+            if (!SSH_KEYS_FILE.equals(defaultKeys)) {
+                {
+                    log.log(Level.WARNING, "Unable to addIdentity for jsch. {0}", ex.getMessage()); // NOI18N
+                }
+            }
+        }
     }
 
     private ConnectionManager() {
@@ -115,18 +139,6 @@ public final class ConnectionManager {
                     log.log(Level.FINEST, "JSCH: {0}", message); // NOI18N
                 }
             });
-        }
-
-        try {
-            jsch.setKnownHosts(SSH_KNOWN_HOSTS_FILE);
-        } catch (JSchException ex) {
-            log.log(Level.WARNING, "Unable to setKnownHosts for jsch. {0}", ex.getMessage()); // NOI18N
-        }
-
-        try {
-            jsch.addIdentity(SSH_KEYS_FILE);
-        } catch (JSchException ex) {
-            log.log(Level.WARNING, "Unable to addIdentity for jsch. {0}", ex.getMessage()); // NOI18N
         }
     }
 
