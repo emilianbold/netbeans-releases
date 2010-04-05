@@ -786,21 +786,6 @@ tokens {
 
 /* Comments: */
 
-protected COMMENT :
-		"/*"
-		( options {greedy=false;}:
-			EndOfLine {deferredNewline();}
-                        | . )*
-		"*/"
-	;
-
-protected CPP_COMMENT
-	:
-		"//" ( '\\' EndOfLine {deferredNewline();}
-                     |  ~('\n' | '\r')
-                     )*
-	;
-
 FORTRAN_COMMENT options { constText=true; } :
     {lang == Language.FORTRAN && inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ')}?
     ('!' | ('c'|'C') | '*')
@@ -845,8 +830,8 @@ FIRST_ASSIGN options { constText=true; } :
 FIRST_DIVIDE :
     '/' ( {$setType(DIVIDE);}               //DIVIDE          : '/' ;
     | '=' {$setType(DIVIDEEQUAL);} )        //DIVIDEEQUAL     : "/=" ;
-    | {(lang == Language.CPP || lang == Language.C) && inputState.getColumn() == 1}? COMMENT {$setType(COMMENT);}
-    | {lang == Language.CPP && inputState.getColumn() == 1}? CPP_COMMENT {$setType(CPP_COMMENT);};
+    | {(lang == Language.CPP || lang == Language.C)}? COMMENT {$setType(COMMENT);}
+    | {lang == Language.CPP}? CPP_COMMENT {$setType(CPP_COMMENT);};
 
 FIRST_STAR options { constText=true; } :
     '*' ( {$setType(STAR);}                 //STAR            : '*' ;
@@ -864,6 +849,24 @@ FIRST_AMPERSAND options { constText=true; } :
     '&' ( {$setType(AMPERSAND);}            //AMPERSAND       : '&' ;
     | '&' {$setType(AND);}                  //AND             : "&&" ;
     | '=' {$setType(BITWISEANDEQUAL);});    //BITWISEANDEQUAL : "&=" ;
+
+
+/* Comments: */
+
+protected COMMENT :
+		"/*"
+		( options {greedy=false;}:
+			EndOfLine {deferredNewline();}
+                        | . )*
+		"*/"
+	;
+
+protected CPP_COMMENT
+	:
+		"//" ( '\\' EndOfLine {deferredNewline();}
+                     |  ~('\n' | '\r')
+                     )*
+	;
 
 FIRST_OR options { constText=true; } :
     '|' ({$setType(BITWISEOR);}             //BITWISEOR       : '|' ;
