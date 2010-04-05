@@ -44,6 +44,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -99,8 +101,10 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         factory=new PersistenceUnitPanelFactory(comp,dObj);
         setVisualEditor(comp);
         repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
+            @Override
             public void run() {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         repaintView();
                     }
@@ -110,6 +114,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         
     }
     
+    @Override
     public SectionView getSectionView() {
         return view;
     }
@@ -164,6 +169,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         return true;
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
         if (PUDataObject.PERSISTENCE_UNIT_ADDED_OR_REMOVED.equals(name)){
@@ -296,6 +302,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             super(actionName);
         }
         
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             boolean isContainer = Util.isSupportedJavaEEVersion(project);
             final PersistenceUnitWizardPanel panel;
@@ -313,6 +320,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     null, null
                     );
             panel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -375,6 +383,8 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     if (lib != null){
                         Util.addLibraryToProject(project, lib);
                     }
+                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(puJdbc.getPersistenceConnection().getDriverClass());
+                    PersistenceLibrarySupport.addDriver(project, driver[0]);
                 }
                 
                 punit.setName(panel.getPersistenceUnitName());
@@ -411,6 +421,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             super(actionName);
         }
         
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             SectionPanel sectionPanel = ((SectionPanel.HeaderButton)evt.getSource()).getSectionPanel();
             PersistenceUnit punit = (PersistenceUnit) sectionPanel.getKey();
