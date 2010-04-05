@@ -69,6 +69,7 @@ public class Md5checkerTest extends NativeExecutionBaseTestCase {
         clearRemoteTmpDir();
         String remoteTmpDir = createRemoteTmpDir();
         File localFile = File.createTempFile("test_checker_", ".dat");
+        localFile.deleteOnExit();
         writeFile(localFile, "1\n2\n3\n");
 
         String remotePath = remoteTmpDir + "/" + localFile.getName();
@@ -88,5 +89,6 @@ public class Md5checkerTest extends NativeExecutionBaseTestCase {
         assertEquals("Check result", Md5checker.Result.DIFFERS, res);
 
         clearRemoteTmpDir();
+        localFile.delete();
     }
 }

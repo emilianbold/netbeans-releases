@@ -154,21 +154,22 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         if (function != null) {
                             StringBuilder buf = new StringBuilder();
                             buf.append(SPACES.substring(0, indent));
-                            buf.append("* " + NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature()) + "\n"); // NOI18N
+                            buf.append("* ").append(NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature())).append("\n"); // NOI18N
                             buf.append(SPACES.substring(0, indent));
                             buf.append("*\n"); // NOI18N
                             for (Parameter p : function.getParametes()) {
                                 buf.append(SPACES.substring(0, indent));
                                 buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
                             }
-                            if (!"void".equals(function.getReturnType())) { // NOI18N
+                            final String returnType = function.getReturnType();
+                            if (returnType != null && !"void".equals(returnType)) { // NOI18N
                                 buf.append(SPACES.substring(0, indent));
                                 buf.append("* @return ...").append('\n'); // NOI18N
                             }
 //                            buf.append(SPACES.substring(0, indent));
 //                            buf.append("*\n"); // NOI18N
                             buf.append(SPACES.substring(0, indent));
-                            buf.append("* @author " + System.getProperty("user.name") + "\n"); // NOI18N
+                            buf.append("* @author ").append(System.getProperty("user.name")).append("\n"); // NOI18N
                             buf.append(SPACES.substring(0, indent));
                             doc.insertString(caretOffset, buf.toString(), null);
                         }
