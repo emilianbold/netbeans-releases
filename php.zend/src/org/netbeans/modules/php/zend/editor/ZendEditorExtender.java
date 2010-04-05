@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -166,28 +167,31 @@ public class ZendEditorExtender extends EditorExtender {
         }
 
         @Override
-        public void visit(FieldAccess node) {
-            super.visit(node);
+        public void visit(Assignment assignment) {
+            super.visit(assignment);
+            if (assignment.getLeftHandSide() instanceof FieldAccess) {
+                final FieldAccess node = (FieldAccess) assignment.getLeftHandSide();
+                if (className != null
+                        && methodName != null
+                        && className.endsWith(ZendUtils.CONTROLLER_CLASS_SUFFIX.toLowerCase())
+                        && methodName.equalsIgnoreCase(actionName)) {
 
-            if (className != null
-                    && methodName != null
-                    && className.endsWith(ZendUtils.CONTROLLER_CLASS_SUFFIX.toLowerCase())
-                    && methodName.equalsIgnoreCase(actionName)) {
-                // $this->view->variable?
-                if (node.getDispatcher() instanceof FieldAccess) {
-                    FieldAccess fieldAccess = (FieldAccess) node.getDispatcher();
-                    if ("view".equals(CodeUtils.extractVariableName(fieldAccess.getField()))) { // NOI18N
-                        if (fieldAccess.getDispatcher() instanceof Variable) {
-                            Variable var = (Variable) fieldAccess.getDispatcher();
-                            if ("$this".equals(CodeUtils.extractVariableName(var))) { // NOI18N
-                                String fqn = null;
-                                for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), node)) {
-                                    // XXX
-                                    fqn = typeScope.getFullyQualifiedName().toString();
-                                    break;
-                                }
-                                synchronized (fields) {
-                                    fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                    // $this->view->variable?
+                    if (node.getDispatcher() instanceof FieldAccess) {
+                        FieldAccess fieldAccess = (FieldAccess) node.getDispatcher();
+                        if ("view".equals(CodeUtils.extractVariableName(fieldAccess.getField()))) { // NOI18N
+                            if (fieldAccess.getDispatcher() instanceof Variable) {
+                                Variable var = (Variable) fieldAccess.getDispatcher();
+                                if ("$this".equals(CodeUtils.extractVariableName(var))) { // NOI18N
+                                    String fqn = null;
+                                    for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), assignment)) {
+                                        // XXX
+                                        fqn = typeScope.getFullyQualifiedName().toString();
+                                        break;
+                                    }
+                                    synchronized (fields) {
+                                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(node.getField()), fqn, action)); // NOI18N
+                                    }
                                 }
                             }
                         }
