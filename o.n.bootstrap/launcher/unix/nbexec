@@ -472,6 +472,23 @@ if [ "no$DISPLAY" = "no" -a `uname` != Darwin ]; then
     echo "$0: WARNING: environment variable DISPLAY is not set"
 fi
 
+
+# The Startup Notification Protocol Specification [1]
+# recommends to unset the DESKTOP_STARTUP_ID environment variable 
+# to avoid possible reuse by some process started later by this
+# process, e.g. when a browser will be launched by the NetBeans [2].
+#
+# See:
+# [1] http://standards.freedesktop.org/startup-notification-spec
+# [2] http://netbeans.org/bugzilla/show_bug.cgi?id=76970
+if [ ! -z $DESKTOP_STARTUP_ID ] ; then
+    # Save a value for later using
+    NB_DESKTOP_STARTUP_ID=$DESKTOP_STARTUP_ID; export NB_DESKTOP_STARTUP_ID
+
+    unset DESKTOP_STARTUP_ID
+fi
+
+
 #
 # main loop
 #
