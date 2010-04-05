@@ -325,15 +325,20 @@ public final class ConnectionManager {
     private Session getSession(ExecutionEnvironment execEnv, boolean restoreLostConnection) {
         synchronized (sessions) {
             if (sessions.containsKey(execEnv)) {
-                Session session = sessions.get(execEnv);
-                if (!restoreLostConnection || session.isConnected()) {
-                    return session;
-                }
-                try {
-                    reconnect(execEnv);
-                    return getSession(execEnv, false);
-                } catch (IOException ex) {
-                    return null;
+                int attempts = 3;
+
+                while (attempts-- > 0) {
+                    Session session = sessions.get(execEnv);
+
+                    if (!restoreLostConnection || session.isConnected()) {
+                        return session;
+                    }
+
+                    try {
+                        reconnect(execEnv);
+                    } catch (IOException ex) {
+                        return null;
+                    }
                 }
             }
 
