@@ -210,7 +210,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private String completionShortcut = null;
     
     private Lookup.Result<KeyBindingSettings> kbs;
-    private Profile profile;
+    private static Profile profile;
     
     private final LookupListener shortcutsTracker = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -1736,7 +1736,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         UI_LOG.log(rec);
     }
 
-    private void initializeProfiling(long when) {
+    private static synchronized void initializeProfiling(long when) {
         if (profile != null) {
             return;
         }
@@ -1755,7 +1755,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         profile = new Profile(profiler, when);
     }
 
-    private final class Profile implements Runnable {
+    private static final class Profile implements Runnable {
         Object profiler;
         boolean profiling;
         private final long time;
@@ -1799,9 +1799,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             }
         }
 
-    }
+    } // end of Profile
 
-    private synchronized void stopProfiling() {
+    private static synchronized void stopProfiling() {
         if (profile != null) {
             try {
                 profile.stop();
