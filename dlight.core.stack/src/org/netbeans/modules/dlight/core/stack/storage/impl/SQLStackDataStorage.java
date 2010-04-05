@@ -183,6 +183,17 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         this.tableMetadatas.addAll(tableMetadatas);
     }
 
+    // For tests ... 
+    public boolean shutdown(boolean shutdownSqlStorage) {
+        boolean result = shutdown();
+        
+        if (shutdownSqlStorage) {
+            result = sqlStorage.shutdown() && result;
+        }
+
+        return result;
+    }
+    
     public boolean shutdown() {
         isRunning = false;
         funcCache.clear();
