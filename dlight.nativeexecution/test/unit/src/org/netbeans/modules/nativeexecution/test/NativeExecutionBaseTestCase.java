@@ -337,6 +337,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
+    private static final String POSTFIX = System.getProperty("cnd.remote.sync.root.postfix"); //NOI18N
+
     protected synchronized  String getRemoteTmpDir() {
         if (remoteTmpDir == null) {
             final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
@@ -349,6 +351,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
                 Exceptions.printStackTrace(ex);
             }
             remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
+            if (POSTFIX != null) {
+                remoteTmpDir += '-' + POSTFIX;
+            }
         }
         return remoteTmpDir;
     }
