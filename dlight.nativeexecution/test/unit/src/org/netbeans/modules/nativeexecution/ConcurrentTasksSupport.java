@@ -50,12 +50,14 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 
 /**
  *
  * @author ak119685
  */
-public class ConcurrentTasksSupport {
+public final class ConcurrentTasksSupport {
+
     final private static Logger log = Logger.getLogger(ConcurrentTasksSupport.class.getName());
     final int concurrentTasks;
     final ArrayList<TaskFactory> factories = new ArrayList<TaskFactory>();
@@ -68,11 +70,11 @@ public class ConcurrentTasksSupport {
         doneSignal = new CountDownLatch(concurrentTasks);
     }
 
-    void addFactory(TaskFactory taskFactory) {
+    public void addFactory(TaskFactory taskFactory) {
         factories.add(taskFactory);
     }
 
-    void init() {
+    public void init() {
         Thread[] threads = new Thread[concurrentTasks];
         final AtomicInteger counter = new AtomicInteger(0);
         final Random r = new Random();
@@ -82,6 +84,7 @@ public class ConcurrentTasksSupport {
 
                 final int id = counter.incrementAndGet();
 
+                @Override
                 public void run() {
                     TaskFactory factoryToUse = factories.get(r.nextInt(factories.size()));
 
@@ -103,7 +106,7 @@ public class ConcurrentTasksSupport {
                     try {
                         task.run();
                     } catch (Throwable th) {
-                        log.info("Exception in task " + th.toString());
+                        log.log(Level.INFO, "Exception in task {0}", th.toString());
                     } finally {
                         doneSignal.countDown();
                     }
@@ -114,7 +117,7 @@ public class ConcurrentTasksSupport {
         }
     }
 
-    void start() {
+    public void start() {
         try {
             startSignal.await();
         } catch (InterruptedException ex) {
@@ -123,7 +126,7 @@ public class ConcurrentTasksSupport {
 
     }
 
-    void waitCompletion() {
+    public void waitCompletion() {
         try {
             doneSignal.await();
         } catch (InterruptedException ex) {
@@ -136,7 +139,8 @@ public class ConcurrentTasksSupport {
         public Runnable newTask();
     }
 
-    public static final class Counters {
+    public static class Counters {
+
         private final ConcurrentMap<String, AtomicInteger> counters =
                 new ConcurrentHashMap<String, AtomicInteger>();
 
@@ -157,6 +161,10 @@ public class ConcurrentTasksSupport {
             for (String id : map.keySet()) {
                 stream.println(id + ": " + map.get(id)); // NOI18N
             }
+        }
+
+        public void assertEquals(String descr, String id, int expected) {
+            Assert.assertEquals(descr, expected, getCounter(id).intValue()); // NOI18N
         }
     }
 }

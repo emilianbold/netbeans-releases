@@ -58,6 +58,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -92,6 +93,7 @@ public final class ConnectionManager {
     // Actual sessions pool
     private static final JSch jsch;
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
+    private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
 
@@ -292,10 +294,18 @@ public final class ConnectionManager {
      * @return action to be used to connect to the <tt>execEnv</tt>.
      * @see Action
      */
-    public AsynchronousAction getConnectToAction(
+    public synchronized AsynchronousAction getConnectToAction(
             final ExecutionEnvironment execEnv, final Runnable onConnect) {
 
-        return new ConnectToAction(execEnv, onConnect);
+        if (connectionActions.containsKey(execEnv)) {
+            return connectionActions.get(execEnv);
+        }
+
+        ConnectToAction action = new ConnectToAction(execEnv, onConnect);
+
+        connectionActions.put(execEnv, action);
+
+        return action;
     }
 
     private static String loc(String key, String... params) {
