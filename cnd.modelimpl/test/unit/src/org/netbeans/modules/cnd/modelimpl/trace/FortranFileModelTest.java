@@ -81,4 +81,9 @@ public class FortranFileModelTest extends TraceModelTestBase {
         performTest("bug182702.f"); // NOI18N
     }
 
+    public void testBug182520() throws Exception {
+        // Bug 182520 - Navigator doesn't show all subroutines for *Fortran* files
+        performTest("bug182520.f"); // NOI18N
+    }
+
 }
