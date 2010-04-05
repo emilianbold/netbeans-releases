@@ -1,11 +1,15 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,8 +26,11 @@ import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 class RfsLocalController implements Runnable {
 
@@ -41,7 +48,7 @@ class RfsLocalController implements Runnable {
      * to the absolute remote path local controller uses
      */
     private final Map<String, String> canonicalToAbsolute = new HashMap<String, String>();
-    
+
     private static enum RequestKind {
         REQUEST,
         WRITTEN
@@ -97,6 +104,7 @@ class RfsLocalController implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         long totalCopyingTime = 0;
         while (true) {
@@ -168,17 +176,35 @@ class RfsLocalController implements Runnable {
     }
 
     private static class FileGatheringInfo {
+        
         public final File file;
         public final String remotePath;
+        private String link;
+
         public FileGatheringInfo(File file, String remotePath) {
             this.file = file;
             this.remotePath = remotePath;
             CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: " + remotePath);
+            this.link = null;
         }
+
         @Override
         public String toString() {
-            return remotePath;
+            return (isLink() ? "L " : file.isDirectory() ? "D " : "F ") + file.getPath() + " -> " + remotePath; // NOI18N
         }
+
+        public boolean isLink() {
+            return link != null;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public void setLink(String link) {
+            this.link = link;
+        }
+
     }
 
     /**
@@ -187,7 +213,10 @@ class RfsLocalController implements Runnable {
     void feedFiles(SharabilityFilter filter) {
         long time = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
-        Set<File> externalDirs = new HashSet<File>();
+
+        // the set of top-level dirs 
+        Set<File> topDirs = new HashSet<File>();
+
         for (File file : files) {
             file = CndFileUtils.normalizeFile(file);
             if (file.isDirectory()) {
@@ -199,18 +228,30 @@ class RfsLocalController implements Runnable {
                         gatherFiles(child, toRemoteFilePathName, filter, filesToFeed);
                     }
                 }
+                topDirs.add(file);
             } else {
                 final File parentFile = file.getAbsoluteFile().getParentFile();
                 String toRemoteFilePathName = mapper.getRemotePath(parentFile.getAbsolutePath());
-                if (!externalDirs.contains(parentFile)) {
+                if (!topDirs.contains(parentFile)) {
                     // add parent folder for external file
-                    externalDirs.add(parentFile);
+                    topDirs.add(parentFile);
                     addFileGatheringInfo(filesToFeed, parentFile, toRemoteFilePathName);
                 }
                 gatherFiles(file, toRemoteFilePathName, filter, filesToFeed);
             }
         }
+
+        Collection<File> parents = gatherParents(topDirs);
+        for (File file : parents) {
+            file = CndFileUtils.normalizeFile(file);
+            String toRemoteFilePathName = mapper.getRemotePath(file.getAbsolutePath());
+            addFileGatheringInfo(filesToFeed, file, toRemoteFilePathName);
+        }
+
+        checkLinks(filesToFeed);
+        
         Collections.sort(filesToFeed, new Comparator<FileGatheringInfo>() {
+            @Override
             public int compare(FileGatheringInfo f1, FileGatheringInfo f2) {
                 if (f1.file.isDirectory() || f2.file.isDirectory()) {
                     if (f1.file.isDirectory() && f2.file.isDirectory()) {
@@ -228,7 +269,7 @@ class RfsLocalController implements Runnable {
         RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathering files took {1} ms", (System.currentTimeMillis() - time));
         time = System.currentTimeMillis();
         for (FileGatheringInfo info : filesToFeed) {
-            sendFileInitRequest(info.file, info.remotePath);
+            sendFileInitRequest(info);
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
@@ -241,6 +282,125 @@ class RfsLocalController implements Runnable {
             err.printf("%s\n", ex.getMessage());
         }
         fileData.store();
+    }
+
+    private Collection<File> gatherParents(Collection<File> files) {
+        Set<File> parents = new HashSet<File>();
+        for (File file : files) {
+            gatherParents(file, parents);
+        }
+        return parents;
+    }
+
+    private void gatherParents(File file, Set<File> parents) {
+        //file = CndFileUtils.normalizeFile(file);
+        File parent = file.getAbsoluteFile().getParentFile();
+        if (parent != null && parent.getParentFile() != null) { // don't add top-level parents
+            parents.add(parent);
+            gatherParents(parent, parents);
+        }
+    }
+
+    private void checkLinks(final List<FileGatheringInfo> filesToFeed) {
+        NativeProcessBuilder pb = NativeProcessBuilder.newLocalProcessBuilder();
+        pb.setExecutable("sh"); //NOI18N
+        pb.setArguments("-c", "xargs ls -ld | grep '^l'"); //NOI18N
+        final NativeProcess process;
+        try {
+            process = pb.call();
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, "Error when checking links: {0}", ex.getMessage());
+            return;
+        }
+        
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                try {
+                    for (FileGatheringInfo info : filesToFeed) {
+                        final String path = info.file.getAbsolutePath();
+                        RemoteUtil.LOGGER.log(Level.FINEST, "\tcheckLinks: {0}", path);
+                        requestWriter.append(path);
+                        requestWriter.newLine();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        requestWriter.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            @Override
+            public void run() {
+                try {
+                    for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
+                        RemoteUtil.LOGGER.info(errLine);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        errorReader.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        Map<String, FileGatheringInfo> map = new HashMap<String, FileGatheringInfo>(filesToFeed.size());
+        for (FileGatheringInfo info : filesToFeed) {
+            map.put(info.file.getAbsolutePath(), info);
+        }
+
+        BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        try {
+            boolean errorReported = false;
+            for (String line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
+                // line format is:
+                // lrwxrwxrwx   1 root     root           5 Mar 24 13:33 /export/link-home -> home/
+                String[] parts = line.split(" +"); // NOI18N
+                if (parts.length <= 4) {
+                    if (!errorReported) {
+                        errorReported = true;
+                        RemoteUtil.LOGGER.log(Level.WARNING, "Unexpected ls output: {0}", line);
+                    }
+                }
+                String linkTarget = parts[parts.length - 1];
+                if (linkTarget.endsWith("/")) { // NOI18N
+                    linkTarget = linkTarget.substring(0, linkTarget.length() - 1);
+                }
+                String linkPath = parts[parts.length - 3];
+                FileGatheringInfo info = map.get(linkPath);
+                CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
+                if (info != null) {
+                    info.setLink(linkTarget);
+                    File linkParentFile = new File(linkPath).getParentFile();
+                    File linkTargetFile = new File(linkParentFile, linkTarget);
+                    linkTargetFile = CndFileUtils.normalizeFile(linkTargetFile);
+                    String remotePath = mapper.getRemotePath(linkTargetFile.getAbsolutePath(), false);
+                    addFileGatheringInfo(filesToFeed, linkTargetFile, remotePath);
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+// do we need to wait here?
+//        try {
+//            int rc = process.waitFor();
+//        } catch (InterruptedException ex) {
+//            // don't report InterruptedException
+//            return;
+//        }
     }
 
     private void readFileInitResponse() throws IOException {
@@ -291,11 +451,15 @@ class RfsLocalController implements Runnable {
         }
     }
     
-    private void sendFileInitRequest(File file, String relPath) {
-        if (file.isDirectory()) {
-            responseStream.printf("D %s\n", relPath); //NOI18N
+    private void sendFileInitRequest(FileGatheringInfo fgi) {
+        if(fgi.isLink()) {
+            responseStream.printf("L %s\n%s\n", fgi.remotePath, fgi.getLink()); //NOI18N
+        } else if (fgi.file.isDirectory()) {
+            responseStream.printf("D %s\n", fgi.remotePath); //NOI18N
             responseStream.flush(); //TODO: remove?
         } else {
+            File file = fgi.file;
+            String remotePath = fgi.remotePath;
             FileData.FileInfo info = fileData.getFileInfo(file);
             FileState newState;
             if (file.exists()) {
@@ -326,7 +490,7 @@ class RfsLocalController implements Runnable {
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
                     || newState == FileState.INEXISTENT,
                     "State shouldn't be " + newState); //NOI18N
-            responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
+            responseStream.printf("%c %d %s\n", newState.id, file.length(), remotePath); // NOI18N
             responseStream.flush(); //TODO: remove?
             if (newState == FileState.INITIAL ) {
                 newState = FileState.TOUCHED;

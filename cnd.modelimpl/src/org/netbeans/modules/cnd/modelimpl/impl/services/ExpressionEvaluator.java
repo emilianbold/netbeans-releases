@@ -92,7 +92,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     public Object eval(String expr) {
-        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr);
+        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
         ts = lang.getFilteredStream(ts);
@@ -120,7 +120,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr);
+        org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
         ts = lang.getFilteredStream(ts);

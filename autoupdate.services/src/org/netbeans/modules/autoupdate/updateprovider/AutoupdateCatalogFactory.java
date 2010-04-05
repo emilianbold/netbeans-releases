@@ -187,6 +187,9 @@ public class AutoupdateCatalogFactory {
             }
             String prefix = NbBundle.getBundle (AutoupdateCatalogFactory.class).getString ("URL_Prefix_Hash_Code"); // NOI18N
             System.setProperty (IDE_HASH_CODE, "".equals (id) ? prefix + "0" : prefix + id); // NOI18N
+            //catching strange IDs like
+            //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6
+            assert !id.startsWith("-n+") : "Generated identity (" + id + ") is of wrong format";
         }
         
         try {

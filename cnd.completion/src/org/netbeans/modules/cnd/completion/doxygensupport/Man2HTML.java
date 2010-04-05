@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -48,6 +49,8 @@ import java.io.IOException;
  */
 public class Man2HTML {
     public static int MAX_WIDTH = 65;
+
+    private static final Pattern ESC_PATTERN = Pattern.compile("\u001B\\[(?:\\d+)(?:;\\d+)*m"); // NOI18N
 
     private enum MODE {
 
@@ -129,7 +132,27 @@ public class Man2HTML {
             line = br.readLine();
         } catch (IOException ioe) {
         }
+        if (line != null) {
+            line = stripTerminalEscapes(line);
+        }
         return line;
+    }
+
+    /**
+     * Strips escape sequences that set display attributes (font color
+     * and other decoration). Such sequences start with ESC (\u001B)
+     * followed by '[' and end with 'm'. They are found in <code>man</code>
+     * output (see bug #183176), and it's not trivial to tell <code>man</code>
+     * not to add them. So filter them out here.
+     *
+     * Unrecognized escape sequences are not stripped to prevent accidental
+     * damage of the text.
+     *
+     * @param line  line to strip escape sequences from
+     * @return line after stripping
+     */
+    private String stripTerminalEscapes(String line) {
+        return ESC_PATTERN.matcher(line).replaceAll(""); // NOI18N
     }
 
     private String getNextLine() {
