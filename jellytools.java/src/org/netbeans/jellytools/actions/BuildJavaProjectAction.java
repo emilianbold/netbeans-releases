@@ -50,8 +50,8 @@ import org.netbeans.jellytools.Bundle;
  */
 public class BuildJavaProjectAction extends Action {
 
-    private static final String buildProjectPopup = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle",
-            "LBL_BuildAction_Name");
+    private static final String buildProjectPopup = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle",
+            "LBL_RebuildProjectAction_Name_popup");
 
     /** creates new BuildProjectAction instance */    
     public BuildJavaProjectAction() {
