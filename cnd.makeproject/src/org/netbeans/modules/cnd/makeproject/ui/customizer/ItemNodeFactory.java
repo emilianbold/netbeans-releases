@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Node;

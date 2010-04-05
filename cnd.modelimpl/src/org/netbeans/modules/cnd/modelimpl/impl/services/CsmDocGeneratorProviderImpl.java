@@ -84,6 +84,9 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
                 }
                 @Override
                 public String getReturnType() {
+                    if (CsmKindUtilities.isConstructor(decl) || CsmKindUtilities.isDestructor(decl)) {
+                        return null;
+                    }
                     return ((CsmFunction)decl).getReturnType().getCanonicalText().toString();
                 }
                 @Override

@@ -298,7 +298,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 .errConvertorFactory(processChangeListener)
                 .outConvertorFactory(processChangeListener);
 
-        if (actionType == PredefinedType.BUILD) {
+        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
         }
 

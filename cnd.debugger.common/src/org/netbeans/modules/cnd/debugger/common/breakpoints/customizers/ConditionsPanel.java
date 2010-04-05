@@ -41,11 +41,15 @@
 
 package org.netbeans.modules.cnd.debugger.common.breakpoints.customizers;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,16 +59,26 @@ import org.openide.util.NbBundle;
  */
 public class ConditionsPanel extends JPanel {
     
-    private CndBreakpoint  breakpoint;
+    private final CndBreakpoint  breakpoint;
+    private final JTextComponent conditionPane;
+    private final JScrollPane conditionSP;
     
     /** Creates new form ConditionsPanel */
     public ConditionsPanel(final CndBreakpoint breakpoint) {
         this.breakpoint = breakpoint;
         initComponents();
 
-        tfConditionFieldForUI = new javax.swing.JTextField();
-        tfConditionFieldForUI.setEnabled(false);
-        tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());
+        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+
+        //Add JEditorPane and context
+        JComponent [] editorComponents = Utilities.createSingleLineEditor(file.getMIMEType());
+        conditionPane = (JTextComponent) editorComponents[1];
+
+        DialogBinding.bindComponentToFile(file, line, 0, 0, conditionPane);
+
+        conditionSP = (JScrollPane)editorComponents[0];
+        conditionSP.setEnabled(false);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -72,28 +86,17 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(tfConditionFieldForUI, gridBagConstraints);
+        add(conditionSP, gridBagConstraints);
 
         setCondition(breakpoint.getCondition());
         setHitCount(breakpoint.getSkipCount());
 
-        int preferredHeight = tfConditionFieldForUI.getPreferredSize().height;
-        if (spCondition.getPreferredSize().height > preferredHeight) {
-            preferredHeight = spCondition.getPreferredSize().height;
-            tfConditionFieldForUI.setPreferredSize(new java.awt.Dimension(tfConditionFieldForUI.getPreferredSize().width, preferredHeight));
-        }
-
-        ActionListener editorPaneUpdated = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                tfCondition.setText(breakpoint.getCondition());
-            }
-        };
-        ContextBindingSupport.getDefault().setupContext(tfCondition, editorPaneUpdated);
+        conditionPane.setText(breakpoint.getCondition());
     }
     
     public void ok() {
         if (cbCondition.isSelected()) {
-            breakpoint.setCondition(tfCondition.getText());
+            breakpoint.setCondition(conditionPane.getText());
         } else {
             breakpoint.setCondition("");
         }
@@ -113,19 +116,17 @@ public class ConditionsPanel extends JPanel {
         if (show) {
             cbConditionActionPerformed(null);
         } else {
-            spCondition.setVisible(show);
-            tfCondition.setVisible(show);
-            tfConditionFieldForUI.setVisible(show);
+            conditionSP.setVisible(show);
         }
     }
     
-    public void setCondition(String condition) {
-        tfCondition.setText(condition);
+    public final void setCondition(String condition) {
+        conditionPane.setText(condition);
         cbCondition.setSelected(condition.length() > 0);
         cbConditionActionPerformed(null);
     }
     
-    public void setHitCount(int hitCount) {
+    public final void setHitCount(int hitCount) {
         if (hitCount != 0) {
             cbSkipCount.setSelected(true);
             tfSkipCount.setText(Integer.toString(hitCount));
@@ -138,7 +139,7 @@ public class ConditionsPanel extends JPanel {
     
     public String getCondition() {
         if (cbCondition.isSelected()) {
-            return tfCondition.getText().trim();
+            return conditionPane.getText().trim();
         } else {
             return "";
         }
@@ -173,7 +174,7 @@ public class ConditionsPanel extends JPanel {
                 return NbBundle.getMessage(ConditionsPanel.class, "MSG_No_Hit_Count_Filter_Spec");
             }
         }
-        if (cbCondition.isSelected() && tfCondition.getText().trim().length() == 0) {
+        if (cbCondition.isSelected() && conditionPane.getText().trim().length() == 0) {
             return NbBundle.getMessage(ConditionsPanel.class, "MSG_No_Condition_Spec");
         }
         return null;
@@ -189,8 +190,6 @@ public class ConditionsPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         cbCondition = new javax.swing.JCheckBox();
-        spCondition = new javax.swing.JScrollPane();
-        tfCondition = new javax.swing.JEditorPane();
         panelHitCountFilter = new javax.swing.JPanel();
         cbSkipCount = new javax.swing.JCheckBox();
         tfSkipCount = new javax.swing.JTextField();
@@ -212,20 +211,6 @@ public class ConditionsPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(cbCondition, gridBagConstraints);
-
-        spCondition = ContextBindingSupport.createScrollableLineEditor(tfCondition);
-        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
-
-        tfCondition.setContentType(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.contentType")); // NOI18N
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.toolTipText")); // NOI18N
-        spCondition.setViewportView(tfCondition);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(spCondition, gridBagConstraints);
 
         panelHitCountFilter.setLayout(new java.awt.GridBagLayout());
 
@@ -281,25 +266,19 @@ private void cbConditionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     boolean isSelected = cbCondition.isSelected();
     
     if (isSelected) {
-        spCondition.setVisible(true);
-        tfConditionFieldForUI.setVisible(false);
-        tfCondition.requestFocusInWindow();
+        conditionPane.setEnabled(true);
+        conditionPane.requestFocusInWindow();
     } else {
-        spCondition.setVisible(false);
-        tfConditionFieldForUI.setText(tfCondition.getText());
-        tfConditionFieldForUI.setVisible(true);
+        conditionPane.setEnabled(false);
     }
     revalidate();
     repaint();
 }//GEN-LAST:event_cbConditionActionPerformed
     
-    private javax.swing.JTextField tfConditionFieldForUI;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbCondition;
     private javax.swing.JCheckBox cbSkipCount;
     private javax.swing.JPanel panelHitCountFilter;
-    private javax.swing.JScrollPane spCondition;
-    private javax.swing.JEditorPane tfCondition;
     private javax.swing.JTextField tfSkipCount;
     // End of variables declaration//GEN-END:variables
     
