@@ -351,22 +351,26 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (startFile != null && startFile != this) {
             return startFile.getLanguageFilter(null);
         } else {
-            String lang;
-            if (fileType == FileType.SOURCE_CPP_FILE) {
-                lang = APTLanguageSupport.GNU_CPP;
-            } else if (fileType == FileType.SOURCE_C_FILE) {
-                lang = APTLanguageSupport.GNU_C;
-            } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
-                lang = APTLanguageSupport.FORTRAN;
-            } else {
-                lang = APTLanguageSupport.GNU_CPP;
-                String name = getName().toString();
-                if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
-                    lang = APTLanguageSupport.GNU_C;
-                }
-            }
-            return APTLanguageSupport.getInstance().getFilter(lang);
+            return APTLanguageSupport.getInstance().getFilter(getFileLanguage());
         }
+    }
+
+    public String getFileLanguage() {
+        String lang;
+        if (fileType == FileType.SOURCE_CPP_FILE) {
+            lang = APTLanguageSupport.GNU_CPP;
+        } else if (fileType == FileType.SOURCE_C_FILE) {
+            lang = APTLanguageSupport.GNU_C;
+        } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
+            lang = APTLanguageSupport.FORTRAN;
+        } else {
+            lang = APTLanguageSupport.GNU_CPP;
+            String name = getName().toString();
+            if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
+                lang = APTLanguageSupport.GNU_C;
+            }
+        }
+        return lang;
     }
 
     //@Deprecated
@@ -661,7 +665,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         APTFile aptFull = null;
         ChangedSegment changedSegment = null;
         try {
-            aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+            aptFull = APTDriver.getInstance().findAPT(this.getBuffer(), getFileLanguage());
             if (getBuffer() instanceof FileBufferDoc) {
                 changedSegment = ((FileBufferDoc) getBuffer()).getLastChangedSegment();
             }
@@ -1853,9 +1857,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void onFakeRegisration(IncludeImpl include, ClassImpl cls) {
         synchronized (fakeIncludeRegistrations) {
-            CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
-            CsmUID<ClassImpl> classUid = UIDCsmConverter.declarationToUID(cls);
-            fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, classUid));
+            if(include != null && cls != null) {
+                CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
+                CsmUID<ClassImpl> classUid = UIDCsmConverter.declarationToUID(cls);
+                if(includeUid != null && classUid != null) {
+                    fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, classUid));
+                }
+            }
         }
     }
 
