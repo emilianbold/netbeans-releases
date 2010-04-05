@@ -405,6 +405,14 @@ static int init_files() {
         } else if (state == LINK) { // symbolic link
             char lnk_src[bufsize]; // it is followed by a line that contains the link source
             fgets(lnk_src, sizeof lnk_src, stdin);
+            char* lf = strchr(lnk_src, '\n');
+            if (lf) {
+                *lf = 0;
+            }
+            if (strchr(buffer, '\r')) {
+                report_error("prodocol error: unexpected CR: %s\n", buffer);
+                return false;
+            }
             create_lnk(path, lnk_src);
         } else { // plain file
             int touch = false;

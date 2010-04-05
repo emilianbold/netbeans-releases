@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.db.h2;
 
-import java.sql.SQLException;
-import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
-import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+package org.netbeans.modules.php.editor;
 
-/**
- * @author Alexey Vladykin
- */
-public class H2StackStorageTest extends CommonStackDataStorageTests {
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.netbeans.junit.NbTestCase;
 
-    protected StackDataStorage createStorage() {
-        try {
-            SQLStackDataStorage result = new SQLStackDataStorage();
-            result.attachTo(new H2DataStorage());
-            return result;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
+public class DocRendererTest extends NbTestCase {
+
+    public DocRendererTest(String name) {
+        super(name);
+    }
+
+    public void testProcessPhpDoc() {
+        // text => result
+        final Map<String, String> testCases = new LinkedHashMap<String, String>();
+        testCases.put(
+                "<b>test1</b>",
+                "<b>test1</b>");
+        testCases.put(
+                "<b>te\nst2</b>",
+                "<b>te\nst2</b>");
+        testCases.put(
+                "<b>te\n\r\nst3</b>",
+                "<b>te<br><br>st3</b>");
+        testCases.put(
+                "<b>te\n\n\nst4</b>",
+                "<b>te<br><br>st4</b>");
+        testCases.put(
+                "<b1>test5</ b>",
+                "&lt;b1>test5</ b>");
+        testCases.put(
+                "<code>test6</code>",
+                "<pre>test6</pre>");
+        testCases.put(
+                "<input>",
+                "&lt;input>");
+
+        for (Map.Entry<String, String> entry : testCases.entrySet()) {
+            String expected = entry.getValue();
+            String processed = DocRenderer.PHPDocExtractor.processPhpDoc(entry.getKey());
+            if (!expected.equals(processed)) {
+                System.err.println("[" + processed + "] => [" + expected + "]");
+            }
+            assertEquals(expected, processed);
         }
-    }
-
-    protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage) db).shutdown(true);
-    }
-
-    protected void flush(StackDataStorage db) {
-        ((SQLStackDataStorage) db).flush();
     }
 }

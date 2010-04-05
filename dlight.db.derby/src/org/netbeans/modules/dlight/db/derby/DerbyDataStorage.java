@@ -98,7 +98,7 @@ public class DerbyDataStorage extends SQLDataStorage {
             
             System.setProperty("derby.system.home", systemDir); // NOI18N
             Class driver = Class.forName("org.apache.derby.jdbc.EmbeddedDriver"); // NOI18N
-            logger.info("Driver for Derby(JavaDB) (" + driver.getName() + ") Loaded "); // NOI18N
+            logger.log(Level.INFO, "Driver for Derby(JavaDB) ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -106,6 +106,7 @@ public class DerbyDataStorage extends SQLDataStorage {
 
         if (tmpDirFile.exists()) {
             final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     return dir.isDirectory() && name.startsWith("DerbyDlight"); // NOI18N
                 }
@@ -153,9 +154,9 @@ public class DerbyDataStorage extends SQLDataStorage {
     public boolean shutdown() {
         //remove folder
         boolean result = super.shutdown();
-        String dbName = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.indexOf(";"));//NOI18N
+        String dbName = dbURL.substring(dbURL.lastIndexOf(':') + 1, dbURL.indexOf(';'));
         //and now get number
-        result = result && Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)); // NOI18N
+        result = Util.deleteLocalDirectory(new File(tmpDir + "/derby_dlight/" + dbName)) && result; // NOI18N
         return result;
     }
 
@@ -255,10 +256,12 @@ public class DerbyDataStorage extends SQLDataStorage {
 //        return stackStorage.getThreadDump(timestamp, threadID, threadState);
 //    }
 
+    @Override
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
     }
 
+    @Override
     public boolean supportsType(DataStorageType storageType) {
         return getStorageTypes().contains(storageType);
     }

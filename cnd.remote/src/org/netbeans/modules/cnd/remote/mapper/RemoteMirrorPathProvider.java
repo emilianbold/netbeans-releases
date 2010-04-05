@@ -56,6 +56,7 @@ import org.openide.util.Exceptions;
  */
 @org.openide.util.lookup.ServiceProvider(service=MirrorPathProvider.class, position=100)
 public class RemoteMirrorPathProvider implements MirrorPathProvider {
+    private static final String POSTFIX = System.getProperty("cnd.remote.sync.root.postfix"); //NOI18N
 
     /** Service provider contract */
     public RemoteMirrorPathProvider() {
@@ -78,6 +79,9 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
             return root;
         }
         String home = RemoteUtil.getHomeDirectory(executionEnvironment);
+        if (home == null) {
+            return null;
+        }
         final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
         MacroExpander expander = MacroExpanderFactory.getExpander(local);
         String localHostID = local.getHost();
@@ -87,6 +91,10 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
             Exceptions.printStackTrace(ex);
         }
         // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+        String result = home + "/.netbeans/remote/" + localHostID; //NOI18N
+        if (POSTFIX != null) {
+            result += '-' + POSTFIX;
+        }
+        return result;
     }
 }

@@ -123,6 +123,12 @@ public class AutoupdateSettings {
         tempIdeIdentity = newIdeIdentity;
         if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity () || getPreferences ().get (PROP_QUALIFIED_IDENTITY, null) == null) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
+            
+            //catching strange IDs like
+            //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6
+            assert !newIdeIdentity.startsWith("-n+") : "Generated identity (" + newIdeIdentity + ") is of wrong format. " +
+                    "Old identity was [" + oldIdeIdentity + "].";
+
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
             String sid = getSuperIdentity ();
             if(sid!=null) {
@@ -208,7 +214,7 @@ public class AutoupdateSettings {
                     // don't exceed 128 chars for prefix
                     if (newPrefix.length () > 128) {
                         newPrefix = newPrefix.substring (0, 128);
-                    }
+                    }                    
                 } finally {
                     is.close();
                 }
@@ -221,6 +227,15 @@ public class AutoupdateSettings {
         } else {
             err.log (Level.FINER, "No new prefix."); // NOI18N
         }
+        //catching strange IDs like
+        //unique=-n+NB0c15fdc4f-2182-40c3-b6d8-ae09ef28922a_526df012-fe24-4849-b343-b4d77b11f6e6
+        assert !(newPrefix + id).startsWith("-n+") : 
+            "Product Indentity is of wrong format, prefix=" +
+                newPrefix + ", id=" +
+                id + ", oldPrefix=" +
+                oldPrefix +
+                ",oldIdeIdentity=" + oldIdeIdentity;
+        
         return newPrefix + id;
     }
 
