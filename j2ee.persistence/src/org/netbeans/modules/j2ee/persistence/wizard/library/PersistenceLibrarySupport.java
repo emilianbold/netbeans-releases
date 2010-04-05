@@ -38,24 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistence.wizard.library;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileLock;
@@ -70,44 +79,41 @@ import org.openide.xml.XMLUtil;
  * Various stuff copied mostly from org.netbeans.modules.project.libraries,
  * because it is not possible to add library to Library manager throught some API.
  */
-public class PersistenceLibrarySupport  {
-    
+public class PersistenceLibrarySupport {
+
     public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
     public static final String LIBRARY_TYPE = "j2se";       //NOI18N
-    public static final String[] VOLUME_TYPES = new String[] {
+    public static final String[] VOLUME_TYPES = new String[]{
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
-        VOLUME_TYPE_JAVADOC,
-    };
-    
+        VOLUME_TYPE_JAVADOC,};
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static int MAX_DEPTH = 3;
-    
     private FileObject storage = null;
     private static PersistenceLibrarySupport instance;
-    
+
     private PersistenceLibrarySupport() {
     }
-    
+
     public static PersistenceLibrarySupport getDefault() {
         if (instance == null) {
             instance = new PersistenceLibrarySupport();
         }
         return instance;
     }
-    
+
     public void addLibrary(LibraryImplementation library) {
         this.initStorage();
         assert this.storage != null : "Storage is not initialized";
         try {
-            writeLibrary(this.storage,library);
+            writeLibrary(this.storage, library);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     private static final FileObject createStorage() {
         try {
             return FileUtil.createFolder(FileUtil.getConfigRoot(), LIBRARIES_REPOSITORY);
@@ -115,7 +121,7 @@ public class PersistenceLibrarySupport  {
             return null;
         }
     }
-    
+
     private synchronized void initStorage() {
         if (this.storage == null) {
             this.storage = createStorage();
@@ -124,62 +130,64 @@ public class PersistenceLibrarySupport  {
             }
         }
     }
-    
+
     private void writeLibrary(final FileObject storage, final LibraryImplementation library) throws IOException {
         storage.getFileSystem().runAtomicAction(
                 new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileObject fo = storage.createData(library.getName(),"xml");   //NOI18N
-                writeLibraryDefinition(fo, library);
-            }
-        }
-        );
+
+            @Override
+                    public void run() throws IOException {
+                        FileObject fo = storage.createData(library.getName(), "xml");   //NOI18N
+                        writeLibraryDefinition(fo, library);
+                    }
+                });
     }
-    
+
     private static void writeLibraryDefinition(final FileObject definitionFile, final LibraryImplementation library) throws IOException {
         FileLock lock = null;
         PrintWriter out = null;
         try {
             lock = definitionFile.lock();
-            out = new PrintWriter(new OutputStreamWriter(definitionFile.getOutputStream(lock),"UTF-8"));
+            out = new PrintWriter(new OutputStreamWriter(definitionFile.getOutputStream(lock), "UTF-8"));
             out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
             out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
             out.println("<library version=\"1.0\">");       			//NOI18N
-            out.println("\t<name>"+library.getName()+"</name>");        //NOI18N
-            out.println("\t<type>"+library.getType()+"</type>");
+            out.println("\t<name>" + library.getName() + "</name>");        //NOI18N
+            out.println("\t<type>" + library.getType() + "</type>");
             String description = library.getDescription();
             if (description != null && description.length() > 0) {
-                out.println("\t<description>"+description+"</description>");   //NOI18N
+                out.println("\t<description>" + description + "</description>");   //NOI18N
             }
             String localizingBundle = library.getLocalizingBundle();
             if (localizingBundle != null && localizingBundle.length() > 0) {
-                out.println("\t<localizing-bundle>"+XMLUtil.toElementContent(localizingBundle)+"</localizing-bundle>");   //NOI18N
+                out.println("\t<localizing-bundle>" + XMLUtil.toElementContent(localizingBundle) + "</localizing-bundle>");   //NOI18N
             }
             String[] volumeTypes = VOLUME_TYPES;
             for (int i = 0; i < volumeTypes.length; i++) {
                 out.println("\t<volume>");      //NOI18N
-                out.println("\t\t<type>"+volumeTypes[i]+"</type>");   //NOI18N
+                out.println("\t\t<type>" + volumeTypes[i] + "</type>");   //NOI18N
                 List volume = library.getContent(volumeTypes[i]);
                 if (volume != null) {
                     //If null -> broken library, repair it.
                     for (Iterator eit = volume.iterator(); eit.hasNext();) {
                         URL url = (URL) eit.next();
-                        out.println("\t\t<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>"); //NOI18N
+                        out.println("\t\t<resource>" + XMLUtil.toElementContent(url.toExternalForm()) + "</resource>"); //NOI18N
                     }
                 }
                 out.println("\t</volume>");     //NOI18N
             }
             out.println("</library>");  //NOI18N
         } finally {
-            if (out !=  null)
+            if (out != null) {
                 out.close();
-            if (lock != null)
+            }
+            if (lock != null) {
                 lock.releaseLock();
+            }
         }
     }
-    
+
     // from org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl
-    
     /**
      * Tests if the query accepts the root as valid JavadocRoot,
      * the query accepts the JavaDoc root, if it can find the index-files
@@ -193,20 +201,20 @@ public class PersistenceLibrarySupport  {
         if (root == null) {
             return false;
         }
-        return findIndexFolder(root,1) != null;
+        return findIndexFolder(root, 1) != null;
     }
-    
+
     private static FileObject findIndexFolder(FileObject fo, int depth) {
         if (depth > MAX_DEPTH) {
             return null;
         }
-        if (fo.getFileObject("index-files",null)!=null || fo.getFileObject("index-all.html",null)!=null) {  //NOI18N
+        if (fo.getFileObject("index-files", null) != null || fo.getFileObject("index-all.html", null) != null) {  //NOI18N
             return fo;
         }
         FileObject[] children = fo.getChildren();
-        for (int i=0; i< children.length; i++) {
+        for (int i = 0; i < children.length; i++) {
             if (children[i].isFolder()) {
-                FileObject result = findIndexFolder(children[i], depth+1);
+                FileObject result = findIndexFolder(children[i], depth + 1);
                 if (result != null) {
                     return result;
                 }
@@ -214,56 +222,56 @@ public class PersistenceLibrarySupport  {
         }
         return null;
     }
-    
+
     /**
      *@return true if the given classpath contains a class with the given name.
-     */ 
+     */
     private static boolean containsClass(ClassPath cp, String className) {
         String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
         return cp.findResource(classRelativePath) != null;
     }
-    
+
     /**
      *@return true if the given library contains a service with the given name.
-     */ 
+     */
     public static boolean containsService(Library library, String serviceName) {
         String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
         return containsPath(library.getContent("classpath"), serviceRelativePath); //NOI18N
     }
-    
+
     /**
      *@return true if the given library contains a class with the given name.
-     */ 
+     */
     public static boolean containsClass(LibraryImplementation library, String className) {
         String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
         return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
     }
-    
+
     /**
      *@return true if the given library contains a service with the given name.
-     */ 
+     */
     public static boolean containsService(LibraryImplementation library, String serviceName) {
         String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
         return containsPath(library.getContent("classpath"), serviceRelativePath); //NOI18N
     }
-    
+
     private static boolean containsPath(List<URL> roots, String relativePath) {
         ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
         return cp.findResource(relativePath) != null;
     }
-    
+
     private static ClassPath getLibraryClassPath(Library library) {
         List<URL> urls = library.getContent("classpath"); //NOI18N
         URL[] result = urls.toArray(new URL[urls.size()]);
-        for (int i = 0; i < result.length; i++){
+        for (int i = 0; i < result.length; i++) {
             // see #101982
-            if (FileUtil.isArchiveFile(result[i])){
+            if (FileUtil.isArchiveFile(result[i])) {
                 result[i] = FileUtil.getArchiveRoot(result[i]);
             }
         }
-     return ClassPathSupport.createClassPath(result);
+        return ClassPathSupport.createClassPath(result);
     }
-    
+
     /**
      * @return the library in which given persistence unit's provider
      * is defined, or null none could be found.
@@ -271,31 +279,101 @@ public class PersistenceLibrarySupport  {
     public static Library getLibrary(PersistenceUnit pu) {
         return getLibrary(ProviderUtil.getProvider(pu));
     }
-    
+
     /**
      * @return the library in which given provider
      * is defined, or null none could be found.
      */
-    public static Library getLibrary(Provider provider){
+    public static Library getLibrary(Provider provider) {
         List<ProviderLibrary> libraries = createLibraries();
-        for (ProviderLibrary each : libraries){
-            if (provider.equals(each.getProvider())){
+        for (ProviderLibrary each : libraries) {
+            if (provider.equals(each.getProvider())) {
                 return each.getLibrary();
             }
         }
         return null;
     }
-    
+
+    /**
+     * @return the library in which given class present, for example jdbc driver class
+     */
+    public static void addDriver(Project project, JDBCDriver driver) {
+        Sources sources = ProjectUtils.getSources(project);
+        if (sources == null) {
+            return;
+        }
+        SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (groups == null || groups.length < 1) {
+            return;
+        }
+        SourceGroup firstGroup = groups[0];
+        FileObject fo = firstGroup.getRootFolder();
+        if (fo == null) {
+            return;
+        }
+        ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
+        if (classPath == null) {
+            classPath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        }
+        if (classPath == null) {
+            return;
+        }
+        String resourceName = driver.getClassName().replace('.', '/') + ".class"; // NOI18N
+        FileObject fob = classPath.findResource(resourceName); // NOI18N
+        if (fob == null) {
+            //first try to find corresponding library in nb
+            String libClass = driver.getClassName();
+            Library[] libraries = LibraryManager.getDefault().getLibraries();
+            for (Library each : libraries) {
+                ClassPath cp = getLibraryClassPath(each);
+                if (containsClass(cp, libClass)) {
+                    Util.addLibraryToProject(project, each);
+                    return;
+                }
+            }
+            //second add jars as is
+            for (URL url : driver.getURLs()) {
+                FileObject jarO = URLMapper.findFileObject(url);
+                if (jarO != null) {
+                    File jar = FileUtil.toFile(jarO);
+                    URL u = null;
+                    try {
+                        u = jar.toURI().toURL();
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    FileObject jarFile = FileUtil.toFileObject(jar);
+                    if (jarFile == null) {
+                        continue;
+                    }
+                    if (FileUtil.isArchiveFile(jarFile)) {
+                        u = FileUtil.getArchiveRoot(u);
+                    }
+                    try {
+                        ProjectClassPathModifier.addRoots(new URL[]{u}, fo, ClassPath.COMPILE);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (UnsupportedOperationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+
+        }
+    }
+
     private static List<ProviderLibrary> createLibraries() {
         List<ProviderLibrary> providerLibs = new ArrayList<ProviderLibrary>();
-        for (Library each : LibraryManager.getDefault().getLibraries()){
+        for (Library each : LibraryManager.getDefault().getLibraries()) {
             ClassPath cp = getLibraryClassPath(each);
             Provider provider = extractProvider(cp);
-            if (provider != null && containsClass(cp, "javax.persistence.EntityManager") && provider.isOnClassPath(cp)){ //NOI18N
+            if (provider != null && containsClass(cp, "javax.persistence.EntityManager") && provider.isOnClassPath(cp)) { //NOI18N
                 providerLibs.add(new ProviderLibrary(each, cp, provider));
             }
         }
         Collections.sort(providerLibs, new Comparator<ProviderLibrary>() {
+
+            @Override
             public int compare(ProviderLibrary l1, ProviderLibrary l2) {
                 String name1 = l1.getLibrary().getDisplayName();
                 String name2 = l2.getLibrary().getDisplayName();
@@ -304,7 +382,7 @@ public class PersistenceLibrarySupport  {
         });
         return providerLibs;
     }
-  
+
     /**
      * Gets the persistence providers that are defined in the libraries
      * of the IDE.
@@ -313,10 +391,12 @@ public class PersistenceLibrarySupport  {
      */
     public static List<Provider> getProvidersFromLibraries() {
         List<Provider> providerLibs = new ArrayList<Provider>();
-        for (ProviderLibrary each : createLibraries()){
+        for (ProviderLibrary each : createLibraries()) {
             providerLibs.add(each.getProvider());
         }
         Collections.sort(providerLibs, new Comparator<Provider>() {
+
+            @Override
             public int compare(Provider p1, Provider p2) {
                 String name1 = p1.getDisplayName();
                 String name2 = p2.getDisplayName();
@@ -325,7 +405,7 @@ public class PersistenceLibrarySupport  {
         });
         return providerLibs;
     }
-    
+
     /**
      * Gets the first library from the libraries registered in 
      * the IDE that contains a persistence provider.
@@ -340,11 +420,10 @@ public class PersistenceLibrarySupport  {
         }
         return null;
     }
-    
-    
+
     private static Provider extractProvider(ClassPath cp) {
-        for (Provider each : ProviderUtil.getAllProviders()){
-            if (each.isOnClassPath(cp)){
+        for (Provider each : ProviderUtil.getAllProviders()) {
+            if (each.isOnClassPath(cp)) {
                 return each;
             }
         }
@@ -353,9 +432,9 @@ public class PersistenceLibrarySupport  {
 
     /**
      * Encapsulates info on a library representing a persistence provider.
-     */ 
-    private static class ProviderLibrary{
-   
+     */
+    private static class ProviderLibrary {
+
         private final Library library;
         // the cp of the library
         private final ClassPath classPath;
@@ -382,6 +461,5 @@ public class PersistenceLibrarySupport  {
         public Provider getProvider() {
             return provider;
         }
-        
     }
 }
