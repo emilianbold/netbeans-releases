@@ -20,24 +20,99 @@
                 <attr name="position" intvalue="0"/>
                 <folder name="text">
                     <folder name="x-c">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
                     </folder>
                     <folder name="x-h">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getHControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
                     </folder>
                     <folder name="x-c++">
-                        <file name="TabsAndIndents.instance">
+                        <file name="All.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCController"/>
                             <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerTabs"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerAlignment"/>
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        <file name="Braces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerBraces"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                        <file name="BlankLines.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerBlank"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCControllerSpaces"/>
+                            <attr name="position" intvalue="600"/>
                         </file>
                     </folder>
                     <folder name="x-fortran">
