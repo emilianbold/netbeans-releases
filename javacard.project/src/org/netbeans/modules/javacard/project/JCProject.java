@@ -56,7 +56,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +73,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -101,6 +101,7 @@ import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.netbeans.modules.javacard.api.BadPlatformOrDevicePanel;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.project.ui.UnsupportedEncodingDialog;
+import org.netbeans.modules.javacard.source.JavacardAPQI;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
@@ -131,8 +132,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -159,7 +158,7 @@ import org.xml.sax.SAXException;
  * @author Anki R Nelaturu, Tim Boudreau
  */
 public class JCProject implements Project, AntProjectListener, PropertyChangeListener, ChangeListener {
-
+    private final Object classpathLock = new Object();
     private final ProjectKind kind;
     private final AuxiliaryConfiguration aux;
     protected final PropertyEvaluator eval;
@@ -170,19 +169,20 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     private ClassPath bootPath;
     private ClassPath libPath;
     private ClassPath compileTimePath;
+    private ClassPath processorPath;
     private final UpdateHelper updateHelper;
     private final ReferenceHelper refHelper;
     private SourceRoots sourceRoots;
     private final PlatformPropertyProvider platformProperties;
     private final DevicePropertyProvider deviceProperties;
     private final Object rootsLock = new Object();
-    private final PlatformModificationListener pml = new PlatformModificationListener();
     private final ChangeSupport supp = new ChangeSupport(this);
     private final SubprojectProviderImpl subprojects = new SubprojectProviderImpl();
     private volatile Boolean cachedBadProjectOrCard;
     private ClassPath[] registeredSourceCP;
     private ClassPath[] registeredCompileCP;
     private ClassPath[] registeredBootCP;
+    private ClassPath[] registeredProcessorCP;
     //package private for unit tests
     final ProjectOpenedHookImpl hook = new ProjectOpenedHookImpl();
 
@@ -263,6 +263,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, antHelper, eval),
                     LookupMergerSupport.createJFBLookupMerger(),
                     QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, sourceRoots, antHelper, this.eval), //Does not use APH to get/put properties/cfgdata
+                    new JavacardAPQI(this),
                     new AntArtifactProviderImpl(),
                     new DependenciesProviderImpl(),});
         return LookupProviderSupport.createCompositeLookup(new ProxyLookup(lkp),
@@ -397,9 +398,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     public final void propertyChange(final PropertyChangeEvent event) {
         if (event != null) {
             String propertyName = event.getPropertyName();
-            if (ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM.equals(propertyName)) {
-                updateGlobalClassPaths();
-            }
             if (ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM.equals(propertyName) ||
                     ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE.equals(propertyName)) {
                 synchronized (this) {
@@ -416,12 +414,10 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
     public void stateChanged(ChangeEvent e) {
         //Called by LibraryManager if the library classpath changes
-        updateGlobalClassPaths();
         subprojects.supp.fireChange();
     }
 
     void onDependenciesChanged() {
-        updateGlobalClassPaths();
         //Get out of the way of ProjectManager.mutex() + Children.MUTEX
         EventQueue.invokeLater(new Runnable() {
 
@@ -532,7 +528,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
     private ClassPath sourcePath;
     public ClassPath getSourceClassPath() {
-        synchronized (pml) {
+        synchronized (classpathLock) {
             if (sourcePath == null) {
                 sourcePath = ClassPathFactory.createClassPath(new SourceRootsClasspathImpl(getRoots()));
             }
@@ -710,7 +706,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     final ClassPath getLibClassPath() {
-        synchronized (pml) {
+        synchronized (classpathLock) {
             if (libPath == null) {
                 libPath = ClassPathFactory.createClassPath(
                         new DependenciesClasspathImpl(this));
@@ -720,11 +716,20 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private final ClassPath getBootClassPath() {
-        synchronized (pml) {
+        synchronized (classpathLock) {
             if (bootPath == null) {
                 bootPath = ClassPathFactory.createClassPath(new BootClassPathImpl(this));
             }
             return bootPath;
+        }
+    }
+
+    private final ClassPath getProcessorClassPath() {
+        synchronized (classpathLock) {
+            if (processorPath == null) {
+                processorPath = ClassPathSupport.createClassPath(new URL[0]);
+            }
+            return processorPath;
         }
     }
 
@@ -734,7 +739,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private final ClassPath getCompileTimeClassPath() {
-        synchronized (pml) {
+        synchronized (classpathLock) {
             if (compileTimePath == null) {
                 compileTimePath = ClassPathSupport.createProxyClassPath(getBootClassPath(), getLibClassPath());
             }
@@ -743,8 +748,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
     }
 
     private final void registerGlobalPaths() {
-        Utils.sfsFolderForRegisteredJavaPlatforms().addFileChangeListener(pml);
-        synchronized (pml) {
+        synchronized (classpathLock) {
             registeredBootCP = cpProvider.getProjectClassPaths(ClassPath.BOOT);
             if (registeredBootCP != null) {
                 GlobalPathRegistry.getDefault().register(
@@ -763,12 +767,18 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 GlobalPathRegistry.getDefault().register(
                         ClassPath.COMPILE, registeredCompileCP);
             }
+
+            registeredProcessorCP =
+                    cpProvider.getProjectClassPaths(JavaClassPathConstants.PROCESSOR_PATH);
+            if (registeredProcessorCP != null) {
+                GlobalPathRegistry.getDefault().register(
+                        JavaClassPathConstants.PROCESSOR_PATH, registeredProcessorCP);
+            }
         }
     }
 
     private final void unregisterGlobalPaths() {
-        Utils.sfsFolderForRegisteredJavaPlatforms().removeFileChangeListener(pml);
-        synchronized (pml) {
+        synchronized (classpathLock) {
             if (registeredBootCP != null) {
                 try {
                     GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT,
@@ -790,17 +800,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 } catch (IllegalArgumentException e) {
                 }// Was not registered, ignore
             }
-        }
-    }
-
-    private final void updateGlobalClassPaths() {
-        synchronized (pml) {
-            unregisterGlobalPaths();
-            bootPath =
-                    null;
-            compileTimePath =
-                    null;
-            registerGlobalPaths();
+            if (registeredProcessorCP != null) {
+                try {
+                    GlobalPathRegistry.getDefault().unregister(JavaClassPathConstants.PROCESSOR_PATH,
+                            registeredProcessorCP);
+                } catch (IllegalArgumentException e) {
+                }// Was not registered, ignore
+            }
         }
     }
 
@@ -1079,27 +1085,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         }
     }
 
-    private final class PlatformModificationListener extends FileChangeAdapter {
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            String platformName = eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
-            if (fe.getFile().getName().equals(platformName)) {
-                updateGlobalClassPaths();
-            }
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            fileDataCreated(fe);
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            fileDataCreated(fe);
-        }
-    }
-
     private final class AntArtifactProviderImpl implements AntArtifactProvider {
 
         public AntArtifact[] getBuildArtifacts() {
@@ -1337,6 +1322,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 return getSourceClassPath();
             } else if (type.equals(ClassPath.BOOT)) {
                 return getBootClassPath();
+            } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                return getProcessorClassPath();
             } else {
                 return null;
             }
