@@ -43,7 +43,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -60,8 +59,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -106,63 +103,60 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        Task task = RequestProcessor.getDefault().post(new Runnable() {
+        String id = "--- getExpander for " + execEnv.toString() + " ---"; // NOI18N
 
-            @Override
-            public void run() {
+        System.out.println(id + " started.");
+        try {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 try {
-                    // Make sure that host is connected!
                     ConnectionManager.getInstance().connectTo(execEnv);
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    fail("Failed to connect to " + execEnv.getDisplayName());
                 }
             }
-        });
-        try {
-            task.waitFinished(20000);
-            task.cancel();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            assertFalse("Cannot connect to " + execEnv.getDisplayName(), false); // NOI18N
-        }
 
-        System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
-        MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
+            assertTrue(execEnv.getDisplayName() + " must be connected", ConnectionManager.getInstance().isConnectedTo(execEnv));
 
-        Map<String, String> myenv = new HashMap<String, String>();
-        try {
-            myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
-            myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
-        System.out.println(myenv.toString());
-
-        String mspec = NativeExecutionTestSupport.getMspec(execEnv);
-
-        String os;
-
-        int mpos = mspec.indexOf('-');
-
-        if (mpos > 0) {
-            os = mspec.substring(mpos + 1);
-            if (os.equals("S2")) {
-                os = "SunOS";
+            Map<String, String> myenv = new HashMap<String, String>();
+            try {
+                myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
+                myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("Unable to parse string to expand: " + ex.getMessage());
             }
-        } else {
-            os = "Cannot guess OS from mspec";
-        }
 
-        try {
-            String pattern = "$osname-${platform}$_isa";
-            String result = expander.expandPredefinedMacros(pattern);
-            System.out.println(pattern + " -> " + result); // NOI18N
-            assertTrue(result + " should be started with " + os, result.startsWith(os));
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            System.out.println(myenv.toString());
+
+            String mspec = NativeExecutionTestSupport.getMspec(execEnv);
+
+            String os;
+
+            int mpos = mspec.indexOf('-');
+
+            if (mpos > 0) {
+                os = mspec.substring(mpos + 1);
+                if (os.equals("S2")) {
+                    os = "SunOS";
+                }
+            } else {
+                os = "Cannot guess OS from mspec";
+            }
+
+            try {
+                String pattern = "$osname-${platform}$_isa";
+                String result = expander.expandPredefinedMacros(pattern);
+                System.out.println(pattern + " -> " + result); // NOI18N
+                assertTrue(result + " should be started with " + os, result.startsWith(os));
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("Unable to parse string to expand: " + ex.getMessage());
+            }
+        } finally {
+            System.out.println(id + " finished");
         }
     }
 
