@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -75,7 +75,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     public ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
         super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
+        name = (qid == null) ? CharSequences.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
     }
@@ -152,7 +152,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     private CharSequence[] initNameParts(AST qid) {

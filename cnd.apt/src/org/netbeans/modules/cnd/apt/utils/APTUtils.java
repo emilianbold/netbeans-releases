@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * APT utilities
@@ -149,7 +149,7 @@ public class APTUtils {
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
-            _token.setTextID(CharSequenceKey.create(buf, start, count));
+            _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
@@ -280,7 +280,7 @@ public class APTUtils {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
         List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
-        Collections.sort(macrosSorted, CharSequenceKey.Comparator);
+        Collections.sort(macrosSorted, CharSequences.comparator());
         for (CharSequence key : macrosSorted) {
             APTMacro macro = macros.get(key);
             assert(macro != null);

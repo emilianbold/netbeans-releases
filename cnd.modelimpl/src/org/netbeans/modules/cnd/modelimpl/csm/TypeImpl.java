@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -85,7 +85,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     private final byte arrayDepth;
     private byte flags;
     CharSequence classifierText;
-    /*package*/ static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequenceKey.empty();
+    /*package*/ static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
     private int parseCount;
 
     final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();

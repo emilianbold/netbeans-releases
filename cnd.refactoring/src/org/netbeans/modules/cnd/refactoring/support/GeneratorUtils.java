@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -679,10 +679,10 @@ public class GeneratorUtils {
     
     public static TypeKind getTypeKind(CsmType type) {
         CharSequence text = type.getClassifierText();
-        if (CharSequenceKey.Comparator.compare("void", text) == 0) { // NOI18N
+        if (CharSequences.comparator().compare("void", text) == 0) { // NOI18N
             return TypeKind.VOID;
-        } else if (CharSequenceKey.Comparator.compare("bool", text) == 0 || // NOI18N
-                CharSequenceKey.Comparator.compare("boolean", text) == 0) { // NOI18N
+        } else if (CharSequences.comparator().compare("bool", text) == 0 || // NOI18N
+                CharSequences.comparator().compare("boolean", text) == 0) { // NOI18N
             return TypeKind.BOOLEAN;
         }
         return TypeKind.UNKNOWN;
@@ -692,7 +692,7 @@ public class GeneratorUtils {
         if (type1.equals(type2)) {
             return true;
         } else if (type2 != null) {
-            return CharSequenceKey.Comparator.compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
+            return CharSequences.comparator().compare(type1.getCanonicalText(), type2.getCanonicalText()) == 0;
         } else {
             return false;
         }

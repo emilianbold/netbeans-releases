@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -55,7 +55,7 @@ public class DefaultCache extends APTStringManager {
         if (text == null){
             return text;
         }
-        return CharSequenceKey.create(text);
+        return CharSequences.create(text);
     }
 
     public void dispose() {

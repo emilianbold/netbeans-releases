@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.classview;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 
 public class NameCache extends APTStringManager {
@@ -56,7 +56,7 @@ public class NameCache extends APTStringManager {
         if (text == null){
             return text;
         }
-        text = CharSequenceKey.create(text);
+        text = CharSequences.create(text);
         //return text;
         return instance.getString(text);
     }

@@ -96,7 +96,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * CsmFile implementations
@@ -1349,7 +1349,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     @Override
     public CharSequence getName() {
-        return CharSequenceKey.create(fileBuffer.getFile().getName());
+        return CharSequences.create(fileBuffer.getFile().getName());
     }
 
     @Override
@@ -2209,7 +2209,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         @Override
         public int compareTo(NameKey o) {
-            int res = CharSequenceKey.Comparator.compare(name, o.name);
+            int res = CharSequences.comparator().compare(name, o.name);
             if (res == 0) {
                 res = start - o.start;
             }
@@ -2236,7 +2236,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         public int compareTo(OffsetSortedKey o) {
             int res = start - o.start;
             if (res == 0) {
-                res = CharSequenceKey.Comparator.compare(name, o.name);
+                res = CharSequences.comparator().compare(name, o.name);
             }
             return res;
         }
@@ -2291,7 +2291,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         @Override
         public int compareTo(NameSortedKey o) {
-            int res = CharSequenceKey.Comparator.compare(name, o.name);
+            int res = CharSequences.comparator().compare(name, o.name);
             if (res == 0) {
                 res = start - o.start;
             }

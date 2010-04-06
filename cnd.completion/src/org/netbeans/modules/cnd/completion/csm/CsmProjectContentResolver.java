@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * help class to resolve content of the project
@@ -1141,7 +1141,7 @@ public final class CsmProjectContentResolver {
                             qname = member.getQualifiedName();
                             if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
                                 // Fix for IZ#139784: last unnamed enum overrides previous ones
-                                qname = CharSequenceKey.create(new StringBuilder(qname).append('$').append(++unnamedEnumCount));
+                                qname = CharSequences.create(new StringBuilder(qname).append('$').append(++unnamedEnumCount));
                             }
                         }
                         // do not replace inner objects by outer ones

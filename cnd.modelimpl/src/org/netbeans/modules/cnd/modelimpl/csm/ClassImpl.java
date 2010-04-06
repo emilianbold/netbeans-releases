@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -672,7 +672,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (cls == null) {
                 cls = getContainingClass();
             }
-            return CharSequenceKey.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
         ////////////////////////////////////////////////////////////////////////////
@@ -743,8 +743,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
         ClassImpl out = null;
         if (container != null) {
-            CharSequence name = CharSequenceKey.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-            name = (name == null) ? CharSequenceKey.empty() : name;
+            CharSequence name = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+            name = (name == null) ? CharSequences.empty() : name;
             int start = getStartOffset(ast);
             int end = getEndOffset(ast);
             CsmOffsetableDeclaration existing = container.findExistingDeclaration(start, end, name);
@@ -925,7 +925,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     @Override

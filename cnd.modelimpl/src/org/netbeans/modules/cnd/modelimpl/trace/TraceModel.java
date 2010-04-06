@@ -81,7 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Tracer for model
@@ -587,7 +587,7 @@ public class TraceModel extends TraceModelBase {
                     CsmFile file = (CsmFile) it.next();
                     l.add(file.getAbsolutePath());
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
@@ -600,7 +600,7 @@ public class TraceModel extends TraceModelBase {
                         l.add(file.getAbsolutePath());
                     }
                 }
-                Collections.sort(l, CharSequenceKey.Comparator);
+                Collections.sort(l, CharSequences.comparator());
                 for (Iterator it = l.iterator(); it.hasNext();) {
                     print((String) it.next());
                 }
