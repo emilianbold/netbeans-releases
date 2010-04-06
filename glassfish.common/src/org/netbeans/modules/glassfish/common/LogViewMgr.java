@@ -198,6 +198,8 @@ public class LogViewMgr {
         }
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
+
     /**
      * Reads a newly included InputSreams
      *
@@ -207,12 +209,11 @@ public class LogViewMgr {
         synchronized (readers) {
             stopReaders();
 
-            RequestProcessor rp = RequestProcessor.getDefault();
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
                 LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
-                rp.post(logger);
+                RP.post(logger);
             }
         }
     }
@@ -226,13 +227,12 @@ public class LogViewMgr {
         synchronized (readers) {
             stopReaders();
             
-            RequestProcessor rp = RequestProcessor.getDefault();
             for(File file : files) {
                 try {
                     // LoggerRunnable will close the stream.
                     LoggerRunnable logger = new LoggerRunnable(recognizers, new FileInputStream(file), true);
                     readers.add(new WeakReference<LoggerRunnable>(logger));
-                    rp.post(logger);
+                    RP.post(logger);
                 } catch (FileNotFoundException ex) {
                     LOGGER.log(Level.FINE, ex.getLocalizedMessage());
                 }
