@@ -190,10 +190,13 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             highlightStartOffset = highlightsSequence.getStartOffset();
             highlightEndOffset = highlightsSequence.getEndOffset();
             highlightAttributes = highlightsSequence.getAttributes();
-            assert (highlightStartOffset < highlightEndOffset) : "Empty highlight at offset=" + highlightStartOffset; // NOI18N
+            // Empty highlight occurred (Highlights API does not comment such case) so possibly re-call.
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + // NOI18N
                         "> " + ViewUtils.toString(highlightAttributes) + '\n');
+            }
+            if (highlightStartOffset >= highlightEndOffset) { // Empty highlight
+                fetchNextHighlight(); // Should be rare so use recursion
             }
 
         } else {
