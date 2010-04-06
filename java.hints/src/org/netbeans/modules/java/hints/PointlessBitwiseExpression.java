@@ -77,7 +77,7 @@ public class PointlessBitwiseExpression {
         TreePath treePath = ctx.getPath ();
         Map<String,TreePath> variables = ctx.getVariables ();
         CompilationInfo compilationInfo = ctx.getInfo ();
-        Tree tree = variables.get ("$c").getLeaf ();
+        TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
         if (value == null) return null;
         if (value == 0)
@@ -105,7 +105,7 @@ public class PointlessBitwiseExpression {
         TreePath treePath = ctx.getPath ();
         CompilationInfo compilationInfo = ctx.getInfo ();
         Map<String,TreePath> variables = ctx.getVariables ();
-        Tree tree = variables.get ("$c").getLeaf ();
+        TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
         if (value != null &&
             value == 0
@@ -123,7 +123,7 @@ public class PointlessBitwiseExpression {
                     TreePathHandle.create (treePath, compilationInfo)
                 )
             );
-        tree = variables.get ("$v").getLeaf ();
+        tree = variables.get ("$v");
         value = IncompatibleMask.getConstant (tree, ctx);
         if (value != null &&
             value == 0
