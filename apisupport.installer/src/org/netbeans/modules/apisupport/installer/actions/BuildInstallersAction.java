@@ -108,6 +108,8 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String appName = "";
                         String appIcon = null;
+                        String appIconIcns = null;
+                        File appIconIcnsFile = null;
                         String licenseType = prefs.get(SuiteInstallerProjectProperties.LICENSE_TYPE, null);
                         File licenseFile = null;
                         String licenseFileProp = prefs.get(SuiteInstallerProjectProperties.LICENSE_FILE, null);
@@ -129,6 +131,17 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             }
                             appName = ps.getProperty("app.name");
                             appIcon = ps.getProperty("app.icon");
+                            appIconIcns = ps.getProperty("app.icon.icns", null);
+                            if(appIconIcns!=null) {
+                                appIconIcnsFile = PropertyUtils.resolveFile(suiteLocation, appIconIcns);
+                            } else {
+                                //${harness.dir}/etc/applicationIcon.icns
+                                appIconIcnsFile = new File(InstalledFileLocator.getDefault().locate(
+                                    "etc/applicationIcon.icns",
+                                    "org.netbeans.modules.apisupport.harness", false).getAbsolutePath().replace("\\", "/"));
+                            }
+
+
                             if (appName == null) {
                                 //suite, not standalone app
                                 RequestProcessor.getDefault().post(new Runnable() {
@@ -322,6 +335,11 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             props.put(
                                 "nbi.icon.file", appIconFile.getAbsolutePath());
 
+                        }
+                        
+                        if(appIconIcnsFile!=null) {
+                            props.put(
+                                    "nbi.dock.icon.file", appIconIcnsFile.getAbsolutePath());
                         }
 
                         try {

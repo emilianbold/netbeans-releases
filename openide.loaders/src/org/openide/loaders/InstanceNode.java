@@ -226,8 +226,12 @@ final class InstanceNode extends DataNode implements Runnable {
             // Ignoring exception the same way as the Exception handler above.
         }
     }
-    
+
+    private boolean brokenIcon;
     private Image initIcon (int type) {
+        if (brokenIcon) {
+            return null;
+        }
         Image beanInfoIcon = null;
         try {
             InstanceCookie ic = ic();
@@ -276,10 +280,12 @@ final class InstanceNode extends DataNode implements Runnable {
         } catch (Exception e) {
             // Problem ==>> use default icon
             Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
+            brokenIcon = true;
         } catch (LinkageError e) {
             // #30650 - catch also LinkageError.
             // Problem ==>> use default icon
             Logger.getLogger(InstanceNode.class.getName()).log(Level.WARNING, null, e);
+            brokenIcon = true;
         }
 
         return beanInfoIcon;
