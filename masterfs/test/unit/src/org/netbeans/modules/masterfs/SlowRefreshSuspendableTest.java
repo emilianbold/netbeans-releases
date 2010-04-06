@@ -87,6 +87,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
     public void testRefreshCanBeSuspended() throws Exception {
         long lm = System.currentTimeMillis();
+        LOG.info("starting testRefreshCanBeSuspended " + lm);
         FileObject fileObject1 = testFolder.createData("fileObject1");
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
@@ -140,6 +141,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void setSource(Object newSource) {
+                LOG.info("Set source called: " + newSource);
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[])newSource;
                 assertEquals("Three elements", 3, arr.length);
@@ -170,6 +172,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         }
         AE counter = new AE();
 
+        LOG.info("Posting AE into RP");
         // starts 5s of disk checking
         RequestProcessor.Task task = RequestProcessor.getDefault().post(counter);
 
@@ -178,7 +181,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
         Thread.sleep(100);
 
-        LOG.info("Staring refresh");
+        LOG.info("Starting refresh");
         // do the refresh
         r.run();
         LOG.info("Refresh finished");

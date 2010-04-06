@@ -51,7 +51,19 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
+
+// import java.awt.BasicStroke;
+// import java.awt.Dimension;
+// import java.awt.FlowLayout;
+// import java.awt.Graphics;
+// import java.awt.Graphics2D;
+// import javax.swing.AbstractButton;
+// import javax.swing.BorderFactory;
+// import javax.swing.JButton;
+// import javax.swing.JLabel;
+// import javax.swing.JPanel;
+// import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -59,150 +71,153 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class Tabbed extends JTabbedPane {
 
-  Tabbed() {
-    addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent event) {
-        if (SwingUtilities.isRightMouseButton(event)) {
-          showPopupMenu(event, event.getX(), event.getY());
-        }
-      }
-    });
-  }
-
-  void addTrees(Tree list, Tree tree) {
-    String title = tree.toString();
-    addTab(title, new Panel(list, tree));
-//  setTabComponentAt(getTabCount() - 1, new Tab(title));
-    setSelectedIndex(getTabCount() - 1);
-  }
-
-  private void showPopupMenu(ComponentEvent event, int x, int y) {
-    JPopupMenu popup = new JPopupMenu();
-    JMenuItem item;
-
-    item = createItem("LBL_Close_Tab", new ActionListener() { // NOI18N
-      public void actionPerformed(ActionEvent event) {
-        closeTab();
-      }
-    });
-    popup.add(item);
-
-    item = createItem("LBL_Close_All_Tabs", new ActionListener() { // NOI18N
-      public void actionPerformed(ActionEvent event) {
-        closeAllTabs();
-      }
-    });
-    popup.add(item);
-
-    item = createItem("LBL_Close_Other_Tabs", new ActionListener() { // NOI18N
-      public void actionPerformed(ActionEvent event) {
-        closeOtherTabs();
-      }
-    });
-    popup.add(item);
-
-    popup.show(event.getComponent(), x, y);
-  }
-
-  private void closeTab() {
-    int i = getSelectedIndex();
-
-    if (i != -1) {
-      remove(i);
-    }
-  }
-
-  public void closeAllTabs() {
-    removeAll();
-  }
-
-  private void closeOtherTabs() {
-    Component current = getSelectedComponent();
-    Component [] other =  getComponents();
-
-    for (int i=0; i < other.length; i++) {
-      if (other [i] != current) {
-        remove(other [i]);
-      }
-    }
-  }
-
-  private JMenuItem createItem(String name, ActionListener listener) {
-    JMenuItem item = new JMenuItem(i18n(Tabbed.class, name));
-    item.addActionListener(listener);
-    return item;
-  }
-/*
-  // -------------------------------
-  private class Tab extends JPanel {
-    Tab(final String title) {
-      super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-      setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-      setOpaque(false);
-      
-      JLabel label = new JLabel(title);
-      label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-      add(label);
-      add(new TabButton());
-    }
-
-    // ----------------------------------------------------------------
-    private class TabButton extends JButton implements ActionListener {
-      public TabButton() {
-        final int size = 17;
-        setPreferredSize(new Dimension(size, size));
-        setToolTipText("close this tab");
-        setUI(new BasicButtonUI());
-        setContentAreaFilled(false);
-        setFocusable(false);
-        setBorder(BorderFactory.createEtchedBorder());
-        setBorderPainted(false);
+    Tabbed() {
         addMouseListener(new MouseAdapter() {
-          public void mouseEntered(MouseEvent event) {
-            Component component = event.getComponent();
-              
-            if (component instanceof AbstractButton) {
-              ((AbstractButton) component).setBorderPainted(true);
+            public void mousePressed(MouseEvent event) {
+                if (SwingUtilities.isRightMouseButton(event)) {
+                    showPopupMenu(event, event.getX(), event.getY());
+                }
             }
-          }
-
-          public void mouseExited(MouseEvent event) {
-            Component component = event.getComponent();
-        
-            if (component instanceof AbstractButton) {
-              ((AbstractButton) component).setBorderPainted(false);
-            }
-          }
         });
-        setRolloverEnabled(true);
-        addActionListener(this);
-      }
+    }
 
-      public void actionPerformed(ActionEvent e) {
-        int i = Tabbed.this.indexOfTabComponent(Tab.this);
+    void addTrees(Tree list, Tree tree) {
+        String title = tree.toString();
+        addTab(title, new Panel(list, tree));
+        // JDK 6: setTabComponentAt(getTabCount() - 1, new Tab(title));
+        setSelectedIndex(getTabCount() - 1);
+    }
+
+    private void showPopupMenu(ComponentEvent event, int x, int y) {
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem item;
+
+        item = createItem("LBL_Close_Tab", new ActionListener() { // NOI18N
+            public void actionPerformed(ActionEvent event) {
+                closeTab();
+            }
+        });
+        popup.add(item);
+
+        item = createItem("LBL_Close_All_Tabs", new ActionListener() { // NOI18N
+            public void actionPerformed(ActionEvent event) {
+                closeAllTabs();
+            }
+        });
+        popup.add(item);
+
+        item = createItem("LBL_Close_Other_Tabs", new ActionListener() { // NOI18N
+            public void actionPerformed(ActionEvent event) {
+                closeOtherTabs();
+            }
+        });
+        popup.add(item);
+        popup.show(event.getComponent(), x, y);
+    }
+
+    private void closeTab() {
+        int i = getSelectedIndex();
 
         if (i != -1) {
-          Tabbed.this.remove(i);
+            remove(i);
         }
-      }
-
-      public void updateUI() {}
-
-      protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        Graphics2D g = (Graphics2D) graphics.create();
-
-        if (getModel().isPressed()) {
-          g.translate(1, 1);
-        }
-        g.setStroke(new BasicStroke(2));
-        int delta = 6;
-
-        g.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
-        g.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
-        g.dispose();
-      }
     }
-  }
+
+    public void closeAllTabs() {
+        removeAll();
+    }
+
+    private void closeOtherTabs() {
+        Component current = getSelectedComponent();
+        Component[] other = getComponents();
+
+        for (int i = 0; i < other.length; i++) {
+            if (other[i] != current) {
+                remove(other[i]);
+            }
+        }
+    }
+
+    private JMenuItem createItem(String name, ActionListener listener) {
+        JMenuItem item = new JMenuItem(i18n(Tabbed.class, name));
+        item.addActionListener(listener);
+        return item;
+    }
+
+/* TO DO JDK 6
+    // -------------------------------
+    private class Tab extends JPanel {
+
+        Tab(final String title) {
+            super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            setBorder(BorderFactory.createEmptyBorder(TINY_SIZE, 0, 0, 0));
+            setOpaque(false);
+
+            JLabel label = new JLabel(title);
+            label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, MEDIUM_SIZE));
+            add(label);
+            add(new TabButton());
+        }
+
+        // ----------------------------------------------------------------
+        private class TabButton extends JButton implements ActionListener {
+            public TabButton() {
+                final int size = 17;
+                setPreferredSize(new Dimension(size, size));
+                setToolTipText(org.netbeans.modules.xml.util.UI.i18n(Tabbed.class, "LBL_Close_Tab")); // NOI18N
+                setUI(new BasicButtonUI());
+                setContentAreaFilled(false);
+                setFocusable(false);
+                setBorder(BorderFactory.createEtchedBorder());
+                setBorderPainted(false);
+
+                addMouseListener(new MouseAdapter() {
+                    public void mouseEntered(MouseEvent event) {
+                        Component component = event.getComponent();
+
+                        if (component instanceof AbstractButton) {
+                            ((AbstractButton) component).setBorderPainted(true);
+                        }
+                    }
+
+                    public void mouseExited(MouseEvent event) {
+                        Component component = event.getComponent();
+
+                        if (component instanceof AbstractButton) {
+                            ((AbstractButton) component).setBorderPainted(false);
+                        }
+                    }
+                });
+
+                setRolloverEnabled(true);
+                addActionListener(this);
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                int i = Tabbed.this.indexOfTabComponent(Tab.this);
+
+                if (i != -1) {
+                    Tabbed.this.remove(i);
+                }
+            }
+
+            public void updateUI() {}
+
+            protected void paintComponent(Graphics graphics) {
+                super.paintComponent(graphics);
+                Graphics2D g = (Graphics2D) graphics.create();
+
+                if (getModel().isPressed()) {
+                    g.translate(1, 1);
+                }
+                g.setStroke(new BasicStroke(2));
+                final int delta = 6;
+
+                g.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
+                g.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
+                g.dispose();
+            }
+        }
+    }
 */
 }

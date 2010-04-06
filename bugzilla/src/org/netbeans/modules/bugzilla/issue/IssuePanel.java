@@ -2159,7 +2159,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     if(ret) {
                         if (isNew) {
                             // Show all custom fields, not only the ones shown on bug creation
-                            initCustomFields();
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    initCustomFields();
+                                }
+                            });
                         }
                         reloadFormInAWT(true);
                     }

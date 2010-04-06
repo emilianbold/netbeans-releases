@@ -56,11 +56,10 @@ import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
-import org.netbeans.modules.xml.validation.ShowCookie;
-
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.openide.filesystems.FileObject;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

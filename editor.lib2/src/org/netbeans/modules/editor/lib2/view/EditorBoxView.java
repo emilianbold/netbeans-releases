@@ -509,6 +509,18 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     }
 
     @Override
+    public String findIntegrityError() {
+        if (children != null) {
+            if (children.size() == 0) {
+                return "children.size()==0";
+            }
+        } else {
+            return "children==null";
+        }
+        return null;
+    }
+
+    @Override
     protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
         appendViewInfoCore(sb, indent, importantChildIndex);
         if (children != null) {

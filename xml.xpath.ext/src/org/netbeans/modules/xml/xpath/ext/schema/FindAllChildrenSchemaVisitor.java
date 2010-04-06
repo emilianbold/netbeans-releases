@@ -114,8 +114,13 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         } else if (sc instanceof ComplexType) {
             visitChildren(sc);
         } else if (sc instanceof Schema) {
-            // Look for a global schema object
-            visitChildren(sc);
+           // Look for a global schema object
+           lookGlobalOnly = true;
+           try {
+               visitChildren(sc);
+           } finally {
+               lookGlobalOnly = false;
+           }
         } else {
             // Other elements can't containg nested elements or attributes
         }
@@ -180,7 +185,7 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             myFound.add(element);
         }
     }
-
+    
     private boolean equalsNemeSpase(Object o1, Object o2) {
         if (o1 == null || o2 == null) { return true; }
         return o1.equals(o2);

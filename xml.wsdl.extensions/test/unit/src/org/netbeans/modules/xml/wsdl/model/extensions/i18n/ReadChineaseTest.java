@@ -124,7 +124,7 @@ public class ReadChineaseTest extends TestCase {
             Role role1 = plt.getRole1();
             if(role1 != null) {
                 String name = role1.getName();
-                String expectedRoleName = "partnerlinktyperole1рш";
+                String expectedRoleName = "partnerlinktyperole1пїЅпїЅ";
                 //uncomment this to test
                 //the role name is not having correct chinease strings
                 assertEquals("name should match", expectedRoleName, name);
@@ -133,6 +133,6 @@ public class ReadChineaseTest extends TestCase {
     }*/
     
     public void testChineasePartnerLinkTypeDummy() throws Exception {
-        assertEquals("name should match","partnerlinktyperole1рш", "partnerlinktyperole1рш");
+        assertEquals("name should match","partnerlinktyperole1пїЅпїЅ", "partnerlinktyperole1пїЅпїЅ");
     }
 }

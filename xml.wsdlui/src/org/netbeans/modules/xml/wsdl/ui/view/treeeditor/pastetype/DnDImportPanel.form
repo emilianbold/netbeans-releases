@@ -184,7 +184,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel" name="errorWarningMessagePanel">
+    <Component class="org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel" name="errorWarningMessagePanel">
       <Properties>
         <Property name="name" type="java.lang.String" value="errorWarningMessagePanel" noResource="true"/>
       </Properties>
