@@ -383,10 +383,10 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             Color textLimitLineColor = docView.getTextLimitLineColor();
             boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
             int textLimitWidth = docView.getTextLimitWidth();
-            int defaultCharWidth = (int)docView.getDefaultCharWidth();
+            float defaultCharWidth = docView.getDefaultCharWidth();
 
             if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
-                int lineX = textLimitWidth * defaultCharWidth;
+                int lineX = (int)(textLimitWidth * defaultCharWidth);
                 if (lineX >= xInt && lineX <= endXInt){
                     g.setColor(textLimitLineColor);
                     g.drawLine(lineX, yInt, lineX, endYInt);

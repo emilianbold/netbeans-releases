@@ -199,14 +199,17 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     }
 
     final double getViewVisualOffset(int index) {
+        checkChildrenNotNull();
         return children.getViewVisualOffset(this, index);
     }
 
     final double getViewVisualOffset(EditorView view) {
+        checkChildrenNotNull();
         return children.getViewVisualOffset(view.getRawVisualOffset());
     }
 
     final double getViewMajorAxisSpan(int index) {
+        checkChildrenNotNull();
         return children.getViewMajorAxisSpan(this, index);
     }
 
@@ -335,10 +338,12 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
 
     @Override
     public Shape getChildAllocation(int index, Shape alloc) {
+        checkChildrenNotNull();
         return children.getChildAllocation(this, index, index + 1, alloc); // alloc overwritten
     }
 
     public Shape getChildAllocation(int startIndex, int endIndex, Shape alloc) {
+        checkChildrenNotNull();
         return children.getChildAllocation(this, startIndex, endIndex, alloc);
     }
 
@@ -372,28 +377,32 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     }
 
     public int getViewIndex(View childView) {
+        checkChildrenNotNull();
         int index = children.getViewIndex(childView.getStartOffset());
         assert (getEditorView(index) == childView);
         return index;
     }
 
     public int getViewIndexFirst(int offset) {
+        checkChildrenNotNull();
         return children.getViewIndexFirst(offset);
     }
 
     @Override
     public int getViewIndexChecked(double x, double y, Shape alloc) {
+        checkChildrenNotNull();
         return children.getViewIndexAtPoint(this, x, y, alloc);
     }
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
-        // Update the bounds with child.modelToView()
+        checkChildrenNotNull();
         return children.modelToViewChecked(this, offset, alloc, bias);
     }
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
+        checkChildrenNotNull();
         return children.viewToModelChecked(this, x, y, alloc, biasReturn);
     }
 
@@ -471,6 +480,7 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
+        checkChildrenNotNull();
         children.paint(this, g, alloc, clipBounds);
     }
 
@@ -500,7 +510,14 @@ public abstract class EditorBoxView extends EditorView implements EditorView.Par
     }
 
     final void fixSpans(int index, int offsetDelta, double visualDelta) {
+        checkChildrenNotNull();
         children.fixOffsetsAndMajorSpan(this, index, offsetDelta, visualDelta);
+    }
+
+    private void checkChildrenNotNull() {
+        if (children == null) {
+            throw new IllegalStateException("Null children in " + getDumpId()); // NOI18N
+        }
     }
 
     @Override
