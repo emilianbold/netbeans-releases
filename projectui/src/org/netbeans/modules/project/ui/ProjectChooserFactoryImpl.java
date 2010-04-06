@@ -47,29 +47,30 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Factory to be implemented bu the ui implementation
  * @author Petr Hrebejk
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.ProjectChooserFactory.class)
+@ServiceProvider(service=ProjectChooserFactory.class)
 public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
 
     public ProjectChooserFactoryImpl() {}
     
-    public JFileChooser createProjectChooser() {
+    public @Override JFileChooser createProjectChooser() {
         return ProjectChooserAccessory.createProjectChooser( false );
     }
 
-    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+    public @Override WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
         return new SimpleTargetChooserPanel( project, folders, bottomPanel, false );
     }
 
-    public File getProjectsFolder() {
+    public @Override File getProjectsFolder() {
         return OpenProjectListSettings.getInstance().getProjectsFolder(true);
     }
 
-    public void setProjectsFolder(File file) {
+    public @Override void setProjectsFolder(File file) {
         OpenProjectListSettings.getInstance().setProjectsFolder (file);
     }
 

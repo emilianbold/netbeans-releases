@@ -63,6 +63,7 @@ import java.util.SortedSet;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
@@ -127,7 +128,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
 
         cmf.run();
     }
-    
+
+    @RandomlyFails // NB-Core-Build #4355: display name after from bundle expected:<[Much Better Nam]e> but was:<[Testing Modul]e>
     public void testBundleKeyDefaultBundle() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         ProjectInformation pi = ProjectUtils.getInformation(project);
