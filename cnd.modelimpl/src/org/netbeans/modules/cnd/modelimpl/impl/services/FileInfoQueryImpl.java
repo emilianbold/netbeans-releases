@@ -240,7 +240,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                     try {
                         long lastParsedTime = fileImpl.getLastParsedTime();
-                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                        APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
                         if (apt != null) {
                             Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
                             if (handlers.isEmpty()) {
@@ -289,7 +289,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
             try {
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
 
                 GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();

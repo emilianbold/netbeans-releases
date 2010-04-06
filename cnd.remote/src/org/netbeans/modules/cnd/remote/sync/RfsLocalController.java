@@ -190,7 +190,7 @@ class RfsLocalController implements Runnable {
 
         @Override
         public String toString() {
-            return (isLink() ? "L " : file.isDirectory() ? "D " : "F ") + file.getPath() + " -> " + remotePath;
+            return (isLink() ? "L " : file.isDirectory() ? "D " : "F ") + file.getPath() + " -> " + remotePath; // NOI18N
         }
 
         public boolean isLink() {
@@ -367,7 +367,7 @@ class RfsLocalController implements Runnable {
             for (String line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
                 // line format is:
                 // lrwxrwxrwx   1 root     root           5 Mar 24 13:33 /export/link-home -> home/
-                String[] parts = line.split(" +");
+                String[] parts = line.split(" +"); // NOI18N
                 if (parts.length <= 4) {
                     if (!errorReported) {
                         errorReported = true;
@@ -375,7 +375,7 @@ class RfsLocalController implements Runnable {
                     }
                 }
                 String linkTarget = parts[parts.length - 1];
-                if (linkTarget.endsWith("/")) {
+                if (linkTarget.endsWith("/")) { // NOI18N
                     linkTarget = linkTarget.substring(0, linkTarget.length() - 1);
                 }
                 String linkPath = parts[parts.length - 3];
