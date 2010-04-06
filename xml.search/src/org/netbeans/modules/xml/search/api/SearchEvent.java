@@ -46,35 +46,35 @@ package org.netbeans.modules.xml.search.api;
  */
 public interface SearchEvent {
 
-  /**
-   * Returns search option.
-   * @return search option
-   */
-  SearchOption getSearchOption();
+    /**
+     * Returns search option.
+     * @return search option
+     */
+    SearchOption getSearchOption();
 
-  /**
-   * Returns search element.
-   * @return search element
-   */
-  SearchElement getSearchElement();
+    /**
+     * Returns search element.
+     * @return search element
+     */
+    SearchElement getSearchElement();
 
-  // ------------------------------------------
-  public class Adapter implements SearchEvent {
+    // ------------------------------------------
+    public class Adapter implements SearchEvent {
 
-    public Adapter(SearchOption option, SearchElement element) {
-      mySearchOption = option;
-      mySearchElement = element;
+        public Adapter(SearchOption option, SearchElement element) {
+            mySearchOption = option;
+            mySearchElement = element;
+        }
+
+        public SearchOption getSearchOption() {
+            return mySearchOption;
+        }
+
+        public SearchElement getSearchElement() {
+            return mySearchElement;
+        }
+
+        private SearchOption mySearchOption;
+        private SearchElement mySearchElement;
     }
-
-    public SearchOption getSearchOption() {
-      return mySearchOption;
-    }
-
-    public SearchElement getSearchElement() {
-      return mySearchElement;
-    }
-
-    private SearchOption mySearchOption;
-    private SearchElement mySearchElement;
-  }
 }

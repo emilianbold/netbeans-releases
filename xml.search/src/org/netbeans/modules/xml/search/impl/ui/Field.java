@@ -45,14 +45,14 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -60,129 +60,129 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class Field {
 
-  Field(String items) {
-    myItems = new LinkedList<String>();
-    createUIComponent();
-    setItems(items);
-  }
-
-  public String getText() {
-    return (String) myComboBox.getEditor().getItem();
-  }
-
-  public void requestFocus() {
-    myComboBox.getEditor().getEditorComponent().requestFocus();
-  }
-
-  public String save() {
-    addItem((String) myComboBox.getEditor().getItem()); // save last input item
-    StringBuffer items = new StringBuffer();
-
-    for (int i=0; i < myItems.size(); i++) {
-      items.append((i==0 ? "" : DELIM) + myItems.get(i)); // NOI18N
-      
-      if (i == MAX_SIZE) {
-        break;
-      }
+    Field(String items) {
+        myItems = new ArrayList<String>();
+        createUIComponent();
+        setItems(items);
     }
-    return items.toString();
-  }
 
-  public void addActionListener(ActionListener listener) {
-    myActionListener = listener;
-  }
-
-  public JComponent getUIComponent() {
-    return myComboBox;
-  }
-
-  private void addItem(String item) {
-    if (item == null) {
-      select();
-      return;
+    public String getText() {
+        return (String) myComboBox.getEditor().getItem();
     }
-    myComboBox.removeAllItems();
 
-    if (myItems.contains(item)) {
-      myItems.remove(item);
+    public void requestFocus() {
+        myComboBox.getEditor().getEditorComponent().requestFocus();
     }
-    myItems.add(0, item);
 
-    for (int i=0; i < myItems.size(); i++) {
-      if (i == MAX_SIZE) {
-        break;
-      }
-      myComboBox.addItem(myItems.get(i));
-    }
-    myComboBox.setSelectedItem(item);
-    select();
-  }
+    public String save() {
+        addItem((String) myComboBox.getEditor().getItem()); // save last input item
+        StringBuilder items = new StringBuilder();
 
-  private void setItems(String items) {
-    if (items == null) {
-      return;
-    }
-    if (items.startsWith(DELIM)) {
-      if ( !myItems.contains("")) { // NOI18N
-        myItems.add(""); // NOI18N
-      }
-    }
-    StringTokenizer stk = new StringTokenizer(items, DELIM);
+        for (int i = 0; i < myItems.size(); i++) {
+            items.append((i == 0 ? "" : DELIM) + myItems.get(i)); // NOI18N
 
-    while (stk.hasMoreTokens()) {
-      String item = stk.nextToken();
-
-      if ( !myItems.contains(item)) {
-        myItems.add(item);
-      }
-    }
-    myComboBox.removeAllItems();
-
-    for (int i=0; i < myItems.size(); i++) {
-      myComboBox.addItem(myItems.get(i));
-      
-      if (i == MAX_SIZE) {
-        break;
-      }
-    }
-    if (myItems.size() > 0) {
-      myComboBox.setSelectedItem(myItems.get(0));
-    }
-    select();
-  }
-
-  private void createUIComponent() {
-    myComboBox = new JComboBox();
-    myComboBox.setEditable(true);
-    myComboBox.getEditor().getEditorComponent().addKeyListener(
-      new KeyAdapter() {
-        public void keyReleased(KeyEvent event) {
-          if (myActionListener != null) {
-            myActionListener.actionPerformed(
-              new ActionEvent(myComboBox.getEditor().getItem(), 0, null));
-          }
-        }
-        public void keyPressed(KeyEvent key) {
-          if (key.getKeyCode() == key.VK_ENTER && !myComboBox.isPopupVisible()) {
-            JRootPane rootPane = SwingUtilities.getRootPane(myComboBox);
-
-            if (rootPane != null) {
-              rootPane.dispatchEvent(key);
+            if (i == MAX_SIZE) {
+                break;
             }
-          }
         }
-      }
-    );
-  }
+        return items.toString();
+    }
 
-  private void select() {
-    myComboBox.getEditor().selectAll();
-  }
+    public void addActionListener(ActionListener listener) {
+        myActionListener = listener;
+    }
 
-  private JComboBox myComboBox;
-  private List<String> myItems;
-  private ActionListener myActionListener;
+    public JComponent getUIComponent() {
+        return myComboBox;
+    }
 
-  private static final int MAX_SIZE = 15;
-  private static final String DELIM = "\u007f"; // NOI18N
+    private void addItem(String item) {
+        if (item == null) {
+            select();
+            return;
+        }
+        myComboBox.removeAllItems();
+
+        if (myItems.contains(item)) {
+            myItems.remove(item);
+        }
+        myItems.add(0, item);
+
+        for (int i = 0; i < myItems.size(); i++) {
+            if (i == MAX_SIZE) {
+                break;
+            }
+            myComboBox.addItem(myItems.get(i));
+        }
+        myComboBox.setSelectedItem(item);
+        select();
+    }
+
+    private void setItems(String items) {
+        if (items == null) {
+            return;
+        }
+        if (items.startsWith(DELIM)) {
+            if (!myItems.contains("")) { // NOI18N
+                myItems.add(""); // NOI18N
+            }
+        }
+        StringTokenizer stk = new StringTokenizer(items, DELIM);
+
+        while (stk.hasMoreTokens()) {
+            String item = stk.nextToken();
+
+            if (!myItems.contains(item)) {
+                myItems.add(item);
+            }
+        }
+        myComboBox.removeAllItems();
+
+        for (int i = 0; i < myItems.size(); i++) {
+            myComboBox.addItem(myItems.get(i));
+
+            if (i == MAX_SIZE) {
+                break;
+            }
+        }
+        if (myItems.size() > 0) {
+            myComboBox.setSelectedItem(myItems.get(0));
+        }
+        select();
+    }
+
+    private void createUIComponent() {
+        myComboBox = new JComboBox();
+        myComboBox.setEditable(true);
+        myComboBox.getEditor().getEditorComponent().addKeyListener(
+            new KeyAdapter() {
+
+                public void keyReleased(KeyEvent event) {
+                    if (myActionListener != null) {
+                        myActionListener.actionPerformed(new ActionEvent(myComboBox.getEditor().getItem(), 0, null));
+                    }
+                }
+
+                public void keyPressed(KeyEvent key) {
+                    if (key.getKeyCode() == key.VK_ENTER && !myComboBox.isPopupVisible()) {
+                        JRootPane rootPane = SwingUtilities.getRootPane(myComboBox);
+
+                        if (rootPane != null) {
+                            rootPane.dispatchEvent(key);
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    private void select() {
+        myComboBox.getEditor().selectAll();
+    }
+
+    private JComboBox myComboBox;
+    private List<String> myItems;
+    private ActionListener myActionListener;
+    private static final int MAX_SIZE = 15;
+    private static final String DELIM = "\u007f"; // NOI18N
 }

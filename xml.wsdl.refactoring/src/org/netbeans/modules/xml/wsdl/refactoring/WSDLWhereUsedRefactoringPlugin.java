@@ -148,8 +148,4 @@ public class WSDLWhereUsedRefactoringPlugin extends WSDLRefactoringPlugin {
     public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
         //do nothing
     }
-    
-      
-    
 }
-

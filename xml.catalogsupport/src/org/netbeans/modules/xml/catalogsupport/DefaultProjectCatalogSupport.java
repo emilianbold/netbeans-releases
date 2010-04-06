@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -65,7 +66,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.catalogsupport.util.ProjectReferenceUtility;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
@@ -93,7 +93,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
      * Creates a new instance of DefaultProjectCatalogSupport
      */
     public DefaultProjectCatalogSupport(Project project) {
-        this(project,null,null);
+        this(project,project.getLookup().lookup(AntProjectHelper.class),project.getLookup().lookup(ReferenceHelper.class));
     }
     
     public DefaultProjectCatalogSupport(Project project, AntProjectHelper helper,
@@ -102,19 +102,24 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         this.helper = helper;
         this.refHelper = refHelper;
     }
-    
+
+    /**
+     * Be aware that the method can return null. It can happen, for example,
+     * because of the specified file object doesn't relate to a project.
+     * @param source
+     * @return
+     */
     public static DefaultProjectCatalogSupport getInstance(FileObject source) {
         Project owner = FileOwnerQuery.getOwner(source);
-        if(owner!=null) {
-            DefaultProjectCatalogSupport support = (DefaultProjectCatalogSupport)owner.
-                    getLookup().lookup(DefaultProjectCatalogSupport.class);
-            if(support!=null) return support;
+
+        if(owner == null) {
+            return null;
         }
-        return new DefaultProjectCatalogSupport(owner);
+        return (DefaultProjectCatalogSupport) owner.getLookup().lookup(DefaultProjectCatalogSupport.class);
     }
     
     public boolean supportsCrossProject() {
-        return helper!=null;
+        return helper != null;
     }
     
     public URI constructProjectProtocol(FileObject foTobeAddedInCat) {
@@ -161,7 +166,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
             return true;
         }
 
-        FileObject folder = getSourceFolder(source);
+        FileObject folder = getSourceFolderByContentFile(source);
         if (folder != null && !FileUtil.isParentOf(folder,target)) {
             return true;
         }
@@ -169,8 +174,8 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         return false;
     }
     
-    public URI createCatalogEntry(FileObject source, FileObject target) throws
-            IOException, CatalogModelException {
+    public URI createCatalogEntry(FileObject source, FileObject target) 
+           throws IOException, CatalogModelException {
         assert source !=null && target !=null;
         CatalogWriteModel cwm = CatalogWriteModelFactory.getInstance().
                 getCatalogWriteModelForProject(project.getProjectDirectory());
@@ -178,25 +183,28 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         Project targetProject = FileOwnerQuery.getOwner(target);
         URI targetURI = null;
         URI sourceURI = null;
+
         try {
             sourceURI = getReferenceURI(source, target);
         } catch (URISyntaxException ex) {
             return null;
         }
-        if(project!=targetProject) {
+        if(project != targetProject && targetProject != null) {
             if(!getProjectReferences().contains(targetProject) &&
                     supportsCrossProject()) {
-                ProjectReferenceUtility.addProjectReference(refHelper,targetProject);
+                ProjectReferenceUtility.addProjectReference(project, refHelper, targetProject);
             }
             targetURI = constructProjectProtocol(target);
         } else {
             try {
-                targetURI = new URI(getRelativePath(cwm.getCatalogFileObject(),target));
-            } catch (URISyntaxException ex) {
+                targetURI = new URI(FileUtil.toFile(target).toURI().toString());
+            }
+            catch (URISyntaxException ex) {
                 return null;
             }
+            sourceURI = targetURI;
         }
-
+        
         try {
             if (sourceURI != null) {
                 sourceURI = new URI(sourceURI.toASCIIString());
@@ -209,37 +217,46 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
             Logger.getLogger(this.getClass().getName()).log(Level.INFO, "", e);
         }
 
-        cwm.addURI(sourceURI,targetURI);
+        cwm.addURI(sourceURI, targetURI);
+
         return sourceURI;
     }
     
     public URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException {
         Project targetProject = FileOwnerQuery.getOwner(target);
-        FileObject sourceFolder = getSourceFolder(source);
+        FileObject sourceFolder = getSourceFolderByContentFile(source);
 
         if (sourceFolder == null) {
             sourceFolder = source;
         }
         String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
-        String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
+        String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("") ? "" : 
             relPathToSrcGroup.concat("/");
-        if(project!=targetProject) {
-            FileObject folder = getSourceFolder(targetProject,target);
+
+        if (project != targetProject && targetProject != null) {
+            FileObject folder = getSourceFolderByContentFile(targetProject, target);
+        
             if (folder == null) {
-                throw new IllegalArgumentException(target.getPath()+" is not in target project source"); //NOI18N
+                String relPathFromTgtGroup = getRelativePath(targetProject.getProjectDirectory(), target);
+                return new URI(getUsableProjectName(targetProject).concat("/").concat(relPathFromTgtGroup));
             }
-            String relPathFromTgtGroup = getRelativePath(folder,target);
-            return new URI(relPathToSrcGroupWithSlash.concat(
-                    getUsableProjectName(targetProject)).
-                    concat("/").concat(relPathFromTgtGroup));
+            String relPathFromTgtGroup = getRelativePath(folder, target);
+            return new URI(getUsableProjectName(targetProject) + "/" + relPathFromTgtGroup);
         } else {
-            FileObject targetSourceFolder = getSourceFolder(target);
-            if (targetSourceFolder == null) {
-                throw new IllegalArgumentException(target.getPath()+" is not in project source"); //NOI18N
+            FileObject targetSourceFolderByContentFile = getSourceFolderByContentFile(target);
+        
+            if (targetSourceFolderByContentFile == null) {
+                targetSourceFolderByContentFile = target;
             }
-            String relPathFromTgtGroup =
-                    getRelativePath(targetSourceFolder,target);
-            return new URI(relPathToSrcGroupWithSlash.concat(relPathFromTgtGroup));
+            String relativePath;
+            if (targetProject == null) {
+                relativePath = getRelativePath(sourceFolder, target);
+                relPathToSrcGroupWithSlash = "../";
+            }
+            else {
+                relativePath = getRelativePath(targetSourceFolderByContentFile, target);
+            }
+            return new URI(relPathToSrcGroupWithSlash.concat(relativePath));
         }
     }
     
@@ -249,8 +266,8 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         return provider.getSubprojects();
     }
     
-    private FileObject getSourceFolder(FileObject source) {
-        return getSourceFolder(project,source);
+    private FileObject getSourceFolderByContentFile(FileObject source) {
+        return getSourceFolderByContentFile(project, source);
     }
     
     private static String[] sourceTypes = new String[] {
@@ -262,10 +279,10 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         ProjectConstants.SOURCES_TYPE_RUBY
     };
     
-    private static FileObject getSourceFolder(Project project, FileObject source) {
+    private static FileObject getSourceFolderByContentFile(Project project, FileObject source) {
         Sources sources = ProjectUtils.getSources(project);
         assert sources !=null;
-        ArrayList<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
+        List<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
         for (String type : sourceTypes) {
             SourceGroup[] groups = sources.getSourceGroups(type);
             if (groups != null) {
@@ -296,6 +313,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         StringTokenizer st1 = new StringTokenizer(sourceLocation,"/");
         StringTokenizer st2 = new StringTokenizer(targetLocation,"/");
         String relativeLoc = "";
+
         while (st1.hasMoreTokens() && st2.hasMoreTokens()) {
             relativeLoc = st2.nextToken();
             if (!st1.nextToken().equals(relativeLoc)) {
@@ -325,8 +343,7 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         }
         return relativeLoc;
     }
-    
-    
+
     private static String getUsableProjectName(Project project) {
         return  PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation
                 (project).getName()).replace('.','_');

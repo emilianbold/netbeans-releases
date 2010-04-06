@@ -133,8 +133,8 @@ public class ReferencedSchemasNode extends AbstractNode {
             if (thisDoc == null) {
                 return false;
             }
-            AXIDocument original = context.getModel().getRoot();
 
+            AXIDocument original = context.getModel().getRoot();
             if (original == null || original.getTargetNamespace() == null) {
                 return false;
             }

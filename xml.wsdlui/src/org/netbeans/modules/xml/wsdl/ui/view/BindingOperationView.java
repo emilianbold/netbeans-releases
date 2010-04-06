@@ -90,7 +90,7 @@ public class BindingOperationView extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
-        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel();
 
         setName("Form"); // NOI18N
 
@@ -224,7 +224,7 @@ public class BindingOperationView extends javax.swing.JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel1;
+    private org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel commonMessagePanel1;
     private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables

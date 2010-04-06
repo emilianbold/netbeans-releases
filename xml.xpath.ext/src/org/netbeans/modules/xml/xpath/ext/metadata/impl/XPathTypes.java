@@ -52,6 +52,8 @@ public abstract class XPathTypes {
         public boolean isAssignableFrom(XPathType otherType) {
             if (otherType instanceof XPathStringType) { 
                 return true;
+            } else if (otherType instanceof XPathDateTimeType) { 
+                return true;
             } else if (otherType instanceof XPathSchemaType) {
                 SchemaComponent otherSType = 
                         ((XPathSchemaType)otherType).getSchemaType();
@@ -195,6 +197,28 @@ public abstract class XPathTypes {
         }
     }
     
+    // See Issue #162495
+    public static final class XPathSubjectType implements XPathType {
+        
+        public MetaType getMetaType() {
+            return MetaType.SUBJECT;
+        }
+
+        public String getName() {
+            return "Subject"; // NOI18N
+        }
+
+        public boolean isAssignableFrom(XPathType otherType) {
+            if (otherType instanceof XPathSubjectType) {
+                // A Node Set can't be considered as a Node because 
+                // in many cases it can be treated as a mistake. 
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     public static final class XPathAnyType implements XPathType {
         
         public MetaType getMetaType() {
@@ -208,6 +232,48 @@ public abstract class XPathTypes {
         public boolean isAssignableFrom(XPathType otherType) {
             return true;
         }
+    }
+    
+    public static final class XPathDateTimeType extends XPathSchemaType {
+        
+        public XPathDateTimeType() {
+            super(XPathMetadataUtils.findPrimitiveType("string")); // NOI18N
+        }
+        
+        @Override
+        public MetaType getMetaType() {
+            return MetaType.STRING;
+        }
+        
+        
+        @Override
+        public String getName() {
+            return "Date/Time"; // NOI18N
+        }
+
+        @Override
+        public boolean isAssignableFrom(XPathType otherType) {
+            if (otherType instanceof XPathDateTimeType) { 
+                return true;
+            } else if (otherType instanceof XPathStringType) { 
+                return true;
+            } else if (otherType instanceof XPathSchemaType) {
+                SchemaComponent otherSType = 
+                        ((XPathSchemaType)otherType).getSchemaType();
+                if (otherSType == mSchemaType) {
+                    return true;
+                }
+                //
+                if (XPathMetadataUtils.isTypeDerived(mSchemaType, otherSType)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        
     }
     
 }

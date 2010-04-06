@@ -136,6 +136,7 @@ public class WizardAbstractConfigurationStep extends WSDLWizardDescriptorPanel i
             
             this.mPanel.getPortTypeNameTextField().getDocument().addDocumentListener(listener);
             this.mPanel.getOperationNameTextField().getDocument().addDocumentListener(listener);
+            this.mPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WizardAbstractConfigurationStep.class, "LBL_WizardPortTypeConfigurationStep"));
             //getWSDLWizardContext().setHasNext(false);
         }
         return this.mPanel;
@@ -168,7 +169,6 @@ public class WizardAbstractConfigurationStep extends WSDLWizardDescriptorPanel i
         fileName = (String) templateWizard.getProperty(WsdlPanel.FILE_NAME);
         project = Templates.getProject(wiz);
         mTempModel = (WSDLModel) templateWizard.getProperty(WizardAbstractConfigurationStep.TEMP_WSDLMODEL);
-        
     }
 
     @Override
