@@ -624,4 +624,29 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "      end"
                 );
     }
+
+    public void testCommentFixed2() {
+        setLoadDocumentText(
+                "      program Bug001\n" +
+                "**************\n" +
+                "*   Bug001   *\n" +
+                "**************\n" +
+                "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "**************\n" +
+                "*   Bug001   *\n" +
+                "**************\n" +
+                "          do 1 i = 1, 67\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+    }
 }
