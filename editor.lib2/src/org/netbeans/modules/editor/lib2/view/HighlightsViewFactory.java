@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -70,6 +71,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
+
+    private Document doc;
 
     private Element lineElementRoot;
 
@@ -104,13 +107,13 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
-        highlightsContainer = HighlightingManager.getInstance().getHighlights(textComponent(), null);
+        doc = component.getDocument();
+        highlightsContainer = HighlightingManager.getInstance().getHighlights(component, null);
         highlightsContainer.addHighlightsChangeListener(this);
     }
 
     @Override
     public void restart(int startOffset) {
-        Document doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
         lineElementRoot = doc.getDefaultRootElement();
         lineIndex = lineElementRoot.getElementIndex(startOffset);
@@ -249,7 +252,15 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                                 lastPending = (affectedRangePendingRunnable == this);
                             }
                             if (lastPending) {
-                                checkFireAffectedAreaChange();
+                                if (doc instanceof AbstractDocument) {
+                                    AbstractDocument adoc = (AbstractDocument) doc;
+                                    adoc.readLock();
+                                    try {
+                                        checkFireAffectedAreaChange();
+                                    } finally {
+                                        adoc.readUnlock();
+                                    }
+                                }
                             }
                         }
                     };

@@ -1227,7 +1227,7 @@ public class CasualDiff {
         }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
-                copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
+                copyTo(localPointer, localPointer = getCommentCorrectedOldPos(oldT.args.head));
             } else {
                 copyTo(localPointer, localPointer = methBounds[1]);
                 tokenSequence.move(localPointer);
@@ -2202,7 +2202,7 @@ public class CasualDiff {
                 // just copy existing element
                 case NOCHANGE:
                     oldIndex++;
-                    int[] bounds = getBounds(item.element);
+                    int[] bounds = getCommentCorrectedBounds(item.element);
                     tokenSequence.move(bounds[0]);
                     if (oldIndex != 1 && !wasLeadingDelete) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
@@ -3386,6 +3386,19 @@ public class CasualDiff {
             return true;
         }
         return false;
+    }
+
+    private int getCommentCorrectedOldPos(JCTree tree) {
+        CommentSet ch = comments.getComments(tree);
+        return Math.min(getOldPos(tree), commentStart(ch, CommentSet.RelativePosition.PRECEDING));
+    }
+
+    private int[] getCommentCorrectedBounds(JCTree tree) {
+        CommentSet ch = comments.getComments(tree);
+        return new int[] {
+            getCommentCorrectedOldPos(tree),
+            Math.max(endPos(tree), Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)))
+        };
     }
 
     private int[] getBounds(JCTree tree) {
