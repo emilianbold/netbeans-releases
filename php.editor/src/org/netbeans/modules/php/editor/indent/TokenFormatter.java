@@ -1350,8 +1350,9 @@ public class TokenFormatter {
 		try {
 		    if (newText != null && !oldText.equals(newText)) {
 			int realOffset = offset + delta;
-			if (formatContext.startOffset() <= realOffset
-				&& realOffset <= formatContext.endOffset()) {
+			int shift = realOffset > 0 ? 1 : 0; // format plus one char around the context.
+			if (formatContext.startOffset() - 1 <= realOffset
+				&& realOffset <= formatContext.endOffset() + 1) {
 			    if (oldText.length() > 0)  {
 				int removeLength = realOffset + oldText.length() < document.getLength()
 				    ? oldText.length()
