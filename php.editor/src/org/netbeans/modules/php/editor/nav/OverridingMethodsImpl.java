@@ -171,15 +171,13 @@ public class OverridingMethodsImpl implements OverridingMethods {
 
         @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(30);
             MethodElement method = (MethodElement) getElement();
             final TypeElement type = method.getType();
-            sb.append(method.getName());
-            sb.append(" : ");//NOI18N
             sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
-            sb.append(" (");//NOI18N
+            sb.append(" ("); // NOI18N
             sb.append(type.getFileObject().getNameExt());
-            sb.append(")");//NOI18N
+            sb.append(")"); // NOI18N
             return sb.toString();
         }
     }
@@ -190,12 +188,12 @@ public class OverridingMethodsImpl implements OverridingMethods {
 
         @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(30);
             TypeElement type = (TypeElement) getElement();
             sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
-            sb.append(" (");//NOI18N
+            sb.append(" ("); // NOI18N
             sb.append(type.getFileObject().getNameExt());
-            sb.append(")");//NOI18N
+            sb.append(")"); // NOI18N
             return sb.toString();
         }
     }
