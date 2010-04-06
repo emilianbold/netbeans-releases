@@ -73,6 +73,9 @@ import org.openide.util.lookup.Lookups;
 
 public final class RootNode extends AbstractNode {
 
+    private static final RequestProcessor REFRESH_PROCESSOR =
+            new RequestProcessor("Server registry update/refresh", 5);
+
     private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(RootNode.class.getName());
@@ -172,7 +175,7 @@ public final class RootNode extends AbstractNode {
         }
 
         public void init() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            REFRESH_PROCESSOR.post(new Runnable() {
 
                 public void run() {
                     synchronized (ChildFactory.this) {
@@ -187,7 +190,7 @@ public final class RootNode extends AbstractNode {
         }
 
         public void stateChanged(final ChangeEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            REFRESH_PROCESSOR.post(new Runnable() {
 
                 public void run() {
                     updateState(e);

@@ -224,6 +224,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private Pty pty = null;
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
+    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -337,6 +338,7 @@ public class GdbDebugger implements PropertyChangeListener {
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", PRINT_REPEAT); // NOI18N
+            gdb.gdb_set("backtrace limit", STACK_MAX_DEPTH); // NOI18N
             // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
