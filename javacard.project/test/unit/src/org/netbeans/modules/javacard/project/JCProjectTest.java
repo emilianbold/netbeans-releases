@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.table.DefaultTableModel;
 import org.junit.Before;
 import org.junit.Test;
@@ -179,6 +180,7 @@ public class JCProjectTest extends AbstractJCProjectTest {
         deps.save();
 
         //Now force a re-read of the data
+        final CountDownLatch latch = new CountDownLatch(1);
 
         DependenciesProvider.Receiver r = new DependenciesProvider.Receiver() {
 
@@ -188,6 +190,7 @@ public class JCProjectTest extends AbstractJCProjectTest {
                     assertEquals(1, deps.all().size());
                     assertEquals("dep", deps.all().get(0).getDependency().getID());
                     assertEquals(new File(fakeLib.getAbsolutePath()).getCanonicalFile(), new File(deps.all().get(0).getPath(ArtifactKind.ORIGIN)).getCanonicalFile());
+                    latch.countDown();
                 } catch (IOException ex) {
                     throw new IllegalStateException (ex);
                 }
@@ -200,9 +203,8 @@ public class JCProjectTest extends AbstractJCProjectTest {
         DependenciesProvider p = project.getLookup().lookup(DependenciesProvider.class);
         assertNotNull (p);
         Cancellable c = p.requestDependencies(r);
-        synchronized (c) {
-            c.wait(10000);
-        }
+        assertNotNull(c);
+        latch.await();
 
         assertNotNull (prov);
 
