@@ -789,7 +789,7 @@ public final class CharSequences {
 
         @Override
         public CharSequence subSequence(int beginIndex, int endIndex) {
-            return CharSequences.create(value, beginIndex, endIndex);
+            return CharSequences.create(value, beginIndex, endIndex-beginIndex);
         }
 
         @Override
@@ -859,7 +859,7 @@ public final class CharSequences {
 
         @Override
         public CharSequence subSequence(int beginIndex, int endIndex) {
-            return CharSequences.create(toChars(), beginIndex, endIndex);
+            return CharSequences.create(toChars(), beginIndex, endIndex-beginIndex);
         }
 
         @Override
