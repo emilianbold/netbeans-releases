@@ -145,6 +145,15 @@ public abstract class JavacardPlatform extends JavaPlatform {
     public abstract ClassPath getBootstrapLibraries(ProjectKind kind);
 
     /**
+     * Get this platform's annotation processor classpath for the given
+     * project kind.  The returned value may vary depending on
+     * kind.isClassic().
+     * @param kind The kind of project a classpath is needed for
+     * @return A ClassPath
+     */
+    public abstract ClassPath getProcessorClasspath(ProjectKind kind);
+
+    /**
      * Get a localized (or user-entered) display name for this particular
      * platform instance
      * @return A localized or user-entered display name for the platform

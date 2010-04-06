@@ -40,7 +40,6 @@
 package org.netbeans.modules.javacard.ri.platform;
 
 import org.netbeans.modules.javacard.spi.Cards;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -52,17 +51,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.common.ListenerProxy;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.PlatformInfo;
 import org.netbeans.modules.javacard.ri.spi.CardsFactory;
@@ -71,7 +70,9 @@ import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.propdos.ObservableProperties;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -90,16 +91,22 @@ import org.openide.util.Lookup.Provider;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-
 /**
  * Implementation of JavacardPlatform for the Java Card Reference Implementation
  * @author Tim Boudreau
  */
 public class RIPlatform extends JavacardPlatform {
     private final Properties props;
-    private final PropertyChangeListener pcl;
+    private final Map<Boolean, ClassPath> processorCps = new HashMap<Boolean, ClassPath>();
+    private final Map <Boolean, ClassPath> bootCps = new HashMap<Boolean, ClassPath>();
+    private final Object cpLock = new Object();
+    private ClassPath stdLibs;
+    private ClassPath src;
+    private final Set<ProjectKind> suppKinds = new HashSet<ProjectKind>(5);
+    static boolean inFindDefaultPlatform;
+
     static {
         //XXX necessary?  Ensures that the global build.properties always
         //has a valid value...
@@ -108,13 +115,6 @@ public class RIPlatform extends JavacardPlatform {
     private Cards cards = new CardsImpl();
     public RIPlatform(Properties props) {
         this.props = props;
-        if (props instanceof ObservableProperties) {
-            pcl = new PCL();
-            ObservableProperties o = (ObservableProperties) props;
-            o.addPropertyChangeListener(WeakListeners.propertyChange(pcl, o));
-        } else {
-            pcl = null;
-        }
     }
 
     public RIPlatform(File root, String name, PlatformInfo info) {
@@ -157,7 +157,6 @@ public class RIPlatform extends JavacardPlatform {
         return p;
     }
 
-    private final Set<ProjectKind> suppKinds = new HashSet<ProjectKind>(5);
     public Set<ProjectKind> supportedProjectKinds() {
         if (suppKinds.isEmpty()) {
             String prop = props.getProperty(
@@ -182,8 +181,6 @@ public class RIPlatform extends JavacardPlatform {
                 JavacardPlatformKeyNames.PLATFORM_KIND));
     }
 
-
-    static boolean inFindDefaultPlatform;
     public static DataObject findDefaultPlatform(DataObject caller) throws IOException {
         //Pending - always use whatever is the default, or somehow make
         //it explicit what platform is delegated to
@@ -303,32 +300,16 @@ public class RIPlatform extends JavacardPlatform {
         return props.getProperty(JavacardPlatformKeyNames.PLATFORM_KIND, "RI");
     }
 
-    private final class PCL implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (JavacardPlatformKeyNames.PLATFORM_BOOT_CLASSPATH.equals(evt.getPropertyName())) {
-                bootCps.clear();
-            }
-        }
-    }
-
     public File getHome() {
         String home = props.getProperty(JavacardPlatformKeyNames.PLATFORM_HOME);
         return home == null ? null : new File (home);
     }
 
-    private ClassPath createClasspathFromProperty (String key) {
-        String value = props.getProperty(key);
-        if (value == null) {
-            return ClassPathSupport.createClassPath("");
-        }
-        return createClasspath(value);
+    private static ClassPath createClasspathFromProperty (String key, Properties props) {
+        return ClassPathFactory.createClassPath(new PropertyClassPathImpl(key, props));
     }
-
-    private ClassPath createClasspath (String relativePaths) {
-        return ClassPathSupport.createClassPath(getURLs(relativePaths));
-    }
-
-    private URL[] getURLs(String absolutePaths) {
+    
+    private static URL[] getURLs(String absolutePaths) {
         String[] entries = absolutePaths.split(File.pathSeparator);
         List<URL> urls = new ArrayList<URL>(entries.length);
         for (String s : entries) {
@@ -360,7 +341,41 @@ public class RIPlatform extends JavacardPlatform {
 
     @Override
     public ClassPath getStandardLibraries() {
-        return createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_CLASSPATH);
+        synchronized (cpLock) {
+            if (stdLibs == null) {
+                stdLibs = createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_CLASSPATH, props);
+            }
+            return stdLibs;
+        }
+    }
+
+    @Override
+    public ClassPath getProcessorClasspath(ProjectKind kind) {
+        synchronized (cpLock) {
+            ClassPath result = processorCps.get(kind.isClassic());
+            if (result == null) {
+                result = createClasspathFromProperty(kind.isClassic() ?
+                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_CLASSIC_CLASSPATH :
+                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_EXT_CLASSPATH, props);
+                processorCps.put(kind.isClassic(), result);
+            }
+        return result;
+        }
+    }
+
+    @Override
+    public ClassPath getBootstrapLibraries(ProjectKind kind) {
+        synchronized (cpLock) {
+            ClassPath result = bootCps.get(kind.isClassic());
+            if (result == null) {
+                String prop = kind.isClassic() ?
+                    JavacardPlatformKeyNames.PLATFORM_CLASSIC_BOOT_CLASSPATH :
+                    JavacardPlatformKeyNames.PLATFORM_BOOT_CLASSPATH;
+                result = createClasspathFromProperty(prop, props);
+                bootCps.put (kind.isClassic(), result);
+            }
+            return result;
+        }
     }
 
     @Override
@@ -395,7 +410,12 @@ public class RIPlatform extends JavacardPlatform {
 
     @Override
     public ClassPath getSourceFolders() {
-        return createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_SRC_PATH);
+        synchronized (cpLock) {
+            if (src == null) {
+                src = createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_SRC_PATH, props);
+            }
+            return src;
+        }
     }
 
     @Override
@@ -411,10 +431,6 @@ public class RIPlatform extends JavacardPlatform {
     public boolean isValid() {
         File home = getHome();
         boolean result = home != null && home.exists() && home.isDirectory();
-        if (!result) {
-            System.err.println("INVALID PLATFORM - home: " + home);
-            System.err.println("Is RI? " + this.isReferenceImplementation());
-        }
         return result;
     }
 
@@ -437,31 +453,6 @@ public class RIPlatform extends JavacardPlatform {
     @Override
     public boolean isVersionSupported(SpecificationVersion javacardVersion) {
         return javacardVersion.compareTo(3) >= 0;
-    }
-
-    private Map <Boolean, ClassPath> bootCps = Collections.synchronizedMap(
-            new HashMap<Boolean, ClassPath>());
-    public ClassPath getBootstrapLibraries(ProjectKind kind) {
-        ClassPath result = bootCps.get(kind.isClassic());
-        if (result == null) {
-            String bootClasspath;
-            if (kind.isClassic()) {
-                bootClasspath = props.getProperty(JavacardPlatformKeyNames.PLATFORM_CLASSIC_BOOT_CLASSPATH);
-                if (bootClasspath == null) {
-                    bootClasspath = props.getProperty(JavacardPlatformKeyNames.PLATFORM_BOOT_CLASSPATH);
-                }
-            } else {
-                bootClasspath = props.getProperty(JavacardPlatformKeyNames.PLATFORM_BOOT_CLASSPATH);
-            }
-            if (bootClasspath == null || "".equals(bootClasspath.trim())) { //NOI18N
-                result = ClassPathSupport.createClassPath(""); //NOI18N
-                bootCps.put (kind.isClassic(), result);
-            } else {
-                result = createClasspath(bootClasspath);
-                bootCps.put (kind.isClassic(), result);
-            }
-        }
-        return result;
     }
 
     @Override
@@ -569,6 +560,126 @@ public class RIPlatform extends JavacardPlatform {
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
             //do nothing
+        }
+    }
+
+    public static class PropertyClassPathImpl extends ListenerProxy<Properties> implements ClassPathImplementation {
+        private final String property;
+        private final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>();
+        private volatile boolean attached;
+        PropertyClassPathImpl (String property, Properties props) {
+            super (props);
+            this.property = property;
+        }
+
+        @Override
+        public List<? extends PathResourceImplementation> getResources() {
+            synchronized (this) {
+                if (resources.isEmpty()) {
+                    resources.addAll(refresh());
+                }
+                return new LinkedList<PathResourceImplementation>(resources);
+            }
+        }
+
+        @Override
+        protected void attach(Properties props, PropertyChangeListener precreatedListener) {
+            if (props instanceof ObservableProperties) {
+                ObservableProperties ops = (ObservableProperties) props;
+                ops.addPropertyChangeListener(precreatedListener);
+            }
+            attached = true;
+        }
+
+        @Override
+        protected void detach(Properties props, PropertyChangeListener precreatedListener) {
+            if (props instanceof ObservableProperties) {
+                ObservableProperties ops = (ObservableProperties) props;
+                ops.removePropertyChangeListener(precreatedListener);
+            }
+            attached = false;
+        }
+
+        @Override
+        protected void onChange(String prop, Object old, Object nue) {
+            if (property.equals(prop)) {
+                List<PathResourceImplementation> oldRes = new ArrayList<PathResourceImplementation>();
+                List<PathResourceImplementation> curr;
+                boolean fire;
+                synchronized(this) {
+                    oldRes.addAll(resources);
+                    resources.clear();
+                    resources.addAll(refresh());
+                    fire = !oldRes.equals(resources);
+                    curr = !fire ? null : new ArrayList<PathResourceImplementation>(resources);
+                }
+                if (fire) {
+                    fire(PROP_RESOURCES, oldRes, curr);
+                }
+            }
+        }
+
+        private List<PathResourceImplementation> refresh() {
+            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+            String value = get().getProperty(property);
+            if (value == null) {
+                return result;
+            } else {
+                URL[] urls = getURLs(value);
+                for (URL u : urls) {
+                    PRI pri = new PRI(u);
+                    result.add (pri);
+                }
+            }
+            return result;
+        }
+
+        private final class PRI implements PathResourceImplementation {
+            private final URL url;
+            PRI(URL url) {
+                this.url = url;
+                Parameters.notNull("url", url);
+            }
+
+            @Override
+            public URL[] getRoots() {
+                return new URL[] { url };
+            }
+
+            @Override
+            public ClassPathImplementation getContent() {
+                return PropertyClassPathImpl.this;
+            }
+
+            @Override
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                //do nothing
+            }
+
+            @Override
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                //do nothing
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final PRI other = (PRI) obj;
+                if (this.url != other.url && (this.url == null || !this.url.toString().equals(other.url.toString()))) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                return url.toString().hashCode();
+            }
         }
     }
 }

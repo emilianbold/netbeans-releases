@@ -406,6 +406,15 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 //Notify the node that it may need to update
                 supp.fireChange();
             }
+            if (ProjectPropertyNames.PROJECT_PROP_PROCESSOR_PATH.equals(propertyName)) {
+                ProcessorClasspathImpl cpImpl;
+                synchronized (classpathLock) {
+                    cpImpl = this.procCp;
+                }
+                if (cpImpl != null) {
+                    cpImpl.processorPathChanged();
+                }
+            }
         } else {
             // Update all
             updateRuntimeDescriptor();
@@ -724,10 +733,12 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         }
     }
 
-    private final ClassPath getProcessorClassPath() {
+    private ProcessorClasspathImpl procCp;
+    final ClassPath getProcessorClassPath() {
         synchronized (classpathLock) {
             if (processorPath == null) {
-                processorPath = ClassPathSupport.createClassPath(new URL[0]);
+                procCp = new ProcessorClasspathImpl(this);
+                processorPath = ClassPathFactory.createClassPath(procCp);
             }
             return processorPath;
         }
@@ -1340,6 +1351,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                 cp = ClassPathSupport.createClassPath(getRoots().getRoots());
             } else if (ClassPath.COMPILE.equals(type)) {
                 cp = getCompileTimeClassPath();
+            } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                cp = getProcessorClassPath();
             } else {
                 cp = getBootClassPath();
             }
