@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -82,6 +85,7 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
+    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = true;
     private static final boolean TRACE = true;
 
     public MakeProjectTestBase(String name) {
@@ -214,6 +218,23 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 return;
             }
 
+            // For simple configure-make projects store logs for reuse
+            boolean hasConfigureLog = true;
+            File configureLog = null;
+            if (new File(path, "configure").exists()) {
+                configureLog = new File(path, "configure.discoveryLog");
+                hasConfigureLog = configureLog.exists();
+                if (hasConfigureLog) {
+                    hackConfigure(configure, configureLog);
+                }
+            }
+
+            final File makeFileLog  = new File(path, "Makefile.discoveryLog");
+            boolean hasMakefileLog = makeFileLog.exists();
+            if (hasMakefileLog) {
+                hackMakefile(makeFile, makeFileLog);
+            }
+
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {
@@ -284,6 +305,12 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
             ImportProject importer = new ImportProject(wizard);
             importer.setUILessMode();
+            if (!hasConfigureLog) {
+                importer.setConfigureLog(configureLog);
+            }
+            if (!hasMakefileLog) {
+                importer.setMakeLog(makeFileLog);
+            }
             importer.create();
             OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
             int i = 0;
@@ -418,14 +445,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
-            if (!OPTIMIZE_NATIVE_EXECUTIONS) {
+            if (!OPTIMIZE_NATIVE_EXECUTIONS && !OPTIMIZE_SIMPLE_PROJECTS) {
                 execute(tools, "rm", dataPath, "-rf", packageName);
                 fileCreatedFolder.mkdirs();
             }
         }
         if (fileCreatedFolder.list().length == 0){
             if (!new File(fileDataPath, tarName).exists()) {
-                execute(tools, "wget", dataPath, "-q", urlName);
+                execute(tools, "wget", dataPath, "-qN", urlName);
                 execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);
@@ -515,6 +542,31 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void hackConfigure(File file, File log) {
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            String firstLine = in.readLine();
+            in.close();
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            out.write(firstLine);
+            out.newLine();
+            out.write("cat " + log.getAbsolutePath());
+            out.close();
+        } catch (IOException e) {
+        }
+    }
+
+    private static void hackMakefile(File file, File log) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            out.write("all:");
+            out.newLine();
+            out.write("\tcat " + log.getAbsolutePath());
+            out.close();
+        } catch (IOException e) {
         }
     }
 }
