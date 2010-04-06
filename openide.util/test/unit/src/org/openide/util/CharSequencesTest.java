@@ -70,6 +70,24 @@ public class CharSequencesTest extends NbTestCase {
         }
     }
 
+    @Test
+    public void testANSISubSequence() {
+        String str = "12345678901234567890123456789";
+        CharSequence sub1 = str.subSequence(1, str.length());
+        CharSequence cs = CharSequences.create(str);
+        CharSequence sub2 = cs.subSequence(1, cs.length());
+        CharSequences.comparator().compare(sub1, sub2);
+    }
+
+    @Test
+    public void testUnicodeSubSequence() {
+        String str = "Длинный Русский текст? Достаточно длинный";
+        CharSequence sub1 = str.subSequence(1, str.length());
+        CharSequence cs = CharSequences.create(str);
+        CharSequence sub2 = cs.subSequence(1, cs.length());
+        CharSequences.comparator().compare(sub1, sub2);
+    }
+
     /**
      * Test of create method, of class CharSequences.
      */
