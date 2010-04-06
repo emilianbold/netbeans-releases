@@ -146,7 +146,6 @@ public class SchemaUsageRefactoringEngine {
         return null;
     }
  
-
     public void _refactorUsages(Model mod, Set<RefactoringElementImplementation> elements, AbstractRefactoring request) throws IOException {
         if (request == null || elements == null || mod == null) return;
         if (! (mod instanceof WSDLModel)) return;
@@ -163,11 +162,11 @@ public class SchemaUsageRefactoringEngine {
                     String newLocation = im.getLocation();
                     if(request instanceof RenameRefactoring ) {
                         newLocation = SharedUtils.calculateNewLocationString(im.getLocation(), (RenameRefactoring)request);
-                     } else if (request instanceof MoveRefactoring) {
+                    } else if (request instanceof MoveRefactoring) {
                         try {
                             newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
                         } catch (Exception e){}
-                     }
+                    }
                     im.setLocation(newLocation);
                 } else if (u.getLookup().lookup(SchemaModelReference.class)!=null) {
                     SchemaModelReference ref = u.getLookup().lookup(SchemaModelReference.class);
@@ -204,7 +203,6 @@ public class SchemaUsageRefactoringEngine {
         return sb.toString();
     }
     
-      
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
             return "location"; //NOI18N
@@ -214,7 +212,6 @@ public class SchemaUsageRefactoringEngine {
             return "ref"; //NO18N
         }
     }
-    
     
     public static ModelSource resolveModelSource(
             String location, Model currentModel, CatalogModel currentCatalog) {
@@ -267,13 +264,10 @@ public class SchemaUsageRefactoringEngine {
         return false;
     }
 
- //   @Override
     public String getModelReference(Component component) {
         if (component instanceof SchemaModelReference) {
             return ((SchemaModelReference)component).getSchemaLocation();
         }        
         return null;
     }
-    
-   
 }

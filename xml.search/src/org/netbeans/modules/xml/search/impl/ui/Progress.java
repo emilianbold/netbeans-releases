@@ -45,7 +45,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -53,17 +53,17 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class Progress implements SearchListener {
 
-  public void searchStarted(SearchEvent event) {
-    myProgress = ProgressHandleFactory.createHandle(
-      i18n(Progress.class, "LBL_Search_Progress")); // NOI18N
-    myProgress.start();
-  }
+    public void searchStarted(SearchEvent event) {
+        myProgress = ProgressHandleFactory.createHandle(i18n(Progress.class, "LBL_Search_Progress")); // NOI18N
+        myProgress.start();
+    }
 
-  public void searchFinished(SearchEvent event) {
-    myProgress.finish();
-  }
+    public void searchFinished(SearchEvent event) {
+        myProgress.finish();
+    }
 
-  public void searchFound(SearchEvent event) {}
+    public void searchFound(SearchEvent event) {
+    }
 
-  private ProgressHandle myProgress;
+    private ProgressHandle myProgress;
 }

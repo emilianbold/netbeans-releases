@@ -350,7 +350,8 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
+            messageLabel.setIcon(ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
         }
     }
 

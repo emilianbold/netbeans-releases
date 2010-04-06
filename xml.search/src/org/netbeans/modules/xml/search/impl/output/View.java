@@ -50,7 +50,7 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -58,105 +58,105 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class View extends TopComponent implements SearchListener {
 
-  public View() {
-    setIcon(icon(View.class, "find").getImage()); // NOI18N
-    setLayout(new GridBagLayout());
-    setFocusable(true);
-    myList = new Tree();
-    myTree = new Tree();
-  }
+    public View() {
+        setIcon(icon(View.class, "find").getImage()); // NOI18N
+        setLayout(new GridBagLayout());
+        setFocusable(true);
+        myList = new Tree();
+        myTree = new Tree();
+    }
 
-  public void searchStarted(SearchEvent event) {
+    public void searchStarted(SearchEvent event) {
 //out();
-    myFoundCount = 0;
-  }
+        myFoundCount = 0;
+    }
 
-  public void searchFound(SearchEvent event) {
+    public void searchFound(SearchEvent event) {
 //out("Found: " + element);
-    SearchElement element = event.getSearchElement();
-    myTree.addElement(element);
-    myList.addElement(new Element(element));
-    myFoundCount++;
-  }
+        SearchElement element = event.getSearchElement();
+        myTree.addElement(element);
+        myList.addElement(new Element(element));
+        myFoundCount++;
+    }
 
-  public void searchFinished(SearchEvent event) {
-    String text = event.getSearchOption().getText();
-    String target = event.getSearchOption().getTarget().toString();
-   
-    myList.finished(target, text, myFoundCount);
-    myTree.finished(target, text, myFoundCount);
+    public void searchFinished(SearchEvent event) {
+        String text = event.getSearchOption().getText();
+        String target = event.getSearchOption().getTarget().toString();
 
-    View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
+        myList.finished(target, text, myFoundCount);
+        myTree.finished(target, text, myFoundCount);
+
+        View view = (View) WindowManager.getDefault().findTopComponent(NAME);
 //out();
 //out("VIEW: " + view.getClass().getName() + " " + view.hashCode());
-    view.show(myList, myTree);
-  }
-
-  private void show(Tree list, Tree tree) {
-    createTabbed();
-    myTabbed.addTrees(list, tree);
-    open();
-    requestActive();
-  }
-
-  private void createTabbed() {
-    if (myTabbed != null) {
-      return;
+        view.show(myList, myTree);
     }
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.fill = GridBagConstraints.BOTH;
 
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    myTabbed = new Tabbed();
-    add(myTabbed, c);
-  }
-
-  @Override
-  public HelpCtx getHelpCtx() {
-    return HelpCtx.DEFAULT_HELP;
-  }
-
-  @Override
-  public int getPersistenceType() {
-    return PERSISTENCE_ALWAYS;
-  }
-      
-  @Override
-  public String getName() {
-    return NAME;
-  }
-  
-  @Override
-  public String getDisplayName() {
-    return i18n(View.class, "LBL_Search_Results"); // NOI18N
-  }
-
-  @Override
-  public String getToolTipText() {
-    return i18n(View.class, "TLT_Search_Results"); // NOI18N
-  }
-
-  @Override
-  protected void componentClosed() {
-    super.componentClosed();
-
-    if (myTabbed != null) {
-      myTabbed.closeAllTabs();
+    private void show(Tree list, Tree tree) {
+        createTabbed();
+        myTabbed.addTrees(list, tree);
+        open();
+        requestActive();
     }
-    myList = null;
-    myTree = null;
-  }
 
-  @Override
-  protected String preferredID() {
-    return NAME;
-  }
+    private void createTabbed() {
+        if (myTabbed != null) {
+            return;
+        }
+        GridBagConstraints c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.fill = GridBagConstraints.BOTH;
 
-  private Tree myList;
-  private Tree myTree;
-  private Tabbed myTabbed;
-  private int myFoundCount;
-  public static final String NAME = "search"; // NOI18N
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+        myTabbed = new Tabbed();
+        add(myTabbed, c);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    public int getPersistenceType() {
+        return PERSISTENCE_ALWAYS;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return i18n(View.class, "LBL_Search_Results"); // NOI18N
+    }
+
+    @Override
+    public String getToolTipText() {
+        return i18n(View.class, "TLT_Search_Results"); // NOI18N
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+
+        if (myTabbed != null) {
+            myTabbed.closeAllTabs();
+        }
+        myList = null;
+        myTree = null;
+    }
+
+    @Override
+    protected String preferredID() {
+        return NAME;
+    }
+
+    private Tree myList;
+    private Tree myTree;
+    private Tabbed myTabbed;
+    private int myFoundCount;
+    private static final String NAME = "xml.search"; // NOI18N
 }

@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchTarget;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -70,194 +70,190 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public interface SearchProvider {
 
-  /**
-   * Returns root.
-   * @return root
-   */
-  Object getRoot();
+    /**
+     * Returns root.
+     * @return root
+     */
+    Object getRoot();
 
-  /**
-   * Returns targets.
-   * @return targets
-   */
-  SearchTarget [] getTargets();
+    /**
+     * Returns targets.
+     * @return targets
+     */
+    SearchTarget[] getTargets();
 
-  /**
-   * Returns element by given object.
-   * @param object is given object
-   * @return element by given object
-   */
-  SearchElement getElement(Object object);
+    /**
+     * Returns element by the given object.
+     * @param object given object
+     * @return element by the given object
+     */
+    SearchElement getElement(Object object);
 
-  // ---------------------------------------------
-  public class Adapter implements SearchProvider {
+    // ---------------------------------------------
+    public class Adapter implements SearchProvider {
 
-    public Adapter(Object root) {
-      this(root, null);
-    }
-
-    public Adapter(Object root, DataObject data) {
-      myData = data;
-      myRoot = root;
-      myElements = new WeakHashMap<Component, SearchElement>();
-    }
-
-    protected Component getRoot(DataObject data) {
-      return null;
-    }
-
-    protected String getType(Component component) {
-      return null;
-    }
-
-    protected Node getNode(Component component) {
-      return null;
-    }
-
-    protected void gotoVisual(Component component) {}
-
-    protected void gotoSource(Component component) {}
-
-    protected Icon getIcon(Component component) {
-      return new ImageIcon(getNode(component).getIcon(BeanInfo.ICON_COLOR_16x16));
-    }
-
-    protected String getName(Component component) {
-      String name = null;
-
-      if (component instanceof Named) {
-        name = ((Named) component).getName();
-      } 
-      if (name == null && component instanceof DocumentComponent) {
-        name = getDocumentName((DocumentComponent) component);
-      }
-      if (name == null) {
-        name = ""; // NOI18N
-      }
-      return name;
-    }
-
-    private String getDocumentName(DocumentComponent component) {
-      org.w3c.dom.Element element = component.getPeer();
-
-      if (element == null) {
-        return null;
-      }
-      return element.getTagName();
-    }
-
-    protected String getToolTip(Component component) {
-      String type = getType(component);
-
-      if (type != null) {
-        int k = type.lastIndexOf("."); // NOI18N
-
-        if (k != -1) {
-          type = type.substring(k + 1);
+        public Adapter(Object root) {
+            this(root, null);
         }
-        return "<html>" + type + " <b>" + getName(component) + "</b></html>"; // NOI18N
-      }
-      return getName(component);
-    }
 
-    public final Object getRoot() {
-      if (myRoot == null) {
-        myRoot = getRoot(myData);
-      }
-      return myRoot;
-    }
-
-    public SearchTarget [] getTargets() {
-      return null;
-    }
-
-    public final SearchElement getElement(Object object) {
-      if ( !(object instanceof Component)) {
-        return null;
-      }
-      Component component = (Component) object;
-      SearchElement element = myElements.get(component);
-
-      if (element != null) {
-        return element;
-      }
-      Component father = component.getParent();
-      SearchElement parent = null;
-
-      if (father != null) {
-        parent = getElement(father);
-      }
-      element = new Element(component, parent);
-      myElements.put(component, element);
-
-      return element;
-    }
-
-    protected final DataObject getDataObject() {
-      return myData;
-    }
-
-    protected final Model getModel(DataObject data) {
-      ModelCookie cookie = data.getCookie(ModelCookie.class);
-
-      if (cookie == null) {
-        return null;
-      }
-      try {
-        return cookie.getModel();
-      } 
-      catch (IOException e) {
-        return null;
-      }
-    }
-
-    protected final void highlight(Component component) {
-      HighlightManager manager = HighlightManager.getDefault();
-      List<HighlightGroup> groups = manager.getHighlightGroups(HighlightGroup.SEARCH);
-
-      if (groups != null) {
-        for (HighlightGroup group : groups) {
-          manager.removeHighlightGroup(group);
+        public Adapter(Object root, DataObject data) {
+            myData = data;
+            myRoot = root;
+            myElements = new WeakHashMap<Component, SearchElement>();
         }
-      }
-      HighlightGroup group = new HighlightGroup(HighlightGroup.SEARCH);
-      Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
-      group.addHighlight(highlight);
-      manager.addHighlightGroup(group);
+
+        protected Component getRoot(DataObject data) {
+            return null;
+        }
+
+        protected String getType(Component component) {
+            return null;
+        }
+
+        protected Node getNode(Component component) {
+            return null;
+        }
+
+        protected void gotoVisual(Component component) {
+        }
+
+        protected void gotoSource(Component component) {
+        }
+
+        protected Icon getIcon(Component component) {
+            return new ImageIcon(getNode(component).getIcon(BeanInfo.ICON_COLOR_16x16));
+        }
+
+        protected String getName(Component component) {
+            String name = null;
+
+            if (component instanceof Named) {
+                name = ((Named) component).getName();
+            }
+            if (name == null && component instanceof DocumentComponent) {
+                name = getDocumentName((DocumentComponent) component);
+            }
+            if (name == null) {
+                name = ""; // NOI18N
+            }
+            return name;
+        }
+
+        private String getDocumentName(DocumentComponent component) {
+            org.w3c.dom.Element element = component.getPeer();
+
+            if (element == null) {
+                return null;
+            }
+            return element.getTagName();
+        }
+
+        protected String getToolTip(Component component) {
+            String type = getType(component);
+
+            if (type != null) {
+                int k = type.lastIndexOf("."); // NOI18N
+
+                if (k != -1) {
+                    type = type.substring(k + 1);
+                }
+                return "<html>" + type + " <b>" + getName(component) + "</b></html>"; // NOI18N
+            }
+            return getName(component);
+        }
+
+        public final Object getRoot() {
+            if (myRoot == null) {
+                myRoot = getRoot(myData);
+            }
+            return myRoot;
+        }
+
+        public SearchTarget[] getTargets() {
+            return null;
+        }
+
+        public final SearchElement getElement(Object object) {
+            if (!(object instanceof Component)) {
+                return null;
+            }
+            Component component = (Component) object;
+            SearchElement element = myElements.get(component);
+
+            if (element != null) {
+                return element;
+            }
+            Component father = component.getParent();
+            SearchElement parent = null;
+
+            if (father != null) {
+                parent = getElement(father);
+            }
+            element = new Element(component, parent);
+            myElements.put(component, element);
+
+            return element;
+        }
+
+        protected final DataObject getDataObject() {
+            return myData;
+        }
+
+        protected final Model getModel(DataObject data) {
+            ModelCookie cookie = data.getCookie(ModelCookie.class);
+
+            if (cookie == null) {
+                return null;
+            }
+            try {
+                return cookie.getModel();
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        protected final void highlight(Component component) {
+            HighlightManager manager = HighlightManager.getDefault();
+            List<HighlightGroup> groups = manager.getHighlightGroups(HighlightGroup.SEARCH);
+
+            if (groups != null) {
+                for (HighlightGroup group : groups) {
+                    manager.removeHighlightGroup(group);
+                }
+            }
+            HighlightGroup group = new HighlightGroup(HighlightGroup.SEARCH);
+            Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
+            group.addHighlight(highlight);
+            manager.addHighlightGroup(group);
+        }
+
+        // --------------------------------------------------------
+        private final class Element extends SearchElement.Adapter {
+
+            private Element(Component component, SearchElement parent) {
+                super(SearchProvider.Adapter.this.getName(component), SearchProvider.Adapter.this.getToolTip(component), SearchProvider.Adapter.this.getIcon(component), parent);
+                myComponent = component;
+            }
+
+            @Override
+            public void gotoSource() {
+                SearchProvider.Adapter.this.gotoSource(myComponent);
+            }
+
+            @Override
+            public void gotoVisual() {
+                SearchProvider.Adapter.this.gotoVisual(myComponent);
+            }
+
+            @Override
+            public boolean isDeleted() {
+                return myComponent.getModel() == null;
+            }
+            private Component myComponent;
+        }
+
+        private Object myRoot;
+        private DataObject myData;
+        private Map<Component, SearchElement> myElements;
     }
-
-    // --------------------------------------------------------
-    private final class Element extends SearchElement.Adapter {
-      private Element(Component component, SearchElement parent) {
-        super(
-          SearchProvider.Adapter.this.getName(component),
-          SearchProvider.Adapter.this.getToolTip(component),
-          SearchProvider.Adapter.this.getIcon(component),
-          parent
-        );
-        myComponent = component;
-      }
-
-      @Override
-      public void gotoSource() {
-        SearchProvider.Adapter.this.gotoSource(myComponent);
-      }
-
-      @Override
-      public void gotoVisual() {
-        SearchProvider.Adapter.this.gotoVisual(myComponent);
-      }
-
-      @Override
-      public boolean isDeleted() {
-        return myComponent.getModel() == null;
-      }
-
-      private Component myComponent;
-    }
-
-    private Object myRoot;
-    private DataObject myData;
-    private Map<Component, SearchElement> myElements;
-  }
 }

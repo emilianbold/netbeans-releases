@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import javax.xml.namespace.NamespaceContext;
+
 /**
  *
  * @author nk160297
@@ -51,5 +53,24 @@ public interface AbstractLocationPath extends XPathSchemaContextHolder {
      * @return a <code>boolean</code> value
      */
     boolean isSimplePath();
+
+    /**
+     * Gets the string representation of the expression's part.
+     * It truncates the step's tail up to the specified index. 
+     * Eventually the step with the index is included and is in the end 
+     * of the result string. Use general getExpressionString() method if 
+     * you need getting the whole text of the path.
+     * 
+     * @return the string representation
+     */
+    String getExpressionString(int lastStepIndex);
     
+    /**
+     * Does almost the same as the previous method but use the specified
+     * namespace context while building locaiton steps' prefixes.
+     *
+     * @return the string representation
+     */
+    String getExpressionString(int lastStepIndex, NamespaceContext ns);
+
 }

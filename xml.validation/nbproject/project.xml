@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -46,21 +46,35 @@
             <code-name-base>org.netbeans.modules.xml.validation</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.xml</code-name-base>
+                    <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.13.11</specification-version>
+                        <specification-version>6.5.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.10</specification-version>
+                        <specification-version>6.6.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -68,7 +82,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.4.11</specification-version>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -84,7 +98,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>5.9.11</specification-version>
+                        <specification-version>5.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -92,7 +106,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.7.11</specification-version>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -108,7 +122,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,7 +138,75 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.5.11</specification-version>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.apache.tools.ant.module</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.24.1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.catalogsupport</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xpath.ext</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -132,24 +214,39 @@
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
-                <friend>org.netbeans.modules.soa.validation</friend>
-                <friend>org.netbeans.modules.soa.validation01</friend>
+                <friend>org.netbeans.modules.bpel.mapper</friend>
+                <friend>org.netbeans.modules.bpel.model</friend>
+                <friend>org.netbeans.modules.bpel.project</friend>
+                <friend>org.netbeans.modules.bpel.refactoring</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.soa.samples</friend>
+                <friend>org.netbeans.modules.soa.catalog</friend>
+                <friend>org.netbeans.modules.dm.di.core</friend>
                 <friend>org.netbeans.modules.etl.editor</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
-                <friend>org.netbeans.modules.xml.schema</friend>
-                <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.xslt.core</friend>
-                <friend>org.netbeans.modules.xslt.tmap</friend>
-                <friend>org.netbeans.modules.script.core</friend>
-                <friend>org.netbeans.modules.workflow.editor</friend>
-                <friend>org.netbeans.modules.worklist.editor</friend>
+                <friend>org.netbeans.modules.iep.project</friend>
+                <friend>org.netbeans.modules.wlm.model</friend>
                 <friend>org.netbeans.modules.wlm.editor</friend>
+                <friend>org.netbeans.modules.wlm.project</friend>
+                <friend>org.netbeans.modules.xml.schema</friend>
+                <friend>org.netbeans.modules.xml.search</friend>
+                <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.xml.xam.ui</friend>
+                <friend>org.netbeans.modules.sca.designer</friend>
+                <friend>org.netbeans.modules.xslt.core</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
+                <friend>org.netbeans.modules.xslt.validation</friend>
                 <friend>org.netbeans.modules.scheduler.ui</friend>
                 <friend>org.netbeans.modules.dm.di.core</friend>
-                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
-                <package>org.netbeans.modules.xml.validation</package>
+                <package>org.netbeans.modules.xml.validation.action</package>
+                <package>org.netbeans.modules.xml.validation.core</package>
                 <package>org.netbeans.modules.xml.validation.ui</package>
+                <package>org.netbeans.modules.xml.clazz</package>
+                <package>org.netbeans.modules.xml.reference</package>
+                <package>org.netbeans.modules.xml.time</package>
+                <package>org.netbeans.modules.xml.util</package>
             </friend-packages>
         </data>
     </configuration>

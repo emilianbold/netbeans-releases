@@ -59,6 +59,9 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.Localized
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
+import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfiguratorFactory;
 
 /**
  *
@@ -102,11 +105,16 @@ public class WsdlGenerationUtil {
     }
     
      public void createAndAddExtensibilityElementAttributes(ExtensibilityElement ee, ExtensionAttrType[] attrs) {
+         ExtensibilityElementConfigurator configurator =
+                ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(ee.getQName());
         if(attrs != null) {
             for(int i =0; i< attrs.length; i++) {
                 ExtensionAttrType attr = attrs[i];
                 String name = attr.getName();
                 String defaultValue = attr.getDefaultValue();
+                if (defaultValue == null && configurator != null) {
+                    defaultValue = configurator.getDefaultValue(ee, ee.getQName(), name);
+                }
                 if(name != null) {
                     ee.setAttribute(name, defaultValue);
                 }
