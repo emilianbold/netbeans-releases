@@ -66,18 +66,27 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 public class CollectDerivationVisitor extends DefaultSchemaVisitor {
 
     private GlobalType mProcessedType;
+
+    // Key --- derived from --> Value
     private HashMap<GlobalType, GlobalType> mDerivationMap;
+    private boolean mSimpleTypesOnly;
     
-    public CollectDerivationVisitor(HashMap<GlobalType, GlobalType> derivationMap) {
+    public CollectDerivationVisitor(HashMap<GlobalType, GlobalType> derivationMap,
+            boolean simpleTypesOnly) {
         assert derivationMap != null; 
         //
         mDerivationMap = derivationMap;
+        mSimpleTypesOnly = simpleTypesOnly;
     }
     
     public HashMap<GlobalType, GlobalType> collectDerivationFrom(
             SchemaModel sModel) {
-        assert sModel != null;
-        visit(sModel.getSchema());
+        if (sModel != null) {
+            Schema schema = sModel.getSchema();
+            if (schema != null) {
+                visit(schema);
+            }
+        }
         //
         return mDerivationMap;
     }
@@ -87,6 +96,7 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     @Override
     public void visit(Schema schema) {
         // Looks for global type children only.
+        assert schema != null;
         for (GlobalType gType: schema.getChildren(GlobalType.class)) {
             mProcessedType = gType;
             gType.accept(this);
@@ -100,6 +110,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
 
     @Override
     public void visit(GlobalComplexType type) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         visitChildren(type);
     }
     
@@ -112,6 +125,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexContent cc) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         visitChildren(cc);
     }
     
@@ -124,6 +140,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexExtension ce) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         checkBaseTypeRef(ce.getBase());
     }
     
@@ -134,6 +153,9 @@ public class CollectDerivationVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ComplexContentRestriction ccr) {
+        if (mSimpleTypesOnly) {
+            return;
+        }
         checkBaseTypeRef(ccr.getBase());
     }
     

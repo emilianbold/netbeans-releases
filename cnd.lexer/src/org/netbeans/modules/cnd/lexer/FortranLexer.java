@@ -187,7 +187,12 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case '-':
                             return token(FortranTokenId.OP_MINUS);
                         case '*':
-                            state = AFTER_STAR;
+                            if ((lineColomn == 1) && !fortranFreeFormat) {
+                                lineCommentFree = false;
+                                state = IN_LINE_COMMENT;
+                            } else {
+                                state = AFTER_STAR;
+                            }
                             break;
                         case '!':
                             // Fortran comments begin with a ! and last to end of line

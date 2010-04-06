@@ -61,11 +61,12 @@ import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 public class TypeInheritanceUtil {
 
     public static Map<GlobalType, GlobalType> populateDerivationMap(
-            ExternalModelResolver extModelResolver) { 
+            ExternalModelResolver extModelResolver, boolean simpleTypesOnly) {
         //
         HashMap<GlobalType, GlobalType> result = new HashMap<GlobalType, GlobalType>();
         //
-        CollectDerivationVisitor visitor = new CollectDerivationVisitor(result);
+        CollectDerivationVisitor visitor = 
+                new CollectDerivationVisitor(result, simpleTypesOnly);
         Collection<SchemaModel> visibleModels = extModelResolver.getVisibleModels();
         for (SchemaModel sModel : visibleModels) {
             visitor.collectDerivationFrom(sModel);
@@ -77,7 +78,11 @@ public class TypeInheritanceUtil {
     public static boolean areTypesDerived(GlobalType derived, GlobalType from, 
             Map<GlobalType, GlobalType> derivationMap) { 
         //
-       GlobalType fromCandidate = derivationMap.get(derived);
+        if (derivationMap == null || derived == null || from == null) {
+            return false;
+        }
+        //
+        GlobalType fromCandidate = derivationMap.get(derived);
         while (true) {
             if (fromCandidate == null) {
                 break;

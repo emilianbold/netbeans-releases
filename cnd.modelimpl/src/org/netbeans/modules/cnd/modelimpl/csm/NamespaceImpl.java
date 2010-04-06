@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
         Persistent, SelfPersistent, Disposable, CsmIdentifiable {
     
-    private static final CharSequence GLOBAL = CharSequenceKey.create("$Global$"); // NOI18N
+    private static final CharSequence GLOBAL = CharSequences.create("$Global$"); // NOI18N
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
@@ -106,7 +106,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     /** Constructor used for global namespace */
     public NamespaceImpl(ProjectBase project, boolean fake) {
         this.name = GLOBAL;
-        this.qualifiedName = CharSequenceKey.empty(); // NOI18N
+        this.qualifiedName = CharSequences.empty(); // NOI18N
         this.parentUID = null;
         this.parentRef = null;
         this.global = true;
@@ -716,7 +716,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             this.name = NameCache.getManager().getString(name);
         }
         public int compareTo(FileNameSortedKey o) {
-            int res = CharSequenceKey.Comparator.compare(name, o.name);
+            int res = CharSequences.comparator().compare(name, o.name);
             if (res == 0) {
                 res = start - o.start;
             }

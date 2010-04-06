@@ -671,7 +671,21 @@ public class TokenFormatter {
 				    addWithSemi = true;
 				    break;
 				case WHITESPACE_WITHIN_ARRAY_DECL_PARENS:
-				    countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
+				    int hIndex = index - 1;
+				    FormatToken token ;
+				    do {
+					token = formatTokens.get(hIndex);
+					hIndex--;
+
+				    } while (token.getId() != FormatToken.Kind.WHITESPACE_INDENT
+					    && token.getId() != FormatToken.Kind.TEXT
+					    && hIndex > 0);
+				    if (token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+					countSpaces = indent;
+				    }
+				    else {
+					countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
+				    }
 				    break;
 				case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
 				    countSpaces = docOptions.spaceWithinMethodDeclParens ? 1 : 0;
@@ -929,13 +943,13 @@ public class TokenFormatter {
 					    && ")".equals(formatToken.getOldText())) {
 					// tryin find out and handling cases when )) folows.
 					int hIndex = index + 1;
-					int hindent = 0;
+					int hindent = indent;
 					if (hIndex < formatTokens.size()) {
 					    FormatToken token;
 					    do {
 						token = formatTokens.get(hIndex);
 						if (token.getId() == FormatToken.Kind.INDENT) {
-						    hindent = indent + ((FormatToken.IndentToken) token).getDelta();
+						    hindent += ((FormatToken.IndentToken) token).getDelta();
 						}
 
 						hIndex++;
@@ -943,8 +957,8 @@ public class TokenFormatter {
 						    && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
 						    && token.getId() != FormatToken.Kind.WHITESPACE
 						    && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT));
-					    if (FormatToken.Kind.TEXT == formatToken.getId()
-						    && ")".equals(formatToken.getOldText())) {
+					    if (FormatToken.Kind.TEXT == token.getId()
+						    && (")".equals(token.getOldText()) || ";".equals(token.getOldText()))) {
 						countSpaces = hindent;
 						handlingSpecialCases = true;
 					    }

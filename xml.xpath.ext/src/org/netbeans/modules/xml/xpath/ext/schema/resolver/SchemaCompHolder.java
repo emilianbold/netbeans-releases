@@ -44,6 +44,7 @@ import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
@@ -66,7 +67,9 @@ public interface SchemaCompHolder<T> {
     String getNamespace(SchemaModelsStack sms);
     SchemaComponent getSchemaComponent();
     boolean isPseudoComp();
-    
+    boolean isPrefixRequired();
+    boolean isAttribute();
+
     final class Factory {
         public static SchemaCompHolder construct(SchemaComponent sc) {
             if (sc == null) {
@@ -146,7 +149,24 @@ public interface SchemaCompHolder<T> {
         public boolean isPseudoComp() {
             return false;
         }
+
+        public boolean isPrefixRequired() {
+            return true;
+        }
         
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 67 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof GTypeHolder) {
                 GTypeHolder holder = (GTypeHolder)other;
@@ -197,12 +217,29 @@ public interface SchemaCompHolder<T> {
             return false;
         }
         
+        public boolean isPrefixRequired() {
+            return XPathUtils.isPrefixRequired(mElement);
+        }
+
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof ElementHolder) {
                 ElementHolder holder = (ElementHolder)other;
                 return holder.mElement.equals(this.mElement);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 47 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -247,12 +284,29 @@ public interface SchemaCompHolder<T> {
             return false;
         }
         
+        public boolean isPrefixRequired() {
+            return XPathUtils.isPrefixRequired(mAttribute);
+        }
+
+        public boolean isAttribute() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof AttributeHolder) {
                 AttributeHolder holder = (AttributeHolder)other;
                 return holder.mAttribute.equals(this.mAttribute);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 43 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -292,12 +346,29 @@ public interface SchemaCompHolder<T> {
             return true;
         }
         
+        public boolean isPrefixRequired() {
+            return true;
+        }
+
+        public boolean isAttribute() {
+            return false;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof PseudoElementHolder) {
                 PseudoElementHolder holder = (PseudoElementHolder)other;
                 return holder.mPseudoComp.equals(this.mPseudoComp);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 67 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override
@@ -336,13 +407,30 @@ public interface SchemaCompHolder<T> {
         public boolean isPseudoComp() {
             return true;
         }
-        
+
+        public boolean isPrefixRequired() {
+            return true;
+        }
+
+        public boolean isAttribute() {
+            return true;
+        }
+
+        @Override
         public boolean equals(Object other) {
             if (other instanceof PseudoAttributeHolder) {
                 PseudoAttributeHolder holder = (PseudoAttributeHolder)other;
                 return holder.mPseudoComp.equals(this.mPseudoComp);
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            String name = this.getName();
+            hash = 29 * hash + (name != null ? name.hashCode() : 0);
+            return hash;
         }
         
         @Override

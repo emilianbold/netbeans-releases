@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -91,15 +91,19 @@ public class DefaultWizardExtensionIterator extends WSDLWizardExtensionIterator 
         currentStepIndex = -1;
         WSDLWizardContext context = getWSDLWizardContext();
         if (templateName == null) {
-            steps = new WSDLWizardDescriptorPanel[]{
-                        new WizardAbstractConfigurationStep(context, true)
-                    };
-            
+            if (steps == null || steps.length != 1) {
+                steps = new WSDLWizardDescriptorPanel[]{
+                            new WizardAbstractConfigurationStep(context, true)
+                        };
+            }
+
         } else {
-            steps = new WSDLWizardDescriptorPanel[]{
-                        new WizardAbstractConfigurationStep(context, false),
-                        new WizardConcreteConfigurationStep(context)
-                    };
+            if (steps == null || steps.length != 2) {
+                steps = new WSDLWizardDescriptorPanel[]{
+                            new WizardAbstractConfigurationStep(context, false),
+                            new WizardConcreteConfigurationStep(context)
+                        };
+            }
         }
         stepNames = new String[steps.length];
         int i = 0;

@@ -55,6 +55,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -116,7 +117,18 @@ public class DerbyDataStorage extends SQLDataStorage {
                 } catch (NumberFormatException e) {
                 }
             }
+
             dbIndex.getAndSet(newValue);
+            
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (File file : files) {
+                        Util.deleteLocalDirectory(file);
+                    }
+                }
+            }, "DerbyDataStorage removing old data bases");//NOI18N
         }
     }
 
@@ -151,7 +163,7 @@ public class DerbyDataStorage extends SQLDataStorage {
         boolean result = super.shutdown();
         String dbName = dbURL.substring(dbURL.lastIndexOf(':') + 1, dbURL.indexOf(';'));
         //and now get number
-        result = Util.deleteLocalDirectory(new File(tmpDir, dbName)) && result; // NOI18N
+        result = Util.deleteLocalDirectory(new File(tmpDir, dbName)) && result;
         return result;
     }
 

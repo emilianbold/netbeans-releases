@@ -590,4 +590,63 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
     }
+
+    public void testFunctionFixedFistComment() {
+        setLoadDocumentText(
+                "C\n" +
+                "      subroutine bar()\n" +
+                "      print *, 'hello from bar...'\n" +
+                "      end"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "C\n" +
+                "      subroutine bar()\n" +
+                "          print *, 'hello from bar...'\n" +
+                "      end"
+                );
+    }
+
+    public void testFunctionFixedFistComment2() {
+        setLoadDocumentText(
+                "C This is comment\n" +
+                "      subroutine bar()\n" +
+                "      print *, 'hello from bar...'\n" +
+                "      end"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "C This is comment\n" +
+                "      subroutine bar()\n" +
+                "          print *, 'hello from bar...'\n" +
+                "      end"
+                );
+    }
+
+    public void testCommentFixed2() {
+        setLoadDocumentText(
+                "      program Bug001\n" +
+                "**************\n" +
+                "*   Bug001   *\n" +
+                "**************\n" +
+                "      do 1 i = 1, 67\n" +
+                "      do 1 j = 1, 67\n" +
+                " 1    write ( 6, 100, advance = 'YES') i\n" +
+                " 100  format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      program Bug001\n" +
+                "**************\n" +
+                "*   Bug001   *\n" +
+                "**************\n" +
+                "          do 1 i = 1, 67\n" +
+                "              do 1 j = 1, 67\n" +
+                " 1                write ( 6, 100, advance = 'YES') i\n" +
+                " 100      format ( 1h, ' ', i2.2)\n" +
+                "      end program Bug001");
+    }
 }

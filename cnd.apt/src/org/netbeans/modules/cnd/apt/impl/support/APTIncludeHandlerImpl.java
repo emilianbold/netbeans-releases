@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -434,7 +434,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             inclStack = new LinkedList<IncludeInfo>();
             recurseIncludes = new HashMap<CharSequence, Integer>();
         }
-        assert path instanceof TinyCharSequence : "must be char sequence key " + path; // NOI18N
+        assert CharSequences.isCompact(path) : "must be char sequence key " + path; // NOI18N
         Integer counter = recurseIncludes.get(path);
         counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
