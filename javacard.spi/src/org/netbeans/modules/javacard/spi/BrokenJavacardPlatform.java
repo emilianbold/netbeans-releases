@@ -93,6 +93,11 @@ final class BrokenJavacardPlatform extends JavacardPlatform {
     }
 
     @Override
+    public ClassPath getProcessorClasspath(ProjectKind kind) {
+        return ClassPathSupport.createClassPath(new FileObject[0]);
+    }
+
+    @Override
     public boolean isValid() {
         return false;
     }
@@ -178,11 +183,17 @@ final class BrokenJavacardPlatform extends JavacardPlatform {
 
     @Override
     public String getPlatformKind() {
-        return "_NONE";
+        return "_NONE"; //NOI18N
     }
 
+    @Override
     public Set<ProjectKind> supportedProjectKinds() {
         return ProjectKind.kindsFor(null, true);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + getDisplayName() + "]";
     }
 
     private static final class CI extends Cards {
