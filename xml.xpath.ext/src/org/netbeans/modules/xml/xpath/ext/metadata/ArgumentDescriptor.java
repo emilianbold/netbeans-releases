@@ -123,15 +123,19 @@ public final class ArgumentDescriptor implements AbstractArgument {
             new ArgumentDescriptor(XPathType.STRING_TYPE, 2, Integer.MAX_VALUE, 
             null, null);
 
+        ArgumentDescriptor REPEATED_NUMBER_2MIN = 
+            new ArgumentDescriptor(XPathType.NUMBER_TYPE, 2, Integer.MAX_VALUE, 
+            null, null);
+
+        ArgumentDescriptor REPEATED_ANY_TYPE_0MIN = 
+            new ArgumentDescriptor(XPathType.ANY_TYPE, 0, Integer.MAX_VALUE, 
+            null, null);
+
         ArgumentDescriptor SIMPLE_NUMBER = 
             new ArgumentDescriptor(XPathType.NUMBER_TYPE, true, false, null);
 
         ArgumentDescriptor OPTIONAL_NUMBER = 
             new ArgumentDescriptor(XPathType.NUMBER_TYPE, false, false, null);
-
-        ArgumentDescriptor REPEATED_NUMBER_2MIN = 
-            new ArgumentDescriptor(XPathType.NUMBER_TYPE, 2, Integer.MAX_VALUE, 
-            null, null);
 
         ArgumentDescriptor SIMPLE_NODE = new ArgumentDescriptor(
                 XPathType.NODE_TYPE, true, false, NODE_SET_ASSIGNABLE);
@@ -145,6 +149,9 @@ public final class ArgumentDescriptor implements AbstractArgument {
         ArgumentDescriptor REPEATED_NODE_SET_2MIN = new ArgumentDescriptor(
                 XPathType.NODE_SET_TYPE, 2, Integer.MAX_VALUE, 
                 null, NOT_ASSIGNABLE);
+
+        ArgumentDescriptor SIMPLE_DATE_TIME_STRING = 
+            new ArgumentDescriptor(XPathType.DATE_TIME_TYPE, true, false, null);
     }
     
 }

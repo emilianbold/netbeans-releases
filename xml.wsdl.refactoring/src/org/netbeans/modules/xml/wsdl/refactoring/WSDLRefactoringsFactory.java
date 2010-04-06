@@ -78,6 +78,4 @@ public class WSDLRefactoringsFactory implements RefactoringPluginFactory {
         }
         return null;
     }
-    
 }
-

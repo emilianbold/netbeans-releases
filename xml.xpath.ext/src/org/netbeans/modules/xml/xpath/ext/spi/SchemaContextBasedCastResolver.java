@@ -43,6 +43,8 @@ package org.netbeans.modules.xml.xpath.ext.spi;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
 /**
@@ -70,9 +72,9 @@ public class SchemaContextBasedCastResolver implements XPathCastResolver {
     }
   
     public List<XPathPseudoComp> getPseudoCompList(XPathSchemaContext parentSContext) {
-        // It looks like it doesn't necessary here
-        // TODO: investigate it later
-        return null;
+        List<XPathPseudoComp> pseudoList = new ArrayList<XPathPseudoComp>();
+        collectPseudoComps(mSContext, parentSContext, pseudoList);
+        return pseudoList;
     }
 
     private XPathCast getCast(XPathSchemaContext lookInside, 
@@ -93,6 +95,34 @@ public class SchemaContextBasedCastResolver implements XPathCastResolver {
         }
         //
         return null;
+    }
+
+    private void collectPseudoComps(XPathSchemaContext lookInside,
+            XPathSchemaContext soughtSContext,
+            List<XPathPseudoComp> pseudoList) {
+        //
+        if (lookInside == null) {
+            return;
+        }
+        //
+        if (lookInside instanceof SimpleSchemaContext) {
+            SimpleSchemaContext simpleContext = (SimpleSchemaContext)lookInside;
+            SchemaCompHolder scHolder = XPathSchemaContext.Utilities.
+                    getSchemaCompHolder(simpleContext, false);
+            if (scHolder.isPseudoComp()) {
+                Object obj = scHolder.getHeldComponent();
+                assert obj instanceof XPathPseudoComp;
+                XPathPseudoComp pseudo = (XPathPseudoComp)obj;
+                XPathSchemaContext pseudoContext = pseudo.getSchemaContext();
+                if (pseudoContext != null &&
+                        pseudoContext.equalsChain(soughtSContext)) {
+                    pseudoList.add(pseudo);
+                }
+            }
+        }
+        //
+        // Collect other pseudocomps.
+        collectPseudoComps(lookInside.getParentContext(),soughtSContext, pseudoList);
     }
 
     private void populateCastList(XPathSchemaContext lookInside, 
