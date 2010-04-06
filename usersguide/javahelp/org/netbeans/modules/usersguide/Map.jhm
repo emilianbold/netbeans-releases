@@ -530,6 +530,6 @@
 <mapID target="org.netbeans.modules.bugtracking.kenai.FakeJiraSupport" url="collab/issues_about.html" />
 
 <!-- id for help button in login to netbeans dialog that is invoked when reporting an issue from the Help menu. -->
-<mapID target="org.netbeans.modules.bugzilla.NBLoginPane" url="misc-general/report_nb-issue.html" />
+<mapID target="org.netbeans.modules.bugzilla.NBLoginPanel" url="misc-general/report_nb-issue.html" />
 
 </map>
