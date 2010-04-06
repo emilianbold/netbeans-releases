@@ -83,6 +83,22 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php");
     }
 
+    public void test168396_1_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168396_1.php");
+    }
+
+    public void test168396_2_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168396_2.php");
+    }
+
+    public void test168396_3_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/168396_3.php");
+    }
+
+    public void test176224_stableFixed() throws Exception {
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/176224.php");
+    }
+
     public void test173354_1_stableFixed() throws Exception {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_1.php");
     }
@@ -157,10 +173,10 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php");
     }
 
-    public void test174595_175229() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
-    }
+//    public void test174595_175229() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
+//    }
 
     public void test174873_173906_stablePartial() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -182,222 +198,216 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     /** settings 5,5  **/
-
     public void testSpacesAfterObjectRefereneces_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php", new IndentPrefs(5, 5));
     }
 
     public void test173354_1_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_1.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_1.php", new IndentPrefs(5, 5));
     }
 
     public void test173354_2_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_2.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_2.php", new IndentPrefs(5, 5));
     }
 
     public void test173354_3_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_3.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_3.php", new IndentPrefs(5, 5));
     }
 
     public void test173107_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173107.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173107.php", new IndentPrefs(5, 5));
     }
 
     public void test160996_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/160996.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/160996.php", new IndentPrefs(5, 5));
     }
 
     public void test162320_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162320.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162320.php", new IndentPrefs(5, 5));
     }
 
     public void test162586_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162586.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162586.php", new IndentPrefs(5, 5));
     }
 
     public void test173899_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173899.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173899.php", new IndentPrefs(5, 5));
     }
 
     public void test173903_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173903.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173903.php", new IndentPrefs(5, 5));
     }
 
     public void test173906_172475_1_5_5_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php", new IndentPrefs(5, 5));
     }
 
     public void test173906_172475_2_5_5_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php", new IndentPrefs(5, 5));
     }
 
     public void test173906_172475_3_5_5_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php", new IndentPrefs(5, 5));
     }
 
     public void test173908_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173908.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173908.php", new IndentPrefs(5, 5));
     }
 
     public void test174579_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174579.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174579.php", new IndentPrefs(5, 5));
     }
 
     public void test174578_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174578.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174578.php", new IndentPrefs(5, 5));
     }
 
     public void test124273_175247_5_5_regression() throws Exception {
-        
-        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", new IndentPrefs(5,5));
+
+        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", new IndentPrefs(5, 5));
     }
 
     public void test174563_5_5_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174563_1.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174563_1.php", new IndentPrefs(5, 5));
     }
 
     public void testIfElseStatement_5_5_stableFixed() throws Exception {
 
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(5, 5));
     }
 
-    public void test174595_175229_5_5_stableFixed() throws Exception {
-        
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(5,5));
-    }
+//    public void test174595_175229_5_5_stableFixed() throws Exception {
+//
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(5, 5));
+//    }
 
     public void test174873_173906_5_5_stablePartial() throws Exception {
-        
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php", new IndentPrefs(5,5));
+
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php", new IndentPrefs(5, 5));
     }
 
     public void test174873_173906_1_5_5_stablePartial() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php", new IndentPrefs(5, 5));
     }
 
     public void test152429_1_5_5_stable() throws Exception {
-        
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", new IndentPrefs(5,5));
+
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", new IndentPrefs(5, 5));
     }
 
     public void test152429_2_5_5_stable() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", new IndentPrefs(5, 5));
     }
-
 
     public void test152429_3_5_5_stable() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", new IndentPrefs(5,5));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", new IndentPrefs(5, 5));
     }
 
-
     /** settings 10,10  **/
-
     public void testSpacesAfterObjectRefereneces_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/spacesAfterObjectReferences.php", new IndentPrefs(10, 10));
     }
 
     public void test173354_1_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_1.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_1.php", new IndentPrefs(10, 10));
     }
 
     public void test173354_2_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_2.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_2.php", new IndentPrefs(10, 10));
     }
 
     public void test173354_3_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_3.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173354_3.php", new IndentPrefs(10, 10));
     }
 
     public void test173107_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173107.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173107.php", new IndentPrefs(10, 10));
     }
 
     public void test160996_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/160996.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/160996.php", new IndentPrefs(10, 10));
     }
 
     public void test162320_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162320.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162320.php", new IndentPrefs(10, 10));
     }
 
     public void test162586_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162586.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/162586.php", new IndentPrefs(10, 10));
     }
 
     public void test173899_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173899.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173899.php", new IndentPrefs(10, 10));
     }
 
     public void test173903_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173903.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173903.php", new IndentPrefs(10, 10));
     }
 
     public void test173906_172475_1_10_10_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_1.php", new IndentPrefs(10, 10));
     }
 
     public void test173906_172475_2_10_10_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_2.php", new IndentPrefs(10, 10));
     }
 
     public void test173906_172475_3_10_10_stableFixedIssue() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173906_172475_3.php", new IndentPrefs(10, 10));
     }
 
     public void test173908_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173908.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/173908.php", new IndentPrefs(10, 10));
     }
 
     public void test174579_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174579.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174579.php", new IndentPrefs(10, 10));
     }
 
     public void test174578_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174578.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174578.php", new IndentPrefs(10, 10));
     }
 
     public void test124273_175247_10_10_regression() throws Exception {
 
-        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", new IndentPrefs(10, 10));
     }
 
     public void test174563_10_10_stableFixed() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174563_1.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174563_1.php", new IndentPrefs(10, 10));
     }
 
     public void testIfElseStatement_10_10_stableFixed() throws Exception {
 
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php", new IndentPrefs(10, 10));
     }
 
-    public void test174595_175229_10_10_stableFixed() throws Exception {
-
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(10,10));
-    }
+//    public void test174595_175229_10_10_stableFixed() throws Exception {
+//
+//        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", new IndentPrefs(10, 10));
+//    }
 
     public void test174873_173906_10_10_stablePartial() throws Exception {
 
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php", new IndentPrefs(10, 10));
     }
 
     public void test174873_173906_1_10_10_stablePartial() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php", new IndentPrefs(10, 10));
     }
 
     public void test152429_1_10_10_stable() throws Exception {
 
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", new IndentPrefs(10, 10));
     }
 
     public void test152429_2_10_10_stable() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", new IndentPrefs(10, 10));
     }
-
 
     public void test152429_3_10_10_stable() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", new IndentPrefs(10,10));
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", new IndentPrefs(10, 10));
     }
-
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
@@ -430,15 +440,16 @@ public class PHPFormatterQATest extends PHPTestBase {
         format(doc, formatter, formatStart, formatEnd, false);
 
         String after = doc.getText(0, doc.getLength());
-        if (preferences.getIndentation() != 2 || preferences.getHangingIndentation() != 2)
+        if (preferences.getIndentation() != 2 || preferences.getHangingIndentation() != 2) {
             assertDescriptionMatches(file, after, false,
-                    "_" +
-                    preferences.getIndentation() +
-                    "_"+
-                    preferences.getHangingIndentation() +
-                    ".formatted");
-        else
+                    "_"
+                    + preferences.getIndentation()
+                    + "_"
+                    + preferences.getHangingIndentation()
+                    + ".formatted");
+        } else {
             assertDescriptionMatches(file, after, false, ".formatted");
+        }
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
