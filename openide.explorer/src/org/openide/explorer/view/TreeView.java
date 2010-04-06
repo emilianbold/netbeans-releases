@@ -87,6 +87,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -233,6 +235,8 @@ public abstract class TreeView extends JScrollPane {
 
     /** Holds VisualizerChildren for all visible nodes */
     private final VisualizerHolder visHolder = new VisualizerHolder();
+    /** reference to the last visible search field */
+    private static Reference<TreeView> lastSearchField = new WeakReference<TreeView>(null);
 
     /** Constructor.
     */
@@ -1702,6 +1706,11 @@ public abstract class TreeView extends JScrollPane {
         if( null != searchpanel )
             return;
 
+        TreeView previousSearchField = lastSearchField.get();
+        if (previousSearchField != null && previousSearchField != this) {
+            previousSearchField.removeSearchField();
+        }
+
         JViewport vp = getViewport();
         originalScrollMode = vp.getScrollMode();
         vp.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
@@ -1712,6 +1721,8 @@ public abstract class TreeView extends JScrollPane {
         revalidate();
         repaint();
         searchTextField.requestFocus();
+
+        lastSearchField = new WeakReference<TreeView>(this);
     }
 
     /**
