@@ -85,7 +85,7 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
-    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = true;
+    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = false;
     private static final boolean TRACE = true;
 
     public MakeProjectTestBase(String name) {
