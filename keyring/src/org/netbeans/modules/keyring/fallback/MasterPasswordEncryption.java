@@ -88,6 +88,8 @@ public class MasterPasswordEncryption implements EncryptionProvider {
                 prefs.putByteArray(saltKey, salt);
             }
             PARAM_SPEC = new PBEParameterSpec(salt, 20);
+            LOG.warning("Falling back to master password encryption; " +
+                    "add -J-Dorg.netbeans.modules.keyring.level=0 to netbeans.conf to see why native keyrings could not be loaded");
             return true;
         } catch (Exception x) {
             LOG.log(Level.INFO, "Cannot initialize security using " + ENCRYPTION_ALGORITHM, x);
