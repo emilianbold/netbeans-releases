@@ -72,6 +72,10 @@ public abstract class ListenerProxy<T> {
         detach(get(), pcl);
     }
 
+    protected final Object lock() {
+        return l;
+    }
+
     /**
      * Start listening to the underlying object, because a listener has been
      * attached
