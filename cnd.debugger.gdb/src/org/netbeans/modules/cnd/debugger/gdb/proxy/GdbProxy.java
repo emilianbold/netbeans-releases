@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
  */
 public class GdbProxy {
     private static final boolean GDBINIT = Boolean.getBoolean("gdb.init.enable"); // NOI18N
-    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -556,12 +555,8 @@ public class GdbProxy {
         engine.sendCommand("-stack-list-locals " + printValues); // NOI18N
     }
 
-    public void stack_list_arguments(int showValues, int low, int high) {
-        engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
-    }
-
     public void stack_list_arguments(int showValues) {
-        stack_list_arguments(showValues, 0, STACK_MAX_DEPTH);
+        engine.sendCommand("-stack-list-arguments " + showValues); // NOI18N
     }
 
     /**
@@ -587,12 +582,12 @@ public class GdbProxy {
 
     /** Request a stack dump from gdb */
     public void stack_list_frames() {
-        engine.sendCommand("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
+        engine.sendCommand("-stack-list-frames"); // NOI18N
     }
 
     /** Request a stack dump from gdb */
     public CommandBuffer stack_list_framesEx() {
-        return engine.sendCommandEx("-stack-list-frames 0 " + STACK_MAX_DEPTH); // NOI18N
+        return engine.sendCommandEx("-stack-list-frames"); // NOI18N
     }
     
     public void gdb_set(String command, Object value) {
