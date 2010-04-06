@@ -279,6 +279,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
             Exception newEx = null;
             try {
                 Object o = arr[i].instanceCreate();
+                if (o == LazyMenu.SEPARATOR) {
+                    o = new JSeparator();
+                }
                 list.add (o);
             } catch (ClassNotFoundException e) {
                 newEx = e;
@@ -458,6 +461,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     /** Menu based on the folder content whith lazy items creation. */
     private static class LazyMenu extends JMenu implements NodeListener, Runnable, ChangeListener {
+        static final JSeparator SEPARATOR = new LazySeparator();
         static {
             // preinitialize outside of AWT
             new DynaMenuModel();
@@ -479,6 +483,15 @@ public class MenuBar extends JMenuBar implements Externalizable {
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
             Mutex.EVENT.readAccess(this);
             getModel().addChangeListener(this);
+        }
+
+        @Override
+        public void updateUI() {
+            if (EventQueue.isDispatchThread()) {
+                super.updateUI();
+            } else {
+                Mutex.EVENT.readAccess(this);
+            }
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -540,7 +553,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         /** Update the properties. Exported via Runnable interface so it
          * can be rescheduled. */
+        @Override
         public void run() {
+            if (master == null) {
+                Mutex.EVENT.readAccess(this);
+                return;
+            }
+            updateUI();
             updateProps();
         }
 
@@ -648,7 +667,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         @Override
         protected Object instanceForCookie(DataObject obj, InstanceCookie cookie) throws IOException, ClassNotFoundException {
-            Object result = super.instanceForCookie(obj, cookie);
+            Object result;
+            if (cookie.instanceClass().equals(JSeparator.class)) {
+                result = SEPARATOR;
+            } else {
+                result = super.instanceForCookie(obj, cookie);
+            }
             cookiesToFiles.put(result, obj.getPrimaryFile());
             return result;
         }
@@ -737,6 +761,25 @@ public class MenuBar extends JMenuBar implements Externalizable {
             	return new AWTTask (run);
     	    }
 	}
-    }
-    
+    } // end of LazyMenu
+
+    private static final class LazySeparator extends JSeparator
+    implements Runnable {
+        public LazySeparator() {
+        }
+
+        @Override
+        public void updateUI() {
+            if (EventQueue.isDispatchThread()) {
+                super.updateUI();
+            } else {
+                Mutex.EVENT.readAccess(this);
+            }
+        }
+
+        @Override
+        public void run() {
+            updateUI();
+        }
+    } // end of LazySeparator
 }

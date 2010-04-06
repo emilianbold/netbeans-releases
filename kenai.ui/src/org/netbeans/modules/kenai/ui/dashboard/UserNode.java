@@ -151,7 +151,8 @@ public class UserNode extends LeafNode {
             if( loadingCounter < 0 )
                 loadingCounter = 0;
             if (loadingCounter == 0) {
-                lblProgress.stop();
+                if (lblProgress!=null)
+                    lblProgress.stop();
             }
             fireContentChanged();
         }
