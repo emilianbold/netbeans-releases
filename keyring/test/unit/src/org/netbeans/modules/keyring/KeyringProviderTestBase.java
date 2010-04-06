@@ -54,7 +54,7 @@ public abstract class KeyringProviderTestBase extends NbTestCase {
     public void testStorage() throws Exception {
         KeyringProvider p = createProvider();
         if (!p.enabled()) {
-            System.err.println(p + "disabled on " + System.getProperty("os.name") + ", skipping");
+            System.err.println(p + " disabled on " + System.getProperty("os.name") + ", skipping");
             return;
         }
         doTestStorage(p, "something", "secret stuff " + UUID.randomUUID(), null);

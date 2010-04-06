@@ -87,6 +87,7 @@ class MasterPasswordPanel extends JPanel {
                         ok.setEnabled(false);
                         return;
                     }
+                    // XXX issue warning in case non-ASCII characters encountered
                     if (!Arrays.equals(newField1.getPassword(), newField2.getPassword())) {
                         notification.setInformationMessage(NbBundle.getMessage(MasterPasswordPanel.class, "MasterPasswordPanel.password_mismatch"));
                         ok.setEnabled(false);
