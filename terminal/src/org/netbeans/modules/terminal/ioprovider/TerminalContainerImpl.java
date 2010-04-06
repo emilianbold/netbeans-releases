@@ -111,15 +111,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
         initComponents();
     }
 
-    void selectTab(JComponent t) {
-        if (soleComponent == null)
-            tabbedPane.setSelectedComponent(t);
-	if (owner != null) {
-	    owner.open();
-	    owner.requestActive();
-	}
-    }
-
     TopComponent topComponent() {
         return owner;
     }
@@ -453,30 +444,6 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	}
     }
 
-    @Override
-    public void setTitle(JComponent who, String title) {
-        if (title == null) {
-            title = originalName;
-        }
-
-	// Use the name field of the component to remember title
-	who.setName(title);
-
-	if (!contains(who)) {
-	    return;
-	}
-
-        if (soleComponent != null) {
-	    assert soleComponent == who;
-	    updateWindowName(title);
-        } else {
-	    assert tabbedPane.getParent() == this;
-	    updateWindowName(null);
-	    // write thru
-            tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
-        }
-    }
-
     void find(Terminal who) {
         FindState findState = who.getFindState();
         if (findState.isVisible()) {
@@ -511,22 +478,29 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	}
     }
 
+    //
+    // Overrides of TerminalContainer
+    //
+
+    @Override
+    public IOContainer ioContainer() {
+	if (ioContainer == null)
+	    ioContainer = IOContainer.create(this);
+	return ioContainer;
+    }
+
     /**
      * Handle delegation from containing TopComponent.
      */
     @Override
     public void componentActivated() {
+	// Up to the client of TerminalContainer:
+	// owner.componentActivated();
 	activated = true;
-        Component component;
-        if (soleComponent != null)
-            component = soleComponent;
-        else
-            component = tabbedPane.getSelectedComponent();
-	// SHOULD use tabToCb
-        if (component instanceof Terminal) {
-            Terminal terminal = (Terminal) component;
-            terminal.callBacks().activated();
-        }
+        JComponent comp = getSelected();
+	CallBacks cb = tabToCb.get(comp);
+	if (cb != null)
+	    cb.activated();
     }
 
     /**
@@ -535,19 +509,19 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void componentDeactivated() {
+	// Up to the client of TerminalContainer:
+	// owner.componentDeactivated();
 	activated = false;
-        Component component;
-        if (soleComponent != null)
-            component = soleComponent;
-        else
-            component = tabbedPane.getSelectedComponent();
-	// SHOULD use tabToCb
-        if (component instanceof Terminal) {
-            Terminal terminal = (Terminal) component;
-            terminal.callBacks().deactivated();
-        }
+        JComponent comp = getSelected();
+	CallBacks cb = tabToCb.get(comp);
+	if (cb != null)
+	    cb.deactivated();
     }
 
+
+    //
+    // Overrides of IOContainer.Provider
+    //
     @Override
     public void open() {
 	if (owner != null)
@@ -583,22 +557,45 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 
     @Override
     public void select(JComponent comp) {
-	selectTab(comp);
+        if (soleComponent == null)
+            tabbedPane.setSelectedComponent(comp);
+	if (owner != null) {
+	    owner.open();
+	    owner.requestActive();
+	}
     }
 
     @Override
     public JComponent getSelected() {
-        if (soleComponent == null)
+        if (soleComponent != null)
+            return soleComponent;
+        else
             return (JComponent) tabbedPane.getSelectedComponent();
-	else
-	    return soleComponent;
     }
 
-    /* TMP
-    public void setTitle(JComponent comp, String name) {
-	throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void setTitle(JComponent who, String title) {
+        if (title == null) {
+            title = originalName;
+        }
+
+	// Use the name field of the component to remember title
+	who.setName(title);
+
+	if (!contains(who)) {
+	    return;
+	}
+
+        if (soleComponent != null) {
+	    assert soleComponent == who;
+	    updateWindowName(title);
+        } else {
+	    assert tabbedPane.getParent() == this;
+	    updateWindowName(null);
+	    // write thru
+            tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
+        }
     }
-     */
 
     @Override
     public void setToolTipText(JComponent comp, String text) {
@@ -630,12 +627,5 @@ final public class TerminalContainerImpl extends TerminalContainer implements IO
 	} else {
 	    return true;
 	}
-    }
-
-    @Override
-    public IOContainer ioContainer() {
-	if (ioContainer == null)
-	    ioContainer = IOContainer.create(this);
-	return ioContainer;
     }
 }
