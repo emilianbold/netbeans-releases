@@ -48,6 +48,22 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="CharSequences">
+        <api name="util"/>
+        <summary>Added <code>CharSequences</code></summary>
+        <version major="8" minor="3"/>
+        <date day="2" month="4" year="2010"/>
+        <author login="vv159170"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                <code>CharSequences.create</code> now can be used
+                to create memory efficient implementations of CharSequences for ASCII strings.
+            </p>
+        </description>
+        <class package="org.openide.util" name="CharSequences"/>
+        <issue number="183162"/>
+    </change>
     <change id="ActionInvoker-ActionPresenterProvider">
         <api name="actions"/>
         <summary>Action SPI interfaces added</summary>
