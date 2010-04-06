@@ -127,7 +127,7 @@ public final class ViewUpdates implements DocumentListener {
         Document doc = documentView.getDocument();
         checkFactoriesComponentInited();
         ViewBuilder viewBuilder = new ViewBuilder(
-                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, 0);
+                null, documentView, 0, viewFactories, 0, doc.getLength() + 1, -1, 0);
         try {
             viewBuilder.createViews();
             viewBuilder.repaintAndReplaceViews();
@@ -237,7 +237,8 @@ public final class ViewUpdates implements DocumentListener {
 
                 if (paragraphView != null && rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                            viewFactories, rStartOffset, rEndOffset, insertLength);
+                            viewFactories, rStartOffset, rEndOffset,
+                            insertOffset + insertLength, insertLength);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
@@ -347,7 +348,8 @@ public final class ViewUpdates implements DocumentListener {
 
                 if (rebuildNecessary) {
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                            viewFactories, rStartOffset, rEndOffset, -removeLength);
+                            viewFactories, rStartOffset, rEndOffset, 
+                            removeOffset + removeLength, -removeLength);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
@@ -448,7 +450,8 @@ public final class ViewUpdates implements DocumentListener {
                         assert (paragraphViewIndex >= 0) : "Line view index is " + paragraphViewIndex; // NOI18N
                         ParagraphView paragraphView = (ParagraphView) documentView.getEditorView(paragraphViewIndex);
                         ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                                viewFactories, rStartOffset, rEndOffset, 0);
+                                viewFactories, rStartOffset, rEndOffset,
+                                rEndOffset, 0);
                         try {
                             viewBuilder.createViews();
                             viewBuilder.repaintAndReplaceViews();

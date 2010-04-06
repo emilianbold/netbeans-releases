@@ -394,14 +394,14 @@ public abstract class EditorView extends View {
     }
 
     public void checkIntegrity() {
-        if (LOG.isLoggable(Level.FINER)) {
+        if (LOG.isLoggable(Level.FINE)) {
             String err = findTreeIntegrityError(); // Check integrity of the document view
             if (err != null) {
                 String msg = "View hierarchy INTEGRITY ERROR! - " + err;
-                LOG.finer(msg + "\nErrorneous view hierarchy:\n");
+                LOG.fine(msg + "\nErrorneous view hierarchy:\n");
                 StringBuilder sb = new StringBuilder(200);
                 appendViewInfo(sb, 0, -2); // -2 means detailed info
-                LOG.finer(sb.toString());
+                LOG.fine(sb.toString());
                 // For finest level stop throw real ISE otherwise just log the stack
                 if (LOG.isLoggable(Level.FINEST)) {
                     throw new IllegalStateException(msg);

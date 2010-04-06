@@ -48,7 +48,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
@@ -58,6 +57,8 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  * @author Miloslav Metelka
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
+
+    private static final int OP_COUNT = 100;
 
     public JavaViewHierarchyRandomTest(String testName) {
         super(testName);
@@ -69,28 +70,40 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     }
 
     public void testRandomModsPlainText() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINEST);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINE);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(Level.FINE);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINE);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
-        DocumentTesting.setLogDoc(container, true);
         container.setName(this.getName());
-        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+//        DocumentTesting.setLogDoc(container, true);
+//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+        ViewHierarchyRandomTesting.testFixedScenarios(container);
         ViewHierarchyRandomTesting.testRandomMods(container);
         // Failed seeds: 1269936518464L 1269878830601L
     }
 
     public void testRandomModsJava() throws Exception {
-        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINEST);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(Level.FINE);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(Level.FINE);
+        Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINE);
         RandomTestContainer container = ViewHierarchyRandomTesting.createContainer(new JavaKit());
-        DocumentTesting.setLogDoc(container, true);
         container.setName(this.getName());
-        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
+//        DocumentTesting.setLogDoc(container, true);
+//        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
         JEditorPane pane = container.getInstance(JEditorPane.class);
         Document doc = pane.getDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
         doc.putProperty("mimeType", "text/x-java");
+        ViewHierarchyRandomTesting.initUndoManager(container);
+        ViewHierarchyRandomTesting.initRandomText(container);
+        ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+        ViewHierarchyRandomTesting.testFixedScenarios(container);
         ViewHierarchyRandomTesting.testRandomMods(container);
         // Failed seeds: 1269936518464L 1269878830601L
     }

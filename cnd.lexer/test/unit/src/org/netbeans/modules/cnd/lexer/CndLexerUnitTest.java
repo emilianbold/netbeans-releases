@@ -73,6 +73,10 @@ public class CndLexerUnitTest extends NbTestSuite {
         addTestSuite(DoxygenLexerTestCase.class);
         addTestSuite(PreprocLexerTestCase.class);
         addTestSuite(EscapeLineTestCase.class);
+        addTestSuite(FortranFlyTokensTestCase.class);
+        addTestSuite(FortranLexerBatchTestCase.class);
+        addTestSuite(FortranLexerPerformanceTestCase.class);
+        addTestSuite(PreprocLexerTestCase.class);
     }
 
     public static Test suite() {

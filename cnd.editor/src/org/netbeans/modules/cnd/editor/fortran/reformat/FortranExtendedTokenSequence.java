@@ -106,6 +106,39 @@ public class FortranExtendedTokenSequence {
         return null;
     }
 
+    int getFirstLineTokenPosition() {
+        int index = ts.index();
+        try {
+            int column = 0;
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case NEW_LINE:
+                    case PREPROCESSOR_DIRECTIVE:
+                         return 0;
+                    case WHITESPACE:
+                    {
+                        String text = ts.token().text().toString();
+                        for(int i = 0; i < text.length(); i++){
+                            char c = text.charAt(i);
+                            if (c == '\t'){
+                                column = (column/tabSize+1)* tabSize;
+                            } else {
+                                column+=1;
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        return column;
+                }
+            }
+            return column;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
     /*package local*/ int getTokenPosition(){
         int index = ts.index();
         try {
