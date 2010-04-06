@@ -345,10 +345,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                                         Highlighter h = pane.getHighlighter();
 
                                         if (h != null) {
-                                            h.removeAllHighlights();
-                                            for (int[] current : localHighlights) {
-                                                h.addHighlight(current[0], current[1], new ErrorHighlightPainter());
+                                            List<Object> oldTags = (List<Object>) pane.getClientProperty(ErrorHighlightPainter.class);
+
+                                            if (oldTags != null) {
+                                                for (Object tag : oldTags) {
+                                                    h.removeHighlight(tag);
+                                                }
                                             }
+
+                                            List<Object> newTags = new LinkedList<Object>();
+                                            for (int[] current : localHighlights) {
+                                                newTags.add(h.addHighlight(current[0], current[1], new ErrorHighlightPainter()));
+                                            }
+
+                                            pane.putClientProperty(ErrorHighlightPainter.class, newTags);
                                         }
                                     } catch (BadLocationException e) {
                                         Exceptions.printStackTrace(e);
