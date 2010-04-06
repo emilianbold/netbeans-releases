@@ -60,8 +60,6 @@ public abstract class NbPreferences extends AbstractPreferences {
     /*private*/EditableProperties properties;
     /*private*/FileStorage fileStorage;
 
-    private final Object hold = new Object();
-    
     private static final RequestProcessor RP = new RequestProcessor();
     /*private*/final RequestProcessor.Task flushTask = RP.create(new Runnable() {
         @Override
@@ -116,7 +114,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private String getProperty(String key) {
-        synchronized (hold) {
+        synchronized (lock) {
             return properties().getProperty(key);
         }
     }
@@ -133,7 +131,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private String[] getKeysSpi() throws BackingStoreException {
-        synchronized (hold) {
+        synchronized (lock) {
             return properties().keySet().toArray(new String[0]);
         }
     }
@@ -146,7 +144,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private void putProperty(String key, String value) {
-        synchronized (hold) {
+        synchronized (lock) {
             properties().put(key, value);
         }
     }
@@ -175,7 +173,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private void removeProperty(String key) {
-        synchronized (hold) {
+        synchronized (lock) {
             properties().remove(key);
         }
     }
@@ -198,7 +196,9 @@ public abstract class NbPreferences extends AbstractPreferences {
     @Override
     protected  void flushSpi() throws BackingStoreException {
         try {
-            fileStorage.save(properties());
+            synchronized (lock) {
+                fileStorage.save(properties());
+            }
         } catch (IOException ex) {
             throw new BackingStoreException(ex);
         }
@@ -230,7 +230,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private void putAllProperties(EditableProperties props, boolean clear) {
-        synchronized (hold) {
+        synchronized (lock) {
             if (clear) {
                 properties().clear();
             }
@@ -248,7 +248,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
 
     private void clearProperties() {
-        synchronized (hold) {
+        synchronized (lock) {
             properties().clear();
         }
     }
