@@ -581,5 +581,10 @@ public class RICardTest {
         public String getPlatformKind() {
             return "TEST";
         }
+
+        @Override
+        public ClassPath getProcessorClasspath(ProjectKind kind) {
+            return ClassPathSupport.createClassPath("");
+        }
     }
 }
