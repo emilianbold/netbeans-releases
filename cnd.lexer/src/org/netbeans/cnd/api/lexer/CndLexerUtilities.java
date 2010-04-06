@@ -41,8 +41,10 @@
 package org.netbeans.cnd.api.lexer;
 
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -140,12 +142,15 @@ public final class CndLexerUtilities {
     }
     
     public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
-        TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
+        InputAttributes ia = (InputAttributes) doc.getProperty(InputAttributes.class);
+        boolean truFree = detectFortranFormat(doc);
+        ia.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, truFree, true);
+        TokenHierarchy<?> th = doc != null ? TokenHierarchy.get(doc) : null;
         TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
         return ts;
     }
 
-    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy<?> hierarchy, final int offset) {
         if (hierarchy != null) {
             TokenSequence<?> ts = hierarchy.tokenSequence();
             while (ts != null && (offset == 0 || ts.moveNext())) {
@@ -163,6 +168,59 @@ public final class CndLexerUtilities {
         }
         return null;
     }
+
+    public static final boolean FORTRAN_FIXED_FORMAT_VALUE = false;
+    public static final boolean FORTRAN_FREE_FORMAT_VALUE = true;
+
+    public static boolean detectFortranFormat(Document doc) {
+        CharSequence sequence;
+        try {
+            sequence = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            return FORTRAN_FIXED_FORMAT_VALUE;
+        }
+        int column = 0;
+        boolean ignoreRestLine = false;
+        for(int i = 0; i < sequence.length(); i++){
+            char c = sequence.charAt(i);
+            if (c == '\n') {
+                column = 0;
+                ignoreRestLine = false;
+                continue;
+            }
+            if (ignoreRestLine) {
+                continue;
+            }
+            column++;
+            switch (column) {
+                case 1:
+                    if (c == 'C' || c == 'c' || c == '*') {
+                        //like to fixed format
+                        ignoreRestLine = true;
+                        break;
+                    } else if ((c >= '0' && c <= '9') || c == ' '){
+                        //like to fixed format
+                        break;
+                    } else {
+                        return FORTRAN_FREE_FORMAT_VALUE;
+                    }
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    if ((c >= '0' && c <= '9') || c == ' '){
+                        //like to fixed format
+                        break;
+                    } else {
+                        return FORTRAN_FREE_FORMAT_VALUE;
+                    }
+                default:
+                    break;
+            }
+        }
+        return FORTRAN_FIXED_FORMAT_VALUE;
+    }
+
 
     public static boolean isCppIdentifier(CharSequence id) {
         if (id == null) {

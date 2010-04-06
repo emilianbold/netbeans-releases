@@ -333,6 +333,7 @@ public enum FortranTokenId implements TokenId {
     NEW_LINE(null, "whitespace"), // NOI18N
     LINE_COMMENT_FIXED(null, "comment"), // NOI18N
     LINE_COMMENT_FREE(null, "comment"), // NOI18N
+    LINE_CONTINUATION_FIXED(null, "continuation"), // NOI18N
 
     // Errors
     ERROR(null, "error"), // NOI18N

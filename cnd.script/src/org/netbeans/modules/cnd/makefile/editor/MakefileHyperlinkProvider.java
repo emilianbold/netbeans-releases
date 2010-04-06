@@ -180,10 +180,14 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
          return null;
     }
 
-    private static void findAndOpenFile(final FileObject baseDir, final String targetPath) {
-        FileObject fileObject = baseDir.getFileObject(targetPath);
-        if (fileObject != null) {
-            asyncOpenInEditor(fileObject, 0);
+    private static void findAndOpenFile(FileObject baseDir, final String targetPath) {
+        while (baseDir != null) {
+            FileObject fileObject = baseDir.getFileObject(targetPath);
+            if (fileObject != null) {
+                asyncOpenInEditor(fileObject, 0);
+                break;
+            }
+            baseDir = baseDir.getParent();
         }
     }
 
