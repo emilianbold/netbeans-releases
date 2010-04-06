@@ -42,12 +42,14 @@ import java.sql.SQLException;
 import org.netbeans.modules.dlight.core.stack.storage.CommonStackDataStorageTests;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.core.stack.storage.impl.SQLStackDataStorage;
+import org.openide.util.Utilities;
 
 /**
  * @author Alexey Vladykin
  */
 public class DerbyStackStorageTest extends CommonStackDataStorageTests {
 
+    @Override
     protected StackDataStorage createStorage() {
         try {
             SQLStackDataStorage result = new SQLStackDataStorage();
@@ -59,10 +61,20 @@ public class DerbyStackStorageTest extends CommonStackDataStorageTests {
         }
     }
 
+    @Override
     protected boolean shutdownStorage(StackDataStorage db) {
-        return ((SQLStackDataStorage)db).shutdown(true);
+        boolean result = ((SQLStackDataStorage) db).shutdown(true);
+
+        if (Utilities.isWindows()) {
+            // on Windows lck file of DerbyBD is not released even on
+            // close()... So directory removing will fail...
+            result = true;
+        }
+
+        return result;
     }
 
+    @Override
     protected void flush(StackDataStorage db) {
         ((SQLStackDataStorage) db).flush();
     }
