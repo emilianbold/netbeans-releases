@@ -27,11 +27,13 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SchemaCompHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.WrappingSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext.SchemaCompPair;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
+import org.netbeans.modules.xml.xpath.ext.visitor.ExpressionComparatorVisitor;
 
 /**
  * Utility class.
@@ -39,6 +41,11 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
  * @author nk160297
  */
 public class XPathUtils {
+
+    public static boolean equal(Object o1, Object o2) {
+        if (o1 == o2) return true;
+        return (o1 == null || o2 == null) ? false : o1.equals(o2);
+    }
 
     /**
      * Converts the qName to a String. 
@@ -109,20 +116,48 @@ public class XPathUtils {
             XPathPredicateExpression[] predArr1, 
             XPathPredicateExpression[] predArr2) {
         //
+        if (predArr1 == predArr2) {
+            return true;
+        }
+        if (predArr1 == null || predArr2 == null) {
+            return false;
+        }
+        //
         // Compare predicates count
-        int counter1 = predArr1 == null ? 0 : predArr1.length;
-        int counter2 = predArr2 == null ? 0 : predArr2.length;
-        if (counter1 != counter2) {
+        int size1 = predArr1 == null ? 0 : predArr1.length;
+        int size2 = predArr2 == null ? 0 : predArr2.length;
+        if (size1 != size2) {
             return false;
         }
         // Compare predicates one by one
-        for (int index = 0; index < counter1; index++) {
+        //
+        // It is implied that the order is the same. 
+        // So the same sets of predicates but with different order 
+        // are considered different. 
+        for (int index = 0; index < size1; index++) {
             XPathPredicateExpression predicate1 = predArr1[index];
             XPathPredicateExpression predicate2 = predArr2[index];
-            String predText1 = predicate1.getExpressionString();
-            String predText2 = predicate2.getExpressionString();
-            if (!(predText1.equals(predText2))) {
-                return false;
+            //
+            XPathExpression predExpr1 = predicate1.getPredicate();
+            XPathExpression predExpr2 = predicate2.getPredicate();
+            //
+            if (predExpr1 instanceof XPathSchemaContextHolder &&
+                    predExpr2 instanceof XPathSchemaContextHolder) {
+                // If both predicate expressions are schema context holders,
+                // then compare contexts.
+                //
+                XPathSchemaContext ctxt1 =
+                        ((XPathSchemaContextHolder)predExpr1).getSchemaContext();
+                XPathSchemaContext ctxt2 =
+                        ((XPathSchemaContextHolder)predExpr2).getSchemaContext();
+                //
+                if (!equal(ctxt1, ctxt2)) {
+                    return false;
+                }
+            } else {
+                if (!ExpressionComparatorVisitor.equals(predExpr1, predExpr2)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -201,7 +236,8 @@ public class XPathUtils {
         assert parentSContext != null;
         ArrayList<SchemaCompPair> result = new ArrayList<SchemaCompPair>();
         //
-        XPathCastResolver castResolver = xPathModel.getXPathCastResolver();
+        XPathCastResolver castResolver = xPathModel == null ? null :
+            xPathModel.getXPathCastResolver();
         Set<SchemaCompPair> parentCompPairSet = parentSContext.getSchemaCompPairs(); 
         //
         boolean processPseudoComp = 
@@ -280,13 +316,15 @@ public class XPathUtils {
             Collection<SchemaModel> sModels = exModelResolver.getVisibleModels();
             for (SchemaModel sModel : sModels) {
                 Schema schema = sModel.getSchema();
-                FindAllChildrenSchemaVisitor visitor = 
-                        new FindAllChildrenSchemaVisitor(
-                        lookForElements, lookForAttributes, false);
-                visitor.lookForSubcomponents(schema);
-                //
-                List<SchemaComponent> foundComps = visitor.getFound();
-                result.addAll(foundComps);
+                if (schema != null) {
+                    FindAllChildrenSchemaVisitor visitor =
+                            new FindAllChildrenSchemaVisitor(
+                            lookForElements, lookForAttributes, false);
+                    visitor.lookForSubcomponents(schema);
+                    //
+                    List<SchemaComponent> foundComps = visitor.getFound();
+                    result.addAll(foundComps);
+                }
             }
         }
         //
@@ -307,7 +345,6 @@ public class XPathUtils {
      * @param soughtName required name
      * @param soughtNamespace required namespace
      * @param isAttribute indicates if an attribute or element is required
-     * @param cachingVisitor force using the cacheing visitor if it specified. 
      * It can be null. 
      * @return
      */
@@ -387,4 +424,21 @@ public class XPathUtils {
             }
         }
     }
+
+    /**
+     * Check if the input schema context is wrapping context, then takes 
+     * unwrapped context recursively. 
+     *
+     * @param sContext
+     * @return
+     */
+    public static XPathSchemaContext unwrap(XPathSchemaContext sContext) {
+       if (sContext instanceof WrappingSchemaContext) {
+           sContext = ((WrappingSchemaContext)sContext).getBaseContext();
+           return unwrap(sContext);
+       } else {
+           return sContext;
+       }
+    }
+
 }

@@ -51,28 +51,28 @@ import javax.swing.JTree;
  * @version 2007.10.18
  */
 final class Navigation extends JPanel {
-  
-  Navigation(JTree tree, JScrollPane scrollPane) {
-    myWrapper = new Wrapper(tree);
-    myScrollPane = scrollPane;
-    add(myWrapper);
-    add(myScrollPane);
-  }
 
-  @Override
-  public boolean isOptimizedDrawingEnabled() {
-    return false;
-  }
+    Navigation(JTree tree, JScrollPane scrollPane) {
+        myWrapper = new Wrapper(tree);
+        myScrollPane = scrollPane;
+        add(myWrapper);
+        add(myScrollPane);
+    }
 
-  @Override
-  public void doLayout() {
-    Dimension size = myWrapper.getPreferredSize();
-    int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width - size.width - INSET;
-    myWrapper.setBounds(x, INSET, size.width, size.height);
-    myScrollPane.setBounds(0, 0, getWidth(), getHeight());
-  }
-  
-  private JPanel myWrapper;
-  private JScrollPane myScrollPane;
-  private static final int INSET = 4;
+    @Override
+    public boolean isOptimizedDrawingEnabled() {
+        return false;
+    }
+
+    @Override
+    public void doLayout() {
+        Dimension size = myWrapper.getPreferredSize();
+        int x = getWidth() - myScrollPane.getVerticalScrollBar().getPreferredSize().width - size.width - INSET;
+        myWrapper.setBounds(x, INSET, size.width, size.height);
+        myScrollPane.setBounds(0, 0, getWidth(), getHeight());
+    }
+
+    private JPanel myWrapper;
+    private JScrollPane myScrollPane;
+    private static final int INSET = 4;
 }

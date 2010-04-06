@@ -239,9 +239,11 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         wsdlmodel = new WeakReference<WSDLModel>(element.getModel());
         
         weakModelListener = WeakListeners.propertyChange(this, wsdlmodel);
-        wsdlmodel.get().addPropertyChangeListener(weakModelListener);
         weakComponentListener = WeakListeners.create(ComponentListener.class, this, wsdlmodel);
-        wsdlmodel.get().addComponentListener(weakComponentListener);
+        if (wsdlmodel.get() != null) {
+            wsdlmodel.get().addPropertyChangeListener(weakModelListener);
+            wsdlmodel.get().addComponentListener(weakComponentListener);
+        }
         
         // Let the node try to update its display name.
         updateDisplayName();

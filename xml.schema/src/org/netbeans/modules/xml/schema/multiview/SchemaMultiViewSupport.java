@@ -61,7 +61,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.nodes.Node;

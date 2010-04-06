@@ -138,7 +138,7 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     public void setNameTF(JTextField nameTF) {
         gui.attachFileNameListener(nameTF);
         if(nameTF != null) {
-            nameTF.getDocument().removeDocumentListener(mListener);//remove existing one
+            nameTF.getDocument().removeDocumentListener(mListener);
             nameTF.getDocument().addDocumentListener(mListener);
             fileNameTextField = nameTF;
         }
@@ -150,7 +150,6 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             gui.getSchemaFileTextField().addPropertyChangeListener(new SchemaImportTextChangeListener());
             gui.getSchemaFileTextField().getDocument().addDocumentListener(new SchemaImportTextChangeListener());
             gui.addPropertyChangeListener(new PropertyChangeListener() {
-
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals("HAS_NEXT")) {
                         hasNext = ((Boolean)evt.getNewValue()).booleanValue();
@@ -161,7 +160,6 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                     changeSupport.fireChange();
                 }
             });
-//            gui.setPreferredSize(new Dimension(450, 400));
         }
         return gui;
     }
@@ -247,8 +245,7 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             }            
             gui.disableWSDLTypeSection(disableAbstract);
         }
-        //if user come to first panel we need to discard out temp wsdl model
-        //cleanup();
+        gui.updateNS();
     }
 
     public void storeSettings(Object settings) {
@@ -277,7 +274,7 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             if ((isNewTmpFileRequest instanceof Boolean) && ((Boolean) isNewTmpFileRequest)) {
                 tempWSDLFile = null;
             }
-
+            
             if (tempWSDLFile != null && gui != null) {
                 LocalizedTemplate userSelectedBindingSubType = gui.getBindingSubType();
                 if (lt != null) {
@@ -555,6 +552,5 @@ public final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     public boolean hasNext() {
         return hasNext;
     }
-    
     
 }

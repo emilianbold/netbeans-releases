@@ -128,6 +128,7 @@ public class WizardBindingConfigurationEditorStep implements WizardDescriptor.Fi
 
                 panel.add(p, BorderLayout.CENTER);
                 panel.setName(p.getName());
+                panel.getAccessibleContext().setAccessibleDescription(p.getName());
                 p.addPropertyChangeListener(new PropertyChangeListener() {
 
                     public void propertyChange(PropertyChangeEvent evt) {

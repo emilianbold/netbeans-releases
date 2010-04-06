@@ -47,13 +47,16 @@ public interface XPathType {
     XPathType NUMBER_TYPE = new XPathTypes.XPathNumberType();
     XPathType NODE_SET_TYPE = new XPathTypes.XPathNodeSetType();
     XPathType NODE_TYPE = new XPathTypes.XPathNodeType();
+    XPathType SUBJECT_TYPE = new XPathTypes.XPathSubjectType();
     XPathType ANY_TYPE = new XPathTypes.XPathAnyType();
+    XPathType DATE_TIME_TYPE = new XPathTypes.XPathDateTimeType();
     
     //==========================================================================
 
     enum MetaType {
         NODE_SET, 
         NODE,
+        SUBJECT,
         STRING, 
         NUMBER, 
         BOOLEAN, 

@@ -145,7 +145,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -158,32 +158,29 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.zaz.nbmodules.screenscraping.project</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.model</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
-                <friend>org.netbeans.modules.soa.ui</friend>
-                <friend>org.netbeans.modules.soa.ui01</friend>
-                <friend>org.netbeans.modules.soa.util</friend>
-                <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.compapp.projects.base</friend>
                 <friend>org.netbeans.modules.compapp.xmlproject</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.iep.project</friend>
                 <friend>org.netbeans.modules.script.project</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
+                <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
-                <friend>org.netbeans.modules.worklist.editor</friend>
+                <friend>org.netbeans.modules.wlm.project</friend>
+                <friend>org.netbeans.modules.xml.validation</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <friend>org.netbeans.modules.xml.xam.ui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
-                <friend>com.zaz.nbmodules.screenscraping.project</friend>
-                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
                 <package>org.netbeans.modules.xml.catalogsupport.ui.customizer</package>
-                <package>org.netbeans.modules.xml.catalogsupport.util</package>
             </friend-packages>
         </data>
     </configuration>

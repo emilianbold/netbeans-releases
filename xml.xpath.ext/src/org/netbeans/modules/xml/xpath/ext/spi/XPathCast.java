@@ -41,35 +41,40 @@
 package org.netbeans.modules.xml.xpath.ext.spi;
 
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.CastSchemaContext;
 
 /**
- * There are different kinds of casts.
- * - Type Cast. An element can be casted to another type. Usually it casts 
- * to a subtype of its own type. 
- * 
- * - Element Cast. An Any schema component is casted to a Global Element.
- * 
- * - Attribute Cast. An AnyAttribute schema component is casted to a Global Attribute.
- * 
+ * A general type cast interface. It specifies a subject of cast and a
+ * target schema type.
  * 
  * @author Vladimir Yaroslavskiy
- * @author nk160297
- * @version 2008.05.20
+ * @author Nikita Krjukov
+ * @version 2009.01.26
  */
 public interface XPathCast extends XPathSchemaContextHolder {
-    
+
     /**
-     * Points to the casted Element.
+     * This method details semantics of the same method defined in the base interface.
+     * @see XPathSchemaContextHolder
+     * 
+     * The result schema context is specially designed for XPathCast.
+     * It holds full information about the casted component and the result cast type.
+     * Using this method is preferred in comparison with the getPathExpression()
+     * because it doesn't depend on namespace context. It means that a XPath expression
+     * can be invalid beeing moved to another location because of namespace prefixes
+     * can be different. But the schema contex will always be correct.
      * @return
      */
-    XPathExpression getPathExpression();
-    String getPathText();
-    
+    CastSchemaContext getSchemaContext();
+
     /**
-     * @return GlobalType, GlobalElement or GlobalAttrubute depends on 
-     * the CastType.
+     * Returns a schema component to which an element of attribute is casted to.
+     * Only GlobalType is supported now. 
+     *
+     * TODO: It probably worth modifying the result type to the
+     * NamedComponentReference or
+     * It will allow referencing to different global components.
      */
     GlobalType getType();
     

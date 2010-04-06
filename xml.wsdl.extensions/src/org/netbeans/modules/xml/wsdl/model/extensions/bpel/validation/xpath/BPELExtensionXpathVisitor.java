@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -69,6 +70,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xpath.ext.XPathOperationOrFuntion;
+import org.netbeans.modules.xml.xpath.ext.metadata.UnknownExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.SimpleSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -102,6 +105,11 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
             // Query is empty. Nothing to validate!
             return;
         }
+
+        boolean hasNMPropertyAttr = pa.getAnyAttribute(new QName(
+                "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/NMProperty", // NOI18N
+                "nmProperty")) != null; // NOI18N
+
         //
         //
         String qLanguage = query.getQueryLanguage();
@@ -181,10 +189,18 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
         // Check if the expression is the Location Path.
         // Only Locatin Path is allowed as a content of Query!
         assert xpath != null;
-        if (!(xpath instanceof XPathLocationPath)) {
-            // Error. Query has to be a Location Path expression
+
+        boolean
+            isValidXPathFunction = (xpath instanceof XPathOperationOrFuntion) &&
+                                   (! (xpath instanceof UnknownExtensionFunction));
+        if (! ((xpath instanceof XPathLocationPath) || isValidXPathFunction)) {
+            // Error. Query has to be a Location Path or XPath expression
             String str = NbBundle.getMessage(BPELExtensionXpathValidator.class,
-                    "LOCATION_PATH_REQUIRED");
+                "LOCATION_PATH_OR_XPATH_EXPRESSION_REQUIRED" /*"LOCATION_PATH_REQUIRED"*/);
+            if (! isValidXPathFunction) {
+                str += " " + NbBundle.getMessage(BPELExtensionXpathValidator.class,
+                    "UNKNOWN_XPATH_FUNCTION");
+            }
             addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
             return;
         }
@@ -195,11 +211,12 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
         model.setSchemaContext(schemaContext);
         //
         // Common validation will be made here!
-        model.resolveExtReferences(true);
-        //
-        // Perform additional XPath validation here
-        PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
-        xpath.accept(pathVVisitor);
+        if (!hasNMPropertyAttr && model.resolveExtReferences(true)) {
+            //
+            // Perform additional XPath validation here
+            PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
+            xpath.accept(pathVVisitor);
+        }
     }
     
     /**

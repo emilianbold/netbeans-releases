@@ -122,7 +122,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
     private InputStream currentStream;
     private String projectName;
     
-    
     /** Creates new form WsdlUIPanel */
     
     WsdlUIPanel(WsdlPanel wizardPanel) {
@@ -143,8 +142,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
             
         } 
         factory = ExtensibilityElementTemplateFactory.getDefault();
-        
-        
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         protocols = new Vector<LocalizedTemplateGroup>();
         
@@ -249,14 +246,21 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         subTypePanel.reset(bindingType);
         bindingSubtypeChanged(getBindingSubType());
     }
-    
+
+    void updateNS() {
+//System.out.println();
+//System.out.println("BBB ==: " + getPath());
+//System.out.println();
+            nsTF.setText(TARGET_URL_PREFIX + projectName + "/" + getPath() + fileNameTF.getText()); // NOI18N
+    }
+
     void attachFileNameListener(javax.swing.JTextField fileNameTextField) {
         this.fileNameTF = fileNameTextField;
-        if (fileNameTF!=null) {
-            nsTF.setText(TARGET_URL_PREFIX+ projectName + "/" + fileNameTF.getText());
+
+        if (fileNameTF != null) {
+            nsTF.setText(TARGET_URL_PREFIX + projectName + "/" + getPath() + fileNameTF.getText()); // NOI18N
             DocListener list = new DocListener();
-            javax.swing.text.Document doc = fileNameTF.getDocument();
-            doc.addDocumentListener(list);
+            fileNameTF.getDocument().addDocumentListener(list);
         } else {
             nsTF.setText(TARGET_URL_PREFIX);
         }
@@ -270,7 +274,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
         schemaLB = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
         schemaTF = new javax.swing.JTextField();
@@ -645,12 +648,43 @@ private void concreteWSDLChoiceActionPerformed(java.awt.event.ActionEvent evt) {
         }
         
         private void documentChanged(javax.swing.event.DocumentEvent e) {
-            if(!hasUserModifiedNamespace) {
-                nsTF.getDocument().removeDocumentListener(mListener);
-                nsTF.setText(TARGET_URL_PREFIX+ projectName + "/" + fileNameTF.getText());
-                nsTF.getDocument().addDocumentListener(mListener);
+            if (hasUserModifiedNamespace) {
+                return;
             }
-            
+            nsTF.getDocument().removeDocumentListener(mListener);
+            nsTF.setText(TARGET_URL_PREFIX + projectName + "/" + getPath() + fileNameTF.getText()); // NOI18N
+            nsTF.getDocument().addDocumentListener(mListener);
+        }
+    }
+
+    private String getPath() {
+        String folder = getTargetFolder();
+
+        if (folder == null) {
+            return ""; // NOI18N
+        }
+        return folder + "/"; // NOI18N
+    }
+
+    private String getTargetFolder() {
+        try {
+            if (wizardPanel.getTemplateWizard() == null) {
+                return null;
+            }
+            org.openide.loaders.DataFolder folder = wizardPanel.getTemplateWizard().getTargetFolder();
+
+            if (folder == null) {
+                return null;
+            }
+            org.openide.filesystems.FileObject fo = folder.getPrimaryFile();
+
+            if (fo == null) {
+                return null;
+            }
+            return fo.getName();
+        }
+        catch (IOException e) {
+            return null;
         }
     }
     
