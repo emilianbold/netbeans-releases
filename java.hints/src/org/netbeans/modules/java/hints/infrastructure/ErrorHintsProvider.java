@@ -341,7 +341,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         if (dObj == null)
             return new Position[] {null, null};
         LineCookie lc = dObj.getCookie(LineCookie.class);
-        int lineNumber = NbDocument.findLineNumber(sdoc, info.getSnapshot().getOriginalOffset(startOffset));
+        int originalStartOffset = info.getSnapshot().getOriginalOffset(startOffset);
+        int lineNumber = NbDocument.findLineNumber(sdoc, originalStartOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
         Line line = lc.getLineSet().getCurrent(lineNumber);
         
@@ -405,16 +406,30 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 }
             }
         }
-        
+
+        String text = null;
+
         if (!rangePrepared) {
-            String text = line.getText();
-            
+            text =line.getText();
+
             if (text == null) {
                 //#116560, (according to the javadoc, means the document is closed):
                 cancel();
                 return null;
             }
-            
+        }
+
+        if (!rangePrepared && d.getCode().endsWith("proc.messager")) {
+            int originalEndOffset = info.getSnapshot().getOriginalOffset(endOffset);
+
+            if (originalEndOffset <= lineOffset + text.length()) {
+                startOffset = originalStartOffset;
+                endOffset = originalEndOffset;
+                rangePrepared = true;
+            }
+        }
+        
+        if (!rangePrepared) {
             int column = 0;
             int length = text.length();
 

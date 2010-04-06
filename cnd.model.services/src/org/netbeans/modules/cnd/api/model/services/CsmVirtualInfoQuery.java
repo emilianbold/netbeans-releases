@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 
 /**
@@ -107,7 +107,7 @@ public abstract class CsmVirtualInfoQuery {
             for(CsmMember m : cls.getMembers()){
                 if (CsmKindUtilities.isMethod(m)) {
                     CsmMethod met = (CsmMethod) m;
-                    if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                    if (CharSequences.comparator().compare(sig, met.getSignature())==0){
                         if (met.isVirtual()){
                             return true;
                         }
@@ -169,7 +169,7 @@ public abstract class CsmVirtualInfoQuery {
                 for(CsmMember member : cls.getMembers()) {
                     if (CsmKindUtilities.isMethod(member)) {
                         CsmMethod method = (CsmMethod) member;
-                        if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
+                        if (CharSequences.comparator().compare(sig, method.getSignature()) == 0) {
                             if (firstFound == null) {
                                 firstFound = method;
                             }
@@ -218,7 +218,7 @@ public abstract class CsmVirtualInfoQuery {
                         for(CsmMember m : c.getMembers()){
                             if (CsmKindUtilities.isMethod(m)) {
                                 CsmMethod met = (CsmMethod) m;
-                                if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                                if (CharSequences.comparator().compare(sig, met.getSignature())==0){
                                     res.add(met);
                                     break;
                                 }

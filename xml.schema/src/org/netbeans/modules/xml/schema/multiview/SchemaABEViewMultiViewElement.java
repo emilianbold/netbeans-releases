@@ -66,7 +66,7 @@ import org.netbeans.modules.xml.schema.abe.UIUtilities;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -126,11 +126,11 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         //
         Model.State newState = (Model.State)evt.getNewValue();
         if(newState == AXIModel.State.VALID) {
-                errorMessage = null;
-                    recreateUI();
-                return;
-            }
-
+            errorMessage = null;
+            recreateUI();
+            return;
+        }
+        
         if(errorMessage == null)
             errorMessage = NbBundle.getMessage(
                     SchemaColumnViewMultiViewElement.class,
@@ -139,7 +139,7 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         setActivatedNodes(new Node[] {schemaDataObject.getNodeDelegate()});
         emptyUI(errorMessage);
     }
-
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }

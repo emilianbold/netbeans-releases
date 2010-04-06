@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -477,11 +477,11 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
                     // unique name search
                     if (CsmKindUtilities.isQualified(tested)){
                         CharSequence testedName = ((CsmQualifiedNamedElement)tested).getQualifiedName();
-                        if (CharSequenceKey.Comparator.compare(qname, testedName)==0){
+                        if (CharSequences.comparator().compare(qname, testedName)==0){
                             if (CsmKindUtilities.isFunction(object) || CsmKindUtilities.isFunction(tested)){
                                 if (CsmKindUtilities.isFunction(object) && CsmKindUtilities.isFunction(tested)){
                                     CharSequence testedSignature = ((CsmFunction)tested).getSignature();
-                                    if (CharSequenceKey.Comparator.compare(signature, testedSignature)==0){
+                                    if (CharSequences.comparator().compare(signature, testedSignature)==0){
                                         return list[i];
                                     }
                                     // for pure C

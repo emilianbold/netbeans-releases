@@ -163,16 +163,19 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ArrayCreation node) {
 	int delta = options.indentArrayItems - options.continualIndentSize;
-	while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY) {
-	    addFormatToken(formatTokens);
+	if (ts.token().id() != PHPTokenId.PHP_ARRAY) { // it's possible that the expression starts with array
+	    while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY) {
+		addFormatToken(formatTokens);
+	    }
+	    if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
+		    || path.get(1) instanceof ArrayElement
+		    || path.get(1) instanceof FormalParameter
+		    || path.get(1) instanceof ReturnStatement) {
+		// when the array is on the beginning of the line, indent items in normal way
+		delta = options.indentArrayItems;
+	    }
+	    addFormatToken(formatTokens); // add array keyword
 	}
-	if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
-		|| path.get(1) instanceof ArrayElement
-		|| path.get(1) instanceof FormalParameter) {
-	    // when the array is on the beginning of the line, indent items in normal way
-	    delta = options.indentArrayItems;
-	}
-	addFormatToken(formatTokens); // add array keyword
 	formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
 	super.visit(node);
 	formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
@@ -460,13 +463,16 @@ public class FormatVisitor extends DefaultVisitor {
 	if (node.getExpression() instanceof FunctionInvocation) {
 	    super.visit(node);
 	} else {
-	    while (ts.moveNext() && ts.offset() < node.getStartOffset()) {
-		addFormatToken(formatTokens);
+//	    while (ts.moveNext() && ts.offset() < node.getStartOffset()) {
+//		addFormatToken(formatTokens);
+//	    }
+	    addAllUntilOffset(node.getStartOffset());
+	    if (ts.moveNext()) {
+		addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
+		formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+		super.visit(node);
+		formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
 	    }
-	    addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
-	    formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
-	    super.visit(node);
-	    formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
 	}
     }
 
@@ -769,7 +775,11 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 	    }
 	    ts.movePrevious();
-	    scan(node.getValue());
+	    if (node.getValue() != null) {
+		formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+		scan(node.getValue());
+		formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
+	    }
 	}
     }
 

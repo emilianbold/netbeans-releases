@@ -35,6 +35,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import java.util.Set;
 import org.netbeans.modules.xml.schema.model.AnyAttribute;
 import org.netbeans.modules.xml.schema.model.AnyElement;
+import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
 import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 
@@ -68,10 +69,6 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         mySoughtName = soughtName;
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
-
-//ENABLE = (soughtName + "").equals("street");
-//out();
-//out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
     
     @Override
@@ -134,7 +131,14 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         } else if (sc instanceof ComplexType) {
             visitChildren(sc);
         } else if (sc instanceof Schema) {
-            visitChildren(sc);
+           // Look for a global schema object
+           lookGlobalOnly = true;
+           try {
+               visitChildren(sc);
+           } finally {
+               lookGlobalOnly = false;
+           }
+
         } else {
             // Other elements can't containg nested elements or attributes
         }
@@ -142,6 +146,15 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 
     protected void checkComponent(SchemaComponent sc) {
         if (sc instanceof Named) {
+            //
+            // It is implied that schema component (sc) is either element or attribute here.
+            // Check it corresponds to isAttribute flag.
+            if (sc instanceof Element && isAttribute) {
+                return;
+            } else if (sc instanceof Attribute && !isAttribute) {
+                return;
+            }
+            //
             String name = ((Named)sc).getName();
             if (mySoughtName.equals(name)) {
                 //
@@ -178,9 +191,9 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             if (el instanceof Named) {
                 String name1 = ((Named) el).getName();
                 String name2 = ((Named) element).getName();
-//                String nameSp1 = SchemaModelsStack.getEffectiveNamespace(el,
+//                String nameSp1 = SchemaModelsStack.getEffectiveNamespace(el, 
 //                        new SchemaModelsStack());
-//                String nameSp2 = SchemaModelsStack.getEffectiveNamespace(element,
+//                String nameSp2 = SchemaModelsStack.getEffectiveNamespace(element, 
 //                        new SchemaModelsStack());
 //                Set<String> set = XPathSchemaContext.Utilities.getEffectiveNamespaces(el, mParentContext);
 //                nameSp1 = set.iterator().next();

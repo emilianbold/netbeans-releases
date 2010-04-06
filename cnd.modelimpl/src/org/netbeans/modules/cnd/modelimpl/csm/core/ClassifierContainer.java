@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Storage for project classifiers. Class was extracted from ProjectBase.
@@ -118,7 +118,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
         CsmUID<CsmClassifier> uid;
-        qualifiedName = CharSequenceKey.create(qualifiedName);
+        qualifiedName = CharSequences.create(qualifiedName);
         try {
             declarationsLock.readLock().lock();
             uid = classifiers.get(qualifiedName);

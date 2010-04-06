@@ -489,7 +489,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // bug #183331 don't log throwable here since it causes recursive writeOut invocation
+            LOG.log(Level.INFO, "UIGesture Collector logging has failed: {0}", ex.getMessage()); // NOI18N
         }
     }
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmNamespaceAlias
@@ -91,7 +91,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
                 System.err.println("Corrupted AST for namespace alias in " + 
                 file.getAbsolutePath() + ' ' + ln + ":" + col); // NOI18N
             }
-            namespace = CharSequenceKey.empty();
+            namespace = CharSequences.empty();
         }
         else {
             for( token = token.getNextSibling() ; token != null; token = token.getNextSibling() ) {
@@ -148,7 +148,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmNamespaceDefinition) ) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return CharSequenceKey.create(scopeQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+                return CharSequences.create(scopeQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.xpath.ext.impl;
 
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
@@ -32,14 +33,14 @@ import org.netbeans.modules.xml.xpath.ext.visitor.impl.ExpressionWriter;
  */
 public abstract class XPathExpressionImpl implements XPathExpression {
 
-    protected XPathModel myModel;
+    protected XPathModel mModel;
     
     public XPathExpressionImpl(XPathModel model) {
-        myModel = model;
+        mModel = model;
     }
     
     public XPathModel getModel() {
-        return myModel;
+        return mModel;
     }
     
     /**
@@ -55,11 +56,21 @@ public abstract class XPathExpressionImpl implements XPathExpression {
      * @return the string representation
      */
     public String getExpressionString() {
-        XPathVisitor visitor = new ExpressionWriter(myModel);
+        XPathVisitor visitor = new ExpressionWriter(mModel);
         accept(visitor);
         return ((ExpressionWriter) visitor).getString();
     }
     
+    public String getExpressionString(NamespaceContext nc) {
+        if (mModel.getNamespaceContext() == nc) {
+            // optimization
+            return getExpressionString();
+        }
+        XPathVisitor visitor = new ExpressionWriter(nc);
+        accept(visitor);
+        return ((ExpressionWriter) visitor).getString();
+    }
+
     @Override
     public String toString() {
         return getExpressionString();

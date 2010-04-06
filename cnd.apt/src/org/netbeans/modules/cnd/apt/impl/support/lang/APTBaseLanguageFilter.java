@@ -52,7 +52,8 @@ import java.util.TreeMap;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -77,7 +78,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      */
     protected APTBaseLanguageFilter(boolean caseInsensitive) {
         if (caseInsensitive) {
-            filter = new TreeMap<CharSequence,Integer>(CharSequenceKey.ComparatorIgnoreCase);
+            filter = new TreeMap<CharSequence,Integer>(CharSequenceUtils.ComparatorIgnoreCase);
         } else {
             filter = new HashMap<CharSequence,Integer>();
         }
@@ -108,7 +109,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
 //        assert(val != null);
 //        filter.put(textKey, val);
-        filter.put(CharSequenceKey.create(text), Integer.valueOf(ttype));
+        filter.put(CharSequences.create(text), Integer.valueOf(ttype));
         keywords.add(Integer.valueOf(ttype));
     }
 

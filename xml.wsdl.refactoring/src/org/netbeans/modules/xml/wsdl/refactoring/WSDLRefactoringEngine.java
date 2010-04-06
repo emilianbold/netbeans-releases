@@ -152,8 +152,6 @@ public class WSDLRefactoringEngine {
 //System.out.println("      schema ref: " + reference);
                 if (reference != null) {
                     String newLocation = reference.getSchemaLocation();
-//System.out.println("        xml location: " + newLocation);
-//System.out.println("       wsdl location: " + model.getModelSource().getLookup().lookup(FileObject.class));
                     
                     if (request instanceof MoveRefactoring) {
                         try {
@@ -161,10 +159,12 @@ public class WSDLRefactoringEngine {
 //System.out.println("    new location: " + newLocation);
                         }
                         catch (Exception e) {
-                            // do nothing, let the old wsdl location remain
+                            // do nothing, let the old schema location remain
                         }
                     }
-                    reference.setSchemaLocation(newLocation);
+//System.out.println("    new location: " + newLocation);
+                    // temporary commented till # 172444 is fixed
+                    // TODO reference.setSchemaLocation(newLocation);
                 }
             }
 //System.out.println();
