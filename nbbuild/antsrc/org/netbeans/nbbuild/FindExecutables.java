@@ -68,8 +68,11 @@ public class FindExecutables extends Task {
             final String prefix = "Load.";
             class Load extends Property {
                 protected @Override void addProperty(String n, String v) {
+                    addProperty(n, (Object) v);
+                }
+                protected @Override void addProperty(String n, Object v) {
                     if (n.equals(prefix + "nbm.executable.files")) {
-                        execFiles.set(v);
+                        execFiles.set((String) v);
                     }
                 }
             }
