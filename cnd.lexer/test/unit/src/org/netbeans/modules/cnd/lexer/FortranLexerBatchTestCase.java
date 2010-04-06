@@ -181,9 +181,10 @@ public class FortranLexerBatchTestCase extends TestCase {
     }
 
     public void testOperators() {
-        String text = "** * / + - // == /= < <= > >=";
+        String text = " ** * / + - // == /= < <= > >=";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes());
         TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.OP_POWER, "**");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.OP_MUL, "*");

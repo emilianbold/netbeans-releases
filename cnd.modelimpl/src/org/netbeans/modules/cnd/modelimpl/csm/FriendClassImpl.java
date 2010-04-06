@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -118,7 +118,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         CsmClass cls = getContainingClass();
         CharSequence clsQName = cls.getQualifiedName();
 	if( clsQName != null && clsQName.length() > 0 ) {
-            return CharSequenceKey.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
+            return CharSequences.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
 	}
         return getName();
     }
@@ -198,7 +198,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
 
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
 
     ////////////////////////////////////////////////////////////////////////////

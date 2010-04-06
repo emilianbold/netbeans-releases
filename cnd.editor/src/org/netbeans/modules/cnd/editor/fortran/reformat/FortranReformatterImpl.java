@@ -653,6 +653,7 @@ public class FortranReformatterImpl {
             }
             if (current.id() == WHITESPACE) {
                 ts.replaceCurrent(current, 0, space, true);
+            } else if (current.id() == LINE_COMMENT_FIXED) {
             } else {
                 if (space > 0) {
                     ts.addBeforeCurrent(0, space, true);

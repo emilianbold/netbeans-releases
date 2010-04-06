@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.core.stack.storage;
 
 import java.util.Arrays;
@@ -51,6 +50,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.api.storage.types.Time;
+import org.openide.util.Utilities;
 import static org.junit.Assert.*;
 
 /**
@@ -74,7 +74,9 @@ public abstract class CommonStackDataStorageTests {
 
     @After
     public void tearDown() {
-        assertTrue(shutdownStorage(db));
+        boolean shutdownResult = shutdownStorage(db);
+            assertTrue(shutdownResult);
+        
     }
 
     @Test
@@ -251,7 +253,7 @@ public abstract class CommonStackDataStorageTests {
 
     private static void assertTimeEquals(long nanos, Object obj) {
         assertTrue(obj instanceof Time);
-        assertEquals(nanos, ((Time)obj).getNanos());
+        assertEquals(nanos, ((Time) obj).getNanos());
     }
 
     private static FunctionCallWithMetric find(List<FunctionCallWithMetric> list, String name) {
@@ -264,9 +266,9 @@ public abstract class CommonStackDataStorageTests {
     }
 
     private static class FunctionCallComparator implements Comparator<FunctionCallWithMetric> {
+
         public int compare(FunctionCallWithMetric c1, FunctionCallWithMetric c2) {
             return c1.getFunction().getName().compareTo(c2.getFunction().getName());
         }
     }
-
 }

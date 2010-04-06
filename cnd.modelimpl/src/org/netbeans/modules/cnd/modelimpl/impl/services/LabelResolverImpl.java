@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -138,14 +138,14 @@ public final class LabelResolverImpl extends CsmLabelResolver {
         }
         private void addLabelDefinition(CsmLabel stmt){
             if (kinds.contains(LabelKind.Definiton)) {
-                if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
+                if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }
             }
         }
         private void addLabelReference(CsmGotoStatement stmt){
             if (kinds.contains(LabelKind.Reference)) {
-                if (label == null || CharSequenceKey.Comparator.compare(label, stmt.getLabel()) == 0){
+                if (label == null || CharSequences.comparator().compare(label, stmt.getLabel()) == 0){
                     collection.add(CsmReferenceSupport.createObjectReference(stmt));
                 }
             }

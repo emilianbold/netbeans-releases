@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
@@ -130,7 +130,7 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
             retValue = false;
         } else {
             SystemMacroImpl other = (SystemMacroImpl)obj;
-            retValue = CharSequenceKey.Comparator.compare(getName(), other.getName()) == 0;
+            retValue = CharSequences.comparator().compare(getName(), other.getName()) == 0;
         }
         return retValue;
     }

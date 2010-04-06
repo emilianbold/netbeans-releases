@@ -46,7 +46,7 @@ import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Misc. static methods used for tracing of code model objects
@@ -624,7 +624,7 @@ public final class CsmTracer {
     }
 
     private Iterator<CsmNamespace> getSortedNestedNamespaces(CsmNamespace nsp) {
-        SortedMap<CharSequence, CsmNamespace> map = new TreeMap<CharSequence, CsmNamespace>(CharSequenceKey.Comparator);
+        SortedMap<CharSequence, CsmNamespace> map = new TreeMap<CharSequence, CsmNamespace>(CharSequences.comparator());
         for (CsmNamespace decl : nsp.getNestedNamespaces()) {
             map.put(decl.getQualifiedName(), decl);
         }

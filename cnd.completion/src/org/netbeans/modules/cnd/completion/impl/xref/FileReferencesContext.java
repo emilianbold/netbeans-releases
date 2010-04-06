@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -219,7 +219,7 @@ public final class FileReferencesContext {
             projectMacros = new HashMap<CharSequence,CsmUID<CsmMacro>>();
             fillProjectMacros();
         }
-        CsmUID<CsmMacro> uid = projectMacros.get(CharSequenceKey.create(name));
+        CsmUID<CsmMacro> uid = projectMacros.get(CharSequences.create(name));
         if (uid != null) {
             return uid.getObject();
         }
