@@ -446,7 +446,9 @@ public class ImportProject implements PropertyChangeListener {
                 isFinished = true;
                 return;
             }
-            final File configureLog = createTempFile("configure"); // NOI18N
+            if (configureLog == null) {
+                configureLog = createTempFile("configure"); // NOI18N
+            }
             Writer outputListener = null;
             try {
                 outputListener = new BufferedWriter(new FileWriter(configureLog));
@@ -678,7 +680,9 @@ public class ImportProject implements PropertyChangeListener {
             isFinished = true;
             return;
         }
-        final File makeLog = createTempFile("make"); // NOI18N
+        if (makeLog == null) {
+            makeLog = createTempFile("make"); // NOI18N
+        }
         ExecutionListener listener = new ExecutionListener() {
 
             @Override
@@ -972,6 +976,16 @@ public class ImportProject implements PropertyChangeListener {
     private boolean isUILessMode = false;
     public void setUILessMode(){
         isUILessMode = true;
+    }
+
+    private File configureLog = null;
+    public void setConfigureLog(File configureLog) {
+        this.configureLog = configureLog;
+    }
+
+    private File makeLog = null;
+    public void setMakeLog(File makeLog) {
+        this.makeLog = makeLog;
     }
 
     private void showFollwUp(final NativeProject project) {
