@@ -55,6 +55,13 @@ import java.util.HashSet;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
+import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.openide.util.Lookup;
 
 /**
  * Term is a pure Java multi-purpose terminal emulator.
@@ -266,6 +273,7 @@ public class Term extends JComponent implements Accessible {
     private int n_paint;
     private boolean fixedFont = false;
     MyFontMetrics metrics = null;
+    private Map<?, ?> renderingHints;
     Buffer buf = new Buffer(80);
     private RegionManager region_manager = new RegionManager();
     // 'left_down_point' remembers where the left button came down as a
@@ -2677,6 +2685,11 @@ public class Term extends JComponent implements Accessible {
         // OLD final char buf[] = l.XcharArray();
         l.getChars(xferBuf);
 
+        // Use rendering hints (antialiasing etc.)
+        Map<?,?> hints = renderingHints;
+        if ((hints != null) && (g instanceof Graphics2D)) {
+            ((Graphics2D) g).setRenderingHints(hints);
+        }
         if (metrics.isMultiCell()) {
             // slow way
             // This looks expensive but it is in fact a whole lot faster
@@ -5003,10 +5016,24 @@ public class Term extends JComponent implements Accessible {
 
         // cache the metrics
         metrics = new MyFontMetrics(this, font);
-
+        initRenderingHints();
         updateScreenSize();
     }
 
+    private void initRenderingHints() {
+        renderingHints = null;
+        // init hints if any
+        Lookup lookup = MimeLookup.getLookup("text/plain"); // NOI18N
+        if (lookup != null) {
+            FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+            if (fcs != null) {
+                AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+                if (attributes != null) {
+                    renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
+                }
+            }
+        }
+    }
     /**
      * Override of JComponent.
      * <p>

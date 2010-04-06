@@ -49,6 +49,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -252,8 +253,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     protected void clearRemoteSyncRoot() {
-        String dirToRemove = RemotePathMap.getRemoteSyncRoot(getTestExecutionEnvironment()) + "/*";
-        boolean isOk = ProcessUtils.execute(getTestExecutionEnvironment(), "rm", "-rf", dirToRemove).isOK();
+        String dirToRemove = RemotePathMap.getRemoteSyncRoot(getTestExecutionEnvironment());
+        boolean isOk = ProcessUtils.execute(getTestExecutionEnvironment(), "sh", "-c", "rm -rf " + dirToRemove + "/*").isOK();
         assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 

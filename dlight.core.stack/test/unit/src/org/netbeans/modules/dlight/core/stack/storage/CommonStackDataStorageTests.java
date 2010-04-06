@@ -69,7 +69,7 @@ public abstract class CommonStackDataStorageTests {
     @Before
     public void setUp() {
         db = createStorage();
-        assertNotNull(db);
+        assertNotNull("Unable to create StackDataStorage DB", db); // NOI18N
     }
 
     @After

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
+
 /**
  *
  * @author Alexander Simon
@@ -62,7 +64,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  i = 6\n"+
                 " end  program\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect program reformat",
                 "program p\n"+
@@ -81,7 +83,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  endif\n"+
                 " end  subroutine\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect program reformat",
                 "subroutine p\n"+
@@ -106,7 +108,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  endif\n"+
                 " end  subroutine\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect program reformat",
                 "subroutine p\n"+
@@ -133,7 +135,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  endif\n"+
                 " end  subroutine\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect program reformat",
                 "subroutine p\n"+
@@ -154,7 +156,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  real :: X,Y\n"+
                 " end  type  point\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect type reformat",
                 "type point\n"+
@@ -171,7 +173,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "TYPE (point) aPoint\n"+
                 "TYPE (point(4)) :: aPoints = point(1,2,3,4)\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect type reformat",
                 "type point\n"+
@@ -197,7 +199,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 " end  type  point\n"+
                 "END Module DEFINITIONS\n"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect type reformat",
                 "! definitions\n"+
@@ -249,7 +251,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  module1=+fact(int)+factorial(int)\n" +
                 "  write(*,*)module1\n" +
                 "  end");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect module reformat (free form)",
                 "module IF\n" +
@@ -351,7 +353,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  enddo\n" +
                 "  write(*,*)'======================'\n" +
                 "  end");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect do reformat (free form)",
                 "PROGRAM TEST\n" +
@@ -449,7 +451,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  example2.i=1\n" +
                 "  print *, 'Union map - integer', loc(example2.i)-loc(example2.j)\n" +
                 "  end");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect map reformat (free form)",
                 "program\n" +
@@ -505,7 +507,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 " #endif\n" +
                 " endif\n" +
                 " end");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect preprocessor reformat (free form)",
                 "#include \"file\"\n" +
@@ -586,7 +588,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "print *,'Printing of result values of outer structure: '\n" +
                 "print *,example\n" +
                 "end");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect structure reformat (free form)",
                 "program\n" +
@@ -653,7 +655,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "end interface\n" +
                 "end module QUADRUPLE_PRECISION"
                 );
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect function indent (free form)",
                 "module QUADRUPLE_PRECISION\n" +
@@ -671,7 +673,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    exit\n" +
                 "  end if\n" +
                 "end do");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect function indent (fixed form)",
                 "do I = 1, 15\n" +
@@ -689,7 +691,7 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "  return\n" +
                 "end if\n" +
                 "end function big_plus_big");
-        setDefaultsOptions();
+        setDefaultsOptions(true);
         reformat();
         assertDocumentText("Incorrect function indent (fixed form)",
                 "pure function big_plus_big(x, y) result(bb)\n" +
@@ -699,4 +701,5 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    end if\n" +
                 "end function big_plus_big");
     }
+
 }
