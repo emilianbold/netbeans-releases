@@ -53,12 +53,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -82,7 +84,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.FindAction;
@@ -110,6 +111,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Martin Krauskopf
  */
 final class LibrariesNode extends AbstractNode {
+
+    private static final Logger LOG = Logger.getLogger(LibrariesNode.class.getName());
 
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
@@ -234,7 +237,7 @@ final class LibrariesNode extends AbstractNode {
                             }
                         });
                     } catch (MutexException e) {
-                        Logger.getLogger(LibrariesNode.class.getName()).log(Level.FINE, null, e);
+                        LOG.log(Level.FINE, null, e);
                     }
                  }
             });
@@ -413,18 +416,22 @@ final class LibrariesNode extends AbstractNode {
 
         public void actionPerformed(ActionEvent ev) {
             SingleModuleProperties props = SingleModuleProperties.getInstance(project);
-            ModuleDependency[] newDeps = AddModulePanel.selectDependencies(props);
-            ProjectXMLManager pxm = new ProjectXMLManager(project);
-            try {
-                pxm.addDependencies(new HashSet<ModuleDependency>(Arrays.asList(newDeps)));
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException e) {
-                ErrorManager.getDefault().annotate(e, "Cannot add selected dependencies: " + Arrays.asList(newDeps)); // NOI18N
-                ErrorManager.getDefault().notify(e);
-            } catch (ProjectXMLManager.CyclicDependencyException ex) {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(msg);
-            }
+            final ModuleDependency[] newDeps = AddModulePanel.selectDependencies(props);
+            final AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                public @Override void run() {
+                    ProjectXMLManager pxm = new ProjectXMLManager(project);
+                    try {
+                        pxm.addDependencies(new HashSet<ModuleDependency>(Arrays.asList(newDeps))); // XXX cannot cancel
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException e) {
+                        LOG.log(Level.INFO, "Cannot add selected dependencies: " + Arrays.asList(newDeps), e);
+                    } catch (ProjectXMLManager.CyclicDependencyException ex) {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
+                }
+            }, NbBundle.getMessage(LibrariesNode.class, "LibrariesNode.update_deps"), cancel, false);
         }
     }
 
@@ -440,47 +447,54 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent ev) {
-            ProjectXMLManager pxm = new ProjectXMLManager(project);
-            ModuleDependency editedDep = null;
-            Dialog d = null;
+            SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
+            if (sp != null) {
+                ModuleList.refreshModuleListForRoot(sp.getSuiteDirectory());
+            }
+            final ProjectXMLManager pxm = new ProjectXMLManager(project);
+            final ModuleDependency dep;
             try {
-                SuiteProvider sp = project.getLookup().lookup(SuiteProvider.class);
-                if (sp != null) {
-                    ModuleList.refreshModuleListForRoot(sp.getSuiteDirectory());
-                }
-                ModuleDependency dep = pxm.getModuleDependency(codeNameBase);
+                dep = pxm.getModuleDependency(codeNameBase);
+            } catch (IOException e) {
+                LOG.log(Level.INFO, "Cannot get dependencies for module: " + codeNameBase, e);
+                return;
+            }
 
-                // XXX duplicated from CustomizerLibraries --> Refactor
-                NbPlatform plaf = project.getPlatform(true);
-                EditDependencyPanel editPanel = new EditDependencyPanel(dep, plaf);
-                DialogDescriptor descriptor = new DialogDescriptor(editPanel,
-                        NbBundle.getMessage(LibrariesNode.class, "CTL_EditModuleDependencyTitle",
-                        dep.getModuleEntry().getLocalizedName()));
-                descriptor.setHelpCtx(new HelpCtx(EditDependencyPanel.class));
-                d = DialogDisplayer.getDefault().createDialog(descriptor);
+            // XXX duplicated from CustomizerLibraries --> Refactor
+            NbPlatform plaf = project.getPlatform(true);
+            EditDependencyPanel editPanel = new EditDependencyPanel(dep, plaf);
+            DialogDescriptor descriptor = new DialogDescriptor(editPanel,
+                    NbBundle.getMessage(LibrariesNode.class, "CTL_EditModuleDependencyTitle",
+                    dep.getModuleEntry().getLocalizedName()));
+            descriptor.setHelpCtx(new HelpCtx(EditDependencyPanel.class));
+            Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+            try {
                 d.setVisible(true);
                 if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-                    editedDep = editPanel.getEditedDependency();
-                    SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(pxm.getDirectDependencies());
-                    deps.remove(dep);
-                    deps.add(editedDep);
-                    pxm.replaceDependencies(deps);
-                    ProjectManager.getDefault().saveProject(project);
+                    final ModuleDependency editedDep = editPanel.getEditedDependency();
+                    final AtomicBoolean cancel = new AtomicBoolean();
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        public @Override void run() {
+                            try {
+                                SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(pxm.getDirectDependencies());
+                                deps.remove(dep);
+                                deps.add(editedDep);
+                                if (cancel.get()) {
+                                    return;
+                                }
+                                pxm.replaceDependencies(deps); // XXX cannot cancel
+                                ProjectManager.getDefault().saveProject(project);
+                            } catch (IOException e) {
+                                LOG.log(Level.INFO, "Cannot store dependency: " + editedDep, e);
+                            } catch (ProjectXMLManager.CyclicDependencyException ex) {
+                                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                                DialogDisplayer.getDefault().notify(msg);
+                            }
+                        }
+                    }, NbBundle.getMessage(LibrariesNode.class, "LibrariesNode.update_deps"), cancel, false);
                 }
-            } catch (IOException e) {
-                if (editedDep != null) {
-                    ErrorManager.getDefault().annotate(e, "Cannot store dependency: " + editedDep); // NOI18N
-                } else {
-                    ErrorManager.getDefault().annotate(e, "Cannot get dependency for module: " + codeNameBase); // NOI18N
-                }
-                ErrorManager.getDefault().notify(e);
-            } catch (ProjectXMLManager.CyclicDependencyException ex) {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(msg);
             } finally {
-                if (d != null) {
-                    d.dispose();
-                }
+                d.dispose();
             }
         }
     }
