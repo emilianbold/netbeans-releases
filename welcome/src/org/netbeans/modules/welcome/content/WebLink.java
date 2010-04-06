@@ -62,6 +62,11 @@ public class WebLink extends LinkButton {
     public WebLink( String label, String url, boolean showBullet ) {
         super( label, showBullet );
         this.url = url;
+
+        getAccessibleContext().setAccessibleName(
+                BundleSupport.getAccessibilityName( "WebLink", label ) ); //NOI18N
+        getAccessibleContext().setAccessibleDescription(
+                BundleSupport.getAccessibilityDescription( "WebLink", url ) ); //NOI18N
     }
 
     public WebLink( String label, String url, boolean showBullet, Color foreground ) {
@@ -69,6 +74,7 @@ public class WebLink extends LinkButton {
         this.url = url;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Utils.showURL( url );
     }
