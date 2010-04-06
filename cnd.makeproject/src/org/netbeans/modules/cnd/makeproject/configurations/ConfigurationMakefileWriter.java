@@ -996,11 +996,14 @@ public class ConfigurationMakefileWriter {
                     bw.write("\t@echo " + comment + "\n"); // NOI18N
                 }
 
-                bw.write("\t@if [ \"`${NM} " + target + " | ${GREP} '|main$$'`\" = \"\" ]; \\\n"); // NOI18N
+                bw.write("\t@NMOUTPUT=`${NM} " + target + "`; \\\n"); // NOI18N
+                bw.write("\tif (echo \"$$NMOUTPUT\" | ${GREP} '|main$$') || \\\n"); // NOI18N
+                bw.write("\t   (echo \"$$NMOUTPUT\" | ${GREP} 'T main$$') || \\\n"); // NOI18N
+                bw.write("\t   (echo \"$$NMOUTPUT\" | ${GREP} 'T _main$$'); \\\n"); // NOI18N
                 bw.write("\tthen  \\\n"); // NOI18N
-                bw.write("\t    ${CP} " + target + " " + nomainTarget + ";\\\n"); // NOI18N
-                bw.write("\telse  \\\n"); // NOI18N
                 bw.write("\t    " + command + ";\\\n"); // NOI18N
+                bw.write("\telse  \\\n"); // NOI18N
+                bw.write("\t    ${CP} " + target + " " + nomainTarget + ";\\\n"); // NOI18N
                 bw.write("\tfi\n"); // NOI18N
             }
             bw.write("\n"); // NOI18N

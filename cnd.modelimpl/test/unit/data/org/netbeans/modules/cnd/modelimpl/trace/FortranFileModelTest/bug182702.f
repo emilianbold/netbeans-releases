@@ -7,10 +7,12 @@
       use constants
       implicit none
 
-! комментарий
+! commentary 
 
       real(dbl) dt
       print *,g
       stop
       end
+
+! комментарий
 
