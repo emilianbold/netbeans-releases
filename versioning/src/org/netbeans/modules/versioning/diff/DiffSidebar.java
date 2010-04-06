@@ -653,6 +653,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
                     Difference ad = getDifference(line, paintDiff);
+                    Rectangle rec1 = component.modelToView(view.getStartOffset());
+                    Rectangle rec2 = component.modelToView(view.getEndOffset() - 1);
+                    if (rec1 == null || rec2 == null) {
+                        break;
+                    }
+                    int height = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
                     if (ad != null) {
                         g.setColor(getColor(ad));
                         if (ad.getType() == Difference.DELETE) {
@@ -663,9 +669,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                             g.setColor(colorBorder);
                             g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
                         } else {
-                            g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
+                            g.fillRect(3, y, BAR_WIDTH - 3, height);
                             g.setColor(colorBorder);
-                            int y1 = y + editorUI.getLineHeight();
+                            int y1 = y + height;
                             g.drawLine(2, y, 2, y1);
                             if (ad.getSecondStart() == line) {
                                 g.drawLine(2, y, BAR_WIDTH - 1, y);
@@ -673,7 +679,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                             g.drawLine(2, y1, BAR_WIDTH - 1, y1);
                         }
                     }
-                    y += editorUI.getLineHeight();
+                    y += height;
                     if (y >= clipEndY) {
                         break;
                     }
