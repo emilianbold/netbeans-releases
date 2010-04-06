@@ -51,7 +51,8 @@ class RfsLocalController implements Runnable {
 
     private static enum RequestKind {
         REQUEST,
-        WRITTEN
+        WRITTEN,
+        PING
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
@@ -93,12 +94,10 @@ class RfsLocalController implements Runnable {
 //    }
 
     private RequestKind getRequestKind(String request) {
-        if (request.charAt(1) != ' ') {
-            throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
-        }
         switch (request.charAt(0)) {
             case 'r':   return RequestKind.REQUEST;
             case 'w':   return RequestKind.WRITTEN;
+            case 'p':   return RequestKind.PING;
             default:
                 throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
         }
@@ -114,52 +113,60 @@ class RfsLocalController implements Runnable {
                 if (request == null) {
                     break;
                 }
-                String remoteFile = request.substring(2);
                 RequestKind kind = getRequestKind(request);
-                String initialPath = canonicalToAbsolute.get(remoteFile);
-                if (initialPath != null) {
-                    remoteFile = initialPath;
-                }
-                String localFilePath = mapper.getLocalPath(remoteFile);
-                if (localFilePath != null) {
-                    File localFile = new File(localFilePath);
-                    if (kind == RequestKind.WRITTEN) {
-                        fileData.setState(localFile, FileState.UNCONTROLLED);
-                        remoteUpdates.add(localFile);
-                        RemoteUtil.LOGGER.log(Level.FINEST, "LC: uncontrolled {0}", localFile);
-                    } else {
-                        CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
-                        if (localFile.exists() && !localFile.isDirectory()) {
-                            //FileState state = fileData.getState(localFile);
-                            RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} started", new Object[]{localFile, remoteFile});
-                            long fileTime = System.currentTimeMillis();
-                            Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
-                            try {
-                                int rc = task.get();
-                                fileTime = System.currentTimeMillis() - fileTime;
-                                totalCopyingTime += fileTime;
-                                System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
-                                if (rc == 0) {
-                                    fileData.setState(localFile, FileState.COPIED);
-                                    respond_ok();
-                                } else {
-                                    respond_err("1"); // NOI18N
-                                }
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                                break;
-                            } catch (ExecutionException ex) {
-                                Exceptions.printStackTrace(ex);
-                                respond_err("2 execution exception\n"); // NOI18N
-                            } finally {
-                                responseStream.flush();
-                            }
-                        } else {
-                            respond_ok();
-                        }
-                    }
-                } else {
+                if (kind == RequestKind.PING) {
+                    RemoteUtil.LOGGER.finest("PING from remote controller");
                     respond_ok();
+                } else {                
+                    if (request.charAt(1) != ' ') {
+                        throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
+                    }
+                    String remoteFile = request.substring(2);
+                    String initialPath = canonicalToAbsolute.get(remoteFile);
+                    if (initialPath != null) {
+                        remoteFile = initialPath;
+                    }
+                    String localFilePath = mapper.getLocalPath(remoteFile);
+                    if (localFilePath != null) {
+                        File localFile = new File(localFilePath);
+                        if (kind == RequestKind.WRITTEN) {
+                            fileData.setState(localFile, FileState.UNCONTROLLED);
+                            remoteUpdates.add(localFile);
+                            RemoteUtil.LOGGER.log(Level.FINEST, "LC: uncontrolled {0}", localFile);
+                        } else {
+                            CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
+                            if (localFile.exists() && !localFile.isDirectory()) {
+                                //FileState state = fileData.getState(localFile);
+                                RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} started", new Object[]{localFile, remoteFile});
+                                long fileTime = System.currentTimeMillis();
+                                Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
+                                try {
+                                    int rc = task.get();
+                                    fileTime = System.currentTimeMillis() - fileTime;
+                                    totalCopyingTime += fileTime;
+                                    System.err.printf("LC: uploading %s to %s finished; rc=%d time =%d total time = %d ms \n", localFile, remoteFile, rc, fileTime, totalCopyingTime);
+                                    if (rc == 0) {
+                                        fileData.setState(localFile, FileState.COPIED);
+                                        respond_ok();
+                                    } else {
+                                        respond_err("1"); // NOI18N
+                                    }
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    break;
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                    respond_err("2 execution exception\n"); // NOI18N
+                                } finally {
+                                    responseStream.flush();
+                                }
+                            } else {
+                                respond_ok();
+                            }
+                        }
+                    } else {
+                        respond_ok();
+                    }
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
