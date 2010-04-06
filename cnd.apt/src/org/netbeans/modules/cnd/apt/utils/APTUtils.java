@@ -210,6 +210,7 @@ public class APTUtils {
                 // Comments
             case APTTokenTypes.CPP_COMMENT:
             case APTTokenTypes.COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return new APTCommentToken();
                 
             default: /*assert(APTConstTextToken.constText[type] != null) : "Do not know text for constText token of type " + type;  // NOI18N*/
@@ -425,6 +426,7 @@ public class APTUtils {
         switch (ttype) {
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return true;
             default:
                 return false;

@@ -109,7 +109,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
     public static List<CppFoldRecord> parse(String name, Reader source) {
         try {
-            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source);
+            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source, APTLanguageSupport.GNU_CPP);
             APTFoldingParser parser = getParser(name, lexer);
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());

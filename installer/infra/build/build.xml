@@ -791,7 +791,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-javafx nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod-sun tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javaee nb-javame nb-ruby nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod-sun tomcat"/>
         </antcall>
      </target>
 
@@ -1008,6 +1008,12 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javase">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javase"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-platform-sdk">        
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-platform-sdk"/>
         </antcall>
     </target>
 

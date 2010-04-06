@@ -365,6 +365,30 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
             }
         }
+        if (lib != null) {
+            List<URL> libList = lib.getContent(JAVADOC_VOLUME);
+            size = libList.size();
+            for (URL libUrl : libList) {
+                String libPath = libUrl.getFile();
+                // file seems to want to return a file: protocol string... not the FILE portion of the URL
+                if (libPath.length() > 5) {
+                    libPath = libPath.substring(5);
+                }
+                if (!new File(libPath.replace("!/", "")).exists()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINE, "libPath does not exist.  Updating " + name);
+                    try {
+                        lmgr.removeLibrary(lib);
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        // Already removed somehow, ignore.
+                        }
+                    lib = null;
+                    size = 0;
+                    break;
+                }
+            }
+        }
 
         // verify that there are not new components in the 'new' definition
         // of the library...  If there are new components... rebuild the library.

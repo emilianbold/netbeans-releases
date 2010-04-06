@@ -124,6 +124,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 break;
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 // just skip comments, they are valid
                 break;
             default:

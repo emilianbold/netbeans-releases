@@ -71,4 +71,19 @@ public class FortranFileModelTest extends TraceModelTestBase {
         performTest("file2.f"); // NOI18N
     }
 
+    public void testBug182945() throws Exception {
+        // Bug 182945 - *Fortran* Navigator shows non-existed items
+        performTest("bug182945.f"); // NOI18N
+    }
+
+    public void testBug182702() throws Exception {
+        // Bug 182702 - *Fortran* Navigator will be empty if Fortran file contains Cyrillic symbols in comments
+        performTest("bug182702.f"); // NOI18N
+    }
+
+    public void testBug182520() throws Exception {
+        // Bug 182520 - Navigator doesn't show all subroutines for *Fortran* files
+        performTest("bug182520.f"); // NOI18N
+    }
+
 }
