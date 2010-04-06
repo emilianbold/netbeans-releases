@@ -179,13 +179,14 @@ class RfsLocalController implements Runnable {
         
         public final File file;
         public final String remotePath;
-        private String link;
+        private String linkTarget;
+        private FileGatheringInfo linkTargetInfo;
 
         public FileGatheringInfo(File file, String remotePath) {
             this.file = file;
             this.remotePath = remotePath;
             CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: " + remotePath);
-            this.link = null;
+            this.linkTarget = null;
         }
 
         @Override
@@ -194,17 +195,24 @@ class RfsLocalController implements Runnable {
         }
 
         public boolean isLink() {
-            return link != null;
+            return linkTarget != null;
         }
 
-        public String getLink() {
-            return link;
+        public String getLinkTarget() {
+            return linkTarget;
         }
 
-        public void setLink(String link) {
-            this.link = link;
+        public void setLinkTarget(String link) {
+            this.linkTarget = link;
         }
 
+        public FileGatheringInfo getLinkTargetInfo() {
+            return linkTargetInfo;
+        }
+
+        public void setLinkTargetInfo(FileGatheringInfo linkTargetInfo) {
+            this.linkTargetInfo = linkTargetInfo;
+        }
     }
 
     /**
@@ -302,6 +310,22 @@ class RfsLocalController implements Runnable {
     }
 
     private void checkLinks(final List<FileGatheringInfo> filesToFeed) {
+        // the counter is just in case here;
+        // the real cycling check is inside checkLinks(List,List) logic
+        int cnt = 0;
+        final int max = 16;
+        Collection<FileGatheringInfo> filesToCheck = filesToFeed;
+        do {
+            filesToCheck = checkLinks(filesToFeed, filesToFeed);
+        } while (!filesToCheck.isEmpty() && cnt++ < max);
+        RemoteUtil.LOGGER.log(Level.FINE, "checkLinks done in {0} passes", cnt);
+        if (!filesToCheck.isEmpty()) {
+            RemoteUtil.LOGGER.info("checkLinks exited by count. Cyclic symlinks?");
+        }
+    }
+
+    private Collection<FileGatheringInfo> checkLinks(final List<FileGatheringInfo> filesToCheck, final List<FileGatheringInfo> filesToAdd) {
+        Set<FileGatheringInfo> addedInfos = new HashSet<FileGatheringInfo>();
         NativeProcessBuilder pb = NativeProcessBuilder.newLocalProcessBuilder();
         pb.setExecutable("sh"); //NOI18N
         pb.setArguments("-c", "xargs ls -ld | grep '^l'"); //NOI18N
@@ -310,7 +334,7 @@ class RfsLocalController implements Runnable {
             process = pb.call();
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.INFO, "Error when checking links: {0}", ex.getMessage());
-            return;
+            return addedInfos;
         }
         
         RequestProcessor.getDefault().post(new Runnable() {
@@ -318,9 +342,8 @@ class RfsLocalController implements Runnable {
             public void run() {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 try {
-                    for (FileGatheringInfo info : filesToFeed) {
-                        final String path = info.file.getAbsolutePath();
-                        RemoteUtil.LOGGER.log(Level.FINEST, "\tcheckLinks: {0}", path);
+                    for (FileGatheringInfo info : filesToCheck) {
+                        final String path = info.file.getAbsolutePath();                        
                         requestWriter.append(path);
                         requestWriter.newLine();
                     }
@@ -356,8 +379,8 @@ class RfsLocalController implements Runnable {
             }
         });
 
-        Map<String, FileGatheringInfo> map = new HashMap<String, FileGatheringInfo>(filesToFeed.size());
-        for (FileGatheringInfo info : filesToFeed) {
+        Map<String, FileGatheringInfo> map = new HashMap<String, FileGatheringInfo>(filesToCheck.size());
+        for (FileGatheringInfo info : filesToCheck) {
             map.put(info.file.getAbsolutePath(), info);
         }
 
@@ -382,12 +405,19 @@ class RfsLocalController implements Runnable {
                 FileGatheringInfo info = map.get(linkPath);
                 CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
                 if (info != null) {
-                    info.setLink(linkTarget);
+                    RemoteUtil.LOGGER.log(Level.FINEST, "\tcheckLinks: {0} -> {1}", new Object[] { linkPath, linkTarget });
+                    info.setLinkTarget(linkTarget);
                     File linkParentFile = new File(linkPath).getParentFile();
                     File linkTargetFile = new File(linkParentFile, linkTarget);
                     linkTargetFile = CndFileUtils.normalizeFile(linkTargetFile);
-                    String remotePath = mapper.getRemotePath(linkTargetFile.getAbsolutePath(), false);
-                    addFileGatheringInfo(filesToFeed, linkTargetFile, remotePath);
+                    FileGatheringInfo targetInfo;
+                    targetInfo = map.get(linkTargetFile.getAbsolutePath());
+                    // TODO: try finding in newly added infos. Probably replace List to Map in filesToAdd
+                    if (targetInfo == null) {
+                        String remotePath = mapper.getRemotePath(linkTargetFile.getAbsolutePath(), false);
+                        targetInfo = addFileGatheringInfo(filesToAdd, linkTargetFile, remotePath);
+                        addedInfos.add(targetInfo);
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -401,6 +431,7 @@ class RfsLocalController implements Runnable {
 //            // don't report InterruptedException
 //            return;
 //        }
+        return addedInfos;
     }
 
     private void readFileInitResponse() throws IOException {
@@ -453,7 +484,7 @@ class RfsLocalController implements Runnable {
     
     private void sendFileInitRequest(FileGatheringInfo fgi) {
         if(fgi.isLink()) {
-            responseStream.printf("L %s\n%s\n", fgi.remotePath, fgi.getLink()); //NOI18N
+            responseStream.printf("L %s\n%s\n", fgi.remotePath, fgi.getLinkTarget()); //NOI18N
         } else if (fgi.file.isDirectory()) {
             responseStream.printf("D %s\n", fgi.remotePath); //NOI18N
             responseStream.flush(); //TODO: remove?
@@ -477,6 +508,7 @@ class RfsLocalController implements Runnable {
                         newState = FileState.INITIAL;
                         break;
                     case UNCONTROLLED:
+                    case INEXISTENT:
                         newState = info.state;
                         break;
                     default:
@@ -501,8 +533,8 @@ class RfsLocalController implements Runnable {
 
     private static void gatherFiles(File file, String base, FileFilter filter, List<FileGatheringInfo> files) {
         // it is assumed that the file itself was already filtered
-        String fileName = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-        addFileGatheringInfo(files, file, fileName);
+        String remotePath = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+        files.add(new FileGatheringInfo(file, remotePath));
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
             for (File child : children) {
@@ -512,10 +544,10 @@ class RfsLocalController implements Runnable {
         }
     }
 
-    private static void addFileGatheringInfo(List<FileGatheringInfo> filesToFeed, final File file, String remoteFilePathName) {
-        //if (file.exists()) {
-            filesToFeed.add(new FileGatheringInfo(file, remoteFilePathName));
-        //}
+    private static FileGatheringInfo addFileGatheringInfo(List<FileGatheringInfo> filesToFeed, final File file, String remoteFilePathName) {
+        FileGatheringInfo info = new FileGatheringInfo(file, remoteFilePathName);
+        filesToFeed.add(info);
+        return info;
     }
 
 
