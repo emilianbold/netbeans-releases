@@ -62,8 +62,8 @@ public class Logo extends JPanel implements Constants, MouseListener {
 
     private String url;
 
-    public static Logo createSunLogo() {
-        return new Logo( SUN_LOGO_IMAGE, BundleSupport.getURL( "SunLogo" ) ); // NOI18N
+    public static Logo createOracleLogo() {
+        return new Logo( ORACLE_LOGO_IMAGE, BundleSupport.getURL( "OracleLogo" ) ); // NOI18N
     }
 
     public static Logo createJavaLogo() {

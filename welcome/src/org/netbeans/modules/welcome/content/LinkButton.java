@@ -55,11 +55,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.ImageIcon;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -69,28 +69,45 @@ public abstract class LinkButton extends JButton
         implements Constants, MouseListener, ActionListener, FocusListener {
 
     private boolean underline = false;
+    private final boolean showBorder;
 
-    final ImageIcon BULLET_ICON = ImageUtilities.loadImageIcon(BULLET_IMAGE, false);
     private final Color defaultForeground;
 
-    public LinkButton( String label, boolean showBullet ) {
-        this( label, showBullet, Utils.getColor(LINK_COLOR) );
+    private final static Border regularBorder = ButtonBorder.createRegular();
+    private final static Border mouseoverBorder = ButtonBorder.createMouseOver();
+
+    public LinkButton( String label ) {
+        this( label, false );
     }
 
-    public LinkButton( String label, boolean showBullet, Color foreground ) {
+    public LinkButton( String label, boolean showBorder ) {
+        this( label, Utils.getColor(LINK_COLOR), showBorder );
+    }
+
+    public LinkButton( String label, Color foreground ) {
+        this( label, foreground, false );
+    }
+
+    public LinkButton( String label, Color foreground, boolean showBorder ) {
         super( label );
         this.defaultForeground = foreground;
+        this.showBorder = showBorder;
         setForeground( defaultForeground );
         setFont( BUTTON_FONT );
-        setBorder( new EmptyBorder(1, 1, 1, 1) );
+
+        if( showBorder ) {
+            setBorder( BorderFactory.createEmptyBorder(5, 11, 5, 11) );
+            setMargin( new Insets(11,11,11,11) );
+        } else {
+            setBorder( new EmptyBorder(1, 1, 1, 1) );
+            setMargin( new Insets(0, 0, 0, 0) );
+        }
+
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         setHorizontalAlignment( JLabel.LEFT );
         addMouseListener(this);
         setFocusable( true );
-        if( showBullet )
-            setIcon( BULLET_ICON );
 
-        setMargin( new Insets(0, 0, 0, 0) );
         setBorderPainted( false );
         setFocusPainted( false );
         setRolloverEnabled( true );
@@ -100,29 +117,35 @@ public abstract class LinkButton extends JButton
         addFocusListener( this );
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         if( isEnabled() ) {
             underline = true;
-            setForeground( Utils.getColor(LINK_IN_FOCUS_COLOR) );
             repaint();
             onMouseEntered( e );
-            setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
+            if( !showBorder )
+                setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
         }
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         if( isEnabled() ) {
             underline = false;
-            setForeground( isVisited() ? Utils.getColor(VISITED_LINK_COLOR): defaultForeground );
+            if( !showBorder )
+                setForeground( isVisited() ? Utils.getColor(VISITED_LINK_COLOR): defaultForeground );
             repaint();
             onMouseExited( e );
         }
@@ -131,6 +154,10 @@ public abstract class LinkButton extends JButton
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = Utils.prepareGraphics( g );
+        if( showBorder ) {
+            Border b = underline ? mouseoverBorder : regularBorder;
+            b.paintBorder(this, g, 0, 0, getWidth(), getHeight());
+        }
         super.paintComponent(g2);
 
         Dimension size = getSize();
@@ -141,9 +168,11 @@ public abstract class LinkButton extends JButton
         }
     }
     
+    @Override
     public void focusLost(FocusEvent e) {
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         Rectangle rect = getBounds();
         rect.grow( 0, FONT_SIZE );
@@ -159,7 +188,7 @@ public abstract class LinkButton extends JButton
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if( underline && isEnabled() ) {
+        if( underline && isEnabled() && !showBorder) {
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
             int iconWidth = 0;

@@ -53,27 +53,24 @@ import javax.swing.border.Border;
  */
 public interface Constants {
 
-    static final String COLOR_SCREEN_BACKGROUND = "ScreenBackgroundColor"; //NOI18N
-    
     static final String COLOR_TAB_SEL_FOREGROUND = "TabSelForegroundColor"; //NOI18N
     static final String COLOR_TAB_UNSEL_FOREGROUND = "TabUnselForegroundColor"; //NOI18N
     static final String COLOR_SECTION_HEADER = "SectionHeaderColor"; //NOI18N
+    static final String COLOR_SECTION_SEPARATOR = "SectionSeparatorColor"; //NOI18N
 
     static final String COLOR_RSS_DATE = "RssDateTimeColor"; //NOI18N
     static final String COLOR_RSS_DETAILS = "RssDetailsColor"; //NOI18N
-    static final String COLOR_HEADER1 = "HeaderForegroundColor1"; //NOI18N
-    static final String COLOR_HEADER2 = "HeaderForegroundColor2"; //NOI18N
+    static final String COLOR_HEADER = "HeaderForegroundColor"; //NOI18N
     
     static final int FONT_SIZE = Utils.getDefaultFontSize();
     static final Font BUTTON_FONT = new Font( null, Font.BOLD, FONT_SIZE );
     static final Font RSS_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE-1 );
     static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
-    static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+12 ); //NOI18N
+    static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
     static final Font GET_STARTED_FONT = new Font( null, Font.BOLD, (int)(FONT_SIZE*1.4) ); //NOI18N
 
-    static final String BULLET_IMAGE = "org/netbeans/modules/welcome/resources/bullet.png"; // NOI18N
-    static final String SUN_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/sun_logo.png"; // NOI18N
+    static final String ORACLE_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/oracle_logo.png"; // NOI18N
     static final String JAVA_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/java_logo.png"; // NOI18N
 
     static final String IMAGE_TOPBAR_CENTER = "org/netbeans/modules/welcome/resources/topbar_center.png"; // NOI18N

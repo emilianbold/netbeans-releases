@@ -51,12 +51,9 @@ import org.openide.util.Lookup;
  */
 class InstallConfig {
     private boolean ergonomics = false;
-    private boolean javaFX = false;
     private boolean somePacksDisabled = false;
     private Set<String> enabledPackNames = new HashSet<String>(10);
     private Set<String> availablePackNames = new HashSet<String>(10);
-
-    private static final String javaFxPackName = "org.netbeans.modules.javafx.kit"; //NOI18N
 
     private static final String javaSEPackName = "org.netbeans.modules.java.kit"; //NOI18N
 
@@ -82,7 +79,6 @@ class InstallConfig {
 
     private InstallConfig() {
         for( ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class) ) {
-            javaFX = javaFX || isJavaFxPack(mi);
 
             ergonomics = ergonomics || isErgonomicsPack(mi);
 
@@ -106,21 +102,8 @@ class InstallConfig {
         return theInstance;
     }
 
-    private static final String[] preferredPackNames = { "java", "ruby", "cnd", "php", "groovy" };
-    public String getPreferredPackName() {
-        for( String prefName : preferredPackNames ) {
-            if( isPackEnabled( prefName ) )
-                return prefName;
-        }
-        return preferredPackNames[0];
-    }
-
     public boolean isErgonomicsEnabled() {
         return ergonomics;
-    }
-
-    public boolean isJavaFXInstalled() {
-        return javaFX && availablePackNames.contains(javaSEPackName) && availablePackNames.size() == 1;
     }
 
     public boolean somePacksDisabled() {
@@ -139,11 +122,6 @@ class InstallConfig {
                 return true;
         }
         return false;
-    }
-
-    private boolean isJavaFxPack( ModuleInfo mi ) {
-        String moduleName = mi.getCodeNameBase();
-        return moduleName.startsWith(javaFxPackName);
     }
 
     private boolean isErgonomicsPack( ModuleInfo mi ) {
