@@ -371,7 +371,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for(PathRegistryEvent.Change c : event.getChanges()) {
                 sb.append(" event=").append(c.getEventKind()); //NOI18N
                 sb.append(" pathKind=").append(c.getPathKind()); //NOI18N
-                sb.append(" pathType=").append(c.getPathType()); //NOI18N
+                sb.append(" pathType=").append(c.getPathId()); //NOI18N
                 sb.append(" affected paths:\n"); //NOI18N
                 Collection<? extends ClassPath> paths = c.getAffectedPaths();
                 if (paths != null) {
@@ -392,7 +392,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         for(PathRegistryEvent.Change c : event.getChanges()) {            
 
             containsRelevantChanges = true;
-            if (c.getEventKind() == EventKind.PATHS_CHANGED || c.getEventKind() == EventKind.INCLUDES_CHANGED) {
+            if (c.getEventKind() == EventKind.PATHS_CHANGED) {
                 existingPathsChanged = true;
                 break;
             }
@@ -3183,7 +3183,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
                             delete(deleted, root);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers,invalidatedMap)) {
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
                                 crawler.storeTimestamps();
                                 outOfDateFiles[0] = resources.size();
                                 deletedFiles[0] = deleted.size();

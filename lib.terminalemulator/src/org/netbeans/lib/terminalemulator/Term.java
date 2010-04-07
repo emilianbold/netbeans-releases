@@ -56,12 +56,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
-import javax.swing.text.AttributeSet;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.api.editor.settings.FontColorNames;
-import org.netbeans.api.editor.settings.FontColorSettings;
-import org.openide.util.Lookup;
 
 /**
  * Term is a pure Java multi-purpose terminal emulator.
@@ -4801,6 +4795,10 @@ public class Term extends JComponent implements Accessible {
         hscroll_wrapper.setVisible(horizontally_scrollable);
     }
 
+    public final void setRenderingHints(Map<?, ?> hints) {
+        renderingHints = hints;
+    }
+    
     /*
      * Returns whether horizontal scrolling is enabled.
      * @see Term.setHorizontallyScrollable
@@ -5016,24 +5014,9 @@ public class Term extends JComponent implements Accessible {
 
         // cache the metrics
         metrics = new MyFontMetrics(this, font);
-        initRenderingHints();
         updateScreenSize();
     }
 
-    private void initRenderingHints() {
-        renderingHints = null;
-        // init hints if any
-        Lookup lookup = MimeLookup.getLookup("text/plain"); // NOI18N
-        if (lookup != null) {
-            FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-            if (fcs != null) {
-                AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-                if (attributes != null) {
-                    renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
-                }
-            }
-        }
-    }
     /**
      * Override of JComponent.
      * <p>

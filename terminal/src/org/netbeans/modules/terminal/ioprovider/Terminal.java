@@ -55,6 +55,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,6 +67,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.AttributeSet;
 
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
@@ -84,6 +86,10 @@ import org.netbeans.modules.terminal.TermAdvancedOption;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for
@@ -223,7 +229,8 @@ public final class Terminal extends JComponent {
         term.setEmulation("ansi");	// NOI18N
         term .setBackground(Color.white);
         term.setHistorySize(4000);
-
+        term.setRenderingHints(getRenderingHints());
+	
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
@@ -629,6 +636,22 @@ public final class Terminal extends JComponent {
             }
         } );
         menu.show(term.getScreen(), p.x, p.y);
+    }
+
+    private Map<?, ?> getRenderingHints() {
+        Map<?, ?> renderingHints = null;
+        // init hints if any
+        Lookup lookup = MimeLookup.getLookup("text/plain"); // NOI18N
+        if (lookup != null) {
+            FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+            if (fcs != null) {
+                AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+                if (attributes != null) {
+                    renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
+                }
+            }
+        }
+	return renderingHints;
     }
 
     /**

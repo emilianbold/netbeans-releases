@@ -263,7 +263,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             matcher = null;
             PropertyChangeEvent ev = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
             if (event != null) {
-                ev.setPropagationId(ev);
+                ev.setPropagationId(event);
             }
             pcs.firePropertyChange(ev);
         }
