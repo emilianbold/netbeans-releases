@@ -581,7 +581,7 @@ public final class DocumentView extends EditorBoxView
             defaultAscent = textLayout.getAscent();
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
-            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getBounds().getWidth());
+            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
