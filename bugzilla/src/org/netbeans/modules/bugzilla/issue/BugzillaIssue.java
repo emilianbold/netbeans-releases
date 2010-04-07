@@ -831,14 +831,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(comment != null) {
             addComment(comment);
         }
-
-        BugzillaCommand submitCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     public void addComment(String comment) {
