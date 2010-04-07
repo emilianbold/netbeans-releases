@@ -79,8 +79,10 @@ final class ProcessList {
     private String executable;
     private final List<String> argsSimple = new ArrayList<String>();
     private final ExecutionEnvironment exEnv;
+    private boolean isSolaris = false;
 
-    private final RequestProcessor RP = new RequestProcessor("Process list", 5); //NOI18N
+    private final RequestProcessor RP = new RequestProcessor("Process list", 1); //NOI18N
+    private RequestProcessor.Task task = null;
 
     protected ProcessList(ExecutionEnvironment exEnv) {
         this.exEnv = exEnv;
@@ -130,6 +132,7 @@ final class ProcessList {
                     }
                     ptype = PTYPE.STD;
                 }
+                isSolaris = hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -143,9 +146,13 @@ final class ProcessList {
         executable = exec;
     }
 
-    private void request(final Pattern filter, final ProcessListReader plr, final boolean full) {
+    private synchronized void request(final Pattern filter, final ProcessListReader plr, final boolean full) {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
         if (ptype != PTYPE.NONE) {
-            RP.post(new Runnable() {
+            task = RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -173,11 +180,47 @@ final class ProcessList {
                         String line = reader.readLine(); // read and ignore header line...
                         List<Vector<String>> proclist = new ArrayList<Vector<String>>();
                         while ((line = reader.readLine()) != null) {
-                            if (filter == null || filter.matcher(line).find()) {
-                                proclist.add(parseLine(line));
+                            proclist.add(parseLine(line));
+                        }
+
+                        // pargs call if needed (IZ 168499)
+                        if (isSolaris) {
+                            NativeProcessBuilder pargsBuilder = NativeProcessBuilder.newProcessBuilder(exEnv);
+                            pargsBuilder.setExecutable("/usr/bin/pargs").redirectError(); // NOI18N
+                            String[] pargs_args = new String[proclist.size()+1];
+                            pargs_args[0] = "-Fl"; // NOI18N
+                            int idx = 1;
+                            for (Vector<String> proc : proclist) {
+                                pargs_args[idx++] = proc.get(1);
+                            }
+                            pargsBuilder.setArguments(pargs_args);
+                            List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
+                            
+                            idx = 0;
+                            for (String procArgs : pargsOutput) {
+                                if (procArgs.length() > 0 && !procArgs.startsWith("pargs:")) { // NOI18N
+                                    proclist.get(idx++).set(5, procArgs);
+                                }
                             }
                         }
-                        plr.processListCallback(proclist);
+
+
+                        List<Vector<String>> res;
+                        if (filter == null) {
+                            res = proclist;
+                        } else {
+                            res = new ArrayList<Vector<String>>();
+                            // Do filtering
+                            outer: for (Vector<String> proc : proclist) {
+                                for (String field : proc) {
+                                    if (filter.matcher(field).find()) {
+                                        res.add(proc);
+                                        continue outer;
+                                    }
+                                }
+                            }
+                        }
+                        plr.processListCallback(res);
                     } catch (IOException ioe) {
                         //do nothing
                     }
