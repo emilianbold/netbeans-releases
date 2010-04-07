@@ -485,7 +485,33 @@ public final class MakeActionProvider implements ActionProvider {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
 
-        if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+        Folder targetFolder = context.lookup(Folder.class);
+        if (targetFolder == null) {
+            Node node = context.lookup(Node.class);
+            if (node != null) {
+                targetFolder = (Folder) node.getValue("Folder"); // NOI18N
+            }
+        }
+        if (targetFolder != null) { // DEBUG TEST
+            String path = ""; // NOI18N
+            if (targetFolder.isTest()) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if (compilerSet != null) {
+                    path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
+                    path = conf.expandMacros(path);
+                    path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
+                }
+            }
+            RunProfile runProfile = createRunProfile(conf, cancelled);
+            if (runProfile == null) {
+                if (cancelled.get()) {
+                    return false; // getEnv() might be costly for remote host
+                }
+            }
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
+            actionEvents.add(projectActionEvent);
+            RunDialogPanel.addElementToExecutablePicklist(path);
+        } else if (actionEvent == ProjectActionEvent.PredefinedType.TEST) { // RUN TEST
             if (conf.isCompileConfiguration() && !validateProject(conf)) {
                 return true;
             }
@@ -502,7 +528,7 @@ public final class MakeActionProvider implements ActionProvider {
             profile.setArgs(args);
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
-        } else if (conf.isMakefileConfiguration()) {
+        } else if (conf.isMakefileConfiguration()) { // RUN UNMANAGED
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
@@ -524,113 +550,11 @@ public final class MakeActionProvider implements ActionProvider {
             // Should never get here...
             assert false;
             return false;
-        } else if (conf.isApplicationConfiguration()) {
-            RunProfile runProfile = null;
-            int platform = conf.getDevelopmentHost().getBuildPlatform();
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                // On Windows we need to add paths to dynamic libraries from subprojects to PATH
-                runProfile = conf.getProfile().clone(conf);
-                Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-                String path = ""; // NOI18N
-                // Add paths from subprojetcs
-                Iterator<String> iter = subProjectOutputLocations.iterator();
-                while (iter.hasNext()) {
-                    String location = CndPathUtilitities.naturalize(iter.next());
-                    path = location + ";" + path; // NOI18N
-                }
-                // Add paths from -L option
-                List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                iter = list.iterator();
-                while (iter.hasNext()) {
-                    String location = CndPathUtilitities.naturalize(iter.next());
-                    path = location + ";" + path; // NOI18N
-                }
-                String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
-                if (userPath == null) {
-                    if (cancelled.get()) {
-                        return false; // getEnv() might be costly for remote host
-                    }
-                    userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
-                }
-                path = path + ";" + userPath; // NOI18N
-                runProfile.getEnvironment().putenv(pi.getPathName(), path);
-            } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
-                StringBuilder path = new StringBuilder();
-                Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
-                // Add paths from subprojetcs
-                Iterator<String> iter = subProjectOutputLocations.iterator();
-                while (iter.hasNext()) {
-                    String location = CndPathUtilitities.naturalize(iter.next());
-                    if (path.length() > 0) {
-                        path.append(":"); // NOI18N
-                    }
-                    path.append(location);
-                }
-                // Add paths from -L option
-                List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                iter = list.iterator();
-                while (iter.hasNext()) {
-                    String location = CndPathUtilitities.naturalize(iter.next());
-                    if (path.length() > 0) {
-                        path.append(":"); // NOI18N
-                    }
-                    path.append(location);
-                }
-                if (path.length() > 0) {
-                    runProfile = conf.getProfile().clone(conf);
-                    String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
-                    if (extPath == null) {
-                        if (cancelled.get()) {
-                            return false; // getEnv() might be costly for remote host
-                        }
-                        extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
-                    }
-                    if (extPath != null) {
-                        path.append(":").append(extPath); // NOI18N
-                    }
-                    runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
-                }
-            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
-                // Add paths from -L option
-                StringBuilder path = new StringBuilder();
-                List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
-                Iterator<String> iter = list.iterator();
-                while (iter.hasNext()) {
-                    String location = CndPathUtilitities.naturalize(iter.next());
-                    if (path.length() > 0) {
-                        path.append(":"); // NOI18N
-                    }
-                    path.append(location);
-                }
-                if (path.length() > 0) {
-                    runProfile = conf.getProfile().clone(conf);
-                    String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
-                    if (extPath == null) {
-                        if (cancelled.get()) {
-                            return false; // NOI18N
-                        }
-                        extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
-                    }
-                    if (extPath != null) {
-                        path.append(":").append(extPath); // NOI18N
-                    }
-                    runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
-                }
-            }
-            if (platform == PlatformTypes.PLATFORM_MACOSX || platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
-                // Make sure DISPLAY variable has been set
+        } else if (conf.isApplicationConfiguration()) { // RUN MANAGED
+            RunProfile runProfile = createRunProfile(conf, cancelled);
+            if(runProfile == null) {
                 if (cancelled.get()) {
                     return false; // getEnv() might be costly for remote host
-                }
-                if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
-                    HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
-                    conf.getProfile().getEnvironment().getenv("DISPLAY") == null) {// NOI18N
-                    // DISPLAY hasn't been set
-                    if (runProfile == null) {
-                        runProfile = conf.getProfile().clone(conf);
-                    }
-                    runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
                 }
             }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
@@ -650,26 +574,6 @@ public final class MakeActionProvider implements ActionProvider {
                 // Always absolute
                 path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
-
-            // Unit tests
-            Folder targetFolder = context.lookup(Folder.class);
-            if (targetFolder == null) {
-                Node node = context.lookup(Node.class);
-                if (node != null) {
-                    targetFolder = (Folder) node.getValue("Folder"); // NOI18N
-                }
-            }
-            if (targetFolder != null) {
-                if (targetFolder.isTest()) {
-                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                    if(compilerSet != null) {
-                        path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
-                        path = conf.expandMacros(path);
-                        path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
-                    }
-                }
-            }
-
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
@@ -677,6 +581,119 @@ public final class MakeActionProvider implements ActionProvider {
             assert false;
         }
         return true;
+    }
+
+    private static RunProfile createRunProfile(MakeConfiguration conf, AtomicBoolean cancelled) {
+        RunProfile runProfile = null;
+        PlatformInfo pi = conf.getPlatformInfo();
+        int platform = conf.getDevelopmentHost().getBuildPlatform();
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            // On Windows we need to add paths to dynamic libraries from subprojects to PATH
+            runProfile = conf.getProfile().clone(conf);
+            Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
+            String path = ""; // NOI18N
+            // Add paths from subprojetcs
+            Iterator<String> iter = subProjectOutputLocations.iterator();
+            while (iter.hasNext()) {
+                String location = CndPathUtilitities.naturalize(iter.next());
+                path = location + ";" + path; // NOI18N
+            }
+            // Add paths from -L option
+            List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+            iter = list.iterator();
+            while (iter.hasNext()) {
+                String location = CndPathUtilitities.naturalize(iter.next());
+                path = location + ";" + path; // NOI18N
+            }
+            String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
+            if (userPath == null) {
+                if (cancelled.get()) {
+                    return null; // getEnv() might be costly for remote host
+                }
+                userPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get(pi.getPathName());
+            }
+            path = path + ";" + userPath; // NOI18N
+            runProfile.getEnvironment().putenv(pi.getPathName(), path);
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
+            StringBuilder path = new StringBuilder();
+            Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
+            // Add paths from subprojetcs
+            Iterator<String> iter = subProjectOutputLocations.iterator();
+            while (iter.hasNext()) {
+                String location = CndPathUtilitities.naturalize(iter.next());
+                if (path.length() > 0) {
+                    path.append(":"); // NOI18N
+                }
+                path.append(location);
+            }
+            // Add paths from -L option
+            List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+            iter = list.iterator();
+            while (iter.hasNext()) {
+                String location = CndPathUtilitities.naturalize(iter.next());
+                if (path.length() > 0) {
+                    path.append(":"); // NOI18N
+                }
+                path.append(location);
+            }
+            if (path.length() > 0) {
+                runProfile = conf.getProfile().clone(conf);
+                String extPath = runProfile.getEnvironment().getenv("DYLD_LIBRARY_PATH"); // NOI18N
+                if (extPath == null) {
+                    if (cancelled.get()) {
+                        return null; // getEnv() might be costly for remote host
+                    }
+                    extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
+                }
+                if (extPath != null) {
+                    path.append(":").append(extPath); // NOI18N
+                }
+                runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
+            }
+        } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
+            // Add paths from -L option
+            StringBuilder path = new StringBuilder();
+            List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
+            Iterator<String> iter = list.iterator();
+            while (iter.hasNext()) {
+                String location = CndPathUtilitities.naturalize(iter.next());
+                if (path.length() > 0) {
+                    path.append(":"); // NOI18N
+                }
+                path.append(location);
+            }
+            if (path.length() > 0) {
+                runProfile = conf.getProfile().clone(conf);
+                String extPath = runProfile.getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
+                if (extPath == null) {
+                    if (cancelled.get()) {
+                        return null; // NOI18N
+                    }
+                    extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                }
+                if (extPath != null) {
+                    path.append(":").append(extPath); // NOI18N
+                }
+                runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
+            }
+        }
+        if (platform == PlatformTypes.PLATFORM_MACOSX || platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX) {
+            // Make sure DISPLAY variable has been set
+            if (cancelled.get()) {
+                return null; // getEnv() might be costly for remote host
+            }
+            if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal()
+                    && HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                    conf.getProfile().getEnvironment().getenv("DISPLAY") == null) {// NOI18N
+                // DISPLAY hasn't been set
+                if (runProfile == null) {
+                    runProfile = conf.getProfile().clone(conf);
+                }
+                runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
+            }
+        }
+        return runProfile;
     }
 
     private boolean onRunSingleStep(MakeConfiguration conf, ArrayList<ProjectActionEvent> actionEvents, Lookup context, Type actionEvent) {
