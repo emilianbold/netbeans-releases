@@ -57,6 +57,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.openide.util.RequestProcessor;
 
 /**
  * View factory returning highlights views. It is specific in that it always
@@ -71,6 +72,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
+
+    // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.stack=true
+    private static final boolean dumpHighlightChangeStack =
+            Boolean.getBoolean(HighlightsViewFactory.class.getName() + ".stack");
+
+    private static final RequestProcessor RP = new RequestProcessor("Highlights-Coalescing"); // NOI18N
+
+//    private static final int COALESCE_DELAY = 10; // Delay before highlights will be rendered
+
+    private static final boolean SYNC_HIGHLIGHTS =
+            Boolean.getBoolean("org.netbeans.editor.sync.highlights"); //NOI18N
 
     private Document doc;
 
@@ -97,6 +109,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     private AttributeSet highlightAttributes;
 
+    private int highlightAreaEndOffset;
+
+    private int highlightAreaEndLineIndex;
+
     private int affectedStartOffset = Integer.MAX_VALUE;
 
     private int affectedEndOffset;
@@ -107,19 +123,29 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
     public HighlightsViewFactory(JTextComponent component) {
         super(component);
-        doc = component.getDocument();
-        highlightsContainer = HighlightingManager.getInstance().getHighlights(component, null);
-        highlightsContainer.addHighlightsChangeListener(this);
     }
 
     @Override
-    public void restart(int startOffset) {
+    public void restart(int startOffset, int matchOffset) {
+        doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
+        highlightsContainer = HighlightingManager.getInstance().getHighlights(textComponent(), null);
+        highlightsContainer.addHighlightsChangeListener(this);
         lineElementRoot = doc.getDefaultRootElement();
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         fetchLineInfo();
 
-        highlightsSequence = highlightsContainer.getHighlights(startOffset, doc.getLength());
+        if (matchOffset <= newlineOffset + 1) { // within same line
+            highlightAreaEndLineIndex = lineIndex;
+            highlightAreaEndOffset = newlineOffset + 1;
+        } else {
+            highlightAreaEndLineIndex = lineElementRoot.getElementIndex(matchOffset);
+            highlightAreaEndOffset = lineElementRoot.getElement(highlightAreaEndLineIndex).getEndOffset();
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("GetHighlights: <" + startOffset + "," + highlightAreaEndOffset + ">\n");
+        }
+        highlightsSequence = highlightsContainer.getHighlights(startOffset, highlightAreaEndOffset);
         assert (highlightsSequence != null);
         highlightStartOffset = highlightEndOffset = -1;
         fetchNextHighlight();
@@ -186,24 +212,43 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     private void fetchNextHighlight() {
-        if (highlightsSequence.moveNext()) {
-            highlightStartOffset = highlightsSequence.getStartOffset();
-            highlightEndOffset = highlightsSequence.getEndOffset();
-            highlightAttributes = highlightsSequence.getAttributes();
-            // Empty highlight occurred (Highlights API does not comment such case) so possibly re-call.
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + // NOI18N
-                        "> " + ViewUtils.toString(highlightAttributes) + '\n');
-            }
-            if (highlightStartOffset >= highlightEndOffset) { // Empty highlight
-                fetchNextHighlight(); // Should be rare so use recursion
-            }
+        boolean done;
+        do {
+            done = true;
+            if (highlightsSequence.moveNext()) {
+                highlightStartOffset = highlightsSequence.getStartOffset();
+                highlightEndOffset = highlightsSequence.getEndOffset();
+                highlightAttributes = highlightsSequence.getAttributes();
+                // Empty highlight occurred (Highlights API does not comment such case) so possibly re-call.
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + // NOI18N
+                            "> " + ViewUtils.toString(highlightAttributes) + '\n');
+                }
+                if (highlightStartOffset >= highlightEndOffset) { // Empty highlight
+                    done = false;
+                }
 
-        } else {
-            highlightStartOffset = Integer.MAX_VALUE;
-            highlightEndOffset = Integer.MAX_VALUE;
-            highlightAttributes = null;
-        }
+            } else {
+                if (highlightAreaEndOffset < docText.length()) {
+                    int startOffset = highlightAreaEndOffset;
+                    if (++highlightAreaEndLineIndex < lineElementRoot.getElementCount()) {
+                        highlightAreaEndOffset = lineElementRoot.getElement(highlightAreaEndLineIndex).getEndOffset();
+                        assert(startOffset <= highlightAreaEndOffset) :
+                            "startOffset=" + startOffset + " <= highlightAreaEndOffset=" + highlightAreaEndOffset; // NOI18N
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Extra-GetHighlights: <" + startOffset + "," + highlightAreaEndOffset + ">\n");
+                        }
+                        highlightsSequence = highlightsContainer.getHighlights(startOffset, highlightAreaEndOffset);
+                        done = false;
+                    } else {
+                        // Leave original HS => no more highlights will be fetched
+                        highlightStartOffset = Integer.MAX_VALUE;
+                        highlightEndOffset = Integer.MAX_VALUE;
+                        highlightAttributes = null;
+                    }
+                }
+            }
+        } while (!done);
     }
 
     public void finish() {
@@ -233,28 +278,27 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         int startOffset = event.getStartOffset();
         int endOffset = event.getEndOffset();
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("highlightChanged: event:<" + startOffset + ',' + endOffset + // NOI18N
-                    ">, thread:" + Thread.currentThread() + "\n"); // NOI18N
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.INFO, "Highlight Change Thread Dump", new Exception());
+            LOG.log(Level.FINER, "highlightChanged: event:<{0}{1}{2}>, thread:{3}\n",
+                    new Object[] {startOffset, ',', endOffset, Thread.currentThread()}); // NOI18N
+            if (dumpHighlightChangeStack) {
+                LOG.log(Level.INFO, "Highlight Change Thread Dump for <" + // NOI18N
+                        startOffset + "," + endOffset + ">", new Exception()); // NOI18N
             }
         }
         if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
-            // Coalesce non-awt events
+            // Coalesce highglihts events by reposting to RP and then to EDT
             extendAffectedRange(startOffset, endOffset);
-            if (SwingUtilities.isEventDispatchThread()) {
-                checkFireAffectedAreaChange();
-            } else {
-                // Post affected range update
-                synchronized (affectedRangeMonitor) {
-                    affectedRangePendingRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean lastPending;
-                            synchronized (affectedRangeMonitor) {
-                                lastPending = (affectedRangePendingRunnable == this);
-                            }
-                            if (lastPending) {
+            // Post affected range update
+            synchronized (affectedRangeMonitor) {
+                affectedRangePendingRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean lastPending;
+                        synchronized (affectedRangeMonitor) {
+                            lastPending = (affectedRangePendingRunnable == this);
+                        }
+                        if (lastPending) {
+                            if (SwingUtilities.isEventDispatchThread()) { // Already posted to AWT
                                 if (doc instanceof AbstractDocument) {
                                     AbstractDocument adoc = (AbstractDocument) doc;
                                     adoc.readLock();
@@ -264,10 +308,16 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                                         adoc.readUnlock();
                                     }
                                 }
+                            } else { // Came from RP => repost to EDT
+                                SwingUtilities.invokeLater(this);
                             }
                         }
-                    };
-                    SwingUtilities.invokeLater(affectedRangePendingRunnable);
+                    }
+                };
+                if (SYNC_HIGHLIGHTS) {
+                    affectedRangePendingRunnable.run(); // Run views rebuild synchronously
+                } else {
+                    RP.post(affectedRangePendingRunnable);
                 }
             }
         }
