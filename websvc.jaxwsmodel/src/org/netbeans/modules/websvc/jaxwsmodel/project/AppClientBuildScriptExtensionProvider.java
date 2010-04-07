@@ -44,11 +44,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
@@ -56,30 +53,26 @@ import org.openide.filesystems.FileObject;
  *
  * @author mkuchtiak
  */
-@ProjectServiceProvider(service=JaxWsBuildScriptExtensionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensionProvider {
-    private static String COMPILE_ON_SAVE_UNSUPPORTED = "compile.on.save.unsupported.jaxws"; //NOI18N
-    static String JAX_WS_STYLESHEET_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jaxws-j2se.xsl"; //NOI18N
+@ProjectServiceProvider(service=JaxWsBuildScriptExtensionProvider.class, projectType="org-netbeans-modules-j2ee-clientproject")
+public class AppClientBuildScriptExtensionProvider implements JaxWsBuildScriptExtensionProvider {
+    static String JAX_WS_STYLESHEET_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jaxws-app-client.xsl"; //NOI18N
     private Project project;
 
-    /** Creates a new instance of J2seBuildScriptExtensionProvider */
-    public J2seBuildScriptExtensionProvider(Project project) {
+    /** Creates a new instance of AppClientBuildScriptExtensionProvider */
+    public AppClientBuildScriptExtensionProvider(Project project) {
         this.project = project;
     }
 
     @Override
     public void addJaxWsExtension(AntBuildExtender ext) throws IOException {
-        TransformerUtils.transformClients(project.getProjectDirectory(), JAX_WS_STYLESHEET_RESOURCE);
+        TransformerUtils.transformClients(project.getProjectDirectory(), JAX_WS_STYLESHEET_RESOURCE, true);
         FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
-        if (extension==null) {
+        if (extension == null) {
             extension = ext.addExtension(JAXWS_EXTENSION, jaxws_build);
             //adding dependencies
             extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-
-            // disable Compile On Save feature
-            disableCompileOnSave(project);
             ProjectManager.getDefault().saveProject(project);
         }
     }
@@ -87,15 +80,13 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
     @Override
     public void removeJaxWsExtension(final AntBuildExtender ext) throws IOException {
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
-        if (extension!=null) {
+        if (extension != null) {
             ProjectManager.mutex().writeAccess(new Runnable() {
                 @Override
                 public void run() {
                     ext.removeExtension(JAXWS_EXTENSION);
                 }
             });
-            // enable Compile on Save feature
-            enableCompileOnSave();
             ProjectManager.getDefault().saveProject(project);
         }
         FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
@@ -109,18 +100,6 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
                 }
             }
         }
-    }
-
-    private static void disableCompileOnSave(Project prj) throws IOException {
-        EditableProperties props = WSUtils.getEditableProperties(prj, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.put(COMPILE_ON_SAVE_UNSUPPORTED, "true"); //NOI18N
-        WSUtils.storeEditableProperties(prj,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-    }
-
-    private void enableCompileOnSave() throws IOException {
-        EditableProperties props = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.remove(COMPILE_ON_SAVE_UNSUPPORTED);
-        WSUtils.storeEditableProperties(project,  AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
     }
 
     @Override

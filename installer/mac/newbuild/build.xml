@@ -286,11 +286,11 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
-                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg),
+                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg),
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
@@ -303,7 +303,7 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
     </target>
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">

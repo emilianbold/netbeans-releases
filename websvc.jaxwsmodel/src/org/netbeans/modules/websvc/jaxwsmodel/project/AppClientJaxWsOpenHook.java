@@ -44,11 +44,8 @@ package org.netbeans.modules.websvc.jaxwsmodel.project;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
@@ -62,12 +59,12 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkuchtiak
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2seJaxWsOpenHook extends ProjectOpenedHook {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-j2ee-clientproject")
+public class AppClientJaxWsOpenHook extends ProjectOpenedHook {
     Project prj;
 
-    /** Creates a new instance of J2seJaxWsOpenHook */
-    public J2seJaxWsOpenHook(Project prj) {
+    /** Creates a new instance of AppClientJaxWsOpenHook */
+    public AppClientJaxWsOpenHook(Project prj) {
         this.prj = prj;
     }
     
@@ -85,7 +82,6 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
                         // generate nbproject/jaxws-build.xml
                         // add jaxws extension
                         extProvider.addJaxWsExtension(ext);
-                        addJaxWsApiEndorsed(prj);
                     }
                 } else if (jaxWsFo == null || !WSUtils.hasClients(jaxWsFo)) {
                     // remove nbproject/jaxws-build.xml
@@ -97,7 +93,6 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
                     if (project_xml != null) {
                         removeCompileDependencies(prj, project_xml, ext);
                     }
-                    addJaxWsApiEndorsed(prj);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -128,7 +123,7 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
         }
         br.close();
         if (isOldVersion) {
-            TransformerUtils.transformClients(prj.getProjectDirectory(), J2seBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
+            TransformerUtils.transformClients(prj.getProjectDirectory(), AppClientBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
             AntBuildExtender.Extension extension = ext.getExtension(JaxWsBuildScriptExtensionProvider.JAXWS_EXTENSION);
             if (extension!=null) {
                 extension.removeDependency("-do-compile", "wsimport-client-compile"); //NOI18N
@@ -139,11 +134,4 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
 
     }
 
-    private void addJaxWsApiEndorsed(Project prj) throws IOException {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(
-        JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sourceGroups!=null && sourceGroups.length>0) {
-            WSUtils.addJaxWsApiEndorsed(prj, sourceGroups[0].getRootFolder());
-        }
-    }
 }
