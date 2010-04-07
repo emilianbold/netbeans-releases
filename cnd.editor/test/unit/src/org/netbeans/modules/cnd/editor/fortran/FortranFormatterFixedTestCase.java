@@ -565,7 +565,7 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "          do 1 i = 1, 67\n" +
                 "              do 1 j = 1, 67\n" +
                 " 1                write ( 6,\n" +
-                "     9100, advance = 'YES') i\n" +
+                "     9        100, advance = 'YES') i\n" +
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
     }
@@ -586,9 +586,28 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "          do 1 i = 1, 67\n" +
                 "              do 1 j = 1, 67\n" +
                 " 1                write ( 6,\n" +
-                "     *100, advance = 'YES') i\n" +
+                "     *        100, advance = 'YES') i\n" +
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
+    }
+
+    public void testFunctionFixedContinuation3() {
+        setLoadDocumentText(
+                "      int A, B,\n" +
+                "     *C,D,\n" +
+                "     *E,F\n" +
+                "      real A1, B1,\n" +
+                "     *C1,D1,\n" +
+                "     *E1,F1");
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect function indent (fixed form)",
+                "      int A, B,\n" +
+                "     *    C, D,\n" +
+                "     *    E, F\n" +
+                "      real A1, B1,\n" +
+                "     *    C1, D1,\n" +
+                "     *    E1, F1");
     }
 
     public void testFunctionFixedFistComment() {
