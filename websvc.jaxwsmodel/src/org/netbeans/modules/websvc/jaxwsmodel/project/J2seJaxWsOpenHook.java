@@ -65,9 +65,8 @@ import org.openide.filesystems.FileUtil;
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
 public class J2seJaxWsOpenHook extends ProjectOpenedHook {
     Project prj;
-    private static final String JAX_WS_XML_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"; //NOI18N
 
-    /** Creates a new instance of JaxWSLookupProvider */
+    /** Creates a new instance of J2seJaxWsOpenHook */
     public J2seJaxWsOpenHook(Project prj) {
         this.prj = prj;
     }
