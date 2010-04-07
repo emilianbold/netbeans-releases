@@ -65,14 +65,16 @@
 #include "rfs_util.h"
 #include "rfs_filedata.h"
 
- 
-
 static int emulate = false;
 
 typedef struct connection_data {
     int sd;
     struct sockaddr_in pin;
 } connection_data;
+
+static const char LC_PROTOCOL_REQUEST = 'r';
+static const char LC_PROTOCOL_WRITTEN = 'w';
+static const char LC_PROTOCOL_PING    = 'p';
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -115,9 +117,6 @@ static void serve_connection(void* data) {
 
         const char* filename = pkg->data;
         file_data *fd = find_file_data(filename);
-
-        const char LC_PROTOCOL_REQUEST = 'r';
-        const char LC_PROTOCOL_WRITTEN = 'w';
 
         if (pkg->kind == pkg_written) {
             if (fd == NULL) {
@@ -504,6 +503,18 @@ static int init_files() {
     return success;
 }
 
+static void ping_pong(void* data) {
+    do {
+        pthread_mutex_lock(&mutex);
+        fprintf(stdout, "%c\n", LC_PROTOCOL_PING);
+        fflush(stdout);
+        char response[64];
+        fgets(response, sizeof response, stdin);
+        pthread_mutex_unlock(&mutex);
+        sleep(10);
+    } while (1);
+}
+
 int main(int argc, char* argv[]) {
     init_trace_flag("RFS_CONTROLLER_TRACE");
     trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
@@ -559,6 +570,10 @@ int main(int argc, char* argv[]) {
     // print port later, when we're done with initializing files
     fprintf(stdout, "PORT %d\n", port);
     fflush(stdout);
+
+    pthread_t ping_pong_thread;
+    pthread_create(&ping_pong_thread, NULL /*&attr*/, (void *(*) (void *)) ping_pong, NULL);
+    pthread_detach(ping_pong_thread);
 
     while (1) {
         /* wait for a client to talk to us */
