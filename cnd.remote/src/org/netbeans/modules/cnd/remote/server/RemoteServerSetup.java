@@ -130,7 +130,7 @@ public class RemoteServerSetup {
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
         for (String path : list) {
-            RemoteUtil.LOGGER.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
+            RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
                 String localFileName = binarySetupMap.get(path);
                 File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
@@ -230,9 +230,9 @@ public class RemoteServerSetup {
 
         RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, cmd);
         support.run();
-        RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
+        RemoteUtil.LOGGER.log(Level.FINE, "RSS.getBinaryUpdatesByChecksum: RC {0}", support.getExitStatus());
         if (support.isFailed() || support.getExitStatus() != 0) {
-            RemoteUtil.LOGGER.fine("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            RemoteUtil.LOGGER.log(Level.FINE, "Running {0} failed on remote host: {1}", new Object[]{cmd, support.getFailureReason()}); //NOI18N
             return new ArrayList<String>(paths2check);
         }
 

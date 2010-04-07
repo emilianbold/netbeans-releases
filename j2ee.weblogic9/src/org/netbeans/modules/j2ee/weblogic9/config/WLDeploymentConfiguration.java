@@ -93,8 +93,7 @@ public class WLDeploymentConfiguration implements DatasourceConfiguration {
 
     @Override
     public boolean supportsCreateDatasource() {
-        // TODO
-        return false;
+        return true;
     }
 
 }

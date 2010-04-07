@@ -87,16 +87,21 @@ public final class CustomizerFramework extends JPanel implements ChangeListener,
     }
 
     void validateData() {
-        boolean valid = extender.isValid();
         String error = extender.getErrorMessage();
-
-        if (valid && error != null) {
-            LOGGER.log(Level.INFO, "Customizer extender {0} returns error even if it is valid.", category.getDisplayName());
-            error = null;
+        if (!extender.isValid()) {
+            assert error != null : "Customizer extender " + category.getDisplayName() + " returns no error even if it is not valid";
+            category.setErrorMessage(error);
+            category.setValid(false);
+            return;
         }
 
-        category.setErrorMessage(error);
-        category.setValid(valid);
+        // is valid
+        if (error != null) {
+            LOGGER.log(Level.INFO, "Customizer extender {0} returns error even if it is valid.", category.getDisplayName());
+        }
+
+        category.setErrorMessage(extender.getWarningMessage());
+        category.setValid(true);
     }
 
     /** This method is called from within the constructor to
