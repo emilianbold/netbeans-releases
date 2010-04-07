@@ -53,6 +53,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -87,7 +89,7 @@ class DiffViewManager implements ChangeListener {
         this.master = master;
         this.leftContentPanel = master.getEditorPane1();
         this.rightContentPanel = master.getEditorPane2();
-        highlightComputeTask = new RequestProcessor("DiffViewHighlightsComputer", 1, true).create(new HighlightsComputeTask());
+        highlightComputeTask = new RequestProcessor("DiffViewHighlightsComputer", 1, true, false).create(new HighlightsComputeTask());
     }
     
     void init() {
@@ -114,6 +116,7 @@ class DiffViewManager implements ChangeListener {
             Logger.getLogger(DiffViewManager.class.getName()).log(Level.SEVERE, "", e);
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     synchronized (smartScrollDisabled) {
                         smartScrollDisabled[0] = false;
@@ -123,6 +126,7 @@ class DiffViewManager implements ChangeListener {
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         JScrollBar leftScrollBar = leftContentPanel.getScrollPane().getVerticalScrollBar();
         JScrollBar rightScrollBar = rightContentPanel.getScrollPane().getVerticalScrollBar();
@@ -160,30 +164,42 @@ class DiffViewManager implements ChangeListener {
         return master;
     }
     
+    private int rightHeightCached;
     private void updateDifferences() {
-        assert Thread.holdsLock(this);
+        assert EventQueue.isDispatchThread();
         int mds = master.getDiffSerial();
-        if (mds <= cachedDiffSerial) return;
+        if (mds <= cachedDiffSerial && rightContentPanel.getEditorPane().getSize().height == rightHeightCached) {
+            return;
+        }
+        rightHeightCached = rightContentPanel.getEditorPane().getSize().height;
         cachedDiffSerial = mds;
         computeDecorations();
+        master.getEditorPane1().getLinesActions().repaint();
+        master.getEditorPane2().getLinesActions().repaint();
         firstHilitesCached = secondHilitesCached = new HighLight[0];
         // interrupt running highlight scan and start new one outside of AWT
         highlightComputeTask.cancel();
         highlightComputeTask.schedule(0);
     }
 
-    public synchronized DecoratedDifference [] getDecorations() {
-        updateDifferences();
+    public DecoratedDifference [] getDecorations() {
+        if (EventQueue.isDispatchThread()) {
+            updateDifferences();
+        }
         return decorationsCached;
     }
 
-    public synchronized HighLight[] getSecondHighlights() {
-        updateDifferences();
+    public HighLight[] getSecondHighlights() {
+        if (EventQueue.isDispatchThread()) {
+            updateDifferences();
+        }
         return secondHilitesCached;
     }
 
-    public synchronized HighLight[] getFirstHighlights() {
-        updateDifferences();
+    public HighLight[] getFirstHighlights() {
+        if (EventQueue.isDispatchThread()) {
+            updateDifferences();
+        }
         return firstHilitesCached;
     }
     
@@ -255,7 +271,7 @@ class DiffViewManager implements ChangeListener {
                         hilites.addAll(rowhilites);
                         start += secondRow.length() + 1;
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //
                     }
                 }
             } else {
@@ -376,35 +392,57 @@ class DiffViewManager implements ChangeListener {
     private void computeDecorations() {
         
         Document document = master.getEditorPane2().getEditorPane().getDocument();
-        EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(rightContentPanel.getEditorPane());
-        if (editorUI == null) return;
-        int lineHeight = editorUI.getLineHeight();
+        View rootLeftView = Utilities.getDocumentView(leftContentPanel.getEditorPane());
+        View rootRightView = Utilities.getDocumentView(rightContentPanel.getEditorPane());
+        if (rootLeftView == null || rootRightView == null) return;
         
         Difference [] diffs = master.getDifferences();
-        decorationsCached = new DecoratedDifference[diffs.length];
+        DecoratedDifference[] decorations = new DecoratedDifference[diffs.length];
         for (int i = 0; i < diffs.length; i++) {
             Difference difference = diffs[i];
             DecoratedDifference dd = new DecoratedDifference(difference, canRollback(document, difference));
-            
+            Rectangle leftStartRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstStart() - 1, false);
+            Rectangle leftEndRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, difference.getFirstEnd() - 1, true);
+            Rectangle rightStartRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondStart() - 1, false);
+            Rectangle rightEndRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, difference.getSecondEnd() - 1, true);
+            if (leftStartRect == null || leftEndRect == null || rightStartRect == null || rightEndRect == null) {
+                decorations = new DecoratedDifference[0];
+                break;
+            }
             if (difference.getType() == Difference.ADD) {
-                dd.topRight = (difference.getSecondStart() - 1) * lineHeight;
-                dd.bottomRight = difference.getSecondEnd() * lineHeight;
-                dd.topLeft = difference.getFirstStart() * lineHeight;
+                dd.topRight = rightStartRect.y;
+                dd.bottomRight = rightEndRect.y + rightEndRect.height;
+                dd.topLeft = leftStartRect.y + leftStartRect.height;
                 dd.floodFill = true;
             } else if (difference.getType() == Difference.DELETE) {
-                dd.topLeft = (difference.getFirstStart() - 1) * lineHeight;
-                dd.bottomLeft = difference.getFirstEnd() * lineHeight;
-                dd.topRight = difference.getSecondStart() * lineHeight;
+                dd.topLeft = leftStartRect.y;
+                dd.bottomLeft = leftEndRect.y + leftEndRect.height;
+                dd.topRight = rightStartRect.y + rightStartRect.height;
                 dd.floodFill = true;
             } else {
-                dd.topRight = (difference.getSecondStart() - 1) * lineHeight;
-                dd.bottomRight = difference.getSecondEnd() * lineHeight;
-                dd.topLeft = (difference.getFirstStart() - 1) * lineHeight;
-                dd.bottomLeft = difference.getFirstEnd() * lineHeight;
+                dd.topRight = rightStartRect.y;
+                dd.bottomRight = rightEndRect.y + rightEndRect.height;
+                dd.topLeft = leftStartRect.y;
+                dd.bottomLeft = leftEndRect.y + leftEndRect.height;
                 dd.floodFill = true;
             }
-            decorationsCached[i] = dd;
+            decorations[i] = dd;
         }
+        decorationsCached = decorations;
+    }
+
+    private Rectangle getRectForView (JTextComponent comp, View rootView, int lineNumber, boolean endOffset) {
+        if (lineNumber == -1 || lineNumber >= rootView.getViewCount()) {
+            return new Rectangle();
+        }
+        Rectangle rect = null;
+        View view = rootView.getView(lineNumber);
+        try {
+            rect = view == null ? null : comp.modelToView(endOffset ? view.getEndOffset() - 1 : view.getStartOffset());
+        } catch (BadLocationException ex) {
+            //
+        }
+        return rect;
     }
 
     private boolean canRollback(Document doc, Difference diff) {
@@ -439,28 +477,31 @@ class DiffViewManager implements ChangeListener {
         leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]);
     }
 
-    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int lineHeight, int rightOffset) {
+    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, View rootLeftView, View rootRightView) {
 
         Difference diff = differenceMatchStart.getDiff();
         boolean matchStart = differenceMatchStart.isStart();
         
         int value;
         int valueSecond;
+        Rectangle leftStartRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstStart() - 1, false);
+        Rectangle leftEndRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstEnd() - 1, true);
+        Rectangle rightStartRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondStart() - 1, false);
+        Rectangle rightEndRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondEnd() - 1, true);
         if (matchStart) {
-            value = diff.getFirstStart() * lineHeight;        // kde zacina prva, 180
-            valueSecond = diff.getSecondStart() * lineHeight; // kde by zacinala druha, napr. 230
+            value = leftStartRect.y + leftStartRect.height;        // kde zacina prva, 180
+            valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
         } else {
             if (diff.getType() == Difference.ADD) {
-                value = diff.getFirstStart() * lineHeight;        // kde zacina prva, 180
-                value -= lineHeight;
-                valueSecond = diff.getSecondEnd() * lineHeight; // kde by zacinala druha, napr. 230
+                value = leftStartRect.y;        // kde zacina prva, 180
+                valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
             } else {
-                value = diff.getFirstEnd() * lineHeight;        // kde zacina prva, 180
+                value = leftEndRect.y + leftEndRect.height;        // kde zacina prva, 180
                 if (diff.getType() == Difference.DELETE) {
-                    value += lineHeight;
-                    valueSecond = diff.getSecondStart() * lineHeight; // kde by zacinala druha, napr. 230
+                    value += leftEndRect.height;
+                    valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
                 } else {
-                    valueSecond = diff.getSecondEnd() * lineHeight; // kde by zacinala druha, napr. 230
+                    valueSecond = rightEndRect.y + rightEndRect.height; // kde by zacinala druha, napr. 230
                 }
             }
         }
@@ -469,8 +510,8 @@ class DiffViewManager implements ChangeListener {
         int secondOffset = rightOffset - valueSecond;
         
         value += secondOffset;
-        if (diff.getType() == Difference.ADD) value += lineHeight;
-        if (diff.getType() == Difference.DELETE) value -= lineHeight;
+        if (diff.getType() == Difference.ADD) value += rightStartRect.height;
+        if (diff.getType() == Difference.DELETE) value -= leftStartRect.height;
         
         return value;
     }
@@ -661,16 +702,18 @@ class DiffViewManager implements ChangeListener {
 
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
             if (editorUI == null) return scrollMap;
-            int lineHeight = editorUI.getLineHeight();
 
             int lastOffset = 0;
+            View rootLeftView = Utilities.getDocumentView(leftContentPanel.getEditorPane());
+            View rootRightView = Utilities.getDocumentView(rightContentPanel.getEditorPane());
+            if (rootLeftView == null || rootRightView == null) return scrollMap;
             for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset++) {
                 DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);
                 int leftOffset;
                 if (dpos == null) {
                     leftOffset = lastOffset + rightOffset;
                 } else {
-                    leftOffset = computeLeftOffsetToMatchDifference(dpos, lineHeight, rightOffset);
+                    leftOffset = computeLeftOffsetToMatchDifference(dpos, rightOffset, rootLeftView, rootRightView);
                     lastOffset = leftOffset - rightOffset;
                 }
                 scrollMap[rightOffset] = leftOffset;
@@ -707,17 +750,22 @@ class DiffViewManager implements ChangeListener {
     private class HighlightsComputeTask implements Runnable {
         private int diffSerial;
 
+        @Override
         public void run() {
             diffSerial = cachedDiffSerial;
             computeSecondHighlights();
-            if (diffSerial == cachedDiffSerial) { // no change has come yet, continue computing
-                master.getEditorPane2().fireHilitingChanged();
-            } else {
+            if (diffSerial != cachedDiffSerial) {
                 return;
             }
             computeFirstHighlights();
             if (diffSerial == cachedDiffSerial) {
-                master.getEditorPane1().fireHilitingChanged();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        master.getEditorPane1().fireHilitingChanged();
+                        master.getEditorPane2().fireHilitingChanged();
+                    }
+                });
             }
         }
     }

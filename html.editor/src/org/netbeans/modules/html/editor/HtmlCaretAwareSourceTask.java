@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,12 +61,15 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserResult> {
 
+    private static final Logger LOGGER = Logger.getLogger(HtmlCaretAwareSourceTask.class.getSimpleName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+
     public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getMimeType();
-            if(mimeType.equals("text/html")) {
+            if(mimeType.equals("text/html")) { //NOI18N
                 return Collections.singletonList(new HtmlCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
@@ -96,13 +100,15 @@ public final class HtmlCaretAwareSourceTask extends ParserResultTask<HtmlParserR
 
     @Override
     public void cancel() {
-        //xxx cancel???
+        //no-op
     }
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
         if(event == null) {
-            Logger.global.warning("HtmlCaretAwareSourceTask.run() called with null SchedulerEvent argument.");
+            if(LOG) {
+                LOGGER.log(Level.INFO, "ParserResultTask.run(...) called with null SchedulerEvent argument."); //NOI18N
+            }
             return ;
         }
 

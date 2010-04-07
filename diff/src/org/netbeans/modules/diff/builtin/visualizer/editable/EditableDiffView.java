@@ -383,29 +383,45 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     @Override
     public void setLocation(final DiffController.DiffPane pane, final DiffController.LocationType type, final int location) {
-        manager.runWithSmartScrollingDisabled(new Runnable() {
-            public void run() {
-                if (type == DiffController.LocationType.DifferenceIndex) {
+        if (type == DiffController.LocationType.DifferenceIndex) {
+            manager.runWithSmartScrollingDisabled(new Runnable() {
+                @Override
+                public void run() {
                     setDifferenceImpl(location);
-                } else {
-                    EditableDiffView.this.askedLineLocation = location;
+                }
+            });
+        } else {
+            EditableDiffView.this.askedLineLocation = location;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Runnable withDisabledSmartScroll = null;
                     if (pane == DiffController.DiffPane.Base) {
                         if (Boolean.TRUE.equals(getJComponent().getClientProperty(PROP_SMART_SCROLLING_DISABLED))) {
-                            setBaseLineNumberImpl(location, false);
+                            withDisabledSmartScroll = new Runnable() {
+                                @Override
+                                public void run() {
+                                    setBaseLineNumberImpl(location, false);
+                                }
+                            };
                         } else {
                             // refactoring jumps only in the left pane, setting the position must be done with smart scrolling enabled
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    setBaseLineNumberImpl(location, true);
-                                }
-                            });
+                            setBaseLineNumberImpl(location, true);
                         }
                     } else {
-                        setModifiedLineNumberImpl(location);
+                        withDisabledSmartScroll = new Runnable() {
+                            @Override
+                            public void run() {
+                                setModifiedLineNumberImpl(location);
+                            }
+                        };
+                    }
+                    if (withDisabledSmartScroll != null) {
+                        manager.runWithSmartScrollingDisabled(withDisabledSmartScroll);
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void setModifiedLineNumberImpl(int line) {
@@ -416,15 +432,23 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             int off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
 
-            int lineHeight = editorUI.getLineHeight();
-
             int offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
-            int lineOffset = lineHeight * line - offset;
+            View rootView = org.netbeans.editor.Utilities.getDocumentView(jEditorPane2.getEditorPane());
+            Rectangle rec = jEditorPane2.getEditorPane().modelToView(rootView.getView(line).getEndOffset() - 1);
+            int lineOffset;
+            if (rec == null) {
+                int lineHeight = editorUI.getLineHeight();
+                lineOffset = lineHeight * line - offset;
+            } else {
+                lineOffset = rec.y - offset;
+            }
 
             JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
 
             rightScrollBar.setValue((int) (lineOffset));
         } catch (IndexOutOfBoundsException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        } catch (BadLocationException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
     }
@@ -434,10 +458,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         try {
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1.getEditorPane());
             if (editorUI == null) return;
-            int lineHeight = editorUI.getLineHeight();
-    
+            
             int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 2 + 1;
-            int lineOffset = lineHeight * line - offset;
+            View rootView = org.netbeans.editor.Utilities.getDocumentView(jEditorPane1.getEditorPane());
+            Rectangle rec = jEditorPane1.getEditorPane().modelToView(rootView.getView(line).getEndOffset() - 1);
+            int lineOffset;
+            if (rec == null) {
+                int lineHeight = editorUI.getLineHeight();
+                lineOffset = lineHeight * line - offset;
+            } else {
+                lineOffset = rec.y - offset;
+            }
     
             int off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
             jEditorPane1.getEditorPane().setCaretPosition(off1);
@@ -450,7 +481,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 updateCurrentDifference();
             }
         } catch (IndexOutOfBoundsException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
