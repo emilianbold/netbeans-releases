@@ -94,7 +94,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("CASE", APTTokenTypes.T_CASE); // NOI18N
         filter("CLASS", APTTokenTypes.T_CLASS); // NOI18N
         filter("CLOSE", APTTokenTypes.T_CLOSE); // NOI18N
-        filter("COMMON", APTTokenTypes.T_COMMON); // NOI18N
+
+// Helps parser to skip unknown constructions
+// Bug 183073 - keyword common breaks *Fortran* Navigator
+//        filter("COMMON", APTTokenTypes.T_COMMON); // NOI18N
+
         filter("CONTAINS", APTTokenTypes.T_CONTAINS); // NOI18N
         filter("CONTINUE", APTTokenTypes.T_CONTINUE); // NOI18N
         filter("CYCLE", APTTokenTypes.T_CYCLE); // NOI18N
