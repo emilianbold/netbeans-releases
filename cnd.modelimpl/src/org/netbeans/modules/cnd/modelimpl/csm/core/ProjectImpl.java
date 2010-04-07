@@ -372,12 +372,12 @@ public final class ProjectImpl extends ProjectBase {
 
     ////////////////////////////////////////////////////////////////////////////
     private RequestProcessor.Task task = null;
-
+    private final static RequestProcessor RP = new RequestProcessor("ProjectImpl RP", 50);
     public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
         if (task != null) {
             task.cancel();
         }
-         task = RequestProcessor.getDefault().create(new Runnable() {
+         task = RP.create(new Runnable() {
 
             public void run() {
                 try {
