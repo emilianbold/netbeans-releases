@@ -70,7 +70,7 @@ public class FindExecutables extends Task {
                 protected @Override void addProperty(String n, String v) {
                     addProperty(n, (Object) v);
                 }
-                protected @Override void addProperty(String n, Object v) {
+                protected void addProperty(String n, Object v) {
                     if (n.equals(prefix + "nbm.executable.files")) {
                         execFiles.set((String) v);
                     }
