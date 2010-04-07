@@ -1013,7 +1013,7 @@ public class ConfigurationMakefileWriter {
     public static void writeRunTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         if (hasTests(projectDescriptor)) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            bw.write("# Build Test Targets\n"); // NOI18N
+            bw.write("# Run Test Targets\n"); // NOI18N
             bw.write(".test-conf:\n"); // NOI18N
 
             bw.write("\t@if [ \"${TEST}\" = \"\" ]; \\\n"); // NOI18N
