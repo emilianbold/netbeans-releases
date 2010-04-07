@@ -70,6 +70,7 @@ import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -515,7 +516,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     }        
     
     public void setSelectedFile() {
-        List<FileDescriptor> list = new ArrayList<FileDescriptor>(Arrays.asList((FileDescriptor[])resultList.getSelectedValues()));
+        List<FileDescriptor> list = NbCollections.checkedListByCopy(Arrays.asList(resultList.getSelectedValues()), FileDescriptor.class, true);
         selectedFile = list.toArray(new FileDescriptor[0]);
     }
 
