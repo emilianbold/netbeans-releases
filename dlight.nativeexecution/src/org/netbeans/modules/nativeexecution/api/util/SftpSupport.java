@@ -129,7 +129,7 @@ class SftpSupport {
         requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
     }
 
-    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException {
+    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException {
         synchronized (channelLock) {
             if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 channel = null;
@@ -140,7 +140,13 @@ class SftpSupport {
             }
             if (channel == null) {
                 ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+                if (cmAccess == null) { // is it a paranoja?
+                    throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
+                }
                 Session session = cmAccess.getConnectionSession(execEnv, true);
+                if (session == null) {
+                    throw new ExecutionException("Error getting connection session", new NullPointerException()); //NOI18N
+                }
                 channel = (ChannelSftp) session.openChannel("sftp"); // NOI18N
                 channel.connect();
             }
@@ -162,7 +168,7 @@ class SftpSupport {
             this.error = error;
         }
 
-        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException, InterruptedException;
+        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException, InterruptedException, ExecutionException;
 
         protected abstract String getTraceName();
 
@@ -203,6 +209,9 @@ class SftpSupport {
             } catch (CancellationException ex) {
                 // no trace
                 rc = 6;
+            } catch (ExecutionException ex) {
+                logException(ex);
+                rc = 7;
             }
             LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
             return rc;
@@ -225,7 +234,7 @@ class SftpSupport {
         }
 
         @Override
-        protected void work() throws IOException, CancellationException, JSchException, SftpException, InterruptedException {
+        protected void work() throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
             if (checkMd5) {
                 Result res = null;
                 try {
@@ -262,7 +271,7 @@ class SftpSupport {
         }
 
         @Override
-        protected void work() throws IOException, CancellationException, JSchException, SftpException {
+        protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException {
             ChannelSftp cftp = getChannel();
             cftp.get(srcFileName, dstFileName);
         }
