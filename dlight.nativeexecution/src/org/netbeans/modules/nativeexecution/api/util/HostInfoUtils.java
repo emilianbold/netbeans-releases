@@ -198,6 +198,9 @@ public final class HostInfoUtils {
         if (result == null) {
             try {
                 result = new FetchHostInfoTask().compute(execEnv);
+                if (result == null) {
+                    throw new IOException("Error getting host info for " + execEnv); // NOI18N
+                }
                 HostInfo oldInfo = cache.putIfAbsent(execEnv, result);
                 if (oldInfo != null) {
                     result = oldInfo;
