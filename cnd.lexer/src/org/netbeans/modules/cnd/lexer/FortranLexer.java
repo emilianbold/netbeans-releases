@@ -122,14 +122,17 @@ public class FortranLexer implements Lexer<FortranTokenId> {
         setState((State) info.state());
     }
 
+    @Override
     public Object state() {
         return getState();
     }
 
+    @Override
     public void release() {
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public Token<FortranTokenId> nextToken() {
 
         while (true) {
@@ -144,11 +147,11 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                 //INIT STATE
                 case INIT:
                     if (isLineBeyondLimit()) {
-                        backup(1); //reevaluate the char
+                        backup(1, c); //reevaluate the char
                         break;
                     }
                     if ((lineColomn == 6) && !fortranFreeFormat) {
-                        if (c != ' ') {
+                        if (!Character.isWhitespace(c)) {
                             return token(FortranTokenId.LINE_CONTINUATION_FIXED);
                         }
                     }
@@ -211,7 +214,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                                 lineCommentFree = false;
                                 state = IN_LINE_COMMENT;
                             } else {
-                                backup(1);
+                                backup(1, c);
                                 state = IN_IDENTIFIER;
                             }
                             break;
@@ -231,7 +234,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             if (cc == ':') {
                                 return token(FortranTokenId.DOUBLECOLON);
                             }
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.COLON);
                         case '%':
                             return token(FortranTokenId.PERCENT);
@@ -263,7 +266,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             // Check for identifier
                             if (CndLexerUtilities.isFortranIdentifierPart(c)) {
                                 state = IN_IDENTIFIER;
-                                backup(1);
+                                backup(1, c);
                                 break;
                             }
 
@@ -274,19 +277,19 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case IN_WHITESPACE: // white space
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.WHITESPACE);
                     }
                     if ((!Character.isWhitespace(c)) || (c == '\n')) {
                         state = INIT;
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.WHITESPACE);
                     }
                     break;
 
                 case AFTER_B:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.IDENTIFIER);
                     }
                     switch (c) {
@@ -295,19 +298,19 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             int cc = read();
                             if (Character.isDigit(cc)) {
                                 state = IN_BINARY;
-                                backup(1);
+                                backup(1, c);
                                 break;
                             } //else continue to default
                         default:
                             state = IN_IDENTIFIER;
-                            backup(2);  //go back and evaluate the character
+                            backup(2, c);  //go back and evaluate the character
                             break;
                     }//switch AFTER_B
                     break;
 
                 case AFTER_O:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.IDENTIFIER);
                     }
                     switch (c) {
@@ -316,19 +319,19 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             int cc = read();
                             if (Character.isDigit(cc)) {
                                 state = IN_OCTAL;
-                                backup(1);
+                                backup(1, c);
                                 break;
                             } //else continue to default
                         default:
                             state = IN_IDENTIFIER;
-                            backup(2);  //go back and evaluate the character
+                            backup(2, c);  //go back and evaluate the character
                             break;
                     }//switch AFTER_O
                     break;
 
                 case AFTER_Z:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.IDENTIFIER);
                     }
                     switch (c) {
@@ -337,12 +340,12 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             int cc = read();
                             if (Character.isLetterOrDigit(cc)) {
                                 state = IN_HEX;
-                                backup(1);
+                                backup(1, c);
                                 break;
                             } //else continue to default
                         default:
                             state = IN_IDENTIFIER;
-                            backup(2);  //go back and evaluate the character
+                            backup(2, c);  //go back and evaluate the character
                             break;
                     }//switch AFTER_Z
                     break;
@@ -352,7 +355,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case '\n':
                             state = INIT;
                             if (input.readLength() > 1) {
-                                backup(1);
+                                backup(1, c);
                                 if(lineCommentFree) {
                                     return token(FortranTokenId.LINE_COMMENT_FREE);
                                 } else {
@@ -367,7 +370,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case IN_STRING:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INCOMPLETE_STRING_LITERAL);
                     }
                     switch (c) {
@@ -376,7 +379,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             break;
                         case '\n':
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.STRING_LITERAL);
                         case '"':
                             if (stringInDoubleQuote) {
@@ -395,7 +398,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case IN_STRING_AFTER_BSLASH:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INCOMPLETE_STRING_LITERAL);
                     }
                     switch (c) {
@@ -404,7 +407,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         case '\\':
                             break;   //ignore the meaning of these characters
                         default:
-                            backup(1);  //go back and evaluate the character
+                            backup(1, c);  //go back and evaluate the character
                             break;
                     }//switch IN_STRING_AFTER_BSLASH:
                     state = IN_STRING;
@@ -412,7 +415,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case AFTER_SLASH:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.OP_DIV);
                     }
                     switch (c) {
@@ -424,14 +427,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             return token(FortranTokenId.OP_NOT_EQ);
                         default:
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.OP_DIV);
                     }//switch AFTER_SLASH
                 //break;
 
                 case AFTER_EQ:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.EQ);
                     }
                     switch (c) {
@@ -440,14 +443,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             return token(FortranTokenId.OP_LOG_EQ);
                         default:
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.EQ);
                     }//switch AFTER_EQ
                 //break;
 
                 case AFTER_STAR:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.OP_MUL);
                     }
                     switch (c) {
@@ -456,14 +459,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             return token(FortranTokenId.OP_POWER);
                         default:
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.OP_MUL);
                     }//switch AFTER_STAR
                 //break;
 
                 case AFTER_LESSTHAN:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.OP_LT);
                     }
                     switch (c) {
@@ -475,14 +478,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             return token(FortranTokenId.OP_LT_GT);
                         default:
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.OP_LT);
                     }//switch AFTER_LESSTHAN
                 //break;
 
                 case AFTER_GREATERTHAN:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.OP_GT);
                     }
                     switch (c) {
@@ -491,7 +494,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             return token(FortranTokenId.OP_GT_EQ);
                         default:
                             state = INIT;
-                            backup(1);
+                            backup(1, c);
                             return token(FortranTokenId.OP_GT);
                     }//switch AFTER_GREATERTHAN
                 //break;
@@ -500,7 +503,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     Token<FortranTokenId> t = keywordOrIdentifier(c);
                     state = INIT;
                     c = read();
-                    backup(1);
+                    backup(1, c);
                     if (c == '\'') {
                         state = IN_APOSTROPHE_CHAR;
                     }
@@ -508,7 +511,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case IN_BINARY:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_BINARY_LITERAL);
                     }
                     if ((c == '\'' || c == '"')) {
@@ -517,14 +520,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     } else if (((Character.isDigit(c)) && (c > '1')) ||
                             !(Character.isDigit(c))) {
                         state = INIT;
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_BINARY_LITERAL);
                     }
                     break;
 
                 case IN_OCTAL:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_OCTAL_LITERAL);
                     }
                     if ((c == '\'' || c == '"')) {
@@ -533,14 +536,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                     } else if (((Character.isDigit(c)) && (c > '7')) ||
                             !(Character.isDigit(c))) {
                         state = INIT;
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_OCTAL_LITERAL);
                     }
                     break;
 
                 case IN_HEX:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_HEX_LITERAL);
                     }
                     if ((c == '\'' || c == '"')) {
@@ -550,14 +553,14 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                             ((Character.toLowerCase(c) < 'a') ||
                             (Character.toLowerCase(c) > 'f'))) {
                         state = INIT;
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.ERR_INVALID_HEX_LITERAL);
                     }
                     break;
 
                 case IN_INT:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.NUM_LITERAL_INT);
                     }
                     switch (c) {
@@ -586,7 +589,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                                     ((!hasNumericUnderscore) && (!(Character.isDigit(c))))) {
                                 state = INIT;
                                 hasNumericUnderscore = false;
-                                backup(1);
+                                backup(1, c);
                                 return token(FortranTokenId.NUM_LITERAL_INT);
                             }
                     }//switch
@@ -594,7 +597,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case IN_REAL:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.NUM_LITERAL_REAL);
                     }
                     switch (c) {
@@ -613,7 +616,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                                     ((!hasNumericUnderscore) && (!(Character.isDigit(c))))) {
                                 state = INIT;
                                 hasNumericUnderscore = false;
-                                backup(1);
+                                backup(1, c);
                                 return token(FortranTokenId.NUM_LITERAL_REAL);
                             }
                     }//switch
@@ -621,18 +624,18 @@ public class FortranLexer implements Lexer<FortranTokenId> {
 
                 case AFTER_DOT:
                     if (isLineBeyondLimit()) {
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.DOT);
                     }
                     if (Character.isDigit(c)) {
                         state = IN_REAL;
                     } else if (CndLexerUtilities.isFortranIdentifierPart(c)) {
                         // Keyword, like .gt., .le., etc.
-                        backup(2);
+                        backup(2, c);
                         state = IN_DOT_IDENTIFIER;
                     } else {
                         state = INIT;
-                        backup(1);
+                        backup(1, c);
                         return token(FortranTokenId.DOT);
                     }
                     break;
@@ -731,21 +734,31 @@ public class FortranLexer implements Lexer<FortranTokenId> {
      * This function reads new symbol
      */
     protected final int read() {
-        lineColomn++;
         int c = input.read();
+        if (c == '\t') {
+            if (lineColomn < 5) {
+                lineColomn = 5;
+            }
+        }
+        lineColomn++;
         return c;
     }
 
     /**
      * This function puts last n symbols back
      */
-    protected final void backup(int n) {
+    protected final void backup(int n, int lastChar) {
+        if (lastChar == '\t') {
+            if (lineColomn == 6) {
+                lineColomn = n;
+            }
+        }
         lineColomn -= n;
         input.backup(n);
     }
 
     /**
-     * This function returns true if the colun number
+     * This function returns true if the column number
      * exceeds the limit defined by FSettingsDefaults.maximumTextWidth
      * otherwise it returns null
      */
@@ -770,7 +783,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
             c = read();
             if (c == EOF || !CndLexerUtilities.isFortranIdentifierPart(c) || isLineBeyondLimit()) {
                 // For surrogate 2 chars must be backed up
-                backup((c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) ? 2 : 1);
+                backup((c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) ? 2 : 1, c);
                 FortranTokenId id = getKeywordOrIdentifierID(idText.toString());
                 assert id != null : "must be valid id for " + idText;
                 return token(id);
@@ -796,11 +809,11 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                 if(id != null) {
                     return token(id);
                 } else {
-                    backup(readSymbolsNumber);
+                    backup(readSymbolsNumber, c);
                     return null;
                 }
             } else if (c == EOF || !CndLexerUtilities.isFortranIdentifierPart(c) || isLineBeyondLimit()) {
-                backup(readSymbolsNumber);
+                backup(readSymbolsNumber, c);
                 return null;
             } else {
                 idText.append(Character.toLowerCase((char) c));
@@ -880,9 +893,9 @@ public class FortranLexer implements Lexer<FortranTokenId> {
     private static class State {
         // State of lexer
 
-        int lexerState;
+        private int lexerState;
         // Position on the line
-        int lineColomn;
+        private int lineColomn;
     }
 
     private State getState() {

@@ -668,4 +668,37 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
     }
+
+    public void testSampleFixed() {
+        setLoadDocumentText(
+                "\t#define N 10\n" +
+                "\tSUBROUTINE test\n" +
+                "! free comment\n" +
+                "C fixed comment\n" +
+                "\tdo i = 1, N\n" +
+                "\tif ( mod(i,2) == 0 ) then\n" +
+                "\tprint *, \"even string\"   ! even\n" +
+                "\telse\n" +
+                "\tprint *, \"odd string\"    ! odd\n" +
+                "\tend if\n" +
+                "\tend do\n" +
+                "\tend\n"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect module reformat (fixed form)",
+                "#define N 10\n" +
+                "      SUBROUTINE test\n" +
+                "          ! free comment\n" +
+                "C fixed comment\n" +
+                "          do i = 1, N\n" +
+                "              if (mod(i, 2) == 0) then\n" +
+                "                  print *, \"even string\" ! even\n" +
+                "              else\n" +
+                "                  print *, \"odd string\" ! odd\n" +
+                "              end if\n" +
+                "          end do\n" +
+                "      end\n"
+                );
+    }
 }
