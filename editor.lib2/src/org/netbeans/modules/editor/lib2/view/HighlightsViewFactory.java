@@ -77,7 +77,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private static final boolean dumpHighlightChangeStack =
             Boolean.getBoolean(HighlightsViewFactory.class.getName() + ".stack");
 
-    private static final RequestProcessor RP = new RequestProcessor("Highlights-Coalescing"); // NOI18N
+    private static final RequestProcessor RP = 
+            new RequestProcessor("Highlights-Coalescing", 1, false, false); // NOI18N
 
 //    private static final int COALESCE_DELAY = 10; // Delay before highlights will be rendered
 
@@ -215,23 +216,22 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         boolean done;
         do {
             done = true;
-            if (highlightsSequence.moveNext()) {
-                highlightStartOffset = highlightsSequence.getStartOffset();
-                highlightEndOffset = highlightsSequence.getEndOffset();
-                highlightAttributes = highlightsSequence.getAttributes();
-                // Empty highlight occurred (Highlights API does not comment such case) so possibly re-call.
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + // NOI18N
-                            "> " + ViewUtils.toString(highlightAttributes) + '\n');
-                }
-                if (highlightStartOffset >= highlightEndOffset) { // Empty highlight
-                    done = false;
-                }
-
-            } else {
-                if (highlightAreaEndOffset < docText.length()) {
-                    int startOffset = highlightAreaEndOffset;
+            if (highlightsSequence != null) {
+                if (highlightsSequence.moveNext()) {
+                    highlightStartOffset = highlightsSequence.getStartOffset();
+                    highlightEndOffset = highlightsSequence.getEndOffset();
+                    highlightAttributes = highlightsSequence.getAttributes();
+                    // Empty highlight occurred (Highlights API does not comment such case) so possibly re-call.
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + // NOI18N
+                                "> " + ViewUtils.toString(highlightAttributes) + '\n');
+                    }
+                    if (highlightStartOffset >= highlightEndOffset) { // Empty highlight
+                        done = false; // Fetch next highlight from the same highlightsSequence
+                    }
+                } else {
                     if (++highlightAreaEndLineIndex < lineElementRoot.getElementCount()) {
+                        int startOffset = highlightAreaEndOffset;
                         highlightAreaEndOffset = lineElementRoot.getElement(highlightAreaEndLineIndex).getEndOffset();
                         assert(startOffset <= highlightAreaEndOffset) :
                             "startOffset=" + startOffset + " <= highlightAreaEndOffset=" + highlightAreaEndOffset; // NOI18N
@@ -241,6 +241,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                         highlightsSequence = highlightsContainer.getHighlights(startOffset, highlightAreaEndOffset);
                         done = false;
                     } else {
+                        highlightsSequence = null;
                         // Leave original HS => no more highlights will be fetched
                         highlightStartOffset = Integer.MAX_VALUE;
                         highlightEndOffset = Integer.MAX_VALUE;
