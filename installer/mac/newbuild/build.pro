@@ -74,8 +74,8 @@
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.id"           value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/oges-3.0.1-b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}.zip"/>-->
-    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}-ml.zip"/>-->
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}.zip"/>
+    <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.0.1-${glassfish.v3.sun.version}-ml.zip"/>
     <!--<property name="glassfish_v3_sun_location"    value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}.zip"/>-->
     <!--<property name="glassfish_v3_sun_location_ml" value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}-ml.zip"/>-->
     <property name="glassfish.v3.sun.subdir"       value="glassfishv3"/>
