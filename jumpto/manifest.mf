@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.jumpto/1
 OpenIDE-Module-Layer: org/netbeans/modules/jumpto/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jumpto/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.14
+OpenIDE-Module-Specification-Version: 1.15
 AutoUpdate-Show-In-Client: false
