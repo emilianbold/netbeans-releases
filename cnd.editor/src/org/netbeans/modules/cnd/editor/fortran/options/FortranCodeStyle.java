@@ -49,7 +49,9 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
@@ -76,9 +78,25 @@ public final class FortranCodeStyle {
         FortranCodeStyle.autoFormatDetection = autoFormatDetection;
     }
 
+    public InputAttributes setupLexerAttributes(Document doc){
+        InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        if (lexerAttrs == null) {
+            lexerAttrs = new InputAttributes();
+            doc.putProperty(InputAttributes.class, lexerAttrs);
+        }
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, getRrightMargin(), true);
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, isFreeFormatFortran(), true);
+        return lexerAttrs;
+    }
+
     public static FortranCodeStyle get(Document doc) {
         Preferences pref = CodeStylePreferences.get(doc).getPreferences();
-        boolean freeFormat = CndLexerUtilities.detectFortranFormat(doc);
+        boolean freeFormat;
+        if (autoFormatDetection) {
+            freeFormat = CndLexerUtilities.detectFortranFormat(doc);
+        } else {
+            freeFormat = pref.getBoolean(FmtOptions.freeFormat, FmtOptions.getDefaultAsBoolean(FmtOptions.freeFormat));
+        }
         Preferences delegate = new MyPreferences(pref, freeFormat);
         return new FortranCodeStyle(delegate);
     }
@@ -95,6 +113,10 @@ public final class FortranCodeStyle {
 
     public int getTabSize() {
         return preferences.getInt(FmtOptions.tabSize, FmtOptions.getDefaultAsInt(FmtOptions.tabSize));
+    }
+
+    public int getRrightMargin() {
+        return preferences.getInt(FmtOptions.rightMargin, FmtOptions.getDefaultAsInt(FmtOptions.rightMargin));
     }
 
     public boolean indentCasesFromSwitch() {

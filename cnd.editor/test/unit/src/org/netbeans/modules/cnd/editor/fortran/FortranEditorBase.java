@@ -70,9 +70,9 @@ public class FortranEditorBase extends BaseDocumentUnitTestCase {
     protected void setDefaultsOptions(boolean isFreeFormat){
         FortranCodeStyle.setAutoFormatDetection(false);
         BaseDocument bd = getDocument();
-        InputAttributes ia = (InputAttributes) bd.getProperty(InputAttributes.class);
-        ia.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, isFreeFormat, true);
-        FortranCodeStyle.get(bd).setFreeFormatFortran(isFreeFormat);
+        FortranCodeStyle codeStyle = FortranCodeStyle.get(bd);
+        codeStyle.setFreeFormatFortran(isFreeFormat);
+        codeStyle.setupLexerAttributes(bd);
     }
 
     /**

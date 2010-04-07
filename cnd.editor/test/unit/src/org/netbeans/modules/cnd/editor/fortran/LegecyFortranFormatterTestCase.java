@@ -189,21 +189,21 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 
     public void testStatementsFixed() {
         setLoadDocumentText(
-                "program A\n" +
-                "integer::j(5)/1,2,3,4,5/,i\n" +
-                "i=1\n" +
-                "if(i.ne.5) goto 5\n" +
-                "5 if (j(3)==i+2) then\n" +
-                "i=j(5)\n" +
-                "elseif (i<3) then\n" +
-                "i=2\n" +
-                "endif\n" +
-                "where(j>2)\n" +
-                "j=10\n" +
-                "elsewhere(j==1)\n" +
-                "j=0\n" +
-                "endwhere\n" +
-                "print *,j\n" +
+                "      program A\n" +
+                "      integer::j(5)/1,2,3,4,5/,i\n" +
+                "      i=1\n" +
+                "      if(i.ne.5) goto 5\n" +
+                "5     if (j(3)==i+2) then\n" +
+                "      i=j(5)\n" +
+                "      elseif (i<3) then\n" +
+                "      i=2\n" +
+                "      endif\n" +
+                "      where(j>2)\n" +
+                "      j=10\n" +
+                "      elsewhere(j==1)\n" +
+                "      j=0\n" +
+                "      endwhere\n" +
+                "      print *,j\n" +
                 "endprogram A");
         setDefaultsOptions(false);
         reformat();
@@ -265,22 +265,22 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 
     public void testStatements2Fixed() {
         setLoadDocumentText(
-                "program A\n" +
-                "integer::j(5)/1,2,3,4,5/,i\n" +
-                "i=1\n" +
-                "if(i.ne.5) goto 5\n" +
-                "5 if (j(3)==i+2) then\n" +
-                "i=j(5)\n" +
-                "else if (i<3) then\n" +
-                "i=2\n" +
-                "end if\n" +
-                "where(j>2)\n" +
-                "j=10\n" +
-                "else where(j==1)\n" +
-                "j=0\n" +
-                "end where\n" +
-                "print *,j\n" +
-                "end program A");
+                "      program A\n" +
+                "      integer::j(5)/1,2,3,4,5/,i\n" +
+                "      i=1\n" +
+                "      if(i.ne.5) goto 5\n" +
+                "   5  if (j(3)==i+2) then\n" +
+                "      i=j(5)\n" +
+                "      else if (i<3) then\n" +
+                "      i=2\n" +
+                "      end if\n" +
+                "      where(j>2)\n" +
+                "      j=10\n" +
+                "      else where(j==1)\n" +
+                "      j=0\n" +
+                "      end where\n" +
+                "      print *,j\n" +
+                "      end program A");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect statements reformat (fixed form)",
@@ -345,23 +345,23 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 
     public void testEnumAndSelectFixed() {
         setLoadDocumentText(
-                "Enum Enum\n" +
-                "Enumerator zero, one, two\n" +
-                "endEnum Enum\n" +
-                "Type Enum1\n" +
-                "Type(Enum) Enum\n" +
-                "endType Enum1\n" +
-                "Type(Enum),parameter::Enum2/zero/\n" +
-                "Type(Enum1) Enum,Enum3\n" +
-                "Enum3.Enum=two\n" +
-                "selectCase(Enum3.Enum)\n" +
-                " case(zero)\n" +
-                " print *, \" zero \", Enum3.Enum\n" +
-                " case(one)\n" +
-                " print *, \" one \", Enum3.Enum\n" +
-                " case(two)\n" +
-                " print *, \" two \", Enum3.Enum\n" +
-                "endSelect");
+                "      Enum Enum\n" +
+                "      Enumerator zero, one, two\n" +
+                "      endEnum Enum\n" +
+                "      Type Enum1\n" +
+                "      Type(Enum) Enum\n" +
+                "      endType Enum1\n" +
+                "      Type(Enum),parameter::Enum2/zero/\n" +
+                "      Type(Enum1) Enum,Enum3\n" +
+                "      Enum3.Enum=two\n" +
+                "      selectCase(Enum3.Enum)\n" +
+                "       case(zero)\n" +
+                "       print *, \" zero \", Enum3.Enum\n" +
+                "       case(one)\n" +
+                "       print *, \" one \", Enum3.Enum\n" +
+                "       case(two)\n" +
+                "       print *, \" two \", Enum3.Enum\n" +
+                "      endSelect");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect enum and select reformat (fixed form)",
@@ -492,22 +492,22 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 
     public void testContainsAndForallFixed() {
         setLoadDocumentText(
-                "implicit none\n" +
-                "integer(4) i, j(0:9)\n" +
-                "do i=1,10\n" +
-                " call a(i);j(10-i)=i\n" +
-                "enddo\n" +
-                "forall (i=2:7,J(I)<>3)\n" +
-                " j(i)=100\n" +
-                "endforall\n" +
-                " print *, j\n" +
-                " contains\n" +
-                "subroutine a(i,j)\n" +
-                " integer, intent(inout)::i\n" +
-                " integer, optional, intent(in                   out)::j\n" +
-                " print *,i\n" +
-                "end subroutine\n" +
-                "End");
+                "      implicit none\n" +
+                "      integer(4) i, j(0:9)\n" +
+                "      do i=1,10\n" +
+                "       call a(i);j(10-i)=i\n" +
+                "      enddo\n" +
+                "      forall (i=2:7,J(I)<>3)\n" +
+                "       j(i)=100\n" +
+                "      endforall\n" +
+                "       print *, j\n" +
+                "       contains\n" +
+                "      subroutine a(i,j)\n" +
+                "       integer, intent(inout)::i\n" +
+                "       integer, optional, intent(in                   out)::j\n" +
+                "       print *,i\n" +
+                "      end subroutine\n" +
+                "      End");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect contains and forall reformat (fixed form)",
@@ -582,28 +582,28 @@ public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 
     public void testIfFixed() {
         setLoadDocumentText(
-                "  implicit double precision (a-h)\n" +
-                "  implicit doubleprecision (o-z)\n" +
-                "  do i=-1,1\n" +
-                "  if (i.eq.0) then\n" +
-                "  write(*,*)a(i)\n" +
-                "  elseif(i.gt.0) then\n" +
-                "  write(*,*)b(i)\n" +
-                "  else if(i.lt.0) then\n" +
-                "  write(*,*)c(i)\n" +
-                "  endif\n" +
-                "  enddo\n" +
-                "  end\n" +
-                "  real*8 function a(n)\n" +
-                "  a=dble(n+10)\n" +
-                "  return\n" +
-                "  endfunction\n" +
-                "  double precision function b(n)\n" +
-                "  b=dble(n*10)\n" +
-                "  end\n" +
-                "  doubleprecision function c(n)\n" +
-                "  c=dble(n-10)\n" +
-                "  end function");
+                "        implicit double precision (a-h)\n" +
+                "        implicit doubleprecision (o-z)\n" +
+                "        do i=-1,1\n" +
+                "        if (i.eq.0) then\n" +
+                "        write(*,*)a(i)\n" +
+                "        elseif(i.gt.0) then\n" +
+                "        write(*,*)b(i)\n" +
+                "        else if(i.lt.0) then\n" +
+                "        write(*,*)c(i)\n" +
+                "        endif\n" +
+                "        enddo\n" +
+                "        end\n" +
+                "        real*8 function a(n)\n" +
+                "        a=dble(n+10)\n" +
+                "        return\n" +
+                "        endfunction\n" +
+                "        double precision function b(n)\n" +
+                "        b=dble(n*10)\n" +
+                "        end\n" +
+                "        doubleprecision function c(n)\n" +
+                "        c=dble(n-10)\n" +
+                "        end function");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect if reformat (fixed form)",
