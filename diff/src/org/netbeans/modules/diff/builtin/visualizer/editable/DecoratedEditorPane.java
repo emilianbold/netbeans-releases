@@ -179,6 +179,7 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
                         if (rec1 == null || rec2 == null) {
                             break;
                         }
+                        y = (int)rec1.getY();
                         int height = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
                         if (ad != null) {
                             // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables

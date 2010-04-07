@@ -417,6 +417,13 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
             int lineHeight = editorUI.getLineHeight();
             int lineAscent = editorUI.getLineAscent();
             while ((y + (lineHeight / 2)) <= (drawHere.y + drawHere.height)) {
+                View view = rootView.getView(line);
+                Rectangle rec1 = editorPane.modelToView(view.getStartOffset());
+                Rectangle rec2 = editorPane.modelToView(view.getEndOffset() - 1);
+                if (rec1 == null || rec2 == null) {
+                    break;
+                }
+                y = (int)rec1.getY();
                 // draw line numbers if they are turned on
                 if (showLineNumbers) {
                     String lineStr = null;
@@ -434,12 +441,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
                     int activeSymbolWidth = fm.stringWidth(activeSymbol);
                     lineNumberWidth = lineNumberWidth + activeSymbolWidth;
                     g.drawString(lineStr, numberWidth - lineNumberWidth - rightMargin, y + lineAscent);
-                }
-                View view = rootView.getView(line);
-                Rectangle rec1 = editorPane.modelToView(view.getStartOffset());
-                Rectangle rec2 = editorPane.modelToView(view.getEndOffset() - 1);
-                if (rec1 == null || rec2 == null) {
-                    break;
                 }
 
                 y += (int) (rec2.getY() + rec2.getHeight() - rec1.getY());

@@ -404,14 +404,14 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
         try {
             View rootView = Utilities.getDocumentView(master.getEditorPane());
             int lineNumber = Utilities.getLineOffset((BaseDocument) master.getEditorPane().getDocument(), master.getEditorPane().viewToModel(new Point(clip.x, clip.y)));
+            if (lineNumber > 0) --lineNumber;
             View view = rootView.getView(lineNumber);
             Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
             if (rec == null) {
                 return;
             }
-            int yOffset = rec.y + rec.height;
-            yOffset -= lineHeight / 4; // baseline correction
-            int linesDrawn = clip.height / lineHeight + 3;  // draw past clipping rectangle to avoid partially drawn numbers
+            int yOffset;
+            int linesDrawn = clip.height / lineHeight + 4;  // draw past clipping rectangle to avoid partially drawn numbers
             int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
             if (lineNumber + linesDrawn > docLines) {
                 linesDrawn = docLines - lineNumber;
@@ -423,9 +423,9 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                 if (rec1 == null || rec2 == null) {
                     break;
                 }
+                yOffset = rec1.y + rec1.height - lineHeight / 4;
                 lineHeight = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
                 g.drawString(formatLineNumber(++lineNumber), linesXOffset, yOffset);
-                yOffset += lineHeight;
             }
         } catch (BadLocationException ex) {
             //
