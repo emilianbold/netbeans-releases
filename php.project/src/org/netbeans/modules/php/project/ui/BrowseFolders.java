@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -288,7 +289,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
             try {
                 DataObject dobj = DataObject.find(fObj);
-                FilterNode fn = new FilterNode(dobj.getNodeDelegate(), isFile ? Children.LEAF : new SourceGroupsChildren(fObj, grp));
+                FilterNode fn = new FilterNode(dobj.getNodeDelegate(), isFile ? Children.LEAF : new SourceGroupsChildren(fObj, grp)) {
+                    @Override
+                    public Action getPreferredAction() {
+                        // #161908
+                        return null;
+                    }
+                };
                 return new Node[] {fn};
             } catch (DataObjectNotFoundException e) {
                 return null;
