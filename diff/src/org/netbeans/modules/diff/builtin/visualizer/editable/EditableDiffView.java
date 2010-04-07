@@ -786,7 +786,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void showCurrentDifference() {
         int index = getDifferenceIndex();
-        if (index < 0 || index >= diffs.length) {
+        if (index < 0 || index >= diffs.length || index >= manager.getDecorations().length) {
             return;
         }
         Difference diff = diffs[index];
@@ -800,7 +800,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             jEditorPane1.getEditorPane().setCaretPosition(off1);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
             
-            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[getDifferenceIndex()];
+            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
             if (ddiff.getDiff().getType() == Difference.DELETE) {
                 offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;

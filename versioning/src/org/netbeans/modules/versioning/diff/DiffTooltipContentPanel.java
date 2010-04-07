@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.versioning.diff;
 
-import org.netbeans.editor.EditorUI;
 import org.netbeans.api.diff.Difference;
 import org.openide.text.CloneableEditorSupport;
 
@@ -54,10 +53,13 @@ import java.awt.*;
  * @author Maros Sandor
  */
 class DiffTooltipContentPanel extends JComponent {
+    private JEditorPane originalTextPane;
+    private final Color color;
+    private int maxWidth;
 
-    public DiffTooltipContentPanel(JTextComponent parentPane, String mimeType, Difference diff) {
+    public DiffTooltipContentPanel(final JTextComponent parentPane, final String mimeType, final Difference diff) {
         
-        JEditorPane originalTextPane = new JEditorPane();
+        originalTextPane = new JEditorPane();
 
         EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
         originalTextPane.setEditorKit(kit);
@@ -80,32 +82,26 @@ class DiffTooltipContentPanel extends JComponent {
 
         originalTextPane.setDocument(doc);
         originalTextPane.setEditable(false);
-        Color color = getBackgroundColor(diff.getType());
-        originalTextPane.setBackground(color);
-
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(originalTextPane);
-
+        color = getBackgroundColor(diff.getType());
         Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
         int lineCount = rootElement.getElementCount();
-        int height = eui.getLineHeight() * lineCount;
-
-        int maxWidth = 0;
-        for(int line = 0; line < lineCount; line++) {
+        maxWidth = 0;
+        for (int line = 0; line < lineCount; line++) {
             Element lineElement = rootElement.getElement(line);
             String text = null;
             try {
                 text = doc.getText(lineElement.getStartOffset(), lineElement.getEndOffset() - lineElement.getStartOffset());
             } catch (BadLocationException e) {
-                e.printStackTrace();
+                //
             }
             text = replaceTabs(mimeType, text);
             int lineLength = parentPane.getFontMetrics(parentPane.getFont()).stringWidth(text);
-            if (lineLength > maxWidth) maxWidth = lineLength;
+            if (lineLength > maxWidth) {
+                maxWidth = lineLength;
+            }
         }
-
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
         else if (maxWidth < 150) maxWidth += 10;
-        originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
 
         if (!originalTextPane.isEditable()) {
             originalTextPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
@@ -116,6 +112,28 @@ class DiffTooltipContentPanel extends JComponent {
 
         setLayout(new BorderLayout());
         add(jsp);
+    }
+
+    void resize () {
+        if (originalTextPane == null) return;
+        originalTextPane.setBackground(color);
+        Element rootElement = org.openide.text.NbDocument.findLineRootElement((StyledDocument) originalTextPane.getDocument());
+        int lineCount = rootElement.getElementCount();
+
+        int height = 0;
+        assert lineCount > 0;
+        Element lineElement = rootElement.getElement(lineCount - 1);
+        Rectangle rec;
+        try {
+            rec = originalTextPane.modelToView(lineElement.getEndOffset() - 1);
+            height = rec.y + rec.height;
+        } catch (BadLocationException ex) {
+        }
+        if (height > 0) {
+            originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
+            SwingUtilities.getWindowAncestor(originalTextPane).pack();
+        }
+        originalTextPane = null;
     }
 
     private Color getBackgroundColor (int key) {
