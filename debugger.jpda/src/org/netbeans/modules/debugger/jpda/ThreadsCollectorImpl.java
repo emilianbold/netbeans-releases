@@ -41,6 +41,8 @@ package org.netbeans.modules.debugger.jpda;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -61,19 +63,26 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
     
     private PropertyChangeListener changesInThreadsListener;
     private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
+    private final List<JPDAThread> threads = new ArrayList<JPDAThread>();
 
     public ThreadsCollectorImpl(JPDADebuggerImpl debugger) {
         this.debugger = debugger;
+        List<JPDAThread> allThreads = debugger.getAllThreads();
+        synchronized (threads) {
+            threads.addAll(allThreads);
+        }
         changesInThreadsListener = new ChangesInThreadsListener();
         debugger.addPropertyChangeListener(WeakListeners.propertyChange(changesInThreadsListener, debugger));
-        for (JPDAThread thread : getAllThreads()) {
+        for (JPDAThread thread : allThreads) {
             watchThread(thread);
         }
     }
 
     @Override
     public List<JPDAThread> getAllThreads() {
-        return debugger.getAllThreads();
+        synchronized (threads) {
+            return Collections.unmodifiableList(new ArrayList(threads));
+        }
     }
 
     @Override
@@ -139,8 +148,17 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
             if (JPDADebugger.PROP_THREAD_STARTED.equals(propertyName)) {
                 JPDAThread thread = (JPDAThread) evt.getNewValue();
                 watchThread(thread);
+                synchronized (threads) {
+                    if (!threads.contains(thread)) {
+                        threads.add(thread); // Could be already added in constructor...
+                    }
+                }
                 firePropertyChange(PROP_THREAD_STARTED, evt.getOldValue(), evt.getNewValue());
             } else if (JPDADebugger.PROP_THREAD_DIED.equals(propertyName)) {
+                JPDAThread thread = (JPDAThread) evt.getOldValue();
+                synchronized (threads) {
+                    threads.remove(thread);
+                }
                 firePropertyChange(PROP_THREAD_DIED, evt.getOldValue(), evt.getNewValue());
             } else if (JPDADebugger.PROP_THREAD_GROUP_ADDED.equals(propertyName)) {
                 firePropertyChange(PROP_THREAD_GROUP_ADDED, evt.getOldValue(), evt.getNewValue());
