@@ -150,7 +150,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("OUT", APTTokenTypes.T_OUT); // NOI18N
         filter("PARAMETER", APTTokenTypes.T_PARAMETER); // NOI18N
         filter("PASS", APTTokenTypes.T_PASS); // NOI18N
-        filter("PAUSE", APTTokenTypes.T_PAUSE); // NOI18N
+
+// Helps parser to skip unknown constructions
+// Bug 183152 - keyword pause breaks *Fortran* Navigator
+//        filter("PAUSE", APTTokenTypes.T_PAUSE); // NOI18N
+
         filter("POINTER", APTTokenTypes.T_POINTER); // NOI18N
         filter("PRINT", APTTokenTypes.T_PRINT); // NOI18N
         filter("PRECISION", APTTokenTypes.T_PRECISION); // NOI18N
