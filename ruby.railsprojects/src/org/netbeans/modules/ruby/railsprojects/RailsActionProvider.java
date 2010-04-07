@@ -516,15 +516,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                 
         // request focus for the output window - see #133519
+        getOutputWindow().requestActive();
+    }
+
+    private static TopComponent getOutputWindow() {
         final String outputWindowId = "output"; //NOI18N
         TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
-        // outputWindow should not be null as the output window id is not likely to change, but 
-        // checking for null anyway since we are not relying on an API.
-        if (outputWindow != null) {
-            outputWindow.requestActive();
-        } else {
-            LOGGER.info("Could not find the output window using id " + outputWindowId);
-        }
+        assert outputWindow != null : "Could not find the output window using id " + outputWindowId;  //NOI18N
+        return outputWindow;
     }
     
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
@@ -651,6 +650,13 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     }
     
     private void runServer(String path, final boolean serverDebug, final boolean clientDebug) {
+        TopComponent outputWindow = getOutputWindow();
+        if (!outputWindow.isOpened()) {
+            outputWindow.open();
+        }
+        outputWindow.requestActive();
+        outputWindow.toFront();
+
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
             server.setDebug(serverDebug);
