@@ -71,14 +71,14 @@ public class ShiftOutOfRange {
     public static ErrorDescription checkShiftOutOfRange (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
         Map<String,TreePath> variables = ctx.getVariables ();
-        Tree tree = variables.get ("$c").getLeaf ();
+        TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
         if (value == null) return null;
-        tree = variables.get ("$v").getLeaf ();
-        if (!(tree instanceof ExpressionTree)) return null;
+        tree = variables.get ("$v");
+        if (!(tree.getLeaf() instanceof ExpressionTree)) return null;
         CompilationInfo compilationInfo = ctx.getInfo ();
         Trees trees = compilationInfo.getTrees ();
-        TreePath identifierTreePath = trees.getPath (compilationInfo.getCompilationUnit (), tree);
+        TreePath identifierTreePath = tree;
         TypeMirror typeMirror = trees.getTypeMirror (identifierTreePath);
         if (typeMirror.toString ().equals ("int")) {
             if (value < 0 || value > 31)
