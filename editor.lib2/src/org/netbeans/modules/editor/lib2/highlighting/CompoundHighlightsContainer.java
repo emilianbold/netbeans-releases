@@ -548,6 +548,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         private final OffsetGapList<OffsetGapList.Offset> boundaries;
         private final Document doc;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public CacheBoundaries(Document doc) {
             this.boundaries = new OffsetGapList<OffsetGapList.Offset>(false);
             this.doc = doc;

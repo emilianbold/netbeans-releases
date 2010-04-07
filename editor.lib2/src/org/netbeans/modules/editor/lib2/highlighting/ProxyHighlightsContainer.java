@@ -98,6 +98,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
      * @return The <code>Highlight</code>s in the area between <code>startOffset</code>
      * and <code>endOffset</code>.
      */
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         assert 0 <= startOffset : "offsets must be greater than or equal to zero"; //NOI18N
         assert startOffset <= endOffset : "startOffset must be less than or equal to endOffset; " + //NOI18N
@@ -197,7 +198,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             ref = new WeakReference<ProxyHighlightsContainer>(container);
         }
         
-        public void highlightChanged(HighlightsChangeEvent event) {
+        public @Override void highlightChanged(HighlightsChangeEvent event) {
             ProxyHighlightsContainer container = ref.get();
             if (container != null) {
                 container.layerChanged(
@@ -229,7 +230,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             this.index2 = findLowest();
         }
 
-        public boolean moveNext() {
+        public @Override boolean moveNext() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
                 checkVersion();
 
@@ -253,7 +254,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
         }
 
-        public int getStartOffset() {
+        public @Override int getStartOffset() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
                 checkVersion();
                 
@@ -265,7 +266,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
         }
 
-        public int getEndOffset() {
+        public @Override int getEndOffset() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
                 checkVersion();
                 
@@ -277,7 +278,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
         }
 
-        public AttributeSet getAttributes() {
+        public @Override AttributeSet getAttributes() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
                 checkVersion();
                 

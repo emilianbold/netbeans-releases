@@ -426,6 +426,7 @@ public final class HighlightingManager {
             this.excludes = buildPatterns(excludes);
         }
 
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             List<? extends HighlightsLayer> includedLayers;
             
