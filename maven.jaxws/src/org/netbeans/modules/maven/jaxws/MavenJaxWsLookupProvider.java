@@ -47,7 +47,6 @@ import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -61,7 +60,7 @@ import org.openide.util.lookup.Lookups;
 @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
 public class MavenJaxWsLookupProvider implements LookupProvider {
 
-    private static RequestProcessor rp = new RequestProcessor("MavenJaxWsLookupProvider-request-processor");
+    private static final RequestProcessor rp = new RequestProcessor("MavenJaxWsLookupProvider-request-processor");
 
     @Override
     public Lookup createAdditionalLookup(Lookup baseContext) {
