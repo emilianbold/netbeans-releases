@@ -345,16 +345,18 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }*/
 
     public void testCreateFolderOrDataFile_ReadOnly() throws Exception {
+        clearWorkDir();
         final File wDir = getWorkDir();
         final File fold = new File(wDir,"a/b/c");
         final File data = new File(fold,"a/b/c.data");
-        assertTrue(getWorkDir().setReadOnly());
+        assertTrue(wDir.setReadOnly());
+        assertFalse("Cannot write", wDir.canWrite());
         try {
             implCreateFolderOrDataFile(fold, data);        
             fail();
         } catch (IOException ex) {            
         } finally {
-            assertTrue(getWorkDir().setWritable(true));        
+            assertTrue(wDir.setWritable(true));
         }
     }
     
