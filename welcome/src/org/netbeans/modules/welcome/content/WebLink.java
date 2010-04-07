@@ -55,12 +55,12 @@ public class WebLink extends LinkButton {
     private String url;
 
     /** Creates a new instance of WebLink */
-    public WebLink( String key, boolean showBullet ) {
-        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ), showBullet );
+    public WebLink( String key, boolean showBorder ) {
+        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ), showBorder );
     }
 
-    public WebLink( String label, String url, boolean showBullet ) {
-        super( label, showBullet );
+    public WebLink( String label, String url, boolean showBorder ) {
+        super( label, showBorder );
         this.url = url;
 
         getAccessibleContext().setAccessibleName(
@@ -69,8 +69,8 @@ public class WebLink extends LinkButton {
                 BundleSupport.getAccessibilityDescription( "WebLink", url ) ); //NOI18N
     }
 
-    public WebLink( String label, String url, boolean showBullet, Color foreground ) {
-        super( label, showBullet, foreground );
+    public WebLink( String label, String url, Color foreground, boolean showBorder ) {
+        super( label, foreground, showBorder );
         this.url = url;
     }
 

@@ -112,8 +112,9 @@ public class ManagerBean implements Manager {
             }
             
             loadRegistriesList();
-            
-            Locale.setDefault(new Locale("en", "US"));
+
+            //Issue #183611
+            //Locale.setDefault(new Locale("en", "US"));
             
             DownloadManager.getInstance().setLocalDirectory(NBI);
             DownloadManager.getInstance().setFinishHandler(new DummyFinishHandler());
