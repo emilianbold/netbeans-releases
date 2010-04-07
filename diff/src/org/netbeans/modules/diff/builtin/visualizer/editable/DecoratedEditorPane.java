@@ -169,59 +169,37 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
                     int curDif = master.getMaster().getCurrentDifference();
                     
                     g.setColor(master.getMaster().getColorLines());
-                    if (master.isFirst()) {
-                        for (int i = startViewIndex; i < rootViewCount; i++){
-                            view = rootView.getView(i);
-                            line = rootElem.getElementIndex(view.getStartOffset());
-                            line++; // make it 1-based
-                            Difference ad = EditableDiffView.getFirstDifference(currentDiff, line);
-                            if (ad != null) {
-                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
-                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                            
-                                int yy = y + editorUI.getLineHeight();
-                                if (ad.getType() == Difference.ADD) {
-                                    g.drawLine(0, yy, getWidth(), yy);
-                                    ad = null;
-                                } else {
-                                    if (ad.getFirstStart() == line) {
-                                        g.drawLine(0, y, getWidth(), y);
-                                    }
-                                    if (ad.getFirstEnd() == line) {
-                                        g.drawLine(0, yy, getWidth(), yy);
-                                    }
+                    for (int i = startViewIndex; i < rootViewCount; i++) {
+                        view = rootView.getView(i);
+                        line = rootElem.getElementIndex(view.getStartOffset());
+                        line++; // make it 1-based
+                        Difference ad = master.isFirst() ? EditableDiffView.getFirstDifference(currentDiff, line) : EditableDiffView.getSecondDifference(currentDiff, line);
+                        Rectangle rec1 = component.modelToView(view.getStartOffset());
+                        Rectangle rec2 = component.modelToView(view.getEndOffset() - 1);
+                        if (rec1 == null || rec2 == null) {
+                            break;
+                        }
+                        y = (int)rec1.getY();
+                        int height = (int) (rec2.getY() + rec2.getHeight() - rec1.getY());
+                        if (ad != null) {
+                            // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
+                            g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);
+                            int yy = y + height;
+                            if (ad.getType() == (master.isFirst() ? Difference.ADD : Difference.DELETE)) {
+                                g.drawLine(0, yy, getWidth(), yy);
+                                ad = null;
+                            } else {
+                                if ((master.isFirst() ? ad.getFirstStart() : ad.getSecondStart()) == line) {
+                                    g.drawLine(0, y, getWidth(), y);
                                 }
-                            }
-                            y += editorUI.getLineHeight();
-                            if (y >= clipEndY) {
-                                break;
+                                if ((master.isFirst() ? ad.getFirstEnd() : ad.getSecondEnd()) == line) {
+                                    g.drawLine(0, yy, getWidth(), yy);
+                                }
                             }
                         }
-                    } else {
-                        for (int i = startViewIndex; i < rootViewCount; i++){
-                            view = rootView.getView(i);
-                            line = rootElem.getElementIndex(view.getStartOffset());
-                            line++; // make it 1-based
-                            Difference ad = EditableDiffView.getSecondDifference(currentDiff, line);
-                            if (ad != null) {
-                                // TODO: can cause AIOOBE, synchronize "currentDiff" and "curDif" variables
-                                g.setStroke(curDif >= 0 && curDif < currentDiff.length && currentDiff[curDif] == ad ? master.getMaster().getBoldStroke() : cs);                          
-                                int yy = y + editorUI.getLineHeight();
-                                if (ad.getType() == Difference.DELETE) {
-                                    g.drawLine(0, yy, getWidth(), yy);
-                                    ad = null;
-                                } else {
-                                    if (ad.getSecondStart() == line) {
-                                        g.drawLine(0, y, getWidth(), y);
-                                    }
-                                    if (ad.getSecondEnd() == line) {
-                                        g.drawLine(0, yy, getWidth(), yy);
-                                    }
-                                }
-                            }
-                            y += editorUI.getLineHeight();
-                            if (y >= clipEndY) {
-                                break;
-                            }
+                        y += height;
+                        if (y >= clipEndY) {
+                            break;
                         }
                     }
                 }

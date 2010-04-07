@@ -67,7 +67,7 @@ public final class CndLexerUtilities {
      * returns C/C++/Preprocessor tokens sequence for component
      * @param component component
      * @param offset offset
-     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequence of this
      * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
      * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
      * If <code>true</code> the backward lying token will
@@ -105,9 +105,9 @@ public final class CndLexerUtilities {
 
     /**
      * returns C/C++/Preprocessor tokens sequence for document
-     * @param doc dicument
+     * @param doc document
      * @param offset offset
-     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequnce of this 
+     * @param lexPP if <code>true</code> and offset is in preprocessor directive then return tokens sequence of this
      * directive. If <code>false</code> and offset is in preprocessor directive do not dive into embedding
      * @param backwardBias @see TokenHierarchy.embeddedTokenSequences
      * If <code>true</code> the backward lying token will
@@ -142,15 +142,12 @@ public final class CndLexerUtilities {
     }
 
     public static TokenSequence<FortranTokenId> getFortranTokenSequence(final Document doc, final int offset) {
-        InputAttributes ia = (InputAttributes) doc.getProperty(InputAttributes.class);
-        boolean truFree = detectFortranFormat(doc);
-        ia.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, truFree, true);
         TokenHierarchy<?> th = doc != null ? TokenHierarchy.get(doc) : null;
         TokenSequence<FortranTokenId> ts = th != null ? getFortranTokenSequence(th, offset) : null;
         return ts;
     }
 
-    public static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy<?> hierarchy, final int offset) {
+    private static TokenSequence<FortranTokenId> getFortranTokenSequence(final TokenHierarchy<?> hierarchy, final int offset) {
         if (hierarchy != null) {
             TokenSequence<?> ts = hierarchy.tokenSequence();
             while (ts != null && (offset == 0 || ts.moveNext())) {

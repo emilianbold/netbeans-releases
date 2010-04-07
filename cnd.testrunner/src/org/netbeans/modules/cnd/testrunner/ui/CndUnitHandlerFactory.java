@@ -401,7 +401,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         private boolean currentSuiteFinished = false;
 
         public CppUnitHandler() {
-            super("((.*)::(.+) : .*)|(Run: )"); //NOI18N
+            super("(((.*)::(.+) : .*)|(Run: )|(OK \\())"); //NOI18N
 
             handlers = new ArrayList<TestRecognizerHandler>();
             handlers.add(new CppUnitTestFinishedHandler());
@@ -500,7 +500,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         class CppUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
             public CppUnitSuiteFinishedHandler() {
-                super("Run: "); //NOI18N
+                super("((Run: )|(OK \\())"); //NOI18N
             }
 
             @Override

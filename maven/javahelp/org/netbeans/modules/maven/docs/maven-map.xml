@@ -51,4 +51,5 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <mapID target="org.netbeans.modules.maven.options.MavenAdvancedOption" url="csh/maven-options.html"/>
     <mapID target="org.netbeans.modules.maven.newproject.BasicWizardPanel" url="csh/maven-newproj-basic.html"/>
     <mapID target="org.netbeans.modules.maven.newproject.ChooseWizardPanel" url="csh/maven-newproj-archetype.html"/>
+    <mapID target="org.netbeans.modules.maven.newproject.NbmWizardPanel" url="csh/maven-newproj-options.html"/>
 </map>

@@ -77,6 +77,7 @@ public class FortranReformatter implements ReformatTask {
         if (codeStyle == null){
             codeStyle = FortranCodeStyle.get(doc);
         }
+        codeStyle.setupLexerAttributes(doc);
         expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
         if (context != null) {
