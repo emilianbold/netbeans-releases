@@ -506,7 +506,7 @@ public class Actions {
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="EXACTLY_ONE"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
@@ -538,7 +538,7 @@ public class Actions {
      * <pre>
      * &lt;file name="action-pkg-ClassName.instance"&gt;
      *   &lt;attr name="type" stringvalue="org.netbeans.api.actions.Openable"/&gt;
-     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Action.inject"/&gt;
+     *   &lt;attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/&gt;
      *   &lt;attr name="selectionType" stringvalue="ANY"/&gt;
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;

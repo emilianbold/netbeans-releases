@@ -106,6 +106,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="FileEncodingQuery-from-mime-lookup">
+          <api name="awt"/>
+          <summary>FileEncodingQuery registered per MIME type takes preceedence</summary>
+          <version major="7" minor="14"/>
+          <date day="7" month="4" year="2010"/>
+          <author login="jtulach"/>
+          <compatibility modification="yes" semantic="incompatible"/>
+          <description>
+              <p>
+                  FileEncodingQuery implementations registered in
+                  <code>Editors/text/mime/</code> folders are queried
+                  even before the actual DataObject has been created
+                  from template. This allows data loaders with static
+                  encoding to register such FileEncodingQuery implementation
+                  there and be active while the object is being constructed.
+              </p>
+          </description>
+          <issue number="102629"/>
+      </change>
       <change id="AcceleratorBinding">
           <api name="awt"/>
           <summary>Added <code>AcceleratorBinding</code></summary>

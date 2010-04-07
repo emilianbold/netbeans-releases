@@ -84,13 +84,10 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
      * - If map contains TRUE value for the given MimeType then get FEQ from the DataObject lookup.
      * - If map not contains given MimeType then add it to the map with value TRUE if FEQ is found in the DataObject lookup
      */
+    @Override
     public Charset getEncoding(FileObject file) {
         assert file != null;
         DataFolder df = TARGET.get();
-        if (df != null && df.getPrimaryFile().equals(file.getParent())) {
-            // do not create new data objects
-            return null;
-        }
         String mimeType = file.getMIMEType();
         FileEncodingQueryImplementation impl = MimeLookup.getLookup(mimeType).lookup(FileEncodingQueryImplementation.class);
         if (impl != null) {
@@ -98,6 +95,10 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
             if (charset != null) {
                 return charset;
             }
+        }
+        if (df != null && df.getPrimaryFile().equals(file.getParent())) {
+            // do not create new data objects
+            return null;
         }
         Boolean useDataObjectLookup = MIME_TYPE_CHECK_MAP.get(mimeType);
         if (useDataObjectLookup == null || useDataObjectLookup.booleanValue() || "content/unknown".equals(mimeType)) {  //NOI18N

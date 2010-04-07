@@ -133,6 +133,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         Runnable r = (Runnable)obj;
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
+            boolean boosted;
             boolean finished;
             
             public AE() {
@@ -160,6 +161,12 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
                     for (int i = 0; i  < 2000; i ++) {
                         assertTrue("Can be read", busyFile.canRead());
                         LOG.log(Level.INFO, "Touched {0}", i);
+                        if (i > 100) {
+                            synchronized (this) {
+                                boosted = true;
+                                notifyAll();
+                            }
+                        }
                     }
                     busyFile.delete();
                     LOG.log(Level.INFO, "deleted {0}", busyFile);
@@ -168,6 +175,12 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
                 }
                 finished = true;
                 LOG.info("finished");
+            }
+
+            public synchronized void waitBoosted() throws Exception {
+                while (!boosted) {
+                    wait();
+                }
             }
         }
         AE counter = new AE();
@@ -179,8 +192,8 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         // connect together
         r.equals(counter);
 
-        Thread.sleep(100);
-
+        LOG.info("Waiting for I/O boost");
+        counter.waitBoosted();
         LOG.info("Starting refresh");
         // do the refresh
         r.run();

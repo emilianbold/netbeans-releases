@@ -4,7 +4,7 @@ if [ -z "$JOB_URL" ]; then
   JOB_URL=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/
 fi
 
-sigtest_prev=nbbuild/build/prevsigtest/snapshot
+sigtest_prev=$WORKSPACE/nbbuild/build/prevsigtest/snapshot
 (
   mkdir -p $sigtest_prev && cd $sigtest_prev/.. && \
   wget "$JOB_URL""lastSuccessfulBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip" &&

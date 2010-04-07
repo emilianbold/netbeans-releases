@@ -477,17 +477,13 @@ class DiffViewManager implements ChangeListener {
         leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]);
     }
 
-    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, View rootLeftView, View rootRightView) {
-
+    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, Rectangle[] positions) {
+        Rectangle leftStartRect = positions[0], leftEndRect = positions[0], rightStartRect = positions[2], rightEndRect = positions[3];
         Difference diff = differenceMatchStart.getDiff();
         boolean matchStart = differenceMatchStart.isStart();
         
         int value;
         int valueSecond;
-        Rectangle leftStartRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstStart() - 1, false);
-        Rectangle leftEndRect = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstEnd() - 1, true);
-        Rectangle rightStartRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondStart() - 1, false);
-        Rectangle rightEndRect = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondEnd() - 1, true);
         if (matchStart) {
             value = leftStartRect.y + leftStartRect.height;        // kde zacina prva, 180
             valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
@@ -707,13 +703,24 @@ class DiffViewManager implements ChangeListener {
             View rootLeftView = Utilities.getDocumentView(leftContentPanel.getEditorPane());
             View rootRightView = Utilities.getDocumentView(rightContentPanel.getEditorPane());
             if (rootLeftView == null || rootRightView == null) return scrollMap;
+            HashMap<Difference, Rectangle[]> positionsPerDiff = new HashMap<Difference, Rectangle[]>(getDecorations().length);
             for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset++) {
                 DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);
                 int leftOffset;
                 if (dpos == null) {
                     leftOffset = lastOffset + rightOffset;
                 } else {
-                    leftOffset = computeLeftOffsetToMatchDifference(dpos, rightOffset, rootLeftView, rootRightView);
+                    Difference diff = dpos.getDiff();
+                    Rectangle[] positions = positionsPerDiff.get(diff);
+                    if (positions == null) {
+                        positions = new Rectangle[4];
+                        positions[0] = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstStart() - 1, false);
+                        positions[1] = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstEnd() - 1, true);
+                        positions[2] = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondStart() - 1, false);
+                        positions[3] = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondEnd() - 1, true);
+                        positionsPerDiff.put(diff, positions);
+                    }
+                    leftOffset = computeLeftOffsetToMatchDifference(dpos, rightOffset, positions);
                     lastOffset = leftOffset - rightOffset;
                 }
                 scrollMap[rightOffset] = leftOffset;

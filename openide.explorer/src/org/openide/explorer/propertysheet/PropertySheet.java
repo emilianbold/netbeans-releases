@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -81,7 +82,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -222,6 +222,9 @@ public class PropertySheet extends JPanel {
     /**Debugging option to suppress all use of tabs */
     private static final boolean neverTabs = Boolean.getBoolean("netbeans.ps.nevertabs"); //NOI18N
     static final boolean forceTabs = Boolean.getBoolean("nb.ps.forcetabs");
+
+    /** property sheet processor */
+    private static final RequestProcessor RP = new RequestProcessor("Property Sheet"); // NOI18N
 
     /** Holds the sort mode for the property sheet */
     private int sortingMode = UNSORTED;
@@ -514,7 +517,7 @@ public class PropertySheet extends JPanel {
                 curTask.cancel();
             }
             
-            if (SwingUtilities.isEventDispatchThread()) {
+            if (EventQueue.isDispatchThread()) {
                 if (loggable) {
                     PropUtils.log(PropertySheet.class, "  Nodes cleared on event queue.  Emptying model.");
                 }
@@ -524,7 +527,7 @@ public class PropertySheet extends JPanel {
                 helperNodes = null;
                 psheet.setTabbedContainerItems(new Object[0], new String[0]);
             } else {
-                SwingUtilities.invokeLater(
+                EventQueue.invokeLater(
                     new Runnable() {
                         public void run() {
                             if (loggable) {
@@ -578,34 +581,39 @@ public class PropertySheet extends JPanel {
 
     private synchronized RequestProcessor.Task getScheduleTask() {
         if (scheduleTask == null) {
-            scheduleTask = RequestProcessor.getDefault().post(
-                    new Runnable() {
+            scheduleTask = RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    Node[] tmp = helperNodes;
+                    if (tmp != null) {
+                        for (Node n : tmp) {
+                            // pre-initialized outside of AWT thread
+                            n.getPropertySets();
+                        }
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
-                            SwingUtilities.invokeLater(
-                                new Runnable() {
-                                    public void run() {
-                                        final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
-                                        Node[] nodesToSet = helperNodes;
-                                        if (loggable) {
-                                            PropUtils.log(
-                                                PropertySheet.class,
-                                                "Delayed " + "updater setting nodes to " + //NOI18N
-                                                    (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
-                                            );
-                                        }
+                            final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
+                            Node[] nodesToSet = helperNodes;
+                            if (loggable) {
+                                PropUtils.log(
+                                    PropertySheet.class,
+                                    "Delayed " + "updater setting nodes to " + //NOI18N
+                                        (null == nodesToSet ? "null" : Arrays.asList(nodesToSet)) //NOI18N
+                                );
+                            }
 
-                                        doSetNodes(nodesToSet);
-                                    }
-                                }
-                            );
+                            doSetNodes(nodesToSet);
                         }
-                    }
-                );
-            initTask = RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                        }
-                    }
-                );
+                    });
+                }
+            });
+            initTask = RP.post(new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
         }
 
         // if none task runs then return initTask to wait for next changes
@@ -1381,10 +1389,10 @@ public class PropertySheet extends JPanel {
                         }
                     }
                 };
-                if( SwingUtilities.isEventDispatchThread() ) {
+                if( EventQueue.isDispatchThread() ) {
                     runnable.run();
                 } else {
-                    SwingUtilities.invokeLater(runnable);
+                    EventQueue.invokeLater(runnable);
                 }
             }
              /*else {
@@ -1417,7 +1425,7 @@ public class PropertySheet extends JPanel {
             /** Receives property change events directed to PropertyChangeListeners,
              * not NodeListeners */
             public void propertyChange(final PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
+                EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         String nm = evt.getPropertyName();
                         /*
