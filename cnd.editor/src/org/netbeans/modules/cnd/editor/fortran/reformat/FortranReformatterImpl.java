@@ -654,6 +654,18 @@ public class FortranReformatterImpl {
             if (current.id() == WHITESPACE) {
                 ts.replaceCurrent(current, 0, space, true);
             } else if (current.id() == LINE_COMMENT_FIXED) {
+            } else if (current.id() == LINE_COMMENT_FREE) {
+                if (codeStyle.isFreeFormatFortran()){
+                    if (space > 0) {
+                        ts.addBeforeCurrent(0, space, true);
+                    }
+                } else {
+                    if (space <= 6) {
+                        ts.addBeforeCurrent(0, 0, true);
+                    } else {
+                        ts.addBeforeCurrent(0, space, true);
+                    }
+                }
             } else {
                 if (space > 0) {
                     ts.addBeforeCurrent(0, space, true);
@@ -665,6 +677,13 @@ public class FortranReformatterImpl {
         if (next != null) {
             if (next.id() == NEW_LINE || next.id() == FortranTokenId.LINE_COMMENT_FIXED) {
                 return;
+            } else if (next.id() == FortranTokenId.LINE_COMMENT_FREE) {
+                if (!codeStyle.isFreeFormatFortran()) {
+                    if (getIndent() <= 6) {
+                        ts.addAfterCurrent(current, 0, 0, true);
+                        return;
+                    }
+                }
             }
             int space = -1;
             if (firstImportant != null) {
@@ -694,7 +713,6 @@ public class FortranReformatterImpl {
             }
         }
     }
-
 
     // indent new line after preprocessor directive
     private void indentNewLine(Token<FortranTokenId> current){

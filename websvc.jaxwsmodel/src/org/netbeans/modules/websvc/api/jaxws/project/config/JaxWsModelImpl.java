@@ -67,7 +67,10 @@ import org.openide.util.ChangeSupport;
  * Provides information used for build-impl generation
  * Working over nbproject/jax-ws.xml file
  */
-@ProjectServiceProvider(service=JaxWsModel.class, projectType="org-netbeans-modules-java-j2seproject")
+@ProjectServiceProvider(service=JaxWsModel.class, projectType={
+    "org-netbeans-modules-j2ee-clientproject",
+    "org-netbeans-modules-java-j2seproject"
+})
 public final class JaxWsModelImpl implements JaxWsModel {
     private static final String JAX_WS_XML_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"; //NOI18N
     private org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws;

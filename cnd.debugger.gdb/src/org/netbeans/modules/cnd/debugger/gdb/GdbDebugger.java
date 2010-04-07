@@ -318,15 +318,17 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             
             String tty = null;
-            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL && pae.getType() != DEBUG_ATTACH) {
-                String termpath = pae.getProfile().getTerminalPath();
-                if (termpath != null) {
-                    tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+            if (pae.getType() != DEBUG_ATTACH) {
+                if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                    String termpath = pae.getProfile().getTerminalPath();
+                    if (termpath != null) {
+                        tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+                    }
+                } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
+                    pty = PtySupport.allocate(execEnv);
+                    PtySupport.connect(iotab, pty);
+                    tty = pty.getSlaveName();
                 }
-            } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
-                pty = PtySupport.allocate(execEnv);
-                PtySupport.connect(iotab, pty);
-                tty = pty.getSlaveName();
             }
 
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, tty, cspath);

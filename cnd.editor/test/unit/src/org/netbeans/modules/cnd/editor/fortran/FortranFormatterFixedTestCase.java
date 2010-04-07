@@ -60,38 +60,38 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
 
     public void testModule2Fixed() {
         setLoadDocumentText(
-                "  module IF\n" +
-                "  integer*8 procedure\n" +
-                "  dimension x(10)\n" +
-                "  contains\n" +
-                "  real*8 function factorial(procedure)\n" +
-                "  integer*8 procedure\n" +
-                "  factorial=1\n" +
-                "  do i=1,procedure\n" +
-                "  factorial=factorial*dble(i)\n" +
-                "  enddo\n" +
-                "  end function\n" +
-                "  end module IF\n" +
-                "  module common\n" +
-                "  real object(3)\n" +
-                "  integer coutner\n" +
-                "  contains\n" +
-                "  integer*8 recursive function fact(n) result(object)\n" +
-                "  integer*8 n, k, object\n" +
-                "  k=n\n" +
-                "  if(n.eq.0) k=1\n" +
-                "  if(n.gt.1) k=k*fact(k-1)\n" +
-                "  object=k\n" +
-                "  end function fact\n" +
-                "  end module common\n" +
-                "  use IF\n" +
-                "  use common\n" +
-                "  real*8 module1\n" +
-                "  integer*8 int\n" +
-                "  int=10\n" +
-                "  module1=+fact(int)+factorial(int)\n" +
-                "  write(*,*)module1\n" +
-                "  end");
+                "      module IF\n" +
+                "      integer*8 procedure\n" +
+                "      dimension x(10)\n" +
+                "      contains\n" +
+                "      real*8 function factorial(procedure)\n" +
+                "      integer*8 procedure\n" +
+                "      factorial=1\n" +
+                "      do i=1,procedure\n" +
+                "      factorial=factorial*dble(i)\n" +
+                "      enddo\n" +
+                "      end function\n" +
+                "      end module IF\n" +
+                "      module common\n" +
+                "      real object(3)\n" +
+                "      integer coutner\n" +
+                "      contains\n" +
+                "      integer*8 recursive function fact(n) result(object)\n" +
+                "      integer*8 n, k, object\n" +
+                "      k=n\n" +
+                "      if(n.eq.0) k=1\n" +
+                "      if(n.gt.1) k=k*fact(k-1)\n" +
+                "      object=k\n" +
+                "      end function fact\n" +
+                "      end module common\n" +
+                "      use IF\n" +
+                "      use common\n" +
+                "      real*8 module1\n" +
+                "      integer*8 int\n" +
+                "      int=10\n" +
+                "      module1=+fact(int)+factorial(int)\n" +
+                "      write(*,*)module1\n" +
+                "      end");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect module reformat (fixed form)",
@@ -131,69 +131,69 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
 
     public void testDoFixed() {
         setLoadDocumentText(
-                "  PROGRAM TEST\n" +
-                "  character  i1ad1(25), i1ad2(7,7), i1ad3(4,4,4)\n" +
-                "  character  i1ad2r(5,5), i1ad3r(5,5,5)\n" +
-                "  integer    shape2(2), shape3(3)\n" +
-                "  character  pad(5)\n" +
-                "  integer    order1(1), order2(2), order3(3)\n" +
-                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_1,3_1/))\n" +
-                "  write(*,*)'=1='\n" +
-                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_2,4_2/),  (/'x','y'/))\n" +
-                "  write(*,*)'=2='\n" +
-                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_8,4_8/),  (/'x','y'/),(/2_1,1_1/))\n" +
-                "  write(*,*)'=3='\n" +
-                "  write(*,*)reshape((/'a','b','c','d','e','f'/), (/2,3/),  ORDER=(/2,1/))\n" +
-                "  write(*,*)'=4='\n" +
-                "  write(*,*)reshape(SHAPE=(/2,3/),SOURCE=(/'a','b','c','d','e','f'/)  ,ORDER=(/2,1/))\n" +
-                "  write(*,*)'=5='\n" +
-                "  write(*,*)reshape(ORDER=(/2,1/),PAD=(/0,0/),SHAPE=(/2,4/), SOURCE=(/'a','b','c','d','e','f'/))\n" +
-                "  write(*,*)'=6='\n" +
-                "  do i=1,25\n" +
-                "  i1ad1(i)=CHAR(i+40)\n" +
-                "  enddo\n" +
-                "  k=0\n" +
-                "  do i=1,7\n" +
-                "  do j=1,7\n" +
-                "  i1ad2(i,j)=CHAR(k+40)\n" +
-                "  k=k+1\n" +
-                "  enddo\n" +
-                "  enddo\n" +
-                "  l=0\n" +
-                "  do i=1,4\n" +
-                "  do j=1,4\n" +
-                "  do k=1,4\n" +
-                "  i1ad3(i,j,k)=CHAR(l+40)\n" +
-                "  l=l+1\n" +
-                "  enddo\n" +
-                "  enddo\n" +
-                "  enddo\n" +
-                "  shape2=5\n" +
-                "  shape3=5\n" +
-                "  order3(1)=1\n" +
-                "  order3(2)=2\n" +
-                "  order3(3)=3\n" +
-                "  pad='z'\n" +
-                "  i1ad2r=reshape(i1ad1,shape2,ORDER=(/2,1/))\n" +
-                "  i1ad3r=reshape(i1ad1,shape3,pad,order3)\n" +
-                "  do i=1,shape2(2)\n" +
-                "  write(*,*)(i1ad2r(i,j),j=1,shape2(1))\n" +
-                "  enddo\n" +
-                "  write(*,*)'===================='\n" +
-                "  do i=1,shape3(1)\n" +
-                "  do j=1,shape3(2)\n" +
-                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
-                "  enddo\n" +
-                "  enddo\n" +
-                "  write(*,*)'===================='\n" +
-                "  i1ad3r=reshape(i1ad2,shape3,pad)\n" +
-                "  do i=1,shape3(1)\n" +
-                "  do j=1,shape3(2)\n" +
-                "  write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
-                "  enddo\n" +
-                "  enddo\n" +
-                "  write(*,*)'======================'\n" +
-                "  end");
+                "      PROGRAM TEST\n" +
+                "      character  i1ad1(25), i1ad2(7,7), i1ad3(4,4,4)\n" +
+                "      character  i1ad2r(5,5), i1ad3r(5,5,5)\n" +
+                "      integer    shape2(2), shape3(3)\n" +
+                "      character  pad(5)\n" +
+                "      integer    order1(1), order2(2), order3(3)\n" +
+                "      write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_1,3_1/))\n" +
+                "      write(*,*)'=1='\n" +
+                "      write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_2,4_2/),  (/'x','y'/))\n" +
+                "      write(*,*)'=2='\n" +
+                "      write(*,*)reshape((/'a','b','c','d','e','f'/), (/2_8,4_8/),  (/'x','y'/),(/2_1,1_1/))\n" +
+                "      write(*,*)'=3='\n" +
+                "      write(*,*)reshape((/'a','b','c','d','e','f'/), (/2,3/),  ORDER=(/2,1/))\n" +
+                "      write(*,*)'=4='\n" +
+                "      write(*,*)reshape(SHAPE=(/2,3/),SOURCE=(/'a','b','c','d','e','f'/)  ,ORDER=(/2,1/))\n" +
+                "      write(*,*)'=5='\n" +
+                "      write(*,*)reshape(ORDER=(/2,1/),PAD=(/0,0/),SHAPE=(/2,4/), SOURCE=(/'a','b','c','d','e','f'/))\n" +
+                "      write(*,*)'=6='\n" +
+                "      do i=1,25\n" +
+                "      i1ad1(i)=CHAR(i+40)\n" +
+                "      enddo\n" +
+                "      k=0\n" +
+                "      do i=1,7\n" +
+                "      do j=1,7\n" +
+                "      i1ad2(i,j)=CHAR(k+40)\n" +
+                "      k=k+1\n" +
+                "      enddo\n" +
+                "      enddo\n" +
+                "      l=0\n" +
+                "      do i=1,4\n" +
+                "      do j=1,4\n" +
+                "      do k=1,4\n" +
+                "      i1ad3(i,j,k)=CHAR(l+40)\n" +
+                "      l=l+1\n" +
+                "      enddo\n" +
+                "      enddo\n" +
+                "      enddo\n" +
+                "      shape2=5\n" +
+                "      shape3=5\n" +
+                "      order3(1)=1\n" +
+                "      order3(2)=2\n" +
+                "      order3(3)=3\n" +
+                "      pad='z'\n" +
+                "      i1ad2r=reshape(i1ad1,shape2,ORDER=(/2,1/))\n" +
+                "      i1ad3r=reshape(i1ad1,shape3,pad,order3)\n" +
+                "      do i=1,shape2(2)\n" +
+                "      write(*,*)(i1ad2r(i,j),j=1,shape2(1))\n" +
+                "      enddo\n" +
+                "      write(*,*)'===================='\n" +
+                "      do i=1,shape3(1)\n" +
+                "      do j=1,shape3(2)\n" +
+                "      write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+                "      enddo\n" +
+                "      enddo\n" +
+                "      write(*,*)'===================='\n" +
+                "      i1ad3r=reshape(i1ad2,shape3,pad)\n" +
+                "      do i=1,shape3(1)\n" +
+                "      do j=1,shape3(2)\n" +
+                "      write(*,*)(i1ad3r(i,j,k),k=1,shape3(3))\n" +
+                "      enddo\n" +
+                "      enddo\n" +
+                "      write(*,*)'======================'\n" +
+                "      end");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect do reformat (fixed form)",
@@ -264,34 +264,34 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
 
     public void testMapFixed() {
         setLoadDocumentText(
-                "  program\n" +
-                "  structure /explorer1/\n" +
-                "  logical*1:: var\n" +
-                "  integer*4 :: i\n" +
-                "  end structure\n" +
-                "  record /explorer1/ example1\n" +
-                "  structure /explorer2/\n" +
-                "  union\n" +
-                "  map\n" +
-                "  logical*1:: var\n" +
-                "  end map\n" +
-                "  map\n" +
-                "  integer*4 :: j\n" +
-                "  end map\n" +
-                "  end union\n" +
-                "  integer*4 :: i\n" +
-                "  end structure\n" +
-                "  record /explorer2/ example2\n" +
-                "  example1.var=.TRUE.\n" +
-                "  example1.i=1\n" +
-                "  print *, 'Simple structure', loc(example1.i)-loc(example1.var)\n" +
-                "  example2.var=.FALSE.\n" +
-                "  example2.i=1\n" +
-                "  print *, 'Union map - var', loc(example2.i)-loc(example2.var)\n" +
-                "  example2.j=1\n" +
-                "  example2.i=1\n" +
-                "  print *, 'Union map - integer', loc(example2.i)-loc(example2.j)\n" +
-                "  end");
+                "      program\n" +
+                "      structure /explorer1/\n" +
+                "      logical*1:: var\n" +
+                "      integer*4 :: i\n" +
+                "      end structure\n" +
+                "      record /explorer1/ example1\n" +
+                "      structure /explorer2/\n" +
+                "      union\n" +
+                "      map\n" +
+                "      logical*1:: var\n" +
+                "      end map\n" +
+                "      map\n" +
+                "      integer*4 :: j\n" +
+                "      end map\n" +
+                "      end union\n" +
+                "      integer*4 :: i\n" +
+                "      end structure\n" +
+                "      record /explorer2/ example2\n" +
+                "      example1.var=.TRUE.\n" +
+                "      example1.i=1\n" +
+                "      print *, 'Simple structure', loc(example1.i)-loc(example1.var)\n" +
+                "      example2.var=.FALSE.\n" +
+                "      example2.i=1\n" +
+                "      print *, 'Union map - var', loc(example2.i)-loc(example2.var)\n" +
+                "      example2.j=1\n" +
+                "      example2.i=1\n" +
+                "      print *, 'Union map - integer', loc(example2.i)-loc(example2.j)\n" +
+                "      end");
         setDefaultsOptions(false);
         reformat();
         assertDocumentText("Incorrect map reformat (fixed form)",
@@ -667,5 +667,51 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 " 1                write ( 6, 100, advance = 'YES') i\n" +
                 " 100      format ( 1h, ' ', i2.2)\n" +
                 "      end program Bug001");
+    }
+
+    public void testSampleFixed() {
+        setLoadDocumentText(
+                "\t#define N 10\n" +
+                "\tSUBROUTINE test\n" +
+                "! free comment\n" +
+                "C fixed comment\n" +
+                "\tdo i = 1, N\n" +
+                "\tif ( mod(i,2) == 0 ) then\n" +
+                "\tprint *, \"even string\"   ! even\n" +
+                "\telse\n" +
+                "\tprint *, \"odd string\"    ! odd\n" +
+                "\tend if\n" +
+                "\tend do\n" +
+                "\tend\n"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect module reformat (fixed form)",
+                "#define N 10\n" +
+                "      SUBROUTINE test\n" +
+                "          ! free comment\n" +
+                "C fixed comment\n" +
+                "          do i = 1, N\n" +
+                "              if (mod(i, 2) == 0) then\n" +
+                "                  print *, \"even string\" ! even\n" +
+                "              else\n" +
+                "                  print *, \"odd string\" ! odd\n" +
+                "              end if\n" +
+                "          end do\n" +
+                "      end\n"
+                );
+    }
+
+    public void testCommentFixedFree() {
+        setLoadDocumentText(
+                "!/*\n" +
+                "! *\n"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect module reformat (fixed form)",
+                "!/*\n" +
+                "! *\n"
+                );
     }
 }

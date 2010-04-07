@@ -205,6 +205,9 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     }
     
     private Pattern getFilterRE() {
+        if (lastFilterValue.isEmpty()) {
+            return null;
+        }
         try {
             return Pattern.compile(lastFilterValue);
         } catch (PatternSyntaxException pse) {
