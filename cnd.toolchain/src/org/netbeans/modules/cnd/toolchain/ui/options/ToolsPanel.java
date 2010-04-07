@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessor
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -1057,7 +1056,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
     final CompilerSet selectedCS[] = new CompilerSet[]{(CompilerSet) lstDirlist.getSelectedValue()};
     final AtomicBoolean cancelled = new AtomicBoolean(false);
-    Runnable longTask = new Runnable() {
+    final Runnable longTask = new Runnable() {
 
             @Override
         public void run() {
@@ -1128,10 +1127,11 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             log.finest("Restored defaults\n");
         }
     };
-    Runnable postWork = new Runnable() {
+    final Runnable postWork = new Runnable() {
 
-            @Override
+        @Override
         public void run() {
+            showHideToolchainInitialization(true);
             if (!cancelled.get()) {
                 changed = true;
                 if (selectedCS[0] != null) {
@@ -1145,7 +1145,18 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
     String title = getString("TITLE_Configure");
     String msg = getString("MSG_Configure_Compiler_Sets", execEnv.toString());
-    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
+    showHideToolchainInitialization(false);
+    RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    longTask.run();
+                } finally {
+                    SwingUtilities.invokeLater(postWork);
+                }
+            }
+    });
+    //ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, null, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
     static String getString(String key) {

@@ -321,7 +321,7 @@ public class FortranReformatterImpl {
                 case LINE_CONTINUATION_FIXED:
                 {
                     if (doFormat()) {
-                        int space = getIndent() - ts.getTokenPosition() - ts.token().length();
+                        int space = getIndent() + codeStyle.indentSize() - ts.getTokenPosition() - ts.token().length();
                         if (space > 0){
                             Token<FortranTokenId> next =ts.lookNext();
                             if (next == null) {
