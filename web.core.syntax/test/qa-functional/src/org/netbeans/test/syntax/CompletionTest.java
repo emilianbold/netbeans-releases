@@ -460,6 +460,7 @@ public class CompletionTest extends J2eeTestCase {
             // dump CC result to golden file
             Iterator items = comp.getCompletionItems().iterator();
             CompletionItem selectedItem = null;
+	    boolean startsWith = false;
             while (items.hasNext()) {
                 TextGraphics2D g = new TextGraphics2D(comp.getSource());
                 Object next = items.next();
@@ -475,10 +476,13 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
-                if ((selectedItem == null) && (dispText.startsWith(step.getChoice()))) {
-                    assertInstanceOf(CompletionItem.class, next);
+                if ((selectedItem == null || !startsWith) && (dispText.startsWith(step.getChoice()))) {
+		    startsWith = true;
                     selectedItem = (CompletionItem) next;
                 }
+		if ((selectedItem == null) && (dispText.contains(step.getChoice()))){
+		    selectedItem = (CompletionItem) next;	
+		} 
                 if (printDirectly && !isJavaScript()) {
                     logIntoRef(dispText);
                 } else {
