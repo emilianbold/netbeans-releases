@@ -38,11 +38,14 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -90,23 +93,31 @@ public final class WhereUsedSupport {
     private FileObject fo;
     private int offset;
     private PhpElementKind kind;
+    private final Set<ModelElement> declarations;
     private ModelElement modelElement;
     private Results results;
     private Set<Modifier> modifier;
     private FindUsageSupport usageSupport;
+    private ElementQuery.Index idx;
 
-    private WhereUsedSupport(ElementQuery.Index idx,ModelElement aElement, ASTNode node, FileObject fo) {
-        this(idx, aElement, node.getStartOffset(), fo);
+    private WhereUsedSupport(ElementQuery.Index idx,Set<ModelElement> declarations, ASTNode node, FileObject fo) {
+        this(idx, declarations, node.getStartOffset(), fo);
         this.node = node;
     }
 
-    private WhereUsedSupport(ElementQuery.Index idx, ModelElement aElement, int offset, FileObject fo) {
+    private WhereUsedSupport(ElementQuery.Index idx, Set<ModelElement> declarations, int offset, FileObject fo) {
         this.fo = fo;
+        this.declarations = declarations;
         this.offset = offset;
-        this.modelElement = aElement;
-        this.usageSupport =FindUsageSupport.getInstance(idx, aElement);
-        kind = aElement.getPhpElementKind();
+        this.idx = idx;
+        setModelElement(ModelUtils.getFirst(declarations));
+        kind = this.modelElement.getPhpElementKind();
         this.results = new Results();
+    }
+
+    void setModelElement(ModelElement modelElement) {
+        this.modelElement = modelElement;
+        this.usageSupport = FindUsageSupport.getInstance(idx, this.modelElement);
     }
 
     public String getName() {
@@ -167,34 +178,46 @@ public final class WhereUsedSupport {
         Model model = ModelFactory.getModel(info);
         final Occurence occurence = model.getOccurencesSupport(offset).getOccurence();
         final Set<ModelElement> declarations = new HashSet<ModelElement>();
-        final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : 0;
-        boolean canContinue = occurence != null && allDeclarations.size() <= 1;
+        final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : Collections.<PhpElement>emptyList();
+        boolean canContinue = occurence != null && allDeclarations.size() > 0 && allDeclarations.size() < 5;
         if (canContinue) {
-            final PhpElement declarationElement = allDeclarations.iterator().next();
-            try {
-                ParserManager.parse(Collections.singleton(Source.create(declarationElement.getFileObject())), new UserTask() {
+            for (final PhpElement declarationElement : allDeclarations) {
+                try {
+                    final FileObject fileObject = declarationElement.getFileObject();
+                    FileObject parserFo = info.getSnapshot().getSource().getFileObject();
+                    if (parserFo != fileObject) {
+                        ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                        Model modelForDeclaration = ModelFactory.getModel(parameter);
-                        declarations.add(modelForDeclaration.findDeclaration(declarationElement));
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                                Model modelForDeclaration = ModelFactory.getModel(parameter);
+                                declarations.add(modelForDeclaration.findDeclaration(declarationElement));
+                            }
+                        });
+                    } else {
+                        declarations.add(model.findDeclaration(declarationElement));
                     }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
             }
             final ModelElement declaration = ModelUtils.getFirst(declarations);
             final Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
-            return (declaration != null && declarations.size() == 1) ?
-                new WhereUsedSupport( indexQuery, declaration, offset, info.getSnapshot().getSource().getFileObject()) : null;
+            return (declaration != null && declarations.size() > 0) ?
+                new WhereUsedSupport( indexQuery, declarations, offset, info.getSnapshot().getSource().getFileObject()) : null;
         }
         return null;
     }
 
     public ModelElement getModelElement() {
         return modelElement;
+    }
+
+    // XXX !!! needs to be fixed !!!
+    public List<ModelElement> getModelElements() {
+        return new ArrayList<ModelElement>(declarations);
     }
 
     Set<FileObject> getRelevantFiles() {

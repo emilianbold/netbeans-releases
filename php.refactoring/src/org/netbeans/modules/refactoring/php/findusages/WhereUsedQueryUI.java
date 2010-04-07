@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -91,6 +92,8 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        ModelElement element1 = panel.getElement();
+        this.element.setModelElement(element1);
         if (kind == ElementKind.METHOD) {
             setForMethod();
             return query.checkParameters();

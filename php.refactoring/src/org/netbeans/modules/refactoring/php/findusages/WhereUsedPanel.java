@@ -44,17 +44,25 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.List;
 import java.util.Set;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.TypeScope;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
 /**
@@ -76,6 +84,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         initComponents();
         searchInComments.setEnabled(false);
         searchInComments.setVisible(false);
+        elementComboBox.setRenderer(new ModelElementRenderer());
     }
     private boolean initialized = false;
     private String methodDeclaringSuperClass = null;
@@ -94,7 +103,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 setupPanels();
             }
         });
-        
         initialized = true;
     }
 
@@ -104,11 +112,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         assert elem != null;
         String name = usage.getName();
         String clsName = null;
-        if (elem instanceof FullyQualifiedElement) {
-            name =  ((FullyQualifiedElement)elem).getFullyQualifiedName().toString();
-        } else if (elem.getInScope() instanceof FullyQualifiedElement) {
-             clsName =  ((FullyQualifiedElement)elem.getInScope()).getFullyQualifiedName().toString();
-        }
+        if (usage.getModelElements().size() == 1) {
+            if (elem instanceof FullyQualifiedElement) {
+                name =  ((FullyQualifiedElement)elem).getFullyQualifiedName().toString();
+            } else if (elem.getInScope() instanceof FullyQualifiedElement) {
+                 clsName =  ((FullyQualifiedElement)elem.getInScope()).getFullyQualifiedName().toString();
+            }
+        } 
         String bKey = bundleKeyForLabel();
         final Set<Modifier> modifiers = usage.getModifiers();
         final String lblText;
@@ -118,6 +128,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             lblText = NbBundle.getMessage(WhereUsedPanel.class, bKey, name);
         }
 
+        handleElementsCombo(usage.getModelElements());
         remove(classesPanel);
         remove(methodsPanel);
         m_overriders.setVisible(false);
@@ -150,6 +161,15 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             c_directOnly.setVisible(false);
         }
         validate();
+    }
+
+    private void handleElementsCombo(List<ModelElement> elements) {
+        elementComboBox.setModel(new DefaultComboBoxModel(new Vector<ModelElement>(elements)));
+        elementComboBox.setSelectedIndex(0);
+        if (elements.size() == 1) {
+            elementLabel.setVisible(false);
+            elementComboBox.setVisible(false);
+        }
     }
 
     private String bundleKeyForLabel() {
@@ -216,6 +236,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         c_directOnly = new javax.swing.JRadioButton();
         commentsPanel = new javax.swing.JPanel();
         label = new javax.swing.JLabel();
+        elementLabel = new javax.swing.JLabel();
+        elementComboBox = new javax.swing.JComboBox();
         searchInComments = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
@@ -234,8 +256,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_isBaseClass, gridBagConstraints);
-        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null");
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -256,7 +276,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
-        m_overriders.getAccessibleContext().setAccessibleDescription("null");
 
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
@@ -272,7 +291,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
-        m_usages.getAccessibleContext().setAccessibleDescription("null");
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
 
@@ -294,7 +312,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_subclasses, gridBagConstraints);
-        c_subclasses.getAccessibleContext().setAccessibleDescription("null");
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
@@ -306,7 +323,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_usages, gridBagConstraints);
-        c_usages.getAccessibleContext().setAccessibleDescription("null");
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
@@ -316,12 +332,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_directOnly, gridBagConstraints);
-        c_directOnly.getAccessibleContext().setAccessibleDescription("null");
 
         add(classesPanel, java.awt.BorderLayout.CENTER);
 
-        commentsPanel.setLayout(new java.awt.BorderLayout());
-        commentsPanel.add(label, java.awt.BorderLayout.NORTH);
+        org.openide.awt.Mnemonics.setLocalizedText(label, "DUMMY"); // NOI18N
+
+        elementLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FromFile")); // NOI18N
 
         searchInComments.setSelected(((Boolean) NbPreferences.forModule(WhereUsedPanel.class).getBoolean("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
         org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
@@ -336,7 +352,34 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 searchInCommentsActionPerformed(evt);
             }
         });
-        commentsPanel.add(searchInComments, java.awt.BorderLayout.CENTER);
+
+        javax.swing.GroupLayout commentsPanelLayout = new javax.swing.GroupLayout(commentsPanel);
+        commentsPanel.setLayout(commentsPanelLayout);
+        commentsPanelLayout.setHorizontalGroup(
+            commentsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(commentsPanelLayout.createSequentialGroup()
+                .addGroup(commentsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(searchInComments)
+                    .addComponent(label)
+                    .addGroup(commentsPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(elementLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(elementComboBox, 0, 263, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        commentsPanelLayout.setVerticalGroup(
+            commentsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(commentsPanelLayout.createSequentialGroup()
+                .addComponent(label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(commentsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(elementComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(elementLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchInComments))
+        );
+
         searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
 
         add(commentsPanel, java.awt.BorderLayout.NORTH);
@@ -347,23 +390,23 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         NbPreferences.forModule(WhereUsedPanel.class).putBoolean("searchInComments.whereUsed", b);//GEN-LAST:event_searchInCommentsItemStateChanged
-    }                                                 
+    }
 
     private void m_isBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_isBaseClassActionPerformed
         parent.stateChanged(null);//GEN-LAST:event_m_isBaseClassActionPerformed
-    }                                             
+    }
 
     private void m_overridersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_overridersActionPerformed
         parent.stateChanged(null);//GEN-LAST:event_m_overridersActionPerformed
-    }                                            
+    }
 
     private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
         parent.stateChanged(null);//GEN-LAST:event_m_usagesActionPerformed
-    }                                        
+    }
 
 private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInCommentsActionPerformed
 // TODO add your handling code here://GEN-LAST:event_searchInCommentsActionPerformed
-}                                                
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;
@@ -372,6 +415,8 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JRadioButton c_usages;
     private javax.swing.JPanel classesPanel;
     private javax.swing.JPanel commentsPanel;
+    private javax.swing.JComboBox elementComboBox;
+    private javax.swing.JLabel elementLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel label;
@@ -406,7 +451,11 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
         return c_usages.isSelected();
     }
 
-    public 
+    public ModelElement getElement() {
+        return (ModelElement) elementComboBox.getSelectedItem();
+    }
+
+    public
     @Override
     Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();
@@ -419,6 +468,47 @@ private void searchInCommentsActionPerformed(java.awt.event.ActionEvent evt) {//
 
     public Component getComponent() {
         return this;
+    }
+
+    private static final class ModelElementRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 87513687675643214L;
+
+        public ModelElementRenderer() {
+            super();
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
+            if (value instanceof ModelElement) {
+                setName("ComboBox.listRenderer"); // NOI18N
+
+                ModelElement element = (ModelElement) value;
+                StringBuilder sb = new StringBuilder();
+                if (element instanceof FullyQualifiedElement) {
+                    sb.append(((FullyQualifiedElement)element).getFullyQualifiedName().toString());
+                } else if (element.getInScope() instanceof FullyQualifiedElement) {
+                    sb.append(((FullyQualifiedElement)element.getInScope()).getFullyQualifiedName().toString());
+                } else {
+                    sb.append(element.getName());
+                }
+                final FileObject fileObject = element.getFileObject();
+                if (fileObject != null) {
+                    sb.append(" (").append(fileObject.getNameExt()).append(")");//NOI18N
+                }
+                //String filepath = FileUtil.toFile(element.getFileObject()).getAbsolutePath();
+                setText(sb.toString());
+            }
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
     }
 }
 
