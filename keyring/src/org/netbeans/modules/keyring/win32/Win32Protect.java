@@ -64,7 +64,7 @@ public class Win32Protect implements EncryptionProvider {
 
     private static final Logger LOG = Logger.getLogger(Win32Protect.class.getName());
     
-    public boolean enabled() {
+    public @Override boolean enabled() {
         if (!Utilities.isWindows()) {
             LOG.fine("not running on Windows");
             return false;
@@ -85,29 +85,29 @@ public class Win32Protect implements EncryptionProvider {
         }
     }
 
-    public String id() {
+    public @Override String id() {
         return "win32"; // NOI18N
     }
 
-    public byte[] encrypt(char[] cleartext) throws Exception {
+    public @Override byte[] encrypt(char[] cleartext) throws Exception {
         byte[] cleartextB = Utils.chars2Bytes(cleartext);
         CryptIntegerBlob input = new CryptIntegerBlob();
         input.store(cleartextB);
         Arrays.fill(cleartextB, (byte) 0);
         CryptIntegerBlob output = new CryptIntegerBlob();
         if (!CryptLib.INSTANCE.CryptProtectData(input, null, null, null, null, 0, output)) {
-            throw new Exception("CryptProtectData failed");
+            throw new Exception("CryptProtectData failed: " + Native.getLastError());
         }
         input.zero();
         return output.load();
     }
 
-    public char[] decrypt(byte[] ciphertext) throws Exception {
+    public @Override char[] decrypt(byte[] ciphertext) throws Exception {
         CryptIntegerBlob input = new CryptIntegerBlob();
         input.store(ciphertext);
         CryptIntegerBlob output = new CryptIntegerBlob();
         if (!CryptLib.INSTANCE.CryptUnprotectData(input, null, null, null, null, 0, output)) {
-            throw new Exception("CryptUnprotectData failed");
+            throw new Exception("CryptUnprotectData failed: " + Native.getLastError());
         }
         byte[] result = output.load();
         // XXX gives CCE because not a Memory: output.zero();
@@ -116,13 +116,13 @@ public class Win32Protect implements EncryptionProvider {
         return cleartext;
     }
 
-    public boolean decryptionFailed() {
+    public @Override boolean decryptionFailed() {
         return false; // not much to do about it
     }
 
-    public void encryptionChangingCallback(Callable<Void> callback) {}
+    public @Override void encryptionChangingCallback(Callable<Void> callback) {}
 
-    public void encryptionChanged() {
+    public @Override void encryptionChanged() {
         assert false;
     }
 
