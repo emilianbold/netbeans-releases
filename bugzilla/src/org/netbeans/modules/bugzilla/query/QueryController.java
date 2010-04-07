@@ -69,7 +69,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -85,7 +84,6 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -388,46 +386,40 @@ public class QueryController extends BugtrackingController implements DocumentLi
             Bugzilla.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
-            BugzillaCommand cmd = new BugzillaCommand() {
+            final BugzillaConfiguration bc = repository.getConfiguration();
+            if(bc == null || !bc.isValid()) {
+                // XXX nice errro msg?
+                return;
+            }
+            EventQueue.invokeLater(new Runnable() {
                 @Override
-                public void execute() throws CoreException, IOException, MalformedURLException {
-                    final BugzillaConfiguration bc = repository.getConfiguration();
-                    if(bc == null || !bc.isValid()) {
-                        // XXX nice errro msg?
-                        return;
+                public void run() {
+                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
+                    if(isNetbeans) {
+                        issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
+                    } else {
+                        severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
                     }
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-                            if(isNetbeans) {
-                                issueTypeParameter.setParameterValues(toParameterValues(bc.getIssueTypes()));
-                            } else {
-                                severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-                            }
-                            statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-                            resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-                            priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-                            changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-                            summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-                            commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-                            whiteboardParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
-                            keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
-                            peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-                            panel.changedToTextField.setText(CHANGED_NOW);
+                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
+                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
+                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+                    summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    commentsParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    whiteboardParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
+                    keywordsParameter.setParameterValues(QueryParameter.PV_KEYWORDS_VALUES);
+                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+                    panel.changedToTextField.setText(CHANGED_NOW);
 
-                            setParameters(urlParameters != null ? urlParameters : getDefaultParameters());
+                    setParameters(urlParameters != null ? urlParameters : getDefaultParameters());
 
-                            if(query.isSaved()) {
-                                final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-                                panel.refreshCheckBox.setSelected(autoRefresh);
-                            }
-                        }
-                    });
+                    if(query.isSaved()) {
+                        final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
+                        panel.refreshCheckBox.setSelected(autoRefresh);
+                    }
                 }
+            });
 
-            };
-            repository.getExecutor().execute(cmd);
         } finally {
             if(Bugzilla.LOG.isLoggable(Level.FINE)) {
                 Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
@@ -630,7 +622,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         QueryNameValidator v = new QueryNameValidator() {
             @Override
             public String isValid(String name) {
-                Query[] queries = repository.getQueries();
+                Query[] queries = repository.getQueries ();
                 for (Query q : queries) {
                     if(q.getDisplayName().equals(name)) {
                         return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
