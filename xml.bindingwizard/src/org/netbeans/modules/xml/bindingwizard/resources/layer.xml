@@ -4,6 +4,7 @@
     <folder name="Templates">
         <folder name="ESB">
             <file name="binding.wsdl" url="binding.wsdl">
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardIterator"/>                             
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/newBindingWizard.html"/>
