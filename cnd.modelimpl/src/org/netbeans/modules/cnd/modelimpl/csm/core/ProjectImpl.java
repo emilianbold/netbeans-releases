@@ -123,6 +123,7 @@ public final class ProjectImpl extends ProjectBase {
             schedule(buf, impl);
             buf.addChangeListener(new ChangeListener() {
 
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     schedule(buf, impl);
                 }
@@ -165,6 +166,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
         if (!acceptNativeItem(nativeFile)) {
             return;
@@ -175,12 +177,14 @@ public final class ProjectImpl extends ProjectBase {
         DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
 
+    @Override
     public void onFilePropertyChanged(List<NativeFileItem> items) {
         if (items.size() > 0) {
             DeepReparsingUtils.reparseOnPropertyChanged(items, this);
         }
     }
 
+    @Override
     public void onFileRemoved(FileImpl impl) {
         try {
             //Notificator.instance().startTransaction();
@@ -194,6 +198,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Override
     public void onFileImplRemoved(List<FileImpl> files) {
         for (FileImpl impl : files) {
             onFileRemovedImpl(impl);
@@ -217,6 +222,7 @@ public final class ProjectImpl extends ProjectBase {
         return impl;
     }
 
+    @Override
     public void onFileRemoved(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
@@ -241,6 +247,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
+    @Override
     public void onFileAdded(NativeFileItem nativeFile) {
         onFileAddedImpl(nativeFile, true);
     }
@@ -263,6 +270,7 @@ public final class ProjectImpl extends ProjectBase {
         return null;
     }
 
+    @Override
     public void onFileAdded(List<NativeFileItem> items) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(this);
@@ -323,6 +331,7 @@ public final class ProjectImpl extends ProjectBase {
         return retValue;
     }
 
+    @Override
     public boolean isArtificial() {
         return false;
     }
@@ -372,13 +381,14 @@ public final class ProjectImpl extends ProjectBase {
 
     ////////////////////////////////////////////////////////////////////////////
     private RequestProcessor.Task task = null;
-
+    private final static RequestProcessor RP = new RequestProcessor("ProjectImpl RP", 50);
     public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
         if (task != null) {
             task.cancel();
         }
-         task = RequestProcessor.getDefault().create(new Runnable() {
+         task = RP.create(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     addToQueue(buf, file);
@@ -392,9 +402,11 @@ public final class ProjectImpl extends ProjectBase {
         task.setPriority(Thread.MIN_PRIORITY);
         int delay = TraceFlags.REPARSE_DELAY;
         boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
+            @Override
             public String getName() {
                 return "reparse-on-document-changed"; //NOI18N
             }
+            @Override
             public boolean isEnabledByDefault() {
                 return true;
             }
