@@ -43,12 +43,12 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
@@ -60,7 +60,7 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
  *
  * @author Vita Stejskal, Miloslav Metelka
  */
-public final class ProxyHighlightsContainer extends AbstractHighlightsContainer {
+public final class ProxyHighlightsContainer extends AbstractHighlightsContainer implements MultiLayerContainer {
 
     private static final Logger LOG = Logger.getLogger(ProxyHighlightsContainer.class.getName());
     
@@ -72,11 +72,11 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
     private final LayerListener listener = new LayerListener(this);
 
     public ProxyHighlightsContainer() {
-        this(null);
+        this(null, null);
     }
     
-    public ProxyHighlightsContainer(HighlightsContainer[] layers) {
-        setLayers(layers);
+    public ProxyHighlightsContainer(Document doc, HighlightsContainer[] layers) {
+        setLayers(doc, layers);
     }
     
     /**
@@ -153,7 +153,8 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
      * @param layers    The new delegate layers. Can be <code>null</code>.
      * @see org.netbeans.api.editor.view.ZOrder#sort(HighlightLayer [])
      */
-    public void setLayers(HighlightsContainer[] layers) {
+    @Override
+    public void setLayers(Document doc, HighlightsContainer[] layers) {
         synchronized (LOCK) {
             // Remove the listener from the current layers
             if (this.layers != null) {
@@ -211,9 +212,9 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
 
     private final class ProxySeq implements HighlightsSequence {
         
-        private Sequence2Marks [] marks;
-        private int index1 = -1;
-        private int index2 = -1;
+        private final Sequence2Marks [] marks;
+        private int index1 = -2;
+        private int index2 = -2;
         private AttributeSet compositeAttributes = null;
         private long version;
         
@@ -224,41 +225,48 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             marks = new Sequence2Marks [seq.size()];
             for (int i = 0; i < seq.size(); i++) {
                 marks[i] = new Sequence2Marks(seq.get(i), startOffset, endOffset);
-                marks[i].moveNext();
             }
-            
-            this.index2 = findLowest();
         }
 
         public @Override boolean moveNext() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
-                checkVersion();
-
-                do {
-                    // Move to the next mark
-                    index1 = index2;
-                    if (index2 != -1) {
-                        marks[index2].moveNext();
+                if (checkVersion()) {
+                    if (index1 == -2 && index2 == -2) {
+                        for(Sequence2Marks m : marks) {
+                            m.moveNext();
+                        }
                         index2 = findLowest();
                     }
 
-                    if (index1 == -1 || index2 == -1) {
-                        break;
-                    }
+                    do {
+                        // Move to the next mark
+                        index1 = index2;
+                        if (index2 != -1) {
+                            marks[index2].moveNext();
+                            index2 = findLowest();
+                        }
 
-                    compositeAttributes = findAttributes();
-                    
-                } while (compositeAttributes == null);
-                
-                return index1 != -1 && index2 != -1;
+                        if (index1 == -1 || index2 == -1) {
+                            break;
+                        }
+
+                        compositeAttributes = findAttributes();
+
+                    } while (compositeAttributes == null);
+
+                    return index1 != -1 && index2 != -1;
+                } else {
+                    index1 = index2 = -1;
+                    return false;
+                }
             }
         }
 
         public @Override int getStartOffset() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                if (index1 == -1 || index2 == -1) {
+                if (index1 == -2 && index2 == -2) {
+                    throw new IllegalStateException("Uninitialized sequence, call moveNext() first."); //NOI18N
+                } else if (index1 == -1 || index2 == -1) {
                     throw new NoSuchElementException();
                 }
 
@@ -268,9 +276,9 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
 
         public @Override int getEndOffset() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                if (index1 == -1 || index2 == -1) {
+                if (index1 == -2 && index2 == -2) {
+                    throw new IllegalStateException("Uninitialized sequence, call moveNext() first."); //NOI18N
+                } else if (index1 == -1 || index2 == -1) {
                     throw new NoSuchElementException();
                 }
 
@@ -280,9 +288,9 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
 
         public @Override AttributeSet getAttributes() {
             synchronized (ProxyHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                if (index1 == -1 || index2 == -1) {
+                if (index1 == -2 && index2 == -2) {
+                    throw new IllegalStateException("Uninitialized sequence, call moveNext() first."); //NOI18N
+                } else if (index1 == -1 || index2 == -1) {
                     throw new NoSuchElementException();
                 }
 
@@ -325,10 +333,8 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
         }
         
-        private void checkVersion() {
-            if (this.version != ProxyHighlightsContainer.this.version) {
-                throw new ConcurrentModificationException();
-            }
+        private boolean checkVersion() {
+            return this.version == ProxyHighlightsContainer.this.version;
         }
     } // End of ProxySeq class
     
