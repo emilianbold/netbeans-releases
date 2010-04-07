@@ -103,6 +103,9 @@ public class ContextTreeViewTest extends NbTestCase {
                             );
                 }
                 assertEquals("No children as they are leaves", 0, cnt);
+
+                Node n = Visualizer.findNode(r);
+                n.setName("Try Rename!");
             }
         }
         AWTTst awt = new AWTTst();
