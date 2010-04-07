@@ -104,6 +104,7 @@ public abstract class PhpModuleCustomizerExtender {
      *
      * @return <code>true</code> if the configuration is valid, <code>false</code> otherwise.
      * @see #getErrorMessage()
+     * @see #getWarningMessage()
      */
     public abstract boolean isValid();
 
@@ -111,8 +112,21 @@ public abstract class PhpModuleCustomizerExtender {
      * Get error message or <code>null</code> if the {@link #getComponent component} is {@link #isValid() valid}.
      * @return error message or <code>null</code> if the {@link #getComponent component} is {@link #isValid() valid}
      * @see #isValid()
+     * @see #getWarningMessage()
      */
     public abstract String getErrorMessage();
+
+    /**
+     * Get warning message that can be not <code>null</code> even for {@link #isValid() valid} extender.
+     * In other words, it is safe to customize PHP module even if this method returns a message.
+     * @return warning message or <code>null</code>
+     * @see #isValid()
+     * @see #getErrorMessage()
+     * @since 1.27
+     */
+    public String getWarningMessage() {
+        return null;
+    }
 
     /**
      * Called to extend properties of the given PHP module. This method
