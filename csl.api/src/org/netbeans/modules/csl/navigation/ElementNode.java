@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.navigation;
 
 
 import java.awt.Image;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -249,6 +250,14 @@ public class ElementNode extends AbstractNode {
 
     public void updateRecursively( StructureItem newDescription ) {
         Children ch = getChildren();
+
+        //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
+        //to ElementChildren to be able to hold the new child data
+        if(!(ch instanceof ElementChildren) && newDescription.getNestedItems().size()>0) {
+            ch=new ElementChildren((List<StructureItem>)Collections.EMPTY_LIST, ui.getFilters(), ui, fileObject);
+            setChildren(ch);
+        }
+        
         if ( ch instanceof ElementChildren ) {           
            HashSet<StructureItem> oldSubs = new HashSet<StructureItem>( description.getNestedItems() );
 
