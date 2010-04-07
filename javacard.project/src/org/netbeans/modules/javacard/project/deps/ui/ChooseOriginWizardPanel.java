@@ -155,6 +155,7 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         Project target = (Project) settings.get(AddDependencyWizardIterator.PROP_TARGET_PROJECT);
         assert target != null;
         ProjectKind pkind = target.getLookup().lookup(ProjectKind.class);
+        assert pkind != null;
         if (origin == null || !origin.exists()) {
             throw new WizardValidationException(component, "Bad Jar file: " + origin, //NOI18N
                     NbBundle.getMessage(ChooseOriginWizardPanel.class,
@@ -171,44 +172,39 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
             case JAR_FILE:
                 realKind = DependencyKind.RAW_JAR;
                 try {
-                    JarFile jar = new JarFile(origin);
-                    try {
-                        Manifest m = jar.getManifest();
-                        if (m == null) {
-                            throw new WizardValidationException(component,
-                                    "No Application-Type entry in main section of manifest for " + //NOI18N
-                                    origin.getAbsolutePath(), NbBundle.getMessage(ChooseOriginWizardPanel.class,
-                                    "ERR_MISSING_MANIFEST", origin.getPath())); //NOI18N
+                    FileObject ofo = FileUtil.toFileObject(FileUtil.normalizeFile(origin));
+                    if (!FileUtil.isArchiveFile(ofo)) {
+                        String msg = NbBundle.getMessage(ChooseOriginWizardPanel.class,
+                                "MSG_NOT_AN_ARCHIVE", origin.getAbsolutePath()); //NOI18N
+                        throw new WizardValidationException(component, msg, msg);
+                    }
+                    ProjectKind jarKind = ProjectKind.forJarFile(origin);
+                    if (jarKind != null) {
+                        if (jarKind.isApplication()) {
+                            String msg = NbBundle.getMessage (ChooseSigOrExpFilePanelVisual.class,
+                                    "MSG_WRONG_JAR_TYPE", origin.getName(), jarKind.getDisplayName());
+                            throw new WizardValidationException (component, msg, msg);
                         }
-                        String libType = m.getMainAttributes().getValue(MANIFEST_APP_TYPE);
-                        if (libType == null) {
-                            realKind = DependencyKind.RAW_JAR;
-                        } else if ("classic-lib".equals(libType)) {
-                            realKind = DependencyKind.CLASSIC_LIB_JAR;
-                        } else if ("extension-lib".equals(libType)) {
-                            if (pkind != null && pkind.isClassic()) {
-                                throw new WizardValidationException(component,
-                                        "Classic -> Extended dep not allowed: " + libType, NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
-                                        "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
-                                }
-                            realKind = DependencyKind.EXTENSION_LIB_JAR;
+                        if (pkind.isClassic() != jarKind.isClassic()) {
+                            String key = pkind.isClassic() ? "MSG_CLASSIC_PROJECT_REQUIRES_CLASSIC_DEP" : "MSG_EXT_PROJECT_REQUIRES_EXT_DEP";
+                            String msg = NbBundle.getMessage(ChooseOriginWizardPanel.class, key);
+                            throw new WizardValidationException (component, msg, msg);
                         }
-                        //force further validation - try to trigger an IOE if
-                        //JAR is corrupted
-                        for (JarEntry e : NbCollections.iterable(jar.entries())) {
-                            e.getName();
+                        switch (jarKind) {
+                            case CLASSIC_LIBRARY :
+                                realKind = DependencyKind.CLASSIC_LIB_JAR;
+                                break;
+                            case EXTENSION_LIBRARY :
+                                realKind = DependencyKind.EXTENSION_LIB_JAR;
+                                break;
+                            default :
+                                throw new AssertionError();
                         }
-                    } catch (IOException ex) {
-                        WizardValidationException e = new WizardValidationException(component, ex.getMessage(),
-                                NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_BAD_JAR_FILE")); //NOI18N
-                        e.initCause(ex);
-                        throw e;
-                    } finally {
-                        jar.close();
                     }
                 } catch (IOException ex) {
+                    realKind = null;
                     WizardValidationException e = new WizardValidationException(component, ex.getMessage(),
-                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_BAD_JAR_FILE")); //NOI18N
+                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "MSG_BAD_JAR", origin.getAbsolutePath())); //NOI18N
                     e.initCause(ex);
                     throw e;
                 }
@@ -228,6 +224,10 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                 if (target.getProjectDirectory().equals(p.getProjectDirectory())) {
                     throw new WizardValidationException(component, "Adding a project to itself: " + target, //NOI18N
                             NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_PROJECT_CANNOT_DEPEND_ON_SELF")); //NOI18N
+                }
+                if (p.getProjectDirectory().getFileObject("build.xml") == null) {
+                    throw new WizardValidationException(component, "Adding a project to itself: " + target, //NOI18N
+                            NbBundle.getMessage(ChooseOriginWizardPanel.class, "ERR_NO_BUILD_SCRIPT", origin.getName())); //NOI18N
                 }
                 //XXX check for circular dependencies if target is library project
                 JCProject jp = p.getLookup().lookup(JCProject.class);
