@@ -86,6 +86,7 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
             DiffTooltipContentPanel cp = new DiffTooltipContentPanel(master.getTextComponent(), master.getMimeType(), diff);
             contentWindow.add(cp);
             contentWindow.pack();
+            cp.resize();
             Dimension dim = contentWindow.getSize();
                         
             Rectangle screenBounds = null;
@@ -122,6 +123,7 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
         actionsWindow.getOwner().addWindowFocusListener(this);
     }
 
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (event.getID() == MouseEvent.MOUSE_PRESSED) {
             onClick(event);
@@ -140,10 +142,12 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
         if (w != actionsWindow && (contentWindow == null || w != contentWindow)) shutdown();
     }
 
+    @Override
     public void windowGainedFocus(WindowEvent e) {
         //
     }
 
+    @Override
     public void windowLostFocus(WindowEvent e) {
         if (actionsWindow != null && e.getOppositeWindow() == null) {
             shutdown();
