@@ -59,7 +59,13 @@ public class JspFoldManager implements FoldManager {
     private final List<Fold> currentFolds = new ArrayList<Fold>(20);
     private Preferences prefs;
 
-    private final Task FOLDS_UPDATE_TASK = RequestProcessor.getDefault().create(new Runnable() {
+    //typically only one folding task (on the edited gile) runs so
+    //the RequestProcessor's throughtput 1 should be enough,
+    //but sometimes (opening many files together or restarting
+    //the IDE with serialized editor panes)
+    //the throughtput should be bigger to leverage the multicore CPUs.
+    private final RequestProcessor RP = new RequestProcessor(JspFoldManager.class.getSimpleName(), 4);
+    private final Task FOLDS_UPDATE_TASK = RP.create(new Runnable() {
         public void run() {
             try {
                 documentDirty = false;
