@@ -117,8 +117,6 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.project.api.PhpEditorExtender;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -280,7 +278,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);
@@ -311,7 +308,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case EXPRESSION:
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteExpression(completionResult, request);
-                    autoCompleteExternals(completionResult, request, prefix);
                     break;
                 case HTML:
                     completionResult.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
@@ -686,24 +682,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (varName.equals("$this")) { //NOI18N
                 staticContext = false;
                 instanceContext = true;
-            } else {
-                if (types.isEmpty()) {
-                    // frameworks
-                    VariableScope variableScope = model.getVariableScope(request.anchor);
-                    if (variableScope != null) {
-                        tokenSequence.move(request.anchor);
-                        String variableName = VariousUtils.getVariableName(VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, variableScope));
-                        if (variableName != null) {
-                            FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-                            EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
-                            PhpClass phpClass = editorExtender.getClass(fileObject, variableName);
-                            if (phpClass != null) {
-                                types = VariousUtils.getType(variableScope, phpClass.getFullyQualifiedName(), request.anchor, true);
-                            }
-                        }
-                    }
-                }
-            }
+            } 
 
             if (types != null) {
                 TypeElement enclosingType = getEnclosingType(request, types);
@@ -902,28 +881,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
 
-    private void autoCompleteExternals(final PHPCompletionResult completionResult, CompletionRequest request, String prefix) {
-        FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-        // frameworks
-        // XXX add this to model! (so go to source etc. could work)
-        EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
-        for (PhpBaseElement element : editorExtender.getElementsForCodeCompletion(fileObject)) {
-            if (prefix == null
-                    || element.getName().startsWith(prefix)) {
-                CompletionProposal variable = PhpElementCompletionItem.fromPhpElement(element, request);
-                String variableName = variable.getName();
-
-                Iterator<CompletionProposal> iter = completionResult.getItems().iterator();
-                for (CompletionProposal proposal : completionResult.getItems()) {
-                    if (variableName.equals(proposal.getName())) {
-                        iter.remove();
-                        break;
-                    }
-                }
-                completionResult.add(variable);
-            }
-        }
-    }
 
     private class LocalVariables{
         Collection<VariableElement> vars;

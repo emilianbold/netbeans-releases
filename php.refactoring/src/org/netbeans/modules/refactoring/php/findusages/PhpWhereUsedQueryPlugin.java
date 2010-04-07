@@ -68,28 +68,27 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
     }
 
     public Problem prepare(final RefactoringElementsBag elementsBag) {
-        if (isFindUsages() || isFindDirectSubclassesOnly()) {
+        if (isFindSubclasses()) {
+            usages.collectSubclasses();
+        } else if (isFindDirectSubclassesOnly()) {
+            usages.collectDirectSubclasses();
+        } else if (isFindUsages()) {
             Set<FileObject> relevantFiles = usages.getRelevantFiles();
             fireProgressListenerStart(ProgressEvent.START, relevantFiles.size());
             for (FileObject fileObject : relevantFiles) {
-                if (fileObject == null) continue;
-                if (isFindDirectSubclassesOnly()) {
-                    usages.collectDirectSubclasses(fileObject);
-                } else {
-                    usages.collectUsages(fileObject);
+                if (fileObject == null) {
+                    continue;
                 }
+                usages.collectUsages(fileObject);
                 fireProgressListenerStep();
             }
-
-            Results results = usages.getResults();
-            Collection<WhereUsedElement> resultElements = results.getResultElements();
-            for (WhereUsedElement whereUsedElement : resultElements) {
-                elementsBag.add(refactoring, whereUsedElement);
-            }
-            fireProgressListenerStop();
-        } 
-
-
+        }
+        Results results = usages.getResults();
+        Collection<WhereUsedElement> resultElements = results.getResultElements();
+        for (WhereUsedElement whereUsedElement : resultElements) {
+            elementsBag.add(refactoring, whereUsedElement);
+        }
+        fireProgressListenerStop();
         return null;
     }
 

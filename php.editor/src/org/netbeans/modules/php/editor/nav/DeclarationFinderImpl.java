@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -191,18 +192,26 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     private static DeclarationLocation findDeclarationImpl(Occurence underCaret, ParserResult info) {
         DeclarationLocation retval = DeclarationLocation.NONE;
-        if (underCaret != null && underCaret.gotoDeclarationEnabled()) {
-            PhpElement declaration = underCaret.gotoDeclaratin();
+        if (underCaret != null) {
+            Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
+            if (gotoDeclarations == null || gotoDeclarations.size() == 0) {
+                if (gotoDeclarations == null) {
+                    System.out.println("");
+                }
+                return DeclarationLocation.NONE;
+            }
+            PhpElement declaration = gotoDeclarations.iterator().next();
             FileObject declarationFo = declaration.getFileObject();
             if (declarationFo == null) {
                 return DeclarationLocation.NONE;
             }
             retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
+            Accuracy degreeOfAccuracy = underCaret.degreeOfAccuracy();
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }
-            Collection<? extends PhpElement> alternativeDeclarations = underCaret.getAllDeclarations();
+            Collection<? extends PhpElement> alternativeDeclarations = gotoDeclarations;
             if (alternativeDeclarations.size() > 1) {
                 retval = DeclarationLocation.NONE;
                 for (PhpElement elem : alternativeDeclarations) {

@@ -51,6 +51,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -61,6 +62,7 @@ import org.openide.util.Exceptions;
 public final class FindUsageSupport {
     private Set<FileObject> files;
     private ModelElement element;
+    private ElementQuery.Index index;
 
     public static FindUsageSupport getInstance(ElementQuery.Index index, ModelElement element) {
         return new FindUsageSupport(index, element);
@@ -75,6 +77,21 @@ public final class FindUsageSupport {
             name = name.substring(1);
         }
         this.files.addAll(index.getLocationsForIdentifiers(name));
+        this.index = index;
+    }
+
+    public Collection<TypeElement> subclasses() {
+        if (element instanceof TypeElement) {
+            return index.getInheritedByTypes((TypeElement) element);
+        }
+        return Collections.emptySet();
+    }
+
+    public Collection<TypeElement> directSubclasses() {
+        if (element instanceof TypeElement) {
+            return index.getDirectInheritedByTypes((TypeElement) element);
+        }
+        return Collections.emptySet();
     }
 
     @CheckForNull
@@ -90,11 +107,8 @@ public final class FindUsageSupport {
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult parameter = (ParserResult) resultIterator.getParserResult();
                     Model model = ModelFactory.getModel(parameter);
-                    ModelVisitor modelVisitor = model.getModelVisitor(element);
-                    Occurence occurence = modelVisitor.getOccurence(element);
-                    if (occurence != null) {
-                        retval.addAll(occurence.getAllOccurences());
-                    }
+                    ModelVisitor modelVisitor = model.getModelVisitor();
+                    retval.addAll(modelVisitor.getOccurence(element));
                 }
             });
         } catch (org.netbeans.modules.parsing.spi.ParseException ex) {
@@ -116,4 +130,5 @@ public final class FindUsageSupport {
     public ModelElement elementToFind() {
         return element;
     }
+
 }

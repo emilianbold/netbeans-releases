@@ -57,7 +57,10 @@ import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
@@ -141,26 +144,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final ParserResult info;
     private boolean  askForEditorExtensions = true;
 
-    public ModelVisitor(ParserResult info) {
-        this(info, -1);
-    }
 
-    public ModelVisitor(final ParserResult info, final int offset) {
+    public ModelVisitor(final ParserResult info) {
         this.fileScope = new FileScopeImpl(info);
         varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
-        //var2TypeName = new HashMap<String, String>();
-        occurencesBuilder = new OccurenceBuilder(offset);
-        markerBuilder = new CodeMarkerBuilder(offset);
-        this.modelBuilder = new ModelBuilder(this.fileScope);
-        this.info = info;
-    }
-
-    public ModelVisitor(final ParserResult info, final ModelElement elemnt) {
-        this.fileScope = new FileScopeImpl(info);
-        varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
-        //var2TypeName = new HashMap<String, String>();
-        occurencesBuilder = new OccurenceBuilder(elemnt);
-        markerBuilder = new CodeMarkerBuilder(-1);
+        occurencesBuilder = new OccurenceBuilder();
+        markerBuilder = new CodeMarkerBuilder();
         this.modelBuilder = new ModelBuilder(this.fileScope);
         this.info = info;
     }
@@ -172,10 +161,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void scan(ASTNode node) {
         super.scan(node);
-        //just temporarily for testing purposes
-//        if (node instanceof Program && fileScope != null) {
-//            extendModel();
-//        }
     }
 
     public void extendModel() {
@@ -363,9 +348,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             handleVarComments();
         } finally {
             program = null;
-            vars = null;
-            buildOccurences();
-            buildCodeMarks();
+//            vars = null;
+//            buildOccurences();
+//            buildCodeMarks();
         }
     }
 
@@ -937,6 +922,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     public CodeMarker getCodeMarker(int offset) {
+        buildCodeMarks(offset);
         return findStrictCodeMarker((FileScopeImpl) getFileScope(), offset, null);
     }
 
@@ -1053,7 +1039,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private CodeMarker findStrictCodeMarker(FileScopeImpl scope, int offset, CodeMarker atOffset) {
-        buildCodeMarks();
         List<? extends CodeMarker> markers = scope.getMarkers();
         for (CodeMarker codeMarker : markers) {
             assert codeMarker != null;
@@ -1066,12 +1051,30 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     public Occurence getOccurence(int offset) {
-        return findStrictOccurence((FileScopeImpl) getFileScope(), offset);
+        if (occurencesBuilder != null) {
+            return occurencesBuilder.build(fileScope, offset);
+        }
+        return null;
     }
 
+    //TODO:
     @CheckForNull
-    public Occurence getOccurence(ModelElement element) {
-        return findStrictOccurence((FileScopeImpl) getFileScope(), element);
+    public List<Occurence> getOccurence(ModelElement element) {
+        if (occurencesBuilder != null) {
+            return occurencesBuilder.build(fileScope, element);
+        }
+        return Collections.emptyList();
+    }
+
+    public ModelElement findDeclaration(PhpElement element) {
+        final int offset = element.getOffset();
+        List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
+        for (ModelElement modelElement : elements) {
+            if (modelElement.getNameRange().overlaps(new OffsetRange(offset,offset+element.getName().length()))) {
+                return modelElement;
+            }
+        }
+        return null;
     }
 
     public VariableScope getNearestVariableScope(int offset) {
@@ -1110,21 +1113,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return retval;
     }
 
-    static List<Occurence> getAllOccurences(FileScope modelScope, Occurence occurence) {
-        ModelElementImpl declaration = (ModelElementImpl) occurence.getDeclaration();
-        if (declaration instanceof MethodScope) {
-            MethodScope methodScope = (MethodScope) declaration;
-            if (methodScope.isConstructor()) {
-                declaration = (ModelElementImpl) methodScope.getInScope();
-            }
-        }
-        if (declaration instanceof VarAssignmentImpl) {
-            VarAssignmentImpl impl = (VarAssignmentImpl) declaration;
-            declaration = impl.getContainer();
-        }
-        return ((FileScopeImpl) modelScope).getAllOccurences(declaration);
-    }
-
     public static IndexScope getIndexScope(ParserResult info) {
         return new IndexScopeImpl(info);
     }
@@ -1133,50 +1121,42 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return new IndexScopeImpl(idx);
     }
 
-    private void buildCodeMarks() {
+    private void buildCodeMarks(final int offset) {
         if (markerBuilder != null) {
-            markerBuilder.build(fileScope);
-            markerBuilder = null;
+            fileScope.clearMarkers();
+            markerBuilder.build(fileScope, offset);
         }
     }
 
-    private void buildOccurences() {
-        if (occurencesBuilder != null) {
-            occurencesBuilder.build(fileScope);
-            occurencesBuilder = null;
-        }
-    }
 
-    private Occurence findStrictOccurence(FileScopeImpl scope, int offset) {
-        Occurence retval = null;
-        buildOccurences();
-        //FileObject fileObject = scope.getFileObject();
-        List<Occurence> occurences = scope.getOccurences();
-        for (Occurence occ : occurences) {
-            assert occ != null;
-            if (occ.getOccurenceRange().containsInclusive(offset)) {
-                retval = occ;
-            }
-        }
-        return retval;
-    }
-
-    private Occurence findStrictOccurence(FileScopeImpl scope, ModelElement element) {
-        Occurence retval = null;
-        buildOccurences();
-        //FileObject fileObject = scope.getFileObject();
-        List<Occurence> occurences = scope.getOccurences();
-        for (Occurence occ : occurences) {
-            assert occ != null;
-            if (occ.getDeclaration().equals(element)) {
-                retval = occ;
-            }
-        }
-        return retval;
-    }
+//    private Occurence findStrictOccurence(FileScopeImpl scope, int offset) {
+//        Occurence retval = null;
+//        //FileObject fileObject = scope.getFileObject();
+//        List<Occurence> occurences = scope.getOccurences();
+//        for (Occurence occ : occurences) {
+//            assert occ != null;
+//            if (occ.getOccurenceRange().containsInclusive(offset)) {
+//                retval = occ;
+//            }
+//        }
+//        return retval;
+//    }
+//
+//    private Occurence findStrictOccurence(FileScopeImpl scope, ModelElement element) {
+//        Occurence retval = null;
+////        buildOccurences(offset);
+////        //FileObject fileObject = scope.getFileObject();
+////        List<Occurence> occurences = scope.getOccurences();
+////        for (Occurence occ : occurences) {
+////            assert occ != null;
+////            if (occ.getDeclaration().equals(element)) {
+////                retval = occ;
+////            }
+////        }
+//        return retval;
+//    }
 
     private VariableScope findNearestVarScope(Scope scope, int offset, VariableScope atOffset) {
-        buildOccurences();
         Collection<? extends ModelElement> elements = scope.getElements();
         for (ModelElement varScope : elements) {
             if (varScope instanceof ClassScope || varScope instanceof NamespaceScope) {
@@ -1259,20 +1239,4 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
     }
-
-    /*private String getVarTypeName(String name, Scope Scope) {
-    String typeName = var2TypeName.get(name);
-    if (typeName == null) {
-    PhpDocTypeTagInfo typeTag = var2DefaultType.get(name);
-    if (typeTag != null) {
-    OffsetRange scopeRange = Scope.getBlockRange();
-    if (scopeRange != null && scopeRange.overlaps(typeTag.getRange())) {
-    typeName = typeTag.getTypeName();
-    var2TypeName.put(name, typeName);
-    scan(typeTag.getTypeTag());
-    }
-    }
-    }
-    return typeName;
-    }*/
 }

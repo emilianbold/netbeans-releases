@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.util.NbPreferences;
@@ -102,7 +103,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         ModelElement elem = usage.getModelElement();
         assert elem != null;
         String name = usage.getName();
-        String clsName = elem.getInScope() instanceof TypeScope ? elem.getInScope().getName() : null;
+        String clsName = null;
+        if (elem instanceof FullyQualifiedElement) {
+            name =  ((FullyQualifiedElement)elem).getFullyQualifiedName().toString();
+        } else if (elem.getInScope() instanceof FullyQualifiedElement) {
+             clsName =  ((FullyQualifiedElement)elem.getInScope()).getFullyQualifiedName().toString();
+        }
         String bKey = bundleKeyForLabel();
         final Set<Modifier> modifiers = usage.getModifiers();
         final String lblText;
@@ -114,7 +120,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         remove(classesPanel);
         remove(methodsPanel);
-        c_subclasses.setVisible(false);
         m_overriders.setVisible(false);
         label.setText(lblText);
         if (usage.getKind() == PhpElementKind.METHOD) {
@@ -132,6 +137,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
         } else if (usage.getKind() == PhpElementKind.CLASS) {
             add(classesPanel, BorderLayout.CENTER);            
+            classesPanel.setVisible(true);
+        } else if (usage.getKind() == PhpElementKind.IFACE) {
+            add(classesPanel, BorderLayout.CENTER);
             classesPanel.setVisible(true);
         } else {
             remove(classesPanel);

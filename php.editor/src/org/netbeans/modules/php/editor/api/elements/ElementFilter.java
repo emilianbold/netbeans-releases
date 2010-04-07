@@ -81,7 +81,7 @@ public abstract class ElementFilter {
     }
 
     public static ElementFilter anyOf(final Collection<ElementFilter> filters) {
-        return ElementFilter.allOf(filters.toArray(new ElementFilter[filters.size()]));
+        return ElementFilter.anyOf(filters.toArray(new ElementFilter[filters.size()]));
     }
 
     public static ElementFilter anyOf(final ElementFilter... filters) {
@@ -346,6 +346,9 @@ public abstract class ElementFilter {
 
     public abstract boolean isAccepted(PhpElement element);
 
+    public <T extends PhpElement> Set<T> filter(T original) {
+        return filter(Collections.<T>singleton(original));
+    }
     public <T extends PhpElement> Set<T> filter(Set<T> original) {
         Set<T> retval = new HashSet<T>();
         for (T baseElement : original) {

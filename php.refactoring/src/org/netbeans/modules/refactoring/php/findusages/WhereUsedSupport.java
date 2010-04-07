@@ -43,7 +43,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -59,16 +58,20 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.model.FindUsageSupport;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.FindUsageSupport;
 import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
@@ -114,9 +117,9 @@ public final class WhereUsedSupport {
         return node;
     }
 
-    public FileObject getFileObject() {
+    /*public FileObject getFileObject() {
         return fo;
-    }
+    }*/
 
     public int getOffset() {
         return offset;
@@ -139,23 +142,17 @@ public final class WhereUsedSupport {
         return results;
     }
 
-    void collectDirectSubclasses(final FileObject fileObject) {
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
+    void collectSubclasses() {
+        Collection<TypeElement> subclasses = usageSupport.subclasses();
+        for (TypeElement typeElement : subclasses) {
+            results.addEntry(typeElement);
+        }
+    }
 
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                    AttributedNodes a = AttributedNodes.getInstance(parameter);
-                    Map<ASTNode, AttributedElement> findOccurences = null;
-                    findOccurences = a.findDirectSubclasses(modelElement);
-                    for (Entry<ASTNode, AttributedElement> entry : findOccurences.entrySet()) {
-                       results.addEntry(fileObject, entry);
-                    }
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+    void collectDirectSubclasses() {
+        Collection<TypeElement> subclasses = usageSupport.directSubclasses();
+        for (TypeElement typeElement : subclasses) {
+            results.addEntry(typeElement);
         }
     }
 
@@ -168,11 +165,32 @@ public final class WhereUsedSupport {
 
     public static WhereUsedSupport getInstance(final ParserResult info, final int offset) {
         Model model = ModelFactory.getModel(info);
-        OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
-        Occurence occurence = occurencesSupport.getOccurence();
-        final boolean canContinue = occurence != null && occurence.getDeclaration() != null && occurence.getAllDeclarations().size() <= 1;
-        return canContinue ? new WhereUsedSupport(ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info)),
-                (ModelElement)occurence.getDeclaration(), offset, info.getSnapshot().getSource().getFileObject()) : null;
+        final Occurence occurence = model.getOccurencesSupport(offset).getOccurence();
+        final Set<ModelElement> declarations = new HashSet<ModelElement>();
+        final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : 0;
+        boolean canContinue = occurence != null && allDeclarations.size() <= 1;
+        if (canContinue) {
+            final PhpElement declarationElement = allDeclarations.iterator().next();
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(declarationElement.getFileObject())), new UserTask() {
+
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        ParserResult parameter = (ParserResult) resultIterator.getParserResult();
+                        Model modelForDeclaration = ModelFactory.getModel(parameter);
+                        declarations.add(modelForDeclaration.findDeclaration(declarationElement));
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            final ModelElement declaration = ModelUtils.getFirst(declarations);
+            final Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(info));
+            return (declaration != null && declarations.size() == 1) ?
+                new WhereUsedSupport( indexQuery, declaration, offset, info.getSnapshot().getSource().getFileObject()) : null;
+        }
+        return null;
     }
 
     public ModelElement getModelElement() {
@@ -180,6 +198,13 @@ public final class WhereUsedSupport {
     }
 
     Set<FileObject> getRelevantFiles() {
+        ModelElement mElement = getModelElement();
+        if (mElement instanceof VariableName) {
+            VariableName variable = (VariableName) mElement;
+            if (!variable.isGloballyVisible()) {
+                return Collections.singleton(mElement.getFileObject());
+            }
+        }
         return usageSupport.inFiles();
     }
 
@@ -245,11 +270,18 @@ public final class WhereUsedSupport {
 
         private Results() {
         }
-        private void addEntry(FileObject fo, Occurence occurence) {
-            ModelElement decl = (ModelElement) occurence.getDeclaration();
-            Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getPHPElement().getModifiers());
-            elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
+        private void addEntry(PhpElement decl) {
+            Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
+            elements.add(WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset()+decl.getName().length()), icon));
         }
+        private void addEntry(FileObject fo, Occurence occurence) {
+            Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
+            if (allDeclarations.size() > 0) {
+                PhpElement decl = allDeclarations.iterator().next();
+                Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
+                elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
+            }
+}
         private void addEntry(FileObject fo, Entry<ASTNode, AttributedElement> entry) {
             AttributedElement element = entry.getValue();
             ASTNode node = entry.getKey();

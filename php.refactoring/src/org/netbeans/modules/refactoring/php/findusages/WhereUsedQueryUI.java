@@ -94,7 +94,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         if (kind == ElementKind.METHOD) {
             setForMethod();
             return query.checkParameters();
-        } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS) {
+        } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
             setForClass();
             return query.checkParameters();
         } else
@@ -114,6 +114,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private void setForClass() {
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
     }
     

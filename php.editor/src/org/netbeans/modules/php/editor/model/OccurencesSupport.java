@@ -48,20 +48,28 @@ import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
  */
 public final class OccurencesSupport {
     private ModelVisitor modelVisitor;
-    private int offset;
+    private Occurence occurence;
+    private CodeMarker codeMarker;
+    int offset;
     OccurencesSupport(ModelVisitor modelVisitor, int offset) {
         this.modelVisitor = modelVisitor;
         this.offset = offset;
     }
 
     @CheckForNull
-    public Occurence getOccurence() {
-        return modelVisitor.getOccurence(offset);
+    public synchronized Occurence getOccurence() {
+        if (occurence == null) {
+            occurence = modelVisitor.getOccurence(offset);
+        }
+        return occurence;
     }
 
     @CheckForNull
-    public CodeMarker getCodeMarker() {
-        return modelVisitor.getCodeMarker(offset);
+    public synchronized CodeMarker getCodeMarker() {
+        if (codeMarker == null) {
+            codeMarker = modelVisitor.getCodeMarker(offset);
+        }
+        return codeMarker;
     }
 
 }

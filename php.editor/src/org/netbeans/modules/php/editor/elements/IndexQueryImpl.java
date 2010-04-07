@@ -147,6 +147,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
+    public Set<TypeElement> getTypes(NameKind query) {
+        final Set<TypeElement> types = new HashSet<TypeElement>();
+        types.addAll(getClasses(query));
+        types.addAll(getInterfaces(query));
+        return types;
+    }
+
+    @Override
     public Set<FunctionElement> getFunctions() {
         return getFunctions(NameKind.empty());
     }
@@ -1212,7 +1220,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         }
     }
 
-    private LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
+    public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
         final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());
         if (typeElement.isClass()) {

@@ -345,6 +345,11 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     public ElementQuery getElementQuery() {
         //TODO: FileScope should implement ElementQuery
         FileScope fileScope = ModelUtils.getFileScope(this);
+        if (fileScope == null && getInScope() instanceof IndexScope) {
+            return ((IndexScope)getInScope()).getIndex();
+        }
+        assert fileScope != null : this;
+        assert fileScope.getIndexScope() != null : this;
         return fileScope.getIndexScope().getIndex();
     }
 
