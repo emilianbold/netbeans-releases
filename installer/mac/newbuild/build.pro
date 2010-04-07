@@ -83,7 +83,7 @@
 
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value="fcs"/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.0.1/promoted"/>
     
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
