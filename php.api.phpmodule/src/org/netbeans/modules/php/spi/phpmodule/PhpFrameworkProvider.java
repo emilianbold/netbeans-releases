@@ -132,6 +132,21 @@ public abstract class PhpFrameworkProvider {
     public abstract PhpModuleExtender createPhpModuleExtender(PhpModule phpModule);
 
     /**
+     * Creates a {@link PhpModuleCustomizerExtender PHP module customizer extender} for this framework
+     * and the given PHP module.
+     *
+     * The default implementation returns {@code null}.
+     *
+     * @param  phpModule the PHP module which properties are to be extended
+     * @return a new PHP module customizer extender; can be {@code null} if the framework doesn't need
+     *         to store/read any PHP module specific properties
+     * @since 1.26
+     */
+    public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
+        return null;
+    }
+
+    /**
      * Get {@link PhpModuleProperties PHP module properties} the given PHP module. PHP framework
      * can provide default values for any property (e.g. web root).
      *

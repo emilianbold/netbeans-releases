@@ -224,7 +224,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
 
                 Object result = DialogDisplayer.getDefault().notify(wizard);
                 if (result == DialogDescriptor.OK_OPTION) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             async(importDirectory);
                         }

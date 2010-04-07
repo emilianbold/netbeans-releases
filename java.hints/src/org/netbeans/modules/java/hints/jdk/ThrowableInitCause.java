@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="general", customizerProvider=CustomizerProviderImpl.class)
+@Hint(category="general", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="ThrowableInitCause")
 public class ThrowableInitCause {
 
     public static final String STRICT_KEY = "strict";

@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.api.SearchTarget;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -58,71 +58,76 @@ import static org.netbeans.modules.xml.ui.UI.*;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.search.spi.SearchEngine.class)
 public final class Engine extends SearchEngine.Adapter {
 
-  public void search(SearchOption option) throws SearchException {
-    myProvider = option.getProvider();
-    SearchTarget target = option.getTarget();
+    public void search(SearchOption option) throws SearchException {
+        myProvider = option.getProvider();
+        SearchTarget target = option.getTarget();
 
-    if (target == null) {
-      myClazz = null;
-    }
-    else {
-      myClazz = target.getClazz();
-    }
+        if (target == null) {
+            myClazz = null;
+        } else {
+            myClazz = target.getClazz();
+        }
 //out();
-    fireSearchStarted(option);
-    search(myProvider.getRoot(), ""); // NOI18N
-    fireSearchFinished(option);
-  }
-
-  private void search(Object object, String indent) {
-    if ( !(object instanceof Component)) {
-      return;
+        fireSearchStarted(option);
+        search(myProvider.getRoot(), ""); // NOI18N
+        fireSearchFinished(option);
     }
-    Component component = (Component) object;
-    process(component, indent);
-    List children = component.getChildren();
-  
-    for (Object child : children) {
-      search(child, indent + "    "); // NOI18N
-    }
-  }
 
-  private void process(Component component, String indent) {
+    private void search(Object object, String indent) {
+//out(indent + " !!!: " + object);
+        if (!(object instanceof Component)) {
+            return;
+        }
+        Component component = (Component) object;
+        process(component, indent);
+        List children = component.getChildren();
+//out(indent + " LST: " + children.size());
+
+        for (Object child : children) {
+            search(child, indent + "    "); // NOI18N
+        }
+    }
+
+    private void process(Component component, String indent) {
 //out(indent + " see: " + component);
-    if (checkClazz(component) && checkName(component)) {
+        if (checkClazz(component) && checkName(component)) {
 //out(indent + "      add.");
-      fireSearchFound(myProvider.getElement(component));
+            fireSearchFound(myProvider.getElement(component));
+        }
     }
-  }
 
-  private boolean checkClazz(Object object) {
-    if (myClazz == null) {
-      return true;
+    private boolean checkClazz(Object object) {
+        if (myClazz == null) {
+            return true;
+        }
+        return myClazz.isAssignableFrom(object.getClass());
     }
-    return myClazz.isAssignableFrom(object.getClass());
-  }
 
-  private boolean checkName(Component component) {
-    String name = ""; // NOI18N
+    private boolean checkName(Component component) {
+        String name = ""; // NOI18N
 
-    if (component instanceof Named) {
-      name = ((Named) component).getName();
+        if (component instanceof Named) {
+            name = ((Named) component).getName();
+    
+            if (name == null) {
+                name = ""; // NOI18N
+            }
+        }
+        return accepts(name);
     }
-    return accepts(name);
-  }
 
-  public boolean isApplicable(Object root) {
-    return root instanceof Component;
-  }
+    public boolean isApplicable(Object root) {
+        return root instanceof Component;
+    }
 
-  public String getDisplayName() {
-    return i18n(Engine.class, "LBL_Engine_Display_Name"); // NOI18N
-  }
+    public String getDisplayName() {
+        return i18n(Engine.class, "LBL_Engine_Display_Name"); // NOI18N
+    }
 
-  public String getShortDescription() {
-    return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
-  }
+    public String getShortDescription() {
+        return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
+    }
 
-  private SearchProvider myProvider;
-  private Class<? extends Object> myClazz;
+    private SearchProvider myProvider;
+    private Class<? extends Object> myClazz;
 }

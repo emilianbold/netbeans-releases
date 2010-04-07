@@ -48,83 +48,83 @@ import org.netbeans.modules.xml.search.spi.SearchProvider;
  */
 public interface SearchOption {
 
-  /**
-   * Returns text to be found.
-   * @return text to be found
-   */
-  String getText();
+    /**
+     * Returns text to be found.
+     * @return text to be found
+     */
+    String getText();
 
-  /**
-   * Returns provider.
-   * @return provider
-   */
-  SearchProvider getProvider();
+    /**
+     * Returns provider.
+     * @return provider
+     */
+    SearchProvider getProvider();
 
-  /**
-   * Returns target to be found.
-   * @return target to be found
-   */
-  SearchTarget getTarget();
+    /**
+     * Returns target to be found.
+     * @return target to be found
+     */
+    SearchTarget getTarget();
 
-  /**
-   * Returns search match.
-   * @return search match
-   */
-  SearchMatch getSearchMatch();
+    /**
+     * Returns search match.
+     * @return search match
+     */
+    SearchMatch getSearchMatch();
 
-  /**
-   * Returns true if search is case sensitive.
-   * @return true if search is case sensitive
-   */
-  boolean isCaseSensitive();
+    /**
+     * Returns true if search is case sensitive.
+     * @return true if search is case sensitive
+     */
+    boolean isCaseSensitive();
 
-  /**
-   * Returns true if search will be performed in selection.
-   * @return true if search will be performed in selection
-   */
-  boolean useSelection();
+    /**
+     * Returns true if search will be performed in selection.
+     * @return true if search will be performed in selection
+     */
+    boolean useSelection();
 
-  // ------------------------------------------
-  public class Adapter implements SearchOption {
+    // ------------------------------------------
+    public class Adapter implements SearchOption {
 
-    public Adapter(String text, SearchProvider provider, SearchTarget target, SearchMatch match, boolean caseSensitive, boolean useSelection) {
-      myText = text;
-      myProvider = provider;
-      myTarget = target;
-      mySearchMatch = match;
-      myCaseSensitive = caseSensitive;
-      myUseSelection = useSelection;
+        public Adapter(String text, SearchProvider provider, SearchTarget target, SearchMatch match, boolean caseSensitive, boolean useSelection) {
+            myText = text;
+            myProvider = provider;
+            myTarget = target;
+            mySearchMatch = match;
+            myCaseSensitive = caseSensitive;
+            myUseSelection = useSelection;
+        }
+
+        public String getText() {
+            return myText;
+        }
+
+        public SearchProvider getProvider() {
+            return myProvider;
+        }
+
+        public SearchTarget getTarget() {
+            return myTarget;
+        }
+
+        public SearchMatch getSearchMatch() {
+            return mySearchMatch;
+        }
+
+        public boolean isCaseSensitive() {
+            return myCaseSensitive;
+        }
+
+        public boolean useSelection() {
+            return myUseSelection;
+        }
+
+        private String myText;
+        private SearchTarget myTarget;
+        private SearchProvider myProvider;
+        private SearchMatch mySearchMatch;
+        private boolean myCaseSensitive;
+        private boolean myUseSelection;
     }
-
-    public String getText() {
-      return myText;
-    }
-
-    public SearchProvider getProvider() {
-      return myProvider;
-    }
-
-    public SearchTarget getTarget() {
-      return myTarget;
-    }
-
-    public SearchMatch getSearchMatch() {
-      return mySearchMatch;
-    }
-
-    public boolean isCaseSensitive() {
-      return myCaseSensitive;
-    }
-
-    public boolean useSelection() {
-      return myUseSelection;
-    }
-
-    private String myText;
-    private SearchTarget myTarget;
-    private SearchProvider myProvider;
-    private SearchMatch mySearchMatch;
-    private boolean myCaseSensitive;
-    private boolean myUseSelection;
-  }
 }

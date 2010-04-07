@@ -41,15 +41,31 @@
 
 package org.netbeans.editor;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Rectangle;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -58,13 +74,17 @@ import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.View;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib2.view.DocumentView;
+import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.openide.util.NbBundle;
 
 /**
@@ -119,13 +139,13 @@ public class Utilities {
     */
     public static int getRowStart(JTextComponent c, int offset)
     throws BadLocationException {
-        Rectangle r = c.modelToView(offset);
+        Rectangle2D r = modelToView(c, offset);
         if (r == null){
             return -1;
         }
         EditorUI eui = getEditorUI(c);
         if (eui != null){
-            return c.viewToModel(new java.awt.Point (eui.textLeftMarginWidth, r.y));
+            return viewToModel(c, eui.textLeftMarginWidth, r.getY());
         }
         return -1;
     }
@@ -260,11 +280,11 @@ public class Utilities {
     */
     public static int getRowEnd(JTextComponent c, int offset)
     throws BadLocationException {
-        Rectangle r = c.modelToView(offset);
+        Rectangle2D r = modelToView(c, offset);
         if (r == null){
             return -1;
         }
-        return c.viewToModel(new java.awt.Point (Integer.MAX_VALUE, r.y));
+        return viewToModel(c, Integer.MAX_VALUE, r.getY());
     }
     
     public static int getRowEnd(BaseDocument doc, int offset)
@@ -333,7 +353,7 @@ public class Utilities {
             return offset; //skip
         }
         
-        Rectangle r = c.modelToView(endInit);
+        Rectangle2D r = modelToView(c, endInit);
         if (r == null){
             return offset; //skip
         }
@@ -342,13 +362,13 @@ public class Utilities {
             return getRowStart(c, endInit);
         }
         
-        int end = c.viewToModel(new java.awt.Point(Math.max(eui.textLeftMarginWidth, x + 2*r.width ),r.y));
+        int end = viewToModel(c, Math.max(eui.textLeftMarginWidth, r.getX() + 2*r.getWidth()), r.getY());
         Rectangle tempRect = c.modelToView(end);
         if (tempRect == null || tempRect.x < x){
             end = endInit;
         }
         
-        int start = c.viewToModel(new java.awt.Point(Math.max(eui.textLeftMarginWidth, x - 2*r.width ),r.y));
+        int start = viewToModel(c, Math.max(eui.textLeftMarginWidth, r.getX() - 2*r.getWidth()),r.getY());
         tempRect = c.modelToView(start);
         if (tempRect == null || tempRect.x > x){
             start = getRowStart(c, end);
@@ -401,7 +421,7 @@ public class Utilities {
     throws BadLocationException {
 	int startInit = getRowEnd(c, offset) + 1;
 
-        Rectangle r = c.modelToView(startInit);
+        Rectangle2D r = modelToView(c, startInit);
         if (r == null){
             return offset; // skip
         }
@@ -411,13 +431,13 @@ public class Utilities {
             return startInit;
         }
         
-        int start = c.viewToModel(new java.awt.Point(Math.min(Integer.MAX_VALUE, r.x + x - 2*r.width ),r.y));
+        int start = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x - 2*r.getWidth()), r.getY());
         Rectangle tempRect = c.modelToView(start);
         if (tempRect!=null && tempRect.x > x){
             start = startInit;
         }
         
-        int end = c.viewToModel(new java.awt.Point(Math.min(Integer.MAX_VALUE, r.x + x + 2*r.width ),r.y));
+        int end = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x + 2*r.getWidth()), r.getY());
         tempRect = c.modelToView(end);
         if (tempRect!=null && tempRect.x < x){
             end = getRowEnd(c, start);
@@ -1318,7 +1338,11 @@ public class Utilities {
      * (or for a bunch of lines in case there is a code folding present).
      */
     public static View getDocumentView(JTextComponent component) {
-        return getRootView(component, DrawEngineDocView.class);
+        if (BaseKit.LINEWRAP_ENABLED) {
+            return getRootView(component, DocumentView.class);
+        } else {
+            return getRootView(component, DrawEngineDocView.class);
+        }
     }
 
     /**
@@ -1465,5 +1489,152 @@ public class Utilities {
         }
         return mimeType;
     }
+
+    //#182648: JTextComponent.modelToView returns a Rectangle, which contains integer positions,
+    //but the views are layed-out using doubles. The rounding (truncating) truncating errors case problems
+    //with navigation (up/down, end line). Below are methods that return exact double-based rectangle
+    //for the given position, and also double-based viewToModel method:
+    static Rectangle2D modelToView(JTextComponent tc, int pos) throws BadLocationException {
+	return modelToView(tc, pos, Position.Bias.Forward);
+    }
+
+    static Rectangle2D modelToView(JTextComponent tc, int pos, Position.Bias bias) throws BadLocationException {
+	Document doc = tc.getDocument();
+	if (doc instanceof AbstractDocument) {
+	    ((AbstractDocument)doc).readLock();
+	}
+	try {
+	    Rectangle alloc = getVisibleEditorRect(tc);
+	    if (alloc != null) {
+                View rootView = tc.getUI().getRootView(tc);
+		rootView.setSize(alloc.width, alloc.height);
+		Shape s = rootView.modelToView(pos, alloc, bias);
+		if (s != null) {
+		  return s.getBounds2D();
+		}
+	    }
+	} finally {
+	    if (doc instanceof AbstractDocument) {
+		((AbstractDocument)doc).readUnlock();
+	    }
+	}
+	return null;
+    }
+
+    private static Position.Bias[] discardBias = new Position.Bias[1];
+    static int viewToModel(JTextComponent tc, double x, double y) {
+	return viewToModel(tc, x, y, discardBias);
+    }
+
+    static int viewToModel(JTextComponent tc, double x, double y, Position.Bias[] biasReturn) {
+	int offs = -1;
+	Document doc = tc.getDocument();
+	if (doc instanceof AbstractDocument) {
+	    ((AbstractDocument)doc).readLock();
+	}
+	try {
+	    Rectangle alloc = getVisibleEditorRect(tc);
+	    if (alloc != null) {
+                View rootView = tc.getUI().getRootView(tc);
+                View documentView = rootView.getView(0);
+                if (documentView instanceof EditorView) {
+                    documentView.setSize(alloc.width, alloc.height);
+                    offs = ((EditorView) documentView).viewToModelChecked(x, y, alloc, biasReturn);
+                } else {
+                    rootView.setSize(alloc.width, alloc.height);
+                    offs = rootView.viewToModel((float) x, (float) y, alloc, biasReturn);
+                }
+	    }
+	} finally {
+	    if (doc instanceof AbstractDocument) {
+		((AbstractDocument)doc).readUnlock();
+	    }
+	}
+        return offs;
+    }
     
+    private static Rectangle getVisibleEditorRect(JTextComponent tc) {
+	Rectangle alloc = tc.getBounds();
+	if ((alloc.width > 0) && (alloc.height > 0)) {
+	    alloc.x = alloc.y = 0;
+	    Insets insets = tc.getInsets();
+	    alloc.x += insets.left;
+	    alloc.y += insets.top;
+	    alloc.width -= insets.left + insets.right;
+	    alloc.height -= insets.top + insets.bottom;
+	    return alloc;
+	}
+	return null;
+    }
+
+    /**
+     * Creates a single line editor pane. Can be called from AWT event thread only.
+     *
+     * @param mimeType The mimetype of the editor's content.
+     *
+     * @return Two components, the first one is a visual <code>JComponent</code> and
+     *   the second one is the editor <code>JTextComponent</code>.
+     *
+     * @since 2.7
+     */
+    public static JComponent [] createSingleLineEditor(String mimeType) {
+        assert SwingUtilities.isEventDispatchThread()
+                : "Utilities.createSingleLineEditor must be called from AWT thread only"; // NOI18N
+
+        EditorKit kit = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
+        if (kit == null) {
+            throw new IllegalArgumentException("No EditorKit for '" + mimeType + "' mimetype."); //NOI18N
+        }
+
+        JEditorPane editorPane = new JEditorPane();
+        editorPane.setEditorKit(kit);
+
+        editorPane.putClientProperty(
+            "HighlightsLayerExcludes", //NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+        );
+        getEditorUI(editorPane).textLimitLineVisible = false;
+
+        KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        KeyStroke escKs = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        KeyStroke tabKs = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+        InputMap im = editorPane.getInputMap();
+        im.put(enterKs, NO_ACTION);
+        im.put(escKs, NO_ACTION);
+        im.put(tabKs, NO_ACTION);
+
+        editorPane.setBorder (
+            new CompoundBorder (editorPane.getBorder(),
+            new EmptyBorder (0, 0, 0, 0))
+        );
+
+        JTextField referenceTextField = new JTextField("M"); //NOI18N
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+
+        JScrollPane sp = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setBorder(referenceTextField.getBorder());
+        sp.setBackground(referenceTextField.getBackground());
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(referenceTextField.getBackground());
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(editorPane, gridBagConstraints);
+        sp.setViewportView(panel);
+
+        int preferredHeight = referenceTextField.getPreferredSize().height;
+        if (sp.getPreferredSize().height < preferredHeight) {
+            sp.setPreferredSize(referenceTextField.getPreferredSize());
+        }
+        sp.setMinimumSize(sp.getPreferredSize());
+
+        return new JComponent [] { sp, editorPane };
+    }
+
+    private static final String NO_ACTION = "no-action"; //NOI18N
 }

@@ -607,6 +607,10 @@ public class CssCompletion implements CodeCompletionHandler {
             return Collections.emptyList();
         }
         CssProjectSupport support = CssProjectSupport.findFor(current);
+        if(support == null) {
+            //we are outside of a project
+            return Collections.emptyList();
+        }
         CssIndex index = support.getIndex();
         Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
 

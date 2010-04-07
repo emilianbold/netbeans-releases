@@ -67,7 +67,7 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
     private JComponent inner = null;
     private JPanel panel;
     private JLabel lblTitle;
-    private JLabel lblLoading;
+    private ProgressLabel lblLoading;
     private JLabel lblError;
     private boolean loaded = false;
     private Loader loader;
@@ -170,7 +170,7 @@ public abstract class AsynchronousLeafNode<T> extends LeafNode {
         if( null != loader )
             loader.cancel();
         loader = new Loader();
-        RequestProcessor.getDefault().post(loader);
+        post(loader);
     }
 
     private void timedout() {

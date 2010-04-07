@@ -61,7 +61,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.nodes.Node;
@@ -305,7 +305,8 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
                         axiModel = AXIModelFactory.getDefault().getModel(
                                 ((SchemaComponent)component).getModel());
                     }
-                    if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
+                    if(axiModel!=null && axiModel.getRoot() != null &&
+                            axiModel.getState()==AXIModel.State.VALID) {
                         view = View.DESIGN;
                     }
                 }
@@ -362,7 +363,8 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
                     if(!axiModel.canView((SchemaComponent)component))
                         return false;
                 }
-                if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
+                if(axiModel!=null && axiModel.getRoot() != null &&
+                        axiModel.getState()==AXIModel.State.VALID) {
                     return true;
                 }
                 return false;

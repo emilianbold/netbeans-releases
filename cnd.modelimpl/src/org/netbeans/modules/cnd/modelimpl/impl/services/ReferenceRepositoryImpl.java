@@ -87,7 +87,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -206,7 +206,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             }
             return Collections.<CsmReference>emptyList();
         }
-        name = CharSequenceKey.create(name);
+        name = CharSequences.create(name);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             System.err.println("resolving " + name + " in file " + file.getAbsolutePath());
         }
@@ -348,7 +348,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer != null){
                     reader = buffer.getReader();
-                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader, file.getFileLanguage());
                 }
             }
         } catch (IOException ex) {

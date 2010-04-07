@@ -78,6 +78,11 @@ public final class Dependency {
         return new Dependency (orig.getID(), newKind, orig.getDeploymentStrategy());
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[" + id + " : " + kind + " : " + strategy + "]";
+    }
+
     public String getPropertyName (ArtifactKind kind) {
         switch (kind) {
             case SOURCES_PATH :
@@ -111,7 +116,7 @@ public final class Dependency {
     }
 
     private String getExpFilePropertyName() {
-        return DEP_PROPERTY_PREFIX + '.' + getID() + ".expfile"; //NOI18N
+        return DEP_PROPERTY_PREFIX +  getID() + ".expfile"; //NOI18N
     }
 
     private String getSigFilePropertyName() {

@@ -242,7 +242,6 @@ public final class MakeActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.setDeleted();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }
@@ -319,7 +318,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
         ServerRecord record = ServerList.get(exeEnv);
         assert record != null;
-        invokeRemoteHostAction(record, actionWorker);
+        invokeLongAction(record, actionWorker);
     }
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
@@ -336,7 +335,7 @@ public final class MakeActionProvider implements ActionProvider {
         runActionWorker(conf.getDevelopmentHost().getExecutionEnvironment(), actionWorker);
     }
 
-    private static void invokeRemoteHostAction(final ServerRecord record, final CancellableTask actionWorker) {
+    private static void invokeLongAction(final ServerRecord record, final CancellableTask actionWorker) {
         CancellableTask wrapper;
         if (!record.isDeleted() && record.isOnline()) {
             wrapper = actionWorker;
@@ -662,17 +661,11 @@ public final class MakeActionProvider implements ActionProvider {
             }
             if (targetFolder != null) {
                 if (targetFolder.isTest()) {
-                    Item[] items = targetFolder.getAllItemsAsArray();
-                    for (int k = 0; k < items.length; k++) {
-                        path = items[k].getPath();
-                        path = path.replaceFirst("\\..*", ""); // NOI18N
-
-                        path = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + path; // NOI18N
-
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    if(compilerSet != null) {
+                        path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                         path = conf.expandMacros(path);
-
                         path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
-
                     }
                 }
             }
@@ -863,28 +856,29 @@ public final class MakeActionProvider implements ActionProvider {
                 list.add(targetFolder);
             }
 
-            loop: for (Folder folder : list) {
-                Item[] items = folder.getAllItemsAsArray();
-                for (int k = 0; k < items.length; k++) {
-                    String test = items[k].getName();
-                    test = test.replaceFirst("\\..*", ""); // NOI18N
-
-                    MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand;
-                    buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + test, ""); // NOI18N
-                    String args = "";
-                    int index = buildCommand.indexOf(' ');
-                    if (index > 0) {
-                        args = buildCommand.substring(index + 1);
-                        buildCommand = buildCommand.substring(0, index);
-                    }
-                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                    profile.setArgs(args);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
-                    actionEvents.add(projectActionEvent);
-
-                    break loop;
+            for (Folder folder : list) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if(compilerSet == null) {
+                    continue;
                 }
+                String target = folder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
+                target = conf.expandMacros(target);
+
+                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+                String buildCommand;
+                buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test TEST=" + target, ""); // NOI18N
+                String args = "";
+                int index = buildCommand.indexOf(' ');
+                if (index > 0) {
+                    args = buildCommand.substring(index + 1);
+                    buildCommand = buildCommand.substring(0, index);
+                }
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+                profile.setArgs(args);
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+                actionEvents.add(projectActionEvent);
+
+                break;
             }
         }
 
@@ -915,7 +909,7 @@ public final class MakeActionProvider implements ActionProvider {
             for (int i = 0; i < getProjectDescriptor().getProjectItems().length; i++) {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
-                if (!itemConfiguration.getExcluded().getValue() &&
+                if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue() &&
                         (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;
@@ -1082,6 +1076,7 @@ public final class MakeActionProvider implements ActionProvider {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
+        ArrayList<String> errsNoBTA = new ArrayList<String>();
         CompilerSet cs;
         String csname;
         File file;
@@ -1133,6 +1128,7 @@ public final class MakeActionProvider implements ActionProvider {
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
             }
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
+            errsNoBTA.add(errs.get(errs.size()-1));
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
@@ -1166,10 +1162,12 @@ public final class MakeActionProvider implements ActionProvider {
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
             if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
+                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
                 runBTA = true;
             }
         } else {
             if (!isValidExecutable(makeTool.getPath(), pi)) {
+                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
                 runBTA = true;
             }
         }
@@ -1179,31 +1177,35 @@ public final class MakeActionProvider implements ActionProvider {
             return false;
         }
         if (cRequired && !exists(cTool.getPath(), pi)) {
-            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
+            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (cppRequired && !exists(cppTool.getPath(), pi)) {
-            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
+            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (fRequired && !exists(fTool.getPath(), pi)) {
-            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (asRequired && !exists(asTool.getPath(), pi)) {
-            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
+        if (cancelled.get()) {
+            return false;
+        }
         if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
+            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingQMake", csname, qmakeTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
 
@@ -1232,6 +1234,7 @@ public final class MakeActionProvider implements ActionProvider {
                 model.setCRequired(cRequired);
                 model.setCppRequired(cppRequired);
                 model.setFortranRequired(fRequired);
+                model.setQMakeRequired(conf.isQmakeConfiguration());
                 model.setAsRequired(asRequired);
                 model.setShowRequiredBuildTools(true);
                 model.setShowRequiredDebugTools(false);
@@ -1256,9 +1259,12 @@ public final class MakeActionProvider implements ActionProvider {
                 }
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
-                NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET",
-                        csname, conf.getDevelopmentHost().getDisplayName(false)));
+                String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", // NOI18N
+                        csname, conf.getDevelopmentHost().getDisplayName(false));
+                for(String error : errsNoBTA) {
+                    message +="\n"+error; // NOI18N
+                }
+                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
                 DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }
@@ -1430,12 +1436,12 @@ public final class MakeActionProvider implements ActionProvider {
 
             buildButton.setMnemonic(getString("BuildButtonMn").charAt(0));
             buildButton.getAccessibleContext().setAccessibleDescription(getString("BuildButtonAD"));
-            buildButton.addActionListener(this);
+            buildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.setMnemonic(getString("CleanBuildButtonMn").charAt(0));
-            rebuildButton.addActionListener(this);
+            rebuildButton.addActionListener(BatchConfigurationSelector.this);
             rebuildButton.getAccessibleContext().setAccessibleDescription(getString("CleanBuildButtonAD"));
             cleanButton.setMnemonic(getString("CleanButtonMn").charAt(0));
-            cleanButton.addActionListener(this);
+            cleanButton.addActionListener(BatchConfigurationSelector.this);
             cleanButton.getAccessibleContext().setAccessibleDescription(getString("CleanButtonAD"));
             closeButton.getAccessibleContext().setAccessibleDescription(getString("CloseButtonAD"));
             // Show the dialog

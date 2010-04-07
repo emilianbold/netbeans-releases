@@ -64,7 +64,6 @@ import org.openide.DialogDisplayer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
-import org.openide.util.RequestProcessor;
 
 /**
  * Patch Action. It asks for a patch file and applies it to the selected file.
@@ -81,10 +80,12 @@ public class PatchAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PatchAction.class, "CTL_PatchActionName");
     }
 
+    @Override
     public boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
             FileObject fo = DiffAction.getFileFromNode(nodes[0]);
@@ -103,34 +104,41 @@ public class PatchAction extends NodeAction {
     /**
      * @return false to run in AWT thread.
      */
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
+    @Override
     public void performAction(Node[] nodes) {
         final FileObject fo = DiffAction.getFileFromNode(nodes[0]);
         if (fo != null) {
             final File patch = getPatchFor(fo);
             if (patch == null) return ;
-            RequestProcessor.getDefault().post(new Runnable () {
+            Utils.postParallel(new Runnable () {
+                @Override
                 public void run() {
-                    ContextualPatch cp = ContextualPatch.create(patch, FileUtil.toFile(fo));
-                    try {
-                        List<ContextualPatch.PatchReport> report = cp.patch(false);
-                        displayPatchReport(report);
-                    } catch (Exception ioex) {
-                        ErrorManager.getDefault().annotate(ioex,
-                            NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-                        ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
-                        return ;
-                    }
+                    performPatch(patch, FileUtil.toFile(fo));
                 }
             });
         }
     }
 
-    private void displayPatchReport(List<ContextualPatch.PatchReport> report) {
+    public static void performPatch(File patch, File file) throws MissingResourceException {
+        ContextualPatch cp = ContextualPatch.create(patch, file);
+        try {
+            List<ContextualPatch.PatchReport> report = cp.patch(false);
+            displayPatchReport(report);
+        } catch (Exception ioex) {
+            ErrorManager.getDefault().annotate(ioex, NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
+            return;
+        }
+    }
+
+
+    private static void displayPatchReport(List<ContextualPatch.PatchReport> report) {
 
         List<ContextualPatch.PatchReport> successful = new ArrayList<ContextualPatch.PatchReport>(); 
         List<ContextualPatch.PatchReport> failed = new ArrayList<ContextualPatch.PatchReport>();
@@ -228,9 +236,11 @@ public class PatchAction extends NodeAction {
 
         // setup filters, default one filters patch files
         FileFilter patchFilter = new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(PatchAction.class, "CTL_PatchDialog_FileFilter");
             }
@@ -257,7 +267,7 @@ public class PatchAction extends NodeAction {
         return selectedFile;
     }
 
-    private void showDiffs(List<FileObject> files, List<FileObject> binaries, Map<FileObject, FileObject> backups) {
+    private static void showDiffs(List<FileObject> files, List<FileObject> binaries, Map<FileObject, FileObject> backups) {
         for (int i = 0; i < files.size(); i++) {
             FileObject file = files.get(i);
             FileObject backup = backups.get(file);
@@ -278,7 +288,7 @@ public class PatchAction extends NodeAction {
      * @param files a list of files, to which the patch was successfully applied
      * @param backups a map of a form original file -> backup file
      */
-    private void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups, boolean onExit) {
+    private static void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups, boolean onExit) {
         StringBuffer filenames=new StringBuffer(), 
                      exceptions=new StringBuffer();
         for (int i = 0; i < files.size(); i++) {
@@ -325,13 +335,14 @@ public class PatchAction extends NodeAction {
                         "EXC_CannotRemoveBackup", filenames, exceptions)));
     }
     
-    private void deleteOnExit(FileObject fo) {
+    private static void deleteOnExit(FileObject fo) {
         File file = FileUtil.toFile(fo);
         if (file != null) {
             file.deleteOnExit();
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
     }
@@ -347,6 +358,7 @@ public class PatchAction extends NodeAction {
             this.chooser = chooser;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e){
             String command  = e.getActionCommand();
             if(command == JFileChooser.APPROVE_SELECTION){

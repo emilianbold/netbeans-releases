@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -82,6 +85,7 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
+    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = false;
     private static final boolean TRACE = true;
 
     public MakeProjectTestBase(String name) {
@@ -150,11 +154,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     }
 
     private File detectConfigure(String path){
-        File configure = new File(path+File.separator+"configure");
+        File configure = new File(path, "configure");
         if (configure.exists()) {
             return configure;
         }
-        configure = new File(path+File.separator+"CMakeLists.txt");
+        configure = new File(path, "CMakeLists.txt");
         if (configure.exists()) {
             return configure;
         }
@@ -167,7 +171,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
             }
         }
-        return new File(path+File.separator+"configure");
+        return new File(path, "configure");
     }
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
@@ -203,7 +207,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             final String path = download(URL, additionalScripts, tools)+subFolder;
 
             final File configure = detectConfigure(path);
-            final File makeFile = new File(path+File.separator+"Makefile");
+            final File makeFile = new File(path, "Makefile");
             if (!configure.exists()) {
                 if (!makeFile.exists()){
                     assertTrue("Cannot find configure or Makefile in folder "+path, false);
@@ -212,6 +216,23 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             if (Utilities.isWindows()){
                 // cygwin does not allow test discovery in real time, so disable tests on windows
                 return;
+            }
+
+            // For simple configure-make projects store logs for reuse
+            boolean hasConfigureLog = true;
+            File configureLog = null;
+            if (new File(path, "configure").exists()) {
+                configureLog = new File(path, "configure.discoveryLog");
+                hasConfigureLog = configureLog.exists();
+                if (hasConfigureLog) {
+                    hackConfigure(configure, configureLog);
+                }
+            }
+
+            final File makeFileLog  = new File(path, "Makefile.discoveryLog");
+            boolean hasMakefileLog = makeFileLog.exists();
+            if (hasMakefileLog) {
+                hackMakefile(makeFile, makeFileLog);
             }
 
             WizardDescriptor wizard = new WizardDescriptor() {
@@ -284,6 +305,12 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
             ImportProject importer = new ImportProject(wizard);
             importer.setUILessMode();
+            if (!hasConfigureLog) {
+                importer.setConfigureLog(configureLog);
+            }
+            if (!hasMakefileLog) {
+                importer.setMakeLog(makeFileLog);
+            }
             importer.create();
             OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
             int i = 0;
@@ -413,25 +440,25 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         File fileDataPath = CndCoreTestUtils.getDownloadBase();
         String dataPath = fileDataPath.getAbsolutePath();
 
-        String createdFolder = dataPath+"/"+packageName;
-        File fileCreatedFolder = new File(createdFolder);
+        File fileCreatedFolder = new File(fileDataPath, packageName);
+        String createdFolder = fileCreatedFolder.getAbsolutePath();
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
-            if (!OPTIMIZE_NATIVE_EXECUTIONS) {
+            if (!OPTIMIZE_NATIVE_EXECUTIONS && !OPTIMIZE_SIMPLE_PROJECTS) {
                 execute(tools, "rm", dataPath, "-rf", packageName);
                 fileCreatedFolder.mkdirs();
             }
         }
         if (fileCreatedFolder.list().length == 0){
-            if (!new File(dataPath+"/"+tarName).exists()) {
-                execute(tools, "wget", dataPath, urlName);
+            if (!new File(fileDataPath, tarName).exists()) {
+                execute(tools, "wget", dataPath, "-qN", urlName);
                 execute(tools, "gzip", dataPath, "-d", zipName);
             }
             execute(tools, "tar", dataPath, "xf", tarName);
             execAdditionalScripts(createdFolder, additionalScripts, tools);
         } else {
-            final File configure = new File(createdFolder+File.separator+"configure");
+            final File configure = new File(fileCreatedFolder, "configure");
             final File makeFile = detectConfigure(createdFolder);
             if (!configure.exists()) {
                 if (!makeFile.exists()){
@@ -515,6 +542,31 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static void hackConfigure(File file, File log) {
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            String firstLine = in.readLine();
+            in.close();
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            out.write(firstLine);
+            out.newLine();
+            out.write("cat " + log.getAbsolutePath());
+            out.close();
+        } catch (IOException e) {
+        }
+    }
+
+    private static void hackMakefile(File file, File log) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            out.write("all:");
+            out.newLine();
+            out.write("\tcat " + log.getAbsolutePath());
+            out.close();
+        } catch (IOException e) {
         }
     }
 }

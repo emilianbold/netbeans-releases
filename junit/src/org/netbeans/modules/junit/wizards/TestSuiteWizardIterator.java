@@ -184,6 +184,13 @@ public class TestSuiteWizardIterator
      */
     private WizardDescriptor.Panel<WizardDescriptor> getTargetPanel() {
         final Project project = Templates.getProject(wizard);
+        if(project == null) { // #176639
+            return new StepProblemMessage(project,
+                                          NbBundle.getMessage(
+                                             this.getClass(),
+                                             "MSG_UnsupportedPlugin")); //NOI18N
+
+        }
         if (targetPanel == null || project != lastSelectedProject) {
             JUnitPlugin plugin = TestUtil.getPluginForProject(project);
             if (plugin.getClass() != DefaultPlugin.class) {

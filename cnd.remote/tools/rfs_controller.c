@@ -65,14 +65,16 @@
 #include "rfs_util.h"
 #include "rfs_filedata.h"
 
- 
-
 static int emulate = false;
 
 typedef struct connection_data {
     int sd;
     struct sockaddr_in pin;
 } connection_data;
+
+static const char LC_PROTOCOL_REQUEST = 'r';
+static const char LC_PROTOCOL_WRITTEN = 'w';
+static const char LC_PROTOCOL_PING    = 'p';
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -115,9 +117,6 @@ static void serve_connection(void* data) {
 
         const char* filename = pkg->data;
         file_data *fd = find_file_data(filename);
-
-        const char LC_PROTOCOL_REQUEST = 'r';
-        const char LC_PROTOCOL_WRITTEN = 'w';
 
         if (pkg->kind == pkg_written) {
             if (fd == NULL) {
@@ -231,6 +230,16 @@ static int create_dir(const char* path) {
     return true; // TODO: check 
 }
 
+static int create_lnk(const char* path, const char* lnk_src) {
+    trace("\tcreating a symlink %s -> %s\n", path, lnk_src);
+    int rc = symlink(lnk_src, path);
+    if (rc != 0) {
+        // TODO: report errors? then check existence first
+        trace("\t\terror creating a symlink %s -> %s\n", path, lnk_src);
+    }
+    return true; // TODO: check
+}
+
 static int create_file(const char* path, int size) {
     trace("\tcreating file %s %d\n", path, size);
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0700);
@@ -285,6 +294,7 @@ static enum file_state char_to_state(char c) {
         case UNCONTROLLED:
         case MODIFIED:
         case DIRECTORY:
+        case LINK:
         case INEXISTENT:
             return c;
         default:
@@ -297,7 +307,7 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
     if (*state == -1) {
         return false;
     }
-    if (*state == DIRECTORY) { // directory
+    if (*state == DIRECTORY || *state == LINK) { // directory
         // format is as in printf("D %s", path)
         *path = buffer + 2;
         *file_size = 0;
@@ -391,6 +401,18 @@ static int init_files() {
             break;
         } else if (state == DIRECTORY) { // directory
             create_dir(path);
+        } else if (state == LINK) { // symbolic link
+            char lnk_src[bufsize]; // it is followed by a line that contains the link source
+            fgets(lnk_src, sizeof lnk_src, stdin);
+            char* lf = strchr(lnk_src, '\n');
+            if (lf) {
+                *lf = 0;
+            }
+            if (strchr(buffer, '\r')) {
+                report_error("prodocol error: unexpected CR: %s\n", buffer);
+                return false;
+            }
+            create_lnk(path, lnk_src);
         } else { // plain file
             int touch = false;
             if (state == INITIAL) {
@@ -421,7 +443,7 @@ static int init_files() {
 
             if (*path == '/') {
                 char real_path [PATH_MAX + 1];
-                if (state == INEXISTENT) {
+                if (state == UNCONTROLLED || state == INEXISTENT) {
                     char *dir = path;
                     char *file = path;
                     // find trailing zero
@@ -481,6 +503,18 @@ static int init_files() {
     return success;
 }
 
+static void ping_pong(void* data) {
+    do {
+        pthread_mutex_lock(&mutex);
+        fprintf(stdout, "%c\n", LC_PROTOCOL_PING);
+        fflush(stdout);
+        char response[64];
+        fgets(response, sizeof response, stdin);
+        pthread_mutex_unlock(&mutex);
+        sleep(10);
+    } while (1);
+}
+
 int main(int argc, char* argv[]) {
     init_trace_flag("RFS_CONTROLLER_TRACE");
     trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
@@ -536,6 +570,10 @@ int main(int argc, char* argv[]) {
     // print port later, when we're done with initializing files
     fprintf(stdout, "PORT %d\n", port);
     fflush(stdout);
+
+    pthread_t ping_pong_thread;
+    pthread_create(&ping_pong_thread, NULL /*&attr*/, (void *(*) (void *)) ping_pong, NULL);
+    pthread_detach(ping_pong_thread);
 
     while (1) {
         /* wait for a client to talk to us */

@@ -216,7 +216,9 @@ public final class MimeTypesTracker {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener listener;
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+
+    /* package */ static final RequestProcessor RP = new RequestProcessor(MimeTypesTracker.class.getName()); //NOI18N
+    private final RequestProcessor.Task task = RP.create(new Runnable() {
         public void run() {
             rebuild();
         }

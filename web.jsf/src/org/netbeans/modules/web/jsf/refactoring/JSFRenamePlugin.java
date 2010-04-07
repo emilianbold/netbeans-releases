@@ -120,6 +120,9 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     
                     // find the old package name
                     ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+                    if(classPath == null){
+                        return null;//it may happens for folders in php and similar projects, see #181611
+                    }
                     FileObject root = classPath.findOwnerRoot(fileObject);
                     String prefix = FileUtil.getRelativePath(root, fileObject.getParent()).replace('/','.');
                     String oldName = (prefix.length() == 0 ? fileObject.getName() : prefix + "." + fileObject.getName());

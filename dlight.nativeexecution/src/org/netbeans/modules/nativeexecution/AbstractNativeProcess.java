@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -110,7 +111,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             // no logging for interrupting
         } catch (IOException ex) {
 //            log.log(Level.INFO, "Exception while getting host info:", ex); //NOI18N
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         hostInfo = hinfo;
 
@@ -133,6 +134,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         } catch (Throwable ex) {
             LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex.toString());
             setState(State.ERROR);
+            throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
         }
 
         return this;

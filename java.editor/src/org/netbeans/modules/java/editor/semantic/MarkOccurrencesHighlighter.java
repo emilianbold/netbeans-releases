@@ -148,7 +148,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return;
 
-        caretPosition = info.getPositionConverter().getJavaSourcePosition(caretPosition);
+        caretPosition = info.getSnapshot().getEmbeddedOffset(caretPosition);
 
         List<int[]> bag = processImpl(info, node, doc, caretPosition);
 
@@ -199,8 +199,8 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         AttributeSet attributes = ColoringManager.getColoringImpl(MO);
 
         for (int[] span : result) {
-            int convertedStart = info.getPositionConverter().getOriginalPosition(span[0]);
-            int convertedEnd   = info.getPositionConverter().getOriginalPosition(span[1]);
+            int convertedStart = info.getSnapshot().getOriginalOffset(span[0]);
+            int convertedEnd   = info.getSnapshot().getOriginalOffset(span[1]);
 
             if (convertedStart != (-1) && convertedEnd != (-1)) {
                 obag.addHighlight(convertedStart, convertedEnd, attributes);

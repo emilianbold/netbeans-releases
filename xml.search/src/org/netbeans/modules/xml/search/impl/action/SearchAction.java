@@ -49,7 +49,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
 import org.netbeans.modules.xml.search.impl.output.View;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -57,36 +57,32 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class SearchAction extends IconAction {
 
-  public SearchAction() {
-    this("LBL_Search_Action", "TLT_Search_Action", "search"); // NOI18N
-  }
-
-  private SearchAction(String name, String toolTip, String icon) {
-    super(
-      i18n(SearchAction.class, name),
-      i18n(SearchAction.class, toolTip),
-      icon(View.class, icon)
-    );
-    setEnabled(false);
-  }
-
-  public void actionPerformed(ActionEvent event) {
-    SearchManager.getDefault().showSearch(getProvider(getLastNode()));
-  }
-
-  private SearchProvider getProvider(Node node) {
-    DataObject data = getDataObject(node);
-
-    if (data == null) {
-      return null;
+    public SearchAction() {
+        this("LBL_Search_Action", "TLT_Search_Action", "search"); // NOI18N
     }
-    return data.getLookup().lookup(SearchProvider.class);
-  }
 
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
+    private SearchAction(String name, String toolTip, String icon) {
+        super(i18n(SearchAction.class, name), i18n(SearchAction.class, toolTip), icon(View.class, icon));
+        setEnabled(false);
+    }
 
-  public static final Action DEFAULT = new SearchAction();
+    public void actionPerformed(ActionEvent event) {
+        SearchManager.getDefault().showSearch(getProvider(getLastNode()));
+    }
+
+    private SearchProvider getProvider(Node node) {
+        DataObject data = getDataObject(node);
+
+        if (data == null) {
+            return null;
+        }
+        return data.getLookup().lookup(SearchProvider.class);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public static final Action DEFAULT = new SearchAction();
 }

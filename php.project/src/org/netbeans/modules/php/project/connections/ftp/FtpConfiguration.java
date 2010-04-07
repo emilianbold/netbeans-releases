@@ -118,7 +118,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        return password != null ? password : "";//NOI18N
+        return password != null ? password : ""; // NOI18N
     }
 
     @Override

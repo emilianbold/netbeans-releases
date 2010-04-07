@@ -59,6 +59,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -108,7 +110,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
                 if (awtEvent instanceof KeyEvent) {
                     KeyEvent keyEvt = (KeyEvent) awtEvent;
-                    if (keyEvt.getSource() != this) {
+                    if (keyEvt.getSource() != InsertRecordDialog.this) {
                         return;
                     }
                     if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
@@ -136,6 +138,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
         Action enterAction = new AbstractAction() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 executeBtnActionPerformed(null);
             }
@@ -144,6 +147,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
@@ -340,11 +344,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     public class TableListener implements TableModelListener {
 
+        @Override
         public void tableChanged(TableModelEvent e) {
             if (SwingUtilities.isEventDispatchThread()) {
                 refreshSQL();
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         refreshSQL();
                     }
@@ -375,8 +381,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {
-                        NotifyDescriptor nd = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notify(nd);
+                        Logger.getLogger(InsertRecordDialog.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
                         wasException = true;
                     }
                     if (wasException) {
@@ -438,14 +444,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             List componentList = Arrays.asList(order);
 
+            @Override
             public Component getFirstComponent(Container focusCycleRoot) {
                 return order[0];
             }
 
+            @Override
             public Component getLastComponent(Container focusCycleRoot) {
                 return order[order.length - 1];
             }
 
+            @Override
             public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {              
                 if (aComponent instanceof JXTableRowHeader) {
                     int rowIndex = jTable1.getRowCount() - 1;
@@ -455,11 +464,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return jTable1;
             }
 
+            @Override
             public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
                 int index = componentList.indexOf(aComponent);
                 return order[(index - 1 + order.length) % order.length];
             }
 
+            @Override
             public Component getDefaultComponent(Container focusCycleRoot) {
                 return order[0];
             }
@@ -497,14 +508,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public TableKeyListener() {
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
             processKeyEvents(e);
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
             processKeyEvents(e);
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             processKeyEvents(e);
         }
@@ -534,7 +548,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     private void copy() {
-        StringBuffer strBuffer = new StringBuffer();
+        StringBuilder strBuffer = new StringBuilder();
         int numcols = jTable1.getSelectedColumnCount();
         int numrows = jTable1.getSelectedRowCount();
         int[] rowsselected = jTable1.getSelectedRows();

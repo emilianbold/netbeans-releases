@@ -263,8 +263,7 @@ public class StatFilesTest extends NbTestCase {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();
         FileObject parent = fobj.getParent();
-        monitor.getResults().assertResult(1, StatFiles.ALL);
-        monitor.getResults().assertResult(1, StatFiles.READ);
+        monitor.getResults().assertResult(0, StatFiles.ALL);
         monitor.reset();
         parent = fobj.getParent();
         monitor.getResults().assertResult(0, StatFiles.ALL);

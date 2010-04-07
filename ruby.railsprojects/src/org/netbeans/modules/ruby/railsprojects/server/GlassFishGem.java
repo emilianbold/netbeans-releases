@@ -70,6 +70,7 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
      */
     private static final Pattern[] PATTERNS = {
         Pattern.compile(".*INFO: Glassfish v3 started.*", Pattern.DOTALL),
+        Pattern.compile(".*Press Ctrl\\+C to stop\\..*", Pattern.DOTALL),
         Pattern.compile(".*[0-9] milliseconds.*", Pattern.DOTALL)
     };
     

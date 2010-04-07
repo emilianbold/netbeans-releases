@@ -77,8 +77,8 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sherold
  */
-public class WarDeploymentConfiguration implements ModuleConfiguration, 
-        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
+public class WarDeploymentConfiguration extends WLDeploymentConfiguration
+        implements ModuleConfiguration, ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
     private final File file;
     private final J2eeModule j2eeModule;
@@ -89,6 +89,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
      * Creates a new instance of WarDeploymentConfiguration 
      */
     public WarDeploymentConfiguration(J2eeModule j2eeModule) {
+        super(j2eeModule);
         this.j2eeModule = j2eeModule;
         file = j2eeModule.getDeploymentConfigurationFile("WEB-INF/weblogic.xml"); // NOI18N
         getWeblogicWebApp();

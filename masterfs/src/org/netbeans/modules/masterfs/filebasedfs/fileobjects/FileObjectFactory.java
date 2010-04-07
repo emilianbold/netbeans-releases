@@ -78,6 +78,7 @@ public final class FileObjectFactory {
     public static boolean WARNINGS = true;
     final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
     private BaseFileObj root;
+    private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
     public static enum Caller {
         ToFileObject, GetFileObject, GetChildern, GetParent, Others
     }
@@ -300,7 +301,11 @@ public final class FileObjectFactory {
             }
         } else {
             if (foForFile == null) {
-                exist = touchExists(file, realExists);
+                if (caller == Caller.GetParent) {
+                    exist = true;
+                } else {
+                    exist = touchExists(file, realExists);
+                }
             } else if (foForFile.isValid()) {
                 if (parent == null) {
                     exist = (realExists == -1) ? true : touchExists(file, realExists);
@@ -421,9 +426,9 @@ public final class FileObjectFactory {
         return null;
     }
 
-    public final void refreshAll(final boolean expected) {
+    public final void refreshAll(RefreshSlow slow, final boolean expected) {
         Set<BaseFileObj> all2Refresh = collectForRefresh();
-        refresh(all2Refresh, expected);
+        refresh(all2Refresh, slow, expected);
     }
 
     private Set<BaseFileObj> collectForRefresh() {
@@ -452,24 +457,51 @@ public final class FileObjectFactory {
                 }
             }
         }
+        all2Refresh.remove(root); // #182793
         return all2Refresh;
     }
 
-    private void refresh(final Set<BaseFileObj> all2Refresh, File... files) {
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, File... files) {
+        final int size = all2Refresh.size();
+        int count = 0;
         for (final BaseFileObj fo : all2Refresh) {
+            count++;
             for (File file : files) {
                 if (isParentOf(file, fo.getFileName().getFile())) {
+                    if (slow != null) {
+                        slow.before();
+                    }
                     fo.refresh(true);
+                    if (slow != null) {
+                        if (!slow.after()) {
+                            return false;
+                        }
+                        slow.progress(count, size, fo);
+                    }
                     break;
                 }                
             }
         }
+        return true;
     }    
     
-    private void refresh(final Set<BaseFileObj> all2Refresh, final boolean expected) {
+    private boolean refresh(final Set<BaseFileObj> all2Refresh, RefreshSlow slow, final boolean expected) {
+        final int size = all2Refresh.size();
+        int count = 0;
         for (final BaseFileObj fo : all2Refresh) {
-            fo.refresh(expected);
+            count++;
+            if (slow != null) {
+                slow.before();
+            }
+                fo.refresh(expected);
+            if (slow != null) {
+                if (!slow.after()) {
+                    return false;
+                }
+                slow.progress(count, size, fo);
+            }
         }
+        return true;
     }
 
     public static boolean isParentOf(final File dir, final File file) {
@@ -634,11 +666,11 @@ public final class FileObjectFactory {
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
-    public final void refresh(final boolean expected) {
+    public final void refresh(final RefreshSlow slow, final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             public void run() {
-                refreshAll(expected);                
+                refreshAll(slow, expected);
             }            
         };        
         
@@ -655,7 +687,7 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
+        LOG_REFRESH.fine(
                 "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
                 Statistics.REFRESH_FS.toString() + "\n  " +
                 Statistics.LISTENERS_CALLS.toString() + "\n  " +
@@ -668,13 +700,19 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FILE.reset();
     }
 
-    public final void refreshFor(final File... files) {
+    public final void refreshFor(final RefreshSlow slow, final File... files) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         final Runnable r = new Runnable() {
             public void run() {
                 Set<BaseFileObj> all2Refresh = collectForRefresh();
-                refresh(all2Refresh, files);
-            }            
+                refresh(all2Refresh, slow, files);
+                if (LOG_REFRESH.isLoggable(Level.FINER)) {
+                    LOG_REFRESH.log(Level.FINER, "Refresh for {0} objects", all2Refresh.size());
+                    for (BaseFileObj baseFileObj : all2Refresh) {
+                        LOG_REFRESH.log(Level.FINER, "  {0}", baseFileObj);
+                    }
+                }
+            }
         };        
         stopWatch.start();
         try {
@@ -689,7 +727,7 @@ public final class FileObjectFactory {
         stopWatch.stop();
 
         // print refresh stats unconditionally in trunk
-        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
+        LOG_REFRESH.fine(
                 "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
                 Statistics.REFRESH_FS.toString() + "\n  " +
                 Statistics.LISTENERS_CALLS.toString() + "\n  " +

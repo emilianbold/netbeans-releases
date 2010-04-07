@@ -1,5 +1,5 @@
 Code completion result for source line:
 Mine::$|_status;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-VARIABLE   ? $_private_status              [STATIC]   Mine
-VARIABLE   ? $_status                      [STATIC]   Mine
+VARIABLE   ? $_private_status              [STATIC,   Mine
+VARIABLE   ? $_status                      [STATIC,   Mine

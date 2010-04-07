@@ -50,6 +50,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -77,18 +78,30 @@ public class CtrlClickHack implements AWTEventListener {
             if (fe.getID() == FocusEvent.FOCUS_GAINED) {
                 if (fe.getOppositeComponent() instanceof JTextComponent) {
                     JTextComponent jtc = (JTextComponent) fe.getOppositeComponent();
-                    jtc.getCaret().setVisible(false);
+                    if (null != jtc) {
+                        Caret caret = jtc.getCaret();
+                        if (null != caret) {
+                            caret.setVisible(false);
+                        }
+                    }
                 } else {
                     JTextComponent jtc = lastFocusedTextComponent == null ? null :
                         lastFocusedTextComponent.get();
-                    if (jtc != null) {
-                        jtc.getCaret().setVisible(false);
+                    if (null != jtc) {
+                        Caret caret = jtc.getCaret();
+                        if (null != caret)
+                            caret.setVisible(false);
                     }
                 }
                 if (fe.getComponent() instanceof JTextComponent) {
                     JTextComponent jtc = (JTextComponent) fe.getComponent();
                     lastFocusedTextComponent = new WeakReference<JTextComponent>(jtc);
-                    jtc.getCaret().setVisible(true);
+                    if (null != jtc) {
+                        Caret caret = jtc.getCaret();
+                        if (null != caret) {
+                            caret.setVisible(true);
+                        }
+                    }
                 }
             }
             return;

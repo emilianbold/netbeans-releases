@@ -231,11 +231,12 @@ public class PushAction extends ContextAction {
             }
 
             List<String> list;
+            HgHookContext context = null;
+            Collection<HgHook> hooks = null;
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
-                Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
-                HgHookContext context = null;
+                hooks = VCSHooks.getInstance().getHooks(HgHook.class);
                 if(hooks.size() > 0) {
                     HgHookContext.LogEntry[] entries = new HgHookContext.LogEntry[messages.size()];
                     for (int i = 0; i < messages.size(); i++) {
@@ -257,9 +258,6 @@ public class PushAction extends ContextAction {
                     }
                 }
                 list = HgCommand.doPush(root, pushUrl, logger, showSaveCredsOption);
-                for (HgHook hgHook : hooks) {
-                    hgHook.afterPush(context);
-                }
             }
             if (!list.isEmpty() &&
                     HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
@@ -269,6 +267,12 @@ public class PushAction extends ContextAction {
                         "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N
                 logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
                 return;
+            }
+
+            if(hooks != null && context != null) {
+                for (HgHook hgHook : hooks) {
+                    hgHook.afterPush(context);
+                }
             }
 
             if (list != null && !list.isEmpty()) {
@@ -347,6 +351,7 @@ public class PushAction extends ContextAction {
                             HgUtils.notifyUpdatedFiles(pushFile, list);
                         }
                     }
+
                 } else {
                     bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY"); // NOI18N
                 }

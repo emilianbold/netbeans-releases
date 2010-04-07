@@ -18,15 +18,35 @@
  */
 
 package org.netbeans.modules.xml.xpath.ext;
+
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
+
 /**
  * This is nothing but a wrapper around an XPathExpression.
  * This helps distinguishing expression which are predicates.
- * (ie. expression which are inside [] in a location/expression path. 
+ * (ie. expression which are inside [] in a location/expression path.
+ *
+ * @author Nikita Krjukov
  * @author radval
  *
  */
 public interface XPathPredicateExpression 
         extends XPathExpression, XPathSchemaContextHolder {
+
+    /**
+     * This method details semantics of the same method defined in the base interface.
+     * @see XPathSchemaContextHolder
+     *
+     * The schema context has special meaning here.
+     * 2 schema contexts are associated with the predicated location step:
+     * a predicated and base context. The base context doesn't have information
+     * about predicate. In only refers to step component. The predicated context
+     * is a wrapper context, which contains the base context and reference to
+     * predicate expression. It is important to understand that the base
+     * context should be specified here. This context is implied to be use
+     * as base while resolving schema context of the predicate's expression.
+     */
+    void setSchemaContext(XPathSchemaContext newContext);
 
     XPathExpression getPredicate();
 }

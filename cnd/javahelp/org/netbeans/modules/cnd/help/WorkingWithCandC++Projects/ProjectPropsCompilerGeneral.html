@@ -13,24 +13,45 @@ type="text/css">
 <body>
 <h2>C/C++ Project Properties Dialog Box: Compiler </h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The C or C++ Compiler panel lets you set the following compiler options for 
-your C or C++ Application project, Library project, or file:
-<ul>
-<li>include directories</li>
-<li>preprocessor definitions</li>
-<li>development mode</li>
-<li>warning level</li>
-<li>64-bit architecture</li>
-<li>whether to strip symbols during linking</li>
-<li>tool to use for compiling</li>
-</ul>
-<p>Use the buttons on the right side of the panel 
-to open the dialog boxes where you can specify include directories, 
-preprocessor definitions, and tools. Use the drop-down lists to set the development 
-mode and warning level.
-Use the checkboxes to specify compilation for 64-bit architecture and 
-stripping of symbols.
-</p>
+<p>The C or C++ Compiler panel lets you set compiler options for 
+your C or C++ Application project, Library project, or file. The options shown
+in the panel are dependent on the tool collection that is in effect. Changes
+you make apply only to the project configuration that is selected at the top of the dialog box.</p>
+<p>Selections in this dialog determine the compiler command options that will be used
+when the project is compiled. You can see the command line options that are
+in effect when you make selections in this dialog box by clicking the button
+next to the Additional Options field.</p>
+
+<p><b>Include Directories.</b> Type the absolute or relative path to the directories containing headers for your project, or
+click the button to browse to the directories and add them. On the file browser dialog box, you can specify
+Absolute or Relative path.</p>
+
+<p><b>Preprocessor Definitions.</b> Type the definitions for macros used by the project. Click the button
+    next to the text field to open the Preprocessor Definitions dialog box if you have many definitions
+    to add.
+    </p>
+
+    <p><b>Development Mode.</b> Select a mode to determine the set of compiler optimizations that will be used
+        when the project is compiled.</p>
+
+    <p><b>Warning Level.</b> Select the level of detail for warnings issued by the compiler.</p>
+    <p><b>Architecture.</b> Select 32-bit or 64-bit architecture for the binary.</p>
+    <p><b>Strip Symbols.</b> Select the checkbox to remove symbol tables from the binary.</p>
+    <p><b>Multithreading Level.</b> Select the type of multithreading, if any, used by the project.</p>
+    <p><b>Library Level.</b> Select an option to specify which standard libraries are included.</p>
+
+    <p><b>Standards Evolution.</b> If your project is written to older C/C++ standards, or relies on
+        newer non-ISO-compliant options, you might need to select a standards option.
+        </p>
+     <p><b>Language Extensions.</b>If your project strictly conforms to ISO C standards without
+         K&R C compatibility extensions, you should select None.
+    </p>
+      <p><b>Tool.</b> The command to run the compiler.</p>
+       <p><b>Additional Options.</b> Type any other compiler command line options in the text field, or click the
+       button to open a dialog box to see the options that are currently in effect. In the
+       dialog box, you can type more flags in the additional option in the Additional Options panel.
+       </p>
+
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

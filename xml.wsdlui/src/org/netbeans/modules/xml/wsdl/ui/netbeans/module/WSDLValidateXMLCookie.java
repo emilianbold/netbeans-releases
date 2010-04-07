@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
-import org.netbeans.modules.xml.validation.ValidateXMLCookieImpl;
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.xml.validation.ui.Output;
 import org.netbeans.modules.xml.xam.Model;
 
 /**
@@ -49,7 +51,7 @@ import org.netbeans.modules.xml.xam.Model;
  *
  * @author  Nathan Fiedler
  */
-public class WSDLValidateXMLCookie extends ValidateXMLCookieImpl {
+public class WSDLValidateXMLCookie implements ValidateXMLCookie {
     private WSDLDataObject dataObject;
 
     /**
@@ -59,8 +61,12 @@ public class WSDLValidateXMLCookie extends ValidateXMLCookieImpl {
         dataObject = dobj;
     }
 
-    @Override
-	protected Model getModel() {
-    	return dataObject.getWSDLEditorSupport().getModel();
+    public boolean validateXML(CookieObserver cookieObserver) {
+        new Output().validate(getModel());
+        return true;
+    }
+
+    protected Model getModel() {
+        return dataObject.getWSDLEditorSupport().getModel();
     }
 }

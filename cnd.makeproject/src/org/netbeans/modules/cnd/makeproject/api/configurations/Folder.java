@@ -181,7 +181,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, setModified);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
 
                 }
             } else {
@@ -1028,16 +1028,18 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = FileUtil.toFile(fileObject);
-        if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+        assert fileObject.isFolder();
+        if (fileObject.isValid()) {
+            File file = FileUtil.toFile(fileObject);
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+            }
+            if (!file.exists() || !file.isDirectory()) {
+                // It is possible that short-living temporary folder is created while building project
+                return;
+            }
+            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
         }
-        //if (true) return;
-        if (!file.exists() || !file.isDirectory()) {
-            assert false;
-            return;
-        }
-        /*Folder top =*/ getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
     }
 
     @Override
@@ -1112,7 +1114,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder

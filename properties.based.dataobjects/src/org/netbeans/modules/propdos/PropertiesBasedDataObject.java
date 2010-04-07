@@ -431,11 +431,8 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     }
 
     private final class IC implements InstanceCookie.Of, InstanceCookie {
-        //No idea why this is necessary, but the platforms dialog logs a
-        //warning that there is no InstanceCookie in our node otherwise
-
         public boolean instanceOf(Class<?> type) {
-            return type.equals(PropertiesBasedDataObject.this.type);
+            return type.isAssignableFrom(PropertiesBasedDataObject.this.type);
         }
 
         public String instanceName() {

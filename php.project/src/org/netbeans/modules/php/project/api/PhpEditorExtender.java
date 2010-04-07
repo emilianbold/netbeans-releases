@@ -41,6 +41,9 @@ package org.netbeans.modules.php.project.api;
 
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.project.PhpProject;
@@ -58,6 +61,9 @@ public final class PhpEditorExtender {
     }
 
     public static EditorExtender forFileObject(FileObject fo) {
+        if (!isCurrentlyOpened(fo)) {
+            return EMPTY_EDITOR_EXTENDER;
+        }
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fo);
         if (phpProject == null) {
             return EMPTY_EDITOR_EXTENDER;
@@ -65,6 +71,15 @@ public final class PhpEditorExtender {
         EditorExtender editorExtender = phpProject.getLookup().lookup(EditorExtender.class);
         assert editorExtender != null : "Editor extender must be found for " + phpProject;
         return editorExtender;
+    }
+
+    private static boolean isCurrentlyOpened(FileObject fo) {
+        JTextComponent component = EditorRegistry.lastFocusedComponent();
+        if (component == null) {
+            return false;
+        }
+        FileObject opened = NbEditorUtilities.getFileObject(component.getDocument());
+        return opened.equals(fo);
     }
 
     private static final class EmptyEditorExtender extends EditorExtender {

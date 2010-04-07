@@ -905,6 +905,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             Collection usedDecls = getUsedDeclarations(this.file, offset, strPrefix, match, kinds);
             out.addAll(usedDecls);
         }
+        if(out.isEmpty() && match) {
+            // Special case for nested structs in C
+            // See Bug 144535 - wrong error highlighting for inner structure
+            out.addAll(prj.findClassifiers(strPrefix));
+        }
         return out;
     }
 

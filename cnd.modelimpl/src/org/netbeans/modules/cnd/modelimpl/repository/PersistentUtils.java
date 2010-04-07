@@ -84,7 +84,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -239,7 +239,7 @@ public class PersistentUtils {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
         } else {
-            assert st instanceof TinyCharSequence;
+            assert CharSequences.isCompact(st);
             aStream.writeUTF(st.toString());
         }
     }
@@ -250,7 +250,7 @@ public class PersistentUtils {
             return null;
         }
         CharSequence res = manager.getString(s);
-        assert res instanceof TinyCharSequence;
+        assert CharSequences.isCompact(res);
         return res;
     }
 

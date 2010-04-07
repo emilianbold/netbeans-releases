@@ -64,6 +64,9 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
@@ -622,5 +625,93 @@ public class GeneralPHP extends JellyTestCase {
                 eoCode.deleteLine(iWalkUpLine);
             }
         }
+    }
+
+    public boolean DeleteFileContent(EditorOperator eoPHP) {
+        eoPHP.setCaretPositionToLine(1);
+        while (eoPHP.getText().length() != 0) {
+            eoPHP.deleteLine(eoPHP.getLineNumber());
+            Sleep(1000);
+        }
+        return true;
+    }
+
+    public JDialogOperator selectPHPFromEditorOptions(int mode) {
+
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
+        JDialogOperator window = new JDialogOperator("Options");
+        if (mode == 0) {
+        window.pressKey(KeyEvent.VK_RIGHT);
+        Sleep(1000);
+
+        for (int i = 0; i <= 4; i++) {
+            window.pressKey(KeyEvent.VK_TAB);
+            Sleep(1000);
+        }
+        window.pressKey(KeyEvent.VK_RIGHT);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_SPACE);
+        Sleep(1000);
+        }
+        window.pressKey(KeyEvent.VK_TAB);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_DOWN);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_DOWN);
+        Sleep(1000);
+        window.pressKey(KeyEvent.VK_ENTER);
+        Sleep(1000);
+        
+        return window;
+    }
+
+    public void setMethodParametersWrappingOptions(int state) {
+
+        JDialogOperator window = selectPHPFromEditorOptions(1);
+
+        //categories - check if they are all present
+        JComboBoxOperator category = new JComboBoxOperator(window, 2);
+        category.selectItem(5);
+
+        JComboBoxOperator wrappingCombo = new JComboBoxOperator(window, 2);
+        if (state == 0) {
+            wrappingCombo.selectItem(2);
+        }
+        if (state == 1) {
+            wrappingCombo.selectItem(0);
+        }
+        if (state == 2) {
+            wrappingCombo.selectItem(1);
+        }
+        Sleep(10000);
+        JButtonOperator jbOK = new JButtonOperator(window, "OK");
+        jbOK.push();
+        Sleep(1000);
+        window.waitClosed();
+    }
+
+    public void setPHPIndentation(int initialIndentation, int contIndentation, int arrayDeclarationIndentation) {
+        JDialogOperator window = selectPHPFromEditorOptions(1);
+
+        //categories - check if they are all present
+        JComboBoxOperator category = new JComboBoxOperator(window, 1);
+        category.selectItem("Tabs And Indents");
+
+        JTextFieldOperator initialIndentTextField = new JTextFieldOperator(window, 1);
+        initialIndentTextField.clearText();
+        initialIndentTextField.enterText(
+                String.valueOf(initialIndentation));
+
+        JTextFieldOperator contIndentTextField = new JTextFieldOperator(window, 2);
+        contIndentTextField.clearText();
+        contIndentTextField.enterText(
+                String.valueOf(contIndentation));
+
+        JTextFieldOperator arrayDeclarationIndentTextField = new JTextFieldOperator(window, 1);
+        arrayDeclarationIndentTextField.clearText();
+        arrayDeclarationIndentTextField.enterText(
+                String.valueOf(arrayDeclarationIndentation));
+
+
     }
 }

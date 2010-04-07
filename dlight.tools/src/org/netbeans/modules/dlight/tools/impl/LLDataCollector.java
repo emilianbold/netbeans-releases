@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
@@ -68,11 +69,13 @@ import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
+import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -101,12 +104,79 @@ public class LLDataCollector
     private DLightTarget target;
     private ValidationStatus validationStatus;
     private CollectorRunner profRunner;
+    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
 
     public LLDataCollector(LLDataCollectorConfiguration configuration) {
         collectedData = EnumSet.of(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
         name = LLDataCollectorConfigurationAccessor.getDefault().getName();
         validationStatus = ValidationStatus.initialStatus();
         validationListeners = Collections.synchronizedSet(new HashSet<ValidationListener>());
+    }
+
+/**
+     * Adds collector state listener, all listeners will be notified about
+     * collector state change.
+     * @param listener add listener
+     */
+    @Override
+    public final void addDataCollectorListener(DataCollectorListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        synchronized (this) {
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    /**
+     * Remove collector listener
+     * @param listener listener to remove from the list
+     */
+    @Override
+    public final void removeDataCollectorListener(DataCollectorListener listener) {
+        synchronized (this) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies listeners target state changed in separate thread
+     * @param oldState state target was
+     * @param newState state  target is
+     */
+    protected final void notifyListeners(final CollectorState state) {
+        DataCollectorListener[] ll;
+
+        synchronized (this) {
+            ll = listeners.toArray(new DataCollectorListener[0]);
+        }
+
+        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
+
+        // Will do notification in parallel, but wait until all listeners
+        // finish processing of event.
+        for (final DataCollectorListener l : ll) {
+            DLightExecutorService.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        l.collectorStateChanged(LLDataCollector.this, state);
+                    } finally {
+                        doneFlag.countDown();
+                    }
+                }
+            }, "Notifying " + l); // NOI18N
+        }
+
+        try {
+            doneFlag.await();
+        } catch (InterruptedException ex) {
+        }
+
     }
 
     public void addConfiguration(LLDataCollectorConfiguration configuration) {
@@ -165,9 +235,10 @@ public class LLDataCollector
 
     private void upload(ExecutionEnvironment execEnv, File localFile, String remoteDir, int mode) {
         try {
+            // TODO: eliminate mkDir in the case we don't need it
             CommonTasksSupport.mkDir(execEnv, remoteDir, null).get();
             CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv,
-                    remoteDir + "/" + localFile.getName(), mode, null).get(); // NOI18N
+                    remoteDir + "/" + localFile.getName(), mode, null, true).get(); // NOI18N
         } catch (InterruptedException ex) {
             DLightLogger.instance.log(Level.WARNING, null, ex);
         } catch (ExecutionException ex) {

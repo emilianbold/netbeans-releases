@@ -42,6 +42,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.FunctionNode;
@@ -224,6 +225,27 @@ public final class AstUtilities {
         if (signature == null) {
             return null;
         }
+
+        // Small hack for #181449
+        // It would be better if the ast nodo was able compose the signature with parameters.
+        if (signature.indexOf(':') > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (StringTokenizer st = new StringTokenizer(signature, ":"); st.hasMoreTokens();) {
+                String token = st.nextToken();
+                int index = token.indexOf(',');
+                if (index == -1) {
+                    index = token.lastIndexOf(')');
+                }
+                if (index > -1) {
+                    sb.append(token.substring(index));
+                }
+                else {
+                    sb.append(token);
+                }
+            }
+            signature = sb.toString();
+        }
+        
 //        Node node = AstUtilities.findBySignature(root, signature);
         boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
         if (lookForFunction) {

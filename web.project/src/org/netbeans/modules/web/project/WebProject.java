@@ -82,6 +82,7 @@ import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor.Task;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -107,6 +108,8 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -162,7 +165,6 @@ import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -485,7 +487,7 @@ public final class WebProject implements Project, AntProjectListener {
         Map<String, String> defs = new HashMap<String, String>();
 
         defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
-        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
         defs.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
         defs.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
         defs.put(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
@@ -812,6 +814,33 @@ public final class WebProject implements Project, AntProjectListener {
         
     }
     
+    public static void makeSureProjectHasJspCompilationLibraries(final ReferenceHelper refHelper) {
+        if (refHelper.getProjectLibraryManager() == null) {
+            return;
+        }
+        ProjectManager.mutex().writeAccess(new Runnable() {
+
+            public void run() {
+                Library lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compiler");
+                if (lib == null) {
+                    try {
+                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compiler")); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                lib = refHelper.getProjectLibraryManager().getLibrary("jsp-compilation");
+                if (lib == null) {
+                    try {
+                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("jsp-compilation")); // NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+    }
+
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
@@ -861,7 +890,7 @@ public final class WebProject implements Project, AntProjectListener {
     final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
         ProjectOpenedHookImpl() {}
-        
+
         protected void projectOpened() {
             try {
                 getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
@@ -995,7 +1024,7 @@ public final class WebProject implements Project, AntProjectListener {
             try {
                 getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Void>() {
                     public Void run(EjbJarMetadata metadata) throws Exception {
-                        enterpriseBeansListener = new EnterpriseBeansListener();
+                        enterpriseBeansListener = new EnterpriseBeansListener(WebProject.this);
                         metadata.getRoot().getEnterpriseBeans().addPropertyChangeListener(enterpriseBeansListener);
                         return null;
                     }
@@ -1018,8 +1047,8 @@ public final class WebProject implements Project, AntProjectListener {
             if(apiWebServicesSupport.isBroken(WebProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(WebProject.this);
             }
-            else if(apiWebServicesClientSupport.isBroken(WebProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(WebProject.this);
+            else if(WebServicesClientSupport.isBroken(WebProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(WebProject.this);
             }
             webPagesFileWatch.init();
             webInfFileWatch.init();
@@ -1040,6 +1069,12 @@ public final class WebProject implements Project, AntProjectListener {
 
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            
+            // make sure that sharable project which requires JSP compilation has its own
+            // copy of jsp-compiler and jsp-compilation library:
+            if (helper.isSharableProject() && "true".equals(props.get(WebProjectProperties.COMPILE_JSPS))) {
+                makeSureProjectHasJspCompilationLibraries(refHelper);
+            }
 
             J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
             J2EEProjectProperties.removeObsoleteLibraryLocations(props);
@@ -1081,7 +1116,7 @@ public final class WebProject implements Project, AntProjectListener {
             }
             
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
-            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
@@ -2155,13 +2190,25 @@ public final class WebProject implements Project, AntProjectListener {
         }
     }
 
-    private class EnterpriseBeansListener implements PropertyChangeListener{
-        public void propertyChange(final PropertyChangeEvent evt) {
-            RequestProcessor.getDefault().post(new Runnable() {
+    private static class EnterpriseBeansListener implements PropertyChangeListener{
+        private static final RequestProcessor rp = new RequestProcessor();
+        private Task upgradeTask = null;
+        private WebProject project;
+
+        public EnterpriseBeansListener(WebProject project) {
+            this.project = project;
+        }
+
+        public synchronized void propertyChange(final PropertyChangeEvent evt) {
+            if (upgradeTask != null){
+                upgradeTask.schedule(100);
+                return;
+            }
+            upgradeTask = rp.post(new Runnable() {
                 public void run() {
-                    WebProjectUtilities.upgradeJ2EEProfile(WebProject.this);
+                    WebProjectUtilities.upgradeJ2EEProfile(project);
                 }
-            });
+            }, 100);
         }
     }
 

@@ -94,6 +94,7 @@ public class MergeRevisions implements PropertyChangeListener {
         return ret;       
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(okButton != null) {
             boolean valid = ((Boolean)evt.getNewValue()).booleanValue();

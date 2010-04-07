@@ -41,8 +41,6 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
@@ -59,8 +57,6 @@ import org.netbeans.modules.bugzilla.query.BugzillaQuery;
  */
 public class KenaiSupportImpl extends KenaiSupport {
 
-    private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
-
     public KenaiSupportImpl() {
     }
 
@@ -73,9 +69,6 @@ public class KenaiSupportImpl extends KenaiSupport {
         KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
         if(repo == null) {
             return null;
-        }
-        synchronized (repositories) {
-            repositories.add(repo);
         }
 
         KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
@@ -93,7 +86,7 @@ public class KenaiSupportImpl extends KenaiSupport {
     public void setFilter(Query query, Filter filter) {
         if(query instanceof BugzillaQuery) { // XXX assert instead of if
             BugzillaQuery bq = (BugzillaQuery) query;
-            bq.setFilter(filter);
+            bq.getController().selectFilter(filter);
         }
     }
 
@@ -109,7 +102,7 @@ public class KenaiSupportImpl extends KenaiSupport {
         String host = loc.getHost();
         int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
         if (idx <= 0) {
-            Bugzilla.LOG.warning("can't get issue tracker url from [" + displayName + ", " + location + "]"); // NOI18N
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
             return null;
         }
         String url = location.substring(0, idx);
@@ -121,7 +114,7 @@ public class KenaiSupportImpl extends KenaiSupport {
         String product = null;
         int idxProductStart = location.indexOf(productAttribute);
         if (idxProductStart <= 0) {
-            Bugzilla.LOG.warning("can't get issue tracker product from [" + displayName + ", " + location + "]"); // NOI18N
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker product from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
             return null;
         } else {
             int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N

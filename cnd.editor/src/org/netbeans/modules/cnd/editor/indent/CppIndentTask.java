@@ -59,6 +59,8 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class CppIndentTask extends IndentSupport implements IndentTask {
+
+    private static String SPACES = "                                "; // NOI18N
     private Context context;
     private Document doc;
 
@@ -89,13 +91,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         return null;
     }
 
-    private TokenItem moveToFirstLineImportantToken(TokenItem token){
+    private TokenItem moveToFirstLineImportantToken(TokenItem token) {
         TokenItem t = token;
-        while(true) {
+        while (true) {
             if (t == null) {
                 return token;
             }
-            switch (t.getTokenID()){
+            switch (t.getTokenID()) {
                 case NEW_LINE:
                 case PREPROCESSOR_DIRECTIVE:
                     return token;
@@ -110,7 +112,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
     }
 
     private int indentLine(TokenItem token, int caretOffset) {
-        if (isPreprocessorLine(token)){
+        if (isPreprocessorLine(token)) {
             // leave untouched for now, (bug#22570)
             return -1;
         }
@@ -151,22 +153,24 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                         if (function != null) {
                             StringBuilder buf = new StringBuilder();
-                            buf.append("* " + NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature()) + "\n"); // NOI18N
+                            buf.append(SPACES.substring(0, indent));
+                            buf.append("* ").append(NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature())).append("\n"); // NOI18N
+                            buf.append(SPACES.substring(0, indent));
+                            buf.append("*\n"); // NOI18N
                             for (Parameter p : function.getParametes()) {
-                                for (int i = 0; i < indent; i++) {
-                                    buf.append(' ');
-                                }
+                                buf.append(SPACES.substring(0, indent));
                                 buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
                             }
-                            if (!"void".equals(function.getReturnType())) { // NOI18N
-                                for (int i = 0; i < indent; i++) {
-                                    buf.append(' ');
-                                }
+                            final String returnType = function.getReturnType();
+                            if (returnType != null && !"void".equals(returnType)) { // NOI18N
+                                buf.append(SPACES.substring(0, indent));
                                 buf.append("* @return ...").append('\n'); // NOI18N
-                                }
-                            for (int i = 0; i < indent; i++) {
-                                buf.append(' ');
                             }
+//                            buf.append(SPACES.substring(0, indent));
+//                            buf.append("*\n"); // NOI18N
+                            buf.append(SPACES.substring(0, indent));
+                            buf.append("* @author ").append(System.getProperty("user.name")).append("\n"); // NOI18N
+                            buf.append(SPACES.substring(0, indent));
                             doc.insertString(caretOffset, buf.toString(), null);
                         }
                     } else {
@@ -185,14 +189,14 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         return findIndent(moveToFirstLineImportantToken(token));
     }
 
-     /** Is given token a preprocessor **/
-     private boolean isPreprocessorLine(TokenItem token){
-         if (token != null){
-             return CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(token.getTokenID().primaryCategory()) ||
-                    CppTokenId.PREPROCESSOR_CATEGORY.equals(token.getTokenID().primaryCategory());
-         }
-         return false;
-     }
+    /** Is given token a preprocessor **/
+    private boolean isPreprocessorLine(TokenItem token) {
+        if (token != null) {
+            return CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(token.getTokenID().primaryCategory())
+                    || CppTokenId.PREPROCESSOR_CATEGORY.equals(token.getTokenID().primaryCategory());
+        }
+        return false;
+    }
 
     private boolean isMultiLineComment(TokenItem token) {
         return (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT);
@@ -237,14 +241,14 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case ASM:
                             case CATCH:
                                 indent = getTokenIndent(stmt);
-                                if (isHalfIndentNewlineBeforeBrace()){
-                                    indent += getShiftWidth()/2;
+                                if (isHalfIndentNewlineBeforeBrace()) {
+                                    indent += getShiftWidth() / 2;
                                 }
                                 break;
                             case SWITCH:
                                 indent = getTokenIndent(stmt);
-                                if (isHalfIndentNewlineBeforeBraceSwitch()){
-                                    indent += getShiftWidth()/2;
+                                if (isHalfIndentNewlineBeforeBraceSwitch()) {
+                                    indent += getShiftWidth() / 2;
                                 }
                                 break;
 
@@ -282,8 +286,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             switch (t.getTokenID()) {
                                 case SEMICOLON:
                                 case LBRACE:
-                                case RBRACE:
-                                {
+                                case RBRACE: {
                                     t = rbmt;
                                     forceFirstNonWhitespace = true;
                                 }
@@ -296,7 +299,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         } else {
                             indent = getTokenIndent(t);
                         }
-                        switch (t.getTokenID()){
+                        switch (t.getTokenID()) {
                             case FOR:
                             case IF:
                             case WHILE:
@@ -305,13 +308,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case TRY:
                             case ASM:
                             case CATCH:
-                                if (isHalfIndentNewlineBeforeBrace()){
-                                    indent += getShiftWidth()/2;
+                                if (isHalfIndentNewlineBeforeBrace()) {
+                                    indent += getShiftWidth() / 2;
                                 }
                                 break;
                             case SWITCH:
-                                if (isHalfIndentNewlineBeforeBraceSwitch()){
-                                    indent += getShiftWidth()/2;
+                                if (isHalfIndentNewlineBeforeBraceSwitch()) {
+                                    indent += getShiftWidth() / 2;
                                 }
                                 break;
                         }
@@ -328,7 +331,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         if (indentCasesFromSwitch()) {
                             indent += getShiftWidth();
                         } else if (isHalfIndentNewlineBeforeBraceSwitch()) {
-                            indent += getShiftWidth()/2;
+                            indent += getShiftWidth() / 2;
                         }
                     }
                     break;
@@ -339,7 +342,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     if (cls != null) {
                         indent = getTokenIndent(cls);
                         if (isHalfIndentVisibility()) {
-                            indent += getShiftWidth()/2;
+                            indent += getShiftWidth() / 2;
                         }
                     }
                     break;
@@ -361,22 +364,22 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     case SEMICOLON: // semicolon found
                         TokenItem tt = findStatementStart(token);
                         // preprocessor tokens are not important (bug#22570)
-                        if (tt !=null){
+                        if (tt != null) {
                             switch (tt.getTokenID()) {
                                 case PUBLIC:
                                 case PRIVATE:
                                 case PROTECTED:
                                     indent = getTokenIndent(tt) + getShiftWidth();
                                     if (isHalfIndentVisibility()) {
-                                        indent -= getShiftWidth()/2;
+                                        indent -= getShiftWidth() / 2;
                                     }
                                     break;
                                 case FOR:
                                     if (isForLoopSemicolon(t)) {
                                         if (alignMultilineFor()) {
                                             TokenItem lparen = getLeftParen(t, tt);
-                                            if (lparen != null){
-                                                indent = getTokenColumn(lparen)+1;
+                                            if (lparen != null) {
+                                                indent = getTokenColumn(lparen) + 1;
                                                 break;
                                             }
                                         }
@@ -397,7 +400,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         if (lbss == null) {
                             lbss = t;
                         }
-                        switch (lbss.getTokenID()){
+                        switch (lbss.getTokenID()) {
                             case FOR:
                             case IF:
                             case WHILE:
@@ -431,21 +434,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
 
                     case COLON:
                         TokenItem ttt = getVisibility(t);
-                        if (ttt != null){
+                        if (ttt != null) {
                             indent = getTokenIndent(ttt) + getRightIndentDeclaration();
                             if (isHalfIndentVisibility()) {
-                                indent -= getShiftWidth()/2;
+                                indent -= getShiftWidth() / 2;
                             }
                         } else {
                             ttt = findAnyToken(t, null,
-                                    new CppTokenId[] {CppTokenId.CASE,
-                                    CppTokenId.DEFAULT,
-                                    CppTokenId.QUESTION,
-                                    CppTokenId.PRIVATE,
-                                    CppTokenId.PROTECTED,
-                                    CppTokenId.PUBLIC}, true);
+                                    new CppTokenId[]{CppTokenId.CASE,
+                                        CppTokenId.DEFAULT,
+                                        CppTokenId.QUESTION,
+                                        CppTokenId.PRIVATE,
+                                        CppTokenId.PROTECTED,
+                                        CppTokenId.PUBLIC}, true);
                             if (ttt != null) {
-                                switch(ttt.getTokenID()) {
+                                switch (ttt.getTokenID()) {
                                     case QUESTION:
                                         indent = getTokenIndent(ttt) + getShiftWidth();
                                         break;
@@ -547,36 +550,36 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             // and not inside parents and if so then do not indent
             // statement continuation
             if (t != null && t.getTokenID() == CppTokenId.COMMA) {
-                if (isArrayInitializationBraceBlock(t, null) &&
-                    getLeftParen(t, stmtStart)==null) {
+                if (isArrayInitializationBraceBlock(t, null)
+                        && getLeftParen(t, stmtStart) == null) {
                     return indent;
                 }
                 TokenItem lparen = getLeftParen(t, stmtStart);
-                if (lparen != null){
+                if (lparen != null) {
                     TokenItem prev = findImportantToken(lparen, null, true);
-                    if (prev != null &&
-                        prev.getTokenID() == CppTokenId.IDENTIFIER){
+                    if (prev != null
+                            && prev.getTokenID() == CppTokenId.IDENTIFIER) {
                         if (isStatement(stmtStart)) {
-                            if (alignMultilineCallArgs()){
-                                return getTokenColumn(lparen)+1;
+                            if (alignMultilineCallArgs()) {
+                                return getTokenColumn(lparen) + 1;
                             }
                         } else {
-                            if (alignMultilineMethodParams()){
-                                return getTokenColumn(lparen)+1;
+                            if (alignMultilineMethodParams()) {
+                                return getTokenColumn(lparen) + 1;
                             }
                         }
                     }
                 }
-            } else if ( (stmtStart.getTokenID() == CppTokenId.IF && alignMultilineIf()) ||
-                        (stmtStart.getTokenID() == CppTokenId.WHILE && alignMultilineWhile()) ||
-                        (stmtStart.getTokenID() == CppTokenId.FOR && alignMultilineFor())) {
-                if (t != null){
+            } else if ((stmtStart.getTokenID() == CppTokenId.IF && alignMultilineIf())
+                    || (stmtStart.getTokenID() == CppTokenId.WHILE && alignMultilineWhile())
+                    || (stmtStart.getTokenID() == CppTokenId.FOR && alignMultilineFor())) {
+                if (t != null) {
                     TokenItem lparen = getLeftParen(t, stmtStart);
-                    if (lparen != null){
-                        return getTokenColumn(lparen)+1;
+                    if (lparen != null) {
+                        return getTokenColumn(lparen) + 1;
                     }
                 }
-            } else if (!isStatement(stmtStart)){
+            } else if (!isStatement(stmtStart)) {
                 return indent;
             }
             indent += getFormatStatementContinuationIndent();
@@ -672,5 +675,4 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             doc.insertString(offset, newIndentString, null);
         }
     }
-
 }

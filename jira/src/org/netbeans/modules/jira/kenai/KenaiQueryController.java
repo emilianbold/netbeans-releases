@@ -40,6 +40,7 @@
 package org.netbeans.modules.jira.kenai;
 
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
+import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConnector;
@@ -103,7 +104,8 @@ public class KenaiQueryController extends QueryController
 
     private boolean checkIssueProduct(NbJiraIssue issue) {
         String issueProject = issue.getFieldValue(IssueField.PROJECT);
-        if(!issueProject.equals(projectName)) {
+        Project project = issue.getRepository().getConfiguration().getProjectById(issueProject);
+        if (project==null || !project.getKey().equals(projectName)) {
             Confirmation dd = new DialogDescriptor.Confirmation(
                                 NbBundle.getMessage(
                                     KenaiQueryController.class,

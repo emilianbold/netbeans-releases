@@ -46,8 +46,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * File and offset -based key
@@ -80,7 +79,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 
     /*package-local*/ CharSequence getName() {
         if (name != null && 0 < name.length() && isDigit(name.charAt(0))) {
-            return CharSequenceKey.empty();
+            return CharSequences.empty();
         }
         return name;
     }
@@ -127,7 +126,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         this.endOffset = aStream.readInt();
         this.hashCode = aStream.readInt();
         this.name = PersistentUtils.readUTF(aStream, NameCache.getManager());
-        assert this.name instanceof TinyCharSequence;
+        assert CharSequences.isCompact(name);
     }
 
     @Override
@@ -141,8 +140,8 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
             return false;
         }
         OffsetableKey other = (OffsetableKey) obj;
-        assert name instanceof TinyCharSequence;
-        assert other.name instanceof TinyCharSequence;
+        assert CharSequences.isCompact(name);
+        assert CharSequences.isCompact(other.name);
         return this.startOffset == other.startOffset &&
                 this.endOffset == other.endOffset &&
                 this.getKind() == other.getKind() &&

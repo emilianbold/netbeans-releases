@@ -237,7 +237,7 @@ class FilesystemHandler extends VCSInterceptor {
             //        options.setModeratelyQuiet(true);
                     final ExecutorGroup refreshCommandGroup = new ExecutorGroup(null);
                     refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null));
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             refreshCommandGroup.execute();
                         }

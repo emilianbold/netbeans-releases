@@ -58,6 +58,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -229,7 +231,7 @@ public final class ClassPath {
      */
     private Map<FileObject,FilteringPathResourceImplementation> root2Filter = new WeakHashMap<FileObject,FilteringPathResourceImplementation>();
     private PropertyChangeListener pListener;
-    private PropertyChangeListener weakPListener;
+    private final List<Object[]> weakPListeners = new LinkedList<Object[]>();   //todo: Replace with Pair<PathResourceImplementation,PropertyChangeListener> when Pair available
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
     private long invalidEntries;    //Lamport ordering of events
@@ -328,14 +330,22 @@ public final class ClassPath {
         assert result != null;
         return result;
     }
-    
+
+    //@GuardedBy("this")
     private List<ClassPath.Entry> createEntries (final List<Object[]> resources) {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
+            for (final Iterator<Object[]> it = weakPListeners.iterator(); it.hasNext();) {
+                final Object[] rwp = it.next();
+                it.remove();
+                ((PathResourceImplementation)rwp[0]).removePropertyChangeListener((PropertyChangeListener)rwp[1]);
+            }
+            assert  weakPListeners.isEmpty();
             for (Object[] pair : resources) {
                 PathResourceImplementation pr = (PathResourceImplementation) pair[0];
                 URL[] roots = (URL[]) pair[1];
-                pr.removePropertyChangeListener(weakPListener);
-                pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
+                final PropertyChangeListener weakPListener = WeakListeners.propertyChange(pListener, pr);
+                pr.addPropertyChangeListener(weakPListener);
+                weakPListeners.add(new Object[]{pr, weakPListener});
                 for (URL root : roots) {
                     if (!(pr instanceof SimplePathResourceImplementation)) { // ctor already checks these things
                         SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName(), caller);
@@ -353,7 +363,7 @@ public final class ClassPath {
         this.propSupport = new PropertyChangeSupport(this);
         this.impl = impl;
         this.pListener = new SPIListener ();
-        this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
+        this.impl.addPropertyChangeListener (WeakListeners.propertyChange(this.pListener, this.impl));
         caller = new IllegalArgumentException();
     }
 
@@ -1014,9 +1024,18 @@ public final class ClassPath {
                     LOG.log(Level.WARNING, "ClassPathImplementation.getResources cannot return null; impl class: {0}", impl.getClass().getName());
                     return;
                 }
-                for (PathResourceImplementation pri : resources) {
-                    pri.removePropertyChangeListener(weakPListener);
-                    pri.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pri));
+                synchronized (ClassPath.this) {
+                    for (final Iterator<Object[]> it = weakPListeners.iterator(); it.hasNext();) {
+                        final Object[] rwp = it.next();
+                        it.remove();
+                        ((PathResourceImplementation)rwp[0]).removePropertyChangeListener((PropertyChangeListener)rwp[1]);
+                    }
+                    assert  weakPListeners.isEmpty();
+                    for (PathResourceImplementation pri : resources) {
+                        final PropertyChangeListener weakPListener = WeakListeners.propertyChange(pListener, pri);
+                        pri.addPropertyChangeListener(weakPListener);
+                        weakPListeners.add(new Object[]{pri, weakPListener});
+                    }
                 }
             }
         }
@@ -1086,10 +1105,11 @@ public final class ClassPath {
 
 
         public synchronized void removeAllRoots () {
-            for (File root : roots) {
+            for (final Iterator<File> it = roots.iterator(); it.hasNext();) {
+                final File root = it.next();
+                it.remove();
                 FileUtil.removeFileChangeListener(this, root);
             }
-            this.roots.clear();
         }
 
         public void fileFolderCreated(FileEvent fe) {
@@ -1116,7 +1136,12 @@ public final class ClassPath {
         }
 
         public void run() {
-            removeAllRoots();
+            try {
+                removeAllRoots();
+            } catch (final IllegalArgumentException iae) {
+                //pass - ignore, the FU.removeFileChangeListener holds listeners
+                //in the WeakHashMap and this may be already removed -> IAE.
+            }
         }
 
         private void processEvent (FileEvent fe) {

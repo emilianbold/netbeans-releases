@@ -210,9 +210,7 @@ public class NewProject extends BasicAction {
                         OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[0]), false, true, mainProject);
                         
                         // Show the project tab to show the user we did something
-                        if (! Boolean.getBoolean("project.tab.no.selection")) { //NOI18N
-                            ProjectUtilities.makeProjectTabVisible( true );
-                        }
+                        ProjectUtilities.makeProjectTabVisible();
                         
                         if (lastProject != null) {
                             // Just select and expand the project node

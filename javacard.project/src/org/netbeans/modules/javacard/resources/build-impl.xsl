@@ -381,25 +381,62 @@ No emulator found at ${emulator.executable}]]>
 
             </xsl:choose>
 
-            <target name="pack" depends="unpack-dependencies,do-pack,do-sign"/>
+            <xsl:choose>
+                <xsl:when test="$classiclibraryproject">
+                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,do-pack"/>
+                </xsl:when>
+
+                <xsl:when test="$classicappletproject">
+                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,create-static-pages,do-pack"/>
+                </xsl:when>
+
+                <xsl:when test="$extensionlibraryproject">
+                    <target name="pack" depends="unpack-dependencies,compile,create-descriptors,do-pack"/>
+                </xsl:when>
+
+                <xsl:otherwise>
+                    <target name="pack" depends="unpack-dependencies,compile,create-descriptors,create-static-pages,do-pack"/>
+                </xsl:otherwise>
+            </xsl:choose>
 
             <target name="do-pack">
                 <jc-pack failonerror="true"/>
             </target>
 
-            <target name="do-sign" if="sign.bundle">
+            <target name="sign" depends="pack,do-sign"/>
+            
+            <target name="do-sign" if="sign.bundle" depends="pack">
                 <jc-sign failonerror="true"/>
             </target>
 
             <xsl:if test="$classicappletproject or $classiclibraryproject">
-                <target name="-print-message-for-use-my-proxies" unless="${{use.my.proxies}}">
-                    <echo></echo>
-                    <echo>!!!!SIO-Proxy Generation!!!!</echo>
-                    <echo>Source for Proxies is generated. To use these sources, Use My Proxies option in Packaging settings of the project must be enabled.</echo>
+                <target name="-print-message-for-use-my-proxies">
+                    <echo>
+    ${proxies.count} proxy source(s) were generated to './${proxy.generation.dir}'
+    ${new.count} new sources were copied to './${src.proxies.dir}'
+    
+    Note: existing proxy sources at './${src.proxies.dir}' weren't replaced or removed.
+    Only new ones were added. To replace any of existing proxy sources with generated ones
+    or remove unnecessary sources you need to delete corresponding source files from 
+    './${src.proxies.dir}'. You can see *all* generated sources at './${proxy.generation.dir}'.
+                    </echo>
                     <echo></echo>
                 </target>
-                <target name="generate-sio-proxies" depends="-init">
+
+                <target name="generate-sio-proxies" depends="-init,compile,create-descriptors">
+                    <delete dir="${{proxy.generation.dir}}"/>
+                    <mkdir dir="${{proxy.generation.dir}}"/>
                     <jc-proxy failonerror="true"/>
+                    <fileset dir="${{proxy.generation.dir}}" includes="**/proxy/*.java" id="proxies.new">
+                        <present present="srconly" targetdir="${{src.proxies.dir}}"/>
+                    </fileset>
+                    <resourcecount property="new.count" refid="proxies.new"/>
+                    <copy todir="${{src.proxies.dir}}" overwrite="false">
+                        <fileset refid="proxies.new"/>
+                    </copy>
+                    <resourcecount property="proxies.count">
+                        <fileset dir="${{proxy.generation.dir}}" includes="**/proxy/*.java" />
+                    </resourcecount>
                     <antcall target="-print-message-for-use-my-proxies"/>
                 </target>
             </xsl:if>
@@ -415,17 +452,9 @@ No emulator found at ${emulator.executable}]]>
                 </xsl:otherwise>
             </xsl:choose>
 
-            <xsl:choose>
-                <xsl:when test="$classiclibraryproject or $extensionlibraryproject">
-                    <target name="build" depends="compile, create-descriptors, pack"/>
-                </xsl:when>
+            <target name="build" depends="pack,sign"/>
 
-                <xsl:otherwise>
-                    <target name="build" depends="compile, create-descriptors, create-static-pages, pack"/>
-                </xsl:otherwise>
-            </xsl:choose>
-
-            <target name="load-bundle" depends="-init,load-dependencies">
+            <target name="load-bundle">
                 <waitfor>
                     <http url="${{javacard.device.cardmanagerurl}}"/>
                 </waitfor>
@@ -529,6 +558,7 @@ run   - Builds and deploys the application and starts the browser.
             <target name="compile" depends="-init">
                 <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspathref="javacard.classpath" includeAntRuntime="no">
                     <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:source-roots/jcproj:root">
+                        <xsl:if test="@id != 'src.proxies.dir'">
                         <xsl:element name="src">
                             <xsl:attribute name="path">
                                 <xsl:text>${</xsl:text>
@@ -536,8 +566,9 @@ run   - Builds and deploys the application and starts the browser.
                                 <xsl:text>}</xsl:text>
                             </xsl:attribute>
                         </xsl:element>
+                        </xsl:if>
                     </xsl:for-each>
-                    <classpath>
+                    <classpath id="compile.path">
                     <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
                         <xsl:element name="pathelement">
                             <xsl:attribute name="path">
@@ -567,7 +598,15 @@ run   - Builds and deploys the application and starts the browser.
                     </xsl:for-each>
                     </classpath>
                 </javac>
-
+            <xsl:if test="$classicappletproject or $classiclibraryproject">
+                <condition property="compile.proxies">
+                    <and>
+                        <isset property="use.my.proxies"/>
+                        <equals arg1="${{use.my.proxies}}" arg2="true"/>
+                        <available file="${{src.proxies.dir}}" type="dir"/>
+                    </and>
+                </condition>
+            </xsl:if>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/project:project/project:configuration/jcproj:data/jcproj:source-roots"/>
@@ -575,6 +614,21 @@ run   - Builds and deploys the application and starts the browser.
                     </xsl:call-template>
                 </copy>
             </target>
+
+        <xsl:if test="$classicappletproject or $classiclibraryproject">
+            <target name="compile-proxies" if="compile.proxies">
+                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}"
+                        target="${{javac.target}}" nowarn="${{javac.deprecation}}"
+                        debug="${{javac.debug}}" optimize="no" includeAntRuntime="no"
+                        includes="**/proxy/*.java">
+                    <bootclasspath>
+                        <pathelement location="${{javacard.bootclasspath}}"/>
+                    </bootclasspath>
+                    <classpath refid="compile.path"/>
+                    <src path="${{src.proxies.dir}}"/>
+                </javac>
+            </target>
+        </xsl:if>
 
             <target name="all" depends="build"/>
 
@@ -596,7 +650,7 @@ run   - Builds and deploys the application and starts the browser.
             </xsl:if>
 
             <target name="create-static-pages" depends="-init">
-                <copy todir="${{build.dir}}">
+                <copy todir="${{build.dir}}" failonerror="false">
                     <xsl:choose>
                         <xsl:when test="$webproject">
                             <fileset dir="${{staticpages.dir}}"/>
@@ -1027,7 +1081,7 @@ run   - Builds and deploys the application and starts the browser.
         <xsl:param name="includes" select="'${includes}'"/>
         <xsl:param name="includes2"/>
         <xsl:param name="excludes"/>
-        <xsl:for-each select="$roots/jcproj:root">
+        <xsl:for-each select="$roots/jcproj:root[@id != 'src.proxies.dir']">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir">
                     <xsl:text>${</xsl:text>

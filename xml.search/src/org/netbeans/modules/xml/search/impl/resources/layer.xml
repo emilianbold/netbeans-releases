@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -50,13 +50,13 @@
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">
-                <file name="search.wstcref" url="search.wstcref">
+                <file name="xml.search.wstcref" url="xml.search.wstcref">
                     <attr name="position" intvalue="1850"/>
                 </file>
             </folder>
         </folder>
         <folder name="Components">
-            <file name="search.settings" url="search.settings"/>
+            <file name="xml.search.settings" url="xml.search.settings"/>
         </folder>
     </folder>
 

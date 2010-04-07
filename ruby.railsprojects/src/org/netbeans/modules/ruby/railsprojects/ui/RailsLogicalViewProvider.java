@@ -110,6 +110,8 @@ import org.openide.util.lookup.Lookups;
  * Logical view provider for Rails project.
  */
 public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider {
+
+    private static final RequestProcessor requestProcessor = new RequestProcessor("Rails Annotation"); // NOI18N
     
     public RailsLogicalViewProvider(
             final RailsProject project,
@@ -307,7 +309,7 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
         
         public void annotationChanged(FileStatusEvent event) {
             if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
+                task = requestProcessor.create(this);
             }
             
             synchronized (privateLock) {

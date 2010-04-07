@@ -61,7 +61,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ui.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;

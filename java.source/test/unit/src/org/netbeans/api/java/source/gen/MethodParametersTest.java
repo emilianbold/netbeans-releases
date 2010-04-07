@@ -421,7 +421,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui( int sugerimos) {\n" +
+            "    public void taragui(int sugerimos) {\n" +
             "    }\n" +
             "}\n";
 
@@ -466,7 +466,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui( int sugerimos, int empezar) {\n" +
+            "    public void taragui(int sugerimos, int empezar) {\n" +
             "    }\n" +
             "}\n";
 

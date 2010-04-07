@@ -40,15 +40,19 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.awt.Dimension;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -64,6 +68,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -72,26 +77,29 @@ import org.openide.util.NbBundle;
  *
  * @author  thp
  */
-/*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
+/*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener, Runnable {
 
     private DialogDescriptor dialogDescriptor = null;
     private final CompilerSetManagerImpl csm;
     private final boolean local;
-    private final Object lock = new Object();
-    private final Object remoteCompilerCheckExecutorLock = new Object();
-    private ExecutorService remoteCompilerCheckExecutor;
+
+    private final Object lastFoundLock = new Object();
+    private CompilerSet lastFoundRemoteCompilerSet;
+
+    private final Object compilerCheckExecutorLock = new Object();
+    private final ScheduledExecutorService compilerCheckExecutor;
+    private ScheduledFuture<?> compilerCheckTask;
+
+    private final Color defaultLbErrColor;
+
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
+        defaultLbErrColor = lbError.getForeground();
         this.csm = (CompilerSetManagerImpl) csm;
         this.local = ((CompilerSetManagerImpl)csm).getExecutionEnvironment().isLocal();
-
-        if (!local) {
-            // we can't have Browse button for remote, so we use it to validate path on remote host
-            btBaseDirectory.setText(getString("AddCompilerSetPanel.btBaseDirectoryRemoteMode.text"));
-            btBaseDirectory.setMnemonic(0);
-        }
 
         List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
@@ -102,120 +110,117 @@ import org.openide.util.NbBundle;
         tfName.setText(""); // NOI18N
         validateData();
 
-        setPreferredSize(new Dimension(800, 300));
-
         tfBaseDirectory.getDocument().addDocumentListener(AddCompilerSetPanel.this);
         tfName.getDocument().addDocumentListener(AddCompilerSetPanel.this);
+
+        compilerCheckExecutor = Executors.newScheduledThreadPool(1);
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-        synchronized (remoteCompilerCheckExecutorLock) {
-            if (remoteCompilerCheckExecutor != null) {
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-                    @Override
-                    public Object run() {
-                        return remoteCompilerCheckExecutor.shutdownNow();
-                    }
-                });
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                return compilerCheckExecutor.shutdownNow();
             }
-        }
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(AddCompilerSetPanel.class, key);
+        });
     }
 
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
         this.dialogDescriptor = dialogDescriptor;
         dialogDescriptor.setValid(false);
     }
-    private CompilerSet lastFoundRemoteCompilerSet;
 
-    private void updateDataBaseDir() {
-        if (local) {
-            //This will be invoked in UI thread
-            File dirFile = new File(tfBaseDirectory.getText());
-            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
-            if (flavors.size() > 0) {
-                cbFamily.setSelectedItem(flavors.get(0));
-            } else {
-                cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
-            }
-            updateDataFamily();
-            if (!dialogDescriptor.isValid()) {
-                tfName.setText("");
+    private void handleBaseDirUpdate() {
+        if (this.dialogDescriptor != null) {
+            this.dialogDescriptor.setValid(false);
+        }
+        lastFoundRemoteCompilerSet = null;
+        final String path = tfBaseDirectory.getText().trim();
+        if (path.length() > 0) {
+            //go to non UI thread
+            synchronized (compilerCheckExecutorLock) {
+                if (compilerCheckTask != null) {
+                    log.log(Level.FINEST, "Cancelling check for {0}", path);
+                    compilerCheckTask.cancel(true);
+                }
+                log.log(Level.FINEST, "Submitting check for {0}", path);
+                compilerCheckTask = compilerCheckExecutor.schedule(this,
+                        local ? 500 : 1000, TimeUnit.MILLISECONDS);
             }
         } else {
-            synchronized (lock) {
-                lastFoundRemoteCompilerSet = null;
-            }
-            final String path = tfBaseDirectory.getText().trim();
-            if (path.length() > 0) {
-                tfBaseDirectory.setEnabled(false);
-                btBaseDirectory.setEnabled(false);
-                final Runnable enabler = new Runnable() {
-                    @Override
-                    public void run() {
-                        tfBaseDirectory.setEnabled(true);
-                        btBaseDirectory.setEnabled(true);
-                    }
-                };
-                //go to non UI thread
-                synchronized (remoteCompilerCheckExecutorLock) {
-                    if (remoteCompilerCheckExecutor != null) {
-                        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            showError(NbBundle.getMessage(getClass(), "BASE_EMPTY"));
+        }
+    }
 
-                            @Override
-                            public Object run() {
-                                return remoteCompilerCheckExecutor.shutdownNow();
-                            }
-                        });
-                        remoteCompilerCheckExecutor = null;
-                    }
-                    remoteCompilerCheckExecutor = Executors.newSingleThreadExecutor();
+    /** check data dir */
+    @Override
+    public void run() {
+        final String path = tfBaseDirectory.getText().trim();
+        log.log(Level.FINEST, "Running check for {0}", path);
+        showStatus(NbBundle.getMessage(getClass(), "CHECK_IN_PROGRESS", path));
+        long time = System.currentTimeMillis();
+        if (path.length() == 0) {
+            log.log(Level.FINEST, "Done check for {0} - the path is empty", path);
+            showError(NbBundle.getMessage(getClass(), "BASE_EMPTY"));
+            return;
+        }
+        if (local) {
+            final List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(new File(path).getAbsolutePath(), csm.getPlatform());
+            if (flavors.size() > 0) {
+                String baseDirectory = getBaseDirectory();
+                String compilerSetName = getCompilerSetName().trim();
+                CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavors.get(0), compilerSetName);
+                ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
+                synchronized (lastFoundLock) {
+                    lastFoundRemoteCompilerSet = cs;
                 }
-                remoteCompilerCheckExecutor.submit(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (!checkConnection()) {
-                            SwingUtilities.invokeLater(enabler);
-                            return;
-                        }
-                        final List<CompilerSet> css = csm.findRemoteCompilerSets(path);
-                        //check if we are not shutdowned already
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                        }
-                        if (Thread.interrupted()) {
-                            return;
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                enabler.run();
-                                if (css.size() > 0) {
-                                    cbFamily.setSelectedItem(css.get(0).getCompilerFlavor());
-                                    synchronized (AddCompilerSetPanel.this.lock) {
-                                        lastFoundRemoteCompilerSet = css.get(0);
-                                    }
-                                    updateDataFamily();
-                                    if (!dialogDescriptor.isValid()) {
-                                        tfName.setText("");
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-
+            }
+        } else {
+            if (!checkConnection()) {
+                log.log(Level.FINEST, "Done check for {0} - no connection to host", path);
+                showError(NbBundle.getMessage(getClass(), "CANNOT_CONNECT"));
+                return;
+            }
+            final List<CompilerSet> css = csm.findRemoteCompilerSets(path);
+            //check if we are not shutdowned already
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                log.log(Level.FINEST, "Interrupted (1) check for {0}", path);
+            }
+            if (Thread.interrupted()) {
+                log.log(Level.FINEST, "Interrupted (2) check for {0}", path);
+                showError(NbBundle.getMessage(getClass(), "CANCELLED"));
+                return;
+            }
+            if (css.size() > 0) {
+                synchronized (lastFoundLock) {
+                    lastFoundRemoteCompilerSet = css.get(0);
+                }
             }
         }
-
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                showStatus(""); //NOI18N
+                if (lastFoundRemoteCompilerSet != null) {
+                    cbFamily.setSelectedItem(lastFoundRemoteCompilerSet.getCompilerFlavor());
+                } else {
+                    cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+                }
+                updateDataFamily();
+                if (!dialogDescriptor.isValid()) {
+                    tfName.setText("");
+                }
+            }
+        });
+        if (log.isLoggable(Level.FINEST)) {
+            time = System.currentTimeMillis() - time;
+            log.log(Level.FINEST, "Done check for {0}; check took {1} ms", new Object[] { path, time });
+        }
     }
 
     private boolean checkConnection() {
@@ -247,41 +252,37 @@ import org.openide.util.NbBundle;
             }
         }
         tfName.setText(suggestedName);
-
         validateData();
     }
 
     private void validateData() {
         boolean valid = true;
-        lbError.setText(""); // NOI18N
-
-        if (local) {
-            File dirFile = new File(tfBaseDirectory.getText());
-            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !ToolUtils.isPathAbsolute(dirFile.getPath())) {
+        final String path = tfBaseDirectory.getText().trim();
+        showStatus(""); // NOI18N
+        synchronized (lastFoundLock) {
+            if (lastFoundRemoteCompilerSet == null) {
                 valid = false;
-                lbError.setText(getString("BASE_INVALID"));
-            }
-        } else {
-            synchronized (lock) {
-                if (lastFoundRemoteCompilerSet == null) {
-                    valid = false;
-                    lbError.setText(getString("REMOTEBASE_INVALID"));
-                }
+                showError(NbBundle.getMessage(getClass(), path.length() == 0 ? "BASE_EMPTY" : "REMOTEBASE_INVALID", path));
             }
         }
-
         cbFamily.setEnabled(valid);
         tfName.setEnabled(valid);
 
         String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
-        if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
-            valid = false;
-            lbError.setText(getString("NAME_INVALID"));
+        if (valid) {
+            if (compilerSetName.length() == 0) { // NOI18N
+                valid = false;
+                showError(NbBundle.getMessage(getClass(),"NAME_EMPTY"));
+            }
+            else if (compilerSetName.contains("|")) { // NOI18N
+                valid = false;
+                showError(NbBundle.getMessage(getClass(),"NAME_INVALID", compilerSetName));
+            }
         }
 
         if (valid && csm.getCompilerSet(compilerSetName.trim()) != null) {
             valid = false;
-            lbError.setText(getString("TOOLNAME_ALREADY_EXISTS"));
+            showError(NbBundle.getMessage(getClass(),"TOOLNAME_ALREADY_EXISTS", compilerSetName));
         }
 
         if (dialogDescriptor != null) {
@@ -289,11 +290,19 @@ import org.openide.util.NbBundle;
         }
     }
 
+    private void showError(String message) {
+        lbError.setForeground(Color.RED);
+        lbError.setText(message);
+    }
+
+    private void showStatus(String message) {
+        lbError.setForeground(defaultLbErrColor);
+        lbError.setText(message);
+    }
+
     private void handleUpdate(DocumentEvent e) {
         if (e.getDocument() == tfBaseDirectory.getDocument()) {
-            if (local) { // we can't support real-time validation for remote base dir
-                updateDataBaseDir();
-            }
+            handleBaseDirUpdate();
         } else {
             validateData();
         }
@@ -311,7 +320,6 @@ import org.openide.util.NbBundle;
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        //validateData();
     }
 
     public String getBaseDirectory() {
@@ -328,21 +336,12 @@ import org.openide.util.NbBundle;
 
     public CompilerSet getCompilerSet() {
         String compilerSetName = getCompilerSetName().trim();
-        if (local) {
-            String baseDirectory = getBaseDirectory();
-            CompilerFlavor flavor = getFamily();
-            CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-            ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
-            return cs;
-        } else {
-            synchronized (lock) {
-                if (lastFoundRemoteCompilerSet != null){
-                    ((CompilerSetImpl)lastFoundRemoteCompilerSet).setName(compilerSetName);
-                    return lastFoundRemoteCompilerSet;
-                }else{
-                    return lastFoundRemoteCompilerSet;
-                }
+        synchronized (lastFoundLock) {
+            if (lastFoundRemoteCompilerSet != null){
+                ((CompilerSetImpl)lastFoundRemoteCompilerSet).setName(compilerSetName);
+                return lastFoundRemoteCompilerSet;
             }
+            return null;
         }
     }
 
@@ -354,7 +353,6 @@ import org.openide.util.NbBundle;
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         infoLabel = new javax.swing.JLabel();
         lbBaseDirectory = new javax.swing.JLabel();
@@ -366,38 +364,13 @@ import org.openide.util.NbBundle;
         tfBaseDirectory = new javax.swing.JTextField();
         lbError = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
-
         infoLabel.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.taInfo.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 16);
-        add(infoLabel, gridBagConstraints);
 
         lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
-        add(lbBaseDirectory, gridBagConstraints);
 
         tfName.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 16, 0);
-        add(tfName, gridBagConstraints);
-        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
         btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("btBrowse").charAt(0));
         btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.text")); // NOI18N
@@ -406,94 +379,109 @@ import org.openide.util.NbBundle;
                 btBaseDirectoryActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 16);
-        add(btBaseDirectory, gridBagConstraints);
-        btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
         lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
         lbFamily.setText(bundle.getString("AddCompilerSetPanel.lbFamily.text")); // NOI18N
         lbFamily.setToolTipText(bundle.getString("AddCompilerSetPanel.lbFamily.toolTipText")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
-        add(lbFamily, gridBagConstraints);
 
         cbFamily.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbFamilyActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
-        add(cbFamily, gridBagConstraints);
 
         lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
         lbName.setLabelFor(tfName);
         lbName.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(9, 16, 16, 0);
-        add(lbName, gridBagConstraints);
 
         tfBaseDirectory.setColumns(40);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
-        add(tfBaseDirectory, gridBagConstraints);
-        tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lbError.setForeground(new java.awt.Color(255, 51, 51));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 16, 16);
-        add(lbError, gridBagConstraints);
+        lbError.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbError.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(lbBaseDirectory))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(lbFamily))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(lbName)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbFamily, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addComponent(infoLabel)
+                .addGap(120, 120, 120))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lbError, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoLabel)
+                .addGap(23, 23, 23)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbBaseDirectory)
+                    .addComponent(btBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tfBaseDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lbFamily)
+                    .addComponent(cbFamily, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lbName))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(lbError)
+                .addContainerGap())
+        );
+
+        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
+        btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
+        tfBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
-    if (local) {
-        String seed = null;
-        if (tfBaseDirectory.getText().length() > 0) {
-            seed = tfBaseDirectory.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
-        FileChooser fileChooser = new FileChooser(getString("SELECT_BASE_DIRECTORY_TITLE"), null, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        String dirPath = fileChooser.getSelectedFile().getPath();
-        tfBaseDirectory.setText(dirPath);
-
+    String seed = null;
+    if (tfBaseDirectory.getText().length() > 0) {
+        seed = tfBaseDirectory.getText();
+    } else if (FileChooser.getCurrectChooserFile() != null) {
+        seed = FileChooser.getCurrectChooserFile().getPath();
+    } else {
+        seed = System.getProperty("user.home"); // NOI18N
     }
-    updateDataBaseDir();
+    JFileChooser fileChooser = new FileChooserBuilder(csm.getExecutionEnvironment()).createFileChooser(seed);
+    fileChooser.setDialogTitle(NbBundle.getMessage(getClass(), "SELECT_BASE_DIRECTORY_TITLE"));
+    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    int ret = fileChooser.showOpenDialog(this);
+    if (ret == JFileChooser.CANCEL_OPTION) {
+        return;
+    }
+    String dirPath = fileChooser.getSelectedFile().getPath();
+    tfBaseDirectory.setText(dirPath);
+    //updateDataBaseDir();
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
 private void cbFamilyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFamilyActionPerformed

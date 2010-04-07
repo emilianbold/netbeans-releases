@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -77,7 +77,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     }
     
     public CharSequence getUniqueName() {
-        return CharSequenceKey.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
+        return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
     }
     
     public CharSequence getUniqueNameWithoutPrefix() {
@@ -90,7 +90,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return file != null ? file.getProject() : null;
     }    
     
-    protected CharSequence getQualifiedNamePostfix() {
+    public CharSequence getQualifiedNamePostfix() {
         if (TraceFlags.SET_UNNAMED_QUALIFIED_NAME && (getName().length() == 0)) {
             return getOffsetBasedName();
         } else {

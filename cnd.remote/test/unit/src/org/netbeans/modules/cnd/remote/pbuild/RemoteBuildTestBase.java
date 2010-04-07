@@ -39,16 +39,16 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -57,19 +57,22 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -120,7 +123,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 wiz.putProperty("name", destdir.getName());
                 wiz.putProperty("projdir", destdir);
                 try {
-                    projectCreator.instantiate(wiz);
+                    projectCreator.instantiate();
                 } catch (IOException ex) {
                     exRef.set(ex);
                 }
@@ -165,13 +168,23 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         RemoteServerRecord rec = (RemoteServerRecord) ServerList.addServer(env, env.getDisplayName(), syncFactory, true, true);
         rec.setSyncFactory(syncFactory);
         assertNotNull("Null ServerRecord for " + env, rec);
-        String home = RemoteUtil.getHomeDirectory(env);
-        String root = home + "/netbeans/.remote";
-        Future<Integer> rmDirTask = CommonTasksSupport.rmDir(env, root, true, new PrintWriter(System.err));
-        rmDirTask.get();
-        assertFalse(HostInfoUtils.fileExists(env, root));
+        clearRemoteSyncRoot();
     }
 
+    protected MakeProject prepareSampleProject(Sync sync, Toolchain toolchain, String sampleName,  String projectDir)
+            throws IllegalArgumentException, IOException, Exception, InterruptedException, InvocationTargetException {
+        setupHost();
+        setSyncFactory(sync.ID);
+        assertEquals("Wrong sync factory:", sync.ID, ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
+        setDefaultCompilerSet(toolchain.ID);
+        assertEquals("Wrong tools collection", toolchain.ID, CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
+        String prjDir = ((projectDir == null) ? sampleName : projectDir) + "_" + sync.ID;
+        FileObject projectDirFO = prepareSampleProject(sampleName, prjDir);
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        return makeProject;
+    }
+
+    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException, InterruptedException, InvocationTargetException {
         // reusing directories makes debugging much more difficult, so we add host name
         projectDirShortName += "_" + getTestHostName();
@@ -212,11 +225,11 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
-    protected void changeProjectHost(FileObject projectDir) throws Exception {
-        changeProjectHost(FileUtil.toFile(projectDir));
+    protected void changeProjectHost(FileObject projectDir, ExecutionEnvironment env) throws Exception {
+        changeProjectHost(FileUtil.toFile(projectDir), env);
     }
 
-    protected void changeProjectHost(File projectDir) throws Exception {
+    protected void changeProjectHost(File projectDir, ExecutionEnvironment env) throws Exception {
         File nbproject = new File(projectDir, "nbproject");
         assertTrue("file does not exist: " + nbproject.getAbsolutePath(), nbproject.exists());
         File confFile = new File(nbproject, "configurations.xml");
@@ -231,10 +244,43 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertTrue(end >= 0);
         StringBuilder newText = new StringBuilder();
         newText.append(text.substring(0, start));
-        newText.append(ExecutionEnvironmentFactory.toUniqueID(getTestExecutionEnvironment()));
+        newText.append(ExecutionEnvironmentFactory.toUniqueID(env));
         newText.append(text.substring(end));
         writeFile(confFile, newText);
     }
+
+    protected void changeProjectHost(MakeProject project, ExecutionEnvironment execEnv) {
+        // the code below is copypasted from  org.netbeans.modules.cnd.makeproject.ui.RemoteDevelopmentAction
+        ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        assertNotNull("ConfigurationDescriptorProvider shouldn't be null", configurationDescriptorProvider);
+        MakeConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor(true);
+        MakeConfiguration mconf = configurationDescriptor.getActiveConfiguration();
+        // the below wiill throw NPE, the above woin't
+        // MakeConfiguration mconf = project.getActiveConfiguration();
+        ServerRecord record = ServerList.get(execEnv);
+        assertTrue("Host " + execEnv, record.isSetUp());
+        DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
+        mconf.setDevelopmentHost(dhc);
+        CompilerSet2Configuration oldCS = mconf.getCompilerSet();
+        String oldCSName = oldCS.getName();
+        CompilerSetManager csm = CompilerSetManager.get(dhc.getExecutionEnvironment());
+            CompilerSet newCS = csm.getCompilerSet(oldCSName);
+            // if not found => use default from new host
+            newCS = (newCS == null) ? csm.getDefaultCompilerSet() : newCS;
+            mconf.setCompilerSet(new CompilerSet2Configuration(dhc, newCS));
+//                    PlatformConfiguration platformConfiguration = mconf.getPlatform();
+//                    platformConfiguration.propertyChange(new PropertyChangeEvent(
+//                            jmi, DevelopmentHostConfiguration.PROP_DEV_HOST, oldDhc, dhc));
+            //FIXUP: please send PropertyChangeEvent to MakeConfiguration listeners
+            //when you do this changes
+            //see cnd.tha.THAMainProjectAction which should use huck to get these changes
+            NativeProjectProvider npp = project.getLookup().lookup(NativeProjectProvider.class);
+            npp.propertyChange(new PropertyChangeEvent(this, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
+            //ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            //ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
+            configurationDescriptor.setModified();
+    }
+
 
     protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDir, int count) throws Exception {
         int timeout = getSampleBuildTimeout();
@@ -243,26 +289,12 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDir,
             int count, int firstTimeout, int subsequentTimeout) throws Exception {
-
-        setupHost();
-        setSyncFactory(sync.ID);
-
-        assertEquals("Wrong sync factory:", sync.ID,
-                ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
-
-        setDefaultCompilerSet(toolchain.ID);
-        assertEquals("Wrong tools collection", toolchain.ID,
-                CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
-
-        clearRemoteSyncRoot();
-        String prjDir = sampleName + "_" + sync.ID;
-        FileObject projectDirFO = prepareSampleProject(sampleName, prjDir);
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        MakeProject makeProject = prepareSampleProject(sync, toolchain, sampleName, projectDir);
         for (int i = 0; i < count; i++) {
             if (count > 0) {
                 System.err.printf("BUILDING %s, PASS %d\n", sampleName, i);
             }
-            buildProject(makeProject, firstTimeout, TimeUnit.SECONDS);
+            buildProject(makeProject, ActionProvider.COMMAND_BUILD, firstTimeout, TimeUnit.SECONDS);
         }
     }
 }

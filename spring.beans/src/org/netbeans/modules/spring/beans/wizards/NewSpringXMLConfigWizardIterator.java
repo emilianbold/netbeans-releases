@@ -226,7 +226,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
                 public Void  run() throws IOException {
                     List<File> origFiles = manager.getConfigFiles();
                     List<File> newFiles = new ArrayList<File>(origFiles);
-                    newFiles.add(file);
+                    if (!newFiles.contains(file)) {
+                        newFiles.add(file);
+                    }
                     List<ConfigFileGroup> origGroups = manager.getConfigFileGroups();
                     List<ConfigFileGroup> newGroups = null;
                     if (selectedGroups.size() > 0) {

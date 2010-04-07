@@ -214,7 +214,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -330,7 +330,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -354,16 +354,21 @@ made subject to such option by the copyright holder.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
-                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
@@ -374,12 +379,20 @@ made subject to such option by the copyright holder.
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                        <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
                         <recursive/>
                     </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools.ide</code-name-base>
                         <compile-dependency/>

@@ -912,7 +912,7 @@ public abstract class AbstractVariable implements LocalVariable {
         if (av != this && av.getFullName().equals(getFullName())) {
             if (av instanceof AbstractField) {
                 final AbstractVariable ancestor = ((AbstractField) this).getAncestor();
-                RequestProcessor.getDefault().post(new Runnable() {
+                debugger.getRequestProcessor().post(new Runnable() {
                     public void run() {
                         ancestor.updateVariable();
                     }

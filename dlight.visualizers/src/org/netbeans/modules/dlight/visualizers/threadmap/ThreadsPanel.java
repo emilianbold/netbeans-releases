@@ -133,6 +133,7 @@ import org.openide.util.actions.Presenter;
 public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionListener, TableColumnModelListener,
         DataManagerListener, ThreadStackActionsProvider {
     private static final String QUERY_STATE_ACTION_COMMAND = "query_state"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ThreadsPanel.class.getName(), 1);
 
     // I18N String constants
     private static final ResourceBundle messages = NbBundle.getBundle(ThreadsPanel.class);
@@ -256,6 +257,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         table.getActionMap().put("DEFAULT_ACTION", // NOI18N
                 new AbstractAction() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         performDefaultAction();
                     }
@@ -465,6 +467,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         scrollBar.addAdjustmentListener(this);
         scrollBar.addMouseWheelListener(new MouseWheelListener() {
+            @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
                     int unitsToScroll = e.getUnitsToScroll();
@@ -596,6 +599,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_1, KeyEvent.ALT_MASK, true), "ascSortFor1");//NOI18N
         table.getActionMap().put("ascSortFor1", new AbstractAction() {// NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 sortByColumn(0);
             }
@@ -603,6 +607,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.ALT_MASK, true), "ascSortFor3");//NOI18N
         table.getActionMap().put("ascSortFor3", new AbstractAction() {// NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 sortByColumn(2);
             }
@@ -610,6 +615,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_MASK, true), "leftTimeLine"); //NOI18N
         AbstractAction action = new AbstractAction(NAVIGATE_CARET_LEFT) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 shiftTimeLine(-1);
             }
@@ -619,6 +625,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_MASK, true), "rightTimeLine"); //NOI18N
         action = new AbstractAction(NAVIGATE_CARET_RIGHT) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 shiftTimeLine(1);
             }
@@ -628,6 +635,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK, true), "newTimeLine"); //NOI18N
         action = new AbstractAction(NAVIGATE_SET_CARET) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 shiftTimeLine(0);
             }
@@ -637,6 +645,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_MASK, true), "focuseStack"); //NOI18N
         action = new AbstractAction(NAVIGATE_STACK_VIEW) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 CallStackTopComponent.getDefault().requestFocus(false);
             }
@@ -666,6 +675,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         };
         close.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 isShowLegend = false;
                 initLegend(isFullMode());
@@ -886,16 +896,18 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     }
 
     private void queryChanged(final ThreadDumpQuery query, final ThreadState state){
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                         detailsCallback.showStack(state.getTimeStamp(), query);
-                    }
-                });
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                detailsCallback.showStack(state.getTimeStamp(), query);
+            }
+        });
     }
 
     /**
      * Invoked when one of the buttons is pressed
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (internalChange) {
             return;
@@ -1017,7 +1029,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         }
     }
 
-    boolean isFullMode(){
+    final boolean isFullMode(){
     //    return fullMSA.isSelected();
         return fullMSAModeValues.contains(selectedViewMode);
     }
@@ -1041,6 +1053,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     /**
      * Invoked when the scrollbar is moved.
      */
+    @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
         // we know we are in zoom mode (in scaleToFit, the scrollbar is disabled)
         if (!internalScrollbarChange) {
@@ -1055,12 +1068,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         }
     }
 
+    @Override
     public void columnAdded(TableColumnModelEvent e) {
     } // Ignored
 
     /**
      * Tells listeners that a column was moved due to a margin change.
      */
+    @Override
     public void columnMarginChanged(ChangeEvent e) {
         refreshViewData();
         updateScrollbar();
@@ -1074,29 +1089,36 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         ThreadsPanel.this.revalidate();
     }
 
+    @Override
     public void columnMoved(TableColumnModelEvent e) {
     } // Ignored
 
+    @Override
     public void columnRemoved(TableColumnModelEvent e) {
     } // Ignored
 
+    @Override
     public void columnSelectionChanged(ListSelectionEvent e) {
     } // Ignored
 
     /** Called when data in manager change */
+    @Override
     public void dataChanged() {
         UIUtils.runInEventDispatchThread(new Runnable() {
 
+            @Override
             public void run() {
                 refreshUI();
             }
         });
     }
 
+    @Override
     public void dataReset() {
         filteredDataToDataIndex.clear();
         UIUtils.runInEventDispatchThread(new Runnable() {
 
+            @Override
             public void run() {
                 refreshUI();
             }
@@ -1185,6 +1207,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         // call stack is shown by one click
     }
 
+    @Override
     public Action[] getStackNodeActions(int threadID) {
         List<Action> result = new ArrayList<Action>();
         LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
@@ -1290,9 +1313,11 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             if (showStackTask != null) {
                 showStackTask.cancel();
             }
-            showStackTask = RequestProcessor.getDefault().post(new Runnable(){
+            showStackTask = RP.post(new Runnable(){
+                @Override
                 public void run() {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             LinkedHashMap<Integer, ThreadState> avaliableStates = prepareAllStacks();
                             final List<Integer> showThreadsID = new ArrayList<Integer>();
@@ -1504,6 +1529,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     void setTimeIntervalSelection(Collection<TimeIntervalDataFilter> timeFilters) {
         this.timeFilters = timeFilters;
         UIThread.invoke(new Runnable() {
+            @Override
             public void run() {
                 updateUI();
             }
@@ -1523,7 +1549,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-    class ThreadsScrollBar extends JScrollBar {
+    private final class ThreadsScrollBar extends JScrollBar {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public ThreadsScrollBar() {
@@ -1559,6 +1585,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         }
 
+        @Override
         public int getColumnCount() {
             return 3;
         }
@@ -1585,11 +1612,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             }
         }
 
+        @Override
         public int getRowCount() {
             //return manager.getThreadsCount();
             return filteredDataToDataIndex.size();
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             switch (columnIndex) {
                 case NAME_COLUMN_INDEX:
@@ -1620,10 +1649,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
             this.state = state;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ThreadsPanel.this.queryChanged(query, state);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }

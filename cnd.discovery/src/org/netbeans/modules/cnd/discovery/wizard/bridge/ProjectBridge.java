@@ -105,7 +105,10 @@ public class ProjectBridge {
         String workingDirRel = CndPathUtilitities.toRelativePath(baseFolder, CndPathUtilitities.naturalize(workingDir));
         workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
-        project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
+        String prjName = "DiscoveryProject"; // NOI18N
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(prjName, baseFolder);// NOI18N
+        prjParams.setOpenFlag(true).setConfiguration(extConf);
+        project = ProjectGenerator.createBlankProject(prjParams); // NOI18N
         resultSet.add(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         makeConfigurationDescriptor = pdp.getConfigurationDescriptor();

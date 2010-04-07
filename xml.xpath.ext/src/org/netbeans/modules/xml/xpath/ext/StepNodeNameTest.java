@@ -36,8 +36,10 @@ import org.openide.ErrorManager;
  * @author Enrico Lelina
  * @version 
  */
-public class StepNodeNameTest extends StepNodeTest {
-    
+public class StepNodeNameTest implements StepNodeTest {
+
+    public static String ASTERISK = "*";
+
     /** The node name. */
     private QName mNodeName;
     
@@ -50,7 +52,7 @@ public class StepNodeNameTest extends StepNodeTest {
         mNodeName = nodeName;
     }
 
-    public StepNodeNameTest(XPathModel xPathModel, SchemaComponent sComp, 
+    public StepNodeNameTest(NamespaceContext nsContext, SchemaComponent sComp,
             SchemaModelsStack sms) {
         super();
         assert (sComp instanceof Named);
@@ -68,7 +70,6 @@ public class StepNodeNameTest extends StepNodeTest {
             }
             assert namespaceURI != null;
             //
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {
                 nsPrefix = nsContext.getPrefix(namespaceURI);
                 //
@@ -102,7 +103,7 @@ public class StepNodeNameTest extends StepNodeTest {
         mNodeName = sCompQName;
     }
     
-    public StepNodeNameTest(XPathModel xPathModel, XPathPseudoComp pseudo, 
+    public StepNodeNameTest(NamespaceContext nsContext, XPathPseudoComp pseudo,
             SchemaModelsStack sms) {
         super();
         String componentName = pseudo.getName();
@@ -115,7 +116,6 @@ public class StepNodeNameTest extends StepNodeTest {
             //
             String nsPrefix = null;
             //
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {
                 nsPrefix = nsContext.getPrefix(namespaceURI);
                 //
@@ -149,20 +149,18 @@ public class StepNodeNameTest extends StepNodeTest {
         mNodeName = sCompQName;
     }
     
-    public StepNodeNameTest(XPathModel xPathModel, SchemaCompHolder sCompHolder, 
+    public StepNodeNameTest(NamespaceContext nsContext, SchemaCompHolder sCompHolder,
             SchemaModelsStack sms) {
         super();
         String componentName = sCompHolder.getName();
         QName sCompQName = null;
         //
         String namespaceURI = sCompHolder.getNamespace(sms);
-        boolean prefixRequired = namespaceURI != null && namespaceURI.length() != 0;
         //
-        if (prefixRequired) {
+        if (sCompHolder.isPrefixRequired()) {
             //
             String nsPrefix = null;
             //
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
             if (nsContext != null) {
                 nsPrefix = nsContext.getPrefix(namespaceURI);
                 //
@@ -205,7 +203,8 @@ public class StepNodeNameTest extends StepNodeTest {
     }
     
     public boolean isWildcard() {
-        return mNodeName.getLocalPart().equals("*"); // NOI18N
+        String lName = mNodeName.getLocalPart();
+        return ASTERISK.equals(lName); // NOI18N
     }
     
     @Override
@@ -219,6 +218,10 @@ public class StepNodeNameTest extends StepNodeTest {
 
     @Override
     public String toString() {
+        return getExpressionString();
+    }
+
+    public String getExpressionString() {
         return XPathUtils.qNameObjectToString(mNodeName);
     }
 }

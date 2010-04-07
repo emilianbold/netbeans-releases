@@ -90,7 +90,7 @@ public class FortranReformatterImpl {
             Token<FortranTokenId> current = ts.token();
             FortranTokenId id = current.id();
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
-                // indent afre preprocessor directive
+                // indent after preprocessor directive
                 analyzeLine(previous, current);
             }
             if (isFirst && current.id() != PREPROCESSOR_DIRECTIVE) {
@@ -318,34 +318,59 @@ public class FortranReformatterImpl {
                 {
                     break;
                 }
+                case LINE_CONTINUATION_FIXED:
+                {
+                    if (doFormat()) {
+                        int space = getIndent() - ts.getTokenPosition() - ts.token().length();
+                        if (space > 0){
+                            Token<FortranTokenId> next =ts.lookNext();
+                            if (next == null) {
+                                ts.addAfterCurrent(current, 0, space, true);
+                            } else {
+                                if (next.id() == WHITESPACE) {
+                                    ts.replaceNext(current, next, 0, space, true);
+                                    // !skip space
+                                    ts.moveNext();
+                                    current = ts.token();
+                                } else {
+                                    ts.addAfterCurrent(current, 0, space, true);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
                 case NUM_LITERAL_INT:
                 {
                     if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
-                        while(true) {
-                            FortranStackEntry top = braces.peek();
-                            if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
-                                braces.pop(ts);
-                                continue;
+                        int pos = ts.getTokenPosition();
+                        if (pos != 5) {
+                            while(true) {
+                                FortranStackEntry top = braces.peek();
+                                if (top != null && top.getKind() == KW_DO && top.getLabel() == Integer.parseInt(current.text().toString())) {
+                                    braces.pop(ts);
+                                    continue;
+                                }
+                                break;
                             }
-                            break;
                         }
                         if (doFormat()) {
-                                int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
-                                if (space > 0){
-                                    Token<FortranTokenId> next =ts.lookNext();
-                                    if (next == null) {
-                                        ts.addAfterCurrent(current, 0, space, true);
+                            int space = indentAfterLabel - ts.getTokenPosition() - ts.token().length();
+                            if (space > 0){
+                                Token<FortranTokenId> next =ts.lookNext();
+                                if (next == null) {
+                                    ts.addAfterCurrent(current, 0, space, true);
+                                } else {
+                                    if (next.id() == WHITESPACE) {
+                                        ts.replaceNext(current, next, 0, space, true);
+                                        // !skip space
+                                        ts.moveNext();
+                                        current = ts.token();
                                     } else {
-                                        if (next.id() == WHITESPACE) {
-                                            ts.replaceNext(current, next, 0, space, true);
-                                            // !skip space
-                                            ts.moveNext();
-                                            current = ts.token();
-                                        } else {
-                                            ts.addAfterCurrent(current, 0, space, true);
-                                        }
+                                        ts.addAfterCurrent(current, 0, space, true);
                                     }
                                 }
+                            }
                         }
                     }
                     break;
@@ -596,6 +621,10 @@ public class FortranReformatterImpl {
 
     private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current, Token<FortranTokenId> firstImportant) {
         boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && !codeStyle.isFreeFormatFortran();
+        int pos = ts.getFirstLineTokenPosition();
+        if (pos == 5 && !codeStyle.isFreeFormatFortran()) {
+            return;
+        }
         if (previous != null && previous.id() != PREPROCESSOR_DIRECTIVE) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
@@ -624,6 +653,7 @@ public class FortranReformatterImpl {
             }
             if (current.id() == WHITESPACE) {
                 ts.replaceCurrent(current, 0, space, true);
+            } else if (current.id() == LINE_COMMENT_FIXED) {
             } else {
                 if (space > 0) {
                     ts.addBeforeCurrent(0, space, true);
@@ -633,7 +663,7 @@ public class FortranReformatterImpl {
         }
         Token<FortranTokenId> next = ts.lookNext();
         if (next != null) {
-            if (next.id() == NEW_LINE) {
+            if (next.id() == NEW_LINE || next.id() == FortranTokenId.LINE_COMMENT_FIXED) {
                 return;
             }
             int space = -1;

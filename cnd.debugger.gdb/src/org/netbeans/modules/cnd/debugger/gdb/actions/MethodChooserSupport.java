@@ -141,7 +141,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
 
     public void doStepInto() {
         final CsmReference ref = refs[chooser.getSelectedIndex()];
-        RequestProcessor.getDefault().post(new Runnable() {
+        debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 final CsmObject referencedObject = ref.getReferencedObject();

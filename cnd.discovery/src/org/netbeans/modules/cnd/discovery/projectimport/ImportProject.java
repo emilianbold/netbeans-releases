@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -95,7 +96,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -129,6 +130,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
     private File nativeProjectFolder;
     private File projectFolder;
     private String projectName;
@@ -140,6 +142,8 @@ public class ImportProject implements PropertyChangeListener {
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
     private boolean setAsMain;
+    private String hostUID;
+    private CompilerSet toolchain;
     private String workingDir;
     private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
     private String cleanCommand = "$(MAKE) -f Makefile clean";  // NOI18N
@@ -185,7 +189,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-
+        hostUID = null; // default host
+        toolchain = null; // default toolchain
+        
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
 
@@ -244,12 +250,14 @@ public class ImportProject implements PropertyChangeListener {
         }
         manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
+        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
-        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+        MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel;
         if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
             workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
@@ -328,7 +336,12 @@ public class ImportProject implements PropertyChangeListener {
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
-        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, tests, importantItemsIterator);
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
+        prjParams.setMakefileName(makefileName).setConfiguration(extConf);
+        prjParams.setSourceFolders(sources).setSourceFoldersFilter(sourceFoldersFilter);
+        prjParams.setTestFolders(tests);
+        prjParams.setImportantFiles(importantItemsIterator);
+        makeProject = ProjectGenerator.createProject(prjParams);
         FileObject dir = FileUtil.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
@@ -349,7 +362,7 @@ public class ImportProject implements PropertyChangeListener {
                 //if (setAsMain) {
                 //    OpenProjects.getDefault().setMainProject(makeProject);
                 //}
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -386,7 +399,7 @@ public class ImportProject implements PropertyChangeListener {
                 if (runMake) {
                     makeProject(true, null);
                 } else {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {
@@ -433,7 +446,9 @@ public class ImportProject implements PropertyChangeListener {
                 isFinished = true;
                 return;
             }
-            final File configureLog = createTempFile("configure"); // NOI18N
+            if (configureLog == null) {
+                configureLog = createTempFile("configure"); // NOI18N
+            }
             Writer outputListener = null;
             try {
                 outputListener = new BufferedWriter(new FileWriter(configureLog));
@@ -665,7 +680,9 @@ public class ImportProject implements PropertyChangeListener {
             isFinished = true;
             return;
         }
-        final File makeLog = createTempFile("make"); // NOI18N
+        if (makeLog == null) {
+            makeLog = createTempFile("make"); // NOI18N
+        }
         ExecutionListener listener = new ExecutionListener() {
 
             @Override
@@ -959,6 +976,16 @@ public class ImportProject implements PropertyChangeListener {
     private boolean isUILessMode = false;
     public void setUILessMode(){
         isUILessMode = true;
+    }
+
+    private File configureLog = null;
+    public void setConfigureLog(File configureLog) {
+        this.configureLog = configureLog;
+    }
+
+    private File makeLog = null;
+    public void setMakeLog(File makeLog) {
+        this.makeLog = makeLog;
     }
 
     private void showFollwUp(final NativeProject project) {

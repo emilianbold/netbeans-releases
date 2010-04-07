@@ -57,7 +57,7 @@ public class DeleteAction extends NodeAction {
 
     protected void performAction(final Node[] activatedNodes) {
         // XXX progress support ???
-        RequestProcessor.getDefault().post(new Runnable() {
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() { 
                 for(Node node : activatedNodes) {
                     StoreEntry se =  node.getLookup().lookup(StoreEntry.class);

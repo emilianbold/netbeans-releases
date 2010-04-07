@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations")
+@Hint(category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation")
 public class IncompatibleMask {
 
     @TriggerPatterns ({
@@ -74,15 +74,15 @@ public class IncompatibleMask {
     public static ErrorDescription checkIncompatibleMask1 (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
         Map<String,TreePath> variables = ctx.getVariables ();
-        Tree tree = variables.get ("$a").getLeaf ();
+        TreePath tree = variables.get ("$a");
         Long v1 = getConstant (tree, ctx);
         if (v1 == null) {
-            tree = variables.get ("$b").getLeaf ();
+            tree = variables.get ("$b");
             v1 = getConstant (tree, ctx);
         }
         if (v1 == null)
             return null;
-        tree = variables.get ("$c").getLeaf ();
+        tree = variables.get ("$c");
         Long v2 = getConstant (tree, ctx);
         if (v2 == null)
             return null;
@@ -106,15 +106,15 @@ public class IncompatibleMask {
     public static ErrorDescription checkIncompatibleMask2 (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
         Map<String,TreePath> variables = ctx.getVariables ();
-        Tree tree = variables.get ("$a").getLeaf ();
+        TreePath tree = variables.get ("$a");
         Long v1 = getConstant (tree, ctx);
         if (v1 == null) {
-            tree = variables.get ("$b").getLeaf ();
+            tree = variables.get ("$b");
             v1 = getConstant (tree, ctx);
         }
         if (v1 == null)
             return null;
-        tree = variables.get ("$c").getLeaf ();
+        tree = variables.get ("$c");
         Long v2 = getConstant (tree, ctx);
         if (v2 == null)
             return null;
@@ -132,26 +132,13 @@ public class IncompatibleMask {
     }
 
     static Long getConstant (
-        Tree                    tree,
+        TreePath                tp,
         HintContext             ctx
     ) {
-        Object value = null;
-        if (tree instanceof LiteralTree)
-            value = ((LiteralTree) tree).getValue ();
-        else
-        if (tree instanceof ExpressionTree) {
-            CompilationInfo compilationInfo = ctx.getInfo ();
-            Trees trees = compilationInfo.getTrees ();
-            TreePath identifierTreePath = trees.getPath (compilationInfo.getCompilationUnit (), tree);
-            Element el = trees.getElement (identifierTreePath);
-            if (el == null || el.getKind () != ElementKind.FIELD)
-                return null;
-            value = ((VariableElement) el).getConstantValue ();
-        } else
-            return null;
+        Number value = ArithmeticUtilities.compute(ctx.getInfo(), tp, true);
 
         if (value instanceof Integer)
-            return new Long ((Integer) value);
+            return Long.valueOf(value.longValue());
         if (value instanceof Long)
             return (Long) value;
         return null;

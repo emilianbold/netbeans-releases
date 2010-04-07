@@ -45,7 +45,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
@@ -142,6 +141,7 @@ class ConfigActionLocal extends ConfigAction {
         }
 
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 try {
                     if (urlToShow[0] != null) {
@@ -162,6 +162,7 @@ class ConfigActionLocal extends ConfigAction {
         };
 
         Cancellable cancellable = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if (urlToShow[1] != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[1]);
@@ -272,6 +273,7 @@ class ConfigActionLocal extends ConfigAction {
         assert selectedFile != null;
 
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 if (urlForStartDebugging != null) {
                     try {
@@ -293,6 +295,7 @@ class ConfigActionLocal extends ConfigAction {
         };
 
         Cancellable cancellable = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if (urlForStopDebugging != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStopDebugging);

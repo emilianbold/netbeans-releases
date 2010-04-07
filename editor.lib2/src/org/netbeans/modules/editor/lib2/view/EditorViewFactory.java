@@ -116,7 +116,7 @@ public abstract class EditorViewFactory {
      * (with end offset of the created view).
      *
      * @param offset offset at which (or after which) a possible new view should be created.
-     * @return start offset of the new view to be created or -1 to indicate that
+     * @return start offset of the new view to be created or Integer.MAX_VALUE to indicate that
      *  no more views would be produced by this factory over the given offset.
      */
     public abstract int nextViewStartOffset(int offset);
@@ -210,7 +210,7 @@ public abstract class EditorViewFactory {
 
         private int endOffset;
 
-        Change(int startOffset, int endOffset) {
+        public Change(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }

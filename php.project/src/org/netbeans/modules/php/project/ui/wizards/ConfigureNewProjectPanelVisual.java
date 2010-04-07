@@ -57,9 +57,8 @@ import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
-import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
-import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.netbeans.modules.php.project.ui.Utils.PhpVersionComboBoxModel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -84,8 +83,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
         phpVersionComboBox.setModel(new PhpVersionComboBoxModel());
 
-        encodingComboBox.setModel(new EncodingModel());
-        encodingComboBox.setRenderer(new EncodingRenderer());
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
 
     @Override
@@ -243,10 +242,12 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     private JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public String getProjectName() {
         return projectNameTextField.getText().trim();
     }
 
+    @Override
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
@@ -257,34 +258,42 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         return localServerComponent.getLocalServer().getSrcRoot();
     }
 
+    @Override
     public LocalServer getSourcesLocation() {
         return localServerComponent.getLocalServer();
     }
 
+    @Override
     public MutableComboBoxModel getLocalServerModel() {
         return localServerComponent.getLocalServerModel();
     }
 
+    @Override
     public void setLocalServerModel(MutableComboBoxModel localServers) {
         localServerComponent.setLocalServerModel(localServers);
     }
 
+    @Override
     public void selectSourcesLocation(LocalServer localServer) {
         localServerComponent.selectLocalServer(localServer);
     }
 
+    @Override
     public PhpVersion getPhpVersion() {
         return (PhpVersion) phpVersionComboBox.getSelectedItem();
     }
 
+    @Override
     public void setPhpVersion(PhpVersion phpVersion) {
         phpVersionComboBox.setSelectedItem(phpVersion);
     }
 
+    @Override
     public Charset getEncoding() {
         return (Charset) encodingComboBox.getSelectedItem();
     }
 
+    @Override
     public void setEncoding(Charset encoding) {
         encodingComboBox.setSelectedItem(encoding);
     }
@@ -308,9 +317,11 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
     }
 
     private static class BrowseSources implements LocalServerController.BrowseHandler {
+        @Override
         public File getCurrentDirectory() {
             return LastUsedFolders.getSources();
         }
+        @Override
         public void locationChanged(File location) {
             LastUsedFolders.setSources(location);
         }

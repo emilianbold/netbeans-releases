@@ -72,9 +72,11 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.MylynUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.commands.JiraCommand;
@@ -139,7 +141,12 @@ public class JiraRepository extends Repository {
             password = "";                                                      // NOI18N
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        Jira.getInstance().addRepository(this);
+        register();
+    }
+
+    final void register() {
+        // register with mylyn to force issue externalization
+        BugtrackingRuntime.getInstance().getTaskRepositoryManager().addRepository(taskRepository);
     }
 
     @Override
@@ -419,19 +426,7 @@ public class JiraRepository extends Repository {
     }
 
     public void setCredentials(String user, String password, String httpUser, String httpPassword) {
-        setCredentials(taskRepository, user, password, httpUser, httpPassword);
-    }
-
-    protected static void setCredentials (TaskRepository repository, String user, String password, String httpUser, String httpPassword) {
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user, password);
-        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-
-        if(httpUser != null || httpPassword != null) {
-            httpUser = httpUser != null ? httpUser : "";                        // NOI18N
-            httpPassword = httpPassword != null ? httpPassword : "";            // NOI18N
-            authenticationCredentials = new AuthenticationCredentials(httpUser, httpPassword);
-            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-        }
+        MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
@@ -439,9 +434,7 @@ public class JiraRepository extends Repository {
                 new TaskRepository(
                     Jira.getInstance().getRepositoryConnector().getConnectorKind(),
                     url);
-        setCredentials(repository, user, password, httpUser, httpPassword);
-        // XXX need proxy settings from the IDE
-
+        MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
         return repository;
     }
 
@@ -510,7 +503,10 @@ public class JiraRepository extends Repository {
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
                 configuration = createConfiguration(client);
-                if(forceRefresh || !client.getCache().hasDetails()) {
+
+                boolean needRefresh = !client.getCache().hasDetails();
+                Jira.LOG.log(Level.FINE, "configuration refresh {0} : needRefresh = {1} forceRefresh={2}", new Object[]{getUrl(), needRefresh, forceRefresh});
+                if(forceRefresh || needRefresh) {
                     Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
                 }
             }
@@ -696,7 +692,6 @@ public class JiraRepository extends Repository {
         attributes.put(ATTRIBUTE_URL, getUrl());
         return attributes;
     }
-
 
     private class Cache extends IssueCache<TaskData> {
         Cache() {

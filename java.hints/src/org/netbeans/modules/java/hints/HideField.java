@@ -63,9 +63,12 @@ import org.openide.util.NbBundle;
 public class HideField extends AbstractHint {
     transient volatile boolean stop;
     
-    /** Creates a new instance of AddOverrideAnnotation */
     public HideField() {
-        super( true, true, AbstractHint.HintSeverity.WARNING);
+        this("FieldNameHidesFieldInSuperclass");
+    }
+
+    public HideField(String... sw) {
+        super( true, true, AbstractHint.HintSeverity.WARNING, sw);
     }
     
     public Set<Kind> getTreeKinds() {

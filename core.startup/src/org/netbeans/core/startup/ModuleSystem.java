@@ -291,15 +291,21 @@ public final class ModuleSystem {
     /** Shut down the system: ask modules to shut down.
      * Some of them may refuse.
      */
-    public boolean shutDown(Runnable midHook) {
+    public boolean shutDown(final Runnable midHook) {
         mgr.mutexPrivileged().enterWriteAccess();
         boolean res;
+        Runnable both = new Runnable() {
+            @Override
+            public void run() {
+                midHook.run();
+                Stamps.getModulesJARs().shutdown();
+            }
+        };
         try {
-            res = mgr.shutDown(midHook);
+            res = mgr.shutDown(both);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        Stamps.getModulesJARs().shutdown();
         return res;
     }
     

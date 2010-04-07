@@ -88,6 +88,7 @@ public class WebUtils {
             URI u = new URI(importedFileName);
             File file = null;
 
+            //does the uri have a scheme component?
             if (u.isAbsolute()) {
                 //do refactor only file resources
                 if ("file".equals(u.getScheme())) { //NOI18N
@@ -104,8 +105,7 @@ public class WebUtils {
             }
 
             if (file != null) {
-
-                if (!file.isAbsolute()) {
+                if (!isAbsolute(file, importedFileName)) {
                     //relative to the current file's folder - let's resolve
                     FileObject parent = source.getParent();
                     if(parent != null) {
@@ -150,6 +150,15 @@ public class WebUtils {
         return null;
     }
 
+    //windows File.isAbsolute() workaround
+    private static boolean isAbsolute(File file, String link) {
+        if(file.isAbsolute()) {
+            return true; //will not be true on windows
+        } else {
+            return link.startsWith("/"); //NOI18N
+        }
+    }
+
     private static FileObject findRelativeLinkBase(FileObject source, String link) {
         //Example:
         //
@@ -166,8 +175,8 @@ public class WebUtils {
         //If there is a link ../C/file1 in file2 the bottom most folder is B
         //If there is a link ../../file0 in file2 the bottom most folder is A
         //If there is a link B/C/file1 in file0 the bottom most folder is A
-        assert !source.isFolder();
-        assert !link.startsWith("/"); //NOI18N
+        assert !source.isFolder() : "The source file " + source.getPath() + " is not a folder!"; //NOI18N
+        assert !link.startsWith("/") : "The relative link " + link + "starts with a slash!"; //NOI18N
         if(link.startsWith("./")) { //NOI18N
             link = link.substring(2); //cut off the ./
         }
@@ -252,20 +261,6 @@ public class WebUtils {
         }
         if(!target.isData()) {
             throw new IllegalArgumentException("The target file " + target.getPath() + " is not a data file!");
-        }
-        if(!UNIT_TESTING) {
-            FileObject root1 = ProjectWebRootQuery.getWebRoot(source);
-            FileObject root2 = ProjectWebRootQuery.getWebRoot(target);
-            if(root1 == null) {
-                throw new IllegalArgumentException("Cannot find web root for source file " + source.getPath()); //NOI18N
-            }
-            if(root2 == null) {
-                throw new IllegalArgumentException("Cannot find web root for target file " + target.getPath()); //NOI18N
-            }
-            if(!root1.equals(root2)) {
-                throw new IllegalArgumentException("Source " + source.getPath() +  "and target " + //NOI18N
-                        target.getPath() + " files have no common web root!"); //NOI18N
-            }
         }
 
         //link: ../../folder/file.txt

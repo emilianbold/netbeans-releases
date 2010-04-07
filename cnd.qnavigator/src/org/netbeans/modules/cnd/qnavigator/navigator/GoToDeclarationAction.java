@@ -60,6 +60,7 @@ public class GoToDeclarationAction extends AbstractAction {
         putValue(Action.NAME, NbBundle.getMessage(GoToDeclarationAction.class, "LBL_GoToDeclaration")); //NOI18N
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         CsmUtilities.openSource(csmObject);
     }

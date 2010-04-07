@@ -124,7 +124,9 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.properties.syntax</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

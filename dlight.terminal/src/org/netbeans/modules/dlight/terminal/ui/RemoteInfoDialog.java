@@ -42,26 +42,26 @@
  *
  * Created on 09.03.2010, 20:39:17
  */
-
 package org.netbeans.modules.dlight.terminal.ui;
 
 import java.awt.Toolkit;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
- * @author vv159170
+ * @author Vladimir Voskresensky
  */
-public class RemoteInfoDialog extends javax.swing.JPanel {
+public final class RemoteInfoDialog extends javax.swing.JPanel {
 
     /** Creates new form RemoteInfoDialog */
-    public RemoteInfoDialog() {
+    public RemoteInfoDialog(String user) {
         initComponents();
-        userField.setText(System.getProperty("user.name")); 
+        userField.setText(user);
     }
 
     /** This method is called from within the constructor to
@@ -80,17 +80,26 @@ public class RemoteInfoDialog extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
 
+        jLabel1.setLabelFor(userField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.jLabel1.text")); // NOI18N
 
         userField.setText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.userField.text")); // NOI18N
+        userField.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.userField.toolTipText")); // NOI18N
+        userField.setInputVerifier(new NonEmpty());
 
+        jLabel2.setLabelFor(hostField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.jLabel2.text")); // NOI18N
 
         hostField.setText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.hostField.text")); // NOI18N
+        hostField.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.hostField.toolTipText")); // NOI18N
+        hostField.setInputVerifier(new NonEmpty());
 
+        jLabel3.setLabelFor(portField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.jLabel3.text")); // NOI18N
 
+        portField.setColumns(4);
         portField.setText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.text")); // NOI18N
+        portField.setToolTipText(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.toolTipText")); // NOI18N
         portField.setInputVerifier(new IntVerifier(portField));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -100,20 +109,14 @@ public class RemoteInfoDialog extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))
-                        .addGap(17, 17, 17)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(183, 183, 183))
-                            .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(userField, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)))
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3))
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(userField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(hostField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,21 +124,23 @@ public class RemoteInfoDialog extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(userField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-    }// </editor-fold>//GEN-END:initComponents
 
-    
+        userField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.userField.AccessibleContext.accessibleName")); // NOI18N
+        hostField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.hostField.AccessibleContext.accessibleName")); // NOI18N
+        portField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RemoteInfoDialog.class, "RemoteInfoDialog.portField.AccessibleContext.accessibleName")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel jLabel1;
@@ -146,15 +151,29 @@ public class RemoteInfoDialog extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public ExecutionEnvironment getExecutionEnvironment() {
-        return ExecutionEnvironmentFactory.createNew(userField.getText(), hostField.getText(), Integer.valueOf(portField.getText()));
+        if (userField.getText().isEmpty() || hostField.getText().isEmpty()) {
+            return null;
+        }
+
+        int port = 22;
+
+        if (!portField.getText().isEmpty()) {
+            try {
+                port = Integer.valueOf(portField.getText());
+            } catch (NumberFormatException ex) {
+            }
+        }
+
+        return ExecutionEnvironmentFactory.createNew(userField.getText(), hostField.getText(), port);
     }
 
     private static final class IntVerifier extends InputVerifier {
+
         private final JTextField tf;
+
         public IntVerifier(JTextField tf) {
             this.tf = tf;
         }
-
 
         @Override
         public boolean verify(JComponent input) {
@@ -165,6 +184,22 @@ public class RemoteInfoDialog extends javax.swing.JPanel {
                 Toolkit.getDefaultToolkit().beep();
                 return false;
             }
+        }
+    }
+
+    private static final class NonEmpty extends InputVerifier {
+
+        public NonEmpty() {
+        }
+
+        @Override
+        public boolean verify(JComponent input) {
+            if (input instanceof JTextComponent) {
+                JTextComponent tf = (JTextComponent) input;
+                return !tf.getText().isEmpty();
+            }
+
+            return true;
         }
     }
 }

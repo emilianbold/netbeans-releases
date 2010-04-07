@@ -38,27 +38,26 @@
  */
 package org.netbeans.core.netigso;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.ArchiveResources;
 import org.netbeans.Module;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
@@ -66,6 +65,7 @@ import org.netbeans.Stamps;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -77,9 +77,14 @@ import org.osgi.framework.launch.FrameworkFactory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ServiceProvider(service = NetigsoFramework.class)
+@ServiceProviders({
+    @ServiceProvider(service = NetigsoFramework.class),
+    @ServiceProvider(service = Netigso.class)
+})
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
+    private static final ThreadLocal<Boolean> SELF_QUERY = new ThreadLocal<Boolean>();
+    private static final String[] EMPTY = {};
 
     private Framework framework;
     private NetigsoActivator activator;
@@ -97,6 +102,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
+            configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this));
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
             FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
@@ -111,7 +117,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             } catch (BundleException ex) {
                 LOG.log(Level.SEVERE, "Cannot start OSGi framework", ex); // NOI18N
             }
-            new NetigsoServices(framework);
+            NetigsoServices ns = new NetigsoServices(framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
         activator.register(preregister);
@@ -142,7 +148,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             framework.stop();
             framework.waitForStop(10000);
             framework = null;
-            registered.clear();
         } catch (InterruptedException ex) {
             LOG.log(Level.WARNING, "Wait for shutdown failed" + framework, ex);
         } catch (BundleException ex) {
@@ -153,27 +158,39 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
         try {
-            assert registered.contains(m.getCodeNameBase()) : m.getCodeNameBase();
+            assert registered.containsKey(m.getCodeNameBase()) : m.getCodeNameBase();
             Bundle b = findBundle(m.getCodeNameBase());
             if (b == null) {
                 throw new IOException("Not found bundle:" + m.getCodeNameBase());
             }
             ClassLoader l = new NetigsoLoader(b, m, jar);
             Set<String> pkgs = new HashSet<String>();
-            Enumeration en = b.findEntries("", "", true);
-            while (en.hasMoreElements()) {
-                URL url = (URL) en.nextElement();
-                if (url.getFile().startsWith("/META-INF")) {
-                    continue;
+            String[] knownPkgs = registered.get(m.getCodeNameBase());
+            if (knownPkgs == EMPTY) {
+                try {
+                    SELF_QUERY.set(true);
+                    Enumeration en = b.findEntries("", "", true);
+                    while (en.hasMoreElements()) {
+                        URL url = (URL) en.nextElement();
+                        if (url.getFile().startsWith("/META-INF")) {
+                            continue;
+                        }
+                        pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+                    }
+                } finally {
+                    SELF_QUERY.set(false);
                 }
-                pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+                registered.put(m.getCodeNameBase(), pkgs.toArray(new String[0]));
+                Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
+            } else {
+                pkgs.addAll(Arrays.asList(knownPkgs));
             }
             pcl.append(new ClassLoader[]{ l });
             LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
             b.start();
             return pkgs;
         } catch (BundleException ex) {
-            throw (IOException) new IOException("Cannot start " + jar).initCause(ex);
+            throw new IOException("Cannot start " + jar, ex);
         }
     }
 
@@ -205,7 +222,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     //
     // take care about the registered bundles
     //
-    private final Set<String> registered = new HashSet<String>();
+    private final Map<String,String[]> registered = new HashMap<String,String[]>();
 
     private File getNetigsoCache() throws IllegalStateException {
         // Explicitly specify the directory to use for caching bundles.
@@ -228,10 +245,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private void fakeOneModule(Module m, Bundle original) throws IOException {
-        final boolean alreadyPresent = registered.add(m.getCodeNameBase());
-        if (!alreadyPresent && original == null) {
+        if (registered.get(m.getCodeNameBase()) != null && original == null) {
             return;
         }
+        registered.put(m.getCodeNameBase(), EMPTY);
         Bundle b;
         try {
             String symbolicName = (String) m.getAttribute("Bundle-SymbolicName");
@@ -246,7 +263,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                     BundleContext bc = framework.getBundleContext();
                     File jar = m.getJarFile();
                     LOG.log(Level.FINE, "Installing bundle {0}", jar);
-                    b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+                    b = bc.installBundle("reference:" + toURI(jar));
                 }
             } else {
                 InputStream is = fakeBundle(m);
@@ -264,7 +281,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
             Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
         } catch (BundleException ex) {
-            throw new IOException(ex.getMessage());
+            throw new IOException(ex);
         }
     }
     
@@ -325,13 +342,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 deleteRec(f);
                 return;
             }
-            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
-            for (;;) {
-                String line = r.readLine();
-                if (line == null) {
-                    break;
-                }
-                registered.add(line);
+            Properties p = new Properties();
+            p.load(is);
+            is.close();
+            for (Map.Entry<Object, Object> entry : p.entrySet()) {
+                String k = (String)entry.getKey();
+                String v = (String)entry.getValue();
+                registered.put(k, v.split(","));
             }
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "Cannot read cache", ex);
@@ -340,12 +357,19 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     public void flushCaches(DataOutputStream os) throws IOException {
-        Writer w = new OutputStreamWriter(os);
-        for (String s : registered) {
-            w.write(s);
-            w.write('\n');
+        Properties p = new Properties();
+        for (Map.Entry<String, String[]> entry : registered.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            String sep = "";
+            for (String s : entry.getValue()) {
+                sb.append(sep);
+                sb.append(s);
+                sep = ",";
+            }
+            p.setProperty(entry.getKey(), sb.toString());
         }
-        w.close();
+
+        p.store(os, null);
     }
 
     @Override
@@ -361,4 +385,32 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
         return null;
     }
+
+    public byte[] fromArchive(long bundleId, String resource, ArchiveResources ar) throws IOException {
+        if (Boolean.TRUE.equals(SELF_QUERY.get())) {
+            return ar.resource(resource);
+        }
+        return fromArchive(ar, resource);
+    }
+
+    private static String toURI(final File file) {
+        class VFile extends File {
+
+            public VFile() {
+                super(file.getPath());
+            }
+
+            @Override
+            public boolean isDirectory() {
+                return false;
+            }
+
+            @Override
+            public File getAbsoluteFile() {
+                return this;
+            }
+        }
+        return new VFile().toURI().toString();
+    }
+
 }

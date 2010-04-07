@@ -642,6 +642,21 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             return true;
         return false;
     }
+    private boolean isWebLogic(String serverInstanceID) {
+        if (serverInstanceID == null || "".equals(serverInstanceID)) {
+            return false;
+        }
+        String shortName;
+        try {
+            shortName = Deployment.getDefault().getServerInstance(serverInstanceID).getServerID();
+            if (shortName != null && shortName.toLowerCase().startsWith("weblogic")) {  //NOI18N
+                return true;
+            }
+        } catch (InstanceRemovedException ex) {
+            LOG.log(Level.WARNING, "Server Instance was removed", ex); //NOI18N
+        }
+        return false;
+    }
     
     void update() {
         Properties properties = panel.getController().getProperties();
@@ -679,6 +694,13 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                 boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
 
+                //XXX: 182282: disable bundled lib in WebLogic.
+                if (isWebLogic(serverInstanceID)) {
+                    isJSF = false;
+                    isJSF12 = false;
+                    isJSF20 = false;
+                }
+                
                 String libName = null; //NOI18N
                 if (isJSF20) {
                     libName = "JSF 2.0"; //NOI18N

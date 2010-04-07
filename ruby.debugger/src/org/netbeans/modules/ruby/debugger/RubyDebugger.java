@@ -60,6 +60,7 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
@@ -275,7 +276,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     private static Map<String, String> getJRubyEnvironment(final RubyExecutionDescriptor descriptor) {
         Map<String, String> env = new HashMap<String, String>();
         if (descriptor.getClassPath() != null) {
-            env.put("CLASSPATH", descriptor.getClassPath()); // NOI18N
+            env.put("CLASSPATH", ExecutionUtils.getExtraClassPath(descriptor.getClassPath())); // NOI18N
         }
         return env;
     }

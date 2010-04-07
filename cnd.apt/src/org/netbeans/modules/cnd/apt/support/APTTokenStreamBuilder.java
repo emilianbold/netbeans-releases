@@ -61,24 +61,24 @@ public final class APTTokenStreamBuilder {
 //        return buildTokenStream(path, stream);
 //    }
     
-    public static TokenStream buildTokenStream(String text) {
+    public static TokenStream buildTokenStream(String text, String lang) {
         char[] buf = new char[text.length()];
         text.getChars(0, text.length(), buf, 0);
         APTLexer lexer = new APTLexer(buf);
-        lexer.init(text, 0);
+        lexer.init(text, 0, lang);
         return lexer;
     }  
     
-    public static TokenStream buildLightTokenStream(CharSequence name, Reader in) {
+    public static TokenStream buildLightTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
-        lexer.init(name.toString(), 0);
+        lexer.init(name.toString(), 0, lang);
         lexer.setOnlyPreproc(true);
         return lexer;
     }    
     
-    public static TokenStream buildTokenStream(CharSequence name, Reader in) {
+    public static TokenStream buildTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
-        lexer.init(name.toString(), 0);
+        lexer.init(name.toString(), 0, lang);
         return lexer;
     }     
 }

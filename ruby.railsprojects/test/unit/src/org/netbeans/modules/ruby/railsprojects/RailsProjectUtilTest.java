@@ -75,6 +75,9 @@ public class RailsProjectUtilTest extends RubyTestBase {
         version = RailsProjectUtil.versionFor("2.3.2");
         assertEquals("2.3.2", version.asString());
 
+        version = RailsProjectUtil.versionFor("3.0.0.beta");
+        assertEquals("3.0.0.beta", version.asString());
+
         version = RailsProjectUtil.versionFor("x.1");
         assertEquals("0.0.0", version.asString());
     }

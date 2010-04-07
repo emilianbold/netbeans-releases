@@ -86,7 +86,7 @@ public class GdbCallStackFrame extends CallStackFrame {
     private final String LOCALS_LOCK = new String("Locals lock"); //NOI18N
     private final String AUTOS_LOCK = new String("Autos lock"); //NOI18N
 
-    private boolean destroyed = false;
+    private volatile boolean destroyed = false;
 
     private Collection<GdbVariable> arguments = null;
     private StyledDocument document = null;
@@ -126,6 +126,7 @@ public class GdbCallStackFrame extends CallStackFrame {
      *
      *  @return Frame nunmber in Call Stack ("0" means top)
      */
+    @Override
     public int getFrameNumber() {
         return frameNumber;
     }
@@ -135,6 +136,7 @@ public class GdbCallStackFrame extends CallStackFrame {
      *
      * @return line number associated with this this stack frame
      */
+    @Override
     public int getLineNumber() {
         return lineNumber;
     }
@@ -170,6 +172,7 @@ public class GdbCallStackFrame extends CallStackFrame {
      *
      * @return name of file this stack frame is stopped in
      */
+    @Override
     public String getFullname() {
         return resolvedName;
     }
@@ -181,15 +184,18 @@ public class GdbCallStackFrame extends CallStackFrame {
     /**
      * @return address this stack frame is stopped in
      */
+    @Override
     public String getAddr() {
         return address;
     }
     
     /** Sets this frame current */
+    @Override
     public void makeCurrent() {
         debugger.setCurrentCallStackFrame(this);
     }
 
+    @Override
     public boolean isValid() {
         return getFileName() != null && getOriginalFullName() != null && getFunctionName() != null;
     }
@@ -238,7 +244,8 @@ public class GdbCallStackFrame extends CallStackFrame {
         }
         return offset;
     }
-    
+
+    private final LocalsBuilder localsBuilder = new LocalsBuilder();
     /**
      * Returns local variables.
      * If local variables are not available returns empty array.
@@ -252,55 +259,99 @@ public class GdbCallStackFrame extends CallStackFrame {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         assert !(SwingUtilities.isEventDispatchThread()); 
 
+        if (destroyed) {
+            return new AbstractVariable[0];
+        }
+        AbstractVariable[] curLocals = localsBuilder.get();
         synchronized (LOCALS_LOCK) {
             if (destroyed) {
+                destroyVars(curLocals);
+                cachedLocalVariables = null;
                 return new AbstractVariable[0];
+            } else {
+                cachedLocalVariables = curLocals;
             }
-            if (cachedLocalVariables == null) {
-                List<GdbVariable> list = debugger.getLocalVariables();
-                int n = list.size();
+        }
+        return cachedLocalVariables;
+    }
 
-                AbstractVariable[] locals = new AbstractVariable[n];
-                for (int i = 0; i < n; i++) {
-                    locals[i] = new GdbLocalVariable(debugger, list.get(i));
+    private final class LocalsBuilder {
+        private AbstractVariable[] locals = null;
+
+        public synchronized AbstractVariable[] get() {
+            if (locals == null) {
+                List<GdbVariable> list = debugger.getLocalVariables();
+                locals = new AbstractVariable[list.size()];
+                int i = 0;
+                for (GdbVariable var : list) {
+                    if (destroyed) {
+                        break;
+                    }
+                    locals[i++] = new GdbLocalVariable(debugger, var);
                 }
-                cachedLocalVariables = locals;
             }
-            return cachedLocalVariables;
+            return locals;
         }
     }
 
+    private final AutosBuilder autosBuilder = new AutosBuilder();
     public AbstractVariable[] getAutos() {
+        if (destroyed) {
+            return new AbstractVariable[0];
+        }
+        AbstractVariable[] curAutos = autosBuilder.get();
         synchronized (AUTOS_LOCK) {
             if (destroyed) {
+                destroyVars(curAutos);
+                cachedAutos = null;
                 return new AbstractVariable[0];
+            } else {
+                cachedAutos = curAutos;
             }
-            if (cachedAutos == null) {
+        }
+        return cachedAutos;
+    }
+
+    private final class AutosBuilder {
+        private AbstractVariable[] autos = null;
+        
+        public synchronized AbstractVariable[] get() {
+            if (autos == null) {
                 Set<String> res = Autos.get(getDocument(), lineNumber-1);
-                AbstractVariable[] autos = new AbstractVariable[res.size()];
+                autos = new AbstractVariable[res.size()];
                 int i = 0;
                 for (String name : res) {
+                    if (destroyed) {
+                        break;
+                    }
                     autos[i++] = new GdbLocalVariable(debugger, name);
                 }
-                cachedAutos = autos;
             }
-            return cachedAutos;
+            return autos;
         }
     }
 
     public void destroy() {
+        destroyed = true;
+        AbstractVariable[] curLocals;
         synchronized (LOCALS_LOCK) {
-            destroyed = true;
-            if (cachedLocalVariables != null) {
-                for (AbstractVariable var : cachedLocalVariables) {
-                    var.destroy();
-                }
-            }
+            curLocals = cachedLocalVariables;
+            cachedLocalVariables = null;
         }
+        destroyVars(curLocals);
 
+        AbstractVariable[] curAutos;
         synchronized (AUTOS_LOCK) {
-            if (cachedAutos != null) {
-                for (AbstractVariable var : cachedAutos) {
+            curAutos = cachedAutos;
+            cachedAutos = null;
+        }
+        destroyVars(curAutos);
+    }
+
+    private void destroyVars(AbstractVariable[] cache) {
+        if (cache != null) {
+            for (AbstractVariable var : cache) {
+                if (var != null) {
                     var.destroy();
                 }
             }

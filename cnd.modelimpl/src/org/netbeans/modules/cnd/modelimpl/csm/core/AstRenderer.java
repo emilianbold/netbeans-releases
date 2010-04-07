@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,6 +70,10 @@ public class AstRenderer {
 
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;
+    }
+
+    protected CsmFile getContainingFile() {
+        return file;
     }
 
     public void render(AST root) {
@@ -518,12 +522,12 @@ public class AstRenderer {
             }
             switch (decl.getKind()) {
                 case VARIABLE:
-                    if (CharSequenceKey.Comparator.compare(name, ((CsmVariable) decl).getName()) == 0) {
+                    if (CharSequences.comparator().compare(name, ((CsmVariable) decl).getName()) == 0) {
                         return true;
                     }
                     break;
                 case VARIABLE_DEFINITION:
-                    if (CharSequenceKey.Comparator.compare(name, ((CsmVariable) decl).getQualifiedName()) == 0) {
+                    if (CharSequences.comparator().compare(name, ((CsmVariable) decl).getQualifiedName()) == 0) {
                         return true;
                     }
                     break;
@@ -549,13 +553,13 @@ public class AstRenderer {
             switch (decl.getKind()) {
                 case FUNCTION:
                 case FUNCTION_FRIEND:
-                    if (CharSequenceKey.Comparator.compare(name, ((CsmFunction) decl).getName()) == 0) {
+                    if (CharSequences.comparator().compare(name, ((CsmFunction) decl).getName()) == 0) {
                         return true;
                     }
                     break;
                 case FUNCTION_DEFINITION:
                 case FUNCTION_FRIEND_DEFINITION:
-                    if (CharSequenceKey.Comparator.compare(name, ((CsmFunctionDefinition) decl).getQualifiedName()) == 0) {
+                    if (CharSequences.comparator().compare(name, ((CsmFunctionDefinition) decl).getQualifiedName()) == 0) {
                         return true;
                     }
                     break;
@@ -896,7 +900,7 @@ public class AstRenderer {
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
                                 if (cfdi != null) {
-                                    typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
+                                    typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
                                 } else if (results.getEnclosingClassifier() != null) {

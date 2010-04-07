@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -226,7 +226,7 @@ public final class ASDDVersion {
         "Sun Java System Application Server 9.1.1" // NOI18N
     );
 
-    /** Represents Sun GlassFish Enterprise Server 10.0
+    /** Represents GF Server 3.0 and 3.0.1
      */
     public static final ASDDVersion SUN_APPSERVER_10_0 = new ASDDVersion(
         "10.0", 100,	// NOI18N
@@ -250,7 +250,7 @@ public final class ASDDVersion {
         DTDRegistry.SUN_APPCLIENT_60_DTD_SYSTEM_ID,
         SunApplicationClient.VERSION_6_0_0,
         600,
-        "Sun GlassFish Enterprise Server 10.0" // NOI18N
+        "GlassFish Server 3.0" // NOI18N
     );
 
     /** Represents Sun Java System Web Server 7.0
@@ -590,37 +590,37 @@ public final class ASDDVersion {
         return appClientVersionString;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericServerVersion() {
         return numericVersion;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericWebAppVersion() {
         return servletVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericEjbJarVersion() {
         return ejbVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericCmpMappingsVersion() {
         return cmpMappingsVersion;
     }
 
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericApplicationVersion() {
         return appVersion;
     }
     
-    /** Version, in the format expected by the Sun DD API
+    /** Version, in the format expected by the sun-* DD API
      */
     public final BigDecimal getNumericAppClientVersion() {
         return appClientVersion;

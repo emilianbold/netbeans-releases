@@ -38,12 +38,11 @@
  */
 package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 
-import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +50,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
-import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -68,7 +67,6 @@ public class UnixHostInfoProvider implements HostInfoProvider {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final File hostinfoScript;
 
-
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
         hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", null, false); // NOI18N
@@ -78,6 +76,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
     }
 
+    @Override
     public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
         if (hostinfoScript == null) {
             return null;
@@ -148,44 +147,33 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         InputStream hiInputStream = null;
 
         try {
-            final Session session = ConnectionManagerAccessor.getDefault().
-                    getConnectionSession(cm, execEnv, true);
+            JschSupport.ChannelParams params = new JschSupport.ChannelParams();
+            ChannelStreams channels = JschSupport.execCommand(execEnv, "/bin/sh -s", params); // NOI18N
 
-            if (session != null) {
-                ChannelExec echannel = null;
+            long localStartTime = System.currentTimeMillis();
 
-                synchronized (session) {
-                    echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                    echannel.setEnv("PATH", "/bin:/usr/bin"); // NOI18N
-                    echannel.setCommand("sh -s"); // NOI18N
-                    echannel.connect();
-                }
+            hiOutputStream = channels.in;
+            hiInputStream = channels.out;
 
-                long localStartTime = System.currentTimeMillis();
+            // echannel.setEnv() didn't work, so writing this directly
+            hiOutputStream.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+            hiOutputStream.flush();
 
-                hiOutputStream = echannel.getOutputStream();
-                hiInputStream = echannel.getInputStream();
+            BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
+            String scriptLine = scriptReader.readLine();
 
-                // echannel.setEnv() didn't work, so writing this directly
-                hiOutputStream.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+            while (scriptLine != null) {
+                hiOutputStream.write((scriptLine + '\n').getBytes());
                 hiOutputStream.flush();
-
-                BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
-                String scriptLine = scriptReader.readLine();
-
-                while (scriptLine != null) {
-                    hiOutputStream.write((scriptLine + '\n').getBytes());
-                    hiOutputStream.flush();
-                    scriptLine = scriptReader.readLine();
-                }
-
-                scriptReader.close();
-                hostInfo.load(hiInputStream);
-
-                long localEndTime = System.currentTimeMillis();
-
-                hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
+                scriptLine = scriptReader.readLine();
             }
+
+            scriptReader.close();
+            hostInfo.load(hiInputStream);
+
+            long localEndTime = System.currentTimeMillis();
+
+            hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
         } catch (JSchException ex) {
             throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
         } finally {

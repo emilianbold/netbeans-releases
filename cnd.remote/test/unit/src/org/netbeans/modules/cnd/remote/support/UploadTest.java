@@ -79,6 +79,7 @@ public class UploadTest extends RemoteTestBase {
     @ForAllEnvironments
     public void testCopyTo() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
+        localFile.deleteOnExit();
         FileWriter fstream = new FileWriter(localFile);
         StringBuilder sb = new StringBuilder("File from "); //NOI18N
         try {
@@ -86,24 +87,25 @@ public class UploadTest extends RemoteTestBase {
             sb.append( addr.getHostName() );
         } catch (UnknownHostException e) {
         }
-        sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
+        sb.append("\ntime: ").append(System.currentTimeMillis()).append("\n"); //NOI18N
         BufferedWriter out = new BufferedWriter(fstream);
         out.write(sb.toString());
         out.close();
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
-        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
         String remoteFile = getRemoteTmpDir() + "/" + localFile.getName(); //NOI18N
-        rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+        int rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770, null).get();
+        assertEquals("Upload RC for " + localFile.getAbsolutePath(), 0, rc);
         assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
         String catCommand = "cat " + remoteFile;
         RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
 //            assert rcs2.run() == 0; // add more output
-        int rc = rcs2.run();
+        rc = rcs2.run();
         if (rc != 0) {
             assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
         }
         assert rcs2.getOutput().equals(sb.toString());
         assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
+        localFile.delete();
     }
     
     public static Test suite() {
@@ -134,7 +136,6 @@ public class UploadTest extends RemoteTestBase {
         assertEquals(0, rc);
         //Thread.sleep(2000);
 
-        RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
         for (File localFile : files) {
             if (localFile.isFile()) {
                 totalCount++;
@@ -142,7 +143,8 @@ public class UploadTest extends RemoteTestBase {
                 assertTrue(localFile.exists());
                 String remoteFile = remoteDir + "/" + localFile.getName(); //NOI18N
                 long time = System.currentTimeMillis();
-                rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
+                rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770, null).get();
+                assertEquals("Upload RC for " + localFile.getAbsolutePath(), 0, rc);
                 time = System.currentTimeMillis() - time;
                 System.out.printf("File %s copied to %s:%s in %d ms\n", localFile, execEnv, remoteFile, time);
             }

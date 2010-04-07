@@ -61,7 +61,7 @@ public class Keyring {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.keyring");
 
     private static KeyringProvider PROVIDER;
-    private static KeyringProvider provider() {
+    private static synchronized KeyringProvider provider() {
         if (PROVIDER == null) {
             for (KeyringProvider p : Lookup.getDefault().lookupAll(KeyringProvider.class)) {
                 if (p.enabled()) {
@@ -117,14 +117,14 @@ public class Keyring {
     }
 
     private static class DummyKeyringProvider implements KeyringProvider {
-        public boolean enabled() {
+        public @Override boolean enabled() {
             return true;
         }
-        public char[] read(String key) {
+        public @Override char[] read(String key) {
             return null;
         }
-        public void save(String key, char[] password, String description) {}
-        public void delete(String key) {}
+        public @Override void save(String key, char[] password, String description) {}
+        public @Override void delete(String key) {}
     }
 
 }

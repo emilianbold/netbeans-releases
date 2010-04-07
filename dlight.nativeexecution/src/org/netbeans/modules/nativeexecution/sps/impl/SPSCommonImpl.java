@@ -46,6 +46,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.AsynchronousAction;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.SolarisPrivilegesSupport;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
@@ -53,6 +54,7 @@ import org.netbeans.modules.nativeexecution.support.ObservableActionListener;
 import org.netbeans.modules.nativeexecution.support.TasksCachedProcessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
@@ -62,9 +64,27 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
             new TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean>(new RequestPrivilegesTask(), true);
     private final ExecutionEnvironment execEnv;
     private volatile boolean cancelled = false;
+    private final ConnectionListener connectionListener;
 
-    protected SPSCommonImpl(ExecutionEnvironment execEnv) {
+    protected SPSCommonImpl(final ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
+        connectionListener = new ConnectionListener() {
+
+            @Override
+            public void connected(ExecutionEnvironment env) {
+            }
+
+            @Override
+            public void disconnected(ExecutionEnvironment env) {
+                if (execEnv.equals(env)) {
+                    invalidate();
+                }
+            }
+        };
+
+        ConnectionManager cm = ConnectionManager.getInstance();
+        cm.addConnectionListener(WeakListeners.create(
+                ConnectionListener.class, connectionListener, cm));
     }
 
     ExecutionEnvironment getExecEnv() {
@@ -73,10 +93,12 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     abstract String getPID();
 
+    @Override
     public abstract void requestPrivileges(
             Collection<String> requestedPrivileges,
             String root, char[] passwd) throws NotOwnerException, CancellationException;
 
+    @Override
     public void requestPrivileges(
             final Collection<String> requestedPrivileges,
             boolean askForPassword) throws NotOwnerException, CancellationException {
@@ -112,6 +134,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         return cancelled;
     }
 
+    @Override
     public boolean hasPrivileges(
             final Collection<String> privs) {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
@@ -134,6 +157,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         return status;
     }
 
+    @Override
     public List<String> getExecutionPrivileges() {
         List<String> result = null;
 
@@ -152,6 +176,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
      * @param onPrivilegesGranted
      * @return
      */
+    @Override
     public AsynchronousAction getRequestPrivilegesAction(
             final Collection<String> requestedPrivileges,
             final Runnable onPrivilegesGranted) {
@@ -161,9 +186,11 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         if (onPrivilegesGranted != null) {
             action.addObservableActionListener(new ObservableActionListener<Boolean>() {
 
+                @Override
                 public void actionStarted(Action source) {
                 }
 
+                @Override
                 public void actionCompleted(Action source, Boolean result) {
                     if (result != null && result.booleanValue() == true) {
                         onPrivilegesGranted.run();
@@ -179,6 +206,7 @@ public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
         cachedPrivilegesFetcher.remove(execEnv);
     }
 
+    @Override
     public void invalidate() {
         invalidateCache();
     }

@@ -31,8 +31,8 @@ import org.netbeans.modules.xml.xpath.ext.schema.resolver.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 
 /**
- * Implements the XPathVisitor interface to generate a string representation
- * of an expression.
+ * Implements the XPathVisitor interface to convert the XPath expression
+ * to relative form. 
  * 
  * @author sbyn
  * @author nk160297

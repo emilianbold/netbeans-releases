@@ -7,77 +7,110 @@
 <html>
 <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-        <title>Creating a Kenai Project</title>
+        <title>Creating and Opening Team Projects</title>
         <link rel="stylesheet" href="../ide.css" type="text/css">
     </head>
     <body>
-        <h2>Creating a Kenai Project</h2>
+        <h2>Creating and Opening Team Projects</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
 
-        <p>If you are logged in to Kenai, you can create a new Kenai project directly in the IDE.
-        When you create a project, the IDE creates a project page on Kenai.com and
-        starts the services associated with the project.
-        If you create a Kenai project you are automatically assigned the role of project administrator.</p>
+        <p>When you are logged in to registered Team Server,
+        you can use wizards in the IDE to create new projects and open existing projects on the Team Server.</p>
 
-        <p><strong>Note.</strong></p>
-        <ul class="note">
-            <li>To create a Kenai project you must be registered with Kenai.com.</li>
-        </ul>
-
-        <p>When you create a Kenai project, you can choose to do either of the following:</p>
-        <ul>
-            <li><a href="#create">Create a new project and local repository</a></li>
-            <li><a href="kenai_share.html">Share a local NetBeans project</a></li>
-        </ul>
+        <p>If you have a local project and you want to add the project to a Team Server, you can use a wizard to
+        <a href="kenai_share.html">share a local NetBeans project</a></p>
 
         <a name="create"></a>
-        <h3>Creating a new Kenai project</h3>
-        <p>When you create a new Kenai project in the IDE you need to specify an empty directory on your system
-        for the local repository.
+        <h3>Creating Projects</h3>
+        <p>When you create a project, the IDE creates a project on the Team Server and
+        starts the services associated with the project.
+        If you create a project you are automatically assigned the role of project administrator.</p>
+
+        <p>To create a new project you need to specify an empty directory on your system for the local repository.
         After the local repository is created, any directories, files or projects that you create or copy to the local
-        repository are automatically under version control.
+        repository are automatically under version control and can be committed to the repository on the Team Server.
         </p>
 
-        <p><strong>To create a new Kenai project:</strong></p>
+        <p><strong>To create a new team project:</strong></p>
         <ol>
-            <li>Login to Kenai by choosing Team &gt; Kenai &gt; Login to Kenai from the main menu.</li>
-            <li>Choose Team &gt; Kenai &gt; Create Kenai Project to open the New Kenai Project wizard.
-                <p>Alternatively, you can click the New Kenai Project icon (&nbsp;<img src="../images/new_kenai_project.png">) in the Kenai Dashboard.</p>
+            <li>Register a Team Server.</li>
+            <li>Login to the Team Server by choosing Team &gt; Team Server &gt; Login from the main menu.</li>
+            <li>Choose Team &gt; Team Server &gt; New Team Project to open the New Team Project wizard.
+                <p>Alternatively, you can click the New Team Project icon (&nbsp;<img src="../images/new_kenai_project.png">) in the Team Dashboard.</p>
             </li>
-            <li>Enter the project details in the Name and License panel of the New Kenai Project wizard. Click Next.</li>
+            <li>Select the Team Server from the drop-down list.</li>
+            <li>Enter the project details in the Name and License panel of the New Team Project wizard. Click Next.</li>
             <li>Select the type of Source Code Repository and supply the necessary repository details.</li>
             <li>Select an Issue Tracking type and any necessary details.</li>
             <li>Click Finish. </li>
         </ol>
 
-        <p>When you click Finish, the IDE creates the Kenai project and adds the project
-            to the Kenai dashboard.
-        </p>
-
-        <h3>Deleting a Kenai project</h3>
-        <p>You cannot use the IDE to remove a project from Kenai.com.
-        To delete a project you need to use the project's Manage page on Kenai.com.
-        Only project owners can delete a Kenai project. </p>
-
-        <p>For more details about managing and deleting projects, see the following document.</p>
-        <p>
-        <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://kenai.com/projects/help/pages/ManageProject">
-            <param name="text" value="<html><u>Project Kenai Site Help: Managing a Project</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object>
+        <p>When you click Finish, the IDE creates the Team project and adds the project
+            to the Team Dashboard.
+            You can now add project sources and resources to the local repository.
         </p>
 
         
+        <h3>Opening Team Projects</h3>
+
+        <p>If you are interested in or a member of a project,
+        you can open the project directly from the IDE.
+        When you open a project, a node representing the project
+        is displayed under Open Projects in the <a href="kenai_dashboard.html">Team Dashboard</a>.
+        </p>
+
+        <p><strong>To open a Team project:</strong></p>
+        <ol>
+            <li>Choose Team &gt; Team Server &gt; Open Team Project from the main menu.
+            <p>Alternatively, you can click the Open Team Project icon (&nbsp;<img src="../images/open_kenai_project.png">) in the Team dashboard.</p></li>
+            <li>Type the search terms in the Open Team Project dialog box and click Search.</li>
+            <li>Select a project from the list. Click OK.</li>
+        </ol>
+        <p>When you click OK, the IDE adds the project to the list of Open Projects in the Team Dashboard.
+        In the Team Dashboard you can view project issues, members and download the project sources.
+        You can click the Bookmark icon to add the project to the list under My Projects.
+        For more about working with Team projects, see <a href="kenai_dashboard.html">Using the Team Server Dashboard</a>.</p>
+
+        <ul class="note">
+            <li>You do not need to open a project if you are only interested in the project sources.
+                You can download sources from the repository by choosing Team &gt; Team Server &gt; Get Sources.</li>
+        </ul>
+
+
+        <p><strong>To download project sources:</strong></p>
+        <ol>
+            <li>In the Team Dashboard, expand the Sources node of the project and
+            click <strong>get</strong> to open the Get Sources from Team Server wizard.
+            <p>Alternatively, choose Team &gt; Team Server &gt; Get Sources from the main menu.</p></li>
+            <li>Select the Repository from the drop-down list.</li>
+            <li>Specify the folder in the remote repository that you want to retrieve.</li>
+            <li>Specify a location for the local repository. Click Get From Team Server.</li>
+        </ol>
+
+        <p>
+            After checkout is complete, you can choose File &gt; Open Project to open the
+            project (if it is a NetBeans project) or work with the files in the Favorites window.
+        </p>
+
+        <p>Projects on a Team Server are usually open source.
+            In most cases, you do not need to login or be a member of
+            a project to open the project or get the sources.
+            In some cases, however, the project administrator might modify the default
+            project permissions to limit access.
+        </p>
+
+        <h3>Deleting Team Projects</h3>
+        <p>You cannot use the IDE to remove a project from the Team Server.
+        The project owner can delete the project using the project's web page on the Team Server site.</p>
+
+        <p>Removing a project from the list under Open Project or My Projects in the Team Dashboard does not delete the project from the Team Server.</p>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd>      <a href="about_kenai_projects.html">About Kenai Projects</a></dd>
+            <dd>      <a href="about_team_servers.html">Using a Team Server</a></dd>
             <dd>      <a href="kenai_share.html">Sharing a Local Project</a></dd>
-            <dd>      <a href="kenai_dashboard.html">Working With Kenai Projects</a></dd>
-            <dd>      <a href="kenai_opening.html">Opening a Kenai Project</a></dd>
-            <dd>      <a href="kenai_quickref.html">Kenai Project Tasks: Quick Reference</a></dd>
+            <dd>      <a href="kenai_dashboard.html">Using the Team Server Dashboard</a></dd>
+            <dd>      <a href="kenai_quickref.html">Team Project Tasks: Quick Reference</a></dd>
         </dl>
         <hr>
         <small><a href="../credits.html">Legal Notices</a></small>

@@ -45,14 +45,159 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 
 public class ProjectGenerator {
 
+    public static final class ProjectParameters {
+
+        private final String projectName;
+        private final File projectFolder;
+        private String makefile;
+        private MakeConfiguration[] configurations;
+        private boolean openFlag;
+        private Iterator<SourceFolderInfo> sourceFolders;
+        private String sourceFoldersFilter;
+        private Iterator<String> importantFileItems;
+        private Iterator<SourceFolderInfo> testFolders;
+        private String mainFile;
+        private String hostUID;
+        private CompilerSet cs;
+
+        /**
+         *
+         * @param projectFolderName name of the project's folder
+         * @param projectParentFolderPath parent folder path (i.e. ~/NetbeansProjects)
+         *          where project folder is to be created
+         */
+        public ProjectParameters(String projectFolderName, String projectParentFolderPath) {
+            this(projectFolderName, new File(projectParentFolderPath, projectFolderName));
+        }
+
+        /**
+         *
+         * @param projectName name of the project
+         * @param projectFolder project folder (i.e. ~/NetbeansProjects/projectName)
+         */
+        public ProjectParameters(String projectName, File projectFolder) {
+            this.projectName = projectName;
+            this.projectFolder = projectFolder;
+            this.makefile = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
+            this.configurations = new MakeConfiguration[0];
+            this.openFlag = false;
+            this.sourceFolders = null;
+            this.sourceFoldersFilter = null;
+            this.testFolders = null; 
+            this.importantFileItems = null; 
+            this.mainFile = "";
+        }
+
+        public ProjectParameters setMakefileName(String makefile) {
+            this.makefile = makefile;
+            return this;
+        }
+
+        public ProjectParameters setConfigurations(MakeConfiguration[] confs) {
+            this.configurations = (confs == null) ? new MakeConfiguration[0] : confs;
+            return this;
+        }
+
+        public ProjectParameters setConfiguration(MakeConfiguration conf) {
+            this.configurations = new MakeConfiguration[] { conf };
+            return this;
+        }
+
+        public ProjectParameters setOpenFlag(boolean open) {
+            this.openFlag = open;
+            return this;
+        }
+
+        public ProjectParameters setSourceFolders(Iterator<SourceFolderInfo> sourceFolders) {
+            this.sourceFolders = sourceFolders;
+            return this;
+        }
+
+        public ProjectParameters setSourceFoldersFilter(String sourceFoldersFilter) {
+            this.sourceFoldersFilter = sourceFoldersFilter;
+            return this;
+        }
+
+        public ProjectParameters setTestFolders(Iterator<SourceFolderInfo> testFolders) {
+            this.testFolders = testFolders;
+            return this;
+        }
+
+        public ProjectParameters setImportantFiles(Iterator<String> importantItems) {
+            this.importantFileItems = importantItems;
+            return this;
+        }
+
+        public ProjectParameters setMainFile(String mainFile) {
+            this.mainFile = mainFile == null ? "" : mainFile;
+            return this;
+        }
+        
+        public ProjectParameters setHostToolchain(String hostUID, CompilerSet cs) {
+            this.hostUID = hostUID;
+            this.cs = cs;
+            return this;
+        }
+
+        public File getProjectFolder() {
+            return projectFolder;
+        }
+
+        public String getProjectName() {
+            return projectName;
+        }
+
+        public MakeConfiguration[] getConfigurations() {
+            return this.configurations;
+        }
+
+        public boolean getOpenFlag() {
+            return this.openFlag;
+        }
+
+        public String getMakefileName() {
+            return this.makefile;
+        }
+
+        public String getMainFile() {
+            return this.mainFile;
+        }
+
+        public Iterator<SourceFolderInfo> getSourceFolders() {
+            return this.sourceFolders;
+        }
+
+        public String getSourceFoldersFilter() {
+            return this.sourceFoldersFilter;
+        }
+
+        public Iterator<SourceFolderInfo> getTestFolders() {
+            return this.testFolders;
+        }
+
+        public Iterator<String> getImportantFiles() {
+            return this.importantFileItems;
+        }
+
+        public String getHostUID() {
+            return hostUID;
+        }
+
+        public CompilerSet getToolchain() {
+            return cs;
+        }
+    }
+    
     public static String getDefaultProjectFolder() {
         return MakeProjectGenerator.getDefaultProjectFolder();
     }
@@ -65,32 +210,23 @@ public class ProjectGenerator {
         return MakeProjectGenerator.getValidProjectName(projectFolder, suggestedProjectName);
     }
 
-    public static Project createBlankProject(boolean open) throws IOException {
-        return MakeProjectGenerator.createBlankProject(open);
+    public static Project createBlankProject(ProjectParameters prjParams) throws IOException {
+        return MakeProjectGenerator.createBlankProject(prjParams);
     }
 
-    public static Project createBlankProject(String projectName, String projectFolder) throws IOException {
-        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, false);
-    }
-
-    public static Project createBlankProject(String projectName, String makefileName, String projectFolder) throws IOException {
-        return MakeProjectGenerator.createBlankProject(projectName, makefileName, projectFolder, false);
-    }
-
-    public static Project createBlankProject(String projectName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
-    }
-
-    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<SourceFolderInfo> testFolders, Iterator<String> importantItems) throws IOException {
-        MakeProject createdProject = MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, sourceFoldersFilter, testFolders, importantItems, null);
-        ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
+    public static Project createProject(ProjectParameters prjParams) throws IOException {
+        MakeProject createdProject = MakeProjectGenerator.createProject(prjParams);
+        ConfigurationDescriptorProvider.recordCreatedProjectMetrics(prjParams.getConfigurations());
         return createdProject;
     }
 
     /*
      * Used by Sun Studio
      */
-    public static void createProjectFromTemplate(URL url, String projectName, String projectFolder) throws IOException {
-        MakeSampleProjectGenerator.createProjectFromTemplate(url, new File(projectFolder, projectName), projectName); // NOI18N
+    public static void createProjectFromTemplate(URL templateResourceURL, ProjectParameters prjParams) throws IOException {
+        MakeSampleProjectGenerator.createProjectFromTemplate(templateResourceURL.openStream(), prjParams);
+    }
+
+    private ProjectGenerator() {
     }
 }

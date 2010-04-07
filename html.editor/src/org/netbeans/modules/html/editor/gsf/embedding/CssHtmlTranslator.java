@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -68,6 +70,10 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     public static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
     public static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
+    private static final Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N
+    private static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(<!--)?(.*?)(-->)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
+    private static final int CDATA_BODY_GROUP_INDEX = 2; //                                        ^^^^
+    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
@@ -100,8 +106,26 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 state.put(IN_STYLE, Boolean.TRUE);
                 //jumped into style
                 int sourceStart = ts.offset();
-                int sourceEnd = sourceStart + htmlToken.length();
-                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                int length = htmlToken.length();
+
+                //filter out <![CDATA ]]> tokens and <!-- --> comment tokens, the code may looks like:
+                //    <head>
+                //      <style type="text/css"><![CDATA[
+                //      <!--
+                //      body { }
+                //      }
+                //      -->
+                //      ]]></style>
+                //    </head><body/>
+                //  </html>
+
+                Matcher matcher = CDATA_FILTER_PATTERN.matcher(htmlToken.text());
+                if (matcher.matches()) {
+                    sourceStart += matcher.start(CDATA_BODY_GROUP_INDEX);
+                    length = matcher.end(CDATA_BODY_GROUP_INDEX) - matcher.start(CDATA_BODY_GROUP_INDEX);
+                }
+
+                embeddings.add(snapshot.create(sourceStart, length, CSS_MIME_TYPE));
             } else {
                 //jumped out of the style
                 state.remove(IN_STYLE);
@@ -189,13 +213,39 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                     if (valueCssType != null) {
                         //XXX we do not support templating code in the value!
                         //class or id attribute value - generate fake selector with # or . prefix
-                        StringBuilder buf = new StringBuilder();
+
                         //#180576 - filter out "illegal" characters from the selector name
                         if (text.indexOf(".") == -1 && text.indexOf(":") == -1) {
-                            buf.append("\n ");
-                            buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
-                            embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
-                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                            embeddings.add(snapshot.create("\n ", CSS_MIME_TYPE)); //NOI18N
+
+                            String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";
+                            Matcher matcher = CLASSES_LIST_PATTERN.matcher(text);
+                            boolean classExists = false;
+                            while(matcher.find()) {
+                                int start = matcher.start();
+                                int end = matcher.end();
+                                if(start != end) {
+                                    embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
+
+                                    //compute the token's document offset
+                                    int start_in_document = sourceStart + start;
+                                    int lenght = end - start;
+
+                                    //create the real text embedding
+                                    embeddings.add(snapshot.create(start_in_document, lenght, CSS_MIME_TYPE));
+
+                                    classExists = true;
+                                }
+                            }
+
+                            if(!classExists) {
+                                //empty class attribute, we need to generate . {} so the completion can complete
+                                //classes after the dot
+                                embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
+                                //+ empty real embedding for the empty value "" content
+                                embeddings.add(snapshot.create(sourceStart, 0, CSS_MIME_TYPE));
+                            }
+
                             embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
                         }
 

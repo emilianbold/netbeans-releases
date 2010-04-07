@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -185,9 +187,15 @@ public class ManDocumentation {
     }
 
     private static File getCacheFile(String name, int chapter, String platformName) {
-        File res = new File(getCacheDir(), name + "." + platformName + "." + chapter); // NOI18N
-
-        return res;
+        // name might look like "operator /=", so we need to escape it
+        String safeName;
+        try {
+            safeName = URLEncoder.encode(name, "UTF-8"); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            // UTF-8 should always be supported, but anyway...
+            safeName = name;
+        }
+        return new File(getCacheDir(), safeName + "." + platformName + "." + chapter); // NOI18N
     }
 
     static NativeProject getNativeProject(CsmFile csmFile) {

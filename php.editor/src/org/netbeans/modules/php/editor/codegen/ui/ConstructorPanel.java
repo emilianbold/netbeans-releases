@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.php.editor.codegen.ui;
 
+import java.awt.Dimension;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTree;
@@ -72,6 +73,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
             case CONSTRUCTOR: properties = cgsInfo.getProperties(); break;
             case GETTER: properties = cgsInfo.getPossibleGetters(); break;
             case SETTER: properties = cgsInfo.getPossibleSetters(); break;
+            case METHODS: properties = cgsInfo.getPossibleMethods(); break;
             default: properties = cgsInfo.getPossibleGettersSetters(); break;
         }
         this.cgsInfo = cgsInfo;
@@ -110,6 +112,11 @@ public class ConstructorPanel extends javax.swing.JPanel {
                     model.addElement(way.getGetterExample(name) + ", " + way.getSetterExample(name));
                 }
                 break;
+            case METHODS:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS");    //NOI18N
+                customizeMethodGeneration = false;
+                Dimension preferredSize = getPreferredSize();
+                setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
         }
         this.label.setText(panelTitle);
         this.pGSCustomize.setVisible(customizeMethodGeneration);
@@ -135,7 +142,7 @@ public class ConstructorPanel extends javax.swing.JPanel {
         root = new CheckNode.CGSClassNode(className);
         JTree tree = new JTree(root);
 
-        for(Property property: properties) {
+        for (Property property : properties) {
             root.add(new CheckNode.CGSPropertyNode(property));
         }
         tree.setCellRenderer(new CheckBoxTreeRenderer());

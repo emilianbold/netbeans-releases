@@ -173,7 +173,17 @@ public abstract class ResolvedDependencies {
                 return d;
             }
         }
-        return null;
+        //Dependencies may have changed - recompute them
+        deps.clear();
+        ResolvedDependency result = null;
+        for (Dependency dep : dependencies.all()) {
+            ResolvedDependency rd = new ResolvedDependency(dep, resolver);
+            if (id.equals(dep.getID())) {
+                result = rd;
+            }
+            deps.add (rd);
+        }
+        return result;
     }
 
     protected Dependencies getOriginalDependencies() {

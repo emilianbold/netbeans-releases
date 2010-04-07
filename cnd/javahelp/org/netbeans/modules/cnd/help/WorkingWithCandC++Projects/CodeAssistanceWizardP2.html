@@ -27,21 +27,22 @@ explored to determine the parsing options.
 contains the source files for your project.</li>
 <li><b>Select analyzer.</b>
 <ul>
-<li><b>Search file system for C/C++ header files.</b> Explore the 
-information in header files. This mode searches the source files root 
-folder for header files and tries to determine the correct include 
-search path. This mode is valid only after your project has been 
-completely parsed by the built-in parser.
-</li>
 <li><b>Explore Executable or Library File.</b> Explore the 
 debugging information in executables and library files.</li>
+<li><b>Explore Make Log File.</b> Explore the log file produced
+    when you build the project. Often the build log contains enough
+    information for the IDE to determine the necessary options
+    and the exact list of files to be built. To use the log as an information source,
+    save your build log in a file and specify this file location in the
+    next step.
+
 <li><b>Explore Object Files in Folder.</b> Explore debugging 
 information in object files.</li>
 </ul>
 </ul>
 <p>The Explore Executable or Library File mode and the Explore 
 Object Files in Folder mode require that the project have been built 
-with debugging information. If you are using a Sun Studio compiler, 
+with debugging information. If you are using a OracleSolaris Studio compiler,
 building with the <tt>-g</tt> option is sufficient. If you are using a 
 GNU compiler, use the following options:
 <pre>

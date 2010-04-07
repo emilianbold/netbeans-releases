@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.util
 OpenIDE-Module-Localizing-Bundle: org/openide/util/Bundle.properties
-OpenIDE-Module-Specification-Version: 8.2
+OpenIDE-Module-Specification-Version: 8.3
 

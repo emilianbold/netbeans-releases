@@ -390,8 +390,7 @@ public final class CommandUtils {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, 
-                    getDebugArguments(xDebugArgument));
+            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         }
         return debugUrl;
     }
@@ -490,7 +489,7 @@ public final class CommandUtils {
     }
 
     private static String getDebugArguments(XDebugUrlArguments xDebugArgument) {
-        return xDebugArgument.toString() + "=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N                
+        return xDebugArgument.toString() + "=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N
     }
 
     private static FileObject[] filterValidFiles(FileObject[] files, FileObject dir) {
