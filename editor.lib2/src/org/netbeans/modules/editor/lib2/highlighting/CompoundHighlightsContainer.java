@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal, Miloslav Metelka
  */
-public final class CompoundHighlightsContainer extends AbstractHighlightsContainer {
+public final class CompoundHighlightsContainer extends AbstractHighlightsContainer implements MultiLayerContainer {
 
     private static final Logger LOG = Logger.getLogger(CompoundHighlightsContainer.class.getName());
     
@@ -235,6 +235,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
      * @param layers    The new delegate layers. Can be <code>null</code>.
      * @see org.netbeans.api.editor.view.ZOrder#sort(HighlightLayer [])
      */
+    @Override
     public void setLayers(Document doc, HighlightsContainer[] layers) {
         Document docForEvents = null;
         
@@ -276,9 +277,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     }
 
-    public void resetCache() {
-        layerChanged(null, 0, Integer.MAX_VALUE);
-    }
+//    public void resetCache() {
+//        layerChanged(null, 0, Integer.MAX_VALUE);
+//    }
     
     // ----------------------------------------------------------------------
     //  Private implementation
@@ -548,6 +549,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         private final OffsetGapList<OffsetGapList.Offset> boundaries;
         private final Document doc;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public CacheBoundaries(Document doc) {
             this.boundaries = new OffsetGapList<OffsetGapList.Offset>(false);
             this.doc = doc;

@@ -87,7 +87,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     }
 
     @Override
-    public void restart(int startOffset) {
+    public void restart(int startOffset, int matchOffset) {
         foldHierarchy.lock(); // this.finish() always called in try-finally
         foldHierarchyLocked = true;
         @SuppressWarnings("unchecked")

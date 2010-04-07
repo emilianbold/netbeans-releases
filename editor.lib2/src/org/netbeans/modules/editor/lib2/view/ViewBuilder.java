@@ -226,7 +226,7 @@ final class ViewBuilder {
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
             FactoryState state = new FactoryState(viewFactories[i], startOffset);
-            state.init(startOffset);
+            state.init(startOffset, matchOffset);
             state.updateNextViewStartOffset(startOffset);
             factoryStates[i] = state;
         }
@@ -564,8 +564,8 @@ final class ViewBuilder {
             this.factory = factory;
         }
 
-        void init(int startOffset) {
-            factory.restart(startOffset);
+        void init(int startOffset, int matchOffset) {
+            factory.restart(startOffset, matchOffset);
         }
 
         void updateNextViewStartOffset(int offset) {
