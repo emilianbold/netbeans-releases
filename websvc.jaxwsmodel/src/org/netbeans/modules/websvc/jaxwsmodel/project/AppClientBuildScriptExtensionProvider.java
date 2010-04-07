@@ -58,7 +58,7 @@ public class AppClientBuildScriptExtensionProvider implements JaxWsBuildScriptEx
     static String JAX_WS_STYLESHEET_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jaxws-app-client.xsl"; //NOI18N
     private Project project;
 
-    /** Creates a new instance of WebProjectJAXWSVersionProvider */
+    /** Creates a new instance of AppClientBuildScriptExtensionProvider */
     public AppClientBuildScriptExtensionProvider(Project project) {
         this.project = project;
     }
