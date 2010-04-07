@@ -147,6 +147,12 @@ public class FortranLexer implements Lexer<FortranTokenId> {
                         backup(1); //reevaluate the char
                         break;
                     }
+                    if ((lineColomn == 6) && !fortranFreeFormat) {
+                        if (c != ' ') {
+                            return token(FortranTokenId.LINE_CONTINUATION_FIXED);
+                        }
+                    }
+
                     switch (c) {
                         case '#':
                             return finishSharp();
