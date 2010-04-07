@@ -766,6 +766,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             if (rootView != null) {
                 for(int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
                     View view = rootView.getView(i);
+                    if (view == null) { // seen in tests
+                        break;
+                    }
+
                     int offset = view.getStartOffset();
                     Rectangle r = null;
 
