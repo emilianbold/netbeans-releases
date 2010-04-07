@@ -101,6 +101,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameText.setEnabled(enabled);
         dispatcherMappingText.setEnabled(enabled);
         includeJstlCheckBox.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
         super.setEnabled(enabled);
     }
     
@@ -245,6 +247,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         dispatcherNameLabel.setEnabled(enabled);
         dispatcherNameText.setEnabled(enabled);
         tabbedPanel.setEnabled(enabled);
+        springVersionLabel.setEnabled(enabled);
+        cbSpringVersion.setEnabled(enabled);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -284,9 +288,12 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             }
         }
         cbSpringVersion.setModel(new DefaultComboBoxModel(items));
-        springLibrary = springLibs.get(cbSpringVersion.getSelectedIndex());
-        libsInitialized = true;
-        repaint();
+        int selectedIndex = cbSpringVersion.getSelectedIndex();
+        if (selectedIndex < springLibs.size()) {
+            springLibrary = springLibs.get(selectedIndex);
+            libsInitialized = true;
+            repaint();
+        }
     }
 
     private class SpringLibrary {
