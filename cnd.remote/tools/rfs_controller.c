@@ -503,15 +503,20 @@ static int init_files() {
     return success;
 }
 
-static void ping_pong(void* data) {
+/**
+ * From time to time prints to stdout.
+ * This guarantees that, as soon as as ssh connection breaks, program will get SIGPIPE and terminate
+ */
+static void check_stdout_pipe(void* data) {
     do {
         pthread_mutex_lock(&mutex);
         fprintf(stdout, "%c\n", LC_PROTOCOL_PING);
         fflush(stdout);
-        char response[64];
-        fgets(response, sizeof response, stdin);
+        // no response needed
+        // char response[64];
+        // fgets(response, sizeof response, stdin);
         pthread_mutex_unlock(&mutex);
-        sleep(10);
+        sleep(20);
     } while (1);
 }
 
@@ -572,7 +577,7 @@ int main(int argc, char* argv[]) {
     fflush(stdout);
 
     pthread_t ping_pong_thread;
-    pthread_create(&ping_pong_thread, NULL /*&attr*/, (void *(*) (void *)) ping_pong, NULL);
+    pthread_create(&ping_pong_thread, NULL /*&attr*/, (void *(*) (void *)) check_stdout_pipe, NULL);
     pthread_detach(ping_pong_thread);
 
     while (1) {

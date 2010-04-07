@@ -85,7 +85,8 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends NbTestCase
     private static final boolean OPTIMIZE_NATIVE_EXECUTIONS =false;
-    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = false;
+    private static final boolean OPTIMIZE_SIMPLE_PROJECTS = true;
+    private static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = true;
 
     public MakeProjectTestBase(String name) {
@@ -219,22 +220,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             }
 
             // For simple configure-make projects store logs for reuse
-            boolean hasConfigureLog = true;
-            File configureLog = null;
-            if (new File(path, "configure").exists()) {
-                configureLog = new File(path, "configure.discoveryLog");
-                hasConfigureLog = configureLog.exists();
-                if (hasConfigureLog) {
-                    hackConfigure(configure, configureLog);
-                }
+            boolean generateLogs = false;
+            if (OPTIMIZE_SIMPLE_PROJECTS && "configure".equals(configure.getName())) {
+                generateLogs = !hasLogs(new File(path));
             }
-
-            final File makeFileLog  = new File(path, "Makefile.discoveryLog");
-            boolean hasMakefileLog = makeFileLog.exists();
-            if (hasMakefileLog) {
-                hackMakefile(makeFile, makeFileLog);
-            }
-
+            
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {
@@ -305,11 +295,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
             ImportProject importer = new ImportProject(wizard);
             importer.setUILessMode();
-            if (!hasConfigureLog) {
-                importer.setConfigureLog(configureLog);
-            }
-            if (!hasMakefileLog) {
-                importer.setMakeLog(makeFileLog);
+            if (generateLogs) {
+                importer.setConfigureLog(new File(path, "configure" + LOG_POSTFIX));
+                importer.setMakeLog(new File(path, "Makefile" + LOG_POSTFIX));
             }
             importer.create();
             OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
@@ -325,6 +313,12 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
                 i++;
             }
+
+            if (generateLogs) {
+                hackConfigure(configure);
+                hackMakefile(makeFile);
+            }
+
             assertEquals("Failed configure", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Configure));
             assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
             CsmModel model = CsmModelAccessor.getModel();
@@ -445,7 +439,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
-            if (!OPTIMIZE_NATIVE_EXECUTIONS && !OPTIMIZE_SIMPLE_PROJECTS) {
+            if (!OPTIMIZE_NATIVE_EXECUTIONS && 
+                    (!OPTIMIZE_SIMPLE_PROJECTS || !hasLogs(fileCreatedFolder))) {
                 execute(tools, "rm", dataPath, "-rf", packageName);
                 fileCreatedFolder.mkdirs();
             }
@@ -545,7 +540,16 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         }
     }
 
-    private static void hackConfigure(File file, File log) {
+    private static boolean hasLogs(File projectDir) {
+        File configureLog = new File(projectDir, "configure" + LOG_POSTFIX);
+        if (!configureLog.exists()) {
+            return false;
+        }
+        File makeLog = new File(projectDir, "Makefile" + LOG_POSTFIX);
+        return makeLog.exists();
+    }
+
+    private static void hackConfigure(File file) {
         try {
             BufferedReader in = new BufferedReader(new FileReader(file));
             String firstLine = in.readLine();
@@ -553,18 +557,18 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(firstLine);
             out.newLine();
-            out.write("cat " + log.getAbsolutePath());
+            out.write("cat " + file.getAbsolutePath() + LOG_POSTFIX);
             out.close();
         } catch (IOException e) {
         }
     }
 
-    private static void hackMakefile(File file, File log) {
+    private static void hackMakefile(File file) {
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write("all:");
             out.newLine();
-            out.write("\tcat " + log.getAbsolutePath());
+            out.write("\tcat " + file.getAbsolutePath() + LOG_POSTFIX);
             out.close();
         } catch (IOException e) {
         }

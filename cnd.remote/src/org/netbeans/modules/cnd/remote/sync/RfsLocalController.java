@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.BufferedReader;
@@ -116,7 +120,8 @@ class RfsLocalController implements Runnable {
                 RequestKind kind = getRequestKind(request);
                 if (kind == RequestKind.PING) {
                     RemoteUtil.LOGGER.finest("PING from remote controller");
-                    respond_ok();
+                    // no response needed
+                    // respond_ok();
                 } else {                
                     if (request.charAt(1) != ' ') {
                         throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
