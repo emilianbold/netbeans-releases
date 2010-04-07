@@ -475,7 +475,7 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 dispText = getPrefix(g.getTextUni().trim());
                 // find choice item
-                if ((selectedItem == null) && (dispText.contains(step.getChoice()))) {
+                if ((selectedItem == null) && (dispText.startsWith(step.getChoice()))) {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }

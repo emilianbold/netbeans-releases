@@ -1,8 +1,8 @@
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
 <%--<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
---%><%@page import="java.util.logging.Logger" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>--%>
+<%@page import="java.util.logging.Logger" %>
 <c:set var="path" value='/ Analytics'/>
 
 
