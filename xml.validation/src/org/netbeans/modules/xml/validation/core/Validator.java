@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.w3c.dom.Attr;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -69,7 +70,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.util.XmlUtil;
-import org.w3c.dom.Attr;
 import static org.netbeans.modules.xml.util.UI.*;
 
 /**
@@ -252,6 +252,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
         if (component instanceof DocumentComponent && component instanceof SchemaComponent) {
             DocumentComponent document = (DocumentComponent) component;
             Attr attr = document.getPeer().getAttributeNode("type"); // NOI18N
+
             if (attr != null) {
                 String typeName = attr.getValue();
                 typeName = removePrefix(typeName);
