@@ -64,7 +64,9 @@ public class JspFoldManager implements FoldManager {
     //but sometimes (opening many files together or restarting
     //the IDE with serialized editor panes)
     //the throughtput should be bigger to leverage the multicore CPUs.
-    private final RequestProcessor RP = new RequestProcessor(JspFoldManager.class.getSimpleName(), 4);
+    private final RequestProcessor RP = new RequestProcessor(JspFoldManager.class.getSimpleName(), 
+            Runtime.getRuntime().availableProcessors());
+    
     private final Task FOLDS_UPDATE_TASK = RP.create(new Runnable() {
         public void run() {
             try {
