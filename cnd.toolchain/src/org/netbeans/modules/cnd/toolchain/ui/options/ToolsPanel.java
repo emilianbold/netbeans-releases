@@ -733,8 +733,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         loadingToolCollectionPanel = new javax.swing.JPanel();
         lblLoadToolsProgress = new javax.swing.JLabel();
 
-        setMinimumSize(new java.awt.Dimension(600, 450));
-        setPreferredSize(new java.awt.Dimension(600, 450));
+        setMinimumSize(new java.awt.Dimension(500, 400));
+        setPreferredSize(new java.awt.Dimension(500, 400));
         setLayout(new java.awt.GridBagLayout());
 
         lbToolCollections.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));
@@ -744,7 +744,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         lbToolCollections.setToolTipText(bundle.getString("HINT_DirListLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         add(lbToolCollections, gridBagConstraints);
@@ -797,11 +797,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weighty = 1.0;
         add(buttomPanel, gridBagConstraints);
 
         ToolSetPanel.setOpaque(false);
@@ -820,7 +819,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
@@ -886,7 +884,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
@@ -894,11 +892,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridheight = 10;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(ToolSetPanel, gridBagConstraints);
 
@@ -933,10 +929,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         add(btEditDevHost, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(toolCollectionPanel, gridBagConstraints);
@@ -953,10 +949,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(loadingToolCollectionPanel, gridBagConstraints);
