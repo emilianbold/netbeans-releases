@@ -701,4 +701,17 @@ public class FortranFormatterFixedTestCase extends FortranEditorBase {
                 "      end\n"
                 );
     }
+
+    public void testCommentFixedFree() {
+        setLoadDocumentText(
+                "!/*\n" +
+                "! *\n"
+                );
+        setDefaultsOptions(false);
+        reformat();
+        assertDocumentText("Incorrect module reformat (fixed form)",
+                "!/*\n" +
+                "! *\n"
+                );
+    }
 }

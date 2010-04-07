@@ -105,7 +105,7 @@ public class RunTestAction extends NodeAction {
         Node n = activatedNodes[0];
         Folder folder = (Folder) n.getValue("Folder"); // NOI18N
         assert folder != null;
-        if (folder.isTest()) {
+        if (folder.isTest() || folder.isTestRootFolder()) {
             return true;
         }
         List<Folder> list = folder.getAllTests();
