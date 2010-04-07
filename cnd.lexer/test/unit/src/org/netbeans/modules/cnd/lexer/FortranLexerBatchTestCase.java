@@ -731,4 +731,15 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.IDENTIFIER, "throwx");
     }
+
+    public void testTab() {
+        String text = "\tprint *";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "\t");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PRINT, "print");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.OP_MUL, "*");
+    }
+
 }

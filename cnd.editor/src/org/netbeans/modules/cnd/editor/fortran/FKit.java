@@ -108,23 +108,22 @@ public class FKit extends NbEditorKit {
         doc.putProperty(Language.class, getLanguage());
     }
 
-    protected Language<FortranTokenId> getLanguage() {
+    private Language<FortranTokenId> getLanguage() {
         return FortranTokenId.languageFortran();
     }
 
-    protected final synchronized InputAttributes getLexerAttributes(BaseDocument doc) {
-        // for now use shared attributes for all documents to save memory
-        // in future we can make attributes per document based on used compiler info
+    private synchronized InputAttributes getLexerAttributes(BaseDocument doc) {
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);
-            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, FSettingsFactory.MAXIMUM_TEXT_WIDTH, true);
         }
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranCodeStyle.get(doc).isFreeFormatFortran(), true);
+        FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, codeStyle.isFreeFormatFortran(), true);
         return lexerAttrs;
     }
 
-    protected Filter<FortranTokenId> getFilter() {
+    private Filter<FortranTokenId> getFilter() {
         return CndLexerUtilities.getFortranFilter();
     }
 
