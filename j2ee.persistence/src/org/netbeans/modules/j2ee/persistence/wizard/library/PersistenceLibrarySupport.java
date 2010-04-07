@@ -73,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -295,71 +296,70 @@ public class PersistenceLibrarySupport {
     }
 
     /**
-     * @return the library in which given class present, for example jdbc driver class
+     *
+     * add jdbc driver jdbc driver
+     * called in separate rp request
      */
-    public static void addDriver(Project project, JDBCDriver driver) {
-        Sources sources = ProjectUtils.getSources(project);
-        if (sources == null) {
-            return;
-        }
-        SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups == null || groups.length < 1) {
-            return;
-        }
-        SourceGroup firstGroup = groups[0];
-        FileObject fo = firstGroup.getRootFolder();
-        if (fo == null) {
-            return;
-        }
-        ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
-        if (classPath == null) {
-            classPath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        }
-        if (classPath == null) {
-            return;
-        }
-        String resourceName = driver.getClassName().replace('.', '/') + ".class"; // NOI18N
-        FileObject fob = classPath.findResource(resourceName); // NOI18N
-        if (fob == null) {
-            //first try to find corresponding library in nb
-            String libClass = driver.getClassName();
-            Library[] libraries = LibraryManager.getDefault().getLibraries();
-            for (Library each : libraries) {
-                ClassPath cp = getLibraryClassPath(each);
-                if (containsClass(cp, libClass)) {
-                    Util.addLibraryToProject(project, each);
-                    return;
-                }
-            }
-            //second add jars as is
-            for (URL url : driver.getURLs()) {
-                FileObject jarO = URLMapper.findFileObject(url);
-                if (jarO != null) {
-                    File jar = FileUtil.toFile(jarO);
-                    URL u = null;
-                    try {
-                        u = jar.toURI().toURL();
-                    } catch (MalformedURLException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    FileObject jarFile = FileUtil.toFileObject(jar);
-                    if (jarFile == null) {
-                        continue;
-                    }
-                    if (FileUtil.isArchiveFile(jarFile)) {
-                        u = FileUtil.getArchiveRoot(u);
-                    }
-                    try {
-                        ProjectClassPathModifier.addRoots(new URL[]{u}, fo, ClassPath.COMPILE);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (UnsupportedOperationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
+    public static void addDriver(final Project project, final JDBCDriver driver) {
+        RequestProcessor.getDefault().post(
+                new Runnable() {
 
-        }
+                @Override
+                public void run() {
+
+                    Sources sources = ProjectUtils.getSources(project);
+                    if (sources == null) {
+                        return;
+                    }
+                    SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    if (groups == null || groups.length < 1) {
+                        return;
+                    }
+                    SourceGroup firstGroup = groups[0];
+                    FileObject fo = firstGroup.getRootFolder();
+                    if (fo == null) {
+                        return;
+                    }
+                    ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
+                    if (classPath == null) {
+                        classPath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                    }
+                    if (classPath == null) {
+                        return;
+                    }
+                    String resourceName = driver.getClassName().replace('.', '/') + ".class"; // NOI18N
+                    FileObject fob = classPath.findResource(resourceName); // NOI18N
+                    if (fob == null) {
+                        for (URL url : driver.getURLs()) {
+                            FileObject jarO = URLMapper.findFileObject(url);
+                            if (jarO != null) {
+                                File jar = FileUtil.toFile(jarO);
+                                URL u = null;
+                                try {
+                                    u = jar.toURI().toURL();
+                                } catch (MalformedURLException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                                FileObject jarFile = FileUtil.toFileObject(jar);
+                                if (jarFile == null) {
+                                    continue;
+                                }
+                                if (FileUtil.isArchiveFile(jarFile)) {
+                                    u = FileUtil.getArchiveRoot(u);
+                                }
+                                try {
+                                    ProjectClassPathModifier.addRoots(new URL[]{u}, fo, ClassPath.COMPILE);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (UnsupportedOperationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+
+                    }
+            }
+        }        );
     }
 
     private static List<ProviderLibrary> createLibraries() {
