@@ -41,11 +41,8 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -61,46 +58,13 @@ import org.openide.util.ImageUtilities;
  */
 class TopBar extends JPanel implements Constants {
 
-    private Image imgCenter;
-    private Image imgLeft;
-    private Image imgRight;
-    
     public TopBar() {
         super( new GridBagLayout() );
-        imgCenter = ImageUtilities.loadImage(IMAGE_TOPBAR_CENTER, true);
-        imgLeft = ImageUtilities.loadImage(IMAGE_TOPBAR_LEFT, true);
-        imgRight = ImageUtilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
-        
-        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
-
+        setOpaque(false);
         WebLink nbLogo = new WebLink(null, BundleSupport.getURL("TopBarLogo"), false); //NOI18N
         Icon icon = new ImageIcon( ImageUtilities.loadImage(IMAGE_TOPBAR_LOGO, true));
         nbLogo.setIcon( icon );
         nbLogo.setPressedIcon( icon );
-        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
-    }
-
-    @Override
-    protected void paintBorder(Graphics g) {
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        int width = getWidth();
-        int height = getHeight();
-        
-        int centerImageWidth = imgCenter.getWidth(null);
-        int centerImageHeight = imgCenter.getHeight(null);
-        
-        int x = (width - centerImageWidth) / 2;
-        int y = Math.min( (height - centerImageHeight) / 2, 0 );
-        
-        g.drawImage(imgCenter, x, y, null);
-        if( x > 0 ) {
-            for( int i=0; i<=x; i++ ) {
-                g.drawImage(imgLeft, i, y, null);
-                g.drawImage(imgRight, width-i-1, y, null);
-            }
-        }
+        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,0,5), 0, 0));
     }
 }
