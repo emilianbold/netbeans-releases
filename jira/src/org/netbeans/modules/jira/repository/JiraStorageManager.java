@@ -295,7 +295,6 @@ public class JiraStorageManager {
             }
         }
         if (success) {
-            success = false;
             // rename the temp file to the permanent one
             File newFile = new File(f, TASKLISTISSUES_STORAGE_FILE);
             try {
