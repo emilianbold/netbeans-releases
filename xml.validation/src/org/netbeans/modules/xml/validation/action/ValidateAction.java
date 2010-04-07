@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -97,14 +97,13 @@ public class ValidateAction extends AbstractAction {
             catch (IOException e) {
                 e.printStackTrace();
             }
+            String extension = "XML"; // NOI18N
 
-            String extension = "XML"; //NOI18N
             try {
                 FileObject file = myModel.getModelSource().getLookup().lookup(FileObject.class);
                 extension = file.getExt().toUpperCase();
-            } catch (Exception ex) {
-                //if fails, it'll be XML
             }
+            catch (Exception e) {}
 
             io.getOut().println(i18n(ValidateAction.class, "MSG_Validation_Started", extension)); // NOI18N
             io.select();
