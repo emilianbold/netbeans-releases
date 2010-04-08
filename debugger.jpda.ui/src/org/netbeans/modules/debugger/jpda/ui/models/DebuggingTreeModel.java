@@ -128,6 +128,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
+        //System.err.println("DebuggingTreeModel.computeChildren("+parent+")");
         if (parent == ROOT) {
             boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
             if (showThreadGroups) {
@@ -262,15 +263,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return false;
     }
 
-    @Override
-    protected boolean cacheChildrenOf(Object node) {
-        if (node instanceof JPDAThread) {
-            return false;
-        } else {
-            return super.cacheChildrenOf(node);
-        }
-    }
-    
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node instanceof CallStackFrame) {
             return 0;
@@ -319,6 +311,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     public void fireNodeChanged (Object node) {
+        //System.err.println("FIRE node changed ("+node+")");
+        //Thread.dumpStack();
         try {
             recomputeChildren();
         } catch (UnknownTypeException ex) {
@@ -466,6 +460,11 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
         }
+        try {
+            recomputeChildren(node);
+        } catch (UnknownTypeException ex) {
+            refreshCache(node);
+        }
         ModelEvent event = new ModelEvent.NodeChanged(this, node,
                 ModelEvent.NodeChanged.CHILDREN_MASK |
                 ModelEvent.NodeChanged.EXPANSION_MASK);
@@ -502,8 +501,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             // gets suspended or is resumed
             // When thread is resumed because of a method invocation, do the
             // refresh only if the method takes a long time.
-            if (t.isSuspended() || !isMethodInvoking(t)) {
-                boolean suspended = t.isSuspended();
+            boolean isMethodInvoking = "methodInvoke".equals(evt.getPropagationId());
+            boolean suspended = t.isSuspended();
+            if (suspended || !isMethodInvoking) {
                 synchronized (this) {
                     if (task == null) {
                         task = RP.create(new Refresher());
