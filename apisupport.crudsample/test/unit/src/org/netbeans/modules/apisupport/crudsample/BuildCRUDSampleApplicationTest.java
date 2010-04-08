@@ -138,68 +138,68 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         return et.result();
     }
 
-    /**
-     * Invokes build-jnlp target on crudsample
-     */
-    public void testBuildJNLP() throws Exception {
-        int ret = runAntTargetsOncrudsample(new String[] {"build-jnlp"});
-        assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);
-        File dist = new File(crudSampleFolder,"dist");
-        File warFile = new File(dist,"crud_sample_application.war");
-        assertTrue("crud_sample_application.war file should be in dist folder", warFile.exists());
-    }
-
-    /**
-     * Invokes build-zip target on crudsample
-     */
-    public void testBuildZip() throws Exception {
-        int ret = runAntTargetsOncrudsample(new String[]{"build-zip"});
-        assertEquals("build-zipant target should return zero - build successful", 0, ret);
-        File dist = new File(crudSampleFolder, "dist");
-        File zipFile = new File(dist, "crud_sample_application.zip");
-        assertTrue("crud_sample_application.zip file should be in dist folder", zipFile.exists());
-    }
-
-    /**
-     * Invokes build target on crudsample
-     */
-    public void testBuild() throws Exception {
-        int ret = runAntTargetsOncrudsample(new String[] {"build"});
-        assertEquals("build ant target should return zero - build successful", 0 , ret);
-        File buildFolder = new File(crudSampleFolder,"build");
-        assertTrue("build folder should exist", buildFolder.exists() && buildFolder.isDirectory());
-        String[] children = buildFolder.list();
-        assertTrue("build folder is not empty", children.length>0);
-
-    }
-
-    /**
-     * Invokes nbms target on crudsample
-     */
-    public void testBuildNBMs() throws Exception {
-        int ret = runAntTargetsOncrudsample(new String[] {"nbms"});
-        assertEquals("build ant target should return zero - build successful", 0 , ret);
-        File buildFolder = new File(crudSampleFolder,"build");
-        File updatesFolder = new File(buildFolder,"updates");
-        assertTrue("build/update folder exists", updatesFolder.exists() && updatesFolder.isDirectory());
-        File viewerNbm = new File(updatesFolder, "org-netbeans-modules-customerviewer.nbm");
-        File editorNbm = new File(updatesFolder, "org-netbeans-modules-customereditor.nbm");
-        File customerDbNbm = new File(updatesFolder, "org-netbeans-modules-customerdb.nbm");
-        File derbyNbm = new File(updatesFolder, "org-netbeans-modules-derbyclientlibrary.nbm");
-        File persistenceLibNbm = new File(updatesFolder, "org-netbeans-modules-persistencelibrary.nbm");
-        assertTrue("Viewer NBM is in build/updates folder", viewerNbm.exists());
-        assertTrue("Editor NBM is in build/updates folder", editorNbm.exists());
-        assertTrue("Customer DB NBM is in build/updates folder", customerDbNbm.exists());
-        assertTrue("Derby NBM is in build/updates folder", derbyNbm.exists());
-        assertTrue("Persistence Library NBM is in build/updates folder", persistenceLibNbm.exists());
-        assertEquals("5 nbms are in build/updates folder", 5, updatesFolder.list(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.indexOf("nbm") != -1;
-            }
-        }).length);
-    }
+//    /**
+//     * Invokes build-jnlp target on crudsample
+//     */
+//    public void testBuildJNLP() throws Exception {
+//        int ret = runAntTargetsOncrudsample(new String[] {"build-jnlp"});
+//        assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);
+//        File dist = new File(crudSampleFolder,"dist");
+//        File warFile = new File(dist,"crud_sample_application.war");
+//        assertTrue("crud_sample_application.war file should be in dist folder", warFile.exists());
+//    }
+//
+//    /**
+//     * Invokes build-zip target on crudsample
+//     */
+//    public void testBuildZip() throws Exception {
+//        int ret = runAntTargetsOncrudsample(new String[]{"build-zip"});
+//        assertEquals("build-zipant target should return zero - build successful", 0, ret);
+//        File dist = new File(crudSampleFolder, "dist");
+//        File zipFile = new File(dist, "crud_sample_application.zip");
+//        assertTrue("crud_sample_application.zip file should be in dist folder", zipFile.exists());
+//    }
+//
+//    /**
+//     * Invokes build target on crudsample
+//     */
+//    public void testBuild() throws Exception {
+//        int ret = runAntTargetsOncrudsample(new String[] {"build"});
+//        assertEquals("build ant target should return zero - build successful", 0 , ret);
+//        File buildFolder = new File(crudSampleFolder,"build");
+//        assertTrue("build folder should exist", buildFolder.exists() && buildFolder.isDirectory());
+//        String[] children = buildFolder.list();
+//        assertTrue("build folder is not empty", children.length>0);
+//
+//    }
+//
+//    /**
+//     * Invokes nbms target on crudsample
+//     */
+//    public void testBuildNBMs() throws Exception {
+//        int ret = runAntTargetsOncrudsample(new String[] {"nbms"});
+//        assertEquals("build ant target should return zero - build successful", 0 , ret);
+//        File buildFolder = new File(crudSampleFolder,"build");
+//        File updatesFolder = new File(buildFolder,"updates");
+//        assertTrue("build/update folder exists", updatesFolder.exists() && updatesFolder.isDirectory());
+//        File viewerNbm = new File(updatesFolder, "org-netbeans-modules-customerviewer.nbm");
+//        File editorNbm = new File(updatesFolder, "org-netbeans-modules-customereditor.nbm");
+//        File customerDbNbm = new File(updatesFolder, "org-netbeans-modules-customerdb.nbm");
+//        File derbyNbm = new File(updatesFolder, "org-netbeans-modules-derbyclientlibrary.nbm");
+//        File persistenceLibNbm = new File(updatesFolder, "org-netbeans-modules-persistencelibrary.nbm");
+//        assertTrue("Viewer NBM is in build/updates folder", viewerNbm.exists());
+//        assertTrue("Editor NBM is in build/updates folder", editorNbm.exists());
+//        assertTrue("Customer DB NBM is in build/updates folder", customerDbNbm.exists());
+//        assertTrue("Derby NBM is in build/updates folder", derbyNbm.exists());
+//        assertTrue("Persistence Library NBM is in build/updates folder", persistenceLibNbm.exists());
+//        assertEquals("5 nbms are in build/updates folder", 5, updatesFolder.list(new FilenameFilter() {
+//
+//            @Override
+//            public boolean accept(File dir, String name) {
+//                return name.indexOf("nbm") != -1;
+//            }
+//        }).length);
+//    }
 
     /**
      * Invokes clean target on crudsample
