@@ -293,7 +293,7 @@ import org.openide.util.NbBundle;
         } finally {
             if (zipFile != null && zipFile.exists()) {
                 if (!zipFile.delete()) {
-                    RemoteUtil.LOGGER.info("Can not delete temporary file " + zipFile.getAbsolutePath()); //NOI18N
+                    RemoteUtil.LOGGER.log(Level.INFO, "Can not delete temporary file {0}", zipFile.getAbsolutePath()); //NOI18N
                 }
             }
         }
@@ -312,6 +312,7 @@ import org.openide.util.NbBundle;
     }
 
 
+    @Override
     public boolean startup(Map<String, String> env2add) {
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);

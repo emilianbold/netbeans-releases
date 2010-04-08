@@ -188,7 +188,7 @@ import org.openide.util.RequestProcessor;
             remoteControllerProcess.destroy();
             throw new ExecutionException(message, null); //NOI18N
         }
-        RemoteUtil.LOGGER.fine("Remote Controller listens port " + port); // NOI18N
+        RemoteUtil.LOGGER.log(Level.FINE, "Remote Controller listens port {0}", port); // NOI18N
         RequestProcessor.getDefault().post(localController);
 
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
@@ -271,6 +271,7 @@ import org.openide.util.RequestProcessor;
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
         }
+        @Override
         public void run() {
             try {
                 String line;

@@ -37,63 +37,15 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.editor.lib2.highlighting;
+
+import javax.swing.text.Document;
+import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Vita Stejskal
  */
-public class FortranFileModelTest extends TraceModelTestBase {
-
-    public FortranFileModelTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        super.setUp();
-    }
-
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    public void testFile1() throws Exception {
-        performTest("file1.f"); // NOI18N
-    }
-
-    public void testFile2() throws Exception {
-        performTest("file2.f"); // NOI18N
-    }
-
-    public void testBug182945() throws Exception {
-        // Bug 182945 - *Fortran* Navigator shows non-existed items
-        performTest("bug182945.f"); // NOI18N
-    }
-
-    public void testBug182702() throws Exception {
-        // Bug 182702 - *Fortran* Navigator will be empty if Fortran file contains Cyrillic symbols in comments
-        performTest("bug182702.f"); // NOI18N
-    }
-
-    public void testBug182520() throws Exception {
-        // Bug 182520 - Navigator doesn't show all subroutines for *Fortran* files
-        performTest("bug182520.f"); // NOI18N
-    }
-
-    public void testBug183152() throws Exception {
-        // Bug 183152 - keyword pause breaks *Fortran* Navigator
-        performTest("bug183152.f"); // NOI18N
-    }
-
-    public void testBug183073() throws Exception {
-        // Bug 183073 - keyword common breaks *Fortran* Navigator
-        performTest("bug183073.f"); // NOI18N
-    }
-
+public interface MultiLayerContainer extends HighlightsContainer {
+    void setLayers(Document doc, HighlightsContainer[] layers);
 }

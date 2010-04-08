@@ -764,8 +764,12 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             maxHeight = -1;
             View rootView = Utilities.getDocumentView(component);
             if (rootView != null) {
-                for(int i = 0; i < rootView.getViewCount(); i++) {
+                for(int i = 0; i < 1 /*rootView.getViewCount()*/; i++) { // scan just first line for now
                     View view = rootView.getView(i);
+                    if (view == null) { // seen in tests
+                        break;
+                    }
+
                     int offset = view.getStartOffset();
                     Rectangle r = null;
 

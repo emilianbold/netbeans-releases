@@ -37,63 +37,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.jumpto.file;
+
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.netbeans.spi.jumpto.file.FileProvider;
+import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Tomas Zezula
  */
-public class FortranFileModelTest extends TraceModelTestBase {
+public abstract class FileProviderAccessor {
 
-    public FortranFileModelTest(String testName) {
-        super(testName);
+    private static volatile FileProviderAccessor instance;
+
+    public static synchronized FileProviderAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(FileProvider.Context.class.getName(), true, FileProviderAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
+        }
+        assert instance != null;
+        return instance;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        super.setUp();
+    public static void setInstance(final FileProviderAccessor theInstance) {
+        assert theInstance != null;
+        instance = theInstance;
     }
 
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
+    public abstract FileProvider.Context createContext(String text, SearchType searchType, Project currentProject);
 
-    public void testFile1() throws Exception {
-        performTest("file1.f"); // NOI18N
-    }
+    public abstract void setRoot(FileProvider.Context ctx, FileObject root);
 
-    public void testFile2() throws Exception {
-        performTest("file2.f"); // NOI18N
-    }
+    public abstract FileProvider.Result createResult(List<? super FileDescriptor> result, String[] message, FileProvider.Context ctx);
 
-    public void testBug182945() throws Exception {
-        // Bug 182945 - *Fortran* Navigator shows non-existed items
-        performTest("bug182945.f"); // NOI18N
-    }
+    public abstract int getRetry(FileProvider.Result result);
 
-    public void testBug182702() throws Exception {
-        // Bug 182702 - *Fortran* Navigator will be empty if Fortran file contains Cyrillic symbols in comments
-        performTest("bug182702.f"); // NOI18N
-    }
+    public abstract void setFromCurrentProject(final FileDescriptor desc, final boolean value);
 
-    public void testBug182520() throws Exception {
-        // Bug 182520 - Navigator doesn't show all subroutines for *Fortran* files
-        performTest("bug182520.f"); // NOI18N
-    }
-
-    public void testBug183152() throws Exception {
-        // Bug 183152 - keyword pause breaks *Fortran* Navigator
-        performTest("bug183152.f"); // NOI18N
-    }
-
-    public void testBug183073() throws Exception {
-        // Bug 183073 - keyword common breaks *Fortran* Navigator
-        performTest("bug183073.f"); // NOI18N
-    }
-
+    public abstract boolean isFromCurrentProject(final FileDescriptor desc);
 }

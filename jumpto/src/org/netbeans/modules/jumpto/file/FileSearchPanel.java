@@ -67,16 +67,19 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
+import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
  * @author  Petr Hrebejk, Andrei Badea
  */
 public class FileSearchPanel extends javax.swing.JPanel implements ActionListener {
-    
-    private static final int BRIGHTER_COLOR_COMPONENT = 10;    
+
+    public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileSearchPanel.class, "TXT_SearchingOtherProjects"); // NOI18N
+    private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private final ContentProvider contentProvider;
     private final Project currentProject;
     private boolean containsScrollPane;
@@ -85,7 +88,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     private String oldText;
     /* package */ long time;
 
-    private FileDescription[] selectedFile;
+    private FileDescriptor[] selectedFile;
 
     private final SearchHistory searchHistory;
 
@@ -160,7 +163,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
                    resultList.setModel(model);
                    resultList.setSelectedIndex(0);
-                   ((FileDescription.Renderer) resultList.getCellRenderer()).setColorPrefered(isPreferedProject());
+                   ((FileSearchAction.Renderer) resultList.getCellRenderer()).setColorPrefered(isPreferedProject());
                    setListPanelContent(null,false);
                    if ( time != -1 ) {
                        FileSearchAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
@@ -219,7 +222,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         else if ( message != null ) { 
            jTextFieldLocation.setText(""); 
            messageLabel.setText(message);
-           messageLabel.setIcon( waitIcon ? FileDescription.Renderer.WAIT_ICON : null);
+           messageLabel.setIcon( waitIcon ? FileSearchAction.Renderer.WAIT_ICON : null);
            if ( containsScrollPane ) {
                listPanel.remove( resultScrollPane );
                listPanel.add( messageLabel );
@@ -411,8 +414,8 @@ private void resultListMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST
 private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_resultListValueChanged
          
         Object svObject = resultList.getSelectedValue();
-        if ( svObject != null && svObject instanceof FileDescription ) {
-            FileDescription selectedValue = (FileDescription)svObject;
+        if ( svObject != null && svObject instanceof FileDescriptor ) {
+            FileDescriptor selectedValue = (FileDescriptor)svObject;
             jTextFieldLocation.setText(FileUtil.getFileDisplayName(selectedValue.getFileObject()));
         }
         else {
@@ -445,7 +448,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
         if ( "selectNextRow".equals(actionKey) && 
               ( selectedIndex == modelSize - 1 ||
                 ( selectedIndex == modelSize - 2 && 
-                  model.getElementAt(modelSize - 1) == FileDescription.SEARCH_IN_PROGRES )
+                  model.getElementAt(modelSize - 1) == SEARCH_IN_PROGRES )
              ) ) {
             resultList.setSelectedIndex(0);
             resultList.ensureIndexIsVisible(0);
@@ -455,7 +458,7 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
                    selectedIndex == 0 ) {
             int last = modelSize - 1;
             
-            if ( model.getElementAt(last) == FileDescription.SEARCH_IN_PROGRES ) {
+            if ( model.getElementAt(last) == SEARCH_IN_PROGRES ) {
                 last--;
             } 
             
@@ -513,11 +516,11 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
     }        
     
     public void setSelectedFile() {
-        List<FileDescription> list = new ArrayList(Arrays.asList(resultList.getSelectedValues()));
-        selectedFile = list.toArray(new FileDescription[0]);
+        List<FileDescriptor> list = NbCollections.checkedListByCopy(Arrays.asList(resultList.getSelectedValues()), FileDescriptor.class, true);
+        selectedFile = list.toArray(new FileDescriptor[0]);
     }
 
-    public FileDescription[] getSelectedFiles() {
+    public FileDescriptor[] getSelectedFiles() {
         return selectedFile;
     }
 
