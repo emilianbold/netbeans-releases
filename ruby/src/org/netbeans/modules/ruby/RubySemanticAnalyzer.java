@@ -459,7 +459,7 @@ public class RubySemanticAnalyzer extends SemanticAnalyzer {
         case ALIASNODE: {
             AliasNode an = (AliasNode)node;
 
-            if (an.getOldName().equals(targetName)) {
+            if (targetName.equals(AstUtilities.getNameOrValue(an.getOldName()))) {
                 return true;
             }
             break;
