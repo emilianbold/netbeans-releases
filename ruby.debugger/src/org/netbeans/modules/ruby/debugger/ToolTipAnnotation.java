@@ -67,7 +67,8 @@ import org.rubyforge.debugcommons.model.RubyVariable;
 public final class ToolTipAnnotation extends Annotation implements Runnable {
 
     private static final Boolean SKIP_BALLOON_EVAL = Boolean.getBoolean("ruby.debugger.skip.balloon.evaluation"); // NOI18N
-    
+    private static final RequestProcessor requestProcessor = new RequestProcessor("Ruby tooltip annotations");
+
     private Part lp;
     private EditorCookie ec;
     
@@ -83,7 +84,7 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
         if (_ec == null) { return null; }
         this.lp = _lp;
         this.ec = _ec;
-        RequestProcessor.getDefault().post(this);
+        requestProcessor.post(this);
         return null;
     }
     
