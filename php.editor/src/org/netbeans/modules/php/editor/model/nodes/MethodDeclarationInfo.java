@@ -44,12 +44,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -60,18 +61,20 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
-    MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration) {
+    private final boolean isFromInterface;
+    MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
         super(methodDeclaration);
+        this.isFromInterface = isFromInterface;
         if (program != null) {
             paramDocTypes = VariousUtils.getParamTypesFromPHPDoc(program, methodDeclaration);
         }
     }
 
-    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration) {
-        return new MethodDeclarationInfo(program, methodDeclaration);
+    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration, final TypeScope typeScope) {
+        return new MethodDeclarationInfo(program, methodDeclaration, typeScope.isInterface());
     }
-    public static MethodDeclarationInfo create(MethodDeclaration classDeclaration) {
-        return new MethodDeclarationInfo(null, classDeclaration);
+    public static MethodDeclarationInfo create(MethodDeclaration classDeclaration, final TypeScope typeScope) {
+        return new MethodDeclarationInfo(null, classDeclaration, typeScope.isInterface());
     }
 
     @Override
@@ -109,7 +112,8 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     }
     
     public PhpModifiers getAccessModifiers() {
-        return PhpModifiers.fromBitMask(getOriginalNode().getModifier());
+        int realModifiers = getOriginalNode().getModifier();
+        realModifiers = (isFromInterface) ? (realModifiers | Modifier.ABSTRACT | Modifier.PUBLIC) : realModifiers;
+        return PhpModifiers.fromBitMask(realModifiers);
     }
-
 }
