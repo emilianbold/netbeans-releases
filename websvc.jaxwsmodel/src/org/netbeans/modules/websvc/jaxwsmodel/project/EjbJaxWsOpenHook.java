@@ -102,11 +102,11 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
 
             JaxWsBuildScriptExtensionProvider extProvider = prj.getLookup().lookup(JaxWsBuildScriptExtensionProvider.class);
             AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
-            FileObject jaxWsFo = jaxWsModel.getJaxWsFile();
-
+            
             if (extProvider != null && ext != null) {
                 boolean buildScriptGenerated = false;
                 FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
+                FileObject jaxWsFo = jaxWsModel.getJaxWsFile();
                 try {
                     boolean hasServiceOrClient = jaxWsFo != null && WSUtils.hasServiceOrClient(jaxWsFo);
                     AntBuildExtender.Extension extension = ext.getExtension(JaxWsBuildScriptExtensionProvider.JAXWS_EXTENSION);
@@ -136,7 +136,7 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
                 }
 
                 if (jaxWsFo != null && !buildScriptGenerated) {
-                    URL stylesheet = WebJaxWsLookupProvider.class.getResource(EjbBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
+                    URL stylesheet = EjbJaxWsOpenHook.class.getResource(EjbBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
                     assert stylesheet != null;
                     try {
                         boolean needToCallTransformer = false;
