@@ -335,6 +335,10 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
+<!-- Add Java Platform wizard-->
+<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="project/csh/proj_add_java_platform.html" />
+
+
 <!-- New Libraries wizard-->
     <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="project/csh/proj_new_lib_wiz1.html" />
     <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" url="project/csh/proj_new_lib_wiz2.html" />
