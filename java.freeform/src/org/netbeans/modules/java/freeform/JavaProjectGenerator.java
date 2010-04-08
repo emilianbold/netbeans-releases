@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -113,38 +114,38 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl == null) {
             return list;
         }
-        for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
+        for (Element sourceFolderEl : XMLUtil.findSubElements(foldersEl)) {
             if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
             SourceFolder sf = new SourceFolder();
-            Element el = Util.findElement(sourceFolderEl, "label", Util.NAMESPACE); // NOI18N
+            Element el = XMLUtil.findElement(sourceFolderEl, "label", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.label = Util.findText(el);
+                sf.label = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "type", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "type", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.type = Util.findText(el);
+                sf.type = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.location = Util.findText(el);
+                sf.location = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "includes", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "includes", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.includes = Util.findText(el);
+                sf.includes = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "excludes", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "excludes", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.excludes = Util.findText(el);
+                sf.excludes = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.encoding = Util.findText(el);
+                sf.encoding = XMLUtil.findText(el);
             }
             if (type == null || type.equals(sf.type)) {
                 if (sf.label == null || sf.label.length() == 0) {
@@ -173,21 +174,21 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl == null) {
             foldersEl = doc.createElementNS(Util.NAMESPACE, "folders"); // NOI18N
-            Util.appendChildElement(data, foldersEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
-            for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
+            for (Element sourceFolderEl : XMLUtil.findSubElements(foldersEl)) {
                 if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                     continue;
                 }
                 if (type == null) {
                     foldersEl.removeChild(sourceFolderEl);
                 } else {
-                    Element typeEl = Util.findElement(sourceFolderEl, "type", Util.NAMESPACE); // NOI18N
+                    Element typeEl = XMLUtil.findElement(sourceFolderEl, "type", Util.NAMESPACE); // NOI18N
                     if (typeEl != null) {
-                        String typeElValue = Util.findText(typeEl);
+                        String typeElValue = XMLUtil.findText(typeEl);
                         if (type.equals(typeElValue)) {
                             foldersEl.removeChild(sourceFolderEl);
                         }
@@ -232,7 +233,7 @@ public class JavaProjectGenerator {
                 el.appendChild(doc.createTextNode(sf.encoding)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            Util.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
+            XMLUtil.appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
@@ -249,36 +250,36 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+        Element viewEl = XMLUtil.findElement(data, "view", Util.NAMESPACE); // NOI18N
         if (viewEl == null) {
             return list;
         }
-        Element itemsEl = Util.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
+        Element itemsEl = XMLUtil.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
         if (itemsEl == null) {
             return list;
         }
-        for (Element sourceFolderEl : Util.findSubElements(itemsEl)) {
+        for (Element sourceFolderEl : XMLUtil.findSubElements(itemsEl)) {
             if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
             SourceFolder sf = new SourceFolder();
             sf.style = sourceFolderEl.getAttribute("style"); // NOI18N
             assert sf.style != null && sf.style.length() > 0 : "Bad style attr on <source-folder> in " + helper; // NOI18N
-            Element el = Util.findElement(sourceFolderEl, "label", Util.NAMESPACE); // NOI18N
+            Element el = XMLUtil.findElement(sourceFolderEl, "label", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.label = Util.findText(el);
+                sf.label = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.location = Util.findText(el);
+                sf.location = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "includes", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "includes", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.includes = Util.findText(el);
+                sf.includes = XMLUtil.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "excludes", Util.NAMESPACE); // NOI18N
+            el = XMLUtil.findElement(sourceFolderEl, "excludes", Util.NAMESPACE); // NOI18N
             if (el != null) {
-                sf.excludes = Util.findText(el);
+                sf.excludes = XMLUtil.findText(el);
             }
             if (style == null || style.equals(sf.style)) {
                 list.add(sf);
@@ -303,17 +304,17 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element viewEl = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+        Element viewEl = XMLUtil.findElement(data, "view", Util.NAMESPACE); // NOI18N
         if (viewEl == null) {
             viewEl = doc.createElementNS(Util.NAMESPACE, "view"); // NOI18N
-            Util.appendChildElement(data, viewEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, viewEl, rootElementsOrder);
         }
-        Element itemsEl = Util.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
+        Element itemsEl = XMLUtil.findElement(viewEl, "items", Util.NAMESPACE); // NOI18N
         if (itemsEl == null) {
             itemsEl = doc.createElementNS(Util.NAMESPACE, "items"); // NOI18N
-            Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
+            XMLUtil.appendChildElement(viewEl, itemsEl, viewElementsOrder);
         }
-        List<Element> sourceViews = Util.findSubElements(itemsEl);
+        List<Element> sourceViews = XMLUtil.findSubElements(itemsEl);
         Iterator it = sourceViews.iterator();
         while (it.hasNext()) {
             Element sourceViewEl = (Element)it.next();
@@ -355,7 +356,7 @@ public class JavaProjectGenerator {
                 el.appendChild(doc.createTextNode(sf.excludes)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            XMLUtil.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
@@ -390,20 +391,20 @@ public class JavaProjectGenerator {
         if (data == null) {
             return list;
         }
-        for (Element cuEl : Util.findSubElements(data)) {
+        for (Element cuEl : XMLUtil.findSubElements(data)) {
             JavaCompilationUnit cu = new JavaCompilationUnit();
             List<String> outputs = new ArrayList<String>();
             List<String> javadoc = new ArrayList<String>();
             List<JavaCompilationUnit.CP> cps = new ArrayList<JavaCompilationUnit.CP>();
             List<String> packageRoots = new ArrayList<String>();
-            for (Element el : Util.findSubElements(cuEl)) {
+            for (Element el : XMLUtil.findSubElements(cuEl)) {
                 if (el.getLocalName().equals("package-root")) { // NOI18N
-                    packageRoots.add(Util.findText(el));
+                    packageRoots.add(XMLUtil.findText(el));
                     continue;
                 }
                 if (el.getLocalName().equals("classpath")) { // NOI18N
                     JavaCompilationUnit.CP cp = new JavaCompilationUnit.CP();
-                    cp.classpath = Util.findText(el);
+                    cp.classpath = XMLUtil.findText(el);
                     cp.mode = el.getAttribute("mode"); // NOI18N
                     if (cp.mode != null && cp.classpath != null) {
                         cps.add(cp);
@@ -411,15 +412,15 @@ public class JavaProjectGenerator {
                     continue;
                 }
                 if (el.getLocalName().equals("built-to")) { // NOI18N
-                    outputs.add(Util.findText(el));
+                    outputs.add(XMLUtil.findText(el));
                     continue;
                 }
                 if (el.getLocalName().equals("javadoc-built-to")) { // NOI18N
-                    javadoc.add(Util.findText(el));
+                    javadoc.add(XMLUtil.findText(el));
                     continue;
                 }
                 if (el.getLocalName().equals("source-level")) { // NOI18N
-                    cu.sourceLevel = Util.findText(el);
+                    cu.sourceLevel = XMLUtil.findText(el);
                 }
                 if (el.getLocalName().equals("unit-tests")) { // NOI18N
                     cu.isTests = true;
@@ -503,7 +504,7 @@ public class JavaProjectGenerator {
             }
         }
         Document doc = data.getOwnerDocument();
-        for (Element cuEl : Util.findSubElements(data)) {
+        for (Element cuEl : XMLUtil.findSubElements(data)) {
             data.removeChild(cuEl);
         }
         for (JavaCompilationUnit cu : compUnits) {
@@ -656,7 +657,7 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Iterator it = Util.findSubElements(data).iterator();
+        Iterator it = XMLUtil.findSubElements(data).iterator();
         while (it.hasNext()) {
             Element exportEl = (Element)it.next();
             if (!exportEl.getLocalName().equals("export")) { // NOI18N
@@ -688,7 +689,7 @@ public class JavaProjectGenerator {
                 el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
                 exportEl.appendChild(el);
             }
-            Util.appendChildElement(data, exportEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, exportEl, rootElementsOrder);
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
@@ -736,12 +737,12 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element subproject = Util.findElement(data, "subprojects", Util.NAMESPACE); // NOI18N
+        Element subproject = XMLUtil.findElement(data, "subprojects", Util.NAMESPACE); // NOI18N
         if (subproject != null) {
             data.removeChild(subproject);
         }
         subproject = doc.createElementNS(Util.NAMESPACE, "subprojects"); // NOI18N
-        Util.appendChildElement(data, subproject, rootElementsOrder);
+        XMLUtil.appendChildElement(data, subproject, rootElementsOrder);
         
         Iterator it = subprojects.iterator();
         while (it.hasNext()) {
@@ -819,12 +820,12 @@ public class JavaProjectGenerator {
     private static void putBuildElement(AntProjectHelper helper, List<String> buildFolders, String elemName) {
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl == null) {
             foldersEl = doc.createElementNS(Util.NAMESPACE, "folders"); // NOI18N
-            Util.appendChildElement(data, foldersEl, rootElementsOrder);
+            XMLUtil.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
-            List<Element> folders = Util.findSubElements(foldersEl);
+            List<Element> folders = XMLUtil.findSubElements(foldersEl);
             Iterator it = folders.iterator();
             while (it.hasNext()) {
                 Element buildFolderEl = (Element)it.next();
@@ -841,7 +842,7 @@ public class JavaProjectGenerator {
             Element locationEl = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
             locationEl.appendChild(doc.createTextNode(location));
             buildFolderEl.appendChild(locationEl);
-            Util.appendChildElement(foldersEl, buildFolderEl, folderElementsOrder);
+            XMLUtil.appendChildElement(foldersEl, buildFolderEl, folderElementsOrder);
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
@@ -900,47 +901,47 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<TargetMapping> list = new ArrayList<TargetMapping>();
         Element genldata = Util.getPrimaryConfigurationData(helper);
-        Element actionsEl = Util.findElement(genldata, "ide-actions", Util.NAMESPACE); // NOI18N
+        Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", Util.NAMESPACE); // NOI18N
         if (actionsEl == null) {
             return list;
         }
-        for (Element actionEl : Util.findSubElements(actionsEl)) {
+        for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
             TargetMapping tm = new TargetMapping();
             tm.name = actionEl.getAttribute("name"); // NOI18N
             List<String> targetNames = new ArrayList<String>();
             EditableProperties props = new EditableProperties(false);
-            for (Element subEl : Util.findSubElements(actionEl)) {
+            for (Element subEl : XMLUtil.findSubElements(actionEl)) {
                 if (subEl.getLocalName().equals("target")) { // NOI18N
-                    targetNames.add(Util.findText(subEl));
+                    targetNames.add(XMLUtil.findText(subEl));
                     continue;
                 }
                 if (subEl.getLocalName().equals("script")) { // NOI18N
-                    tm.script = Util.findText(subEl);
+                    tm.script = XMLUtil.findText(subEl);
                     continue;
                 }
                 if (subEl.getLocalName().equals("context")) { // NOI18N
                     TargetMapping.Context ctx = new TargetMapping.Context();
-                    for (Element contextSubEl : Util.findSubElements(subEl)) {
+                    for (Element contextSubEl : XMLUtil.findSubElements(subEl)) {
                         if (contextSubEl.getLocalName().equals("property")) { // NOI18N
-                            ctx.property = Util.findText(contextSubEl);
+                            ctx.property = XMLUtil.findText(contextSubEl);
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("format")) { // NOI18N
-                            ctx.format = Util.findText(contextSubEl);
+                            ctx.format = XMLUtil.findText(contextSubEl);
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("folder")) { // NOI18N
-                            ctx.folder = Util.findText(contextSubEl);
+                            ctx.folder = XMLUtil.findText(contextSubEl);
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("pattern")) { // NOI18N
-                            ctx.pattern = Util.findText(contextSubEl);
+                            ctx.pattern = XMLUtil.findText(contextSubEl);
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("arity")) { // NOI18N
-                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", Util.NAMESPACE); // NOI18N
+                            Element sepFilesEl = XMLUtil.findElement(contextSubEl, "separated-files", Util.NAMESPACE); // NOI18N
                             if (sepFilesEl != null) {
-                                ctx.separator = Util.findText(sepFilesEl);
+                                ctx.separator = XMLUtil.findText(sepFilesEl);
                             }
                             continue;
                         }
@@ -994,7 +995,7 @@ public class JavaProjectGenerator {
     
     private static void readProperty(Element propertyElement, EditableProperties props) {
         String key = propertyElement.getAttribute("name"); // NOI18N
-        String value = Util.findText(propertyElement);
+        String value = XMLUtil.findText(propertyElement);
         props.setProperty(key, value);
     }
 

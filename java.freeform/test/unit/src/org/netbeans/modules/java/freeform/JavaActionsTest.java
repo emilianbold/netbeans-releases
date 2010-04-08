@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Locale;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.FreeformProject;
-import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ActionProvider;
@@ -88,13 +87,13 @@ public class JavaActionsTest extends TestBase {
         prj = copyProject(simple);
         // Remove existing context-sensitive bindings to make a clean slate.
         Element data = prj.getPrimaryConfigurationData();
-        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
+        Element ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
         assertNotNull(ideActions);
-        Iterator<Element> actionsIt = Util.findSubElements(ideActions).iterator();
+        Iterator<Element> actionsIt = XMLUtil.findSubElements(ideActions).iterator();
         while (actionsIt.hasNext()) {
             Element action = actionsIt.next();
             assertEquals("action", action.getLocalName());
-            if (Util.findElement(action, "context", Util.NAMESPACE) != null) {
+            if (XMLUtil.findElement(action, "context", Util.NAMESPACE) != null) {
                 ideActions.removeChild(action);
             }
         }
@@ -209,9 +208,9 @@ public class JavaActionsTest extends TestBase {
         ja.addBinding("some.action", "special.xml", "special-target", "selection", "${some.src.dir}", "\\.java$", "relative-path", ",");
         Element data = prj.getPrimaryConfigurationData();
         assertNotNull(data);
-        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
+        Element ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
         assertNotNull(ideActions);
-        List<Element> actions = Util.findSubElements(ideActions);
+        List<Element> actions = XMLUtil.findSubElements(ideActions);
         Element lastAction = actions.get(actions.size() - 1);
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -231,8 +230,8 @@ public class JavaActionsTest extends TestBase {
         assertEquals(expectedXml, xmlToString(lastAction));
         ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
         data = prj.getPrimaryConfigurationData();
-        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
-        actions = Util.findSubElements(ideActions);
+        ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
+        actions = XMLUtil.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -252,8 +251,8 @@ public class JavaActionsTest extends TestBase {
         // Non-context-sensitive bindings have no <context> but need to add a view item.
         ja.addBinding("general.action", "special.xml", "special-target", null, null, null, null, null);
         data = prj.getPrimaryConfigurationData();
-        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
-        actions = Util.findSubElements(ideActions);
+        ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
+        actions = XMLUtil.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -262,12 +261,12 @@ public class JavaActionsTest extends TestBase {
             "    <target>special-target</target>\n" +
             "</action>\n";
         assertEquals(expectedXml, xmlToString(lastAction));
-        Element view = Util.findElement(data, "view", Util.NAMESPACE);
+        Element view = XMLUtil.findElement(data, "view", Util.NAMESPACE);
         assertNotNull(view);
-        Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE);
+        Element contextMenu = XMLUtil.findElement(view, "context-menu", Util.NAMESPACE);
         assertNotNull(contextMenu);
         // Currently (no FPG to help) it is always added as the last item.
-        List<Element> contextMenuActions = Util.findSubElements(contextMenu);
+        List<Element> contextMenuActions = XMLUtil.findSubElements(contextMenu);
         Element lastContextMenuAction = contextMenuActions.get(contextMenuActions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -276,13 +275,13 @@ public class JavaActionsTest extends TestBase {
         
         //test #58442:
         data = prj.getPrimaryConfigurationData();
-        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
+        ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
         data.removeChild(ideActions);
         
         ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
         data = prj.getPrimaryConfigurationData();
-        ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE);
-        actions = Util.findSubElements(ideActions);
+        ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE);
+        actions = XMLUtil.findSubElements(ideActions);
         lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -460,7 +459,7 @@ public class JavaActionsTest extends TestBase {
         assertEquals("Correct code generated for external script", expectedXml, xmlToString(root));
         // And also with locations defined as special properties in various ways...
         Element data = prj.getPrimaryConfigurationData();
-        Element properties = Util.findElement(data, "properties", Util.NAMESPACE);
+        Element properties = XMLUtil.findElement(data, "properties", Util.NAMESPACE);
         assertNotNull(properties);
         Element property = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "property");
         property.setAttribute("name", "external.xml");

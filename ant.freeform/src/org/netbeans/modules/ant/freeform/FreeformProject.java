@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -66,6 +65,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -196,12 +196,12 @@ public final class FreeformProject implements Project {
             return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
                 public String run() {
                     Element genldata = getPrimaryConfigurationData();
-                    Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
+                    Element nameEl = XMLUtil.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (nameEl == null) {
                         // Corrupt. Cf. #48267 (cause unknown).
                         return "???"; // NOI18N
                     }
-                    return Util.findText(nameEl);
+                    return XMLUtil.findText(nameEl);
                 }
             });
         }

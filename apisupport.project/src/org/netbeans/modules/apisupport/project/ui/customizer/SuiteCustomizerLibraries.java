@@ -1467,23 +1467,23 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             dependencies = new HashSet<Dependency>();
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
             Element dataE = project.getPrimaryConfigurationData();
-            Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            Element depsE = XMLUtil.findElement(dataE, "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             assert depsE != null : "Malformed metadata in " + project;
-            for (Element dep : Util.findSubElements(depsE)) {
-                Element run = Util.findElement(dep, "run-dependency", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            for (Element dep : XMLUtil.findSubElements(depsE)) {
+                Element run = XMLUtil.findElement(dep, "run-dependency", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (run == null) {
                     continue;
                 }
-                String text = Util.findText(Util.findElement(dep, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
-                Element relverE = Util.findElement(run, "release-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                String text = XMLUtil.findText(XMLUtil.findElement(dep, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
+                Element relverE = XMLUtil.findElement(run, "release-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (relverE != null) {
-                    text += '/' + Util.findText(relverE);
+                    text += '/' + XMLUtil.findText(relverE);
                 }
-                Element specverE = Util.findElement(run, "specification-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                Element specverE = XMLUtil.findElement(run, "specification-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (specverE != null) {
-                    text += " > " + Util.findText(specverE);
+                    text += " > " + XMLUtil.findText(specverE);
                 } else {
-                    Element implver = Util.findElement(run, "implementation-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                    Element implver = XMLUtil.findElement(run, "implementation-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                     if (implver != null) {
                         // Will special-case '*' as an impl version to mean "match anything".
                         text += " = *"; // NOI18N

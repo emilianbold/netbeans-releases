@@ -46,7 +46,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -54,6 +53,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -117,12 +117,12 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
         List<URL> tests = new ArrayList<URL>();
         Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (data != null) {
-            for (Element cu : Util.findSubElements(data)) {
+            for (Element cu : XMLUtil.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
-                boolean isTests = Util.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_3) != null; // NOI18N
-                for (Element pr : Util.findSubElements(cu)) {
+                boolean isTests = XMLUtil.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_3) != null; // NOI18N
+                for (Element pr : XMLUtil.findSubElements(cu)) {
                     if (pr.getLocalName().equals("package-root")) { // NOI18N
-                        String rawtext = Util.findText(pr);
+                        String rawtext = XMLUtil.findText(pr);
                         assert rawtext != null;
                         String evaltext = eval.evaluate(rawtext);
                         if (evaltext != null) {

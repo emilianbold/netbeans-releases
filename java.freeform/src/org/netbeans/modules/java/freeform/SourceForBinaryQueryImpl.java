@@ -50,7 +50,6 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -60,6 +59,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -100,7 +100,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             if (java == null) {
                 return null;
             }
-            for (Element compilationUnit : Util.findSubElements(java)) {
+            for (Element compilationUnit : XMLUtil.findSubElements(java)) {
                 assert compilationUnit.getLocalName().equals("compilation-unit") : compilationUnit;
                 List<URL> binaries = findBinaries(compilationUnit);
                 if (!binaries.isEmpty()) {
@@ -137,11 +137,11 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      */
     private List<URL> findBinaries(Element compilationUnitEl) {
         List<URL> binaries = new ArrayList<URL>();
-        for (Element builtToEl : Util.findSubElements(compilationUnitEl)) {
+        for (Element builtToEl : XMLUtil.findSubElements(compilationUnitEl)) {
             if (!builtToEl.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }
-            String text = Util.findText(builtToEl);
+            String text = XMLUtil.findText(builtToEl);
             String textEval = evaluator.evaluate(text);
             if (textEval == null) {
                 continue;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
@@ -81,6 +82,7 @@ public class Hacks {
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
         final RequestProcessor.Task task = RP.create(new Runnable() {
+            String lastKnownTitle; // #134802
             public void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();
@@ -129,7 +131,11 @@ public class Hacks {
                             // Note that currently mname is ignored.
                             MessageFormat.format(format, BUILD_NUMBER, pname, mname) :
                             MessageFormat.format(format, BUILD_NUMBER, mname);
-                        WindowManager.getDefault().getMainWindow().setTitle(title);
+                        Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                        if (lastKnownTitle == null || lastKnownTitle.equals(mainWindow.getTitle())) {
+                            lastKnownTitle = title;
+                            mainWindow.setTitle(title);
+                        }
                     }
                 });
             }
