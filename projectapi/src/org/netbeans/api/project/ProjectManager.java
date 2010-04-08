@@ -191,6 +191,7 @@ public final class ProjectManager {
         dir2Proj.clear();
         modifiedProjects.clear();
         proj2Factory.clear();
+        removedProjects.clear();
     }
     
     /**
@@ -544,10 +545,11 @@ public final class ProjectManager {
             LOG.log(Level.FINE, "markModified({0})", p.getProjectDirectory());
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
-                    if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalStateException("An attempt to call ProjectState.markModified on a deleted project: " + p.getProjectDirectory()); // NOI18N
+                    if (proj2Factory.containsKey(p)) {
+                        modifiedProjects.add(p);
+                    } else {
+                        LOG.log(Level.WARNING, "An attempt to call ProjectState.markModified on an unknown project: {0}", p.getProjectDirectory());
                     }
-                    modifiedProjects.add(p);
                     return null;
                 }
             });
@@ -557,14 +559,12 @@ public final class ProjectManager {
             assert p != null;
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
-                    if (proj2Factory.get(p) == null) {
-                        throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory()); // NOI18N
-                    }
-                    
                     dir2Proj.remove(p.getProjectDirectory());
                     proj2Factory.remove(p);
                     modifiedProjects.remove(p);
-                    removedProjects.add(p);
+                    if (!removedProjects.add(p)) {
+                        LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", p.getProjectDirectory());
+                    }
                     //#111892
                     Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
                     for (FileOwnerQueryImplementation impl : col) {
@@ -597,14 +597,13 @@ public final class ProjectManager {
      * <p>Acquires read access.
      * @param p a project loaded by this manager
      * @return true if it is modified, false if has been saved since the last modification
-     * @throws IllegalArgumentException if the project was not created through this manager
      */
-    public boolean isModified(final Project p) throws IllegalArgumentException {
+    public boolean isModified(final Project p) {
         return mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
                 synchronized (dir2Proj) {
                     if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
+                        LOG.log(Level.WARNING, "Project {0} was already deleted", p);
                     }
                 }
                 return modifiedProjects.contains(p);
@@ -626,10 +625,9 @@ public final class ProjectManager {
      * </p>
      * @param p the project to save
      * @throws IOException if it cannot be saved
-     * @throws IllegalArgumentException if the project was not created through this manager
      * @see ProjectFactory#saveProject
      */
-    public void saveProject(final Project p) throws IOException, IllegalArgumentException {
+    public void saveProject(final Project p) throws IOException {
         try {
             mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
@@ -637,13 +635,14 @@ public final class ProjectManager {
                     if (removedProjects.contains(p)) {
                         return null;
                     }
-                    if (!proj2Factory.containsKey(p)) {
-                        throw new IllegalArgumentException("Project " + p + " not created by " + ProjectManager.this + " or was already deleted"); // NOI18N
-                    }
                     if (modifiedProjects.contains(p)) {
                         ProjectFactory f = proj2Factory.get(p);
-                        f.saveProject(p);
-                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        if (f != null) {
+                            f.saveProject(p);
+                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        } else {
+                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
+                        }
                         modifiedProjects.remove(p);
                     }
                     return null;
@@ -673,9 +672,12 @@ public final class ProjectManager {
                     while (it.hasNext()) {
                         Project p = it.next();
                         ProjectFactory f = proj2Factory.get(p);
-                        assert f != null : p;
-                        f.saveProject(p);
-                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        if (f != null) {
+                            f.saveProject(p);
+                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
+                        } else {
+                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
+                        }
                         it.remove();
                     }
                     return null;
@@ -692,7 +694,7 @@ public final class ProjectManager {
      *
      * @since 1.6
      *
-     * @param p a project loaded by this manager
+     * @param p a project
      * @return true if the project is still valid, false if it has been deleted
      */
     public boolean isValid(final Project p) {
