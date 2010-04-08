@@ -115,6 +115,7 @@ final class ViewReplace<V extends EditorBoxView, CV extends EditorView> {
         StringBuilder sb = new StringBuilder(200);
         sb.append("viewId=").append(view.getDumpId());
         sb.append(", index=").append(index);
+        sb.append(", viewCount=").append(view.getViewCount());
         sb.append(", removeCount=").append(removeCount);
         EditorView[] addedViews = addedViews();
         sb.append(", addedCount=").append(addedViews.length);

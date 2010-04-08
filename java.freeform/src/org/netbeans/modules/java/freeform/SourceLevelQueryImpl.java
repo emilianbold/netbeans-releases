@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -54,6 +53,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -102,7 +102,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
         if (java == null) {
             return null;
         }
-        for (Element compilationUnitEl : Util.findSubElements(java)) {
+        for (Element compilationUnitEl : XMLUtil.findSubElements(java)) {
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
             List<FileObject> packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnitEl);
             for (FileObject root : packageRoots) {
@@ -133,9 +133,9 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
      * Get the source level indicated in a compilation unit (or null if none is indicated).
      */
     private String getLevel(Element compilationUnitEl) {
-        Element sourceLevelEl = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
+        Element sourceLevelEl = XMLUtil.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
         if (sourceLevelEl != null) {
-            return Util.findText(sourceLevelEl);
+            return XMLUtil.findText(sourceLevelEl);
         } else {
             return null;
         }

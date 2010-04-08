@@ -145,8 +145,10 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         System.setProperty(testWorkerRunningProp, "true"); // NOI18N
         if (worker.startup(env2add)) {            
             final ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                 }
+                @Override
                 public void executionFinished(int rc) {
                     worker.shutdown();
                     delegate.removeExecutionListener(this);

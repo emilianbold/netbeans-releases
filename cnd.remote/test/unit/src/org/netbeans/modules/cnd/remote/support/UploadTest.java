@@ -79,6 +79,7 @@ public class UploadTest extends RemoteTestBase {
     @ForAllEnvironments
     public void testCopyTo() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd"); //NOI18N
+        localFile.deleteOnExit();
         FileWriter fstream = new FileWriter(localFile);
         StringBuilder sb = new StringBuilder("File from "); //NOI18N
         try {
@@ -86,7 +87,7 @@ public class UploadTest extends RemoteTestBase {
             sb.append( addr.getHostName() );
         } catch (UnknownHostException e) {
         }
-        sb.append("\ntime: " + System.currentTimeMillis()+ "\n"); //NOI18N
+        sb.append("\ntime: ").append(System.currentTimeMillis()).append("\n"); //NOI18N
         BufferedWriter out = new BufferedWriter(fstream);
         out.write(sb.toString());
         out.close();
@@ -104,6 +105,7 @@ public class UploadTest extends RemoteTestBase {
         }
         assert rcs2.getOutput().equals(sb.toString());
         assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
+        localFile.delete();
     }
     
     public static Test suite() {

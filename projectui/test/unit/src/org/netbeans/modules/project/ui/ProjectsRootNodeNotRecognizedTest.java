@@ -71,6 +71,7 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         super(testName);
     }            
 
+    @RandomlyFails // NB-Core-Build #4346: child at 0
     public void testBadgingNodeIsOKIfProjectIsNoLongerRecognized() throws Exception{
         //prepearing project
         MockLookup.setInstances(new TestFactory());
@@ -106,7 +107,9 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
         // now verify that both dirs has been refused
         assertTrue("Contains main: " + TestFactory.refused, TestFactory.refused.contains(foMain));
         assertTrue("Contains another: " + TestFactory.refused, TestFactory.refused.contains(foAnother));
-        assertNull("No lazy project", logicalView.getChildren().getNodeAt(0).getLookup().lookup(LazyProject.class));
+        Node child = logicalView.getChildren().getNodeAt(0);
+        assertNotNull("child at 0", child);
+        assertNull("No lazy project", child.getLookup().lookup(LazyProject.class));
     }
 
 

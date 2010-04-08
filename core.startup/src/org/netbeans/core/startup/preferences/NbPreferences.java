@@ -59,11 +59,13 @@ public abstract class NbPreferences extends AbstractPreferences {
     
     /*private*/EditableProperties properties;
     /*private*/FileStorage fileStorage;
-    
+
     private static final RequestProcessor RP = new RequestProcessor();
     /*private*/final RequestProcessor.Task flushTask = RP.create(new Runnable() {
+        @Override
         public void run() {
             fileStorage.runAtomic(new Runnable() {
+                @Override
                 public void run() {
                     synchronized (lock) {
                         try {
@@ -106,23 +108,45 @@ public abstract class NbPreferences extends AbstractPreferences {
         newNode = !fileStorage.existsNode();
     }
         
+    @Override
     protected final String getSpi(String key) {
-        return properties().getProperty(key);
+        return getProperty(key);
+    }
+
+    private String getProperty(String key) {
+        synchronized (lock) {
+            return properties().getProperty(key);
+        }
     }
     
+    @Override
     protected final String[] childrenNamesSpi() throws BackingStoreException {
         //TODO: cache it if necessary
         return fileStorage.childrenNames();
     }
     
+    @Override
     protected final String[] keysSpi() throws BackingStoreException {
-        return properties().keySet().toArray(new String[0]);
+        return getKeysSpi();
+    }
+
+    private String[] getKeysSpi() throws BackingStoreException {
+        synchronized (lock) {
+            return properties().keySet().toArray(new String[0]);
+        }
     }
     
+    @Override
     protected final void putSpi(String key, String value) {
-        properties().put(key,value);
+        putProperty(key, value);
         fileStorage.markModified();
         asyncInvocationOfFlushSpi();
+    }
+
+    private void putProperty(String key, String value) {
+        synchronized (lock) {
+            properties().put(key, value);
+        }
     }
     
     @Override
@@ -141,12 +165,20 @@ public abstract class NbPreferences extends AbstractPreferences {
         }
     }
     
+    @Override
     protected final void removeSpi(String key) {
-        properties().remove(key);
+        removeProperty(key);
         fileStorage.markModified();
         asyncInvocationOfFlushSpi();
     }
+
+    private void removeProperty(String key) {
+        synchronized (lock) {
+            properties().remove(key);
+        }
+    }
     
+    @Override
     protected final void removeNodeSpi() throws BackingStoreException {
         try {
             fileStorage.removeNode();
@@ -155,38 +187,41 @@ public abstract class NbPreferences extends AbstractPreferences {
         }
     }
     
-    void asyncInvocationOfFlushSpi() {
+    private void asyncInvocationOfFlushSpi() {
         if (!fileStorage.isReadOnly()) {
             flushTask.schedule(200);
         }
     }
     
+    @Override
     protected  void flushSpi() throws BackingStoreException {
         try {
-            fileStorage.save(properties());
+            synchronized (lock) {
+                fileStorage.save(properties());
+            }
         } catch (IOException ex) {
             throw new BackingStoreException(ex);
         }
     }
     
+    @Override
     protected void syncSpi() throws BackingStoreException {
         if (properties != null) {            
             try {
-                properties.clear();
-                properties().putAll(fileStorage.load());
+                putAllProperties(fileStorage.load(), true);
                 
             } catch (IOException ex) {
                 throw new BackingStoreException(ex);
             }
         }
     }
-    
-    EditableProperties properties()  {
+
+    private EditableProperties properties()  {
         if (properties == null) {
             properties = new EditableProperties(true);
             //properties.putAll(loadDefaultProperties());
             try {
-                properties().putAll(fileStorage.load());
+                putAllProperties(fileStorage.load(), false);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -194,12 +229,27 @@ public abstract class NbPreferences extends AbstractPreferences {
         return properties;
     }
 
+    private void putAllProperties(EditableProperties props, boolean clear) {
+        synchronized (lock) {
+            if (clear) {
+                properties().clear();
+            }
+            properties().putAll(props);
+        }
+    }
+
     public @Override final void removeNode() throws BackingStoreException {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
-            properties().clear();
+            clearProperties();
             super.removeNode();
+        }
+    }
+
+    private void clearProperties() {
+        synchronized (lock) {
+            properties().clear();
         }
     }
     
@@ -232,10 +282,12 @@ public abstract class NbPreferences extends AbstractPreferences {
             super(parent, name);
         }
         
+        @Override
         protected AbstractPreferences childSpi(String name) {
             return new UserPreferences(this, name);
         }
 
+        @Override
         protected NbPreferences.FileStorage getFileStorage(String absolutePath) {
             return PropertiesStorage.instance(absolutePath());
         }
@@ -250,10 +302,12 @@ public abstract class NbPreferences extends AbstractPreferences {
             super(parent, name);
         }
         
+        @Override
         protected AbstractPreferences childSpi(String name) {
             return new SystemPreferences(this, name);
         }
 
+        @Override
         protected NbPreferences.FileStorage getFileStorage(String absolutePath) {
             return PropertiesStorage.instanceReadOnly(absolutePath());            
         }

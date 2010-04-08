@@ -131,6 +131,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.xml.XMLUtil;
 
 /**
  * A NetBeans module project.
@@ -221,8 +222,8 @@ public final class NbModuleProject implements Project {
                     .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages")).add();
         }
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
-            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-            String pkgrootS = Util.findText(pkgrootEl);
+            Element pkgrootEl = XMLUtil.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            String pkgrootS = XMLUtil.findText(pkgrootEl);
             sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
                     .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
         }
@@ -340,7 +341,7 @@ public final class NbModuleProject implements Project {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 Element data = ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true);
                 if (data != null) {
-                    return Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
+                    return XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
                 } else {
                     return helper.getPrimaryConfigurationData(true);
                 }
@@ -357,7 +358,7 @@ public final class NbModuleProject implements Project {
             public Void run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 if (ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true) != null) {
-                    ac.putConfigurationFragment(Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
+                    ac.putConfigurationFragment(XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
                 } else {
                     helper.putPrimaryConfigurationData(data, true);
                 }
@@ -373,9 +374,9 @@ public final class NbModuleProject implements Project {
 
     private NbModuleProvider.NbModuleType getModuleType() {
         Element data = getPrimaryConfigurationData();
-        if (Util.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
+        if (XMLUtil.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.SUITE_COMPONENT;
-        } else if (Util.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
+        } else if (XMLUtil.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.STANDALONE;
         } else {
             return NbModuleProvider.NETBEANS_ORG;
@@ -471,9 +472,9 @@ public final class NbModuleProject implements Project {
 
     public String getCodeNameBase() {
         Element config = getPrimaryConfigurationData();
-        Element cnb = Util.findElement(config, "code-name-base", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+        Element cnb = XMLUtil.findElement(config, "code-name-base", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
-            return Util.findText(cnb);
+            return XMLUtil.findText(cnb);
         } else {
             return null;
         }
@@ -623,12 +624,12 @@ public final class NbModuleProject implements Project {
             return true;
         }
         Element config = getPrimaryConfigurationData();
-        Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+        Element pubPkgs = XMLUtil.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (pubPkgs == null) {
             // Try <friend-packages> too.
-            pubPkgs = Util.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            pubPkgs = XMLUtil.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         }
-        return pubPkgs != null && !Util.findSubElements(pubPkgs).isEmpty();
+        return pubPkgs != null && !XMLUtil.findSubElements(pubPkgs).isEmpty();
     }
     
     public List<String> supportedTestTypes() {
@@ -655,10 +656,10 @@ public final class NbModuleProject implements Project {
     public Map<FileObject,Element> getExtraCompilationUnits() {
         if (extraCompilationUnits == null) {
             extraCompilationUnits = new HashMap<FileObject,Element>();
-            for (Element ecu : Util.findSubElements(getPrimaryConfigurationData())) {
+            for (Element ecu : XMLUtil.findSubElements(getPrimaryConfigurationData())) {
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
-                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-                    String pkgrootS = Util.findText(pkgrootEl);
+                    Element pkgrootEl = XMLUtil.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                    String pkgrootS = XMLUtil.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
                     FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
                     if (pkgroot == null) {

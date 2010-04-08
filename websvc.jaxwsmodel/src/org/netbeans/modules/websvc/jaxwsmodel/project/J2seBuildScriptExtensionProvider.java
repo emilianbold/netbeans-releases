@@ -62,7 +62,7 @@ public class J2seBuildScriptExtensionProvider implements JaxWsBuildScriptExtensi
     static String JAX_WS_STYLESHEET_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jaxws-j2se.xsl"; //NOI18N
     private Project project;
 
-    /** Creates a new instance of WebProjectJAXWSVersionProvider */
+    /** Creates a new instance of J2seBuildScriptExtensionProvider */
     public J2seBuildScriptExtensionProvider(Project project) {
         this.project = project;
     }

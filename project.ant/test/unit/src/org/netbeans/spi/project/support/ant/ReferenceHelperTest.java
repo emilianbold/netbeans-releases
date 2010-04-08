@@ -63,7 +63,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -71,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -342,9 +342,9 @@ public class ReferenceHelperTest extends NbTestCase {
         assertTrue("Project is still modified", pm.isModified(p));
         pm.saveProject(p);
         Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        Element config = Util.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
+        Element config = XMLUtil.findElement(doc.getDocumentElement(), "configuration", AntProjectHelper.PROJECT_NS);
         assertNotNull("have <configuration>", config);
-        Element references = Util.findElement(config, ReferenceHelper.REFS_NAME, ReferenceHelper.REFS_NS);
+        Element references = XMLUtil.findElement(config, ReferenceHelper.REFS_NAME, ReferenceHelper.REFS_NS);
         assertNotNull("have <references>", references);
         NodeList nl = references.getElementsByTagNameNS(ReferenceHelper.REFS_NS, "reference");
         assertEquals("have three <reference>s", 3, nl.getLength());
@@ -386,9 +386,9 @@ public class ReferenceHelperTest extends NbTestCase {
             Element reference = (Element)nl.item(i);
             for (int j = 0; j < 6; j++) {
                 String elementName = elementNames[j];
-                Element element = Util.findElement(reference, elementName, ReferenceHelper.REFS_NS);
+                Element element = XMLUtil.findElement(reference, elementName, ReferenceHelper.REFS_NS);
                 assertNotNull("had element " + elementName + " in ref #" + i, element);
-                assertEquals("correct text in " + elementName + " in ref #" + i, values[i][j], Util.findText(element));
+                assertEquals("correct text in " + elementName + " in ref #" + i, values[i][j], XMLUtil.findText(element));
             }
         }
     }
@@ -1080,9 +1080,9 @@ public class ReferenceHelperTest extends NbTestCase {
         Element refs = p.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(ReferenceHelper.REFS_NAME, namespace, true);
         assertNotNull(refs);
         List<String> actualScriptLocations = new ArrayList<String>();
-        for (Element ref : Util.findSubElements(refs)) {
-            Element script = Util.findElement(ref, "script", namespace);
-            actualScriptLocations.add(Util.findText(script));
+        for (Element ref : XMLUtil.findSubElements(refs)) {
+            Element script = XMLUtil.findElement(ref, "script", namespace);
+            actualScriptLocations.add(XMLUtil.findText(script));
         }
         assertEquals(Arrays.asList(scriptLocations), actualScriptLocations);
     }

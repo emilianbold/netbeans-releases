@@ -71,7 +71,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author  Marian Petras
  */
-final class PropertiesEncoding extends FileEncodingQueryImplementation {
+public final class PropertiesEncoding extends FileEncodingQueryImplementation {
     
     /*
      * TO DO:
@@ -81,6 +81,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
      * - allow decoding of supplementary characters (?)
      */
     
+    @Override
     public Charset getEncoding(FileObject file) {
         assert !file.isValid() || file.isData();
         try {

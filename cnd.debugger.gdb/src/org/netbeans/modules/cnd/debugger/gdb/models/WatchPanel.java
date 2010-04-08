@@ -46,12 +46,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.util.*;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.netbeans.modules.cnd.debugger.common.utils.ContextBindingSupport;
+import javax.swing.border.CompoundBorder;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.editor.Utilities;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -64,7 +63,7 @@ import org.openide.util.HelpCtx;
 public class WatchPanel {
 
     private JPanel panel;
-    private JEditorPane editorPane;
+    private JTextComponent editorPane;
     private String expression;
 
     public WatchPanel(String expression) {
@@ -82,37 +81,27 @@ public class WatchPanel {
         panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel();
         Mnemonics.setLocalizedText(textLabel, bundle.getString("CTL_Watch_Name")); // NOI18N
-        editorPane = new JEditorPane();//expression); // NOI18N
-        editorPane.setText(expression);
+        textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
+        panel.setLayout (new BorderLayout ());
+        panel.setBorder (new EmptyBorder (11, 12, 1, 11));
+        panel.add (BorderLayout.NORTH, textLabel);
 
-        ActionListener editorPaneUpdated = new ActionListener() {
+        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
 
-            public void actionPerformed(ActionEvent e) {
-                editorPane.setText(expression);
-                editorPane.selectAll();
-            }
-        };
-        ContextBindingSupport.getDefault().setupContext(editorPane, editorPaneUpdated);
-
-        JScrollPane sp = ContextBindingSupport.createScrollableLineEditor(editorPane);
-        FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
-        int size = 2 * fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
-        Insets eInsets = editorPane.getInsets();
-        Insets spInsets = sp.getInsets();
-        sp.setPreferredSize(new Dimension(30 * size,
-                size + 2 +
-                eInsets.bottom + eInsets.top +
-                spInsets.bottom + spInsets.top));
-
-        textLabel.setBorder(new EmptyBorder(0, 0, 5, 0));
-        panel.setLayout(new BorderLayout());
-        panel.setBorder(new EmptyBorder(11, 12, 1, 11));
-        panel.add(BorderLayout.NORTH, textLabel);
-        panel.add(BorderLayout.CENTER, sp);
-
-        editorPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Watch_Name")); // NOI18N
+        //Add JEditorPane and context
+        JComponent [] editorComponents = Utilities.createSingleLineEditor(file.getMIMEType());
+        editorPane = (JTextComponent) editorComponents[1];
+        DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         editorPane.setText(expression);
         editorPane.selectAll();
+
+        panel.add (BorderLayout.CENTER, editorComponents[0]);
+        editorPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Watch_Name")); // NOI18N
+        editorPane.setBorder (
+            new CompoundBorder (editorPane.getBorder (),
+            new EmptyBorder (2, 0, 2, 0))
+        );
 
         textLabel.setLabelFor(editorPane);
         HelpCtx.setHelpIDString(editorPane, "debug.customize.watch"); // NOI18N

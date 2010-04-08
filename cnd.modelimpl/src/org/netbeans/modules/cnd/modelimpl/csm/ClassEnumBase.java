@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -83,7 +83,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
-        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
+        this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
     }
 
     public static int getEndOffset(AST node) {

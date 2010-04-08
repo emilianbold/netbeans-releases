@@ -46,18 +46,19 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.CharSequences;
 
 /**
  * @author Radek Matous
  */
 public class FileName implements FileNaming {
-    private String name;
+    private CharSequence name;
     private final FileNaming parent;
     private Integer id;
 
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
-        this.name = parseName(parent, file);
+        this.name = CharSequences.create(parseName(parent, file));
         id = NamingFactory.createID(file);
     }
 
@@ -78,7 +79,7 @@ public class FileName implements FileNaming {
                 retVal = f.renameTo(newFile);
             }
             if (retVal) {
-                this.name = name;
+                this.name = CharSequences.create(name);
                 Integer iid = NamingFactory.createID(newFile);                               
                 if (!iid.equals(id)) {
                     id = iid;                  
@@ -105,7 +106,7 @@ public class FileName implements FileNaming {
 
 
     public final String getName() {
-        return name;
+        return name.toString();
     }
 
     public FileNaming getParent() {

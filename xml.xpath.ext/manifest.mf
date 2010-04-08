@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.2.1
 OpenIDE-Module: org.netbeans.modules.xml.xpath.ext
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/xpath/ext/Bundle.properties

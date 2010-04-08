@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.editor.fortran;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
 import org.netbeans.modules.cnd.editor.fortran.indent.FortranIndentTask;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter;
@@ -63,8 +64,12 @@ public class FortranEditorBase extends BaseDocumentUnitTestCase {
         return new FKit();
     }
 
-    protected void setDefaultsOptions(){
-        FortranCodeStyle.get(getDocument()).setFreeFormatFortran(true);
+    protected void setDefaultsOptions(boolean isFreeFormat){
+        BaseDocument bd = getDocument();
+        FortranCodeStyle codeStyle = FortranCodeStyle.get(bd);
+        codeStyle.setAutoFormatDetection(false);
+        codeStyle.setFreeFormatFortran(isFreeFormat);
+        codeStyle.setupLexerAttributes(bd);
     }
 
     /**

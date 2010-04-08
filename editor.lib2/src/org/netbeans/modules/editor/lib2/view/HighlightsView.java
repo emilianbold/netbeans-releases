@@ -60,6 +60,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -383,10 +384,10 @@ public class HighlightsView extends EditorView implements TextLayoutView {
             Color textLimitLineColor = docView.getTextLimitLineColor();
             boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
             int textLimitWidth = docView.getTextLimitWidth();
-            int defaultCharWidth = (int)docView.getDefaultCharWidth();
+            float defaultCharWidth = docView.getDefaultCharWidth();
 
             if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
-                int lineX = textLimitWidth * defaultCharWidth;
+                int lineX = (int)(textLimitWidth * defaultCharWidth);
                 if (lineX >= xInt && lineX <= endXInt){
                     g.setColor(textLimitLineColor);
                     g.drawLine(lineX, yInt, lineX, endYInt);
@@ -429,6 +430,25 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                     g.drawPolyline(xArray, yArray, wavePixelCount - 1);
                 }
             }
+
+            Object underlineValue = attrs.getAttribute(StyleConstants.Underline);
+            if (underlineValue != null) {
+                Color underlineColor;
+                if (underlineValue instanceof Boolean) { // Correct swing-way
+                    underlineColor = textComponent.getForeground();
+                } else { // NB bug - it's Color instance
+                    underlineColor = (Color) underlineValue;
+                }
+                g.setColor(underlineColor);
+                float underlineOffset = docView.getDefaultUnderlineOffset();
+                float underlineThickness = docView.getDefaultUnderlineThickness();
+                g.fillRect(
+                        (int) allocBounds.getX(),
+                        (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineOffset),
+                        (int) allocBounds.getWidth(),
+                        (int) Math.max(1, Math.round(underlineThickness))
+                );
+            }
         }
     }
 
@@ -441,6 +461,26 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 textComponent.getForeground(), g);
         paintTextLayout(g, allocBounds, docView, textLayout);
 
+        if (attrs != null) {
+            Object strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough);
+            if (strikeThroughValue != null) {
+                Color strikeThroughColor;
+                if (strikeThroughValue instanceof Boolean) { // Correct swing-way
+                    strikeThroughColor = textComponent.getForeground();
+                } else { // NB bug - it's Color instance
+                    strikeThroughColor = (Color) strikeThroughValue;
+                }
+                g.setColor(strikeThroughColor);
+                float strikeOffset = docView.getDefaultStrikethroughOffset();
+                float strikeThickness = docView.getDefaultStrikethroughThickness();
+                g.fillRect(
+                        (int) allocBounds.getX(),
+                        (int) (allocBounds.getY() + docView.getDefaultAscent() + strikeOffset),
+                        (int) allocBounds.getWidth(),
+                        (int) Math.max(1, Math.round(strikeThickness))
+                );
+            }
+        }
     }
 
     static void paintTextLayout(Graphics2D g, Rectangle2D.Double bounds,

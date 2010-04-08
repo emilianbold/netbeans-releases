@@ -276,4 +276,16 @@ public final class CharBuffer {
 	}
         lastBlankLines = numBlankLines;
     }
+    public boolean isWhitespaceLine() {
+        int toCheck = col;
+
+        while (toCheck > 0) {
+            if (!Character.isWhitespace(chars[used - toCheck])) {
+                return false;
+            }
+            toCheck--;
+        }
+
+        return true;
+    }
 }

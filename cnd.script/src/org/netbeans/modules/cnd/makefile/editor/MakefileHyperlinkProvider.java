@@ -124,66 +124,92 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
              tokenSequence.move(offset);
              if (tokenSequence.moveNext()) {
                 Token<MakefileTokenId> token = tokenSequence.token();
-                if (token != null && token.id() == MakefileTokenId.BARE) {
-                    String text = token.text().toString();
-                    int tokenOffset = tokenSequence.offset();
-                    ElementKind targetKind = ElementKind.RULE;
-
-                    // check for "include" keyword behind current token
-                    PREV_LOOP: while (tokenSequence.movePrevious()) {
-                        Token<MakefileTokenId> prevToken = tokenSequence.token();
-                        switch (prevToken.id()) {
-                            case BARE:
-                            case WHITESPACE:
-                            case MACRO:
-                                // ok, just skip them
-                                break;
-
-                            case KEYWORD:
-                                if (TokenUtilities.equals(prevToken.text(), "include")) { // NOI18N
-                                    targetKind = ElementKind.FILE;
-                                }
-                                break PREV_LOOP;
-
-                            default:
-                                break PREV_LOOP;
-                        }
+                if (token != null) {
+                    switch (token.id()) {
+                        case BARE:
+                            return analyzeBareToken(tokenSequence, token, offset);
+                        case MACRO:
+                            return analyzeMacroToken(tokenSequence, token, offset);
                     }
-
-                    tokenSequence.move(offset);
-
-                    // check for some assignment token ahead of current token
-                    NEXT_LOOP: while (tokenSequence.moveNext()) {
-                        Token<MakefileTokenId> nextToken = tokenSequence.token();
-                        switch (nextToken.id()) {
-                            case BARE:
-                            case WHITESPACE:
-                            case MACRO:
-                                // ok, just skip them
-                                break;
-
-                            case EQUALS:
-                            case COLON_EQUALS:
-                            case PLUS_EQUALS:
-                                targetKind = ElementKind.VARIABLE;
-                                break NEXT_LOOP;
-
-                            default:
-                                break NEXT_LOOP;
-                        }
-                    }
-
-                    return new HyperlinkToken(text, tokenOffset, targetKind);
                 }
              }
          }
          return null;
     }
 
-    private static void findAndOpenFile(final FileObject baseDir, final String targetPath) {
-        FileObject fileObject = baseDir.getFileObject(targetPath);
-        if (fileObject != null) {
-            asyncOpenInEditor(fileObject, 0);
+    private static HyperlinkToken analyzeBareToken(TokenSequence<MakefileTokenId> tokenSequence, Token<MakefileTokenId> token, int offset) {
+        String text = token.text().toString();
+        int tokenOffset = tokenSequence.offset();
+        ElementKind targetKind = ElementKind.RULE;
+
+        // check for "include" keyword behind current token
+        PREV_LOOP:
+        while (tokenSequence.movePrevious()) {
+            Token<MakefileTokenId> prevToken = tokenSequence.token();
+            switch (prevToken.id()) {
+                case BARE:
+                case WHITESPACE:
+                case MACRO:
+                    // ok, just skip them
+                    break;
+
+                case KEYWORD:
+                    if (TokenUtilities.equals(prevToken.text(), "include")) { // NOI18N
+                        targetKind = ElementKind.FILE;
+                    }
+                    break PREV_LOOP;
+
+                default:
+                    break PREV_LOOP;
+            }
+        }
+
+        tokenSequence.move(offset);
+
+        // check for some assignment token ahead of current token
+        NEXT_LOOP:
+        while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> nextToken = tokenSequence.token();
+            switch (nextToken.id()) {
+                case BARE:
+                case WHITESPACE:
+                case MACRO:
+                    // ok, just skip them
+                    break;
+
+                case EQUALS:
+                case COLON_EQUALS:
+                case PLUS_EQUALS:
+                    targetKind = ElementKind.VARIABLE;
+                    break NEXT_LOOP;
+
+                default:
+                    break NEXT_LOOP;
+            }
+        }
+
+        return new HyperlinkToken(text, tokenOffset, targetKind);
+    }
+
+    private static HyperlinkToken analyzeMacroToken(TokenSequence<MakefileTokenId> tokenSequence, Token<MakefileTokenId> token, int offset) {
+        String text = token.text().toString();
+        int tokenOffset = tokenSequence.offset();
+        if ((text.startsWith("$(") && text.endsWith(")") || text.startsWith("${") && text.endsWith("}")) && // NOI18N
+                tokenOffset + 2 <= offset && offset < tokenOffset + text.length() - 1) {
+            text = text.substring(2, text.length() - 1);
+            return new HyperlinkToken(text, tokenOffset + 2, ElementKind.VARIABLE);
+        }
+        return null;
+    }
+
+    private static void findAndOpenFile(FileObject baseDir, final String targetPath) {
+        while (baseDir != null) {
+            FileObject fileObject = baseDir.getFileObject(targetPath);
+            if (fileObject != null) {
+                asyncOpenInEditor(fileObject, 0);
+                break;
+            }
+            baseDir = baseDir.getParent();
         }
     }
 

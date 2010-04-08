@@ -52,6 +52,7 @@ import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
@@ -104,6 +105,7 @@ public class FortranBracketCompletion {
     }
 
     private static Token<FortranTokenId> getToken(BaseDocument doc, int dotPos){
+        FortranCodeStyle.get(doc).setupLexerAttributes(doc);
         TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, dotPos);
         if (ts == null) {
             return null;
@@ -116,6 +118,7 @@ public class FortranBracketCompletion {
     }
 
     private static TokenSequence<FortranTokenId> getTokenSequence(BaseDocument doc, int dotPos){
+        FortranCodeStyle.get(doc).setupLexerAttributes(doc);
         TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, dotPos);
         if (ts == null) {
             return null;

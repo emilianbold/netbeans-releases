@@ -87,6 +87,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
     public void testRefreshCanBeSuspended() throws Exception {
         long lm = System.currentTimeMillis();
+        LOG.info("starting testRefreshCanBeSuspended " + lm);
         FileObject fileObject1 = testFolder.createData("fileObject1");
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
@@ -132,6 +133,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         Runnable r = (Runnable)obj;
         class AE extends ActionEvent implements Runnable {
             List<FileObject> files = new ArrayList<FileObject>();
+            boolean boosted;
             boolean finished;
             
             public AE() {
@@ -140,6 +142,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
 
             @Override
             public void setSource(Object newSource) {
+                LOG.info("Set source called: " + newSource);
                 assertTrue(newSource instanceof Object[]);
                 Object[] arr = (Object[])newSource;
                 assertEquals("Three elements", 3, arr.length);
@@ -158,6 +161,12 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
                     for (int i = 0; i  < 2000; i ++) {
                         assertTrue("Can be read", busyFile.canRead());
                         LOG.log(Level.INFO, "Touched {0}", i);
+                        if (i > 100) {
+                            synchronized (this) {
+                                boosted = true;
+                                notifyAll();
+                            }
+                        }
                     }
                     busyFile.delete();
                     LOG.log(Level.INFO, "deleted {0}", busyFile);
@@ -167,18 +176,25 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
                 finished = true;
                 LOG.info("finished");
             }
+
+            public synchronized void waitBoosted() throws Exception {
+                while (!boosted) {
+                    wait();
+                }
+            }
         }
         AE counter = new AE();
 
+        LOG.info("Posting AE into RP");
         // starts 5s of disk checking
         RequestProcessor.Task task = RequestProcessor.getDefault().post(counter);
 
         // connect together
         r.equals(counter);
 
-        Thread.sleep(100);
-
-        LOG.info("Staring refresh");
+        LOG.info("Waiting for I/O boost");
+        counter.waitBoosted();
+        LOG.info("Starting refresh");
         // do the refresh
         r.run();
         LOG.info("Refresh finished");

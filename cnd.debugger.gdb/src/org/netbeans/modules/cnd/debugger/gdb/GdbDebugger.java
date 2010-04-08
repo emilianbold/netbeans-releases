@@ -224,6 +224,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private Pty pty = null;
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
+    private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -317,15 +318,17 @@ public class GdbDebugger implements PropertyChangeListener {
             }
             
             String tty = null;
-            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL && pae.getType() != DEBUG_ATTACH) {
-                String termpath = pae.getProfile().getTerminalPath();
-                if (termpath != null) {
-                    tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+            if (pae.getType() != DEBUG_ATTACH) {
+                if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                    String termpath = pae.getProfile().getTerminalPath();
+                    if (termpath != null) {
+                        tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+                    }
+                } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
+                    pty = PtySupport.allocate(execEnv);
+                    PtySupport.connect(iotab, pty);
+                    tty = pty.getSlaveName();
                 }
-            } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
-                pty = PtySupport.allocate(execEnv);
-                PtySupport.connect(iotab, pty);
-                tty = pty.getSlaveName();
             }
 
             gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, tty, cspath);
@@ -337,6 +340,7 @@ public class GdbDebugger implements PropertyChangeListener {
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat", PRINT_REPEAT); // NOI18N
+            gdb.gdb_set("backtrace limit", STACK_MAX_DEPTH); // NOI18N
             // Either Attach or Debug core
             if (pae.getType() == DEBUG_ATTACH) {
                 String pgm = null;
@@ -2681,9 +2685,11 @@ public class GdbDebugger implements PropertyChangeListener {
     public static BreakpointImpl<?> getBreakpointImpl(Breakpoint b) {
         GdbDebugger debugger = getGdbDebugger();
         if (debugger != null) {
-            for (BreakpointImpl<?> bptImpl : debugger.breakpointList.values()) {
-                if (bptImpl.getBreakpoint() == b) {
-                    return bptImpl;
+            synchronized (debugger.breakpointList) {
+                for (BreakpointImpl<?> bptImpl : debugger.breakpointList.values()) {
+                    if (bptImpl.getBreakpoint() == b) {
+                        return bptImpl;
+                    }
                 }
             }
         }

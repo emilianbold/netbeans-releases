@@ -78,17 +78,8 @@
 
         <zip destfile="${cache}/latest/${build.name}_${env.BUILD_NUMBER}_${time.stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
-                <include name="netbeans/apisupport/**"/>
-                <include name="netbeans/bin/**"/>
-                <include name="netbeans/enterprise/**"/>
-                <include name="netbeans/etc/**"/>
-                <include name="netbeans/harness/**"/>
-                <include name="netbeans/ide/**"/>
-                <include name="netbeans/java/**"/>
-                <include name="netbeans/nb/**"/>
-                <include name="netbeans/platform/**"/>
-                <include name="netbeans/websvccommon/**"/>
-                <include name="netbeans/xml/**"/>
+                <include name="netbeans/**"/>
+                <exclude name="netbeans/moduleCluster.properties"/>
                 <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
@@ -99,6 +90,7 @@
     <!-- unit test -->
     <target name="unit-test">
         <ant target="test" dir="${home}/print"/>
+        <ant target="test" dir="${home}/xml.search"/>
     </target>
 
     <!-- javadoc -->
@@ -184,8 +176,8 @@
         <antcall target="do-module"><param name="module" value="xml.wsdlui"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.wsdl.refactoring"/></antcall>
         <antcall target="do-module"><param name="module" value="xml.wsdlextui"/></antcall>
-        <!--antcall target="do-module"><param name="module" value="xml.wsdl.bindingsupport.ui.util"/></antcall-->
-        <!--antcall target="do-module"><param name="module" value="xml.bindingwizard"/></antcall-->
-        <!--antcall target="do-module"><param name="module" value="xml.wsdlui.api"/></antcall-->
+        <antcall target="do-module"><param name="module" value="xml.wsdl.bindingsupport.ui.util"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.bindingwizard"/></antcall>
+        <antcall target="do-module"><param name="module" value="xml.wsdlui.api"/></antcall>
     </target>
 </project>

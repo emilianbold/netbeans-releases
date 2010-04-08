@@ -27,6 +27,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.resolver.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
@@ -56,16 +57,27 @@ public class XPathVariableReferenceImpl extends XPathExpressionImpl
     }
 
     public XPathVariable getVariable() {
-        VariableResolver varResolver = myModel.getVariableResolver();
-        if (varResolver != null) {
-            XPathVariable var = varResolver.resolveVariable(mVariableQName);
-            return var;
+        XPathVariable var = null;
+        XPathSchemaContext sContext = getSchemaContext();
+        if (sContext != null) {
+            sContext = XPathUtils.unwrap(sContext);
+            if (sContext instanceof VariableSchemaContext) {
+                var = VariableSchemaContext.class.cast(sContext).getVariable();
+            }
         }
-        return null;
+        //
+        // TODO: It's not clear if it is reasonable to try again
+        if (var == null) {
+            VariableResolver varResolver = mModel.getVariableResolver();
+            if (varResolver != null) {
+                var = varResolver.resolveVariable(mVariableQName);
+            }
+        }
+        return var;
     }
 
     public ReferenceableSchemaComponent getType() {
-        VariableResolver varResolver = myModel.getVariableResolver();
+        VariableResolver varResolver = mModel.getVariableResolver();
         if (varResolver != null) {
             ReferenceableSchemaComponent varType = 
                     varResolver.resolveVariableType(mVariableQName);
@@ -100,10 +112,10 @@ public class XPathVariableReferenceImpl extends XPathExpressionImpl
 
     public XPathSchemaContext getSchemaContext() {
         if (mSchemaContext == null) {
-            if (myModel.getRootExpression() != null) {
-                myModel.resolveExtReferences(false);
+            if (mModel.getRootExpression() != null) {
+                mModel.resolveExtReferences(false);
             } else {
-                myModel.resolveExpressionExtReferences(this);
+                mModel.resolveExpressionExtReferences(this);
             }
         }
         return mSchemaContext;

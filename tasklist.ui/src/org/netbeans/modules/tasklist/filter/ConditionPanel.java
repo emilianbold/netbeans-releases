@@ -117,10 +117,13 @@ final class ConditionPanel extends JPanel implements ActionListener, PropertyCha
         setValueComponent(cond.getCondition().createConstantComponent());
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == propertyCombo) {
-            AppliedFilterCondition[] c = 
-	      filter.createConditions((TaskProperty)propertyCombo.getSelectedItem()); 
+            TaskProperty prop = (TaskProperty) propertyCombo.getSelectedItem();
+            if( null == prop )
+                return;
+            AppliedFilterCondition[] c = filter.createConditions(prop);
 
             relationCombo.setModel(new DefaultComboBoxModel(c));
             if (c.length != 0) {
@@ -133,7 +136,8 @@ final class ConditionPanel extends JPanel implements ActionListener, PropertyCha
         } else if (evt.getSource() == relationCombo) {
             AppliedFilterCondition cond = 
                 (AppliedFilterCondition) relationCombo.getSelectedItem();
-            setValueComponent(cond.getCondition().createConstantComponent());
+            if( null != cond )
+                setValueComponent(cond.getCondition().createConstantComponent());
         }
     }
     

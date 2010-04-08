@@ -648,32 +648,41 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     g.fillPolygon(new int [] { 0, BAR_WIDTH, 0 }, yCoords, 3);
                 }
 
-                for (int i = startViewIndex; i < rootViewCount; i++){
-                    view = rootView.getView(i);
-                    line = rootElem.getElementIndex(view.getStartOffset());
-                    line++; // make it 1-based
-                    Difference ad = getDifference(line, paintDiff);
-                    if (ad != null) {
-                        g.setColor(getColor(ad));
-                        if (ad.getType() == Difference.DELETE) {
-                            yCoords[0] = y + editorUI.getLineAscent();
-                            yCoords[1] = y + editorUI.getLineAscent() * 3 / 2;
-                            yCoords[2] = y + editorUI.getLineAscent() * 2;
-                            g.fillPolygon(new int [] { 2, BAR_WIDTH, 2 }, yCoords, 3);
-                            g.setColor(colorBorder);
-                            g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
-                        } else {
-                            g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
-                            g.setColor(colorBorder);
-                            int y1 = y + editorUI.getLineHeight();
-                            g.drawLine(2, y, 2, y1);
-                            if (ad.getSecondStart() == line) {
-                                g.drawLine(2, y, BAR_WIDTH - 1, y);
-                            }
-                            g.drawLine(2, y1, BAR_WIDTH - 1, y1);
+                for (Difference ad : paintDiff) {
+                    if (ad.getSecondStart() == 0 && ad.getType() == Difference.DELETE) continue; // delete on 1st line already painted
+                    int diffLine = ad.getSecondStart();
+                    if (diffLine > rootViewCount) break; // out of sync with current content
+                    if (diffLine < line && ad.getSecondEnd() < line) continue; // offscreen lines
+                    View view1 = rootView.getView(diffLine - 1);
+                    Rectangle rec1 = component.modelToView(view1.getStartOffset());
+                    if (rec1 == null) break;
+                    y = rec1.y;
+                    g.setColor(getColor(ad));
+                    if (ad.getType() == Difference.DELETE) {
+                        yCoords[0] = (int) y + editorUI.getLineAscent();
+                        yCoords[1] = (int) y + editorUI.getLineAscent() * 3 / 2;
+                        yCoords[2] = (int) y + editorUI.getLineAscent() * 2;
+                        g.fillPolygon(new int[]{2, BAR_WIDTH, 2}, yCoords, 3);
+                        g.setColor(colorBorder);
+                        g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
+                        y = yCoords[2];
+                    } else {
+                        if (ad.getSecondEnd() > rootViewCount) break; // out of sync with current content
+                        View view2 = rootView.getView(ad.getSecondEnd() - 1);
+                        Rectangle rec2 = component.modelToView(view2.getEndOffset() - 1);
+                        if (rec2  == null) break;
+                        double height = (rec2.getY() + rec2.getHeight() - rec1.getY());
+                        
+                        g.fillRect(3, (int) y, BAR_WIDTH - 3, (int) height);
+                        g.setColor(colorBorder);
+                        int y1 = (int) (y + height);
+                        g.drawLine(2, (int) y, 2, y1);
+                        if (ad.getSecondStart() == diffLine) {
+                            g.drawLine(2, (int) y, BAR_WIDTH - 1, (int) y);
                         }
+                        g.drawLine(2, y1, BAR_WIDTH - 1, y1);
+                        y = rec2.y + rec2.height;
                     }
-                    y += editorUI.getLineHeight();
                     if (y >= clipEndY) {
                         break;
                     }

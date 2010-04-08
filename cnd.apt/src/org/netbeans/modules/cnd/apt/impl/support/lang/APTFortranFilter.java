@@ -80,7 +80,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("ALLOCATABLE", APTTokenTypes.T_ALLOCATABLE); // NOI18N
         filter("ALLOCATE", APTTokenTypes.T_ALLOCATE); // NOI18N
         filter("ASSIGNMENT", APTTokenTypes.T_ASSIGNMENT); // NOI18N
-        filter("ASSIGN", APTTokenTypes.T_ASSIGN); // NOI18N
+
+// Assign keyword was excluded
+// Bug 182942 - *Fortran* Navigator doesn't show modules in source files
+//        filter("ASSIGN", APTTokenTypes.T_ASSIGN); // NOI18N
+
         filter("ASSOCIATE", APTTokenTypes.T_ASSOCIATE); // NOI18N
         filter("ASYNCHRONOUS", APTTokenTypes.T_ASYNCHRONOUS); // NOI18N
         filter("BACKSPACE", APTTokenTypes.T_BACKSPACE); // NOI18N
@@ -90,7 +94,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("CASE", APTTokenTypes.T_CASE); // NOI18N
         filter("CLASS", APTTokenTypes.T_CLASS); // NOI18N
         filter("CLOSE", APTTokenTypes.T_CLOSE); // NOI18N
-        filter("COMMON", APTTokenTypes.T_COMMON); // NOI18N
+
+// Helps parser to skip unknown constructions
+// Bug 183073 - keyword common breaks *Fortran* Navigator
+//        filter("COMMON", APTTokenTypes.T_COMMON); // NOI18N
+
         filter("CONTAINS", APTTokenTypes.T_CONTAINS); // NOI18N
         filter("CONTINUE", APTTokenTypes.T_CONTINUE); // NOI18N
         filter("CYCLE", APTTokenTypes.T_CYCLE); // NOI18N
@@ -146,7 +154,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("OUT", APTTokenTypes.T_OUT); // NOI18N
         filter("PARAMETER", APTTokenTypes.T_PARAMETER); // NOI18N
         filter("PASS", APTTokenTypes.T_PASS); // NOI18N
-        filter("PAUSE", APTTokenTypes.T_PAUSE); // NOI18N
+
+// Helps parser to skip unknown constructions
+// Bug 183152 - keyword pause breaks *Fortran* Navigator
+//        filter("PAUSE", APTTokenTypes.T_PAUSE); // NOI18N
+
         filter("POINTER", APTTokenTypes.T_POINTER); // NOI18N
         filter("PRINT", APTTokenTypes.T_PRINT); // NOI18N
         filter("PRECISION", APTTokenTypes.T_PRECISION); // NOI18N

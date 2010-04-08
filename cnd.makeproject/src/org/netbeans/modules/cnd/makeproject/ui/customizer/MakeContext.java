@@ -42,8 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;

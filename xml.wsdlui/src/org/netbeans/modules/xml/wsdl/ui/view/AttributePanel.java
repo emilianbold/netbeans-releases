@@ -58,7 +58,7 @@ import javax.swing.event.DocumentListener;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel;
+import org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel;
 import org.openide.util.NbBundle;
 
 /**

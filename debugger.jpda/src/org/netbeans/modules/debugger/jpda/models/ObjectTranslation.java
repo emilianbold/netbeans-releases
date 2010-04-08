@@ -74,7 +74,8 @@ public final class ObjectTranslation {
     private int translationID;
     
     /* original Object to a new one.*/
-    private WeakHashMap<Mirror, WeakReference<Object>> cache = new WeakHashMap<Mirror, WeakReference<Object>>();
+    private final WeakHashMap<Mirror, WeakReference<Object>> cache
+            = new WeakHashMap<Mirror, WeakReference<Object>>();
     
     
     /**

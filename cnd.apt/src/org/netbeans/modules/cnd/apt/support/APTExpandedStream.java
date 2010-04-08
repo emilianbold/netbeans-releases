@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * TokenStream responsible to expand all containing macros and as result
@@ -537,7 +537,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 tokensRightMerged.append(token.getTextID());
             }
         }
-        List<APTToken> valRight = paramsMap.get(CharSequenceKey.create(tokensRightMerged));
+        List<APTToken> valRight = paramsMap.get(CharSequences.create(tokensRightMerged));
         String rightText;
         if (valRight != null) {
             rightText = toText(valRight, false);
@@ -552,7 +552,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             return new ArrayList<APTToken>();
         }
         String text = leftText + rightText;
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text, APTLanguageSupport.UNKNOWN);
         List<APTToken> tokens = APTUtils.toList(ts);
         return tokens;
     }

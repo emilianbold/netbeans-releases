@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 
 }
 
@@ -509,15 +509,29 @@ tokens {
     T_EXIT;
 }
 {
-
-
     private boolean reportErrors;
-    public void init(String filename, int flags) {
+    private Language lang;
+
+    public static enum Language {
+        C,
+        CPP,
+        FORTRAN
+    };
+
+
+    public void init(String filename, int flags, String language) {
         preprocPossible = true;
         preprocPending = false;
         reportErrors = true;
 
         setFilename(filename);
+
+        if(language.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
+            lang = Language.FORTRAN;
+        } else {
+            lang = Language.CPP;
+        }
+
 //        if ((flags & CPPParser.CPP_SUPPRESS_ERRORS) > 0) {
 //            reportErrors = false;
 //        }
@@ -770,6 +784,16 @@ tokens {
     }
 }
 
+/* Comments: */
+
+FORTRAN_COMMENT options { constText=true; } :
+    {lang == Language.FORTRAN && inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ')}?
+    ('!' | ('c'|'C') | '*')
+    (~('\n' | '\r'))*
+    {$setType(FORTRAN_COMMENT);}
+    ;
+
+
 /* Operators: */
 
 COMMA          options { constText=true; } : ',' ;
@@ -806,8 +830,8 @@ FIRST_ASSIGN options { constText=true; } :
 FIRST_DIVIDE :
     '/' ( {$setType(DIVIDE);}               //DIVIDE          : '/' ;
     | '=' {$setType(DIVIDEEQUAL);} )        //DIVIDEEQUAL     : "/=" ;
-    | COMMENT {$setType(COMMENT);}
-    | CPP_COMMENT {$setType(CPP_COMMENT);};
+    | {(lang == Language.CPP || lang == Language.C)}? COMMENT {$setType(COMMENT);}
+    | {lang == Language.CPP}? CPP_COMMENT {$setType(CPP_COMMENT);};
 
 FIRST_STAR options { constText=true; } :
     '*' ( {$setType(STAR);}                 //STAR            : '*' ;
@@ -826,25 +850,28 @@ FIRST_AMPERSAND options { constText=true; } :
     | '&' {$setType(AND);}                  //AND             : "&&" ;
     | '=' {$setType(BITWISEANDEQUAL);});    //BITWISEANDEQUAL : "&=" ;
 
+
+/* Comments: */
+
+protected COMMENT :
+		"/*"
+		( options {greedy=false;}:
+			EndOfLine {deferredNewline();}
+                        | . )*
+		"*/"
+	;
+
+protected CPP_COMMENT
+	:
+		"//" ( '\\' EndOfLine {deferredNewline();}
+                     |  ~('\n' | '\r')
+                     )*
+	;
+
 FIRST_OR options { constText=true; } :
     '|' ({$setType(BITWISEOR);}             //BITWISEOR       : '|' ;
     | '=' {$setType(BITWISEOREQUAL);}       //BITWISEOREQUAL  : "|=" ;
     | '|' {$setType(OR);});                 //OR              : "||" ;
-
-protected COMMENT : 
-		"/*"   
-		( options {greedy=false;}:
-			EndOfLine {deferredNewline();}
-                        | . )*
-		"*/"              
-	;
-
-protected CPP_COMMENT 
-	:	
-		"//" ( '\\' EndOfLine {deferredNewline();}
-                     |  ~('\n' | '\r')
-                     )* 
-	;
 
 FIRST_BITWISEXOR options { constText=true; } :
     '^' ( {$setType(BITWISEXOR);}           //BITWISEXOR      : '^' ;

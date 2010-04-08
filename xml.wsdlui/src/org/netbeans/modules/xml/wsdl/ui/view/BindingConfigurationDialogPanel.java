@@ -142,7 +142,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         addBindingPanel = new org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel();
         bindingConfigurationPanel = new javax.swing.JPanel();
         bindingConfigurationLabel = new javax.swing.JLabel();
-        commonMessagePanel = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        commonMessagePanel = new org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel();
 
         setName("BindingConfigurationDialogPanel"); // NOI18N
 
@@ -561,7 +561,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
     private org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel addBindingPanel;
     private javax.swing.JLabel bindingConfigurationLabel;
     private javax.swing.JPanel bindingConfigurationPanel;
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel;
+    private org.netbeans.modules.xml.wsdl.bindingsupport.common.CommonMessagePanel commonMessagePanel;
     // End of variables declaration//GEN-END:variables
     private WSDLModel mModel;
     private DialogDescriptor mDD;

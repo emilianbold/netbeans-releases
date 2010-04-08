@@ -40,11 +40,14 @@ package org.netbeans.modules.dlight.terminal.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -52,18 +55,22 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOVisibility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -83,6 +90,7 @@ abstract class TerminalAction implements ActionListener {
         final IOProvider term = IOProvider.get("Terminal"); // NOI18N
         if (term != null) {
             final ExecutionEnvironment env = getEnvironment();
+            final AtomicBoolean destroyed = new AtomicBoolean(false);
             if (env != null) {
                 Runnable runnable = new Runnable() {
 
@@ -100,27 +108,23 @@ abstract class TerminalAction implements ActionListener {
                             try {
                                 ConnectionManager.getInstance().connectTo(env);
                             } catch (IOException ex) {
-                                String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
-                                String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                                if (!destroyed.get()) {
+                                    String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+                                    String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
+                                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                                }
                                 return;
                             } catch (CancellationException ex) {
                                 return;
                             }
                         }
 
+                        InputOutput io = null;
                         try {
-                            final InputOutput io = term.getIO(env.getDisplayName(), null, ioContainer);
+                            io = term.getIO(env.getDisplayName(), null, ioContainer);
                             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
-                            npb.addNativeProcessListener(new ChangeListener() {
-
-                                @Override
-                                public void stateChanged(ChangeEvent e) {
-                                    NativeProcessChangeEvent ev = (NativeProcessChangeEvent) e;
-//                                    System.out.println("Process' " + e.getSource() + " state is " + ev.state);
-                                }
-                            });
+                            npb.addNativeProcessListener(new NativeProcessListener(io, destroyed));
 
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                             String shell = hostInfo.getShell();
@@ -138,14 +142,24 @@ abstract class TerminalAction implements ActionListener {
                             } catch (InterruptedException ex) {
                                 Exceptions.printStackTrace(ex);
                             } catch (ExecutionException ex) {
-                                String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
-                                String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                                if (!destroyed.get()) {
+                                    String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+                                    String msg = NbBundle.getMessage(TerminalAction.class, "TerminalAction.FailedToStart.text", error); // NOI18N
+                                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                                }
                             }
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
+                            reportInIO(io, ex);
                         } catch (CancellationException ex) {
                             Exceptions.printStackTrace(ex);
+                            reportInIO(io, ex);
+                        }
+                    }
+
+                    private void reportInIO(InputOutput io, Exception ex) {
+                        if (io != null && ex != null) {
+                            io.getErr().print(ex.getLocalizedMessage());
                         }
                     }
                 };
@@ -163,5 +177,61 @@ abstract class TerminalAction implements ActionListener {
             actions = termActions.toArray(new Action[termActions.size()]);
         }
         return actions;
+    }
+
+    private final static class NativeProcessListener implements ChangeListener, PropertyChangeListener {
+        private final InputOutput io;
+        private NativeProcess process;
+        private final AtomicBoolean destroyed;
+
+        public NativeProcessListener(InputOutput io, AtomicBoolean destroyed) {
+            this.io = io;
+            assert destroyed != null;
+            this.destroyed = destroyed;
+            IONotifier.addPropertyChangeListener(io, WeakListeners.propertyChange(this, io));
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (e instanceof NativeProcessChangeEvent) {
+                NativeProcessChangeEvent npce = (NativeProcessChangeEvent) e;
+                System.err.printf("%s:%d[%s]\n", npce.getSource(), npce.pid,  npce.state);
+                initProcess(npce);
+                if (destroyed.get()) {
+                    return;
+                }
+                switch (npce.state) {
+                    case RUNNING:
+                        break;
+                    case CANCELLED:
+                    case FINISHED:
+                        io.closeInputOutput();
+                        break;
+                    case ERROR:
+                        io.getErr().close();
+                        io.getOut().close();
+                        break;
+                }
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (IOVisibility.PROP_VISIBILITY.equals(evt.getPropertyName()) && Boolean.FALSE.equals(evt.getNewValue())) {
+                if (destroyed.compareAndSet(false, true)) {
+                    // term is closing => destroy process
+                    NativeProcess proc = this.process;
+                    if (proc != null) {
+                        proc.destroy();
+                    }
+                }
+            }
+        }
+
+        private void initProcess(NativeProcessChangeEvent npce) {
+            if (this.process == null) {
+                this.process = (NativeProcess) npce.getSource();
+            }
+        }
     }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="ESB">
+            <file name="binding.wsdl" url="binding.wsdl">
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.common.WSDLWizardIterator"/>                             
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/newBindingWizard.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.bindingwizard.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/>
+                <!--attr name="templateCategory" stringvalue="XML"/-->
+                <attr name="bindingConcreteConfiguration" stringvalue="true"/>
+            </file>
+        </folder> 
+        <!--folder name="SOA_BPEL">
+            <file name="binding.wsdl" url="binding.wsdl">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.WSDLWizardIterator"/>                             
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/newBindingWizard.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.bindingwizard.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/>
+                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
+                <attr name="bindingConcreteConfiguration" stringvalue="true"/>
+            </file>
+        </folder-->                  
+    </folder>     
+</filesystem>

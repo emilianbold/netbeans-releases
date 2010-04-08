@@ -69,14 +69,16 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
         return container;
     }
 
-    public static void testRandomMods(RandomTestContainer container) throws Exception {
-//        container.addOp(new Op());
-//        container.addCheck(new Check());
+    public static void initUndoManager(RandomTestContainer container) throws Exception {
         UndoManager undoManager = new UndoManager();
         Document doc = DocumentTesting.getDocument(container);
         doc.addUndoableEditListener(undoManager);
         doc.putProperty(UndoManager.class, undoManager);
+    }
 
+    public static void initRandomText(RandomTestContainer container) throws Exception {
+//        container.addOp(new Op());
+//        container.addCheck(new Check());
         RandomText randomText = RandomText.join(
                 RandomText.lowerCaseAZ(3),
                 RandomText.spaceTabNewline(1),
@@ -84,7 +86,9 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
                 RandomText.phrase(" \t\tabcdef\t", 1)
         );
         container.putProperty(RandomText.class, randomText);
+    }
 
+    public static RandomTestContainer.Round addRound(RandomTestContainer container) throws Exception {
         RandomTestContainer.Round round = container.addRound();
         round.setOpCount(100);
         round.setRatio(DocumentTesting.INSERT_CHAR, 5);
@@ -104,12 +108,19 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
         round.setRatio(EditorPaneTesting.MOVE, 20);
         round.setRatio(EditorPaneTesting.SELECT, 20);
         round.setRatio(EditorPaneTesting.SET_CARET_OFFSET, 1);
+        return round;
+    }
 
+    public static void testFixedScenarios(RandomTestContainer container) throws Exception {
         // Fixed scenario - last undo throwed exc.
         RandomTestContainer.Context gContext = container.context();
         JEditorPane pane = EditorPaneTesting.getEditorPane(container);
         // Insert initial text into doc
 //        DocumentTesting.insert(container.context(), 0, "abc\ndef\n\nghi");
+        DocumentTesting.insert(gContext, 0, "\n\n\n\n\n");
+        DocumentTesting.remove(gContext, 0, DocumentTesting.getDocument(gContext).getLength());
+
+        // Check for an error caused by delete a line-2-begining and insert at line-1-end and two undos
         DocumentTesting.insert(gContext, 0, "a\nb\n\n");
         EditorPaneTesting.setCaretOffset(gContext, 2);
         EditorPaneTesting.performAction(gContext, pane, DefaultEditorKit.deleteNextCharAction);
@@ -117,7 +128,9 @@ public class ViewHierarchyRandomTesting extends NbTestCase {
         EditorPaneTesting.typeChar(gContext, 'c');
         DocumentTesting.undo(gContext, 1);
         DocumentTesting.undo(gContext, 1); // This throwed ISE for plain text mime type
+    }
 
+    public static void testRandomMods(RandomTestContainer container) throws Exception {
         container.run(1269936518464L);
 //        container.run(1269878830601L);
 //        container.run(1269875047713L);

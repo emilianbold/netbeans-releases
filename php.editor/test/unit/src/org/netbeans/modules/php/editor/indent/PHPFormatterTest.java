@@ -126,7 +126,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/arrays2.php");
     }
 
-    public void atestArrays3() throws Exception {
+    public void testArrays3() throws Exception {
         reformatFileContents("testfiles/formatting/arrays3.php");
     }
 
@@ -146,7 +146,7 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/format_fragment1.php");
     }
 
-    public void atestNestedArrays1() throws Exception {
+    public void testNestedArrays1() throws Exception {
         reformatFileContents("testfiles/formatting/nested_array1.php");
     }
 
@@ -199,11 +199,11 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue176453.php");
     }
 
-    public void atest165762() throws Exception {
+    public void test165762() throws Exception {
         reformatFileContents("testfiles/formatting/issue165762.php");
     }
 
-    public void atest166550() throws Exception {
+    public void test166550() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue166550.php", options);
     }
@@ -1584,6 +1584,31 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue175229() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
+    }
+
+    public void test183200_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue183200_01.php", options);
+    }
+
+    public void test183200_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue183200_02.php", options);
+    }
+
+    public void test182072_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue182072_01.php", options);
+    }
+
+    public void test180332_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue180332_01.php", options);
+    }
+
+    public void test168396_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue168396_01.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

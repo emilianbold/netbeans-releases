@@ -61,6 +61,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -267,7 +268,7 @@ public class UpdateHelper {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); // NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                 Element sourceRoots = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  // NOI18N
                 Element root = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   // NOI18N
                 root.setAttribute ("id","src.dir");   // NOI18N
@@ -284,7 +285,7 @@ public class UpdateHelper {
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); // NOI18N
-                    copyDocument (doc, oldRoot, newRoot);
+                    XMLUtil.copyDocument (oldRoot, newRoot, BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                     cachedElement = updateMinAntVersion (newRoot, doc);
                 }
             }
@@ -305,39 +306,6 @@ public class UpdateHelper {
             cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); // NOI18N
         }
         return cachedProperties;
-    }
-
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(BluejProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,newElement);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
-        }
     }
 
     static final String MINIMUM_ANT_VERSION = "1.6.5";  // NOI18N

@@ -1980,6 +1980,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
+        boolean onlyWhitespaces = out.isWhitespaceLine();
         if (Comment.Style.WHITESPACE == comment.style()) {
             if (false && printWhitespace) {
                 char[] data = comment.getText().toCharArray();
@@ -2069,7 +2070,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
             }
         }
-        if (comment.indent() >= 0 || comment.style() != Comment.Style.BLOCK || comment.style() != Comment.Style.JAVADOC) {
+        if (onlyWhitespaces || comment.style() == Style.LINE) {
             newline();
             toLeftMargin();
         } else {

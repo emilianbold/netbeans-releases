@@ -54,7 +54,6 @@ import org.netbeans.core.windows.Constants;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.awt.event.KeyEvent;
 import org.netbeans.core.windows.Switches;
 
 

@@ -52,13 +52,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBuildExtenderAccessor;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -111,7 +111,7 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         assertNull("No build-impl.xml yet", bi);
         // Modify shared data in a project.
         Element primdata = h.getPrimaryConfigurationData(true);
-        Element oldDisplayName = Util.findElement(primdata, "display-name", "urn:test:shared");
+        Element oldDisplayName = XMLUtil.findElement(primdata, "display-name", "urn:test:shared");
         assertNotNull("had a <display-name> before", oldDisplayName);
         Element displayName = primdata.getOwnerDocument().createElementNS("urn:test:shared", "display-name");
         displayName.appendChild(primdata.getOwnerDocument().createTextNode("New Name"));
@@ -132,7 +132,7 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         NodeList l = doc.getElementsByTagName("description");
         assertEquals("one <description> in build-impl.xml", 1, l.getLength());
         el = (Element)l.item(0);
-        assertEquals("correct description", "New Name", Util.findText(el));
+        assertEquals("correct description", "New Name", XMLUtil.findText(el));
         // Clear build-impl.xml to test if it is rewritten.
         bi.delete();
         // Now make some irrelevant change - e.g. to private.xml - and check that there is no modification.

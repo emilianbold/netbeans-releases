@@ -51,8 +51,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
@@ -111,7 +110,7 @@ public final class APTMacroMapSnapshot {
     }
     
     /*package*/ final APTMacro getMacro(CharSequence key) {
-        assert key instanceof TinyCharSequence : "string can't be here " + key;
+        assert CharSequences.isCompact(key) : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);
@@ -189,7 +188,7 @@ public final class APTMacroMapSnapshot {
         }
 
         public CharSequence getFile() {
-            return CharSequenceKey.empty();
+            return CharSequences.empty();
         }
         
         public Kind getKind() {

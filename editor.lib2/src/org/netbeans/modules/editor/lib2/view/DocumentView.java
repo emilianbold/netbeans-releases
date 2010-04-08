@@ -197,6 +197,12 @@ public final class DocumentView extends EditorBoxView
 
     private float defaultUnderlineOffset;
 
+    private float defaultUnderlineThickness;
+
+    private float defaultStrikethroughOffset;
+
+    private float defaultStrikethroughThickness;
+
     private float defaultCharWidth;
 
     private Color defaultForeground;
@@ -581,7 +587,10 @@ public final class DocumentView extends EditorBoxView
             defaultAscent = textLayout.getAscent();
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
-            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getBounds().getWidth());
+            defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
+            defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
+            defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
+            defaultCharWidth = (float) ViewUtils.cutFractions(textLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
@@ -772,6 +781,21 @@ public final class DocumentView extends EditorBoxView
     public float getDefaultUnderlineOffset() {
         checkSettingsInfo();
         return defaultUnderlineOffset;
+    }
+
+    public float getDefaultUnderlineThickness() {
+        checkSettingsInfo();
+        return defaultUnderlineThickness;
+    }
+
+    public float getDefaultStrikethroughOffset() {
+        checkSettingsInfo();
+        return defaultStrikethroughOffset;
+    }
+
+    public float getDefaultStrikethroughThickness() {
+        checkSettingsInfo();
+        return defaultStrikethroughThickness;
     }
 
     public float getDefaultCharWidth() {

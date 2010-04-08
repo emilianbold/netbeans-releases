@@ -47,12 +47,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -74,12 +74,12 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
         Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
         if (data != null) {
-            for (Element cu : Util.findSubElements(data)) {
+            for (Element cu : XMLUtil.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
                 boolean rightCU = false;
-                for (Element builtTo : Util.findSubElements(cu)) {
+                for (Element builtTo : XMLUtil.findSubElements(cu)) {
                     if (builtTo.getLocalName().equals("built-to")) { // NOI18N
-                        String rawtext = Util.findText(builtTo);
+                        String rawtext = XMLUtil.findText(builtTo);
                         assert rawtext != null;
                         String evaltext = eval.evaluate(rawtext);
                         if (evaltext != null) {
@@ -95,9 +95,9 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
                 }
                 if (rightCU) {
                     List<URL> resultURLs = new ArrayList<URL>();
-                    for (Element javadocTo : Util.findSubElements(cu)) {
+                    for (Element javadocTo : XMLUtil.findSubElements(cu)) {
                         if (javadocTo.getLocalName().equals("javadoc-built-to")) { // NOI18N
-                            String rawtext = Util.findText(javadocTo);
+                            String rawtext = XMLUtil.findText(javadocTo);
                             assert rawtext != null;
                             String evaltext = eval.evaluate(rawtext);
                             if (evaltext != null) {

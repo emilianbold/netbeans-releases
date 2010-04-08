@@ -42,8 +42,6 @@ package org.netbeans.modules.cnd.editor.fortran.reformat;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
@@ -74,15 +72,21 @@ public class FortranReformatter implements ReformatTask {
         this.codeStyle = codeStyle;
     }
 
+    @Override
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
             codeStyle = FortranCodeStyle.get(doc);
         }
+        codeStyle.setupLexerAttributes(doc);
         expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
         if (context != null) {
-            for (Context.Region region : context.indentRegions()) {
-                reformatImpl(region);
+            if ("text/x-fortran".equals(context.mimePath())) { //NOI18N
+                for (Context.Region region : context.indentRegions()) {
+                    TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, 0);
+                    reformatImpl(ts, region.getStartOffset(), region.getEndOffset());
+                    break;
+                }
             }
         } else {
             int endOffset = doc.getLength();
@@ -91,51 +95,9 @@ public class FortranReformatter implements ReformatTask {
         }
     }
 
+    @Override
     public ExtraLock reformatLock() {
         return null;
-    }
-
-
-    private void reformatImpl(Context.Region region) throws BadLocationException {
-        int startOffset = region.getStartOffset();
-        int endOffset = region.getEndOffset();
-        if ("text/x-fortran".equals(context.mimePath())) { //NOI18N
-            reformatLanguage(FortranTokenId.languageFortran(), startOffset, endOffset);
-        }
-    }
-
-    private void reformatLanguage(Language<FortranTokenId> language, int startOffset, int endOffset) throws BadLocationException {
-        TokenHierarchy hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
-        if (hierarchy == null) {
-            return;
-        }
-        reformatImpl(hierarchy, startOffset, endOffset);
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
-        TokenSequence<?> ts = hierarchy.tokenSequence();
-        ts.move(startOffset);
-        if (ts.moveNext() && ts.token().id() != FortranTokenId.NEW_LINE){
-            while (ts.movePrevious()){
-                startOffset = ts.offset();
-                if (ts.token().id() != FortranTokenId.NEW_LINE) {
-                    break;
-                }
-            }
-        }
-        while (ts != null && (startOffset == 0 || ts.moveNext())) {
-            ts.move(startOffset);
-            if (ts.language() == FortranTokenId.languageFortran()) {
-                reformatImpl((TokenSequence<FortranTokenId>) ts, startOffset, endOffset);
-                return;
-            }
-            if (!ts.moveNext() && !ts.movePrevious()) {
-                return;
-            }
-            ts = ts.embedded();
-        }
     }
 
     private void reformatImpl(TokenSequence<FortranTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
@@ -221,6 +183,7 @@ public class FortranReformatter implements ReformatTask {
 
     public static class Factory implements ReformatTask.Factory {
 
+        @Override
         public ReformatTask createTask(Context context) {
             return new FortranReformatter(context);
         }
