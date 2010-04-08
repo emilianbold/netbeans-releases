@@ -120,7 +120,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     public TypeScope getTypeScope() {
-        return (ClassScope) getInScope();
+        return (TypeScope) getInScope();
     }
 
     @Override

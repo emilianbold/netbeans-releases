@@ -286,11 +286,11 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
-                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.sun.id}.pkg),
+                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg),
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
@@ -523,8 +523,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
-                <!--<filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>-->
-                <filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>
+                <filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>
+                <!--<filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>-->
                 <!--<filter token="GLASSFISH_ID" value="${glassfish.id}"/>
                 <filter token="SJSAS_ID" value="${sjsas.id}"/>-->
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
@@ -539,7 +539,8 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISHV3_SUN" value="${sizeof.glassfish.v3.sun}"/>
+                <!--<filter token="SIZE_GLASSFISHV3_SUN" value="${sizeof.glassfish.v3.sun}"/>-->
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                

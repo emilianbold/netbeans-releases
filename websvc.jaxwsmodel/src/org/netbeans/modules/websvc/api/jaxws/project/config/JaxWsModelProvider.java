@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.api.jaxws.project.config;
 
+import org.netbeans.modules.websvc.jaxwsmodel.project.JaxWsModelImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import org.openide.filesystems.FileObject;
@@ -74,5 +75,13 @@ public class JaxWsModelProvider {
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs impl =
                 org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs.createGraph(fo.getInputStream());
         return (impl==null?null:new JaxWsModelImpl(impl,fo));
+    }
+
+    public Service createService(Object serviceImpl) {
+        return new Service((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service)serviceImpl);
+    }
+
+    public Client createClient(Object clientImpl) {
+        return new Client((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client)clientImpl);
     }
 }

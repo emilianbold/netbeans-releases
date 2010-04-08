@@ -41,11 +41,8 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -61,9 +58,7 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
 
     private CachingSupport cachedModelSupport;
     private ParserResult info;
-    private Map<PhpElement, List<Occurence>> occurences =
-            new HashMap<PhpElement, List<Occurence>>();
-    private List<CodeMarkerImpl> codeMarkers = new ArrayList<CodeMarkerImpl>();
+    private final List<CodeMarkerImpl> codeMarkers = Collections.synchronizedList(new ArrayList<CodeMarkerImpl>());
 
     FileScopeImpl(ParserResult info) {
         this(info, "program");//NOI18N
@@ -79,45 +74,12 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
         codeMarkers.add(codeMarkerImpl);
     }
 
-    void addOccurence(Occurence occurence) {
-        PhpElement declaration = occurence.getDeclaration();
-        addOccurence(declaration, occurence);
-    }
-
-    void addOccurence(final PhpElement declaration, Occurence occurence) {
-        List<Occurence> ocList = occurences.get(declaration);
-        if (ocList == null) {
-            ocList = new ArrayList<Occurence>();
-            List<Occurence> old = occurences.put(declaration, ocList);
-            assert old == null;
-        }
-        assert occurence != null;
-        ocList.add(occurence);
-    }
-
     List<? extends CodeMarker> getMarkers() {
         return codeMarkers;
     }
 
-    /**
-     * @return the occurences
-     */
-    List<Occurence> getOccurences() {
-        List<Occurence> ocList = new ArrayList<Occurence>();
-        Collection<List<Occurence>> values = occurences.values();
-        for (List<Occurence> list : values) {
-            ocList.addAll(list);
-        }
-        return ocList;
-    }
-
-    List<Occurence> getAllOccurences(PhpElement declaration) {
-        final List<Occurence> retval = occurences.get(declaration);
-        return retval != null ? retval : Collections.<Occurence>emptyList();
-    }
-
-    List<Occurence> getAllOccurences(Occurence occurence) {
-        return getAllOccurences(occurence.getDeclaration());
+    void clearMarkers() {
+        codeMarkers.clear();
     }
 
     /**
@@ -147,5 +109,4 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
             }
         }));
     }
-
 }

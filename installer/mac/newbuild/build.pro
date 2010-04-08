@@ -65,7 +65,7 @@
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="(.*)oges-3.0.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)ogs-3.0.1-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>

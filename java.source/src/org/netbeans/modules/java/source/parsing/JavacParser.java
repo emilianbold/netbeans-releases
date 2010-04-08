@@ -94,7 +94,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -547,12 +546,7 @@ public class JavacParser extends Parser {
                 }
                 long start = System.currentTimeMillis();
                 JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(currentInfo.getClasspathInfo());
-                fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList(currentInfo.jfo.toUri().toURL().toString()).iterator()); //NOI18N
-                try {
-                    currentInfo.getJavacTask().enter();
-                } finally {
-                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
-                }
+                currentInfo.getJavacTask().enter();
                 currentPhase = Phase.ELEMENTS_RESOLVED;
                 long end = System.currentTimeMillis();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
