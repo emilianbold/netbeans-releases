@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.search.api;
 
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -48,42 +48,41 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public interface SearchTarget {
 
-  /**
-   * Returns the class of target.
-   * @return the class of target
-   */
-  Class<? extends Object> getClazz();
+    /**
+     * Returns the class of target.
+     * @return the class of target
+     */
+    Class<? extends Object> getClazz();
 
+    // -------------------------------------------
+    public class Adapter implements SearchTarget {
 
-  // -------------------------------------------
-  public class Adapter implements SearchTarget {
+        public Adapter(Class bundle, Class<? extends Object> clazz) {
+            myClazz = clazz;
+            myBundle = bundle;
+        }
 
-    public Adapter(Class bundle, Class<? extends Object> clazz) {
-      myClazz = clazz;
-      myBundle = bundle;
+        public Class<? extends Object> getClazz() {
+            return myClazz;
+        }
+
+        @Override
+        public String toString() {
+            return i18n(myBundle, name());
+        }
+
+        private String name() {
+            String name = myClazz.getName();
+
+            int k = name.lastIndexOf("."); // NOI18N
+
+            if (k == -1) {
+                return name;
+            }
+            return name.substring(k + 1);
+        }
+
+        private Class myBundle;
+        private Class<? extends Object> myClazz;
     }
-
-    public Class<? extends Object> getClazz() {
-      return myClazz;
-    }
-
-    @Override
-    public String toString() {
-      return i18n(myBundle, name());
-    }
-
-    private String name() {
-      String name = myClazz.getName();
-
-      int k = name.lastIndexOf("."); // NOI18N
-
-      if (k == -1) {
-        return name;
-      }
-      return name.substring(k + 1);
-    }
-
-    private Class myBundle;
-    private Class<? extends Object> myClazz;
-  }
 }

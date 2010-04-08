@@ -43,7 +43,7 @@ package org.netbeans.modules.xml.wsdl.ui.api.property;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -143,58 +143,43 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent> {
         }
     }
 
-    class WSDLProjectFolderChildren extends Children.Keys<FileObject> {
+    class WSDLProjectFolderChildren extends Children.Array {
 
         private final FileObject projectDir;
         private final Node original;
         private final List<Class<? extends WSDLComponent>> filters;
-        private Set<FileObject> emptySet = Collections.emptySet();
+        private final Project project;
 
         public WSDLProjectFolderChildren(Node original, Project project, List<Class<? extends WSDLComponent>> filters) {
             this.original = original;
             this.filters = filters;
             this.projectDir = project.getProjectDirectory();
+            this.project = project;
         }
 
         @Override
-        public Node[] createNodes(FileObject fo) {
-            ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
-            WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
-            NodesFactory factory = NodesFactory.getInstance();
-            return new Node[]{new FileNode(
-                        factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters),
-                        FileUtil.getRelativePath(projectDir, fo), 2)};
+        protected Collection<Node> initCollection() {
+            ArrayList<Node> keys = new ArrayList<Node>();
+            Set<File> alreadyAddedFiles = new HashSet<File>();
 
-        }
-
-        @Override
-        protected void addNotify() {
-            resetKeys();
-        }
-
-        @Override
-        protected void removeNotify() {
-            this.setKeys(emptySet);
-
-        }
-
-        private void resetKeys() {
-            ArrayList<FileObject> keys = new ArrayList<FileObject>();
-
-            Set<FileObject> validFolders = new HashSet<FileObject>();
-            populateValidFolders(original, validFolders);
-            
-            for (FileObject rootFolder : validFolders) {
-                List<File> files = recursiveListFiles(FileUtil.toFile(rootFolder), new WSDLFileFilter());
-                for (File file : files) {
-                    FileObject fo = FileUtil.toFileObject(file);
-                    keys.add(fo);
+            List<File> files = recursiveListFiles(project, new WSDLFileFilter());
+            for (File file : files) {
+                if (alreadyAddedFiles.contains(file)) {
+                    continue;
                 }
+                FileObject fo = FileUtil.toFileObject(file);
+                alreadyAddedFiles.add(file);
+                ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
+                WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(modelSource);
+                NodesFactory factory = NodesFactory.getInstance();
+                keys.add(new FileNode(
+                        factory.createFilteredDefinitionNode(wsdlModel.getDefinitions(), filters),
+                        FileUtil.getRelativePath(projectDir, fo), 2));
             }
-
-            this.setKeys(keys);
+            return keys;
         }
     }
+
     public static final String WSDL_FILE_EXTENSION = "wsdl";
 
     static class WSDLFileFilter implements FileFilter {

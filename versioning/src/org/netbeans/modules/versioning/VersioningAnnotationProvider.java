@@ -454,7 +454,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private boolean allCleared;
 
         Cache(String type) {
-            this.annotationRefreshTask = new RequestProcessor("VersioningAnnotator.annotationRefresh", 1, false).create(new AnnotationRefreshTask()); //NOI18N
+            this.annotationRefreshTask = new RequestProcessor("VersioningAnnotator.annotationRefresh", 1, false, false).create(new AnnotationRefreshTask()); //NOI18N
             this.filesToAnnotate = new LinkedHashSet<ItemKey<T, KEY>>();
             assert ANNOTATION_TYPE_ICON.equals(type) || ANNOTATION_TYPE_LABEL.equals(type);
             this.type = type;

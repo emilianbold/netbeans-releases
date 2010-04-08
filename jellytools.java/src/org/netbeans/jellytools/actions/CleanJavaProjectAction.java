@@ -49,7 +49,7 @@ import org.netbeans.jellytools.Bundle;
  */
 public class CleanJavaProjectAction extends Action {
 
-    private static final String cleanProjectPopup = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_CleanAction_Name");
+    private static final String cleanProjectPopup = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CleanProjectAction_Name_popup");
 
     /** creates new CleanProjectAction instance */
     public CleanJavaProjectAction() {

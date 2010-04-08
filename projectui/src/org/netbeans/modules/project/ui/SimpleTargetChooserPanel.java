@@ -70,6 +70,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private WizardDescriptor wizard;
     private boolean isFolder;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     SimpleTargetChooserPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder) {
         this.folders = folders;
         if (folders != null && folders.length == 0) {
@@ -84,7 +85,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         this.gui = null;
     }
 
-    public Component getComponent() {
+    public @Override Component getComponent() {
         if (gui == null) {
             gui = new SimpleTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), isFolder );
             gui.addChangeListener(this);
@@ -92,7 +93,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         return gui;
     }
 
-    public HelpCtx getHelp() {
+    public @Override HelpCtx getHelp() {
         if ( bottomPanel != null ) {
             HelpCtx bottomHelp = bottomPanel.getHelp();
             if ( bottomHelp != null ) {
@@ -105,7 +106,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         
     }
 
-    public boolean isValid() {
+    public @Override boolean isValid() {
         boolean ok = ( gui != null && gui.getTargetName() != null && gui.getTargetGroup() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
@@ -122,15 +123,15 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         return errorMessage == null;
     }
 
-    public void addChangeListener(ChangeListener l) {
+    public @Override void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
-    public void removeChangeListener(ChangeListener l) {
+    public @Override void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
-    public void readSettings(WizardDescriptor settings) {
+    public @Override void readSettings(WizardDescriptor settings) {
                 
         wizard = settings;
                 
@@ -164,7 +165,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         }
     }
     
-    public void storeSettings(WizardDescriptor settings) { 
+    public @Override void storeSettings(WizardDescriptor settings) {
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
@@ -172,8 +173,6 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            
-            FileObject template = Templates.getTemplate( wizard );
             
             String name = gui.getTargetName ();
             if (name.indexOf ('/') > 0) { // NOI18N
@@ -186,7 +185,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         settings.putProperty("NewFileWizard_Title", null); // NOI18N
     }
 
-    public void stateChanged(ChangeEvent e) {        
+    public @Override void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
     

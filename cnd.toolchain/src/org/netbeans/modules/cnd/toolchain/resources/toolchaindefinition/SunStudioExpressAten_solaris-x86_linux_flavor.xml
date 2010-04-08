@@ -42,10 +42,10 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 5/10 Compiler Collection" family="SunStudio"/>
+    <toolchain name="OracleSolarisStudioExpress" display="Oracle Solaris Studio Express 6/10 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/sun/sunstudioaten/bin"/>
-        <platform os="sun_intel" directory="/opt/aten/bin"/>
+        <platform os="linux" directory="opt/oracle/solstudioex1006/bin"/>
+        <platform os="sun_intel" directory="/opt/solstudioex1006/bin"/>
     </default_locations>
 </toolchaindefinition>

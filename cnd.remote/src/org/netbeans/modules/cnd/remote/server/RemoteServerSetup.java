@@ -56,15 +56,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -129,22 +130,26 @@ public class RemoteServerSetup {
     protected  void setup() {
         List<String> list = updateMap.remove(executionEnvironment);
         for (String path : list) {
-            RemoteUtil.LOGGER.fine("RSS.setup: Updating \"" + path + "\" on " + executionEnvironment); //NO18N
+            RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
                 String localFileName = binarySetupMap.get(path);
                 File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
                 //String remotePath = REMOTE_LIB_DIR + file.getName();
                 String remotePath = path;
-                if (file == null
-                        || !file.exists()
-                        || !copyTo(file, remotePath)) {
+                try {
+                    if (file == null
+                            || !file.exists()
+                            || !copyTo(file, remotePath)) {
+                        throw new Exception();
+                    }
+                } catch (Exception ex) {
                     setFailed(NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", executionEnvironment, path)); //NOI18N
                 }
             }
         }
     }
 
-    private boolean copyTo(File file, String remoteFilePath) {
+    private boolean copyTo(File file, String remoteFilePath) throws InterruptedException, ExecutionException {
         int slashPos = remoteFilePath.lastIndexOf('/'); //NOI18N
         if (slashPos >= 0) {
             String remoteDir = remoteFilePath.substring(0, slashPos);
@@ -154,7 +159,7 @@ public class RemoteServerSetup {
                 RemoteCommandSupport.run(executionEnvironment, cmd);
             }
         }
-        return RemoteCopySupport.copyTo(executionEnvironment, file.getAbsolutePath(), remoteFilePath);
+        return CommonTasksSupport.uploadFile(file.getAbsolutePath(), executionEnvironment, remoteFilePath, 0775, null).get() == 0;
     }
 
     private List<String> getBinaryUpdates() {
@@ -225,9 +230,9 @@ public class RemoteServerSetup {
 
         RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, cmd);
         support.run();
-        RemoteUtil.LOGGER.fine("RSS.getBinaryUpdatesByChecksum: RC " + support.getExitStatus());
+        RemoteUtil.LOGGER.log(Level.FINE, "RSS.getBinaryUpdatesByChecksum: RC {0}", support.getExitStatus());
         if (support.isFailed() || support.getExitStatus() != 0) {
-            RemoteUtil.LOGGER.fine("Running " + cmd + " failed on remote host: " + support.getFailureReason()); //NOI18N
+            RemoteUtil.LOGGER.log(Level.FINE, "Running {0} failed on remote host: {1}", new Object[]{cmd, support.getFailureReason()}); //NOI18N
             return new ArrayList<String>(paths2check);
         }
 

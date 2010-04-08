@@ -67,7 +67,6 @@ public class Actions implements ActionsFactory {
     
     private static Action SET_AS_MAIN_PROJECT;
     private static Action CUSTOMIZE_PROJECT;
-    private static Action OPEN_SUBPROJECTS;
     private static Action CLOSE_PROJECT;
     private static Action NEW_FILE;
     private static Action COPY_PROJECT;
@@ -89,10 +88,7 @@ public class Actions implements ActionsFactory {
     }
     
     public synchronized Action openSubprojectsAction() {
-        if ( OPEN_SUBPROJECTS == null ) {
-            OPEN_SUBPROJECTS = new OpenSubprojects();
-        }
-        return OPEN_SUBPROJECTS;
+        return SystemAction.get(OpenSubprojects.class);
     }
     
     public synchronized Action closeProjectAction() {
@@ -103,11 +99,15 @@ public class Actions implements ActionsFactory {
     }
     
     public synchronized Action newFileAction() {
+        return newFile();
+    }
+
+    public static Action newFile() {
         if ( NEW_FILE == null ) {
             NEW_FILE = new NewFile.WithSubMenu();
         }
         return NEW_FILE;
-    }    
+    }
     
     public Action deleteProjectAction() {
         return deleteProject();
@@ -154,16 +154,19 @@ public class Actions implements ActionsFactory {
     
     public static Action javadocProject() {
         return new ProjectAction (
-            "javadoc", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NOI18N
+            "javadoc", // XXX move to java.project and use JavaProjectConstants.COMMAND_JAVADOC
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name_popup"),
             null, 
             null ); 
     }
     
     public static Action testProject() {        
         Action a = new ProjectAction (
-            "test", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testProject.png", false), //NOI18N
+            ActionProvider.COMMAND_TEST,
+            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testProject.png", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testProject.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -174,7 +177,9 @@ public class Actions implements ActionsFactory {
     public static Action buildProject() {
         Action a = new ProjectAction (
             ActionProvider.COMMAND_BUILD, 
-            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildCurrentProject.gif", false),
             null );  
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildCurrentProject.gif"); //NOI18N
         return a;
@@ -183,7 +188,9 @@ public class Actions implements ActionsFactory {
     public static Action cleanProject() {
         Action a = new ProjectAction(
                 ActionProvider.COMMAND_CLEAN,
-                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif", false), //NOI18N
+                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name"),
+                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name_popup"),
+                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif", false),
                 null );
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif"); //NOI18N
         return a;
@@ -192,7 +199,9 @@ public class Actions implements ActionsFactory {
     public static Action rebuildProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_REBUILD,
-            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif"); //NOI18N
         return a;
@@ -201,7 +210,9 @@ public class Actions implements ActionsFactory {
     public static Action runProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_RUN, 
-            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runCurrentProject.gif", false), //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"),
+            NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name_popup"),
+            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runCurrentProject.gif", false),
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runCurrentProject.gif"); //NOI18N
         return a;

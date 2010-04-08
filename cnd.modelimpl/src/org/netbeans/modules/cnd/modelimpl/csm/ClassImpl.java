@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -78,11 +78,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     private class ClassAstRenderer extends AstRenderer {
         private final boolean renderingLocalContext;
-        private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
+        private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(boolean renderingLocalContext) {
-            super((FileImpl) ClassImpl.this.getContainingFile());
+        public ClassAstRenderer(CsmFile containingFile, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+            super((FileImpl) containingFile);
             this.renderingLocalContext = renderingLocalContext;
+            this.curentVisibility = curentVisibility;
         }
 
         @Override
@@ -109,7 +110,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 switch (token.getType()) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                     case CPPTokenTypes.LITERAL_template:{
-                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+                        List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
                         String name = "<" + TemplateUtils.getClassSpecializationSuffix(token, null) + ">"; // NOI18N
                         setTemplateDescriptor(params, name);
                         break;
@@ -355,6 +356,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                         //new VariableImpl(
                         break;
+                }
+            }
+            
+            // Check for include directives in class
+            if (!renderingLocalContext) {
+                CsmFile file = getContainingFile();
+                for (CsmInclude include : file.getIncludes()) {
+                    if (include.getStartOffset() > getStartOffset()
+                            && include.getEndOffset() < getEndOffset()) {
+                        ((FileImpl) file).onFakeRegisration((IncludeImpl) include, ClassImpl.this);
+                    }
                 }
             }
         }
@@ -660,7 +672,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (cls == null) {
                 cls = getContainingClass();
             }
-            return CharSequenceKey.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
         ////////////////////////////////////////////////////////////////////////////
@@ -719,15 +731,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     protected final void render(AST ast, boolean localClass) {
-        new ClassAstRenderer(localClass).render(ast);
+        new ClassAstRenderer(getContainingFile(), CsmVisibility.PRIVATE, localClass).render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
+    }
+
+    public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
+        new ClassAstRenderer(file, visibility, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
         ClassImpl out = null;
         if (container != null) {
-            CharSequence name = CharSequenceKey.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-            name = (name == null) ? CharSequenceKey.empty() : name;
+            CharSequence name = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
+            name = (name == null) ? CharSequences.empty() : name;
             int start = getStartOffset(ast);
             int end = getEndOffset(ast);
             CsmOffsetableDeclaration existing = container.findExistingDeclaration(start, end, name);
@@ -908,7 +925,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     @Override

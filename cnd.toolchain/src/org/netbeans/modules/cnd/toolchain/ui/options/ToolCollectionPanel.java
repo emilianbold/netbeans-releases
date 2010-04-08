@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -101,6 +103,7 @@ import org.openide.util.Utilities;
         cbCRequired.setName("c"); // NOI18N
         cbCppRequired.setName("c++"); // NOI18N
         cbFortranRequired.setName("fortran"); // NOI18N
+        cbQMakeRequired.setName("qmake"); // NOI18N
         cbAsRequired.setName("assembler"); // NOI18N
     }
 
@@ -109,13 +112,6 @@ import org.openide.util.Utilities;
             requiredToolsLabel.setVisible(false); // Required Tools label!
             requiredToolsPanel.setVisible(false); // Required Tools panel!
         }
-
-        btCBrowse.setEnabled(false);
-        btCppBrowse.setEnabled(false);
-        btFortranBrowse.setEnabled(false);
-        btAsBrowse.setEnabled(false);
-        btMakeBrowse.setEnabled(false);
-        btDebuggerBrowse.setEnabled(false);
         tfMakePath.setEditable(false);
         tfDebuggerPath.setEditable(false);
         tfQMakePath.setEditable(false);
@@ -125,11 +121,13 @@ import org.openide.util.Utilities;
             cbCRequired.setEnabled(true);
             cbCppRequired.setEnabled(true);
             cbFortranRequired.setEnabled(true);
+            cbQMakeRequired.setEnabled(true);
             cbAsRequired.setEnabled(true);
         } else {
             cbCRequired.setEnabled(false);
             cbCppRequired.setEnabled(false);
             cbFortranRequired.setEnabled(false);
+            cbQMakeRequired.setEnabled(false);
             cbAsRequired.setEnabled(false);
         }
 
@@ -139,6 +137,7 @@ import org.openide.util.Utilities;
         cbCRequired.setSelected(manager.getModel().isCRequired());
         cbCppRequired.setSelected(manager.getModel().isCppRequired());
         cbFortranRequired.setSelected(manager.getModel().isFortranRequired());
+        cbQMakeRequired.setSelected(manager.getModel().isQMakeRequired());
         cbAsRequired.setSelected(manager.getModel().isAsRequired());
     }
 
@@ -152,6 +151,7 @@ import org.openide.util.Utilities;
         cbCppRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbCRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbFortranRequired.setVisible(manager.getModel().showRequiredBuildTools());
+        cbQMakeRequired.setVisible(manager.getModel().showRequiredBuildTools());
         cbAsRequired.setVisible(manager.getModel().showRequiredBuildTools());
     }
 
@@ -212,13 +212,16 @@ import org.openide.util.Utilities;
             if (model.isAsRequired() != cbAsRequired.isSelected()) {
                 model.setAsRequired(cbAsRequired.isSelected());
             }
+            if (model.isQMakeRequired() != cbQMakeRequired.isSelected()) {
+                model.setFortranRequired(cbQMakeRequired.isSelected());
+            }
         }
     }
 
     void preChangeCompilerSet(CompilerSet cs) {
         if (cs == null) {
             lbFamilyValue.setText(""); // NOI18N
-            updateToolsControls(false, false, false, true);
+            updateToolsControls(false, false, true);
             return;
         }
         if (cs.isUrlPointer()) {
@@ -426,8 +429,9 @@ import org.openide.util.Utilities;
         boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
         boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
         boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
         boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
-        return makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid;
+        return makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid && qmakeValid;
     }
 
     void getErrors(List<String> errors) {
@@ -436,6 +440,7 @@ import org.openide.util.Utilities;
         boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
         boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
         boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
         boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
             if (!isPathFieldValid(tfMakePath)) {
@@ -456,20 +461,15 @@ import org.openide.util.Utilities;
         if (cbFortranRequired.isSelected() && !fortranValid) {
             errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedFortranCompiler")); // NOI18N
         }
+        if (cbQMakeRequired.isSelected() && !qmakeValid) {
+            errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedQMake")); // NOI18N
+        }
         if (cbAsRequired.isSelected() && !asValid) {
             errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedAssembler")); // NOI18N
         }
     }
 
-    void updateToolsControls(boolean enableText, boolean enableBrowse, boolean enableVersions, boolean cleanText) {
-        btCBrowse.setEnabled(enableBrowse);
-        btCppBrowse.setEnabled(enableBrowse);
-        btFortranBrowse.setEnabled(enableBrowse);
-        btAsBrowse.setEnabled(enableBrowse);
-        btMakeBrowse.setEnabled(enableBrowse);
-        btDebuggerBrowse.setEnabled(enableBrowse);
-        btQMakeBrowse.setEnabled(enableBrowse);
-        btCMakeBrowse.setEnabled(enableBrowse);
+    void updateToolsControls(boolean enableText, boolean enableVersions, boolean cleanText) {
         updateTextField(tfMakePath, enableText, cleanText);
         updateTextField(tfDebuggerPath, enableText, cleanText);
         updateTextField(tfBaseDirectory, false, cleanText);
@@ -533,34 +533,28 @@ import org.openide.util.Utilities;
         }
     }
 
-    private boolean selectCompiler(JTextField tf) {
-        String seed = tfBaseDirectory.getText();
-        FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return false;
-        }
-        if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-            NotifyDescriptor nb = new NotifyDescriptor.Message(ToolsPanel.getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
-            DialogDisplayer.getDefault().notify(nb);
-            return false;
-        }
-        String aPath = fileChooser.getSelectedFile().getPath();
-        if (Utilities.isWindows()) {
-            if (aPath.endsWith(".lnk")) { // NOI18N
-                aPath = aPath.substring(0, aPath.length() - 4);
+    private boolean selectTool(JTextField tf, boolean checkBaseFolder) {
+        String seed = tf.getText();
+        if (seed.length() > 0 && ! seed.endsWith("/")) { //NOI18N
+            int pos = seed.lastIndexOf("/"); //NOI18N
+            if (pos > 0) {
+                seed = seed.substring(0, pos);
             }
         }
-        tf.setText(aPath); // compiler set is updated by textfield's listener
-        return true;
-    }
-
-    private boolean selectTool(JTextField tf) {
-        String seed = tf.getText();
-        FileChooser fileChooser = new FileChooser(ToolsPanel.getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false); // NOI18N
+        JFileChooser fileChooser = new FileChooserBuilder(manager.getExecutionEnvironment()).createFileChooser(seed);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setDialogTitle(ToolsPanel.getString("SELECT_TOOL_TITLE"));
+        //fileChooser.setApproveButtonMnemonic(KeyEvent.VK_ENTER);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return false;
+        }
+        if (checkBaseFolder) {
+            if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
+                NotifyDescriptor nb = new NotifyDescriptor.Message(ToolsPanel.getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+                DialogDisplayer.getDefault().notify(nb);
+                return false;
+            }
         }
         String aPath = fileChooser.getSelectedFile().getPath();
         if (Utilities.isWindows()) {
@@ -760,6 +754,7 @@ import org.openide.util.Utilities;
         cbFortranRequired.addItemListener(this);
         cbAsRequired = new javax.swing.JCheckBox();
         cbFortranRequired.addItemListener(this);
+        cbQMakeRequired = new javax.swing.JCheckBox();
         lbBaseDirectory = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
         lbAsCommand = new javax.swing.JLabel();
@@ -1011,6 +1006,9 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         requiredToolsPanel.add(cbAsRequired, gridBagConstraints);
 
+        cbQMakeRequired.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbQMakeRequired.text")); // NOI18N
+        requiredToolsPanel.add(cbQMakeRequired, new java.awt.GridBagConstraints());
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 15;
@@ -1173,35 +1171,35 @@ import org.openide.util.Utilities;
     }// </editor-fold>//GEN-END:initComponents
 
     private void btMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeBrowseActionPerformed
-        selectTool(tfMakePath);
+        selectTool(tfMakePath, false);
 }//GEN-LAST:event_btMakeBrowseActionPerformed
 
     private void btDebuggerBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btDebuggerBrowseActionPerformed
-        selectTool(tfDebuggerPath);
+        selectTool(tfDebuggerPath, false);
 }//GEN-LAST:event_btDebuggerBrowseActionPerformed
 
     private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed
-        selectCompiler(tfCPath);
+        selectTool(tfCPath, true);
 }//GEN-LAST:event_btCBrowseActionPerformed
 
     private void btCppBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppBrowseActionPerformed
-        selectCompiler(tfCppPath);
+        selectTool(tfCppPath, true);
 }//GEN-LAST:event_btCppBrowseActionPerformed
 
     private void btFortranBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranBrowseActionPerformed
-        selectCompiler(tfFortranPath);
+        selectTool(tfFortranPath, true);
 }//GEN-LAST:event_btFortranBrowseActionPerformed
 
     private void btAsBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAsBrowseActionPerformed
-        selectCompiler(tfAsPath);
+        selectTool(tfAsPath, true);
 }//GEN-LAST:event_btAsBrowseActionPerformed
 
     private void btQMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btQMakeBrowseActionPerformed
-        selectTool(tfQMakePath);
+        selectTool(tfQMakePath, false);
 }//GEN-LAST:event_btQMakeBrowseActionPerformed
 
     private void btCMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCMakeBrowseActionPerformed
-        selectTool(tfCMakePath);
+        selectTool(tfCMakePath, false);
 }//GEN-LAST:event_btCMakeBrowseActionPerformed
 
     private void btInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btInstallActionPerformed
@@ -1226,6 +1224,7 @@ import org.openide.util.Utilities;
     private javax.swing.JCheckBox cbDebuggerRequired;
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbMakeRequired;
+    private javax.swing.JCheckBox cbQMakeRequired;
     private javax.swing.JLabel lbAsCommand;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;

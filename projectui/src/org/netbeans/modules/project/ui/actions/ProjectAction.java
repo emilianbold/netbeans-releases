@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -111,6 +112,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         
     }
        
+    @Override
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
@@ -135,6 +137,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         
     }
     
+    @Override
     protected void refresh( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
@@ -160,6 +163,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     private void enable(final boolean enable) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setEnabled(enable);
                 }
@@ -177,9 +181,10 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         return namePattern;
     }
     
-    // Implementation of ContextAwareAction ------------------------------------
-    
-    public Action createContextAwareInstance( Lookup actionContext ) {
-        return new ProjectAction( command, performer, namePattern, popupPattern, (Icon)getValue( SMALL_ICON ), actionContext );
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
+        Action a = new ProjectAction(command, performer, namePattern, popupPattern, (Icon) getValue(SMALL_ICON), actionContext);
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
+        return a;
     }
+
 }

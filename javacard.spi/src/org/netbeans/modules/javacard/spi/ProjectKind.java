@@ -51,12 +51,15 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -416,6 +419,20 @@ public enum ProjectKind {
                 return "cap";
             default :
                 throw new AssertionError();
+        }
+    }
+
+    public static ProjectKind forJarFile (File jarFile) throws IOException {
+        JarFile jf = new JarFile(jarFile);
+        try {
+            Manifest m = jf.getManifest();
+            String appType = (String) m.getMainAttributes().get("Application-Type");
+            if (appType == null) {
+                return null;
+            }
+            return forManifestType(appType);
+        } finally {
+            jf.close();
         }
     }
 }

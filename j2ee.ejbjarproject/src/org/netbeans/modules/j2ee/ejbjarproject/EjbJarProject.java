@@ -1000,8 +1000,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
                 apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
             }
-            else if(apiWebServicesClientSupport.isBroken(EjbJarProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
+            else if(WebServicesClientSupport.isBroken(EjbJarProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
             }
         }
         
@@ -1032,7 +1032,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
             
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
-            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N

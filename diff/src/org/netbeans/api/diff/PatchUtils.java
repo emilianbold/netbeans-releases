@@ -8,8 +8,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.tools.FileObject;
+import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.diff.builtin.ContextualPatch;
 import org.netbeans.modules.diff.builtin.Patch;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * Utility class for patch application.
@@ -32,8 +47,7 @@ public class PatchUtils {
      * @since 1.19
      */
     public static void applyPatch(File patch, File context) throws IOException {
-        ContextualPatch cp = ContextualPatch.create(patch, context);
-        cp.patch(false); // false - dry run
+        PatchAction.performPatch(patch, context);
     }
 
     /**

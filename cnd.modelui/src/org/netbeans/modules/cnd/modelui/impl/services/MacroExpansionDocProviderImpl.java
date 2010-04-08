@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -429,7 +429,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         walker.visit();
         // we do not remember cache entry because it is stopped before end of file
         // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code);
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
         if (ts != null) {
             ts = new APTMacroExpandedStream(ts, handler.getMacroMap());
             StringBuilder sb = new StringBuilder(""); // NOI18N
@@ -1021,7 +1021,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         public void appendInterval(int inLength, int outLength, boolean macro, String macroExpansion, Map<Interval, List<Interval>> paramsToExpansion) {
             assert(cache != null);
-            CharSequence cs = CharSequenceKey.create(macroExpansion);
+            CharSequence cs = CharSequences.create(macroExpansion);
             CharSequence cachedCS = cache.get(cs);
             if(cachedCS != null) {
                 cs = cachedCS;

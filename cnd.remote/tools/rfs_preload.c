@@ -126,15 +126,13 @@ static void post_open(const char *path, int flags) {
     }
     inside = 1;
 
-    if (path[0] != '/') {
-        static __thread char real_path[PATH_MAX + 1];
-        if ( realpath(path, real_path)) {
-            path = real_path;
-        } else {
-            trace_unresolved_path(path);
-            inside = 0;
-            return;
-        }
+    static __thread char real_path[PATH_MAX + 1];
+    if ( realpath(path, real_path)) {
+        path = real_path;
+    } else {
+        trace_unresolved_path(path, "post_open");
+        inside = 0;
+        return;
     }
 
     if (strncmp(my_dir, path, my_dir_len) != 0) {
@@ -187,19 +185,13 @@ static bool pre_open(const char *path, int flags) {
     }
     inside = 1;
 
-    const char* real_path;
-    if (path[0] != '/') {
-        static __thread char real_path_buffer[PATH_MAX + 1];
-        if ( realpath(path, real_path_buffer)) {
-            //path = real_path;
-            real_path = real_path_buffer;
-        } else {
-            trace_unresolved_path(path);
-            inside = 0;
-            return false;
-        }
-    } else {
-        real_path = path;
+    static __thread char real_path[PATH_MAX + 1];
+    if ( !realpath(path, real_path)) {
+        trace_unresolved_path(path, "pre_open");
+        inside = 0;
+        // We usually get here if file does not exist.
+        // Don't return false - let real open apply its logic
+        return true;
     }
 
     if (strncmp(my_dir, real_path, my_dir_len) != 0) {
@@ -446,7 +438,9 @@ int pthread_create(void *newthread,
         } \
         if (prev) {\
             result = prev(path, flags, mode); \
-            post_open(path, flags); \
+            if (result != -1) { \
+                post_open(path, flags); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function_name); \
             errno = EFAULT; \
@@ -469,7 +463,9 @@ int pthread_create(void *newthread,
         } \
         if (prev) { \
             result = prev(path, mode); \
-            post_open(path, int_mode); \
+            if (result) { \
+                post_open(path, int_mode); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \
@@ -525,7 +521,8 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
         }
         if (prev) {
             result = prev(path, argv, envp);
-            post_open(path, flags);
+            // no post_open here since execve never returns in the case of success
+            //post_open(path, flags);
         } else {
             trace("Could not find original \"%s\" function\n", function_name);
             errno = EFAULT;
@@ -552,9 +549,11 @@ int rename(const char *oldpath, const char *path) {
             result = prev(oldpath, path);
             if (result == -1) {
                 trace("Errno=%d %s\n", errno, strerror(errno));
-                perror("RENAMING ");
+                // why should we call perror here? it's up to caller
+                // perror("RENAMING ");
+            } else {
+                post_open(path, O_TRUNC | O_CREAT | O_WRONLY);
             }
-            post_open(path, O_TRUNC | O_CREAT | O_WRONLY);
         } else {
             trace("Could not find original \"%s\" function\n", function_name);
             errno = EFAULT;
@@ -590,7 +589,9 @@ FILE *fopen64(const char * filename, const char * mode) {
         } \
         if (prev) { \
             result = prev(path, mode, stream); \
-            post_open(path, int_mode); \
+            if (result) { \
+                post_open(path, int_mode); \
+            } \
         } else { \
             trace("Could not find original \"%s\" function\n", #function); \
             errno = EFAULT; \

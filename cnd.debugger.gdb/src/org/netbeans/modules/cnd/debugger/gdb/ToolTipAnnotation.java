@@ -50,6 +50,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.ValuePresenter;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -58,7 +59,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.util.RequestProcessor;
 
 /*
  * ToolTipAnnotation.java
@@ -92,7 +92,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         
         this.lp = lp;
         this.ec = ec;
-        RequestProcessor.getDefault ().post (this);
+        GdbUtils.getGdbRequestProcessor().post(this);
         return null;
     }
         

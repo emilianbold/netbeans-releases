@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -71,6 +71,7 @@ import org.openide.util.RequestProcessor;
  */
 abstract public class HostKeyArray extends Children.Keys<PersistentKey> implements UpdatebleHost{
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(HostKeyArray.class.getName(), 1);
     // for testing only
     private static final boolean noLoadinNode = Boolean.getBoolean("cnd.classview.no-loading-node"); // NOI18N
     private static Comparator<java.util.Map.Entry<PersistentKey, SortedName>> COMARATOR = new MyComparator();
@@ -171,6 +172,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return myID;
     }
     
+    @Override
     public boolean newNamespsce(CsmNamespace ns) {
         if (!isInited){
             return false;
@@ -181,6 +183,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return true;
     }
     
+    @Override
     public boolean removeNamespsce(CsmNamespace ns) {
         if (!isInited){
             return false;
@@ -192,6 +195,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return true;
     }
     
+    @Override
     public boolean newDeclaration(CsmOffsetableDeclaration decl) {
         if (!isInited){
             return false;
@@ -225,6 +229,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return true;
     }
     
+    @Override
     public boolean removeDeclaration(CsmOffsetableDeclaration decl) {
         if (!isInited){
             return false;
@@ -303,6 +308,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         }
     }
     
+    @Override
     public boolean changeDeclaration(CsmOffsetableDeclaration oldDecl,CsmOffsetableDeclaration newDecl) {
         if (!isInited){
             return false;
@@ -364,6 +370,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return false;
     }
     
+    @Override
     public boolean reset(CsmOffsetableDeclaration decl, List<CsmOffsetableDeclaration> recursive){
         myID = PersistentKey.createKey(decl);
         if (!isInited){
@@ -423,6 +430,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return false;
     }
     
+    @Override
     public void flush() {
         if (update &&  isInited){
             resetKeys();
@@ -430,6 +438,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         update = false;
     }
     
+    @Override
     protected Node[] createNodes(PersistentKey object) {
         Node node = createNode(object);
         if (node != null) {
@@ -468,11 +477,11 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
                     // unique name search
                     if (CsmKindUtilities.isQualified(tested)){
                         CharSequence testedName = ((CsmQualifiedNamedElement)tested).getQualifiedName();
-                        if (CharSequenceKey.Comparator.compare(qname, testedName)==0){
+                        if (CharSequences.comparator().compare(qname, testedName)==0){
                             if (CsmKindUtilities.isFunction(object) || CsmKindUtilities.isFunction(tested)){
                                 if (CsmKindUtilities.isFunction(object) && CsmKindUtilities.isFunction(tested)){
                                     CharSequence testedSignature = ((CsmFunction)tested).getSignature();
-                                    if (CharSequenceKey.Comparator.compare(signature, testedSignature)==0){
+                                    if (CharSequences.comparator().compare(signature, testedSignature)==0){
                                         return list[i];
                                     }
                                     // for pure C
@@ -519,7 +528,8 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         }
         super.addNotify();
         if (isNamespace() && !force){ //isGlobalNamespace()) {
-            RequestProcessor.getDefault().post(new Runnable(){
+            RP.post(new Runnable(){
+                @Override
                 public void run() {
                     synchronized (childrenUpdater.getLock(getProject())) {
                         myKeys = getMembers();
@@ -571,6 +581,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     }
     
     private static class MyComparator implements Comparator<java.util.Map.Entry<PersistentKey, SortedName>> {
+        @Override
         public int compare(java.util.Map.Entry<PersistentKey, SortedName> o1, java.util.Map.Entry<PersistentKey, SortedName> o2) {
             SortedName n1 = o1.getValue();
             SortedName n2 = o2.getValue();

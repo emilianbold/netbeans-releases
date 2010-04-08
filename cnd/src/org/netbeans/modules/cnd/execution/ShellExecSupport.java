@@ -44,9 +44,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.settings.ShellSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,10 +88,12 @@ public class ShellExecSupport extends ExecutionSupport {
                 getString("PROP_RUN_DIRECTORY"), // NOI18N
                 getString("HINT_RUN_DIRECTORY")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getRunDirectory();
             }
 
+            @Override
             public void setValue(String val) {
                 setRunDirectory(val);
             }
@@ -127,10 +126,12 @@ public class ShellExecSupport extends ExecutionSupport {
                 getString("PROP_SHELL_COMMAND"), // NOI18N
                 getString("HINT_SHELL_COMMAND")) { // NOI18N
 
+            @Override
             public String getValue() {
                 return getShellCommand();
             }
 
+            @Override
             public void setValue(String val) {
                 setShellCommand(val);
             }
@@ -277,12 +278,7 @@ public class ShellExecSupport extends ExecutionSupport {
         }
     }
 
-    private ResourceBundle bundle = null;
-
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(ShellExecSupport.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(ShellExecSupport.class, s);
     }
 }

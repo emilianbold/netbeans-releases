@@ -483,17 +483,23 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             }
 
             for (int i = 0; i < copy.length; i++) {
+                if (copy[i] == null) {
+                    continue;
+                }
                 // Get context aware action instance if needed.
                 Action act;
 
                 // Retrieve context aware action instance if possible.
                 if ((lookup != null) && copy[i] instanceof ContextAwareAction) {
                     act = ((ContextAwareAction) copy[i]).createContextAwareInstance(lookup);
+                    if (act == null) {
+                        throw new IllegalStateException("createContextAwareInstance for " + copy[i] + " returned null!");
+                    }
                 } else {
                     act = copy[i];
                 }
 
-                if (act instanceof Presenter.Popup && act.isEnabled()) {
+                if (act.isEnabled()) {
                     en = true;
 
                     break;

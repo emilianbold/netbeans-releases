@@ -95,6 +95,10 @@ public final class Log extends Handler {
         logger = l;
     }
 
+    static Runnable internalLog() {
+        return new IL(true);
+    }
+
     /** Enables logging for given logger name and given severity.
      * Everything logged to the object is going to go to the returned
      * CharSequence object which can be used to check the content or
@@ -108,6 +112,7 @@ public final class Log extends Handler {
      * @since 1.27
      */
     public static CharSequence enable(String loggerName, Level level) {
+        IL il = new IL(false);
         class MyPs extends PrintStream implements CharSequence {
             private ByteArrayOutputStream os;
 
@@ -240,6 +245,8 @@ public final class Log extends Handler {
 
 
     static void configure(Level lev, NbTestCase current) {
+        IL il = new IL(false);
+        
         String c = "handlers=" + Log.class.getName() + "\n" +
                    ".level=" + lev.intValue() + "\n";
 
@@ -272,36 +279,53 @@ public final class Log extends Handler {
         }
 
         NbTestCase c = current;
-        return c == null ? System.err : c.getLog();
+        Runnable off = Log.internalLog();
+        try {
+            return c == null ? System.err : c.getLog();
+        } finally {
+            off.run();
+        }
     }
 
+    @Override
     public void publish(LogRecord record) {
         if (record.getLevel().intValue() < getLevel().intValue()) {
             return;
         }
-        StringBuffer sb = NbModuleLogHandler.toString(record);
-        PrintStream ps = getLog();
-        if (ps != null) {
-            try {
-                ps.println(sb.toString());
-            } catch (LinkageError err) {
-                // prevent circular references
-            }
+        if (IL.isInternalLog()) {
+            return;
         }
+        Runnable off = internalLog();
+        try {
+            StringBuffer sb = NbModuleLogHandler.toString(record);
+            PrintStream ps = getLog();
+            if (ps != null) {
+                try {
+                    ps.println(sb.toString());
+                } catch (LinkageError err) {
+                    // prevent circular references
+                }
+            }
 
-        messages.append(sb.toString());
+            messages.append(sb.toString());
 
-        if (messages.length() > 40000) {
-            messages.delete(0, 20000);
+            if (messages.length() > 40000) {
+                messages.delete(0, 20000);
+            }
+        } finally {
+            off.run();
         }
     }
 
+    @Override
     public void flush() {
     }
 
+    @Override
     public void close() {
-        if (getLevel() != Level.OFF) {
-            this.logger.addHandler(this);
+        Logger l = this.logger;
+        if (getLevel() != Level.OFF && l != null) {
+            l.addHandler(this);
         }
     }
 
@@ -430,4 +454,23 @@ public final class Log extends Handler {
         }
         
     } // end of InstancesHandler
+
+    private static class IL implements Runnable {
+        private static ThreadLocal<Boolean> INTERNAL_LOG = new ThreadLocal<Boolean>();
+        private final Boolean prev;
+
+        public IL(boolean on) {
+            prev = INTERNAL_LOG.get();
+            INTERNAL_LOG.set(on);
+        }
+
+        @Override
+        public void run() {
+            INTERNAL_LOG.set(prev);
+        }
+
+        public static boolean isInternalLog() {
+            return Boolean.TRUE.equals(INTERNAL_LOG.get());
+        }
+    } // end of IL
 }

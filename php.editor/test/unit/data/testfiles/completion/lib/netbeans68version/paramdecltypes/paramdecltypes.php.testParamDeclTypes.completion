@@ -2,12 +2,12 @@ Code completion result for source line:
 function paramsfnc($a,$b,$c,$d) {|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CLASS      clsA                            [PUBLIC]   paramdecltypes.php
-CLASS      ifaceA                                     paramdecltypes.php
-METHOD     paramsfnc($a, $b, $c, $d)                  paramdecltypes.php
-VARIABLE   ? $a                                       paramdecltypes.php
-VARIABLE   ? $b                                       paramdecltypes.php
-VARIABLE   ? $c                                       paramdecltypes.php
-VARIABLE   ? $d                                       paramdecltypes.php
+CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
+METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
+VARIABLE   ? $a                            [PUBLIC]   paramdecltypes.php
+VARIABLE   ? $b                            [PUBLIC]   paramdecltypes.php
+VARIABLE   ? $c                            [PUBLIC]   paramdecltypes.php
+VARIABLE   ? $d                            [PUBLIC]   paramdecltypes.php
 ------------------------------------
 VARIABLE   $GLOBALS                                   PHP Platform
 VARIABLE   $HTTP_RAW_POST_DATA                        PHP Platform

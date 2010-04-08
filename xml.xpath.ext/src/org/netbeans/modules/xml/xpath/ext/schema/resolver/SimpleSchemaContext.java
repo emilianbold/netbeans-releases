@@ -22,8 +22,12 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathPseudoComp;
 
 /**
@@ -35,7 +39,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
     private XPathSchemaContext mParentContext;
     private SchemaCompPair mSchemaCompPair;
     private boolean lastInChain = false;
-
+    
     /**
      * Constructs a simple schema context based on the list of 
      * SchemaComponent objects. 
@@ -51,7 +55,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         XPathSchemaContext result = parentContext;
         for (SchemaComponent sComp : pathList) {
             result = new SimpleSchemaContext(result, sComp);
-            }
+        }
         //
         return result;
     }
@@ -78,7 +82,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         } else {
             mParentContext = parentContext;
             SchemaCompHolder parentCompHolder = 
-                    Utilities.getSchemaCompHolder(mParentContext);
+                    Utilities.getSchemaCompHolder(mParentContext, false);
             assert parentCompHolder != null;
             mSchemaCompPair = new SchemaCompPair(sComp, parentCompHolder);
         }
@@ -96,7 +100,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         //
         mParentContext = parentContext;
         SchemaCompHolder parentCompHolder = 
-                Utilities.getSchemaCompHolder(mParentContext);
+                Utilities.getSchemaCompHolder(mParentContext, false);
         assert parentCompHolder != null;
         mSchemaCompPair = new SchemaCompPair(sCompHolder, parentCompHolder);
     }
@@ -143,6 +147,32 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         return sb.toString();
     }
 
+    public String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms) {
+        assert nsContext != null;
+        //
+        StringBuilder sb = new StringBuilder();
+        //
+        if (mParentContext != null) {
+            sb.append(mParentContext.getExpressionString(nsContext, sms)).
+                    append(LocationStep.STEP_SEPARATOR);
+        }
+        //
+        SchemaCompHolder sCompHilder =
+                XPathSchemaContext.Utilities.getSchemaCompHolder(this, false);
+        assert sCompHilder != null;
+        //
+        StepNodeNameTest newSnnt = new StepNodeNameTest(nsContext, sCompHilder, sms);
+        assert newSnnt != null;
+        //
+        if (sCompHilder.isAttribute()) {
+            sb.append("@"); // NOI18N
+        }
+        //
+        sb.append(newSnnt.getExpressionString());
+        //
+        return sb.toString();
+    }
+
     @Override
     public boolean equals(Object obj)  {
         if (obj instanceof SimpleSchemaContext) {
@@ -152,38 +182,22 @@ public class SimpleSchemaContext implements XPathSchemaContext {
             SchemaCompHolder sCompH1 = this.mSchemaCompPair.getCompHolder();
             SchemaCompHolder sCompH2 = other.mSchemaCompPair.getCompHolder();
             //
-            if (!(sCompH1.equals(sCompH2))) {
-                return false;
-            }
-            //
-            return true;
-        } else if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equals(
-                    this, (XPathSchemaContext)obj);
+            return XPathUtils.equal(sCompH1, sCompH2);
         }
         //
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + (this.mParentContext != null ? this.mParentContext.hashCode() : 0);
+        hash = 67 * hash + (this.mSchemaCompPair != null ? this.mSchemaCompPair.hashCode() : 0);
+        return hash;
+    }
     
     public boolean equalsChain(XPathSchemaContext other) {
-        if (equals(other)) {
-            //
-            // Compare parent contexts
-            XPathSchemaContext parentCont1 = this.mParentContext;
-            XPathSchemaContext parentCont2 = other.getParentContext();
-            if (parentCont1 != null && parentCont2 != null) {
-                boolean result = parentCont1.equalsChain(parentCont2);
-                if (!result) {
-                    return false;
-                }
-            } else if ((parentCont1 == null && parentCont2 != null) || 
-                    (parentCont1 != null && parentCont2 == null)) {
-                return false;
-            } 
-            //
-            return true;
-        }
-        return false;
+        return XPathSchemaContext.Utilities.equalsChain(this, other);
     }
 
     public boolean isLastInChain() {
@@ -193,4 +207,5 @@ public class SimpleSchemaContext implements XPathSchemaContext {
     public void setLastInChain(boolean value) {
         lastInChain = value;
     }
+
 }

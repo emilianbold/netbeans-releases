@@ -787,8 +787,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
-            if(apiWebServicesClientSupport.isBroken(AppClientProject.this)) {
-                apiWebServicesClientSupport.showBrokenAlert(AppClientProject.this);
+            if(WebServicesClientSupport.isBroken(AppClientProject.this)) {
+                WebServicesClientSupport.showBrokenAlert(AppClientProject.this);
             }
         }
         
@@ -820,7 +820,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             }
             
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
-            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
             if (!props.containsKey(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT))props.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N

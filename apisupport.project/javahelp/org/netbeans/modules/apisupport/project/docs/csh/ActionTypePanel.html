@@ -19,13 +19,11 @@
   from the Module Development category.
 <p>In the Action Type page, you have to set the type: 
 <ul>
-	<li><b>Always Enabled (use ActionListener).</b> Specifies that the action will be invoked
+	<li><b>Always Enabled.</b> Specifies that the action will be invoked
 	from a menu item in the menu bar, from a toolbar button in a toolbar, or from a keyboard shortcut anywhere
 	in the IDE.
-	<li><b>Conditionally Enabled (use CookieAction).</b> Specifies the classes for which the action will be created.
-	This is normally one of your own classes. For example, if you use the <a href="FileRecognitionPanel.html">New File wizard</a>,
-	one of the generated classes is called <tt><i>something</i>DataObject</tt>. This is the name of the cookie class
-	that you type in the Conditionally Enabled drop-down list. However, optionally, you can also include one or more of the
+	<li><b>Conditionally Enabled.</b> Specifies the classes for which the action will be created.
+	This is normally one of your own business objects. However, optionally, you can also include one or more of the
         following, which creates the action for all classes that subclass them:
 	 <ul>
 		 <li>DataObject</li>

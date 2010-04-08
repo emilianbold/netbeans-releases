@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
-import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -81,38 +80,21 @@ public class DiffExecutor {
     }
 
     /**
-     * Opens GUI component that shows differences between current base revisions
-     * and HEAD revisions.
-     */ 
-    public void showRemoteDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_REMOTE, group);
-    }
-    
-    /**
-     * Opens GUI component that shows differences between current working files
-     * and HEAD revisions.
-     */ 
-    public void showAllDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_ALL, group);
-    }
-    
-    /**
-     * Opens GUI component that shows differences between current working files
-     * and repository versions they are based on.
-     */ 
-    public void showLocalDiff(ExecutorGroup group) {
-        showDiff(Setup.DIFFTYPE_LOCAL, group);
+     * Opens GUI component that shows differences.
+     * @param type type of diff (local, remote, all)
+     */
+    public void showDiff (ExecutorGroup group, int type) {
+        if (type != Setup.DIFFTYPE_LOCAL && type != Setup.DIFFTYPE_REMOTE && type != Setup.DIFFTYPE_ALL) {
+            throw new IllegalArgumentException();
+        }
+        VersionsCache.getInstance().purgeVolatileRevisions();
+        MultiDiffPanel panel = new MultiDiffPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
+        openDiff(panel, group);
     }
 
     public void showDiff(File file, String rev1, String rev2) {
         MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2);
         openDiff(panel, null);
-    }
-
-    private void showDiff(int type, ExecutorGroup group) {
-        VersionsCache.getInstance().purgeVolatileRevisions();
-        MultiDiffPanel panel = new MultiDiffPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
-        openDiff(panel, group);
     }
     
     private void openDiff(final MultiDiffPanel c, final ExecutorGroup group) {

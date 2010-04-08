@@ -48,8 +48,6 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -61,7 +59,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.Presenter;
 
 /**
  * Action to open the project(s) corresponding to selected folder(s).
@@ -74,20 +71,19 @@ import org.openide.util.actions.Presenter;
 public final class OpenProjectFolderAction extends AbstractAction implements ContextAwareAction {
     
     public OpenProjectFolderAction() {
-        // Label not likely displayed in GUI.
         super(NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_action"));
     }
     
-    public void actionPerformed(ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         // Cannot be invoked without any context.
         assert false;
     }
     
-    public Action createContextAwareInstance(Lookup context) {
+    public @Override Action createContextAwareInstance(Lookup context) {
         return new ContextAction(context);
     }
     
-    private final class ContextAction extends AbstractAction implements Presenter.Popup {
+    private static final class ContextAction extends AbstractAction {
         
         /** Projects to be opened. */
         private final Set<Project> projects;
@@ -107,6 +103,9 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
                 }
                 // Ignore folders not corresponding to projects (will not disable action if some correspond to projects).
             }
+            if (projects.isEmpty()) {
+                putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+            }
             // Ignore projects which are already open (will not disable action if some can be opened).
             projects.removeAll(Arrays.asList(OpenProjectList.getDefault().getOpenProjects()));
             int size = projects.size();
@@ -114,37 +113,20 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
                 String name = ProjectUtils.getInformation(projects.iterator().next()).getDisplayName();
                 putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_menu_one", name));
             } else if (size > 1) {
-                putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_menu_multiple", new Integer(size)));
+                putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_menu_multiple", size));
+            } else {
+                putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_action"));
+                setEnabled(false);
             }
         }
         
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             // Run asynch so that UI is not blocked; might show progress dialog (?).
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     OpenProjectList.getDefault().open(projects.toArray(new Project[projects.size()]), false, true);
                 }
             });
-        }
-        
-        public JMenuItem getPopupPresenter() {
-            class Presenter extends JMenuItem implements DynamicMenuContent {
-                public Presenter() {
-                    super(ContextAction.this);
-                }
-                public JComponent[] getMenuPresenters() {
-                    if (!projects.isEmpty()) {
-                        return new JComponent[] {this, null};
-                    } else {
-                        // Disabled, so do not display at all.
-                        return new JComponent[0];
-                    }
-                }
-                public JComponent[] synchMenuPresenters(JComponent[] items) {
-                    return getMenuPresenters();
-                }
-            }
-            return new Presenter();
         }
         
     }

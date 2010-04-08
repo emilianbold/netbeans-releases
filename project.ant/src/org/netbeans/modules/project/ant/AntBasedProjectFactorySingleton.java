@@ -75,7 +75,6 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -98,6 +97,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 @ServiceProvider(service=ProjectFactory.class, position=100)
+@SuppressWarnings({"StaticNonFinalUsedInInitialization", "MS_SHOULD_BE_FINAL"}) // HELPER_CALLBACK
 public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     
     public static final String PROJECT_XML_PATH = "nbproject/project.xml"; // NOI18N
@@ -117,7 +117,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     static {
         antBasedProjectTypes = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
         antBasedProjectTypes.addLookupListener(new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+            public @Override void resultChanged(LookupEvent ev) {
                 synchronized (AntBasedProjectFactorySingleton.class) {
                     Set<AntBasedProjectType> oldTypes = type2Projects.keySet();
                     Set<AntBasedProjectType> removed  = new HashSet<AntBasedProjectType>(oldTypes);
@@ -162,7 +162,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         return antBasedProjectTypesByType.get(type);
     }
     
-    public boolean isProject(FileObject dir) {
+    public @Override boolean isProject(FileObject dir) {
         File dirF = FileUtil.toFile(dir);
         if (dirF == null) {
             return false;
@@ -173,7 +173,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         return projectXmlF.isFile();
     }
 
-    public Result isProject2(FileObject projectDirectory) {
+    public @Override Result isProject2(FileObject projectDirectory) {
         if (FileUtil.toFile(projectDirectory) == null) {
             return null;
         }
@@ -214,7 +214,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
     }
 
     
-    public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+    public @Override Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         if (FileUtil.toFile(projectDirectory) == null) {
             LOG.log(Level.FINE, "no disk dir {0}", projectDirectory);
             return null;
@@ -272,7 +272,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         if (o == null) {
             b.append("null");
         } else {
-            Class t = o.getClass();
+            Class<?> t = o.getClass();
             if (t.isArray()) {
                 Object[] arr = o instanceof Object[] ? (Object[]) o : Utilities.toObjectArray(o);
                 b.append('[');
@@ -297,14 +297,11 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
     }
     private void dumpFields(Object o) {
-        if (!System.getProperty("java.class.path").contains("junit")) {
-            return;
-        }
         if (LOG.isLoggable(Level.FINE)) {
-            Class implClass = o.getClass();
+            Class<?> implClass = o.getClass();
             StringBuilder b = new StringBuilder("Fields of a(n) ").append(implClass.getName());
             try {
-                for (Class c = implClass; c != null; c = c.getSuperclass()) {
+                for (Class<?> c = implClass; c != null; c = c.getSuperclass()) {
                     for (Field f : c.getDeclaredFields()) {
                         if ((f.getModifiers() & Modifier.STATIC) > 0) {
                             continue;
@@ -392,7 +389,6 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
                     Element corrected = ProjectXMLCatalogReader.autocorrect(projectEl, x);
                     if (corrected != null) {
                         projectXml.replaceChild(corrected, projectEl);
-                        projectEl = corrected;
                         // Try to correct on disk if possible.
                         // (If not, any changes from the IDE will write out a corrected file anyway.)
                         if (projectDiskFile.canWrite()) {
@@ -410,7 +406,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             }
             return projectXml;
         } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
+            IOException ioe = new IOException(projectDiskFile + ": " + e, e);
             String msg = e.getMessage().
                     // org/apache/xerces/impl/msg/XMLSchemaMessages.properties validation (3.X.4)
                     replaceFirst("^cvc-[^:]+: ", ""). // NOI18N
@@ -422,15 +418,15 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
     }
 
-    public void saveProject(Project project) throws IOException, ClassCastException {
+    public @Override void saveProject(Project project) throws IOException, ClassCastException {
         Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
             StringBuilder sBuff = new StringBuilder();
-            sBuff.append(project.getClass().getName() + "\n"); // NOI18N
-            sBuff.append("argument project: " + project + " => " + project.hashCode() + "\n"); // NOI18N
+            sBuff.append(project.getClass().getName()).append('\n'); // NOI18N
+            sBuff.append("argument project: ").append(project).append(" => ").append(project.hashCode()).append('\n'); // NOI18N
             sBuff.append("project2Helper keys: " + "\n"); // NOI18N
             for (Project prj : project2Helper.keySet()) {
-                sBuff.append("    project: " + prj + " => " + prj.hashCode() + "\n"); // NOI18N
+                sBuff.append("    project: ").append(prj).append(" => ").append(prj.hashCode()).append('\n'); // NOI18N
             }
             throw new ClassCastException(sBuff.toString());
         }
@@ -487,7 +483,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         assert HELPER_CALLBACK != null;
     }
 
-    public static AntBasedProjectType create(Map map) {
+    public static AntBasedProjectType create(Map<?,?> map) {
         return new AntBasedGenericType(map);
     }
 

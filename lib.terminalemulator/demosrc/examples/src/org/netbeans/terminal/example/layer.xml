@@ -18,6 +18,12 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
             </file>
+            <file name="org-netbeans-terminal-example-comprehensive-SelectLastAction.instance">
+                <attr name="delegate" newvalue="org.netbeans.terminal.example.comprehensive.SelectLastAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.comprehensive.Bundle#CTL_SelectLastAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
         </folder>
         <folder name="Window">
             <file name="org-netbeans-terminal-example-ShellTermAction.instance"/>
@@ -44,6 +50,10 @@
             <file name="org-netbeans-terminal-example-comprehensive-CommandTerminalAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Terminals/org-netbeans-terminal-example-comprehensive-CommandTerminalAction.instance"/>
                 <attr name="position" intvalue="-50"/>
+            </file>
+            <file name="org-netbeans-terminal-example-comprehensive-SelectLastAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Terminals/org-netbeans-terminal-example-comprehensive-SelectLastAction.instance"/>
+                <attr name="position" intvalue="502"/>
             </file>
             <file name="org-netbeans-terminal-example-iofeatures-IOfeaturesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-terminal-example-iofeatures-IOFeaturesAction.instance"/>

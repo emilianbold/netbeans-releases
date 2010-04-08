@@ -43,11 +43,12 @@
 #define _XOPEN_SOURCE 600
 #define _BSD_SOURCE
 #include <termios.h>
+#else
+#include <stropts.h>
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stropts.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -59,13 +60,14 @@
 static pid_t pty_fork();
 
 int main(int argc, char* argv[]) {
-    pid_t pid;
+    pid_t pid, w;
+    int status;
     char *pty = NULL;
 
     int c;
     int err_flag = 0;
 
-    while ((c = getopt(argc, argv, "p:")) != EOF) {
+    while (pty == NULL && (c = getopt(argc, argv, "p:")) != EOF) {
         switch (c) {
             case 'p':
                 pty = optarg;
@@ -166,7 +168,12 @@ int main(int argc, char* argv[]) {
     // Flush out the PID message before we take away stdout
     fflush(stdout);
 
-    waitpid(pid, NULL, 0);
-}
+    w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+    
+    if (w != -1 && WIFEXITED(status)) {
+        exit(WEXITSTATUS(status));
+    }
 
+    exit(EXIT_FAILURE);
+}
 

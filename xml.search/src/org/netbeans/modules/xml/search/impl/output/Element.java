@@ -48,36 +48,31 @@ import org.netbeans.modules.xml.search.api.SearchElement;
  */
 final class Element extends SearchElement.Adapter {
 
-  public Element(SearchElement element) {
-    super(
-      getName(element),
-      element.getToolTip(),
-      element.getIcon(),
-      null);
-
-    myElement = element;
-  }
-
-  @Override
-  public void gotoSource() {
-    myElement.gotoSource();
-  }
-
-  @Override
-  public void gotoVisual() {
-    myElement.gotoVisual();
-  }
-
-  private static String getName(SearchElement element) {
-    StringBuffer name = new StringBuffer(element.getName());
-    SearchElement parent = element.getParent();
-
-    while (parent != null) {
-      name.insert(0, parent.getName() + "."); // NOI18N
-      parent = parent.getParent();
+    public Element(SearchElement element) {
+        super(getName(element), element.getToolTip(), element.getIcon(), null);
+        myElement = element;
     }
-    return name.toString();
-  }
 
-  private SearchElement myElement;
+    @Override
+    public void gotoSource() {
+        myElement.gotoSource();
+    }
+
+    @Override
+    public void gotoVisual() {
+        myElement.gotoVisual();
+    }
+
+    private static String getName(SearchElement element) {
+        StringBuilder name = new StringBuilder(element.getName());
+        SearchElement parent = element.getParent();
+
+        while (parent != null) {
+            name.insert(0, parent.getName() + "."); // NOI18N
+            parent = parent.getParent();
+        }
+        return name.toString();
+    }
+
+    private SearchElement myElement;
 }

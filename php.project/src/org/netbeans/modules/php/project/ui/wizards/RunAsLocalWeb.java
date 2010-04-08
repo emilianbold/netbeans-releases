@@ -108,11 +108,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             textFields[i].getDocument().addDocumentListener(dl);
         }
         copyFilesVisual.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 changeSupport.fireChange();
             }
         });
         runAsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
@@ -144,12 +146,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         return runAsCombo;
     }
 
+    @Override
     protected void loadFields() {
         for (int i = 0; i < textFields.length; i++) {
             textFields[i].setText(getValue(propertyNames[i]));
         }
     }
 
+    @Override
     protected void validateFields() {
         // validation is done in RunConfigurationPanel
         changeSupport.fireChange();
@@ -169,6 +173,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             super(propName, label, field);
         }
 
+        @Override
         protected final String getDefaultValue() {
             return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }

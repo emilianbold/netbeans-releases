@@ -223,25 +223,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m"/>
     </target>
 
-    <target name="-conditional-javadoc-init" depends="-conditional-16-init">
-        <condition property="skip.javadoc">
-            <or>
-                <isset property="skip.16"/>
-                <and>
-                    <isset property="config.javadoc.cluster"/>
-                    <not>
-                        <equals arg1="${cluster.dir}" arg2="${config.javadoc.cluster}"/>
-                    </not>
-                </and>                
-            </or>
-        </condition>
-    </target>
-    
-    <target name="-conditional-javadoc-warn" depends="-conditional-javadoc-init" if="skip.16">
-        <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.6"/>
-    </target>
-
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.javadoc">
+    <target name="javadoc" depends="build-init,-javadoc-init">
         <path id="javadoc.classpath">
             <path refid="cp"/>
             <path path="${module.run.classpath}"/><!-- XXX #157320: JDK 5 bug workaround -->
@@ -284,27 +266,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
     
-    <target name="netbeans-javadoc" depends="netbeans,javadoc" />
-    
-    <target name="-conditional-16-init" depends="basic-init">
-        <condition property="skip.16">
-            <and>
-                <equals arg1="1.6" arg2="${javac.target}"/>
-                <not>
-                    <available classname="java.util.NavigableMap"/>
-                </not>
-            </and>
-        </condition>
-    </target>
-    
-    <target name="-conditional-nbm-warn" depends="-conditional-16-init" if="skip.16">
-        <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.6"/>
-    </target>
-    
-    <target name="conditional-nbm" unless="skip.16" depends="-conditional-nbm-warn">
-        <antcall target="nbm"/>
-    </target>
-
     <target name="-create-dest-dir-nbm" depends="init">
         <mkdir dir="${nbm.target.dir}"/> 
     </target>

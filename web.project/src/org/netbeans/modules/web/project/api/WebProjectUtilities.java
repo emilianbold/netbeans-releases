@@ -724,7 +724,7 @@ public class WebProjectUtilities {
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); // NOI18N
-        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
@@ -748,8 +748,6 @@ public class WebProjectUtilities {
         
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
-        
-        ep.setProperty(WebProjectProperties.JSPCOMPILATION_CLASSPATH, "${jspc.classpath}:${javac.classpath}");
         
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         

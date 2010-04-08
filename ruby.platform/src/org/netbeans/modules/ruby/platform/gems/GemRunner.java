@@ -334,7 +334,8 @@ final class GemRunner {
         // problem with inheriting the process environment (RUBYLIB)
         // I've not found any switches to force the RUBYLIB to be inherited.
         File gemToolDir = new File(platform.getGemTool()).getParentFile().getParentFile();
-        argList.add("-I" + gemToolDir + File.separator + "lib"); // NOI18N
+        // always use forward slashes in the load path, even on Win
+        argList.add("-I" + gemToolDir + "/" + "lib"); // NOI18N
 
         argList.add(platform.getGemTool());
         argList.add(gemCommand);

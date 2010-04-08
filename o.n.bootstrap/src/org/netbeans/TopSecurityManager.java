@@ -170,6 +170,13 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
 
+    private void notifyRead(String file) {
+        SecurityManager s = getSecurityManager();
+        if (s != null) {
+            s.checkRead(file);
+        }
+    }
+
     private void notifyWrite(String file) {
         SecurityManager s = getSecurityManager();
         if (s != null) {
@@ -286,7 +293,7 @@ public class TopSecurityManager extends SecurityManager {
      * it reduces performance penalty of startup about 10%
      */
     public @Override void checkRead(String file) {
-        // XXX reconsider!
+        notifyRead(file);
     }
     
     public @Override void checkRead(FileDescriptor fd) {

@@ -43,6 +43,7 @@ import java.util.Map;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.CLIODCConfiguration;
 import org.netbeans.modules.dlight.collector.stdout.CLIOParser;
+import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**
  *
@@ -94,4 +95,6 @@ public abstract class CLIODCConfigurationAccessor {
     public abstract Map<String, String> getDLightTargetExecutionEnv(CLIODCConfiguration configuration);
 
     public abstract boolean registerAsIndicatorDataProvider(CLIODCConfiguration configuration);
+
+    public abstract DataStorageType getDataStorageType(CLIODCConfiguration configuration);
 }

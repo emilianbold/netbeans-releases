@@ -72,6 +72,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -376,12 +377,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             LifecycleManager.getDefault().saveAll();
-            exec.showLocalDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            exec.showDiff(group, Setup.DIFFTYPE_LOCAL);
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            exec.showRemoteDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_REMOTE);
+            exec.showDiff(group, Setup.DIFFTYPE_REMOTE);
         } else {
             LifecycleManager.getDefault().saveAll();
-            exec.showAllDiff(group);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
+            exec.showDiff(group, Setup.DIFFTYPE_ALL);
         }
     }
     
@@ -419,7 +423,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
                 }
             }
         });
-        RequestProcessor.getDefault().post(new Runnable() {
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
             public void run() {
                 refreshCommandGroup.execute();
             }
@@ -429,14 +433,17 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Local"));
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_REMOTE);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Remote"));
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
+            CvsModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_All"));
         }
     }

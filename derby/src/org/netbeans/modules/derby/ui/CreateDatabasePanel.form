@@ -16,20 +16,22 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="databaseNameLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="databaseLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="retypePasswordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="retypePassword" pref="296" max="32767" attributes="0"/>
                   <Component id="databaseNameTextField" alignment="0" pref="296" max="32767" attributes="0"/>
-                  <Component id="passwordTextField" alignment="0" pref="296" max="32767" attributes="0"/>
+                  <Component id="password" alignment="0" pref="296" max="32767" attributes="0"/>
                   <Component id="userTextField" alignment="0" pref="296" max="32767" attributes="0"/>
-                  <Component id="databaseLocationValueLabel" min="-2" pref="296" max="-2" attributes="0"/>
+                  <Component id="databaseLocationValueLabel" alignment="0" pref="296" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="propertiesButton" min="-2" max="-2" attributes="0"/>
@@ -39,7 +41,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" max="-2" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="databaseNameLabel" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -50,18 +52,23 @@
                   <Component id="userLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="userTextField" linkSize="1" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="passwordLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordTextField" linkSize="1" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="password" linkSize="1" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" max="-2" attributes="0">
+                  <Component id="retypePasswordLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="retypePassword" alignment="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="databaseLocationLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="propertiesButton" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="databaseLocationValueLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="propertiesButton" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="17" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -117,14 +124,14 @@
     <Component class="javax.swing.JLabel" name="passwordLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="passwordTextField"/>
+          <ComponentRef name="password"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_Password" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="passwordTextField">
+    <Component class="javax.swing.JPasswordField" name="password">
       <Properties>
         <Property name="columns" type="int" value="15"/>
       </Properties>
@@ -166,6 +173,21 @@
           <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="ACSD_CreateDatabasePanel_databaseLocationValueLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="retypePasswordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="retypePassword"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_RetypePassword" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="retypePassword">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

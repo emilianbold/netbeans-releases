@@ -87,6 +87,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
     private Lookup.Result lookupRes;
 
     private Object currentToken;
+
+    private static final RequestProcessor RP = new RequestProcessor("PaletteSwitch"); //NOI18N
     
     /** Creates a new instance of PaletteSwitcher */
     private PaletteSwitch() {
@@ -134,6 +136,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return currentPalette;
     }
     
+    @Override
     public void run() {
         if( !SwingUtilities.isEventDispatchThread() ) {
             SwingUtilities.invokeLater( this );
@@ -153,7 +156,8 @@ final class PaletteSwitch implements Runnable, LookupListener {
         final PaletteController existingPalette = currentPalette;
         final boolean isMaximized = isPaletteMaximized();
         final Object token = currentToken;
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
+            @Override
             public void run() {
                 findNewPalette(existingPalette, activeTc, openedEditors, isMaximized, token);
             }

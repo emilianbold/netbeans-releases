@@ -44,12 +44,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -73,7 +74,9 @@ import org.xml.sax.Attributes;
 public class ConfigurationXMLReader extends XMLDocReader {
 
     private static int DEPRECATED_VERSIONS = 26;
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private FileObject projectDirectory;
+    private final static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("ConfigurationXMLReader", 10);//NOI18N
 
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
@@ -104,7 +107,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         }
         String path = FileUtil.toFile(projectDirectory).getPath();
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
-        Task task = RequestProcessor.getDefault().post(new NamedRunnable("Reading project configuraion") { //NOI18N
+        Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected @Override void runImpl() {
                 try {
@@ -224,14 +227,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     // Attach listeners to all disk folders
     private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
-        Task task = RequestProcessor.getDefault().post(new Runnable() {
+        Task task = REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
-                long time = 0;
-                if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                    time = System.currentTimeMillis();
-                    System.err.println("Start attach folder listeners");
-                }
+                long time = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Start attach folder listeners");
                 String oldName = Thread.currentThread().getName();
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
@@ -244,9 +244,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                         }
                     }
                     //configurationDescriptor.setModified(currentState);
-                    if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
-                        System.err.println("End attach folder listeners, time "+(System.currentTimeMillis()-time)+"ms.");
-                    }
+                    LOGGER.log(Level.FINE, "End attach folder listeners, time {0}ms.", (System.currentTimeMillis() - time));
                 } finally {
                     // restore thread name - it might belong to the pool
                     Thread.currentThread().setName(oldName);

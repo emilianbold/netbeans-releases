@@ -378,6 +378,7 @@ final class ResultView extends TopComponent {
         assert EventQueue.isDispatchThread();
 
         Manager.getInstance().searchWindowClosed();
+        closeAll(false); // #170545
     }
     
     /**

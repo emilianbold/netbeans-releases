@@ -78,7 +78,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
@@ -88,13 +87,13 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -231,14 +230,15 @@ public class CommitAction extends ContextAction {
         dialog.setVisible(true);
 
         final String message = panel.getCommitMessage().trim();
-        if (!message.isEmpty()) {
-            HgModuleConfig.getDefault().setLastCommitMessage(message);
+        if (dd.getValue() != commitButton && !message.isEmpty()) {
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
         } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
@@ -481,23 +481,29 @@ public class CommitAction extends ContextAction {
             }
             final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh);
             commitCmd.setCommitHooks(context, hooks, hookFiles);
-            IndexingBridge.getInstance().runWithoutIndexing(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    commitCmd.handle();
-                    return null;
-                }
-            }, commitCandidates.keySet().toArray(new File[commitCandidates.keySet().size()]));
+            commitCmd.handle();
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
-        } catch (Exception ex) {
-            Mercurial.LOG.log(Level.INFO, "Cannot run commit with disabled indexing", ex); //NOI18N
         } finally {
+            refreshFS(filesToRefresh);
             cache.refreshAllRoots(filesToRefresh);
             logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             logger.output(""); // NOI18N
         }
+    }
+
+    private static void refreshFS (Map<File, Set<File>> filesPerRepository) {
+        final Set<File> files = new HashSet<File>();
+        for (Set<File> values : filesPerRepository.values()) {
+            files.addAll(values);
+        }
+        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                FileUtil.refreshFor(files.toArray(new File[files.size()]));
+            }
+        }, 100);
     }
 
     private static void putCandidate(Map<File, List<File>> m, File repository, File file) {

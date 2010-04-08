@@ -144,7 +144,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     }        
 
     private static void scheduleTask(Runnable runnable) {          
-        RequestProcessor.Task task = RequestProcessor.getDefault().create(runnable);        
+        RequestProcessor.Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(runnable);
         task.schedule(0);        
     }
 

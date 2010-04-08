@@ -43,7 +43,7 @@ package org.netbeans.modules.xml.search.impl.ui;
 import java.awt.Event;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -64,7 +64,7 @@ import org.netbeans.modules.xml.search.api.SearchOption;
 import org.netbeans.modules.xml.search.spi.SearchEngine;
 import org.netbeans.modules.xml.search.spi.SearchListener;
 import org.netbeans.modules.xml.search.spi.SearchProvider;
-import static org.netbeans.modules.xml.ui.UI.*;
+import static org.netbeans.modules.xml.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -72,146 +72,145 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public final class Find extends SearchControlPanel {
 
-  public Find(List<SearchEngine> engines, Object root, JComponent parent) {
-    super();
-    bindAction(parent);
-    myProviders = new LinkedList<Provider>();
-    SearchProvider provider = new SearchProvider.Adapter(root);
+    public Find(List<SearchEngine> engines, Object root, JComponent parent) {
+        super();
+        bindAction(parent);
+        myProviders = new ArrayList<Provider>();
+        SearchProvider provider = new SearchProvider.Adapter(root);
 
-    for (SearchEngine engine : engines) {
-      myProviders.add(new Provider(engine, provider));
+        for (SearchEngine engine : engines) {
+            myProviders.add(new Provider(engine, provider));
+        }
+        setProviders(myProviders);
     }
-    setProviders(myProviders);
-  }
 
-  @Override
-  public void setEnabled(boolean enabled) {
-    super.setEnabled(enabled);
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
 
-    if (enabled) {
-      return;
+        if (enabled) {
+            return;
+        }
+        for (Provider provider : myProviders) {
+            provider.release();
+        }
     }
-    for (Provider provider : myProviders) {
-      provider.release();
-    }
-  }
 
-  @Override
-  protected void hideResults() {
+    @Override
+    protected void hideResults() {
 //out("Hide selection");
-    if (myElements == null) {
-      return;
+        if (myElements == null) {
+            return;
+        }
+        for (Object element : myElements) {
+            ((SearchElement) element).unhighlight();
+        }
+        myElements = null;
     }
-    for (Object element : myElements) {
-      ((SearchElement) element).unhighlight();
-    }
-    myElements = null;
-  }
 
-  @Override
-  protected void showSearchResult(Object object) {
+    @Override
+    protected void showSearchResult(Object object) {
 //out("show result");
-    if ( !(object instanceof SearchElement)) {
-      return;
-    }
-    ((SearchElement) object).gotoVisual();
-  }
-
-  private void bindAction(JComponent parent) {
-    FindAction findAction = (FindAction) FindAction.get(FindAction.class);
-    Object key = findAction.getActionMapKey();
-    parent.getActionMap().put(key, new AbstractAction () {
-      public void actionPerformed(ActionEvent event) {
-        setVisible(true);
-      }
-    });
-    InputMap keys =
-      parent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    KeyStroke stroke = (KeyStroke) findAction.getValue(Action.ACCELERATOR_KEY);
-
-    if (stroke == null) {
-      stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
-    }
-    keys.put(stroke, key);
-  }
-
-  // ------------------------------------------------------------------------------------------------------------
-  private final class Provider implements org.netbeans.modules.xml.xam.ui.search.SearchProvider, SearchListener {
-    private Provider(SearchEngine engine, SearchProvider provider) {
-      mySearchEngine = engine;
-      mySearchEngine.addSearchListener(this);
-      myProvider = provider;
+        if (!(object instanceof SearchElement)) {
+            return;
+        }
+        ((SearchElement) object).gotoVisual();
     }
 
-    void release() {
-      mySearchEngine.removeSearchListeners();
+    private void bindAction(JComponent parent) {
+        FindAction findAction = (FindAction) FindAction.get(FindAction.class);
+        Object key = findAction.getActionMapKey();
+        parent.getActionMap().put(key, new AbstractAction() {
+            public void actionPerformed(ActionEvent event) {
+                setVisible(true);
+            }
+        });
+        InputMap keys = parent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        KeyStroke stroke = (KeyStroke) findAction.getValue(Action.ACCELERATOR_KEY);
+
+        if (stroke == null) {
+            stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
+        }
+        keys.put(stroke, key);
     }
 
-    public String getDisplayName() {
-      return mySearchEngine.getDisplayName();
-    }
+    // ------------------------------------------------------------------------------------------------------------
+    private final class Provider implements org.netbeans.modules.xml.xam.ui.search.SearchProvider, SearchListener {
 
-    public String getShortDescription() {
-      return mySearchEngine.getShortDescription();
-    }
+        private Provider(SearchEngine engine, SearchProvider provider) {
+            mySearchEngine = engine;
+            mySearchEngine.addSearchListener(this);
+            myProvider = provider;
+        }
 
-    public String getInputDescription() {
-      return i18n(Provider.class, "LBL_Input_Description"); // NOI18N
-    }
+        void release() {
+            mySearchEngine.removeSearchListeners();
+        }
 
-    public List<Object> search(Query query) throws org.netbeans.modules.xml.xam.ui.search.SearchException {
-      SearchMatch match = getMatch(query);
-      String text = getText(query, match);
+        public String getDisplayName() {
+            return mySearchEngine.getDisplayName();
+        }
 
-      SearchOption option = new SearchOption.Adapter(
-        text,
-        myProvider,
-        null, // target
-        match,
-        false, // case sensitive
-        query.useSelected());
+        public String getShortDescription() {
+            return mySearchEngine.getShortDescription();
+        }
 
-      try {
-        mySearchEngine.search(option);
-      }
-      catch (SearchException e) {
-        throw new org.netbeans.modules.xml.xam.ui.search.SearchException(
-          e.getMessage(), e);
-      }
+        public String getInputDescription() {
+            return i18n(Provider.class, "LBL_Input_Description"); // NOI18N
+        }
+
+        public List<Object> search(Query query) throws org.netbeans.modules.xml.xam.ui.search.SearchException {
+            SearchMatch match = getMatch(query);
+            String text = getText(query, match);
+
+            SearchOption option = new SearchOption.Adapter(
+                text,
+                myProvider,
+                null, // target
+                match,
+                false, // case sensitive
+                query.useSelected()
+            );
+            try {
+                mySearchEngine.search(option);
+            } catch (SearchException e) {
+                throw new org.netbeans.modules.xml.xam.ui.search.SearchException(e.getMessage(), e);
+            }
 //out("returned: " + myElements);
-      return myElements;
+            return myElements;
+        }
+
+        private SearchMatch getMatch(Query query) {
+            if (query.isRegularExpression()) {
+                return SearchMatch.REGULAR_EXPRESSION;
+            }
+            return SearchMatch.PATTERN;
+        }
+
+        private String getText(Query query, SearchMatch match) {
+            String text = query.getQuery().trim();
+
+            if (match == SearchMatch.PATTERN) {
+                return "*" + text + "*"; // NOI18N
+            }
+            return text;
+        }
+
+        public void searchStarted(SearchEvent event) {
+            myElements = new ArrayList<Object>();
+        }
+
+        public void searchFound(SearchEvent event) {
+            myElements.add(event.getSearchElement());
+        }
+
+        public void searchFinished(SearchEvent event) {
+        }
+    
+        private SearchProvider myProvider;
+        private SearchEngine mySearchEngine;
     }
 
-    private SearchMatch getMatch(Query query) {
-      if (query.isRegularExpression()) {
-        return SearchMatch.REGULAR_EXPRESSION;
-      }
-      return SearchMatch.PATTERN;
-    }
-
-    private String getText(Query query, SearchMatch match) {
-      String text = query.getQuery().trim();
-
-      if (match == SearchMatch.PATTERN) {
-        return "*" + text + "*"; // NOI18N
-      }
-      return text;
-    }
-
-    public void searchStarted(SearchEvent event) {
-      myElements = new LinkedList<Object>();
-    }
-
-    public void searchFound(SearchEvent event) {
-      myElements.add(event.getSearchElement());
-    }
-
-    public void searchFinished(SearchEvent event) {}
-
-    private SearchProvider myProvider;
-    private SearchEngine mySearchEngine;
-  }
-
-  private List<Object> myElements;
-  private List<Provider> myProviders;
+    private List<Object> myElements;
+    private List<Provider> myProviders;
 }

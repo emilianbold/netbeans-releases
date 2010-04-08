@@ -42,17 +42,12 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -79,20 +74,12 @@ import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataM
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -100,6 +87,7 @@ import org.openide.util.RequestProcessor;
  * @author Andrei Badea
  */
 public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
+    private static final RequestProcessor RP = new RequestProcessor(J2SEPersistenceProvider.class.getName(), 1, false, false);
 
     private final J2SEProject project;
     private final ClassPathProviderImpl cpProvider;
@@ -156,9 +144,9 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
     @Override
     public PersistenceScope findPersistenceScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            J2SEPersistenceProvider provider = project.getLookup().lookup(J2SEPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            J2SEPersistenceProvider provider = proj.getLookup().lookup(J2SEPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -166,9 +154,9 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
     @Override
     public EntityClassScope findEntityClassScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            J2SEPersistenceProvider provider = project.getLookup().lookup(J2SEPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            J2SEPersistenceProvider provider = proj.getLookup().lookup(J2SEPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -296,7 +284,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     private void puChanged() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
@@ -305,12 +293,12 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                     public void run() {
                         EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String ap = prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
-
+                        boolean changed = false;
                         if (ap == null) {
                             ap = "";
                         }
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
-                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
+                        if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             SourceGroup firstGroup = groups[0];
@@ -324,14 +312,21 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                                 if( turnOn ) {
                                     prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "false");//NOI18N
                                 }
-                                project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
-                                try {
-                                    ProjectManager.getDefault().saveProject(project);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
+                                changed = true;
+                            }
+                        }
+                        if (!J2SEProjectUtil.isTrue(prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))) {
+                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true");    //NOI18N
+                            changed = true;
+                        }
+                        if (changed) {
+                            project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                            try {
+                                ProjectManager.getDefault().saveProject(project);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                     }

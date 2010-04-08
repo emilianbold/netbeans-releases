@@ -146,7 +146,7 @@ public class KenaiConnection implements PropertyChangeListener {
         String kenaiUrl = "https://" + room.substring(room.indexOf("@muc.")+"@muc.".length());
         Kenai kenai = KenaiManager.getDefault().getKenai(kenaiUrl);
         try {
-            return kenai.getProject(room.substring(0, room.indexOf("@muc.")));
+            return kenai.getProject(room.substring(0, room.indexOf("@muc."))); // NOI18N
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -160,9 +160,9 @@ public class KenaiConnection implements PropertyChangeListener {
 
     public static Kenai getKenai(String jid) {
         Utilities.assertJid(jid);
-        int index = jid.indexOf("@muc.");
+        int index = jid.indexOf("@muc."); // NOI18N
         if (index<0) {
-            index = jid.indexOf("@") + 1;
+            index = jid.indexOf("@") + 1; // NOI18N
         } else {
             index+=5;
         }

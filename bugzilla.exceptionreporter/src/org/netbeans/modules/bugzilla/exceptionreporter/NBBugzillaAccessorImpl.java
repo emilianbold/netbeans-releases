@@ -41,6 +41,7 @@ package org.netbeans.modules.bugzilla.exceptionreporter;
 
 import org.netbeans.lib.uihandler.NBBugzillaAccessor;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -50,8 +51,13 @@ import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
 
     @Override
-    public void openIssue(String issueID) {
-        NBBugzillaUtils.openIssue(issueID);
+    public void openIssue(final String issueID) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                NBBugzillaUtils.openIssue(issueID);
+            }
+        });
     }
 
     @Override

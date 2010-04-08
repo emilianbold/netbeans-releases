@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,7 +54,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
- * Lite weight service that gets command line from binary file in case Sun Studio compiler
+ * Light weight service that gets command line from binary file in case Sun Studio compiler
  *
  * @author Alexander Simon
  */
@@ -61,6 +63,70 @@ public class CompileLineService {
     private static final boolean TRACE_READ_EXCEPTIONS = false;
 
     private CompileLineService() {
+    }
+
+    public static void main(String[] args){
+        if (args.length < 2) {
+            System.err.println("Not enough parameters."); // NOI18N
+            System.err.println("Usage:"); // NOI18N
+            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -file binaryFileName"); // NOI18N
+            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -folder folderName"); // NOI18N
+            return;
+        }
+        try {
+            dump(args[0], args[1], System.out);
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static void dump(String kind, String objFileName, PrintStream out) throws IOException, Exception {
+        List<SourceFile> res = null;
+        if ("-file".equals(kind)){ // NOI18N
+            res = getSourceFileProperties(objFileName);
+        } else if ("-folder".equals(kind)){ // NOI18N
+            res = getSourceFolderProperties(objFileName);
+        } else {
+            throw new Exception("Wrong arguments: "+kind+" "+objFileName); // NOI18N
+        }
+        for(SourceFile entry : res) {
+            out.println(entry.compileDir);
+            out.println(entry.sourceFile);
+            out.println(entry.compileLine);
+        }
+    }
+
+    public static List<SourceFile> getSourceProperties(BufferedReader out) throws IOException {
+        return readSourceProperties(out);
+    }
+
+    private static List<SourceFile> readSourceProperties(BufferedReader out) throws IOException {
+        List<SourceFile> list = new ArrayList<SourceFile>();
+        String line;
+        String compileDir = null;
+        String sourceFile = null;
+        String compileLine = null;
+        int i = 0;
+        while ((line=out.readLine())!= null){
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            switch (i%3) {
+                case 0:
+                    compileDir = line;
+                    break;
+                case 1:
+                    sourceFile = line;
+                    break;
+                case 2:
+                    compileLine = line;
+                    list.add(new SourceFile(compileDir, sourceFile, compileLine));
+                    break;
+            }
+            i++;
+        }
+        return list;
     }
 
     // valid on Solaris or Linux
@@ -142,10 +208,11 @@ public class CompileLineService {
         private List<String> userPaths;
 
         private SourceFile(CompilationUnit cu) throws IOException, Exception {
-            compileLine = cu.getCommandLine();
-            if (compileLine == null) {
+            String s = cu.getCommandLine();
+            if (s == null) {
                 throw new Exception("Dwarf information does not contain compile line");  // NOI18N
             }
+            compileLine = s.trim();
             compileDir = cu.getCompilationDir();
             if (compileDir == null) {
                 throw new Exception("Dwarf information does not contain compile dir");  // NOI18N
@@ -154,6 +221,12 @@ public class CompileLineService {
             if (sourceFile == null) {
                 throw new Exception("Dwarf information does not contain source file name");  // NOI18N
             }
+        }
+
+        private SourceFile( String compileDir, String sourceFile, String compileLine) {
+            this.compileLine = compileLine;
+            this.compileDir = compileDir;
+            this.sourceFile = sourceFile;
         }
 
         public final String getCompileDir() {

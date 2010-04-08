@@ -74,7 +74,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes().length > 0;
+        return CvsVersioningSystem.getInstance().getStatusCache().listFiles(getContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).length > 0;
     }
 
     public void performCvsAction(Node[] nodes) {
@@ -93,7 +93,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(ResolveConflictsAction.class, "MSG_MoveAwayLocalFileConflict", file.getName())));
             } else {
-                RequestProcessor.getDefault().post(new Runnable() {
+                CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                     public void run() {
                         ResolveConflictsExecutor rce = new ResolveConflictsExecutor();
                         rce.exec(file);

@@ -68,6 +68,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -220,6 +221,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
+    public boolean isProtectedModeOwner(final Thread thread) {
+        return getWorker().isProtectedModeOwner(thread);
+    }
+
     public boolean isIndexer() {
         return inIndexer.get() == Boolean.TRUE;
     }
@@ -366,7 +371,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for(PathRegistryEvent.Change c : event.getChanges()) {
                 sb.append(" event=").append(c.getEventKind()); //NOI18N
                 sb.append(" pathKind=").append(c.getPathKind()); //NOI18N
-                sb.append(" pathType=").append(c.getPathType()); //NOI18N
+                sb.append(" pathType=").append(c.getPathId()); //NOI18N
                 sb.append(" affected paths:\n"); //NOI18N
                 Collection<? extends ClassPath> paths = c.getAffectedPaths();
                 if (paths != null) {
@@ -387,7 +392,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         for(PathRegistryEvent.Change c : event.getChanges()) {            
 
             containsRelevantChanges = true;
-            if (c.getEventKind() == EventKind.PATHS_CHANGED || c.getEventKind() == EventKind.INCLUDES_CHANGED) {
+            if (c.getEventKind() == EventKind.PATHS_CHANGED) {
                 existingPathsChanged = true;
                 break;
             }
@@ -781,6 +786,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test"); //NOI18N
     private static final boolean notInterruptible = Boolean.getBoolean("netbeans.indexing.notInterruptible"); //NOI18N
+    private static final boolean noRecursiveListener = Boolean.getBoolean("netbeans.indexing.notRecursiveListener");    //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
     private static final String PROP_LAST_INDEXED_VERSION = RepositoryUpdater.class.getName() + "-last-indexed-document-version"; //NOI18N
     private static final String PROP_LAST_DIRTY_VERSION = RepositoryUpdater.class.getName() + "-last-dirty-document-version"; //NOI18N
@@ -3177,7 +3183,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
                             delete(deleted, root);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers,invalidatedMap)) {
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
                                 crawler.storeTimestamps();
                                 outOfDateFiles[0] = resources.size();
                                 deletedFiles[0] = deleted.size();
@@ -3285,7 +3291,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 assert work != null;
                 if (!allCancelled) {
                       if (wait && Utilities.holdsParserLock()) {
-                        if (protectedMode == 0) {
+                        if (protectedOwners.isEmpty()) {
                             enforceWork = true;
                         } else {
                             // XXX: #176049, this may happen now when versioning uses
@@ -3319,7 +3325,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
                         }
                         
-                        if (!scheduled && protectedMode == 0) {
+                        if (!scheduled && protectedOwners.isEmpty()) {
                             scheduled = true;
                             Utilities.scheduleSpecialTask(this);
                         }
@@ -3366,20 +3372,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public boolean isWorking() {
             synchronized (todo) {
-                return scheduled || protectedMode > 0;
+                return scheduled || !protectedOwners.isEmpty();
             }
         }
 
         public void enterProtectedMode() {
             synchronized (todo) {
-                protectedMode++;
-                LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedMode); //NOI18N
+                protectedOwners.add(Thread.currentThread().getId());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Entering protected mode: {0}", protectedOwners.size()); //NOI18N
+                }
             }
         }
 
         public void exitProtectedMode(Runnable followupTask) {
             synchronized (todo) {
-                if (protectedMode <= 0) {
+                if (protectedOwners.isEmpty()) {
                     throw new IllegalStateException("Calling exitProtectedMode without enterProtectedMode"); //NOI18N
                 }
 
@@ -3390,11 +3398,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     followupTasks.add(followupTask);
                 }
+                protectedOwners.remove(Thread.currentThread().getId());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedOwners.size()); //NOI18N
+                }
 
-                protectedMode--;
-                LOGGER.log(Level.FINE, "Exiting protected mode: {0}", protectedMode); //NOI18N
-
-                if (protectedMode == 0) {
+                if (protectedOwners.isEmpty()) {
                     // in normal mode again, restart all delayed jobs
                     final List<Runnable> tasks = followupTasks;
 
@@ -3426,7 +3435,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public boolean isInProtectedMode() {
             synchronized (todo) {
-                return protectedMode > 0;
+                return !protectedOwners.isEmpty();
+            }
+        }
+
+        public boolean isProtectedModeOwner (final Thread thread) {
+            synchronized (todo) {
+                return protectedOwners.contains(thread.getId());
             }
         }
 
@@ -3522,7 +3537,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean scheduled = false;
         private boolean allCancelled = false;
         private boolean cancelled = false;
-        private int protectedMode = 0;
+        private List<Long> protectedOwners = new LinkedList<Long>();
         private List<Runnable> followupTasks = null;
 
         private void _run() {
@@ -3576,7 +3591,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private Work getWork () {
             synchronized (todo) {
                 Work w;
-                if (!cancelled && protectedMode == 0 && todo.size() > 0) {
+                if (!cancelled && protectedOwners.isEmpty() && todo.size() > 0) {
                     w = todo.remove(0);
                 } else {
                     w = null;
@@ -3853,12 +3868,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private static final class RootsListeners {
 
-        private static final RequestProcessor RP = new RequestProcessor("Recursive Listener Init", 1, true);
-        
         private FileChangeListener sourcesListener = null;
         private FileChangeListener binariesListener = null;
         private final Map<URL, File> sourceRoots = new HashMap<URL, File>();
         private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<URL, Pair<File, Boolean>>();
+        private final AtomicBoolean noRecursiveListenerLogged = new AtomicBoolean();
 
         public RootsListeners() {
         }
@@ -3895,120 +3909,98 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        public boolean add(final URL root, final boolean sourceRoot, CancelRequest shuttdownRequest) {
-            RequestProcessor.Task task = RP.post(new Runnable() {
-                public @Override void run() {
-                    interruptibleAddRecursiveListener(root, sourceRoot);
-                }
-            });
-            for (;;) {
-                if (task.isFinished()) {
-                    break;
-                }
-                try {
-                    task.waitFinished(1000);
-                    if (shuttdownRequest.isRaised()) {
-                        //Do not call the expensive recursive listener if exiting
-                        return false;
+        public synchronized boolean add(final URL root, final boolean sourceRoot, CancelRequest shuttdownRequest) {
+            if (sourceRoot) {
+                if (sourcesListener != null) {
+                    if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
+                        try {
+                            File f = new File(root.toURI());
+                            safeAddRecursiveListener(sourcesListener, f, shuttdownRequest);
+                            sourceRoots.put(root, f);
+                        } catch (URISyntaxException use) {
+                            LOGGER.log(Level.INFO, null, use);
+                        }
                     }
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.INFO, "Interrupted", ex);
+                }
+            } else {
+                if (binariesListener != null) {
+                    if (!binaryRoots.containsKey(root)) {
+                        File f = null;
+                        URL archiveUrl = FileUtil.getArchiveFile(root);
+                        try {
+                            f = new File(archiveUrl != null ? archiveUrl.toURI() : root.toURI());
+                        } catch (URISyntaxException use) {
+                            LOGGER.log(Level.INFO, null, use);
+                        }
+
+                        if (f != null) {
+                            if (archiveUrl != null) {
+                                // listening on an archive file
+                                FileUtil.addFileChangeListener(binariesListener, f);
+                            } else {
+                                // listening on a folder
+                                safeAddRecursiveListener(binariesListener, f, shuttdownRequest);
+                            }
+                            binaryRoots.put(root, Pair.of(f, archiveUrl != null));
+                        }
+                    }
                 }
             }
-            return true;
+            return !shuttdownRequest.isRaised();
         }
 
-        private void interruptibleAddRecursiveListener(URL root, boolean sourceRoot) {
-            Pair<File,FileChangeListener> toAdd = null;
-            synchronized (this) {
+        public synchronized void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
+            for (URL root : roots) {
                 if (sourceRoot) {
                     if (sourcesListener != null) {
-                        if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
-                            try {
-                                File f = new File(root.toURI());
-                                toAdd = Pair.of (f,sourcesListener);
-                                sourceRoots.put(root, f);
-                            } catch (URISyntaxException use) {
-                                LOGGER.log(Level.INFO, null, use);
-                            }
+                        File f = sourceRoots.remove(root);
+                        if (f != null) {
+                            safeRemoveRecursiveListener(sourcesListener, f);
                         }
                     }
                 } else {
                     if (binariesListener != null) {
-                        if (!binaryRoots.containsKey(root)) {
-                            File f = null;
-                            URL archiveUrl = FileUtil.getArchiveFile(root);
-                            try {
-                                f = new File(archiveUrl != null ? archiveUrl.toURI() : root.toURI());
-                            } catch (URISyntaxException use) {
-                                LOGGER.log(Level.INFO, null, use);
-                            }
-
-                            if (f != null) {
-                                if (archiveUrl != null) {
-                                    // listening on an archive file
-                                    FileUtil.addFileChangeListener(binariesListener, f);
-                                } else {
-                                    // listening on a folder
-                                    toAdd = Pair.of(f,binariesListener);
-                                }
-                                binaryRoots.put(root, Pair.of(f, archiveUrl != null));
-                            }
-                        }
-                    }
-                }
-            }
-            if (toAdd != null) {
-                safeAddRecursiveListener(toAdd.second, toAdd.first);
-            }
-        }
-
-        public void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
-            final RequestProcessor.Task task = RP.post(new Runnable() {     //Serialize requests into single thread
-                public @Override void run() {
-                    synchronized (this) {   //Synchronized to ensure visibility
-                        for (URL root : roots) {
-                            if (sourceRoot) {
-                                if (sourcesListener != null) {
-                                    File f = sourceRoots.remove(root);
-                                    if (f != null) {
-                                        safeRemoveRecursiveListener(sourcesListener, f);
-                                    }
-                                }
+                        Pair<File, Boolean> pair = binaryRoots.remove(root);
+                        if (pair != null) {
+                            if (pair.second) {
+                                FileUtil.removeFileChangeListener(binariesListener, pair.first);
                             } else {
-                                if (binariesListener != null) {
-                                    Pair<File, Boolean> pair = binaryRoots.remove(root);
-                                    if (pair != null) {
-                                        if (pair.second) {
-                                            FileUtil.removeFileChangeListener(binariesListener, pair.first);
-                                        } else {
-                                            safeRemoveRecursiveListener(binariesListener, pair.first);
-                                        }
-                                    }
-                                }
+                                safeRemoveRecursiveListener(binariesListener, pair.first);
                             }
                         }
                     }
                 }
-            });
-            task.waitFinished();
+            }
         }
 
-        private void safeAddRecursiveListener(FileChangeListener listener, File path) {
-            try {
-                FileUtil.addRecursiveListener(listener, path);
-            } catch (Exception e) {
-                // ignore
-                LOGGER.log(Level.FINE, null, e);
+        private void safeAddRecursiveListener(FileChangeListener listener, File path, final CancelRequest shuttdownRequest) {
+            if (noRecursiveListener) {
+                if (!noRecursiveListenerLogged.getAndSet(true)) {
+                    LOGGER.info("Recursive listeners are disabled"); //NOI18N
+                }
+            } else {
+                try {
+                    FileUtil.addRecursiveListener(listener, path, new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return shuttdownRequest.isRaised();
+                        }
+                    });
+                } catch (Exception e) {
+                    // ignore
+                    LOGGER.log(Level.FINE, null, e);
+                }
             }
         }
 
         private void safeRemoveRecursiveListener(FileChangeListener listener, File path) {
-            try {
-                FileUtil.removeRecursiveListener(listener, path);
-            } catch (Exception e) {
-                // ignore
-                LOGGER.log(Level.FINE, null, e);
+            if (!noRecursiveListener) {
+                try {
+                    FileUtil.removeRecursiveListener(listener, path);
+                } catch (Exception e) {
+                    // ignore
+                    LOGGER.log(Level.FINE, null, e);
+                }
             }
         }
     } // End of RootsListeners class

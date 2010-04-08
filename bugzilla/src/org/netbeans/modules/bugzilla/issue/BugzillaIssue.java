@@ -86,6 +86,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -711,7 +712,9 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     boolean canReassign() {
-        boolean oldRepository = (getBugzillaRepository().getConfiguration().getInstalledVersion().compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0);
+        BugzillaConfiguration rc = getBugzillaRepository().getConfiguration();
+        final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
+        boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0 : false;
         if (oldRepository) {
             TaskAttribute rta = data.getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());

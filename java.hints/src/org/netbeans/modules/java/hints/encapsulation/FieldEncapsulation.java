@@ -63,12 +63,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
@@ -78,6 +81,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,7 +102,10 @@ public class FieldEncapsulation {
     private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance";   //NOI18N
     private static final String KW_THIS = "this";
 
-    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false) //NOI18N
+    static final String ALLOW_ENUMS_KEY = "allow.enums";
+    static final boolean ALLOW_ENUMS_DEFAULT = false;
+
+    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription protectedField(final HintContext ctx) {
         return create(ctx,
@@ -107,7 +114,7 @@ public class FieldEncapsulation {
             "ProtectedField");  //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription publicField(final HintContext ctx) {
         return create(ctx,
@@ -116,7 +123,7 @@ public class FieldEncapsulation {
             "PublicField"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription packageField(final HintContext ctx) {
         return create(ctx,
@@ -180,6 +187,12 @@ public class FieldEncapsulation {
         final ModifiersTree mt = vt.getModifiers();
         if (mt.getFlags().contains(Modifier.FINAL) || !hasRequiredVisibility(mt.getFlags(),visibility)) {
             return null;
+        }
+        if (ctx.getPreferences().getBoolean(ALLOW_ENUMS_KEY, ALLOW_ENUMS_DEFAULT)) {
+            Element type = ctx.getInfo().getTrees().getElement(new TreePath(tp, vt.getType()));
+            if (type != null && type.getKind() == ElementKind.ENUM) {
+                return null;
+            }
         }
         final Collection<? extends TreePath> fieldGroup = Utilities.resolveFieldGroup(ctx.getInfo(), tp);
         if (fieldGroup.size() != 1 && fieldGroup.iterator().next().getLeaf() != tp.getLeaf()) {
@@ -287,6 +300,15 @@ public class FieldEncapsulation {
                 LOG.warning("Encapsulate Field action is broken: " + ACTION_PATH); //NOI18N
                 return;
             }
+        }
+    }
+    
+    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
+        public CustomizerImpl() {
+            super(NbBundle.getMessage(FieldEncapsulation.class, "DN_IgnoreEnumForField"),
+                  NbBundle.getMessage(FieldEncapsulation.class, "TP_IgnoreEnumForField"),
+                  ALLOW_ENUMS_KEY,
+                  ALLOW_ENUMS_DEFAULT);
         }
     }
 }

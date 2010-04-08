@@ -42,11 +42,13 @@ package org.netbeans.modules.cnd.debugger.gdb.attach;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.concurrent.CancellationException;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.AttachTableColumn;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -54,6 +56,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -76,6 +79,10 @@ final class ProcessList {
     private String executable;
     private final List<String> argsSimple = new ArrayList<String>();
     private final ExecutionEnvironment exEnv;
+    private boolean isSolaris = false;
+
+    private final RequestProcessor RP = new RequestProcessor("Process list", 1); //NOI18N
+    private RequestProcessor.Task task = null;
 
     protected ProcessList(ExecutionEnvironment exEnv) {
         this.exEnv = exEnv;
@@ -125,26 +132,35 @@ final class ProcessList {
                     }
                     ptype = PTYPE.STD;
                 }
+                isSolaris = hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
             ptype = PTYPE.NONE;
         } catch (CancellationException caex) {
             ptype = PTYPE.NONE;
+        } catch (InterruptedException ex) {
+            // don't log InterruptedException
+            ptype = PTYPE.NONE;
         }
         executable = exec;
     }
 
-    private void request(final ProcessListReader plr, final boolean full) {
+    private synchronized void request(final Pattern filter, final ProcessListReader plr, final boolean full) {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
         if (ptype != PTYPE.NONE) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            task = RP.post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (ptype == PTYPE.UNINITIALIZED) {
                             init();
                         }
                         if (ptype == PTYPE.NONE) {
-                            plr.processListCallback(Collections.<String>emptyList());
+                            plr.processListCallback(Collections.<Vector<String>>emptyList());
                             return;
                         }
                         List<String> args = new ArrayList<String>(argsSimple);
@@ -160,37 +176,149 @@ final class ProcessList {
                         npb.setArguments(args.toArray(new String[args.size()]));
                         npb.redirectError();
                         NativeProcess process = npb.call();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        reader.readLine(); // read and ignore header line...
-                        List<String> proclist = new ArrayList<String>();
-                        String line;
+                        BufferedReader reader = ProcessUtils.getReader(process.getInputStream(), exEnv.isRemote());
+                        String line = reader.readLine(); // read and ignore header line...
+                        List<Vector<String>> proclist = new ArrayList<Vector<String>>();
                         while ((line = reader.readLine()) != null) {
-                            proclist.add(line);
+                            proclist.add(parseLine(line));
                         }
-                        plr.processListCallback(proclist);
+
+                        // pargs call if needed (IZ 168499)
+                        if (isSolaris) {
+                            NativeProcessBuilder pargsBuilder = NativeProcessBuilder.newProcessBuilder(exEnv);
+                            pargsBuilder.setExecutable("/usr/bin/pargs").redirectError(); // NOI18N
+                            String[] pargs_args = new String[proclist.size()+1];
+                            pargs_args[0] = "-Fl"; // NOI18N
+                            int idx = 1;
+                            for (Vector<String> proc : proclist) {
+                                pargs_args[idx++] = proc.get(1);
+                            }
+                            pargsBuilder.setArguments(pargs_args);
+                            List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
+                            
+                            idx = 0;
+                            for (String procArgs : pargsOutput) {
+                                if (procArgs.length() > 0 && !procArgs.startsWith("pargs:")) { // NOI18N
+                                    proclist.get(idx++).set(5, procArgs);
+                                }
+                            }
+                        }
+
+
+                        List<Vector<String>> res;
+                        if (filter == null) {
+                            res = proclist;
+                        } else {
+                            res = new ArrayList<Vector<String>>();
+                            // Do filtering
+                            outer: for (Vector<String> proc : proclist) {
+                                for (String field : proc) {
+                                    if (filter.matcher(field).find()) {
+                                        res.add(proc);
+                                        continue outer;
+                                    }
+                                }
+                            }
+                        }
+                        plr.processListCallback(res);
                     } catch (IOException ioe) {
                         //do nothing
                     }
                 }
             });
         } else {
-            plr.processListCallback(Collections.<String>emptyList());
+            plr.processListCallback(Collections.<Vector<String>>emptyList());
         }
     }
 
-    void requestSimple(ProcessListReader plr) {
-        request(plr, false);
+    private Vector<String> parseLine(String line) {
+        Vector<String> row = new Vector<String>();
+        StringTokenizer tokenizer = new StringTokenizer(line);
+        if (isWindowsPsFound()) {
+            while (tokenizer.hasMoreTokens()) {
+                row.add(tokenizer.nextToken());
+            }
+            return reorderWindowsProcLine(row);
+        } else if (isStd()) {
+            int i = 0;
+            StringBuilder sb = new StringBuilder();
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                // Combine args
+                if (++i <= 5) {
+                    row.add(token);
+                } else {
+                    sb.append(token);
+                    sb.append(' ');
+                }
+            }
+            if (sb.length() > 0) {
+                row.add(sb.toString());
+            }
+            return row;
+        }
+        return row;
     }
 
-    void requestFull(ProcessListReader plr) {
-        request(plr, true);
+    private static Vector<String> reorderWindowsProcLine(Vector<String> oldrow) {
+        StringBuilder tmp = new StringBuilder();
+        Vector<String> nurow = new Vector<String>(oldrow.size() - 2);
+        String status = oldrow.get(0);
+        String stime;
+        int i;
+
+        if (status.length() == 1 && (status.equals("I") ||  status.equals("C") || status.equals("O"))) { // NOI18N
+            // The status field is optional...
+            nurow.add(0, oldrow.get(6));  // UID
+            nurow.add(1, oldrow.get(4));  // WINPID
+            nurow.add(2, oldrow.get(1));  // PID
+            nurow.add(3, oldrow.get(2));  // PPID
+            nurow.add(4, oldrow.get(7));  // STIME
+            stime = oldrow.get(7);
+            if (Character.isDigit(stime.charAt(0))) {
+                i = 8;
+            } else {
+                stime = stime + ' ' + oldrow.get(8);
+                i = 9;
+            }
+            nurow.add(4, stime);  // STIME
+            while (i < oldrow.size()) {
+                tmp.append(oldrow.get(i++));
+            }
+        } else {
+            nurow.add(0, oldrow.get(5));  // UID
+            nurow.add(1, oldrow.get(3));  // WINPID
+            nurow.add(2, oldrow.get(0));  // PID
+            nurow.add(3, oldrow.get(1));  // PPID
+            stime = oldrow.get(6);
+            if (Character.isDigit(stime.charAt(0))) {
+                i = 7;
+            } else {
+                stime = stime + ' ' + oldrow.get(7);
+                i = 8;
+            }
+            nurow.add(4, stime);  // STIME
+            while (i < oldrow.size()) {
+                tmp.append(oldrow.get(i++));
+            }
+        }
+        nurow.add(5, tmp.toString());  // CMD
+        return nurow;
     }
 
-    protected boolean isStd() {
+    void requestSimple(Pattern filter, ProcessListReader plr) {
+        request(filter, plr, false);
+    }
+
+    void requestFull(Pattern filter, ProcessListReader plr) {
+        request(filter, plr, true);
+    }
+
+    private boolean isStd() {
         return ptype == PTYPE.STD;
     }
     
-    protected boolean isWindowsPsFound() {
+    private boolean isWindowsPsFound() {
         return ptype == PTYPE.WINDOWS;
     }
 

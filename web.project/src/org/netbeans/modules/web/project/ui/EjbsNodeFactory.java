@@ -63,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * NodeFactory to create EJB nodes.
@@ -88,6 +89,8 @@ public class EjbsNodeFactory implements NodeFactory {
         private Node view = null;
         private boolean isViewEmpty = true;
         private final J2eeProjectCapabilities projectCap;
+        private static final RequestProcessor rp = new RequestProcessor();
+        private Task checkTask = null;
 
         EjbNodeList(WebProject proj) {
             this.project = proj;
@@ -147,8 +150,12 @@ public class EjbsNodeFactory implements NodeFactory {
             });
         }
 
-        private void checkView(){
-            RequestProcessor.getDefault().post(new Runnable(){
+        private synchronized void checkView(){
+            if(checkTask != null){
+                checkTask.schedule(100);
+                return;
+            }
+            checkTask = rp.post(new Runnable(){
                 public void run() {
                     Boolean isEmpty = Boolean.TRUE;
                     try {
@@ -177,7 +184,7 @@ public class EjbsNodeFactory implements NodeFactory {
                         fireChange();
                     }
                 }
-            });
+            }, 100);
         }
     }
 }

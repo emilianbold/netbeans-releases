@@ -50,8 +50,19 @@ import org.openide.windows.InputOutput;
  */
 public abstract class IOResizable {
 
-    public interface Listener {
-	public void sizeChanged(Dimension cells, Dimension pixels);
+    /**
+     * Use IONotifier with PROP_SIZE and IOResizable.Size as values
+     */
+    public static final String PROP_SIZE = "IOResizable.PROP_SIZE"; // NOI18N
+
+    public static final class Size {
+	public final Dimension cells;
+	public final Dimension pixels;
+
+	public Size(Dimension cells, Dimension pixels) {
+	    this.cells = cells;
+	    this.pixels = pixels;
+	}
     }
 
     private static IOResizable find(InputOutput io) {
@@ -63,30 +74,6 @@ public abstract class IOResizable {
     }
 
     /**
-     * Add a size change listener to the provided IO.
-     * @param io IO to operate on.
-     * @param listener ... to notify of size changes.
-     */
-    public static void addListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.addListener(listener);
-	}
-    }
-
-    /**
-     * Remove the given size change listener from the provided IO.
-     * @param io IO to operate on.
-     * @param listener ... to remove.
-     */
-    public static void removeListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.removeListener(listener);
-	}
-    }
-
-    /**
      * Checks whether this feature is supported for provided IO
      * @param io IO to check on
      * @return true if supported
@@ -94,16 +81,4 @@ public abstract class IOResizable {
     public static boolean isSupported(InputOutput io) {
         return find(io) != null;
     }
-
-    /**
-     * Add a size change listener to this.
-     * @param listener ... to notify of size changes.
-     */
-    abstract protected void addListener(Listener listener);
-
-    /**
-     * Remove the given size change listener from this.
-     * @param listener ... to remove.
-     */
-    abstract protected void removeListener(Listener listener);
 }

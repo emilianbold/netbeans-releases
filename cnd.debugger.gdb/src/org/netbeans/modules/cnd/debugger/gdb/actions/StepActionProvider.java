@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
@@ -84,6 +83,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      */
     public StepActionProvider(ContextProvider lookupProvider) {
         super(lookupProvider);
+        setProviderToDisableOnLazyAction(this);
     }
     
     // ActionProviderSupport ...................................................
@@ -114,37 +114,33 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      * @param action an action which has been called
      */    
     public void runAction(final Object action) {
-        if (getDebugger() != null) {
-            synchronized (getDebugger().LOCK) {
-                if (action == ActionsManager.ACTION_STEP_INTO) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepI();
-                    } else {
-                        doSmartStepInto();
-                    }
-                    return;
-                }
-                if (action == ActionsManager.ACTION_STEP_OUT) {
-                    getDebugger().stepOut();
-                    return;
-                }
-                if (action == ActionsManager.ACTION_STEP_OVER) {
-                    if (Disassembly.isInDisasm()) {
-                        getDebugger().stepOverInstr();
-                    } else {
-                        getDebugger().stepOver();
-                    }
-                    return;
-                }
-                if (action == ActionsManager.ACTION_CONTINUE) {
-                    getDebugger().resume();
-                    return;
-                }
-                if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
-                    getDebugger().runToCursor();
-                    return;
-                }
+        if (action == ActionsManager.ACTION_STEP_INTO) {
+            if (Disassembly.isInDisasm()) {
+                getDebugger().stepI();
+            } else {
+                doSmartStepInto();
             }
+            return;
+        }
+        if (action == ActionsManager.ACTION_STEP_OUT) {
+            getDebugger().stepOut();
+            return;
+        }
+        if (action == ActionsManager.ACTION_STEP_OVER) {
+            if (Disassembly.isInDisasm()) {
+                getDebugger().stepOverInstr();
+            } else {
+                getDebugger().stepOver();
+            }
+            return;
+        }
+        if (action == ActionsManager.ACTION_CONTINUE) {
+            getDebugger().resume();
+            return;
+        }
+        if (action == ActionsManager.ACTION_RUN_TO_CURSOR) {
+            getDebugger().runToCursor();
+            return;
         }
     }
 
@@ -205,11 +201,11 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      */
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        doLazyAction(new Runnable() {
             @Override
             public void run() {
                 try {
-                    doAction(action);
+                    runAction(action);
                 } finally {
                     actionPerformedNotifier.run();
                 }

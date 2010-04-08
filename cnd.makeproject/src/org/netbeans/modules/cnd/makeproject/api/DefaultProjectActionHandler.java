@@ -259,7 +259,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         ProcessChangeListener processChangeListener =
                 new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName(), !runInInternalTerminal);
+                converter, io, pae.getActionName());
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                 .setWorkingDirectory(workingDirectory)
@@ -298,7 +298,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 .errConvertorFactory(processChangeListener)
                 .outConvertorFactory(processChangeListener);
 
-        if (actionType == PredefinedType.BUILD) {
+        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
         }
 
@@ -399,16 +399,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final String actionName;
         private long startTimeMillis;
         private Runnable postRunnable;
-        private final boolean outSummary;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, boolean outSummary) {
+                InputOutput tab, String actionName) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
-            this.outSummary = outSummary;
         }
 
         @Override
@@ -445,21 +443,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getOut().println(res.toString());
-                                tab.getOut().println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (process.exitValue() != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            tab.getOut().println(res.toString());
+                            tab.getOut().println();
+                            closeIO();
 
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());
@@ -476,21 +472,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                tab.getErr().println(res.toString());
-                                tab.getErr().println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (process.exitValue() != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            tab.getErr().println(res.toString());
+                            tab.getErr().println();
+                            closeIO();
                             if (listener != null) {
                                 listener.executionFinished(-1);
                             }
@@ -506,22 +500,20 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         @Override
                         public void run() {
                             int rc = process.exitValue();
-                            if (outSummary) {
-                                StringBuilder res = new StringBuilder();
-                                res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                                res.append(" ("); // NOI18N
-                                if (rc != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
-                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                                res.append(')');
-
-                                PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                                pw.println(res.toString());
-                                pw.println();
-                                closeIO();
+                            StringBuilder res = new StringBuilder();
+                            res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
+                            res.append(" ("); // NOI18N
+                            if (rc != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(' ');
                             }
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(')');
+
+                            PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
+                            pw.println(res.toString());
+                            pw.println();
+                            closeIO();
 
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());

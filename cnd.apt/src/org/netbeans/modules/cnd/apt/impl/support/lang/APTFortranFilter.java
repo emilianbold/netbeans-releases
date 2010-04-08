@@ -57,7 +57,7 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
     public APTFortranFilter() {
-        setCaseInsensitive(true);
+        super(true);
         initialize();
     }
 
@@ -80,7 +80,11 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("ALLOCATABLE", APTTokenTypes.T_ALLOCATABLE); // NOI18N
         filter("ALLOCATE", APTTokenTypes.T_ALLOCATE); // NOI18N
         filter("ASSIGNMENT", APTTokenTypes.T_ASSIGNMENT); // NOI18N
-        filter("ASSIGN", APTTokenTypes.T_ASSIGN); // NOI18N
+
+// Assign keyword was excluded
+// Bug 182942 - *Fortran* Navigator doesn't show modules in source files
+//        filter("ASSIGN", APTTokenTypes.T_ASSIGN); // NOI18N
+
         filter("ASSOCIATE", APTTokenTypes.T_ASSOCIATE); // NOI18N
         filter("ASYNCHRONOUS", APTTokenTypes.T_ASYNCHRONOUS); // NOI18N
         filter("BACKSPACE", APTTokenTypes.T_BACKSPACE); // NOI18N

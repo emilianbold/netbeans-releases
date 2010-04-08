@@ -70,6 +70,7 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     static final int STATE_VALID = 0;
     static final int STATE_INVALID_PARSABLE = 1;
     static final int STATE_INVALID_UNPARSABLE = 2;
+    static final int STATE_INVALID_OLD_VERSION = 3;
     static final String PROPERTY_STATUS = "dd_status"; //NOI18N
 
     /** Getter for version property.

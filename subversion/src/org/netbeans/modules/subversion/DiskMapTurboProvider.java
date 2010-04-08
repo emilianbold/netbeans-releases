@@ -395,7 +395,7 @@ class DiskMapTurboProvider implements TurboProvider {
             Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n" + encodedContent + "\n");
             Exception ex = new Exception("Corrupted cache file \"" + file.getAbsolutePath() + "\", please report in subversion module issues and attach "
                     + tmpFile.getAbsolutePath() + " plus the IDE message log", e);
-            Subversion.LOG.log(Level.SEVERE, null, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
@@ -410,7 +410,8 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private String readChars(DataInputStream dis, int len) throws IOException {
-        StringBuffer sb = new StringBuffer(len);
+        if (len < 0 || len > 1024 * 1024 * 10) throw new EOFException("Len: " + len); // preventing from OOME
+        StringBuilder sb = new StringBuilder(len);
         while (len-- > 0) {
             sb.append(dis.readChar());
         }
@@ -485,7 +486,7 @@ class DiskMapTurboProvider implements TurboProvider {
         byte [] buffer = new byte[4096];
         int totalLen = len;
         for (;;) {
-            int n = (len <= 4096) ? len : 4096;
+            int n = (len >= 0 && len <= 4096) ? len : 4096;
             n = in.read(buffer, 0, n);
             if (n < 0) throw new EOFException("Missing " + len + " bytes from total " + totalLen + " bytes.");  // NOI18N
             out.write(buffer, 0, n);

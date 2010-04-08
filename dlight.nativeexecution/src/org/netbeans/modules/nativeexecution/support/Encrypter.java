@@ -56,11 +56,7 @@ public final class Encrypter {
     private Encrypter() {
     }
 
-    public static boolean checkCRC32(String fname, long checksum) {
-        return checksum == getFileChecksum(fname);
-    }
-
-    private static long getFileChecksum(String fname) {
+    public static long getFileChecksum(String fname) {
         File file = new File(fname);
         if (file == null || !file.exists()) {
             return -1;
@@ -99,4 +95,9 @@ public final class Encrypter {
 
         return checksum.getValue();
     }
+
+    public static boolean checkCRC32(String fname, long checksum) {
+        return checksum == getFileChecksum(fname);
+    }
+
 }

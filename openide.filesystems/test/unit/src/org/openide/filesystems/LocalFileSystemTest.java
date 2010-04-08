@@ -45,14 +45,7 @@ import junit.framework.*;
 import java.io.*;
 import org.netbeans.junit.*;
 
-/**
- *
- * @author  rm111737
- * @version
- */
 public class LocalFileSystemTest extends FileSystemFactoryHid {
-
-    /** Creates new LocalFileSystemTest */
     public LocalFileSystemTest (Test test) {
         super(test);
     }
@@ -65,16 +58,17 @@ public class LocalFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileSystemTestHid.class);                         
         suite.addTestSuite(FileObjectTestHid.class);        
         suite.addTestSuite(LocalFileSystemTestHid.class);
-        /*failing tests*/        
         suite.addTestSuite(URLMapperTestHidden.class);        
         suite.addTestSuite(URLMapperTestInternalHidden.class);                        
         suite.addTestSuite(FileUtilTestHidden.class);                        
-        
+
         return new LocalFileSystemTest(suite);
     }
 
+    @Override
     protected void destroyFileSystem (String testName) throws IOException {}
     
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         return new FileSystem[] {TestUtilHid.createLocalFileSystem(testName, resources)};
     }

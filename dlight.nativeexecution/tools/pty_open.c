@@ -10,9 +10,14 @@
 #include <termios.h>
 #endif
 
+#if !defined __APPLE__ && !defined __CYGWIN__
+#include <stropts.h>
+#else
+#include <sys/select.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stropts.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -66,16 +71,71 @@ static int pts_open(int masterfd) {
         return -1;
     }
 #else
-    /*
-        struct termios termios_p;
-        tcgetattr(slavefd, &termios_p);
-        cfmakeraw(&termios_p);
-        tcsetattr(slavefd, TCSANOW, &termios_p);
-     */
+/*
+    struct termios termios_p;
+    tcgetattr(slavefd, &termios_p);
+    cfmakeraw(&termios_p);
+    tcsetattr(slavefd, TCSANOW, &termios_p);
+*/
 #endif
 
     return slavefd;
 }
+
+#ifdef __APPLE__
+
+static void loop(int master_fd) {
+    ssize_t n;
+    char buf[BUFSIZ];
+    int select_result;
+    fd_set read_set;
+
+    for (;;) {
+        FD_ZERO(&read_set);
+        FD_SET(STDIN_FILENO, &read_set);
+        FD_SET(master_fd, &read_set);
+        select_result = select(master_fd + 1, &read_set, NULL, NULL, NULL);
+
+        if (select_result == -1) {
+            printf("ERROR: poll failed\n");
+            exit(1);
+        }
+
+        if (FD_ISSET(STDIN_FILENO, &read_set)) {
+            if ((n = read(STDIN_FILENO, buf, BUFSIZ)) == -1) {
+                printf("ERROR: read from stdin failed\n");
+                exit(1);
+            }
+
+            if (n == 0) {
+                break;
+            }
+
+            if (write(master_fd, buf, n) == -1) {
+                printf("ERROR: write to master failed\n");
+                exit(1);
+            }
+        }
+
+        if (FD_ISSET(master_fd, &read_set)) {
+            if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
+                printf("ERROR: read from master failed\n");
+                exit(1);
+            }
+
+            if (n == 0) {
+                break;
+            }
+
+            if (write(STDOUT_FILENO, buf, n) == -1) {
+                printf("ERROR: write to stdout failed\n");
+                exit(1);
+            }
+        }
+    }
+}
+
+#else
 
 static void loop(int master_fd) {
     ssize_t n;
@@ -136,6 +196,7 @@ static void loop(int master_fd) {
         }
     }
 }
+#endif
 
 int main(int argc, char** argv) {
     int master_fd;

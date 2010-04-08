@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
@@ -64,8 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
+import org.openide.util.CharSequences;
 
 /**
  * APTMacroMap base implementation
@@ -105,7 +105,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
      */
     private void define(String macroText, boolean isSystem) {
         macroText = DEFINE_PREFIX + macroText;
-        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText);
+        TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
@@ -141,7 +141,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     
     private void defineImpl(APTFile file, APTDefine define, Kind macroType) {
         APTToken name = define.getName();
-        CharSequence filePath = (file == null ? CharSequenceKey.empty() : file.getPath());
+        CharSequence filePath = (file == null ? CharSequences.empty() : file.getPath());
         putMacro(name.getTextID(), createMacro(filePath, define, macroType));
     }
 
@@ -163,7 +163,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     } 
 
     public final boolean isDefined(CharSequence token) {
-        token = CharSequenceKey.create(token);
+        token = CharSequences.create(token);
         return getMacro(token) != null;
     } 
 
@@ -173,7 +173,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
 
     protected APTMacro getMacro(CharSequence token) {
-        assert token instanceof TinyCharSequence : "must not be String object " + token;
+        assert CharSequences.isCompact(token) : "must not be String object " + token;
         APTMacro res = active.getMacro(token);
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }

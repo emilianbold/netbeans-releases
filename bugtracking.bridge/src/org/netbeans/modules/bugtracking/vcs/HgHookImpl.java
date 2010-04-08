@@ -137,9 +137,10 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public void afterCommit(HgHookContext context) {
-        VCSHooksConfig.getInstance().setHgLink(isLinkSelected());
-        VCSHooksConfig.getInstance().setHgResolve(isResolveSelected());
-        VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
+        if(panel == null) {
+            LOG.fine("no settings for afterCommit");                                // NOI18N
+            return;
+        }
 
         if(context.getFiles().length == 0) {
             LOG.warning("calling hg afterCommit for zero files");                   // NOI18N
@@ -149,6 +150,16 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg afterCommit start for " + file);                    // NOI18N
 
+        Issue issue = getIssue();
+        if (issue == null) {
+            LOG.log(Level.FINE, " no issue set for " + file);                       // NOI18N
+            return;
+        }
+
+        VCSHooksConfig.getInstance().setHgLink(isLinkSelected());
+        VCSHooksConfig.getInstance().setHgResolve(isResolveSelected());
+        VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
+
         if (!isLinkSelected() &&
             !isResolveSelected())
         {
@@ -156,11 +167,6 @@ public class HgHookImpl extends HgHook {
             return;
         }
 
-        Issue issue = getIssue();
-        if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                       // NOI18N
-            return;
-        }
 
         String msg = null;
         if(isLinkSelected()) {
@@ -212,8 +218,8 @@ public class HgHookImpl extends HgHook {
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
-            PushOperation pa = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
-            if(pa == null) {
+            PushOperation operation = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
+            if(operation == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
                 continue;
             }
@@ -227,13 +233,13 @@ public class HgHookImpl extends HgHook {
                 }
             }
 
-            Issue issue = repo.getIssue(pa.getIssueID());
+            Issue issue = repo.getIssue(operation.getIssueID());
             if(issue == null) {
-                LOG.log(Level.FINE, " no issue found with id " + pa.getIssueID());  // NOI18N
+                LOG.log(Level.FINE, " no issue found with id " + operation.getIssueID());  // NOI18N
                 continue;
             }
 
-            issue.addComment(pa.getMsg(), isResolveSelected());
+            issue.addComment(operation.getMsg(), operation.isClose());
         }
         LOG.log(Level.FINE, "push hook end for " + file);                       // NOI18N
     }
@@ -249,11 +255,10 @@ public class HgHookImpl extends HgHook {
             referenceFile = context.getFiles()[0];
         }
         
-        panel = new HookPanel();
-        panel.resolveCheckBox.setSelected(VCSHooksConfig.getInstance().getHgResolve());
-        boolean commit = VCSHooksConfig.getInstance().getHgAfterCommit();
-        panel.commitRadioButton.setSelected(commit);
-        panel.pushRadioButton.setSelected(!commit);
+        panel = new HookPanel(
+                        VCSHooksConfig.getInstance().getHgLink(),
+                        VCSHooksConfig.getInstance().getHgResolve(),
+                        VCSHooksConfig.getInstance().getHgAfterCommit());
         
         if (referenceFile != null) {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);

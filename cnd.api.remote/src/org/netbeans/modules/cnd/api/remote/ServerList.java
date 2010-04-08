@@ -137,58 +137,77 @@ public class ServerList {
 
     private static class DummyServerRecord implements ServerRecord {
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ServerList.class, "DUMMY_HOST_NAME");
         }
 
+        @Override
         public ExecutionEnvironment getExecutionEnvironment() {
             return ExecutionEnvironmentFactory.getLocal();
         }
 
+        @Override
         public String getServerDisplayName() {
             return getDisplayName();
         }
 
+        @Override
         public String getServerName() {
             return getDisplayName();
         }
 
+        @Override
         public RemoteSyncFactory getSyncFactory() {
             return RemoteSyncFactory.getDefault();
         }
 
+        @Override
         public String getUserName() {
             return "";
         }
 
+        @Override
         public boolean isDeleted() {
             return true;
         }
 
+        @Override
         public boolean isOffline() {
             return false;
         }
 
+        @Override
         public boolean isOnline() {
             return true;
         }
 
+        @Override
         public boolean isRemote() {
             return false;
         }
 
+        @Override
         public boolean isSetUp() {
             return true;
         }
 
+        @Override
         public boolean setUp() {
             return true;
         }
 
+        @Override
         public void validate(boolean force) {
         }
 
+        @Override
         public boolean getX11Forwarding() {
+            return false;
+        }
+
+        @Override
+        public boolean isRememberPassword() {
             return false;
         }
     }

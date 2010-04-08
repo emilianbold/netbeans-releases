@@ -44,12 +44,14 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -130,8 +132,18 @@ public class IssueAction extends SystemAction {
         });
     }
 
+    public static void openIssue(final File file, final String issueId) {
+        openIssueIntern(null, file, issueId);
+    }
+
     public static void openIssue(final Repository repository, final String issueId) {
+        openIssueIntern(repository, null, issueId);
+    }
+
+    public static void openIssueIntern(final Repository repositoryParam, final File file, final String issueId) {
         assert issueId != null;
+        assert repositoryParam != null && file == null || repositoryParam == null && file != null;
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -158,19 +170,29 @@ public class IssueAction extends SystemAction {
                             } else {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
                                 handle.start();
+
+                                Repository repository;
+                                if(repositoryParam == null) {
+                                    repository = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+                                    if(repository == null) {
+                                        // if no repository was known user was supposed to choose or create one
+                                        // in scope of the previous getRepository() call. So null shoud stand
+                                        // for cancel in this case.
+                                        handleTC();
+                                        return;
+                                    }
+                                    BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repository);
+
+                                } else {
+                                    repository = repositoryParam;
+                                }
+
                                 issue[0] = repository.getIssue(issueId);
                                 if(issue[0] == null) {
                                     // lets hope the repository was able to handle this
                                     // because whatever happend, there is nothing else
                                     // we can do at this point
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if(!tcOpened) {
-                                                tc.close();
-                                            }
-                                        }
-                                    });
+                                    handleTC();
                                     return;
                                 }
                                 SwingUtilities.invokeLater(new Runnable() {
@@ -184,6 +206,17 @@ public class IssueAction extends SystemAction {
                         } finally {
                             if(handle != null) handle.finish();
                         }
+                    }
+
+                    public void handleTC() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!tcOpened) {
+                                    tc.close();
+                                }
+                            }
+                        });
                     }
                 });
             }

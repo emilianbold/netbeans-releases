@@ -47,6 +47,8 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -65,13 +67,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -79,6 +85,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListModel;
 import javax.swing.Scrollable;
@@ -119,6 +126,7 @@ import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -182,8 +190,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
+        initSpellChecker();
+        initDefaultButton();
 
         BugtrackingUtil.issue163946Hack(scrollPane1);
+    }
+
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
     }
 
     private void updateReadOnlyField(JTextField field) {
@@ -1136,6 +1161,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
+    }
+
     private List<CustomFieldInfo> customFields = new LinkedList<CustomFieldInfo>();
     private void initCustomFields() {
         customFields.clear();
@@ -1531,6 +1561,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         addCommentArea.setLineWrap(true);
+        addCommentArea.setWrapStyleWord(true);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -2107,7 +2138,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 try {
                     ret = issue.submitAndRefresh();
                     for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.file.exists()) {
+                        if (attachment.file.exists() && attachment.file.isFile()) {
                             if (attachment.description.trim().length() == 0) {
                                 attachment.description = NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription"); // NOI18N
                             }
@@ -2128,7 +2159,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     if(ret) {
                         if (isNew) {
                             // Show all custom fields, not only the ones shown on bug creation
-                            initCustomFields();
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    initCustomFields();
+                                }
+                            });
                         }
                         reloadFormInAWT(true);
                     }

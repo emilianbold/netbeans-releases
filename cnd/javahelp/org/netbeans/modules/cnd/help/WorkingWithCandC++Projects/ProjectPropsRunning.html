@@ -13,24 +13,29 @@ type="text/css">
 <body>
 <h2>C/C++ Project Properties Dialog Box: Run</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Run panel lets you specify run arguments and the run directory, 
-set runtime environment variables, and specify whether to build the project before 
-running it. Use the  buttons on the right side of the panel to open dialog boxes
-where you can specify run arguments and the run directory, and 
-set environment variables. Use the checkbox to specify whether to 
-build the project. 
-</p>
-<p>Use the drop-down lists to specify the console 
-type and terminal type. The default console type, External Terminal, 
-displays program input and output in an external terminal window where 
-you can type input in response to program prompts. The default 
-terminal type applies to the External Terminal, and is the one most
-appropriate for your environment.
-</p>
-<p>You can set the console type to Output Window to make the program's interactive
-    output to go to the Output window in the IDE instead of a separate terminal window.
-    Note that when you use this option, the compiler build output is overwritten in the Output
-    window.</p>
+<p>The Run panel lets you specify properties that are used when you run
+    your project in the IDE.
+<p><b>Arguments.</b> Enter any arguments that should be supplied to the project's command line when
+you run the project.</p>
+<p><b>Run directory.</b> Enter the path to the directory where the project should run. Normally
+this is the same as the project directory.</p>
+<p><b>Environment.</b> Enter any environment variables and their values if the project requires them
+    to run.</p>
+<p><b>Build First.</b> Select the checkbox if you want the project to build before it
+    runs.</p>
+<p><b>Console Type.</b> The output generated when you run the project goes to
+    the console. You can specify what type of console to use. Select Output Window
+    to send the program's output to the Output window
+    in the IDE. This causes the build output to be replaced with the run output.
+    Select External Terminal to cause the IDE to open a new terminal window outside
+    the IDE to display the program output and allow you to type input to the program.
+    Select Internal Terminal to cause the IDE to open a new window in the IDE, separate
+    from the Output window, to display the program output and allow you to type any input.
+    </p>
+<p><b>Terminal Type.</b> The terminal type applies to the External Terminal. The choices
+    offered in the list vary according to the environment where the IDE is running.</p>
+
+
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

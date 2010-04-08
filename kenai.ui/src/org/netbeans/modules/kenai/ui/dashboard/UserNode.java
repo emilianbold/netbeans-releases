@@ -66,7 +66,7 @@ public class UserNode extends LeafNode {
 
     private JPanel panel;
     private JLabel lblUser;
-    private JLabel lblProgress;
+    private ProgressLabel lblProgress;
     private LinkButton btnOpenProject;
     private LinkButton btnRefresh;
     private LinkButton btnLogin;
@@ -150,6 +150,10 @@ public class UserNode extends LeafNode {
             loadingCounter--;
             if( loadingCounter < 0 )
                 loadingCounter = 0;
+            if (loadingCounter == 0) {
+                if (lblProgress!=null)
+                    lblProgress.stop();
+            }
             fireContentChanged();
         }
     }

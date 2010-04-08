@@ -4,97 +4,141 @@ Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
-type="text/css">
-<title>Files Window</title>
-</head>
-<body>
-<h2>Files Window</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Files window shows a directory-based view of your projects, including 
-files and folders that are not displayed in the Projects window. You can open 
-the Files window by choosing Window &gt; Files (Ctrl-2).
-</p>
-<p>For C and C++ projects, the Files window displays the following:
-</p>
-<table border="1" cellpsdding="5" cellspacing="0" summary="The left column lists  
-the item. The right column lists the description.">
-<tr valign="top">
-<th scope="col" align="left">Item</th>
-<th scope="col" align="left">Description</th>
-</tr>
-<tr valign="top">
-<td valign="top"><tt>nbproject</tt></td> 	
-<td>
-The directory that contains the project makefile and other metadata. This 
-directory contains:
-<ul>
-
-<li><tt>project.xml</tt>. IDE-generated metadata 
-file.
-</li>
-<li><tt>configurations.xml</tt> metadata file 
-</li>
-<li>Configuration-specific makefiles
-</ul>
-</td>
-</tr>
-<tr>
-<td valign="top"><tt>nbproject/private</tt>
-</td>
-<td valign="top">The directory that holds properties that are 
-defined for you only. If you are sharing the project over VCS, any properties 
-you define in <tt>private.properties</tt> are not checked in with other project 
-metadata 
-and are applied only to your installation of the IDE.
-</td>
-</tr>
-<tr>
-</td>
-<td valign="top"><tt>build</tt></td>
-<td valign="top">The output directory for object (<tt>.o</tt>) files.  This directory may contain
-    subdirectories that are named for the project configuration and tool collection that were used to build the project.
-    For example, if you build your project while the Debug configuration is active, and you are using the
-    Sun Studio tool collection on a Solaris OS on an x86 system, you will have Debug and SunStudio-Solaris-x86
-    subdirectories. These subdirectories enable you to keep separate build products for different build environments.
-</td>
-</tr>
-<tr>
-<td valign="top"><tt>dist</tt></td>
-<td>The output directory for executable (<tt>.exe</tt>) files and library files. This directory may contain
-    subdirectories that are named for the project configuration and tool collection that were used to build the project.
-    For example, if you build your project while the Debug configuration is active, and you are using the
-    Sun Studio tool collection on a Solaris OS on an x86 system, you will have Debug and SunStudio-Solaris-x86
-    subdirectories. These subdirectories enable you to keep separate build products for different build environments.
-</td>
-</tr>
-<tr>
-<td>Makefile</td>
-<td>The master makefile for the project.
-</td>
-</tr>
-</table>
-<table summary="related topics">
-<tr valign="top">
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr valign="top">
-<td width="23"></td>
-<td>
-  <a href="CandC++Overview.html">C and C++ Development Overview</a><br>
-  <a href="ProjectsWindow.html">Projects Window</a>
-</td>
-</tr>
-</table>
-<hr>
-<small>
-<a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <link rel="StyleSheet" type="text/css" href="/org/netbeans/modules/usersguide/ide.css">
+     
+    <title>Files Window</title>
+  </head>
+  <body>
+    <h2>
+       Files Window
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+       The Files window shows a directory-based view of your projects, including files and folders
+      that are not displayed in the Projects window. You can open the Files window by choosing
+      Window &gt; Files (Ctrl-2).
+    </p>
+    <p>
+       For C and C++ projects, the Files window displays the following:
+    </p>
+    <table cellpsdding="5" cellspacing="0" summary=
+    "The left column lists the item. The right column lists the description." border="1">
+      <tr valign="top">
+        <th scope="col" align="left">
+          Item
+        </th>
+        <th scope="col" align="left">
+          Description
+        </th>
+      </tr>
+      <tr valign="top">
+        <td valign="top">
+          <tt>nbproject</tt> 
+        </td>
+        <td>
+          The directory that contains the project makefile and other metadata. This directory
+          contains: 
+          <ul>
+            <li>
+              <tt>project.xml</tt>. IDE-generated metadata file.
+            </li>
+            <li>
+              <tt>configurations.xml</tt> metadata file
+            </li>
+            <li>
+              Configuration-specific makefiles
+            </li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <tt>nbproject/private</tt> 
+        </td>
+        <td valign="top">
+          The directory that holds properties that are defined for you only. If you are sharing the
+          project over VCS, any properties you define in <tt>private.properties</tt> are not
+          checked in with other project metadata and are applied only to your installation of the
+          IDE.
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <tt>build</tt> 
+        </td>
+        <td valign="top">
+          The output directory for object (<tt>.o</tt>) files. This directory may contain
+          subdirectories that are named for the project configuration and tool collection that were
+          used to build the project. For example, if you build your project while the Debug
+          configuration is active, and you are using the Oracle Solaris Studio tool collection on a
+          Oracle Solaris operating system on an x86 system, you will have Debug and
+          OracleSolarisStudio-Solaris-x86 subdirectories. These subdirectories enable you to keep
+          separate build products for different build environments.
+        </td>
+      </tr>
+      <tr>
+        <td valign="top">
+          <tt>dist</tt> 
+        </td>
+        <td>
+          The output directory for executable (<tt>.exe</tt>) files and library files. This
+          directory may contain subdirectories that are named for the project configuration and
+          tool collection that were used to build the project. For example, if you build your
+          project while the Debug configuration is active, and you are using the Oracle Solaris
+          Studio tool collection on an Oracle Solaris operating system on an x86 system, you will
+          have Debug and OracleSolarisStudio-Solaris-x86 subdirectories. These subdirectories
+          enable you to keep separate build products for different build environments.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <tt>Makefile</tt> 
+        </td>
+        <td>
+          The master makefile for the project.
+        </td>
+      </tr>
+    </table>
+    <table summary="related topics">
+      <tr valign="top">
+        <th align="left" colspan="2">
+          <a name="seealso">See Also</a> 
+        </th>
+      </tr>
+      <tr valign="top">
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="IDEToolsCandC++Development.html">IDE Tools for C/C++/Fortran Development</a><br>
+           <a href="ProjectsWindow.html">Projects Window</a> 
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table cellpadding="20" border="0">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

@@ -524,7 +524,7 @@ public abstract class Module extends ModuleInfo {
     public File getJarFile() {
         return null;
     }
-    
+
     /** Get the JAR manifest.
      * Should never be null, even if disabled.
      * Might change if a module is reloaded.

@@ -14,51 +14,34 @@ type="text/css">
 <h2>C and C++ Debugger Windows</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>
-Whenever you start a debugging session, the IDE opens debugging 
-windows below the editing area. Each debugger window has a tab and 
-shares space with the Output window. You can open any debugger 
-window by choosing Window &gt; Debugging &gt; window-name (for example, 
-View > Debugging > Breakpoints).
+When you start a debugging session, the IDE opens debugging 
+windows below the editing area. The Watches, Variables, and Call Stack
+windows open by default. Each debugger window has a tab and
+shares space with the Output window. You can also open these windows
+and other debugger windows by choosing Window &gt; Debugging &gt; window-name (for example,
+Window > Debugging > Breakpoints).
 </p>
 <p>
-A set of debugger windows opens automatically when you start a 
-debugging session. The Watches, Local Variables, and Call Stack 
-windows open by default with every debugging session. You can open 
-any other debugger window by choosing View &gt; Debugging &gt; window-name.
-In each debugger window, information is organized into lists. 
-Each list item represents a single object. Each column represents a 
-property of the object. Data displayed in blue underlined text is 
-linked to the source code.
-</p>
-<p>Each debugger window displays a variety of icons to relay 
-information about the object. For example, the Breakpoints window 
-uses a small red square to indicate a breakpoint set on a line. Some 
-windows also include a node expansion control in the left column. 
-Clicking this control expands and collapses the object.
+Each debugger window shows lists of objects and properties of
+the objects. Icons next to the objects relay
+information about the object. For example, in the Breakpoints window
+a small red square indicates a breakpoint set on a line. Some
+windows also have controls to expand and collapse object nodes.
 </p>
 <p>
-Some elements of a window's list have editable properties, such as 
-the value property of a variable in the Local Variables window. If you 
-select a property and the property has a white background, then you 
-can edit the property. A selected property with a gray background 
-cannot be edited.
+Some objects have editable properties, such as
+the value property of a variable in the Variables window. If a
+selected property has a white background, it is editable.
+A selected property with a gray background cannot be edited.
 </p>
 <p>
-In a debugger window's list, you can size a column to fit its 
-contents by dragging the column border in the title header. You can move a column by 
-dragging the column's title header. Clicking the icon to the right of the column 
-titles opens a dialog box that provides a list of all possible 
-columns that can be shown. Using this dialog box, you can choose to 
-show or hide a column of information. 
+You can resize columns in debugger windows by dragging the right edge
+of the column header. You can move a column by dragging the middle
+of the column header to a new location. Click the icon to the right of the column
+titles to select which columns to show or hide.
 </p>
-<p>Each window also includes a pop-up menu, which you open by 
-right-clicking inside the window. Most items in this menu apply to 
-the selected object. One menu item, List Options, opens a submenu 
-with commands for operating on the list, including which column 
-the list is sorted on and whether the objects in the list are 
-sorted in ascending or descending order. Clicking the column header 
-is another way to switch the sort order between ascending and 
-descending order.
+<p>Right-click in a debugger window to display a pop-up menu of
+    actions that apply to the objects in the window.
 </p>
 <table summary="related topics">
 <tr valign="top">
@@ -67,7 +50,7 @@ descending order.
 <tr valign="top">
 <td width="23"></td>
 <td>
-  <a href="CandC++LocalVariablesWindow.html">Local Variables Window</a><br>
+  <a href="CandC++LocalVariablesWindow.html">Variables Window</a><br>
   <a href="CandC++WatchesWindow.html">Watches Window</a><br>
   <a href="CandC++CallStackWindow.html">Call Stack Window</a><br>
   <a href="CandC++BreakpointsWindow.html">Breakpoints Window</a><br>

@@ -70,10 +70,13 @@ public class TypeFinder implements CancellableTask<CompilationController> {
     private final ClassPath classpath;
     private final String fqn;
     private Callback callback;
+    private final Logger LOG = Logger.getLogger (TypeFinder.class.getName());
 
     public TypeFinder(String fqn, ClassPath path) {
         this.classpath = path;
         this.fqn = fqn;
+        LOG.log(Level.FINER, "Create a TypeFinder for {0} on {1}", //NOI18N
+                new Object[] { fqn, path});
     }
 
     public interface Callback {
@@ -86,19 +89,22 @@ public class TypeFinder implements CancellableTask<CompilationController> {
         this.callback = callback;
         //recursively iterate all children
         for (FileObject fo : classpath.getRoots()) {
+            LOG.log(Level.FINER, "Scan {0} for {1}", new Object[] { fo, fqn }); //NOI18N
             analyze(fo);
         }
     }
 
 
     private void analyze(FileObject fo) {
+        LOG.log(Level.FINEST, "Analyze {0}", new Object[] { fo }); //NOI18N
         if (fo.isFolder()) {
             for (FileObject child : fo.getChildren()) {
                 analyze(child);
             }
-        } else if ("java".equals(fo.getExt())) { //NOI18N
+        } else if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
             JavaSource src = JavaSource.forFileObject(fo);
             try {
+                LOG.log(Level.FINEST, "Check java source {0}", new Object[] { fo }); //NOI18N
                 src.runUserActionTask(this, true);
             } catch (IOException ex) {
                 Logger.getLogger(TypeFinder.class.getName()).log(Level.INFO,
@@ -132,6 +138,7 @@ public class TypeFinder implements CancellableTask<CompilationController> {
             TypeMirror mirror = compiler.getTrees().getTypeMirror(
                     TreePath.getPath(compiler.getCompilationUnit(),
                     tree));
+            LOG.log(Level.FINEST, "Check type {0}", mirror); //NOI18N
             if (tree instanceof ClassTree && match(mirror, compiler.getTypes())) {
                 callback.foundFileObject(compiler.getFileObject(),
                         mirror.toString());
@@ -161,6 +168,7 @@ public class TypeFinder implements CancellableTask<CompilationController> {
                 }
             }
         }
+        LOG.log(Level.FINEST, "Match {0}? ", new Object[] { mirror, result }); //NOI18N
         return result;
     }
 }

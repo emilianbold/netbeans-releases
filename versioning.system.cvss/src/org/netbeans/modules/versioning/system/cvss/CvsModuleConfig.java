@@ -51,6 +51,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
@@ -75,7 +76,6 @@ public class CvsModuleConfig {
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
     public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
-    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -84,7 +84,8 @@ public class CvsModuleConfig {
     private FileCollection excludedFiles;
     
     private Map<String, RootSettings> rootsMap;
-
+    private String lastCanceledCommitMessage;
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
 
     public CvsModuleConfig() {
         excludedFiles = new FileCollection();
@@ -205,12 +206,26 @@ public class CvsModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCommitMessage() {
-        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCommitMessage(String message) {
-        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
+    }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
     }
 
     private Map<String, RootSettings> getRootsMap() {

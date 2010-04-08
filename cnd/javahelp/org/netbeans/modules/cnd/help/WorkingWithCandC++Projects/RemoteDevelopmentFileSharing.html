@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
+    <title>File Sharing with Remote Development Hosts</title>
+  </head>
+  <body>
+    <h2>
+       File Sharing with Remote Development Hosts
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+      When you use the File System Sharing option for synchronizing project files between
+      local and remote development hosts, you might need to provide path mapping information to help the
+      IDE use the shared file system.
+    </p>
+    <p>
+        <b>To set the path mapping for a remote host:</b>
+    <ul>
+        <li>Select Tools &gt; Options, and click the C/C++ category.
+
+        </li>
+        <li>Click Build Tools.</li>
+        <li>Click Edit next to the Development Host list.</li>
+        <li>In the Development Hosts Manager dialog, select the remote host that you have set up to use File Sharing.</li>
+        <li>Click Path Mapper...</li>
+        <li>Double-click the text entry line under Local Path, and type the full path to the
+        shared directory as seen from the local machine. For example, if you are storing your
+        project in a <tt>/export/home/user/NetBeansProjects</tt> directory on <tt>myserver</tt>, you might access
+        that directory as <tt>/Volumes/NET/myserver/export/home/user/NetBeansProjects</tt> on a Mac client.
+        You can click the button next to the path field to use a file browser to navigate to the directory if you prefer.</li>
+        <li>Double-click the text entry line under Remote Path and type the full path to the
+        shared directory as seen from the remote host. If you use <tt>/export/home/user/NetBeansProjects</tt>
+        from the remote server, enter that path as the Remote Path.</li>
+        <li>Click OK in the Edit Path's Map dialog, and click OK in the Development Host Manager dialog.</li>
+    </ul>
+    
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+            <a href="RemoteDevelopment.html">Using a Remote Development Host</a><br>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
+                    <param name="text" value="<html><u>C/C++ Remote
+          Development tutorial (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

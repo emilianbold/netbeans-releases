@@ -100,8 +100,7 @@ public class LookupProviderImpl implements LookupProvider {
     }
     
     public static boolean isMyProject(AuxiliaryConfiguration aux) {
-        return aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true) != null ||
-               aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true) != null;
+        return JavaProjectGenerator.getJavaCompilationUnits(aux) != null;
     }
     
     private static final class HelpIDFragmentProviderImpl implements HelpIDFragmentProvider {
@@ -143,12 +142,28 @@ public class LookupProviderImpl implements LookupProvider {
         }
 
         public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
-            if (elementName.equals(JavaProjectNature.EL_JAVA) && namespace.equals(JavaProjectNature.NS_JAVA_2) && shared) {
-                Element nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-                if (nue == null) {
-                    Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                    if (old != null) {
-                        nue = upgradeSchema(old);
+            if (elementName.equals(JavaProjectNature.EL_JAVA) && shared) {
+                Element nue = null;
+                if (namespace.equals(JavaProjectNature.NS_JAVA_3)) {
+                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+                    if (nue == null) {
+                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+                        if (old != null) {
+                            nue = upgradeSchema(old);
+                        } else {
+                            old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                            if (old != null) {
+                                nue = upgradeSchema(old);
+                            }
+                        }
+                    }
+                } else if (namespace.equals(JavaProjectNature.NS_JAVA_2)) {
+                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+                    if (nue == null) {
+                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
+                        if (old != null) {
+                            nue = upgradeSchema(old, JavaProjectNature.NS_JAVA_2);
+                        }
                     }
                 }
                 return nue;
@@ -166,13 +181,17 @@ public class LookupProviderImpl implements LookupProvider {
         }
         
     }
-    
+
     static Element upgradeSchema(Element old) {
+        return upgradeSchema(old, JavaProjectNature.NS_JAVA_3);
+    }
+
+    static Element upgradeSchema(final Element old, final String to) {
         Document doc = old.getOwnerDocument();
-        Element nue = doc.createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
-        copyXMLTree(doc, old, nue, JavaProjectNature.NS_JAVA_2);
+        Element nue = doc.createElementNS(to, JavaProjectNature.EL_JAVA);
+        copyXMLTree(doc, old, nue, to);
         return nue;
-    }  
+    }
     // Copied from org.netbeans.modules.java.j2seproject.UpdateHelper with changes; could be an API eventually:
     private static void copyXMLTree(Document doc, Element from, Element to, String newNamespace) {
         NodeList nl = from.getChildNodes();

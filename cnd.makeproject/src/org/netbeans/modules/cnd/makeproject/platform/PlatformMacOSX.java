@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformMacOSX extends Platform {
     public static final String NAME = "MacOSX"; // NOI18N
-    public static final String LIBRARY_SUFFIX = "dylib"; // NOI18N
+    public static final String LIBRARY_SUFFIX = ".dylib"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
 //        StdLibraries.getStandardLibary("Motif"), // NOI18N
@@ -70,13 +70,18 @@ public class PlatformMacOSX extends Platform {
     
     @Override
     public String getLibraryName(String baseName) {
-        return "lib" + baseName + "." + LIBRARY_SUFFIX; // NOI18N
+        return "lib" + baseName + LIBRARY_SUFFIX; // NOI18N
     }
-    
+
+    @Override
+    public String getQtLibraryName(String baseName, String version) {
+        return getLibraryName(baseName + "." + version); // NOI18N
+    }
+
     @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith("." + LIBRARY_SUFFIX)) { // NOI18N
-            int i = libName.indexOf("." + LIBRARY_SUFFIX); // NOI18N
+        if (libName.endsWith(LIBRARY_SUFFIX)) {
+            int i = libName.indexOf(LIBRARY_SUFFIX);
             if (i > 0) {
                 libName = libName.substring(0, i);
             }

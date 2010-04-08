@@ -83,7 +83,6 @@ public class SvnModuleConfig {
     public static final String KEY_PASSWORD = "versioning.subversion."; //NOI18N
     public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
-    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
     private static final String SEPARATOR = "###"; //NOI18N
     private static final String KEY_SORTING = "sortingStatus."; //NOI18N
@@ -97,6 +96,7 @@ public class SvnModuleConfig {
     }
     
     private Set<String> exclusions;
+    private String lastCanceledCommitMessage;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -345,12 +345,12 @@ public class SvnModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCommitMessage() {
-        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCommitMessage(String message) {
-        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
     }
 
     public boolean isRepositoryPathPrefixed() {

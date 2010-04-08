@@ -42,11 +42,13 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.awt.CardLayout;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -111,7 +113,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         if (isContainerManaged){
             comboHelper.connect(providerCombo);
-            Provider provider = ProviderUtil.getProvider(persistenceUnit);
+            ArrayList<Provider> providers = new ArrayList<Provider>();
+            for(int i=0; i<providerCombo.getItemCount(); i++){
+                Object obj = providerCombo.getItemAt(i);
+                if(obj instanceof Provider){
+                    providers.add((Provider) obj);
+                }
+            }
+            Provider provider = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
             providerCombo.setSelectedItem(provider);
         } else {
             comboHelper.connect(libraryComboBox);
@@ -257,16 +266,18 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             
             jtaCheckBox.setSelected(jtaDataSource != null);
             
-            String provider = persistenceUnit.getProvider();
-            for (int i = 0; i < providerCombo.getItemCount(); i++) {
-                Object item = providerCombo.getItemAt(i);
-                if (item instanceof Provider){
-                    if (((Provider) item).getProviderClass().equals(provider)) {
-                        providerCombo.setSelectedIndex(i);
-                        break;
-                    }
+            ArrayList<Provider> providers = new ArrayList<Provider>();
+            for(int i=0; i<providerCombo.getItemCount(); i++){
+                Object obj = providerCombo.getItemAt(i);
+                if(obj instanceof Provider){
+                    providers.add((Provider) obj);
                 }
             }
+            
+            Provider provider = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
+
+            providerCombo.setSelectedItem(provider);
+
         } else if (!isContainerManaged){
             initJdbcComboBox();
             setSelectedLibrary();
@@ -310,7 +321,15 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
      * Sets selected item in library combo box.
      */
     private void setSelectedLibrary(){
-        Provider selected = ProviderUtil.getProvider(persistenceUnit);
+        ArrayList<Provider> providers = new ArrayList<Provider>();
+        for(int i=0; i<libraryComboBox.getItemCount(); i++){
+            Object obj = libraryComboBox.getItemAt(i);
+            if(obj instanceof Provider){
+                providers.add((Provider) obj);
+            }
+        }
+        Provider selected = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
+        
         if (selected == null){
             return;
         }
@@ -372,7 +391,15 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             if (props != null){
                 Property[] properties = props.getProperty2();
                 String url = null;
-                Provider provider = ProviderUtil.getProvider(persistenceUnit);
+                ArrayList<Provider> providers = new ArrayList<Provider>();
+                JComboBox activeCB = providerCombo.isVisible() ? providerCombo : libraryComboBox;
+                for(int i=0; i<activeCB.getItemCount(); i++){
+                    Object obj = activeCB.getItemAt(i);
+                    if(obj instanceof Provider){
+                        providers.add((Provider) obj);
+                    }
+                }
+                Provider provider = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
                 for (int i = 0; i < properties.length; i++) {
                     String key = properties[i].getName();
                     if (provider.getJdbcUrl().equals(key)) {

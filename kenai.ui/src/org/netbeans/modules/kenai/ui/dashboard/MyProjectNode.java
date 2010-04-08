@@ -258,15 +258,6 @@ public class MyProjectNode extends LeafNode {
         refreshChildren();
     }
 
-    private static RequestProcessor rp;;
-
-    private static synchronized void post(Runnable run) {
-        if (rp == null) {
-            rp = new RequestProcessor();
-        }
-        rp.post(run);
-    }
-
     @Override
     protected void dispose() {
         super.dispose();
@@ -276,9 +267,6 @@ public class MyProjectNode extends LeafNode {
             mh.removePropertyChangeListener(projectListener);
         }
         project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
-        synchronized(MyProjectNode.class) {
-            rp=null;
-        }
     }
 
     private void setBugsLater(final QueryResultHandle bug) {

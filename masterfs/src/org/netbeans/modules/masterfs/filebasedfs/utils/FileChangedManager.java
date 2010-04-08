@@ -39,7 +39,9 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
+import java.security.Permission;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
@@ -55,10 +57,11 @@ public class FileChangedManager extends SecurityManager {
     private static final int CREATE_HINT = 2;
     private static final int DELETE_HINT = 1;
     private static final int AMBIGOUS_HINT = 3;
-    
-    
     private final ConcurrentHashMap<Integer,Integer> hints = new ConcurrentHashMap<Integer,Integer>();
     private long shrinkTime = System.currentTimeMillis();
+    private static volatile long ioTime = -1;
+    private static volatile int ioLoad;
+    private static final ThreadLocal<Integer> IDLE_IO = new ThreadLocal<Integer>();
     
     public FileChangedManager() {
         INSTANCE = this;
@@ -71,6 +74,10 @@ public class FileChangedManager extends SecurityManager {
         }
         return INSTANCE;
     }
+
+    @Override
+    public void checkPermission(Permission perm) {
+    }
     
     @Override
     public void checkDelete(String file) {
@@ -80,6 +87,16 @@ public class FileChangedManager extends SecurityManager {
     @Override
     public void checkWrite(String file) {
         put(file, true);
+    }
+
+    @Override
+    public void checkRead(String file) {
+        pingIO(1);
+    }
+
+    @Override
+    public void checkRead(String file, Object context) {
+        pingIO(1);
     }
         
     public boolean impeachExistence(File f, boolean expectedExixts) {
@@ -102,7 +119,7 @@ public class FileChangedManager extends SecurityManager {
         if (time > 0) {
             time = System.currentTimeMillis() - time;
             if (time > 500) {
-                LOG.warning("Too much time (" + time + " ms) spend touching " + file);
+                LOG.log(Level.WARNING, "Too much time ({0} ms) spend touching {1}", new Object[]{time, file});
             }
         }
         Integer id = getKey(file);
@@ -110,8 +127,68 @@ public class FileChangedManager extends SecurityManager {
         put(id, retval);
         return retval;
     }
+
+    public static void idleIO(int maximumLoad, Runnable r) {
+        Integer prev = IDLE_IO.get();
+        int prevMax = prev == null ? 0 : prev;
+        try {
+            IDLE_IO.set(Math.max(maximumLoad, prevMax));
+            r.run();
+        } finally {
+            IDLE_IO.set(prev);
+        }
+    }
+
+    public static void waitIOLoadLowerThan(int load) throws InterruptedException {
+        for (;;) {
+            int l = pingIO(0);
+            if (l < load) {
+                return;
+            }
+            synchronized (IDLE_IO) {
+                IDLE_IO.wait(100);
+            }
+        }
+    }
+
+    private static int pingIO(int inc) {
+        long ms = System.currentTimeMillis();
+        boolean change = false;
+        while (ioTime < ms) {
+            ioTime += 100;
+            ioLoad /= 2;
+            change = true;
+            if (ioLoad == 0) {
+                ioTime = ms + 100;
+                break;
+            }
+        }
+        if (change) {
+            synchronized (IDLE_IO) {
+                IDLE_IO.notifyAll();
+            }
+        }
+        if (inc == 0) {
+            return ioLoad;
+        }
+
+        Integer maxLoad = IDLE_IO.get();
+        if (maxLoad != null) {
+            try {
+                waitIOLoadLowerThan(maxLoad);
+            } catch (InterruptedException ex) {
+                // OK
+            }
+        } else {
+            ioLoad += inc;
+            LOG.log(Level.FINE, "I/O load: {0} (+{1})", new Object[] { ioLoad, inc });
+        }
+        return ioLoad;
+    }
+
     
     private Integer put(int id, boolean state) {
+        pingIO(2);
         shrinkTime = System.currentTimeMillis();
         int val = toValue(state);
         Integer retval = hints.putIfAbsent(id,val);

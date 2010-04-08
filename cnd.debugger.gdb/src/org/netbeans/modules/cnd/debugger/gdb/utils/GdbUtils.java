@@ -48,8 +48,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Various miscelaneous static methods.
@@ -870,5 +872,14 @@ public class GdbUtils {
             last++;
         }
         return Double.parseDouble(msg.substring(first+1, last));
+    }
+
+    public static RequestProcessor getGdbRequestProcessor() {
+        // if gdb debugger is available - return it's RP
+        GdbDebugger gdbDebugger = GdbDebugger.getGdbDebugger();
+        if (gdbDebugger != null) {
+            return gdbDebugger.getRequestProcessor();
+        }
+        return RequestProcessor.getDefault();
     }
 }

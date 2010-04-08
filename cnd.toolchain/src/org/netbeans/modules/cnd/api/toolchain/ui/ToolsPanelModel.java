@@ -70,6 +70,10 @@ public abstract class ToolsPanelModel {
     
     public abstract void setFortranRequired(boolean value);
 
+    public abstract boolean isQMakeRequired();
+
+    public abstract void setQMakeRequired(boolean value);
+
     public abstract boolean isAsRequired();
 
     public abstract void setAsRequired(boolean value);

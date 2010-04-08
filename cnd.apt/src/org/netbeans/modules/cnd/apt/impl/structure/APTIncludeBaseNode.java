@@ -93,15 +93,18 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         return endOffset;
     }
 
+    @Override
     public APT getFirstChild() {
         return null;
     }
 
+    @Override
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "include doesn't support children"; // NOI18N
     }
 
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
@@ -109,7 +112,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
             return false;
         }
         // eat all till END_PREPROC_DIRECTIVE
-        switch (token.getType()) {
+        switch (ttype) {
             case APTTokenTypes.INCLUDE_STRING:
             case APTTokenTypes.SYS_INCLUDE_STRING:
                 if (includeFileToken == EMPTY_INCLUDE) {
@@ -121,6 +124,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 break;
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 // just skip comments, they are valid
                 break;
             default:

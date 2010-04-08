@@ -116,6 +116,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
                     new ExecutionDescriptor.InputProcessorFactory() {
+                        @Override
                         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                             return inputProcessor;
                         }
@@ -183,9 +184,12 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         if (processBuilder == null) {
             return null;
         }
+
+        processBuilder = processBuilder.redirectErrorStream(true);
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
@@ -273,15 +277,18 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             outputFile.deleteOnExit();
         }
 
+        @Override
         public void processInput(char[] chars) throws IOException {
             for (char c : chars) {
                 bos.write((byte) c);
             }
         }
 
+        @Override
         public void reset() {
         }
 
+        @Override
         public void close() {
             try {
                 bos.close();
@@ -302,13 +309,14 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     }
 
     class CommandsLineProcessor implements LineProcessor {
-        private final StringBuffer error = new StringBuffer();
+        private final StringBuffer error = new StringBuffer(200);
         private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
         private String prefix;
 
+        @Override
         public void processLine(String line) {
             if (!StringUtils.hasText(line)) {
                 prefix = null;
@@ -347,9 +355,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             return error.toString();
         }
 
+        @Override
         public void close() {
         }
 
+        @Override
         public void reset() {
         }
     }

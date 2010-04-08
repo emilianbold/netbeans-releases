@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.freeform;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -68,12 +69,13 @@ import org.w3c.dom.Element;
 class UsageLogger {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.freeform"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(UsageLogger.class.getName(), 1, false, false);
 
     private UsageLogger() {}
 
     public static void log(final Project p) {
         if (LOG.isLoggable(Level.INFO)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     Object[] data;
                     try {
@@ -105,10 +107,7 @@ class UsageLogger {
         int compilationUnitsMissingBuiltTo = 0;
         int compilationUnitsMultipleRoots = 0;
         Set<String> classpathEntries = new HashSet<String>();
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        if (java == null) {
-            java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-        }
+        Element java = JavaProjectGenerator.getJavaCompilationUnits(aux);
         if (java != null) {
             for (Element compilationUnitEl : Util.findSubElements(java)) {
                 compilationUnits++;
@@ -152,7 +151,11 @@ class UsageLogger {
             if (antScript != null) {
                 AntProjectCookie apc = DataObject.find(antScript).getLookup().lookup(AntProjectCookie.class);
                 if (apc != null) {
-                    targets = TargetLister.getTargets(apc).size();
+                    try {
+                        targets = TargetLister.getTargets(apc).size();
+                    } catch (IOException ioe) {
+                        //pass - Broken build.xml which may happen for freeform, targets = 0 and log usage
+                    }
                 }
             }
         }

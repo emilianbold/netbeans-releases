@@ -42,7 +42,6 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -73,7 +72,6 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -139,9 +137,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     @Override
     public PersistenceScope findPersistenceScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            WebPersistenceProvider provider = (WebPersistenceProvider) proj.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -149,9 +147,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     @Override
     public EntityClassScope findEntityClassScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
+        Project proj = FileOwnerQuery.getOwner(fo);
+        if (proj != null) {
+            WebPersistenceProvider provider = (WebPersistenceProvider) proj.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -177,10 +175,10 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
+                ClassPathProviderImpl cpProv = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{
-                            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),});
+                            cpProv.getProjectSourcesClassPath(ClassPath.SOURCE),
+                            cpProv.getProjectSourcesClassPath(ClassPath.COMPILE),});
             }
             return projectSourcesClassPath;
         }
@@ -250,7 +248,6 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
             @Override
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
-
                     @Override
                     public void run() {
                         EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -259,22 +256,31 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
                         if (ap == null) {
                             ap = "";
                         }
+                        boolean changed = false;
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
-                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
+                        if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
                             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             SourceGroup firstGroup = groups[0];
                             FileObject fo = firstGroup.getRootFolder();
                             ClassPath compile = ClassPath.getClassPath(fo, JavaClassPathConstants.PROCESSOR_PATH);
-                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
+                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {//NOI18N
                                 ap = ap.trim();
                                 boolean turnOn = ap.length()==0;//we will switch generation on only if there was no processors even by default properties "save" have case on existence of ap
                                 ap = ap + (ap.length() > 0 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
                                 prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
+                                changed = true;
                                 if( turnOn ) {
                                     prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "false");//NOI18N
                                 }
-                                 project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                            }
+                        }
+                        if (!"true".equals(prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR))) {
+                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "true");    //NOI18N
+                            changed = true;
+                        }
+                        if(changed) {
+                                project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
                                 try {
                                     ProjectManager.getDefault().saveProject(project);
                                 } catch (IOException ex) {
@@ -282,7 +288,6 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
                                 } catch (IllegalArgumentException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
-                            }
                         }
                     }
                 });

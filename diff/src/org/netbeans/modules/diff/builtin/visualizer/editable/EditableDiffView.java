@@ -94,9 +94,12 @@ import org.netbeans.spi.diff.DiffControllerImpl;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
 
 /**
@@ -165,6 +168,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     
     private Document baseDocument;
     private Document modifiedDocument;
+    private Boolean skipFile;
     
     /**
      * The right pane is editable IFF editableCookie is not null.
@@ -297,8 +301,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                  SwingUtilities.invokeAndWait(awtTask);
             }
         } catch (InterruptedException e) {
-            Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.FINE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
+            return;
         } catch (InvocationTargetException e) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.SEVERE, ".colorLines:" + colorLines + ", .jviewPort2:" + jViewport2
                     + ", editableDocument:" + editableDocument + ", editableCookie:" + editableCookie + ", editorUndoRedo:" + editorUndoRedo, e);
@@ -378,29 +383,45 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     @Override
     public void setLocation(final DiffController.DiffPane pane, final DiffController.LocationType type, final int location) {
-        manager.runWithSmartScrollingDisabled(new Runnable() {
-            public void run() {
-                if (type == DiffController.LocationType.DifferenceIndex) {
+        if (type == DiffController.LocationType.DifferenceIndex) {
+            manager.runWithSmartScrollingDisabled(new Runnable() {
+                @Override
+                public void run() {
                     setDifferenceImpl(location);
-                } else {
-                    EditableDiffView.this.askedLineLocation = location;
+                }
+            });
+        } else {
+            EditableDiffView.this.askedLineLocation = location;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Runnable withDisabledSmartScroll = null;
                     if (pane == DiffController.DiffPane.Base) {
                         if (Boolean.TRUE.equals(getJComponent().getClientProperty(PROP_SMART_SCROLLING_DISABLED))) {
-                            setBaseLineNumberImpl(location, false);
+                            withDisabledSmartScroll = new Runnable() {
+                                @Override
+                                public void run() {
+                                    setBaseLineNumberImpl(location, false);
+                                }
+                            };
                         } else {
                             // refactoring jumps only in the left pane, setting the position must be done with smart scrolling enabled
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    setBaseLineNumberImpl(location, true);
-                                }
-                            });
+                            setBaseLineNumberImpl(location, true);
                         }
                     } else {
-                        setModifiedLineNumberImpl(location);
+                        withDisabledSmartScroll = new Runnable() {
+                            @Override
+                            public void run() {
+                                setModifiedLineNumberImpl(location);
+                            }
+                        };
+                    }
+                    if (withDisabledSmartScroll != null) {
+                        manager.runWithSmartScrollingDisabled(withDisabledSmartScroll);
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void setModifiedLineNumberImpl(int line) {
@@ -411,15 +432,23 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             int off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), line);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
 
-            int lineHeight = editorUI.getLineHeight();
-
             int offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
-            int lineOffset = lineHeight * line - offset;
+            View rootView = org.netbeans.editor.Utilities.getDocumentView(jEditorPane2.getEditorPane());
+            Rectangle rec = jEditorPane2.getEditorPane().modelToView(rootView.getView(line).getEndOffset() - 1);
+            int lineOffset;
+            if (rec == null) {
+                int lineHeight = editorUI.getLineHeight();
+                lineOffset = lineHeight * line - offset;
+            } else {
+                lineOffset = rec.y - offset;
+            }
 
             JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
 
             rightScrollBar.setValue((int) (lineOffset));
         } catch (IndexOutOfBoundsException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        } catch (BadLocationException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
     }
@@ -429,10 +458,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         try {
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1.getEditorPane());
             if (editorUI == null) return;
-            int lineHeight = editorUI.getLineHeight();
-    
+            
             int offset = jEditorPane1.getScrollPane().getViewport().getViewRect().height / 2 + 1;
-            int lineOffset = lineHeight * line - offset;
+            View rootView = org.netbeans.editor.Utilities.getDocumentView(jEditorPane1.getEditorPane());
+            Rectangle rec = jEditorPane1.getEditorPane().modelToView(rootView.getView(line).getEndOffset() - 1);
+            int lineOffset;
+            if (rec == null) {
+                int lineHeight = editorUI.getLineHeight();
+                lineOffset = lineHeight * line - offset;
+            } else {
+                lineOffset = rec.y - offset;
+            }
     
             int off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), line);
             jEditorPane1.getEditorPane().setCaretPosition(off1);
@@ -445,7 +481,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 updateCurrentDifference();
             }
         } catch (IndexOutOfBoundsException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
@@ -748,7 +786,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void showCurrentDifference() {
         int index = getDifferenceIndex();
-        if (index < 0 || index >= diffs.length) {
+        if (index < 0 || index >= diffs.length || index >= manager.getDecorations().length) {
             return;
         }
         Difference diff = diffs[index];
@@ -762,7 +800,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             jEditorPane1.getEditorPane().setCaretPosition(off1);
             jEditorPane2.getEditorPane().setCaretPosition(off2);
             
-            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[getDifferenceIndex()];
+            DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
             if (ddiff.getDiff().getType() == Difference.DELETE) {
                 offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
@@ -950,24 +988,26 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         Document sdoc = getSourceDocument(ss);
         baseDocument = sdoc;
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (jEditorPane1.getEditorPane().getUI() instanceof BaseTextUI) {
-            if (sdoc == null) {
-                Reader r = ss.createReader();
-                if (r != null) {
-                    firstSourceAvailable = true;
-                    try {
-                        kit.read(r, doc, 0);
-                    } catch (javax.swing.text.BadLocationException e) {
-                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                    } finally {
-                        r.close();
+        if (!Boolean.TRUE.equals(skipFile)) {
+            if (jEditorPane1.getEditorPane().getUI() instanceof BaseTextUI) {
+                if (sdoc == null) {
+                    Reader r = ss.createReader();
+                    if (r != null) {
+                        firstSourceAvailable = true;
+                        try {
+                            kit.read(r, doc, 0);
+                        } catch (javax.swing.text.BadLocationException e) {
+                            throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                        } finally {
+                            r.close();
+                        }
                     }
+                } else {
+                    firstSourceAvailable = true;
                 }
             } else {
-                firstSourceAvailable = true;
+                firstSourceUnsupportedTextUI = true;
             }
-        } else {
-            firstSourceUnsupportedTextUI = true;
         }
         jEditorPane1.initActions();        
         jEditorPane1.getEditorPane().setDocument(doc);
@@ -983,7 +1023,23 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (dao.getPrimaryFile() == fo) {
                     EditorCookie ec = dao.getCookie(EditorCookie.class);
                     if (ec != null) {
-                        sdoc = ec.openDocument();
+                        try {
+                            sdoc = ec.openDocument();
+                        } catch (UserQuestionException ex) {
+                            boolean open = !Boolean.TRUE.equals(skipFile);
+                            if (skipFile == null) {
+                                NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                                    NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.ConfirmOpenningTitle"), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION); //NOI18N
+                                open = DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
+                            }
+                            if (open) {
+                                ex.confirmed();
+                                sdoc = ec.openDocument();
+                            } else {
+                                sdoc = null;
+                                this.skipFile = true;
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -1031,24 +1087,26 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
         Document doc = sdoc != null ? sdoc : kit.createDefaultDocument();
-        if (jEditorPane2.getEditorPane().getUI() instanceof BaseTextUI) {
-            if (sdoc == null) {
-                Reader r = ss.createReader();
-                if (r != null) {
-                    secondSourceAvailable = true;
-                    try {
-                        kit.read(r, doc, 0);
-                    } catch (javax.swing.text.BadLocationException e) {
-                        throw new IOException("Can not locate the beginning of the document."); // NOI18N
-                    } finally {
-                        r.close();
+        if (sdoc != null || !Boolean.TRUE.equals(skipFile)) {
+            if (jEditorPane2.getEditorPane().getUI() instanceof BaseTextUI) {
+                if (sdoc == null) {
+                    Reader r = ss.createReader();
+                    if (r != null) {
+                        secondSourceAvailable = true;
+                        try {
+                            kit.read(r, doc, 0);
+                        } catch (javax.swing.text.BadLocationException e) {
+                            throw new IOException("Can not locate the beginning of the document."); // NOI18N
+                        } finally {
+                            r.close();
+                        }
                     }
+                } else {
+                    secondSourceAvailable = true;
                 }
             } else {
-                secondSourceAvailable = true;
+                secondSourceUnsupportedTextUI = true;
             }
-        } else {
-            secondSourceUnsupportedTextUI = true;
         }
         jEditorPane2.initActions();
         view.putClientProperty(UndoRedo.class, editorUndoRedo);

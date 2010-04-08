@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,7 +75,7 @@ public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
             File copiedBase = new File(new File(getWorkDir(), getTestHostName()), origBase.getName());
             copyDirectory(origBase, copiedBase);
             File projectDirFile = new File(copiedBase, projectName);
-            changeProjectHost(projectDirFile);
+            changeProjectHost(projectDirFile, getTestExecutionEnvironment());
             setupHost(sync.ID);
             setSyncFactory(sync.ID);
             assertEquals("Wrong sybc factory:", sync.ID,
@@ -86,11 +87,10 @@ public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
 
             assertTrue(projectDirFile.exists());
 
-            clearRemoteSyncRoot();
             FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
             MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
             assertNotNull("project is null", makeProject);
-            buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+            buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
         } finally {
             ConnectionManager.getInstance().disconnect(execEnv);
         }

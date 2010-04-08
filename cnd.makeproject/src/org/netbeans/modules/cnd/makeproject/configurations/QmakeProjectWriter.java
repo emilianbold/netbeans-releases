@@ -310,7 +310,7 @@ public class QmakeProjectWriter {
                 case LibraryItem.LIB_ITEM:
                 case LibraryItem.STD_LIB_ITEM:
                 case LibraryItem.OPTION_ITEM:
-                    return item.getOption();
+                    return item.getOption(null);
                 default:
                     return ""; // NOI18N
             }

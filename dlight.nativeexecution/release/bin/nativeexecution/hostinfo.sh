@@ -21,9 +21,16 @@ if [ "${OS}" = "SunOS" ]; then
    OSBUILD=`head -1 /etc/release | sed -e "s/^ *//"`
    CPUNUM=`/usr/sbin/psrinfo -v | grep "^Status of" | wc -l | sed 's/^ *//'`
 else
-   uname -a | egrep "x86_64|WOW64" >/dev/null
-   if [ $? -eq 0 ]; then
-      BITNESS=64
+   if [ "${OS}" = "Darwin" ]; then
+      sysctl hw.cpu64bit_capable | grep -q "1$"
+      if [ $? -eq 0 ]; then
+         BITNESS=64
+      fi
+   else
+      uname -a | egrep "x86_64|WOW64" >/dev/null
+      if [ $? -eq 0 ]; then
+         BITNESS=64
+      fi
    fi
 
    if [ -f "/etc/sun-release" ]; then

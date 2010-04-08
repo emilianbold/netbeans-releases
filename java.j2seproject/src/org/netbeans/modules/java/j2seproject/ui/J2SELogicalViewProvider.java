@@ -48,16 +48,13 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,29 +67,26 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
-import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -107,21 +101,29 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final J2SEProject project;
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
-    private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PropertyChangeListener pcl;
     
-    public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
         this.helper = helper;
         assert helper != null;
         this.evaluator = evaluator;
         assert evaluator != null;
-        this.spp = spp;
-        assert spp != null;
         this.resolver = resolver;
         assert resolver != null;
+        pcl = new PropertyChangeListener() {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
+                testBroken();
+            }
+        };
+        evaluator.addPropertyChangeListener(pcl);
+        // When evaluator fires changes that platform properties were
+        // removed the platform still exists in JavaPlatformManager.
+        // That's why I have to listen here also on JPM:
+        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
     }
     
     public Node createLogicalView() {
@@ -174,13 +176,32 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         changeSupport.removeChangeListener(l);
     }
     
+    private final RequestProcessor.Task task = RP.create(new Runnable() {
+        public @Override void run() {
+            boolean old = broken;
+            boolean _broken = hasBrokenLinks();
+            if (old != _broken) {
+                setBroken(_broken);
+            }
+            old = illegalState;
+            boolean _illegalState = hasInvalidJdkVersion();
+            if (old != _illegalState) {
+                setIllegalState(_illegalState);
+            }
+            old = compileOnSaveDisabled;
+            boolean _compileOnSaveDisabled = isCompileOnSaveDisabled();
+            if (old != _compileOnSaveDisabled) {
+                setCompileOnSaveDisabled(_compileOnSaveDisabled);
+            }
+        }
+    });
+
     /**
      * Used by J2SEProjectCustomizer to mark the project as broken when it warns user
-     * about project's broken references and advices him to use BrokenLinksAction to correct it.
-     *
+     * about project's broken references and advises him to use BrokenLinksAction to correct it.
      */
-    public void testBroken() {
-        changeSupport.fireChange();
+    public @Override void testBroken() {
+        task.schedule(100);
     }
     
     
@@ -201,7 +222,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 new String[] {J2SEProjectProperties.JAVA_PLATFORM});
     }
     
-    public boolean hasInvalidJdkVersion () {
+    private boolean hasInvalidJdkVersion () {
         String javaSource = this.evaluator.getProperty("javac.source");     //NOI18N
         String javaTarget = this.evaluator.getProperty("javac.target");    //NOI18N
         if (javaSource == null && javaTarget == null) {
@@ -250,16 +271,10 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         String compileOnSaveDisabledTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + NbBundle.getMessage(J2SELogicalViewProvider.class, "TP_CompileOnSaveDisabled");
         compileOnSaveDisabledBadge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(COMPILE_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP); // NOI18N
     }
-    
-    /** Filter node containin additional features for the J2SE physical
-     */
-    private final class J2SELogicalViewRootNode extends AbstractNode {
+
+    private final class J2SELogicalViewRootNode extends AbstractNode implements ChangeListener {
         
-        private Action brokenLinksAction;
-        private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
-        private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
-        private boolean compileOnSaveDisabled;  //true iff Compile-on-Save is disabled
-        
+        @SuppressWarnings("LeakingThisInConstructor")
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
                   Lookups.singleton(project));
@@ -272,7 +287,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 illegalState = true;
             }
             compileOnSaveDisabled = isCompileOnSaveDisabled();
-            brokenLinksAction = new BrokenLinksAction();
+            addChangeListener(WeakListeners.change(this, J2SELogicalViewProvider.this));
         }
 
         @Override
@@ -315,9 +330,15 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             }
         }
         
+        public @Override void stateChanged(ChangeEvent e) {
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+
         @Override
         public Action[] getActions( boolean context ) {
-            return getAdditionalActions();
+            return CommonProjectActions.forType("org-netbeans-modules-java-j2seproject"); // NOI18N
         }
         
         @Override
@@ -334,145 +355,77 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         public HelpCtx getHelpCtx() {
             return new HelpCtx(J2SELogicalViewRootNode.class);
         }
-        
-        // Private methods -------------------------------------------------
-        
-        private Action[] getAdditionalActions() {
-            
-            ResourceBundle bundle = NbBundle.getBundle(J2SELogicalViewProvider.class);
-            
-            List<Action> actions = new ArrayList<Action>();
-            
-            actions.add(CommonProjectActions.newFileAction());
-            actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, bundle.getString("LBL_JavadocAction_Name"), null)); // NOI18N
-            actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
-            actions.addAll(Utilities.actionsForPath("Projects/Debugger_Actions_temporary")); //NOI18N
-            actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
-            actions.add(CommonProjectActions.setProjectConfigurationAction());
-            actions.add(null);
-            actions.add(CommonProjectActions.setAsMainProjectAction());
-            actions.add(CommonProjectActions.openSubprojectsAction());
-            actions.add(CommonProjectActions.closeProjectAction());
-            actions.add(null);
-            actions.add(CommonProjectActions.renameProjectAction());
-            actions.add(CommonProjectActions.moveProjectAction());
-            actions.add(CommonProjectActions.copyProjectAction());
-            actions.add(CommonProjectActions.deleteProjectAction());
-            actions.add(null);
-            actions.add(SystemAction.get(FindAction.class));
-            
-            // honor 57874 contact
-            actions.addAll(Utilities.actionsForPath("Projects/Actions")); //NOI18N
-            
-            actions.add(null);
-            if (broken) {
-                actions.add(brokenLinksAction);
-            }
-            actions.add(CommonProjectActions.customizeProjectAction());
-            
-            return actions.toArray(new Action[actions.size()]);
-            
-        }
-        
-        private void setBroken(boolean broken) {
-            this.broken = broken;
-            brokenLinksAction.setEnabled(broken);
-            fireIconChange();
-            fireOpenedIconChange();
-            fireDisplayNameChange(null, null);
-        }
-        
-        private void setIllegalState (boolean illegalState) {
-            this.illegalState = illegalState;
-            fireIconChange();
-            fireOpenedIconChange();
-            fireDisplayNameChange(null, null);
-        }
-        
-        private void setCompileOnSaveDisabled (boolean value) {
-            this.compileOnSaveDisabled = value;
-            fireIconChange();
-            fireOpenedIconChange();
-            fireDisplayNameChange(null, null);
+
+    }
+
+    private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
+    private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
+    private boolean compileOnSaveDisabled;  //true iff Compile-on-Save is disabled
+
+    // Private methods -------------------------------------------------
+
+    private void setBroken(boolean broken) {
+        this.broken = broken;
+        changeSupport.fireChange();
+    }
+
+    private void setIllegalState (boolean illegalState) {
+        this.illegalState = illegalState;
+        changeSupport.fireChange();
+    }
+
+    private void setCompileOnSaveDisabled (boolean value) {
+        this.compileOnSaveDisabled = value;
+        changeSupport.fireChange();
+    }
+
+    public static final class BrokenLinksActionFactory extends AbstractAction implements ContextAwareAction {
+
+        /** for layer registration */
+        public BrokenLinksActionFactory() {
+            setEnabled(false);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         }
 
-        /** This action is created only when project has broken references.
-         * Once these are resolved the action is disabled.
-         */
-        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, ChangeListener, Runnable {
-            
-            private RequestProcessor.Task task = null;
-            
-            private PropertyChangeListener weakPCL;
-            
-            public BrokenLinksAction() {
-                putValue(Action.NAME, NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
-                setEnabled(broken);
-                evaluator.addPropertyChangeListener(this);
-                // When evaluator fires changes that platform properties were
-                // removed the platform still exists in JavaPlatformManager.
-                // That's why I have to listen here also on JPM:
-                weakPCL = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
-                JavaPlatformManager.getDefault().addPropertyChangeListener(weakPCL);
-                J2SELogicalViewProvider.this.addChangeListener(WeakListeners.change(this, J2SELogicalViewProvider.this));
-            }
-            
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    helper.requestUpdate();
-                    BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[] {J2SEProjectProperties.JAVA_PLATFORM});
-                    run();
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                }
-            }
-            
-            public void propertyChange(PropertyChangeEvent evt) {
-                refsMayChanged();
-            }
-            
-            
-            public void stateChanged(ChangeEvent evt) {
-                refsMayChanged();
-            }
-            
-            public synchronized void run() {
-                boolean old = J2SELogicalViewRootNode.this.broken;
-                boolean broken = hasBrokenLinks();
-                if (old != broken) {
-                    setBroken(broken);
-                }
-                
-                old = J2SELogicalViewRootNode.this.illegalState;
-                broken = hasInvalidJdkVersion ();
-                if (old != broken) {
-                    setIllegalState(broken);
-                }
-                old = J2SELogicalViewRootNode.this.compileOnSaveDisabled;
-                boolean cosDisabled = isCompileOnSaveDisabled();
-                if (old != cosDisabled) {
-                    setCompileOnSaveDisabled(cosDisabled);
-                }
-            }
-            
-            private void refsMayChanged() {
-                // check project state whenever there was a property change
-                // or change in list of platforms.
-                // Coalesce changes since they can come quickly:
-                if (task == null) {
-                    task = RP.create(this);
-                }
-                task.schedule(100);
-            }
-            
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
         }
-        
+
+        public @Override Action createContextAwareInstance(Lookup actionContext) {
+            Collection<? extends Project> p = actionContext.lookupAll(Project.class);
+            if (p.size() != 1) {
+                return this;
+            }
+            J2SELogicalViewProvider lvp = p.iterator().next().getLookup().lookup(J2SELogicalViewProvider.class);
+            if (lvp == null) {
+                return this;
+            }
+            return lvp.new BrokenLinksAction();
+        }
+
     }
-    
+
+    /** This action is created only when project has broken references.
+     * Once these are resolved the action is disabled.
+     */
+    private class BrokenLinksAction extends AbstractAction {
+
+        public BrokenLinksAction() {
+            putValue(Action.NAME, NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
+            setEnabled(broken);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                helper.requestUpdate();
+                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[] {J2SEProjectProperties.JAVA_PLATFORM});
+                testBroken();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
+
+    }
+
 }

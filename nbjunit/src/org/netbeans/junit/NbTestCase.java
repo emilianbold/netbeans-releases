@@ -395,17 +395,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             return;
         }
         try {
-            String hudsonURL = System.getenv("HUDSON_URL");
-            if (hudsonURL != null) {
-                String workspace = System.getenv("WORKSPACE");
+            String buildURL = System.getenv("BUILD_URL");
+            if (buildURL != null) {
+                String workspace = new File(System.getenv("WORKSPACE")).getCanonicalPath();
                 if (!workspace.endsWith(File.separator)) {
                     workspace += File.separator;
                 }
-                String path = wd.getAbsolutePath();
+                String path = wd.getCanonicalPath();
                 if (path.startsWith(workspace)) {
                     copytree(wd, new File(wd.getParentFile(), wd.getName() + "-FAILED"));
-                    System.err.println("Working directory: " + hudsonURL + "job/" + System.getenv("JOB_NAME") + "/" +
-                            System.getenv("BUILD_NUMBER") + "/artifact/" +
+                    System.err.println("Working directory: " + buildURL + "artifact/" +
                             path.substring(workspace.length()).replace(File.separatorChar, '/') + "-FAILED/");
                     return;
                 }

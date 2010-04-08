@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -54,9 +54,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import org.netbeans.modules.j2ee.sun.validation.Constants;
 import org.netbeans.modules.j2ee.sun.validation.constraints.CardinalConstraint;
 import org.netbeans.modules.j2ee.sun.validation.constraints.Constraint;
 import org.netbeans.modules.j2ee.sun.validation.constraints.data.Argument;
@@ -85,7 +82,7 @@ import org.netbeans.modules.j2ee.sun.validation.util.Utils;
  * <code>ValidationManagerFactory</code> returns default 
  * <code>ValidationManager</code>. Default <code>ValidationManager</code> is 
  * based on default Validation File. Default Validation File defines Constraints
- * for 8.0 Sun DTDs.
+ * for 8.0 SJSAS DTDs.
  * <p>
  * Validations are performed, recursively on the given Object.
  * Two types of Validations are perfomed, Structural validations and Specified
@@ -1059,7 +1056,7 @@ public class ValidationManager {
     private Constraints getConstraints(String constraintsFile){
         URL url = null;
         InputStream inputStream = null;
-        Constraints constraints = null;
+        Constraints retVal = null;
 
         if(constraintsFile != null){
             inputStream = getInputStream(constraintsFile);
@@ -1068,12 +1065,12 @@ public class ValidationManager {
         //Create graph
         if(inputStream != null){
             try {
-                constraints = Constraints.createGraph(inputStream);
+                retVal = Constraints.createGraph(inputStream);
             } catch(Exception e) {
                 System.out.println(e.getMessage());
-                constraints = null;
+                retVal = null;
             }
         }
-        return constraints;
+        return retVal;
     }
 }

@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity")
+@Hint(category="code_maturity", suppressWarnings="CallToThreadDumpStack")
 public class PrintStackTrace {
 
     @TriggerPattern(value="$t.printStackTrace ()",

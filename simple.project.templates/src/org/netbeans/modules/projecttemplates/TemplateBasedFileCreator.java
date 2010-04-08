@@ -84,6 +84,9 @@ class TemplateBasedFileCreator extends FileCreator {
         if (performManualSubstitutions) {
             substitute(result, params);
         }
+        if (result.getPrimaryFile().isLocked()) {
+            throw new IllegalStateException ("Output file " + result.getPrimaryFile().getPath() + " should not be locked after create-from-template");
+        }
         return result;
     }
 

@@ -155,11 +155,10 @@ final class RubyMethodTypeInferencer {
             case VCALLNODE:
                 Node root = knowledge.getRoot();
                 AstPath path = new AstPath(root, callNodeToInfer);
-                IScopingNode clazz = AstUtilities.findClassOrModule(path);
-                if (clazz == null) {
+                String className = AstUtilities.getFqnName(path);
+                if (className.isEmpty()) {
                     break;
                 }
-                String className = AstUtilities.getClassOrModuleName(clazz);
                 // check whether it is a call to a method in the same file that 
                 // we've already analyzed (so we don't have to use the index for such cases)
                 RubyType methodInSameFile = knowledge.getTypeForMethod(className, name);
@@ -206,7 +205,8 @@ final class RubyMethodTypeInferencer {
                             ? FindersHelper.pickFinderType(callNodeToInfer, name, receiverType)
                             // looks like a query method
                             : ActiveRecordQueryIndexer.getReturnType(name);
-                } else if (RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
+                } else if (ActiveRecordQueryIndexer.isQueryMethod(name)
+                        && RubyIndex.ACTIVE_RECORD_RELATION.equals(receiverType.first())) {
                     return ActiveRecordQueryIndexer.getReturnType(name);
                 }
             }
@@ -226,9 +226,7 @@ final class RubyMethodTypeInferencer {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         // first methods from the class itself
-        for (String type : receiverType.getRealTypes()) {
-            methods.addAll(index.getMethods(name, type, QuerySupport.Kind.EXACT));
-        }
+        methods.addAll(index.getMethods(name, receiverType.getRealTypes(), QuerySupport.Kind.EXACT));
         if (methods.isEmpty()) {
             // inherited methods
             // TODO: should consider only the return type of the first inherited method in the hiearchy

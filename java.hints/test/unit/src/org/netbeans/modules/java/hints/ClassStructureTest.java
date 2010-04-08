@@ -290,6 +290,20 @@ public class ClassStructureTest extends TestBase {
     }
 
     @Test
+    public void testProtectedMemberInFinalClass181723() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;\n" +
+                       "@SuppressWarnings(\"FinalClass\") public final class Test extends A {\n" +
+                       "    protected void test() {\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "@SuppressWarnings(\"MultipleTopLevelClassesInFile\") class A {\n" +
+                       "    protected void test() {\n" +
+                       "    }\n" +
+                       "}");
+    }
+
+    @Test
     public void testMarkerInterface() throws Exception {
         performAnalysisContainsTest("test/Test.java",
                        "package test;\n" +

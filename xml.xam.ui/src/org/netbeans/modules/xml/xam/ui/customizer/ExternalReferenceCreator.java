@@ -57,14 +57,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
+import org.netbeans.modules.xml.reference.ReferenceUtil;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
@@ -79,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
 
 /**
  * Base class for external reference creators. Unlike a customizer, a
@@ -97,7 +99,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
     /** The file being modified (where the import will be added). */
     private transient FileObject sourceFO;
     /** Used to deal with project catalogs. */
-    private transient DefaultProjectCatalogSupport catalogSupport;
+    private transient DefaultProjectCatalogSupport myCatalogSupport;
 
     /**
      * Creates new form ExternalReferenceCreator
@@ -109,9 +111,9 @@ public abstract class ExternalReferenceCreator<T extends Component>
         super(component);
         registeredNodes = new HashMap<DataObject, NodeSet>();
         initComponents();
-        sourceFO = (FileObject) component.getModel().getModelSource().
-                getLookup().lookup(FileObject.class);
-        catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
+        sourceFO = (FileObject) component.getModel().getModelSource().getLookup().
+             lookup(FileObject.class);
+        myCatalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
         init(component, model);
         // View for selecting an external reference.
         TreeTableView locationView = new LocationView();
@@ -138,33 +140,40 @@ public abstract class ExternalReferenceCreator<T extends Component>
     }
 
     public void applyChanges() throws IOException {
-        List<Node> nodes = getSelectedNodes();
-        for (Node node : nodes) {
-            if (node instanceof ExternalReferenceNode) {
-                Model model = ((ExternalReferenceNode) node).getModel();
-                // Without a model, the selection is completely invalid.
-                if (model != null && model != getModelComponent().getModel()) {
-                    FileObject fileObj = (FileObject) model.getModelSource().
-                            getLookup().lookup(FileObject.class);
-                    if (fileObj != null) {
-                        try {
-                            if (catalogSupport.needsCatalogEntry(sourceFO, fileObj)) {
-                                // Remove the previous catalog entry, then create new one.
-                                URI uri = catalogSupport.getReferenceURI(sourceFO, fileObj);
-                                catalogSupport.removeCatalogEntry(uri);
-                                catalogSupport.createCatalogEntry(sourceFO, fileObj);
-                            }
-                        } catch (URISyntaxException use) {
-                            ErrorManager.getDefault().notify(use);
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
-                        } catch (CatalogModelException cme) {
-                            ErrorManager.getDefault().notify(cme);
-                        }
-                    }
-                }
-            }
-        }
+// # 174959
+//        List<Node> nodes = getSelectedNodes();
+//    
+//        for (Node node : nodes) {
+//            if ( !(node instanceof ExternalReferenceNode)) {
+//                continue;
+//            }
+//            Model model = ((ExternalReferenceNode) node).getModel();
+//
+//            if (model == null || model == getModelComponent().getModel()) {
+//                continue;
+//            }
+//            FileObject file = (FileObject) model.getModelSource().getLookup().lookup(FileObject.class);
+//
+//            if (file == null) {
+//                continue;
+//            }
+//            try {
+//                if (myCatalogSupport != null && myCatalogSupport.needsCatalogEntry(sourceFO, file)) {
+//                    URI uri = myCatalogSupport.getReferenceURI(sourceFO, file);
+//                    myCatalogSupport.removeCatalogEntry(uri);
+//                    myCatalogSupport.createCatalogEntry(sourceFO, file);
+//                }
+//            }
+//            catch (URISyntaxException e) {
+//                ErrorManager.getDefault().notify(e);
+//            }
+//            catch (IOException e) {
+//                ErrorManager.getDefault().notify(e);
+//            }
+//            catch (CatalogModelException e) {
+//                ErrorManager.getDefault().notify(e);
+//            }
+//      }
     }
 
     /**
@@ -213,7 +222,13 @@ public abstract class ExternalReferenceCreator<T extends Component>
                 // the same prefix (or at least that is the idea).
                 ExternalReferenceDataNode other = set.getNodes().get(0);
                 if (node.getPrefix().equals(other.getPrefix())) {
-                    return false;
+                    // Additionally check that the namespaces are different.
+                    // It is allowed to use the same prefix if the namespace is the same.
+                    String ns1 = node.getNamespace();
+                    String ns2 = other.getNamespace();
+                    if (!XAMUtils.equal(ns1, ns2)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -332,18 +347,29 @@ public abstract class ExternalReferenceCreator<T extends Component>
      *
      * @param  node  selected node.
      */
-    private void validateInput(ExternalReferenceNode node) {
+    protected void validateInput(ExternalReferenceNode node) {
         String msg = null;
         if (mustNamespaceDiffer() && node instanceof ExternalReferenceDataNode) {
             ExternalReferenceDataNode erdn = (ExternalReferenceDataNode) node;
             Map<String, String> prefixMap = getPrefixes(getModelComponent().getModel());
             String ep = erdn.getPrefix();
-            // Must be a non-empty prefix, that is not already in use, and
-            // is unique among the selected nodes (and be selected itself).
-            if (ep.length() == 0 || prefixMap.containsKey(ep) ||
-                    (!isValidPrefix(erdn) && erdn.isSelected())) {
-                msg = NbBundle.getMessage(ExternalReferenceCreator.class,
-                        "LBL_ExternalReferenceCreator_InvalidPrefix");
+            String nodeNs = erdn.getNamespace();
+            // Skip this check if namespace is not specified.
+            if (nodeNs != null && nodeNs.length() != 0) {
+                //
+                // Must be a non-empty prefix, that is not already in use, and
+                // is unique among the selected nodes (and be selected itself).
+                //
+                String registeredNs = prefixMap.get(ep);
+                boolean prefixRegistered = registeredNs != null;
+                boolean registeredPrefixIncorrect = !nodeNs.equals(registeredNs);
+                //
+                if (ep.length() == 0 || 
+                        (prefixRegistered && registeredPrefixIncorrect) ||
+                        (!isValidPrefix(erdn) && erdn.isSelected())) {
+                    msg = NbBundle.getMessage(ExternalReferenceCreator.class,
+                            "LBL_ExternalReferenceCreator_InvalidPrefix");
+                }
             }
         }
         if (node instanceof RetrievedFilesChildren.RetrievedFileNode) {
@@ -368,7 +394,8 @@ public abstract class ExternalReferenceCreator<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
+            messageLabel.setIcon(ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/xml/xam/ui/resources/error.gif", false)); // NOI18N
         }
     }
 
@@ -386,6 +413,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
         public LocationView() {
             super();
             tree.addMouseListener(new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
                     // Invert the selection of the data node, if such a
                     // node was clicked on.
@@ -423,11 +451,11 @@ public abstract class ExternalReferenceCreator<T extends Component>
 
     protected Node createRootNode() {
         Set/*<Project>*/ refProjects = null;
-        if (catalogSupport.supportsCrossProject()) {
-            refProjects = catalogSupport.getProjectReferences();
+        if (myCatalogSupport != null && myCatalogSupport.supportsCrossProject()) {
+            refProjects = myCatalogSupport.getProjectReferences();
         }
         ExternalReferenceDecorator decorator = getNodeDecorator();
-        Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
+        Node[] rootNodes = new Node[0];
         Project prj = FileOwnerQuery.getOwner(sourceFO);
         if (prj == null) {
             showMessage(NbBundle.getMessage(ExternalReferenceCreator.class,
@@ -435,18 +463,23 @@ public abstract class ExternalReferenceCreator<T extends Component>
             // set empty root.
             Node rootNode = new AbstractNode(Children.LEAF);
             return rootNode;
+        } else {
+            LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
+                    lookup(LogicalViewProvider.class);
+            rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
+            rootNodes[0] = decorator.createExternalReferenceNode(
+                    viewProvider.createLogicalView());
         }
-        LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
-                lookup(LogicalViewProvider.class);
-        rootNodes[0] = decorator.createExternalReferenceNode(
-                viewProvider.createLogicalView());
         int rootIndex = 1;
         List<FileObject> projectRoots = new ArrayList<FileObject>();
-        projectRoots.add(prj.getProjectDirectory());
+
+        if (prj != null) {
+            projectRoots.add(prj.getProjectDirectory());
+        }
         if (refProjects != null) {
             for (Object o : refProjects) {
                 Project refPrj = (Project) o;
-                viewProvider = (LogicalViewProvider) refPrj.getLookup().
+                LogicalViewProvider viewProvider = (LogicalViewProvider) refPrj.getLookup().
                         lookup(LogicalViewProvider.class);
                 rootNodes[rootIndex++] = decorator.createExternalReferenceNode(
                         viewProvider.createLogicalView());
@@ -456,7 +489,10 @@ public abstract class ExternalReferenceCreator<T extends Component>
         FileObject[] roots = projectRoots.toArray(
                 new FileObject[projectRoots.size()]);
         Children fileChildren = new Children.Array();
-        fileChildren.add(rootNodes);
+
+        if (rootNodes != null) {
+            fileChildren.add(rootNodes);
+        }
         Node byFilesNode = new FolderNode(fileChildren);
         byFilesNode.setDisplayName(NbBundle.getMessage(
                 ExternalReferenceCreator.class,
@@ -599,30 +635,38 @@ public abstract class ExternalReferenceCreator<T extends Component>
             DataObject dobj = (DataObject) node.getLookup().
                     lookup(DataObject.class);
             if (dobj != null && dobj.isValid()) {
-                FileObject fileObj = dobj.getPrimaryFile();
-                ModelCookie cookie = (ModelCookie) dobj.getCookie(
-                        ModelCookie.class);
+                FileObject file = dobj.getPrimaryFile();
+                ModelCookie cookie = (ModelCookie) dobj.getCookie(ModelCookie.class);
                 Model model;
+
                 try {
                     if (cookie != null && (model = cookie.getModel()) !=
                             getModelComponent().getModel()) {
                         String ns = getTargetNamespace(model);
-                        if (ns == null || mustNamespaceDiffer() !=
+                
+                        if (ns == null || mustNamespaceDiffer() != 
                                 ns.equals(getTargetNamespace())) {
-                            return catalogSupport.getReferenceURI(
-                                    sourceFO, fileObj).toString();
+                            // # 174959
+                            location = ReferenceUtil.getLocation(ReferenceUtil.getProject(sourceFO).getProjectDirectory(), file);
+                            // # 177775
+                            if (location == null && myCatalogSupport != null) {
+                                location = myCatalogSupport.getReferenceURI(sourceFO, file).toString();
+                            }
+                            return location;
                         }
                     }
-                } catch (URISyntaxException urise) {
+                }
+                catch (URISyntaxException urise) {
                     ErrorManager.getDefault().notify(urise);
-                } catch (IOException ioe) {
+                }
+                catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
                 }
             }
         }
         if (location != null) {
             try {
-                URI uri = new URI("file", location, null);
+                URI uri = new URI("file", location, null); // NOI18N
                 uri = uri.normalize();
                 location = uri.getRawSchemeSpecificPart();
             } catch (URISyntaxException use) {

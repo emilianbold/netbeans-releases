@@ -58,7 +58,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.CharSequences;
 
 /**
  * utility methods for sorting Csm elements
@@ -173,10 +174,10 @@ public class CsmSortUtilities {
             }
             if (CsmKindUtilities.isCsmObject(o1) && CsmKindUtilities.isCsmObject(o2)) {
                 if (CsmKindUtilities.isClass((CsmObject)o1) && CsmKindUtilities.isClass((CsmObject)o2)){
-                    return CharSequenceKey.Comparator.compare(((CsmClass)o1).getName(),((CsmClass)o2).getName());
+                    return CharSequences.comparator().compare(((CsmClass)o1).getName(),((CsmClass)o2).getName());
                 }
                 if (CsmKindUtilities.isNamespace((CsmObject)o1) && CsmKindUtilities.isNamespace((CsmObject)o2)){
-                    return CharSequenceKey.Comparator.compare(((CsmNamespace)o1).getName(),((CsmNamespace)o2).getName());
+                    return CharSequences.comparator().compare(((CsmNamespace)o1).getName(),((CsmNamespace)o2).getName());
                 }
             }
             
@@ -193,10 +194,10 @@ public class CsmSortUtilities {
             }
             if (CsmKindUtilities.isCsmObject(o1) && CsmKindUtilities.isCsmObject(o2)) {
                 if (CsmKindUtilities.isClass((CsmObject)o1) && CsmKindUtilities.isClass((CsmObject)o2)){
-                    return CharSequenceKey.ComparatorIgnoreCase.compare(((CsmClass)o1).getName(),((CsmClass)o2).getName());
+                    return CharSequenceUtils.ComparatorIgnoreCase.compare(((CsmClass)o1).getName(),((CsmClass)o2).getName());
                 }
                 if (CsmKindUtilities.isNamespace((CsmObject)o1) && CsmKindUtilities.isNamespace((CsmObject)o2)){
-                    return CharSequenceKey.ComparatorIgnoreCase.compare(((CsmNamespace)o1).getName(),((CsmNamespace)o2).getName());
+                    return CharSequenceUtils.ComparatorIgnoreCase.compare(((CsmNamespace)o1).getName(),((CsmNamespace)o2).getName());
                 }
             }
             
@@ -384,8 +385,8 @@ public class CsmSortUtilities {
     
     private static int compareNames(CsmNamedElement elem1, CsmNamedElement elem2, boolean sensitive) {
         int order = sensitive ?
-                        CharSequenceKey.Comparator.compare(elem1.getName(),elem2.getName()) :
-                        CharSequenceKey.ComparatorIgnoreCase.compare(elem1.getName(),elem2.getName());        
+                        CharSequences.comparator().compare(elem1.getName(),elem2.getName()) :
+                        CharSequenceUtils.ComparatorIgnoreCase.compare(elem1.getName(),elem2.getName());
         return order;
     }
     
@@ -393,7 +394,7 @@ public class CsmSortUtilities {
         int order = compareNames(var1, var2, sensitive);
 
         //do not allow fields merge
-        int sameName = CharSequenceKey.Comparator.compare(var1.getName(),var2.getName());
+        int sameName = CharSequences.comparator().compare(var1.getName(),var2.getName());
         if (order == 0 && sameName != 0) order = sameName;
 
         return order;
@@ -403,7 +404,7 @@ public class CsmSortUtilities {
         int order = compareNames(enmtr1, enmtr2, sensitive);
 
         //do not allow fields merge
-        int sameName = CharSequenceKey.Comparator.compare(enmtr1.getName(),enmtr2.getName());
+        int sameName = CharSequences.comparator().compare(enmtr1.getName(),enmtr2.getName());
         if (order == 0 && sameName != 0) order = sameName;
 
         return order;
@@ -422,8 +423,8 @@ public class CsmSortUtilities {
                     // TODO: access to getClassifier is too expensive (calls renderer)
                     // should be changed to cheap one
                     order = sensitive ?
-                        CharSequenceKey.Comparator.compare(param1[i].getType().getText(),param2[i].getType().getText()) :
-                        CharSequenceKey.ComparatorIgnoreCase.compare(param1[i].getType().getText(),param2[i].getType().getText());
+                        CharSequences.comparator().compare(param1[i].getType().getText(),param2[i].getType().getText()) :
+                        CharSequenceUtils.ComparatorIgnoreCase.compare(param1[i].getType().getText(),param2[i].getType().getText());
                 } catch (NullPointerException ex) {
                     order = 0;
                     // IZ #76035. Unfortunately getType() sometimes returns null  
@@ -446,7 +447,7 @@ public class CsmSortUtilities {
         }
 
         //do not allow methods merge
-        int sameName = CharSequenceKey.Comparator.compare(fun1.getName(),fun2.getName());
+        int sameName = CharSequences.comparator().compare(fun1.getName(),fun2.getName());
         if (order == 0 && sameName != 0) order = sameName;
 
         return order;

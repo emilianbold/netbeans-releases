@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UsingResolverImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -89,7 +89,7 @@ public final class Resolver3 implements Resolver {
     private boolean inLocalContext = false;
     
     private CharSequence currName() {
-        return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequenceKey.empty();
+        return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
     }
 
     private CsmNamespace containingNamespace;
@@ -364,7 +364,7 @@ public final class Resolver3 implements Resolver {
                  decls = ur.findUsedDeclarations(containingNS);
             }
             for (CsmDeclaration decl : decls) {
-                if (CharSequenceKey.Comparator.compare(nameToken, decl.getName()) == 0) {
+                if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
                     if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
                         result = decl;
                         break;
@@ -489,7 +489,7 @@ public final class Resolver3 implements Resolver {
                     CsmSelect.getFilterBuilder().createNameFilter(currName(), true, true, false));
             while(it.hasNext()) {
                 CsmMember member = it.next();
-                if( CharSequenceKey.Comparator.compare(currName(),member.getName())==0 ) {
+                if( CharSequences.comparator().compare(currName(),member.getName())==0 ) {
                     if(CsmKindUtilities.isClassifier(member)) {
                         return (CsmClassifier) member;
                     }            
@@ -509,7 +509,7 @@ public final class Resolver3 implements Resolver {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
             } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
                 CsmTypedef typedef = (CsmTypedef) decl;
-                if( CharSequenceKey.Comparator.compare(currName(),typedef.getName())==0 ) {
+                if( CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
                     currTypedef = typedef;
                 }
             }
@@ -517,7 +517,7 @@ public final class Resolver3 implements Resolver {
     }
     
     private void processTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        if( CharSequenceKey.Comparator.compare(nsd.getName(),currName())==0 )  {
+        if( CharSequences.comparator().compare(nsd.getName(),currName())==0 )  {
             currNamIdx++;
             doProcessTypedefsInUpperNamespaces(nsd);
         } else {
@@ -575,7 +575,7 @@ public final class Resolver3 implements Resolver {
             }
         } else if (CsmKindUtilities.isScope(element)) {
             if (inLocalContext && needClassifiers() && CsmKindUtilities.isClassifier(element)) {
-                if (CharSequenceKey.Comparator.compare(currName(), ((CsmClassifier)element).getName()) == 0) {
+                if (CharSequences.comparator().compare(currName(), ((CsmClassifier)element).getName()) == 0) {
                     currLocalClassifier = (CsmClassifier)element;
                 }
             }
@@ -584,7 +584,7 @@ public final class Resolver3 implements Resolver {
             }
         } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
             CsmTypedef typedef = (CsmTypedef) element;
-            if( CharSequenceKey.Comparator.compare(currName(),typedef.getName())==0 ) {
+            if( CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
                 currTypedef = typedef;
             }
         }
@@ -694,7 +694,7 @@ public final class Resolver3 implements Resolver {
                 }
 
                 if( result == null ) {
-                    CsmDeclaration decl = usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
+                    CsmDeclaration decl = usingDeclarations.get(CharSequences.create(nameTokens[0]));
                     if( decl != null ) {
                         result = decl;
                     }
@@ -721,7 +721,7 @@ public final class Resolver3 implements Resolver {
                 }
                 
                 if( result == null && needNamespaces()) {
-                    Object o = namespaceAliases.get(CharSequenceKey.create(nameTokens[0]));
+                    Object o = namespaceAliases.get(CharSequences.create(nameTokens[0]));
                     if( o instanceof CsmNamespace ) {
                         result = (CsmNamespace) o;
                     }

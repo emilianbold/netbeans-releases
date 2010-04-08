@@ -172,12 +172,14 @@ public class NbKeymapTest extends NbTestCase {
         make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
         make("Keymaps/NetBeans/C-A.instance").setAttribute("instanceCreate", new DummyAction("two"));
         make("Keymaps/Eclipse/C-A.instance").setAttribute("instanceCreate", new DummyAction("three"));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
         assertEquals("two", km.getAction(controlA).getValue(Action.NAME));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        km.waitFinished();
         assertEquals("three", km.getAction(controlA).getValue(Action.NAME));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "IDEA");
+        km.waitFinished();
         assertEquals("one", km.getAction(controlA).getValue(Action.NAME));
     }
 
@@ -191,6 +193,7 @@ public class NbKeymapTest extends NbTestCase {
         assertMapping(km, KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK), def, "one");
         assertEquals(null, a.getValue(Action.ACCELERATOR_KEY));
         FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        km.waitFinished();
         // let former EQ task finish
         EventQueue.invokeAndWait(new Runnable() {public void run() {}});
         // Any actions ever passed to getKeyStrokesForAction should get updated when keymap changes:
@@ -245,15 +248,18 @@ public class NbKeymapTest extends NbTestCase {
     public void testChangesInShortcutRegistrations() throws Exception {
         make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
         make("Keymaps/NetBeans/C-B.instance").setAttribute("instanceCreate", new DummyAction("two"));
-        Keymap km = new NbKeymap();
+        NbKeymap km = new NbKeymap();
         assertEquals("one", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         assertEquals("two", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)));
         FileUtil.getConfigFile("Shortcuts/C-A.instance").delete();
+        km.waitFinished();
         assertEquals(null, km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK)));
         make("Shortcuts/C-C.instance").setAttribute("instanceCreate", new DummyAction("three"));
+        km.waitFinished();
         assertEquals("three", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
         make("Keymaps/NetBeans/C-C.instance").setAttribute("instanceCreate", new DummyAction("four"));
+        km.waitFinished();
         assertEquals("four", km.getAction(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).getValue(Action.NAME));
     }
 

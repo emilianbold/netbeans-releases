@@ -169,7 +169,7 @@ public class BugzillaConfig {
 
         String user = repository.getUsername();
 
-        String httpUser = repository.getHttpUsername();        
+        String httpUser = repository.getHttpUsername();
         String url = repository.getUrl();
         String shortNameEnabled = Boolean.toString(repository.isShortUsernamesEnabled());
         getPreferences().put(
@@ -181,8 +181,8 @@ public class BugzillaConfig {
                 "" + DELIMITER +                // NOI18N - skip password, will be saved via keyring
                 shortNameEnabled + DELIMITER +
                 repoName);
-        
-        
+
+
         String password = repository.getPassword();
         String httpPassword = repository.getHttpPassword();
         if(BugtrackingUtil.isNbRepository(repository)) {
@@ -196,13 +196,40 @@ public class BugzillaConfig {
     }
 
     public BugzillaRepository getRepository(String repoID) {
-        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
-        if(repoString.equals("")) {                                             // NOI18N
+        String[] values = getRepositoryValues(repoID);
+        if(values == null) {
             return null;
         }
-        String[] values = repoString.split(DELIMITER);
         assert values.length == 3 || values.length == 6 || values.length == 7;
         String url = values[0];
+        boolean shortNameEnabled = false;
+        if (values.length > 5) {
+            shortNameEnabled = Boolean.parseBoolean(values[5]);
+        }
+        String name;
+        if (values.length > 6) {
+            name = values[6];
+        } else {
+            name = repoID;
+        }
+        BugzillaRepository repo = new BugzillaRepository(repoID, name, url, null, null, null, null, shortNameEnabled);
+
+        // make sure tha scrambled password is removed
+        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
+            putRepository(repoID, repo);
+        }
+
+        return repo;
+    }
+
+    public void setupCredentials(BugzillaRepository repository) {
+        String repoID = repository.getID();
+        String[] values = getRepositoryValues(repoID);
+        if(values == null) {
+            return;
+        }
+
+        String url = repository.getUrl();
         String user;
         String password;
         if(BugtrackingUtil.isNbRepository(url)) {
@@ -215,24 +242,8 @@ public class BugzillaConfig {
         }
         String httpUser = values.length > 3 ? values[3] : null;
         String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
-        boolean shortNameEnabled = false;
-        if (values.length > 5) {
-            shortNameEnabled = Boolean.parseBoolean(values[5]);
-        }
-        String name;
-        if (values.length > 6) {
-            name = values[6];
-        } else {
-            name = repoID;
-        }
-        BugzillaRepository repo = new BugzillaRepository(repoID, name, url, user, password, httpUser, httpPassword, shortNameEnabled);
 
-        // make sure tha scrambled password is removed
-        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
-            putRepository(repoID, repo); 
-        }
-
-        return repo;
+        repository.setCredentials(user, password, httpUser, httpPassword);
     }
 
     public String[] getRepositories() {
@@ -329,7 +340,6 @@ public class BugzillaConfig {
             }
         }
         if (success) {
-            success = false;
             // rename the temp file to the permanent one
             File newFile = new File(f, TASKLISTISSUES_STORAGE_FILE);
             try {
@@ -404,5 +414,13 @@ public class BugzillaConfig {
         }
         String nbHome = System.getProperty("netbeans.user");            //NOI18N
         return nbHome + "/config/issue-tracking/org-netbeans-modules-bugzilla"; //NOI18N
+    }
+
+    private String[] getRepositoryValues(String repoID) {
+        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
+        if(repoString.equals("")) {                                             // NOI18N
+            return null;
+        }
+        return repoString.split(DELIMITER);
     }
 }

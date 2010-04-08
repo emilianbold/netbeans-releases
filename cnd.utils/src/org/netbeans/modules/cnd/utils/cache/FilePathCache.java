@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.utils.cache;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.openide.util.CharSequences;
 
 /**
  * cache entry
@@ -58,7 +59,7 @@ public class FilePathCache  extends APTStringManager {
     }
     
     public CharSequence getString(CharSequence text) {
-        text = CharSequenceKey.create(text);
+        text = CharSequences.create(text);
         return instance.getString(text);
     }
 

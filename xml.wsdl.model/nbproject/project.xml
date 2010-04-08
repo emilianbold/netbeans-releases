@@ -68,36 +68,34 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
             </module-dependencies>
             <test-dependencies>
                 <!-- Dependencies for a source root with tests: -->
                 <test-type>
                     <name>unit</name>
-                    <!-- A dependency on a module or its tests: -->
                     <test-dependency>
-                        <!-- Identification of module our tests depend upon: -->
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                        <!-- Include also transitive module dependencies of that module: -->
-                        <recursive/>
-                        <!-- Always available when running, but to include at compile time also: -->
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
-                        <!-- To request the tests of that module as well: -->
-                        <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
@@ -107,7 +105,13 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>

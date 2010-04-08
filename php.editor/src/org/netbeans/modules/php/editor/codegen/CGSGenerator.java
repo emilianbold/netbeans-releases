@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.openide.util.NbBundle;
 
@@ -36,7 +38,8 @@ public class CGSGenerator implements CodeGenerator {
         CONSTRUCTOR,
         GETTER,
         SETTER,
-        GETTER_AND_SETTER
+        GETTER_AND_SETTER,
+        METHODS;
     }
 
     public enum GenWay {
@@ -97,6 +100,7 @@ public class CGSGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public void invoke() {
         String dialogTitle = null;
 
@@ -113,6 +117,10 @@ public class CGSGenerator implements CodeGenerator {
             case GETTER_AND_SETTER:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS_AND_SETTERS");    //NOI18N
                 break;
+            case METHODS:
+                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS");    //NOI18N
+                break;
+
         }
 
         //TODO obtain the value from project properties
@@ -130,6 +138,7 @@ public class CGSGenerator implements CodeGenerator {
         }
     }
 
+    @Override
     public String getDisplayName() {
         String name = null;
         switch (type) {
@@ -145,12 +154,16 @@ public class CGSGenerator implements CodeGenerator {
             case GETTER_AND_SETTER:
                 name = NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER_AND_SETTER");    //NOI18N
                 break;
+            case METHODS:
+                name = NbBundle.getMessage(CGSGenerator.class, "LBL_METHODS");    //NOI18N
+                break;
         }
         return name;
     }
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             JTextComponent textComp = context.lookup(JTextComponent.class);
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
@@ -168,6 +181,9 @@ public class CGSGenerator implements CodeGenerator {
                 }
                 if (info.getPossibleGettersSetters().size() > 0) {
                     ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
+                }
+                if (info.getPossibleMethods().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.METHODS));
                 }
             }
             return ret;
@@ -235,6 +251,22 @@ public class CGSGenerator implements CodeGenerator {
                     }
                 }
                 text = gettersAndSetters.toString();
+                break;
+            case METHODS:
+                StringBuffer inheritedMethods = new StringBuffer();
+                for (Property property : cgsInfo.getPossibleMethods()) {
+                    if (property.isSelected() && (property instanceof CGSInfo.MethodProperty)) {
+                        CGSInfo.MethodProperty methodProperty = (CGSInfo.MethodProperty)property;
+                        MethodElement method = methodProperty.getMethod();
+                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody).replace("abstract ", "")); //NOI18N;
+                        } else {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody).replace("abstract ", "")); //NOI18N;
+                        }
+                        inheritedMethods.append(NEW_LINE);
+                    }
+                }
+                text = inheritedMethods.toString();
                 break;
         }
         return text;

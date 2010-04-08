@@ -278,7 +278,7 @@ public class OutputFileManager extends CachingFileManager {
                 }
             }
         } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
+            Exceptions.printStackTrace(Exceptions.attachMessage(e, "sibling class=" + sibling.getClass() + ", uri=" + sibling.toUri().toASCIIString()));
         }
         return null;
     }

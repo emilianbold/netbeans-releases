@@ -159,4 +159,19 @@ public class ResolvedDependency {
     public int hashCode() {
         return getDependency().hashCode();
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder (super.toString());
+        sb.append ("[");
+        for (ArtifactKind k : ArtifactKind.values()) {
+            if (supportedArtifactKinds().contains(k)) {
+                File f = resolveFile(k);
+                sb.append (k);
+                sb.append ("=");
+                sb.append (f.getPath());
+            }
+        }
+        sb.append ("]");
+        return sb.toString();
+    }
 }

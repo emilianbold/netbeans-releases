@@ -92,10 +92,10 @@ final class ChooseSigOrExpFilePanel implements WizardDescriptor.Panel<Map<String
                 case EXP_FILE :
                     if (f != null) {
                         settings.put (ChooseOriginWizardPanel.PROP_EXP_FILE, f);
-                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.JAR_WITH_EXP_FILE);
+//                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.JAR_WITH_EXP_FILE);
                     } else {
                         settings.remove (ChooseOriginWizardPanel.PROP_EXP_FILE);
-                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.RAW_JAR);
+//                        settings.put (ChooseOriginWizardPanel.PROP_ACTUAL_DEP_KIND, DependencyKind.RAW_JAR);
                     }
                     break;
                 case SIG_FILE :

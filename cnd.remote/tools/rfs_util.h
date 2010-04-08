@@ -76,12 +76,12 @@ void _trace_startup(const char* prefix, const char* env_var, const char* binary)
 #define trace_shutdown() if (trace_flag) { _trace_shutdown(); }
 void _trace_shutdown();
 
-#define trace_unresolved_path(path) if (trace_flag) { _trace_unresolved_path(path); }
-static void _trace_unresolved_path(const char* path) {
+#define trace_unresolved_path(path, action) if (trace_flag) { _trace_unresolved_path(path, action); }
+static void _trace_unresolved_path(const char* path, const char* action) {
     if (trace_flag) {
         char pwd[PATH_MAX + 1];
         getcwd(pwd, sizeof pwd);
-        trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
+        trace("Can not resolve path on %s: %s pwd: %s\n", action, path, pwd);
     }
 }
 

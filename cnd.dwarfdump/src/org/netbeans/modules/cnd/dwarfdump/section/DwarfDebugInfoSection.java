@@ -133,16 +133,18 @@ public class DwarfDebugInfoSection extends ElfSection {
 
     private class UnitIterator implements Iterator<CompilationUnit> {
         private int cuOffset = 0;
-        CompilationUnit unit;
+        private CompilationUnit unit;
 
         public UnitIterator() throws IOException {
             advance();
         }
 
+        @Override
         public boolean hasNext() {
             return unit != null;
         }
 
+        @Override
         public CompilationUnit next() {
             CompilationUnit res = unit;
             try {
@@ -153,6 +155,7 @@ public class DwarfDebugInfoSection extends ElfSection {
             return res;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

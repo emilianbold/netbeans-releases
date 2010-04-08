@@ -66,4 +66,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-</filesystem>
+    <folder name="Spellcheckers">
+        <file name="Ruby">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.ruby.Bundle"/>
+        </file>
+        <file name="RHTML">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spellchecker.bindings.ruby.Bundle"/>
+        </file>
+    </folder></filesystem>

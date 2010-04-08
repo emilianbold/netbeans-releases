@@ -398,6 +398,7 @@ bool JvmLauncher::findJava(const char *minJavaVersion) {
 bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *minJavaVersion) {
     logMsg("JvmLauncher::findJava()\n\tjavaKey: %s\n\tprefix: %s\n\tminJavaVersion: %s", javaKey, prefix, minJavaVersion);
     string value;
+    bool result = false;
     if (getStringFromRegistry(HKEY_LOCAL_MACHINE, javaKey, CUR_VERSION_NAME, value)) {
         if (value >= minJavaVersion) {
             string path;
@@ -405,9 +406,23 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
                 if (*path.rbegin() == '\\') {
                     path.erase(path.length() - 1, 1);
                 }
-                return checkJava(path.c_str(), prefix);
+                result = checkJava(path.c_str(), prefix);
             }
         }
     }
-    return false;    
+    if(!result && isWow64()) {
+        if (getStringFromRegistry64bit(HKEY_LOCAL_MACHINE, javaKey, CUR_VERSION_NAME, value)) {
+            if (value >= minJavaVersion) {
+                string path;
+                if (getStringFromRegistry64bit(HKEY_LOCAL_MACHINE, (string(javaKey) + "\\" + value).c_str(), JAVA_HOME_NAME, path)) {
+                    if (*path.rbegin() == '\\') {
+                        path.erase(path.length() - 1, 1);
+                    }
+                    result = checkJava(path.c_str(), prefix);
+                }
+            }
+        }
+    } 
+    // probably also need to check 32bit registry when launcher becomes 64-bit but is not the case now.
+    return result;    
 }

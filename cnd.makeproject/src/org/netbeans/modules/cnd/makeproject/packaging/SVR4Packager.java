@@ -212,8 +212,8 @@ public class SVR4Packager implements PackagerDescriptor {
             String packageName = packagingConfiguration.findInfoValueName("PKG"); // NOI18N // FIXUP: what is null????
 
             bw.write("# Create pkginfo and prototype files\n"); // NOI18N
-            bw.write("PKGINFOFILE=${TMPDIR}/pkginfo\n"); // NOI18N
-            bw.write("PROTOTYPEFILE=${TMPDIR}/prototype\n"); // NOI18N
+            bw.write("PKGINFOFILE=${NBTMPDIR}/pkginfo\n"); // NOI18N
+            bw.write("PROTOTYPEFILE=${NBTMPDIR}/prototype\n"); // NOI18N
             bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
             bw.write("\n"); // NOI18N        
             bw.write("cd \"${TOP}\"\n"); // NOI18N
@@ -276,12 +276,12 @@ public class SVR4Packager implements PackagerDescriptor {
             bw.write("\n"); // NOI18N
             bw.write("# Make package\n"); // NOI18N  
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $NBTMPDIR\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
-//        bw.write("pkgtrans -s ${TMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
+//        bw.write("pkgtrans -s ${NBTMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
 //        bw.write("checkReturnCode\n"); // NOI18N
             bw.write("rm -rf " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
-            bw.write("mv ${TMPDIR}/" + packageName + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+            bw.write("mv ${NBTMPDIR}/" + packageName + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("echo Solaris SVR4: " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
             bw.write("\n"); // NOI18N

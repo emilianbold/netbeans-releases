@@ -742,7 +742,6 @@ public class BugtrackingUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(Repository repo) {
-        // XXX dummy implementation
         String url = repo.getUrl();
         return isNbRepository(url);
     }
@@ -817,6 +816,10 @@ public class BugtrackingUtil {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
+    public static void openIssue(File file, String issueId) {
+        IssueAction.openIssue(file, issueId);
+    }
+
     public static Map<String, List<RecentIssue>> getAllRecentIssues() {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
@@ -833,5 +836,14 @@ public class BugtrackingUtil {
         IssueAction.createIssue(repo);
     }
 
+    public static String getPasswordLog(String psswd) {
+        if(psswd == null) {
+            return ""; // NOI18N
+        }
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+            return psswd; 
+        }
+        return "******"; // NOI18N
+    }
     
 }

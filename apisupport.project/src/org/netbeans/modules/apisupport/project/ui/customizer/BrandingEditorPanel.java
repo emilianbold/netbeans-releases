@@ -40,12 +40,19 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -61,6 +68,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
     private boolean isValid = true;
     private final boolean contextAvailable;
     private DialogDescriptor descriptor;
+    private boolean brandingEnabled = true;
 
     /** Creates new form BrandingEditorPanel */
     public BrandingEditorPanel( String title, Project p, final BasicBrandingModel model, boolean contextAvailable ) {
@@ -108,13 +116,32 @@ class BrandingEditorPanel extends javax.swing.JPanel {
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
-    void open() {
-        descriptor = new DialogDescriptor(this, title, true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+    Dialog open() {
+        descriptor = new DialogDescriptor(this, title, false, DialogDescriptor.OK_CANCEL_OPTION, null, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if( descriptor.getValue() == DialogDescriptor.OK_OPTION ) {
+                    doSave();
+                }
+            }
+        });
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
-        if( descriptor.getValue() == DialogDescriptor.OK_OPTION ) {
-            doSave();
-        }
+        //it's possible to open project properties window while branding editor is opened
+        //and switch from application suite to module suite which doesn't support branding
+        //so let's prevent saving when in 'module suite' mode
+        dlg.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                refreshBrandingEnabled();
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                refreshBrandingEnabled();
+            }
+        });
+        return dlg;
     }
 
     void setModified() {
@@ -129,10 +156,25 @@ class BrandingEditorPanel extends javax.swing.JPanel {
         for( AbstractBrandingPanel panel : panels ) {
             panel.store();
         }
-        try {
-            model.store();
-        } catch( IOException ioE ) {
-            Exceptions.printStackTrace(ioE);
+        final SuiteProperties props = model.getSuiteProperties();
+        if( null != props ) {
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws IOException {
+                        props.storeProperties();
+                        return null;
+                    }
+                });
+            } catch (MutexException e) {
+                Exceptions.printStackTrace(e);
+            }
+        } else {
+            try {
+                model.store();
+            } catch( IOException ioE ) {
+                Exceptions.printStackTrace(ioE);
+            }
         }
 
         isModified = false;
@@ -151,6 +193,17 @@ class BrandingEditorPanel extends javax.swing.JPanel {
         lblError.setText(errMessage);
         lblError.setVisible(!isValid);
         if( null != descriptor )
-            descriptor.setValid(isValid);
+            descriptor.setValid(isValid && brandingEnabled);
+    }
+
+    private void refreshBrandingEnabled() {
+        SuiteProperties props = model.getSuiteProperties();
+        if( null != props )
+            props.reloadProperties();
+        model.brandingEnabledRefresh();
+        brandingEnabled = model.isBrandingEnabled();
+        if( null != descriptor ) {
+            descriptor.setValid( isValid && brandingEnabled );
+        }
     }
 }

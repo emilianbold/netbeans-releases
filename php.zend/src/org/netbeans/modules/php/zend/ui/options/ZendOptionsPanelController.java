@@ -129,6 +129,7 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
         propertyChangeSupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (!changed) {
             changed = true;

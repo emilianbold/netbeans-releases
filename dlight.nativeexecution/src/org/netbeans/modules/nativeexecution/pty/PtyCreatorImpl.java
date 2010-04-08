@@ -36,18 +36,15 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.pty;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.JschSupport;
+import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
@@ -70,6 +67,10 @@ public class PtyCreatorImpl implements PtyAllocator {
 
         final String ptyOpenUtilityPath = PtyOpenUtility.getInstance().getPath(env);
 
+        if (ptyOpenUtilityPath == null) {
+            return null;
+        }
+
         try {
             if (env.isLocal()) {
                 ProcessBuilder pb = new ProcessBuilder(ptyOpenUtilityPath);
@@ -77,33 +78,25 @@ public class PtyCreatorImpl implements PtyAllocator {
                 output = pty.getOutputStream();
                 input = pty.getInputStream();
             } else {
-                ConnectionManagerAccessor access = ConnectionManagerAccessor.getDefault();
-                Session session = access.getConnectionSession(ConnectionManager.getInstance(), env, false);
-                ChannelExec echannel = null;
-
-                if (session != null) {
-                    synchronized (session) {
-                        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-                        echannel.setCommand(ptyOpenUtilityPath);
-                        echannel.connect();
-                        output = echannel.getOutputStream();
-                        input = echannel.getInputStream();
-                    }
-                }
+                ChannelStreams streams = JschSupport.execCommand(env, ptyOpenUtilityPath, null);
+                output = streams.in;
+                input = streams.out;
             }
 
             PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);
-            result = new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
+            result = ptyInfo == null ? null : new PtyImplementation(env, ptyInfo.tty, ptyInfo.pid, input, output);
         } catch (Exception ex) {
-            if (input != null) {
-                input.close();
-            }
-
-            if (output != null) {
-                output.close();
-            }
-
             throw new IOException(ex);
+        } finally {
+            if (result == null) {
+                if (input != null) {
+                    input.close();
+                }
+
+                if (output != null) {
+                    output.close();
+                }
+            }
         }
 
         return result;

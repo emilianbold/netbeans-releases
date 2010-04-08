@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.DialogDisplayer;
@@ -133,10 +132,8 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
 
     @Override
     public synchronized void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
-        ConnectionManager mgr = ConnectionManager.getInstance();
-
         final Session session = ConnectionManagerAccessor.getDefault().
-                getConnectionSession(mgr, execEnv, true);
+                getConnectionSession(execEnv, true);
 
         if (session == null) {
             return;
@@ -242,6 +239,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         char[] cbuf = new char[2];
         StringBuilder sb = new StringBuilder();
 
+        // LATER: shouldn't it use ProcessUtils.getReader?
         Reader r = new InputStreamReader(in);
 
         while (pos != len && r.read(cbuf, 0, 1) != -1) {

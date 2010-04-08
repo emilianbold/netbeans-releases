@@ -217,6 +217,17 @@ public class CollectionRemoveTest extends TestBase {
                             "}");
     }
 
+    public void testCollectionRemoveInteger() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test () {" +
+                            "        java.util.List<String> l = null;" +
+                            "        l.remove(0);" +
+                            "    }" +
+                            "}");
+    }
+
     static {
         NbBundle.setBranding("test");
     }

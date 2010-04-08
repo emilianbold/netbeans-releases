@@ -103,7 +103,6 @@ public class HgModuleConfig {
 
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();
-    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
     
     private static String userName;
 
@@ -112,6 +111,7 @@ public class HgModuleConfig {
     }
     
     private Set<String> exclusions;
+    private String lastCanceledCommitMessage;
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -613,12 +613,12 @@ public class HgModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCommitMessage() {
-        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCommitMessage(String message) {
-        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
     }
     
     synchronized Set<String> getCommitExclusions() {

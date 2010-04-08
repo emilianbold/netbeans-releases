@@ -88,9 +88,9 @@ public class JarXmlModelTest extends CommonTestCase {
             public Void run( JsfModel model ) throws Exception {
                 assertEquals( 6 , model.getModels().size());
                 assertEquals( 6 , model.getFacesConfigs().size());
-                
-                assertNotNull( model.getModels().get( 1 ).getModelSource().
-                        getLookup().lookup( JsfModel.class ));
+
+                assertNotNull(model.getModels().get(1).getModelSource().
+                        getLookup().lookup(JsfModel.class));
                 
                 List<ManagedBean> beans = model.getElements( ManagedBean.class );
                 assertEquals( 4 ,beans.size());
@@ -141,8 +141,11 @@ public class JarXmlModelTest extends CommonTestCase {
 
             public Void run( JsfModel model ) throws Exception {
                 URL url = JarXmlModelTest.class.getResource("data/lib2.jar");
+                SeveralXmlModelTest.PropListener l = new SeveralXmlModelTest.PropListener();
+                model.addPropertyChangeListener(l);
                 addCompileRoots( Collections.singletonList( 
                         new URL( "jar:"+url.toString()+"!/")));
+                l.waitForModelUpdate();
                 
                 assertEquals( 7 ,  model.getModels().size());
                 assertEquals( 7 ,  model.getFacesConfigs().size());

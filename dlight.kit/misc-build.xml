@@ -49,8 +49,7 @@ made subject to such option by the copyright holder.
         <loadproperties srcfile="${nbroot}/nbbuild/cluster.properties"/>
         <pathconvert property="dlight.modules.fullpath">
             <path>
-                <!-- TODO: include dlight.nativeexecution once its tests are fixed -->
-                <dirset dir="${nbroot}" includes="${nb.cluster.dlight}" excludes="dlight.nativeexecution"/>
+                <dirset dir="${nbroot}" includes="${nb.cluster.dlight}"/>
             </path>
             <mapper type="identity"/>
         </pathconvert>
@@ -75,7 +74,7 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
-    <target name="test" depends="-init-modules">
+    <target name="test" depends="-init-modules" description="dlight tests">
         <subant buildpath="${dlight.modules.fullpath}" target="test">
             <property name="cluster.config" value="dlight"/>
         </subant>

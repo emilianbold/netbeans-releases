@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -147,7 +147,7 @@ public class ReferenceSupportImpl {
             if (strFqn.endsWith("const")) { // NOI18N
                 int cutConstInd = strFqn.lastIndexOf("const"); // NOI18N
                 assert cutConstInd >= 0;
-                fqnCheck = CharSequenceKey.create(strFqn.substring(cutConstInd));
+                fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
             }
             return fqnCheck.equals(fqnTarget);
         }

@@ -105,10 +105,10 @@ function checkChoiceUpgradeAction() {
             <line choice="baseide"></line>          
             <line choice="ruby"></line>           
         </line>            
-        <line choice="glassfish-v3-sun"></line>
+        <line choice="glassfish-v3"></line>
     </choices-outline>
-    <choice id="glassfish-v3-sun" title="glassfish-v3-sun-title" description="glassfish-v3-sun-description" start_selected="true" start_enabled="true" start_visible="true">
-        <pkg-ref id="ident.pkg.glassfish.v3.sun"></pkg-ref>
+    <choice id="glassfish-v3" title="glassfish-v3-title" description="glassfish-v3-description" start_selected="true" start_enabled="true" start_visible="true">
+        <pkg-ref id="ident.pkg.glassfish.v3"></pkg-ref>
     </choice>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
@@ -119,5 +119,5 @@ function checkChoiceUpgradeAction() {
     </choice>    
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.glassfish.v3.sun" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3_SUN@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-sun-@GLASSFISHV3_SUN_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-@GLASSFISHV3_ID@.pkg</pkg-ref>
 </installer-gui-script>
