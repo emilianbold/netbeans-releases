@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
-import java.util.logging.Level;
+import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends BugzillaCommand {
+public class GetTaskDataCommand extends BugzillaCommand {
 
+    private final String id;
     private final TaskRepository taskRepository;
+    private TaskData taskData;
+    private String stringValue;
 
-    public ValidateCommand(TaskRepository taskRepository) {
+    public GetTaskDataCommand(String id, TaskRepository taskRepository) {
+        this.id = id;
         this.taskRepository = taskRepository;
     }
 
     @Override
-    public void execute() throws CoreException {
-        try {
-            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-            client.validate(new NullProgressMonitor());
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-        }
+    public void execute() throws CoreException, IOException, MalformedURLException {
+        taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(taskRepository, id, new NullProgressMonitor());
+    }
+
+    public TaskData getTaskData() {
+        return taskData;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ValidateCommand [repository=");                              // NOI18N
+        sb.append("GetTaskDataCommand [repository=");                       // NOI18N
         sb.append(taskRepository.getUrl());
-        sb.append("]");                                                         // NOI18N
-        return sb.toString();
+        sb.append(",id=");                                                  // NOI18N
+        sb.append(id);
+        sb.append("]");                                                     // NOI18N
+        return  sb.toString();
+        
     }
-
 
 }
