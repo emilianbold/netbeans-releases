@@ -182,9 +182,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbNewLibrary.setSelected(true);
             panel.setLibrary(null);
         } else if (items.size() != 0 &&  panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED){
-            rbRegisteredLibrary.setEnabled(true);
+            if (!customizer) {
+                rbRegisteredLibrary.setEnabled(true);
+                cbLibraries.setEnabled(true);
+            }
             rbRegisteredLibrary.setSelected(true);
-            cbLibraries.setEnabled(true);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
             }
