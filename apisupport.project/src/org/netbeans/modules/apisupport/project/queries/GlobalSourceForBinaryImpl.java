@@ -409,13 +409,13 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 is.close();
             }
             Element docel = doc.getDocumentElement();
-            Element type = Util.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
+            Element type = XMLUtil.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N
             String cnb = null;
-            if (Util.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
-                Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-                Element data = Util.findElement(cfg, "data", null); // NOI18N
+            if (XMLUtil.findText(type).equals("org.netbeans.modules.apisupport.project")) { // NOI18N
+                Element cfg = XMLUtil.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
+                Element data = XMLUtil.findElement(cfg, "data", null); // NOI18N
                 if (data != null) {
-                    cnb = Util.findText(Util.findElement(data, "code-name-base", null)); // NOI18N
+                    cnb = XMLUtil.findText(XMLUtil.findElement(data, "code-name-base", null)); // NOI18N
                 }
             }
             return cnb;

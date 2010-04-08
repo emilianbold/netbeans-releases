@@ -52,6 +52,7 @@ import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -98,12 +99,12 @@ public class UnboundTargetAlertTest extends TestBase {
         assertEquals(null, lastMapping.context);
         // Also check the context menu.
         Element data = prj.getPrimaryConfigurationData();
-        Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+        Element view = XMLUtil.findElement(data, "view", FreeformProjectType.NS_GENERAL);
         assertNotNull(view);
-        Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
+        Element contextMenu = XMLUtil.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull(contextMenu);
         Set<String> actionNames = new TreeSet<String>();
-        for (Element action : Util.findSubElements(contextMenu)) {
+        for (Element action : XMLUtil.findSubElements(contextMenu)) {
             if (action.getLocalName().equals("ide-action")) {
                 actionNames.add(action.getAttribute("name"));
             }

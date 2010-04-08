@@ -105,7 +105,7 @@ public final class SharabilityQuery {
      */
     public static int getSharability(File file) {
         if (file == null) throw new IllegalArgumentException();
-        assert file.equals(FileUtil.normalizeFile(file)) : "Must pass a normalized file: " + file;
+        assert file.equals(FileUtil.normalizeFile(file)) : "Must pass a normalized file: " + file + " vs. " + FileUtil.normalizeFile(file);
         for (SharabilityQueryImplementation sqi : implementations.allInstances()) {
             int x = sqi.getSharability(file);
             if (x != UNKNOWN) {

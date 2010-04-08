@@ -1473,6 +1473,22 @@ public void run () {
       <class package="org.openide.xml" name="XMLUtil"/>
       <issue number="16629"/>
     </change>
+    <change id="refactored-methods-into-XMLUtil">
+        <api name="xml"/>
+        <summary>Refactored XML methods from various modules to be added
+        to <code>XMLUtil</code>.  Seven new methods added.</summary>
+        <version major="8" minor="4"/>
+        <date day="7" month="4" year="2010"/>
+        <author login="mvfranz"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Refactored XML related methods into XMLUtil.
+            </p>
+        </description>
+        <class package="org.openide.xml" name="XMLUtil"/>
+        <issue number="136595"/>
+    </change>
 </changes>
 <htmlcontents>
 <head>

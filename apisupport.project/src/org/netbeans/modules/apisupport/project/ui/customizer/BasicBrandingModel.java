@@ -56,7 +56,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
@@ -67,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -406,8 +406,8 @@ public class BasicBrandingModel {
                 res = getProjectDirectoryFile().getName();
             return res;
         }
-        Element nameEl = Util.findElement(suiteProps.getProject().getHelper().getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
-        String text = (nameEl != null) ? Util.findText(nameEl) : null;
+        Element nameEl = XMLUtil.findElement(suiteProps.getProject().getHelper().getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
+        String text = (nameEl != null) ? XMLUtil.findText(nameEl) : null;
         return (text != null) ? text : "???"; // NOI18N
     }
 

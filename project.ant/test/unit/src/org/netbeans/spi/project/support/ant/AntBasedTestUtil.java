@@ -70,7 +70,6 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
@@ -225,9 +224,9 @@ public class AntBasedTestUtil {
             
             private String getText(String elementName) {
                 Element data = helper.getPrimaryConfigurationData(true);
-                Element el = Util.findElement(data, elementName, "urn:test:shared");
+                Element el = XMLUtil.findElement(data, elementName, "urn:test:shared");
                 if (el != null) {
-                    String text = Util.findText(el);
+                    String text = XMLUtil.findText(el);
                     if (text != null) {
                         return text;
                     }
@@ -324,7 +323,7 @@ public class AntBasedTestUtil {
         if (!f.isFile()) {
             return null;
         }
-        return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+        return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
     }
     
     /**
