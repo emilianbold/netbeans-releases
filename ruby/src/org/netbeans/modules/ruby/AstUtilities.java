@@ -88,6 +88,7 @@ import org.jrubyparser.ast.DotNode;
 import org.jrubyparser.ast.HashNode;
 import org.jrubyparser.ast.ILiteralNode;
 import org.jrubyparser.ast.IfNode;
+import org.jrubyparser.ast.LiteralNode;
 import org.jrubyparser.ast.NewlineNode;
 import org.jrubyparser.ast.NilNode;
 import org.jrubyparser.ast.NotNode;
@@ -1124,7 +1125,7 @@ public class AstUtilities {
             break;
         case ALIASNODE:
             AliasNode aliasNode = (AliasNode) node;
-            if (name.equals(aliasNode.getNewName()) || name.equals(aliasNode.getOldName())) {
+            if (name.equals(getNameOrValue(aliasNode.getNewName())) || name.equals(getNameOrValue(aliasNode.getOldName()))) {
                 return aliasNode;
             }
             break;
@@ -1434,7 +1435,9 @@ public class AstUtilities {
 
         int newStart = pos.getStartOffset() + 6; // 6: "alias ".length()
 
-        return new OffsetRange(newStart, newStart + node.getNewName().length());
+        String name = getNameOrValue(node.getNewName());
+        int length = name != null ? name.length() : 0;
+        return new OffsetRange(newStart, newStart + length);
     }
 
     /**
@@ -1450,9 +1453,15 @@ public class AstUtilities {
         // spaces are - between alias and the first word or between old and new. XXX.
         SourcePosition pos = node.getPosition();
 
-        int oldStart = pos.getStartOffset() + 6 + node.getNewName().length() + 1; // 6: "alias ".length; 1: " ".length
+        String newName = getNameOrValue(node.getNewName());
+        int newLength = newName != null ? newName.length() : 0;
 
-        return new OffsetRange(oldStart, oldStart + node.getOldName().length());
+        String oldName = getNameOrValue(node.getOldName());
+        int oldLength = oldName != null ? oldName.length() : 0;
+
+        int oldStart = pos.getStartOffset() + 6 + newLength + 1; // 6: "alias ".length; 1: " ".length
+
+        return new OffsetRange(oldStart, oldStart + oldLength);
     }
 
     public static String getClassOrModuleName(IScopingNode node) {
@@ -1652,6 +1661,9 @@ public class AstUtilities {
                 Node child = node.childNodes().get(0);
                 return getNameOrValue(child);
             }
+        }
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
         }
         return null;
     }
@@ -2206,12 +2218,15 @@ public class AstUtilities {
 
     /**
      * Throws {@link ClassCastException} if the given node is not instance of
-     * {@link INameNode}.
+     * {@link INameNode} or {@link LiteralNode}.
      *
-     * @param node instance of {@link INameNode}.
+     * @param node instance of {@link INameNode} or {@link LiteralNode}.
      * @return node's name
      */
     public static String getName(final Node node) {
+        if (node instanceof LiteralNode) {
+            return ((LiteralNode) node).getName();
+        }
         return ((INameNode) node).getName();
     }
 
@@ -2224,7 +2239,7 @@ public class AstUtilities {
      * @return the name or <code>null</code>.
      */
     static String safeGetName(final Node node) {
-        if (node instanceof INameNode) {
+        if (node instanceof INameNode || node instanceof LiteralNode) {
             return getName(node);
         }
         return null;

@@ -146,7 +146,7 @@ public class RetoucheUtils {
             simpleName = c2n.getName();
             name = AstUtilities.getFqn(c2n);
         } else if (node instanceof AliasNode) {
-            name = ((AliasNode)node).getNewName();
+            name = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
         }
         
         if (name == null && node instanceof INameNode) {
