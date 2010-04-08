@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +70,6 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.api.editor.PhpBaseElement;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
@@ -109,7 +106,6 @@ import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.VariablesScope;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
@@ -117,8 +113,6 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.project.api.PhpEditorExtender;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -280,7 +274,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
-
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);
@@ -311,7 +304,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 case EXPRESSION:
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteExpression(completionResult, request);
-                    autoCompleteExternals(completionResult, request, prefix);
                     break;
                 case HTML:
                     completionResult.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
@@ -686,23 +678,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else if (varName.equals("$this")) { //NOI18N
                 staticContext = false;
                 instanceContext = true;
-            } else {
-                if (types.isEmpty()) {
-                    // frameworks
-                    VariableScope variableScope = model.getVariableScope(request.anchor);
-                    if (variableScope != null) {
-                        tokenSequence.move(request.anchor);
-                        String variableName = VariousUtils.getVariableName(VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, variableScope));
-                        if (variableName != null) {
-                            FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-                            EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
-                            PhpClass phpClass = editorExtender.getClass(fileObject, variableName);
-                            if (phpClass != null) {
-                                types = VariousUtils.getType(variableScope, phpClass.getFullyQualifiedName(), request.anchor, true);
-                            }
-                        }
-                    }
-                }
             }
 
             if (types != null) {
@@ -902,29 +877,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
 
-    private void autoCompleteExternals(final PHPCompletionResult completionResult, CompletionRequest request, String prefix) {
-        FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-        // frameworks
-        // XXX add this to model! (so go to source etc. could work)
-        EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
-        for (PhpBaseElement element : editorExtender.getElementsForCodeCompletion(fileObject)) {
-            if (prefix == null
-                    || element.getName().startsWith(prefix)) {
-                CompletionProposal variable = PhpElementCompletionItem.fromPhpElement(element, request);
-                String variableName = variable.getName();
-
-                Iterator<CompletionProposal> iter = completionResult.getItems().iterator();
-                while (iter.hasNext()) {
-                    CompletionProposal proposal = iter.next();
-                    if (variableName.equals(proposal.getName())) {
-                        iter.remove();
-                        break;
-                    }
-                }
-                completionResult.add(variable);
-            }
-        }
-    }
 
     private class LocalVariables{
         Collection<VariableElement> vars;

@@ -76,8 +76,17 @@ public class PHPParseResult extends ParserResult {
     }
 
     public Model getModel() {
-        if (model == null) {
-            model = ModelFactory.getModel(this);
+        return getModel(true);
+    }
+
+    public Model getModel(boolean extended) {
+        synchronized(this) {
+            if (model == null) {
+                model = ModelFactory.getModel(this);
+            }
+        }
+        if (extended) {
+            model.getExtendedModel();
         }
         return model;
     }

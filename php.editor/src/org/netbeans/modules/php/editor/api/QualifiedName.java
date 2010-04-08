@@ -120,15 +120,23 @@ public class QualifiedName {
                 namesProposals.add(proposedName);
             }
             for (UseElement useElement : declaredUses) {
-                proposedName = QualifiedName.create(useElement.getName()).toNamespaceName().append(name).toFullyQualified();
+                final QualifiedName useQName = QualifiedName.create(useElement.getName());
+                proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
                 if (proposedName != null) {
                     namesProposals.add(proposedName);
+                }
+                if (!useQName.getName().equalsIgnoreCase(name.getName())) {
+                    proposedName = useQName.append(name).toFullyQualified();
+                    if (proposedName != null) {
+                        namesProposals.add(proposedName);
+                    }
                 }
             }
         }
         namesProposals.add(name);
         return namesProposals;
     }
+
 
     public String getName() {
         return toName().toString();

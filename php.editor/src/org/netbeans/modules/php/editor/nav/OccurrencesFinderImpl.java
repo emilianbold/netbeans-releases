@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -131,22 +133,27 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
             Model model = ((PHPParseResult) parameter).getModel();
-            OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+            OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
             Occurence caretOccurence = occurencesSupport.getOccurence();
             if (caretOccurence != null) {
-                PhpElement decl = caretOccurence.getDeclaration();
-                if (decl != null && !decl.getPhpElementKind().equals(PhpElementKind.INCLUDE)) {
-                    Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
-                    for (Occurence occurence : allOccurences) {
-                        result.add(occurence.getOccurenceRange());
+                final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES, Accuracy.UNIQUE);
+                if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
+                    PhpElementKind kind = caretOccurence.getKind();
+                    if (!kind.equals(PhpElementKind.INCLUDE)) {
+                        Collection<Occurence> allOccurences = caretOccurence.getAllOccurences();
+                        for (Occurence occurence : allOccurences) {
+                            if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
+                                result.add(occurence.getOccurenceRange());
+                            }
+                        }
                     }
                 }
-            } 
+            }
         } else {
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = ((PHPParseResult) parameter).getModel();
-                OccurencesSupport occurencesSupport = model.getOccurencesSupport(offset);
+                OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
                 CodeMarker codeMarker = occurencesSupport.getCodeMarker();
                 if (codeMarker != null) {
                     Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
