@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<definitions name="#SERVICE_NAME" targetNamespace="#TARGET_NAMESPACE"
-    xmlns:tns="#TARGET_NAMESPACE"
-    xmlns="http://schemas.xmlsoap.org/wsdl/"
-    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-
-</definitions>

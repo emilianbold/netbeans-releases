@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.xml.wsdl.bindingsupport.ui.util/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/bindingsupport/ui/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-AutoUpdate-Show-In-Client: false
-
