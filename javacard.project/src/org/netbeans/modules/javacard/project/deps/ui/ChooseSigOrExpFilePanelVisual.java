@@ -232,7 +232,8 @@ public class ChooseSigOrExpFilePanelVisual extends javax.swing.JPanel implements
 
     private void browseFileButtononBrowseOrigin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseFileButtononBrowseOrigin
         File f;
-        if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).setFileFilter(kind == IntermediatePanelKind.EXP_FILE ? new ExpFileFilter() : new SigFilter()).
+        if ((f = new FileChooserBuilder(ChooseOriginPanelVisual.class).
+                setDirectoriesOnly(kind == IntermediatePanelKind.EXP_FILE).
                 setTitle(kind.toString()).
                 showOpenDialog()) != null) {
             fileField.setText(f.getAbsolutePath());

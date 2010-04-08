@@ -73,7 +73,7 @@ public class HgHookImpl extends HgHook {
 
     private HookPanel panel;
     private final String name;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
 
     public HgHookImpl() {
@@ -103,7 +103,7 @@ public class HgHookImpl extends HgHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg beforeCommit start for " + file);                // NOI18N
+        LOG.log(Level.FINE, "hg beforeCommit start for {0}", file);                // NOI18N
 
         if (isLinkSelected()) {
             String msg = context.getMessage();
@@ -114,7 +114,7 @@ public class HgHookImpl extends HgHook {
             
             Issue issue = getIssue();
             if (issue == null) {
-                LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+                LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
                 return null;
             }
             String issueInfo = new MessageFormat(formatString).format(
@@ -122,7 +122,7 @@ public class HgHookImpl extends HgHook {
                     new StringBuffer(),
                     null).toString();
 
-            LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
+            LOG.log(Level.FINER, " hg commit hook issue info ''{0}''", issueInfo);     // NOI18N
             if(format.isAbove()) {
                 msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
@@ -148,11 +148,11 @@ public class HgHookImpl extends HgHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg afterCommit start for " + file);                    // NOI18N
+        LOG.log(Level.FINE, "hg afterCommit start for {0}", file);                    // NOI18N
 
         Issue issue = getIssue();
         if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                       // NOI18N
+            LOG.log(Level.FINE, " no issue set for {0}", file);                       // NOI18N
             return;
         }
 
@@ -163,7 +163,7 @@ public class HgHookImpl extends HgHook {
         if (!isLinkSelected() &&
             !isResolveSelected())
         {
-            LOG.log(Level.FINER, " nothing to do in hg afterCommit for " + file);   // NOI18N
+            LOG.log(Level.FINER, " nothing to do in hg afterCommit for {0}", file);   // NOI18N
             return;
         }
 
@@ -187,16 +187,16 @@ public class HgHookImpl extends HgHook {
                     new StringBuffer(),
                     null).toString();
 
-            LOG.log(Level.FINER, " hg afterCommit message '" + msg + "'");      // NOI18N
+            LOG.log(Level.FINER, " hg afterCommit message ''{0}''", msg);      // NOI18N
         }
         if(isCommitSelected()) {
             issue.addComment(msg, isResolveSelected());
             issue.open();
         } else {
             VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, isResolveSelected()));
-            LOG.log(Level.FINE, "schedulig issue  " + file);                    // NOI18N
+            LOG.log(Level.FINE, "schedulig issue {0} for file {1}", new Object[]{issue.getID(), file}); // NOI18N
         }
-        LOG.log(Level.FINE, "hg afterCommit end for " + file);                  // NOI18N
+        LOG.log(Level.FINE, "hg afterCommit end for {0}", file);                  // NOI18N
         VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
     }
 
@@ -212,7 +212,7 @@ public class HgHookImpl extends HgHook {
             return;
         }
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "push hook start for " + file);                     // NOI18N
+        LOG.log(Level.FINE, "push hook start for {0}", file);                     // NOI18N
 
         Repository repo = null;
         LogEntry[] entries = context.getLogEntries();
@@ -220,7 +220,7 @@ public class HgHookImpl extends HgHook {
 
             PushOperation operation = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
             if(operation == null) {
-                LOG.log(Level.FINE, " no push hook scheduled for " + file);     // NOI18N
+                LOG.log(Level.FINE, " no push hook scheduled for {0}", file);     // NOI18N
                 continue;
             }
 
@@ -228,20 +228,20 @@ public class HgHookImpl extends HgHook {
                 repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
                                                                                         //         might have deleted in the meantime
                 if(repo == null) {
-                    LOG.log(Level.WARNING, " could not find issue tracker for " + file);      // NOI18N
+                    LOG.log(Level.WARNING, " could not find issue tracker for {0}", file);      // NOI18N
                     break;
                 }
             }
 
             Issue issue = repo.getIssue(operation.getIssueID());
             if(issue == null) {
-                LOG.log(Level.FINE, " no issue found with id " + operation.getIssueID());  // NOI18N
+                LOG.log(Level.FINE, " no issue found with id {0}", operation.getIssueID());  // NOI18N
                 continue;
             }
 
             issue.addComment(operation.getMsg(), operation.isClose());
         }
-        LOG.log(Level.FINE, "push hook end for " + file);                       // NOI18N
+        LOG.log(Level.FINE, "push hook end for {0}", file);                       // NOI18N
     }
 
     @Override
@@ -266,6 +266,7 @@ public class HgHookImpl extends HgHook {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
         }
         panel.changeFormatButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onShowFormat();
             }

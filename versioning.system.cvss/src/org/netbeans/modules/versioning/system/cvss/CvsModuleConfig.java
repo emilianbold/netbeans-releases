@@ -127,16 +127,20 @@ public class CvsModuleConfig {
      * @param file file to exclude from commit
      */
     public void addExclusion(File file) {
-        excludedFiles.add(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (!excludedFiles.contains(file)) {
+            excludedFiles.add(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
 
     /**
      * @param file file to include in commit
      */
     public void removeExclusion(File file) {
-        excludedFiles.remove(file);
-        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        if (excludedFiles.contains(file)) {
+            excludedFiles.remove(file);
+            excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+        }
     }
     
     // clients code ~~~~~~~~~~~~~~~~~~~~~~~~~
