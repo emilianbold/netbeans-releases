@@ -64,6 +64,11 @@ import java.io.Writer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.diff.options.DiffOptionsController;
+import org.openide.awt.UndoRedo;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -78,6 +83,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private DiffController      controller;
     private Action              nextAction;
     private Action              prevAction;
+    private JComponent innerPanel;
 
     /** Creates new form SingleDiffPanel */
     public SingleDiffPanel(FileObject left, FileObject right, FileObject type) throws IOException {
@@ -128,11 +134,31 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         controller.addPropertyChangeListener(this);
         
         controllerPanel.removeAll();
-        JComponent innerPanel = controller.getJComponent();
+        innerPanel = controller.getJComponent();
         controllerPanel.add(innerPanel);
         setName(innerPanel.getName());
+        activateNodes();
         revalidate();
         repaint();
+    }
+
+    public void activateNodes () {
+        TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
+        if (tc != null) {
+            Node node = new AbstractNode(Children.LEAF, Lookups.singleton(modified));
+            tc.setActivatedNodes(new Node[] {node});
+        }
+    }
+
+    public UndoRedo getUndoRedo() {
+        UndoRedo undoRedo = null;
+        if (innerPanel != null) {
+            undoRedo = (UndoRedo) innerPanel.getClientProperty(UndoRedo.class);
+        }
+        if (undoRedo == null) {
+            undoRedo = UndoRedo.NONE;
+        }
+        return undoRedo;
     }
 
     public void requestActive () {

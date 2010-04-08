@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
@@ -78,18 +79,21 @@ public class DictionaryImpl implements Dictionary {
     private final File source;
     private final Project p;
     private final AuxiliaryConfiguration ac;
+    private final Locale locale;
     
-    public DictionaryImpl(File source) {
+    public DictionaryImpl(File source, Locale locale) {
         this.source = source;
         this.p = null;
         this.ac = null;
+        this.locale = locale;
         loadDictionary(source);
     }
     
-    public DictionaryImpl(Project p, AuxiliaryConfiguration ac) {
+    public DictionaryImpl(Project p, AuxiliaryConfiguration ac, Locale locale) {
         this.source = null;
         this.p  = p;
         this.ac = ac;
+        this.locale = locale;
         loadDictionary(ac);
     }
     
@@ -121,7 +125,7 @@ public class DictionaryImpl implements Dictionary {
         
         Collections.sort(getDictionary(), new Comparator<String>() {
             public int compare(String s1, String s2) {
-                return s1.compareToIgnoreCase(s2);
+                return s1.toLowerCase(locale).compareTo(s2.toLowerCase(locale));
             }
         });
    }
@@ -153,7 +157,8 @@ public class DictionaryImpl implements Dictionary {
     }
     
     public int findLesser(String word) {
-        List dict = getDictionary();
+        word = word.toLowerCase(locale);
+        List<String> dict = getDictionary();
         
         int lower = 0;
         int upper = dict.size() - 1;
@@ -171,9 +176,9 @@ public class DictionaryImpl implements Dictionary {
                 last = true;
             
             int current = (lower + upper) / 2;
-            String currentObj = (String) dict.get(current);
+            String currentObj = dict.get(current);
             
-            int result = currentObj.compareToIgnoreCase(word);
+            int result = currentObj.toLowerCase(locale).compareTo(word);
             
             if (result == 0)
                 return current;
@@ -187,7 +192,7 @@ public class DictionaryImpl implements Dictionary {
             }
         }
         
-        if (((String )dict.get(lower)).compareToIgnoreCase(word) == 0)
+        if (dict.get(lower).toLowerCase(locale).compareTo(word) == 0)
             return lower;
         else
             return (lower + 1) < dict.size() ? lower + 1 : lower;
@@ -195,10 +200,11 @@ public class DictionaryImpl implements Dictionary {
     
     public ValidityType findWord(String word) {
         if (getDictionary().isEmpty()) return ValidityType.INVALID;
-        String str = getDictionary().get(findLesser(word.toLowerCase()));
+        String str = getDictionary().get(findLesser(word));
+        String lWord = word.toLowerCase(locale);
 //            System.err.println("str=" + str);
-        if (str.startsWith(word.toLowerCase())) {
-            if (str.length() == word.length())
+        if (str.startsWith(word) || str.startsWith(lWord)) {
+            if (str.equals(word) || str.equals(lWord))
                 return ValidityType.VALID;
             else
                 return ValidityType.PREFIX_OF_VALID;

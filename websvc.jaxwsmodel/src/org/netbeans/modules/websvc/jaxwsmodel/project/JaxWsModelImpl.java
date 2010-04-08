@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.api.jaxws.project.config;
+package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +55,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -115,11 +121,11 @@ public final class JaxWsModelImpl implements JaxWsModel {
         changeSupport = new ChangeSupport(this);
     }
 
-    JaxWsModelImpl(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws) {
+    public JaxWsModelImpl(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws) {
         this(jaxws,null);
     }
 
-    JaxWsModelImpl(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws, FileObject fo) {
+    public JaxWsModelImpl(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws, FileObject fo) {
         this.jaxws=jaxws;
         this.fo=fo;
         propertyChangeListeners = new ArrayList<PropertyChangeListener>();
@@ -136,7 +142,9 @@ public final class JaxWsModelImpl implements JaxWsModel {
             org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service[] org = services.getService();
             if (org==null) return new Service[]{};
             Service[] newServices = new Service[org.length];
-            for (int i=0;i<org.length;i++) newServices[i] = new Service(org[i]);
+            for (int i=0;i<org.length;i++) {
+                newServices[i] = JaxWsModelProvider.getDefault().createService(org[i]);
+            }
             return newServices;
         }
     }
@@ -154,13 +162,13 @@ public final class JaxWsModelImpl implements JaxWsModel {
     @Override
     public Service findServiceByName(String name) {
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service service = findService(name);
-        return service==null ? null : new Service(service);
+        return service==null ? null : JaxWsModelProvider.getDefault().createService(service);
     }
     
     @Override
     public Service findServiceByImplementationClass(String wsClassName) {
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service service = _findServiceByClass(wsClassName);
-        return (service==null?null:new Service(service));
+        return service==null ? null : JaxWsModelProvider.getDefault().createService(service);
     }
     
     private org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service findService(String name) {
@@ -231,7 +239,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
         service.setImplementationClass(implementationClass);
         jaxws.getServices().addService(service);
         fireServiceAdded(name, implementationClass);
-        return new Service(service);
+        return JaxWsModelProvider.getDefault().createService(service);
     }
     
     @Override
@@ -253,7 +261,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
         service.setPortName(portName);
         service.setPackageName(packageName);
         jaxws.getServices().addService(service);
-        return new Service(service);
+        return JaxWsModelProvider.getDefault().createService(service);
     }
     
     @Override
@@ -265,7 +273,9 @@ public final class JaxWsModelImpl implements JaxWsModel {
             org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client[] org = clients.getClient();
             if (org==null) return new Client[]{};
             Client[] newClients = new Client[org.length];
-            for (int i=0;i<org.length;i++) newClients[i] = new Client(org[i]);
+            for (int i=0;i<org.length;i++) {
+                newClients[i] = JaxWsModelProvider.getDefault().createClient(org[i]);
+            }
             return newClients;
         }
     }
@@ -273,7 +283,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
     @Override
     public Client findClientByName(String name) {
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client client = findClient(name);
-        return (client==null?null:new Client(client));
+        return client==null ? null : JaxWsModelProvider.getDefault().createClient(client);
     }
     
     @Override
@@ -285,7 +295,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
             org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client[] org = clients.getClient();
             if (org==null) return null;
             for (int i=0;i<org.length;i++) {
-                if (wsdlUrl.equals(org[i].getWsdlUrl())) return new Client(org[i]);
+                if (wsdlUrl.equals(org[i].getWsdlUrl())) return JaxWsModelProvider.getDefault().createClient(org[i]);
             }
             return null;
         }
@@ -334,7 +344,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
             client.setPackageNameForceReplace("true");
         }
         jaxws.getClients().addClient(client);
-        return new Client(client);
+        return JaxWsModelProvider.getDefault().createClient(client);
     }
     
     @Override
@@ -467,21 +477,22 @@ public final class JaxWsModelImpl implements JaxWsModel {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
            Object oldValue = evt.getOldValue();
+           JaxWsModelProvider factory = JaxWsModelProvider.getDefault();
            if (oldValue != null) {
                if (oldValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client) {
-                   oldValue = new Client((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client)oldValue);
+                   oldValue = factory.createClient(oldValue);
                }
                if (oldValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service) {
-                   oldValue = new Service((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service)oldValue);
+                   oldValue = factory.createService(oldValue);
                }
            }
            Object newValue = evt.getNewValue();
            if (newValue != null) {
                if (newValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client) {
-                   newValue = new Client((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client)newValue);
+                   newValue = factory.createClient(newValue);
                }
                if (newValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service) {
-                   newValue = new Service((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service)newValue);
+                   newValue = factory.createService(newValue);
                }
            }
            originalListener.propertyChange(new PropertyChangeEvent(evt.getSource(), evt.getPropertyName(), oldValue, newValue));
