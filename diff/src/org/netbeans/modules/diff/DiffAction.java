@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 
 import org.openide.NotifyDescriptor;
+import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -70,6 +71,7 @@ import org.netbeans.modules.diff.builtin.SingleDiffPanel;
 import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Diff Action. It gets the default diff visualizer and diff provider if needed
@@ -262,7 +264,13 @@ public class DiffAction extends NodeAction {
                             super.componentActivated();
                             fsdp.requestActive();
                         }
+
+                        @Override
+                        public UndoRedo getUndoRedo() {
+                            return fsdp.getUndoRedo();
+                        }
                     };
+                    fsdp.putClientProperty(TopComponent.class, dtc);
                     dtc.open();
                     dtc.requestActive();
                 }
