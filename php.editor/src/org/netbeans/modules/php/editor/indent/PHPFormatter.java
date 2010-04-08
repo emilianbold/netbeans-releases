@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -121,7 +122,7 @@ public class PHPFormatter implements Formatter {
 //        astReformat(context, indentLevels);
 
 	long start = System.currentTimeMillis();
-
+	
 	(new TokenFormatter()).reformat(context, info);
 	
 	if (LOG.isLoggable(Level.FINE)) {
