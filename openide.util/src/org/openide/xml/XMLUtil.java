@@ -45,8 +45,13 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
@@ -64,6 +69,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
@@ -841,5 +847,245 @@ public final class XMLUtil extends Object {
             }
         }
         return doc;
+    }
+
+    /**
+     * Append a child element to the parent at the specified location.
+     *
+     * Starting with a valid document, append an element according to the schema
+     * sequence represented by the <code>order</code>.  All existing child elements must be
+     * include as well as the new element.  The existing child element following
+     * the new child is important, as the element will be 'inserted before', not
+     * 'inserted after'.
+     *
+     * @param parent parent to which the child will be appended
+     * @param el element to be added
+     * @param order order of the elements which must be followed
+     * @throws IllegalArgumentException if the order cannot be followed, either
+     * a missing existing or new child element is not specifed in order
+     *
+     * @since 8.4
+     */
+    public static void appendChildElement(Element parent, Element el, String[] order) throws IllegalArgumentException {
+        List l = Arrays.asList(order);
+        int index = l.indexOf(el.getLocalName());
+
+        // ensure the new new element is contained in the 'order'
+        if (index == -1) {
+            throw new IllegalArgumentException("new child element '"+ el.getLocalName() + "' not specified in order " + l); // NOI18N
+        }
+
+        List<Element> elements = findSubElements(parent);
+        Element insertBefore = null;
+
+        for (Element e : elements) {
+            int index2 = l.indexOf(e.getLocalName());
+            // ensure that all existing elements are in 'order'
+            if (index2 == -1) {
+                throw new IllegalArgumentException("Existing child element '" + e.getLocalName() + "' not specified in order " + l);  // NOI18N
+            }
+            if (index2 > index) {
+                insertBefore = e;
+                break;
+            }
+        }
+
+        parent.insertBefore(el, insertBefore);
+    }
+
+    /**
+     * Find all direct child elements of an element.
+     * Children which are all-whitespace text nodes or comments are ignored; others cause
+     * an exception to be thrown.
+     * @param parent a parent element in a DOM tree
+     * @return a list of direct child elements (may be empty)
+     * @throws IllegalArgumentException if there are non-element children besides whitespace
+     * 
+     * @since 8.4
+     */
+    public static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
+        NodeList l = parent.getChildNodes();
+        List<Element> elements = new ArrayList<Element>(l.getLength());
+        for (int i = 0; i < l.getLength(); i++) {
+            Node n = l.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                elements.add((Element) n);
+            } else if (n.getNodeType() == Node.TEXT_NODE) {
+                String text = ((Text) n).getNodeValue();
+                if (text.trim().length() > 0) {
+                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
+                }
+            } else if (n.getNodeType() == Node.COMMENT_NODE) {
+                // OK, ignore
+            } else {
+                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
+            }
+        }
+        return elements;
+    }
+
+    /**
+     * Search for an XML element in the direct children of parent only.
+     *
+     * This compares localName (nodeName if localName is null) to name,
+     * and checks the tags namespace with the provided namespace.
+     * A <code>null</code> namespace will match any namespace.
+     *
+     * <ul>This is differs from the DOM version by:
+     * <li>not searching recursively</li>
+     * <li>returns a single result</li>
+     * </ul>
+     *
+     * @param parent a parent element
+     * @param name the intended local name
+     * @param namespace the intended namespace (or null)
+     * @return the one child element with that name, or null if none
+     * @throws IllegalArgumentException if there is multiple elements of the same name
+     * 
+     * @since 8.4
+     */
+    public static Element findElement(Element parent, String name, String namespace) throws IllegalArgumentException {
+        Element result = null;
+        NodeList l = parent.getChildNodes();
+        int nodeCount = l.getLength();
+        for (int i = 0; i < nodeCount; i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Node node = l.item(i);
+                String localName = node.getLocalName();
+                localName = localName == null ? node.getNodeName() : localName;
+                
+                if (name.equals(localName)
+			&& (namespace == null || namespace.equals(node.getNamespaceURI()))) {
+                    if (result == null) {
+                        result = (Element)node;
+                    } else {
+                        throw new IllegalArgumentException("more than one element with same name found");
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Extract nested text from a node.
+     * Currently does not handle coalescing text nodes, CDATA sections, etc.
+     * @param parent a parent element
+     * @return the nested text, or null if none was found
+     * 
+     * @since 8.4
+     */
+    public static String findText(Node parent) {
+        NodeList l = parent.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
+                Text text = (Text) l.item(i);
+                return text.getNodeValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Convert an XML fragment from one namespace to another.
+     * 
+     * @param from element to translate
+     * @param namespace namespace to be translated to
+     * @return
+     * 
+     * @since 8.4
+     */
+    public static Element translateXML(Element from, String namespace) {
+        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            Node node = nl.item(i);
+            Node newNode;
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                newNode = translateXML((Element) node, namespace);
+            } else {
+                newNode = node.cloneNode(true);
+            }
+            to.appendChild(newNode);
+        }
+        NamedNodeMap m = from.getAttributes();
+        for (int i = 0; i < m.getLength(); i++) {
+            Node attr = m.item(i);
+            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
+        }
+        return to;
+    }
+
+    /**
+     * Copy elements from one document to another attaching at the specified element
+     * and translating the namespace.
+     *
+     * @param from copy the children of this element (exclusive)
+     * @param to where to attach the copied elements
+     * @param newNamespace destination namespace
+     * 
+     * @since 8.4
+     */
+    public static void copyDocument(Element from, Element to, String newNamespace) {
+        Document doc = to.getOwnerDocument();
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            Node node = nl.item(i);
+            Node newNode = null;
+            if (Node.ELEMENT_NODE == node.getNodeType()) {
+                Element oldElement = (Element) node;
+                newNode = doc.createElementNS(newNamespace, oldElement.getTagName());
+                NamedNodeMap m = oldElement.getAttributes();
+                Element newElement = (Element) newNode;
+                for (int index = 0; index < m.getLength(); index++) {
+                    Node attr = m.item(index);
+                    newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
+                }
+                copyDocument(oldElement, newElement, newNamespace);
+            } else {
+                newNode = node.cloneNode(true);
+                newNode = to.getOwnerDocument().importNode(newNode, true);
+            }
+            if (newNode != null) {
+                to.appendChild(newNode);
+            }
+        }
+    }
+
+    /**
+     * Create an XML error handler that rethrows errors and fatal errors and logs warnings.
+     * @return a standard error handler
+     *
+     * @since 8.4
+     */
+    public static ErrorHandler defaultErrorHandler() {
+        return new ErrHandler();
+    }
+
+    private static final class ErrHandler implements ErrorHandler {
+
+        public ErrHandler() {}
+
+        private void annotate(SAXParseException exception) throws SAXException {
+            Exceptions.attachMessage(exception, "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber()); // NOI18N
+        }
+
+        public void fatalError(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            throw exception;
+        }
+
+        public void error(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            throw exception;
+        }
+
+        public void warning(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.INFO, null, exception);
+        }
+
     }
 }

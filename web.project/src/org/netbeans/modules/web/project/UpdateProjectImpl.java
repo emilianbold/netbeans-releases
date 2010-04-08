@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -295,7 +296,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                 if (version == 1) {
                     //1->2 upgrade
                     Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
@@ -317,7 +318,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
                             Element library = (Element) libList.item(i);
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
                             //remove ${ and } from the beginning and end
-                            String webFileText = findText(webFile);
+                            String webFileText = XMLUtil.findText(webFile);
                             webFileText = webFileText.substring(2, webFileText.length() - 1);
 //                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
                             if (webFileText.startsWith ("lib.")) {
@@ -372,56 +373,6 @@ public class UpdateProjectImpl implements UpdateImplementation {
     private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
         if (prop.get(property)==null) { //NOI18N
             prop.put (property, defaultValue); //NOI18N
-        }
-    }
-
-    /**
-     * Extract nested text from a node.
-     * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent node
-     * @return the nested text, or null if none was found
-     */
-    private static String findText(Node parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                        newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,(Element)newNode);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
         }
     }
 

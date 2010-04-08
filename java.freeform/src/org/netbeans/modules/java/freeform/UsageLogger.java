@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -61,6 +60,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -109,18 +109,18 @@ class UsageLogger {
         Set<String> classpathEntries = new HashSet<String>();
         Element java = JavaProjectGenerator.getJavaCompilationUnits(aux);
         if (java != null) {
-            for (Element compilationUnitEl : Util.findSubElements(java)) {
+            for (Element compilationUnitEl : XMLUtil.findSubElements(java)) {
                 compilationUnits++;
                 int builtTos = 0;
                 int roots = 0;
-                for (Element other : Util.findSubElements(compilationUnitEl)) {
+                for (Element other : XMLUtil.findSubElements(compilationUnitEl)) {
                     String name = other.getLocalName();
                     if (name.equals("package-root")) { // NOI18N
                         roots++;
                     } else if (name.equals("built-to")) { // NOI18N
                         builtTos++;
                     } else if (name.equals("classpath")) { // NOI18N
-                        String text = Util.findText(other);
+                        String text = XMLUtil.findText(other);
                         if (text != null) {
                             String textEval = eval.evaluate(text);
                             if (textEval != null) {

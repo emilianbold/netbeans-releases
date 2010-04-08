@@ -89,6 +89,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -242,8 +243,8 @@ public final class SuiteProject implements Project {
         }
         
         private String getSimpleName() {
-            Element nameEl = Util.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
-            String text = (nameEl != null) ? Util.findText(nameEl) : null;
+            Element nameEl = XMLUtil.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
+            String text = (nameEl != null) ? XMLUtil.findText(nameEl) : null;
             return (text != null) ? text : "???"; // NOI18N
         }
         

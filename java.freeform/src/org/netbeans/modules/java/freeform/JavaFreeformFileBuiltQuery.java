@@ -47,7 +47,6 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -58,6 +57,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -99,7 +99,7 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
         List<String> to   = new ArrayList<String>();
         
         if (java != null) {
-            List<Element> compilationUnits = Util.findSubElements(java);
+            List<Element> compilationUnits = XMLUtil.findSubElements(java);
             Iterator it = compilationUnits.iterator();
             while (it.hasNext()) {
                 Element compilationUnitEl = (Element)it.next();
@@ -188,11 +188,11 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
     
     static List<String> findBuiltToNames(Element compilationUnitEl) {
         List<String> names = new ArrayList<String>();
-        for (Element e : Util.findSubElements(compilationUnitEl)) {
+        for (Element e : XMLUtil.findSubElements(compilationUnitEl)) {
             if (!e.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }
-            String location = Util.findText(e);
+            String location = XMLUtil.findText(e);
             names.add(location);
         }
         return names;

@@ -172,6 +172,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
 
 /**
  * Represents one ejb module project
@@ -627,7 +628,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         if (element != null) {
             Document doc = element.getOwnerDocument();
             Element newRoot = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-            copyDocument (doc, element, newRoot);
+            XMLUtil.copyDocument (element, newRoot, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE);
             Element srcRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
             Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
@@ -640,33 +641,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             newRoot.appendChild (tstRoots);
             helper.putPrimaryConfigurationData (newRoot, true);
             ProjectManager.getDefault().saveProject(this);
-        }
-    }
-
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    copyDocument(doc,oldElement,(Element)newNode);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
         }
     }
 

@@ -60,8 +60,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.openide.xml.XMLUtil;
 
 
 /**
@@ -258,41 +257,12 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
         }
         
         // Module is a NB module suite component, not a NB source module
-        if (findElement(e, "suite-component", namespace) != null) return false; // NOI18N
+        if (XMLUtil.findElement(e, "suite-component", namespace) != null) return false; // NOI18N
         
         // Module is a NB module suite component, not a NB source module
-        if (findElement(e, "standalone", namespace) != null) return false; // NOI18N
+        if (XMLUtil.findElement(e, "standalone", namespace) != null) return false; // NOI18N
         
         // Module is a NB source module (neither suite component nor standalone)
         return true;
-    }
-    
-    // COPIED FROM org.netbeans.modules.project.ant:
-    // (except for namespace == null support in findElement)
-    // (and support for comments in findSubElements)
-    
-    /**
-     * Search for an XML element in the direct children of a parent.
-     * DOM provides a similar method but it does a recursive search
-     * which we do not want. It also gives a node list and we want
-     * only one result.
-     * @param parent a parent element
-     * @param name the intended local name
-     * @param namespace the intended namespace (or null)
-     * @return the first child element with that name, or null if none
-     */
-    private static Element findElement(Element parent, String name, String namespace) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element)l.item(i);
-                if ((namespace == null && name.equals(el.getTagName())) ||
-                        (namespace != null && name.equals(el.getLocalName()) &&
-                        namespace.equals(el.getNamespaceURI()))) {
-                    return el;
-                }
-            }
-        }
-        return null;
     }
 }
