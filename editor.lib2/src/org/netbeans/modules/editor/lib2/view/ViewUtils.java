@@ -99,8 +99,8 @@ public final class ViewUtils {
         g.fillRect(
                 (int) r.getX(),
                 (int) r.getY(),
-                (int) r.getWidth(),
-                (int) r.getHeight()
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight())
         );
     }
 

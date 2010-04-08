@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.util.Locale;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -89,9 +90,10 @@ public class AddToDictionaryCompletionItem implements CompletionItem {
         DataObject dataObject = (DataObject) document.getProperty (Document.StreamDescriptionProperty);
         FileObject fileObject = dataObject.getPrimaryFile ();
         Project project = FileOwnerQuery.getOwner (fileObject);
+        Locale locale = LocaleQuery.findLocale(fileObject);
         DictionaryImpl dictionary = projects ?
-            ComponentPeer.getProjectDictionary (project) :
-            ComponentPeer.getUsersLocalDictionary (LocaleQuery.findLocale (fileObject));
+            ComponentPeer.getProjectDictionary (project, locale) :
+            ComponentPeer.getUsersLocalDictionary (locale);
         dictionary.addEntry (word);
         ComponentPeer componentPeer = (ComponentPeer) component.getClientProperty (ComponentPeer.class);
         componentPeer.reschedule();
