@@ -67,10 +67,16 @@ public class ActionButton extends LinkButton {
         Object tooltip = a.getValue( Action.SHORT_DESCRIPTION );
         if( null != tooltip )
             setToolTipText( tooltip.toString() );
+        if( null == urlString ) {
+            setUsageTrackingId(getText());
+        } else {
+            setUsageTrackingId(getText() + " (" + urlString + ")"); //NOI18N
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        logUsage();
         if( null != action ) {
             action.actionPerformed( e );
         }

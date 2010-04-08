@@ -43,7 +43,12 @@ package org.netbeans.modules.welcome;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.welcome.content.BundleSupport;
+import org.netbeans.modules.welcome.content.Constants;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -77,9 +82,21 @@ public class WelcomeOptions {
  
     public void setShowOnStartup( boolean show ) {
         boolean oldVal = isShowOnStartup();
+        if( oldVal == show ) {
+            return;
+        }
         prefs().putBoolean(PROP_SHOW_ON_STARTUP, show);
         if( null != propSupport )
             propSupport.firePropertyChange( PROP_SHOW_ON_STARTUP, oldVal, show );
+
+        LogRecord rec = new LogRecord(Level.INFO, "USG_SHOW_START_PAGE"); //NOI18N
+        rec.setParameters(new Object[] {show} );
+        rec.setLoggerName(Constants.USAGE_LOGGER.getName());
+        rec.setResourceBundle(NbBundle.getBundle(BundleSupport.BUNDLE_NAME));
+        rec.setResourceBundleName(BundleSupport.BUNDLE_NAME);
+
+        Constants.USAGE_LOGGER.log(rec);
+
     }
 
     public boolean isShowOnStartup() {

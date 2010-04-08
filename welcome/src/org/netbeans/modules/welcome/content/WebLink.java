@@ -67,15 +67,20 @@ public class WebLink extends LinkButton {
                 BundleSupport.getAccessibilityName( "WebLink", label ) ); //NOI18N
         getAccessibleContext().setAccessibleDescription(
                 BundleSupport.getAccessibilityDescription( "WebLink", url ) ); //NOI18N
+
+        setUsageTrackingId(url);
     }
 
     public WebLink( String label, String url, Color foreground, boolean showBorder ) {
         super( label, foreground, showBorder );
         this.url = url;
+
+        setUsageTrackingId(url);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        logUsage();
         Utils.showURL( url );
     }
     

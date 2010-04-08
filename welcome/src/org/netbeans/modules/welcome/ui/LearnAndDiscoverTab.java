@@ -42,17 +42,10 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
-import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.Utils;
 import org.netbeans.modules.welcome.content.WebLink;
 

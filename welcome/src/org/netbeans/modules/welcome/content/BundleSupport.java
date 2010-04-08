@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 public class BundleSupport {
 
-    private static final String BUNDLE_NAME = "org.netbeans.modules.welcome.resources.Bundle"; // NOI18N
+    public static final String BUNDLE_NAME = "org.netbeans.modules.welcome.resources.Bundle"; // NOI18N
 
     private static final String LABEL_PREFIX = "LBL_"; // NOI18N
     private static final String URL_PREFIX = "URL_"; // NOI18N
