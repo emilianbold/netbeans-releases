@@ -73,6 +73,7 @@ import org.netbeans.modules.editor.impl.ComplexValueSettingsFactory;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -139,7 +140,17 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             }
 
             public @Override Object setValue(Object value) {
-                // ignore, just let the document to fire the property change event
+                // ignore, just let the document fire the property change event
+                return null;
+            }
+        });
+        putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().getInt(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, EditorPreferencesDefaults.defaultTextLimitWidth); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document fire the property change event
                 return null;
             }
         });

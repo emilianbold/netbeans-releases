@@ -518,6 +518,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
         putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
+        putProperty(SimpleValueNames.TAB_SIZE, new BaseDocument_PropertyHandler() {
+            public @Override Object setValue(Object value) {
+                return null;
+            }
+
+            public @Override Object getValue() {
+                return getTabSize();
+            }
+        });
         putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
         lineRootElement = new LineRootElement(this);
