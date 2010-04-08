@@ -375,6 +375,7 @@ public final class DocumentView extends EditorBoxView
         if (mutex != null) {
             mutex.lock();
             try {
+                ((EditorTabExpander) tabExpander).updateTabSize();
                 if (fontRenderContext != null) { // Only rebuild views with valid fontRenderContext
                     viewUpdates.reinitViews();
                 }
@@ -886,6 +887,7 @@ public final class DocumentView extends EditorBoxView
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Document) {
+            boolean reinitViews = false;
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType lwt = LineWrapType.fromSettingValue((String)getDocument().getProperty(SimpleValueNames.TEXT_LINE_WRAP));
@@ -895,8 +897,14 @@ public final class DocumentView extends EditorBoxView
                 if (lwt != lineWrapType) {
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
                     lineWrapType = lwt;
-                    reinitViews();
+                    reinitViews = true;
                 }
+            }
+            if (propName == null || SimpleValueNames.TAB_SIZE.equals(propName)) {
+                reinitViews = true;
+            }
+            if (reinitViews) {
+                reinitViews();
             }
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
