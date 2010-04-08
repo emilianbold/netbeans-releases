@@ -1010,6 +1010,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
+        public String getCustomInsertTemplate() {
+            if (endWithDoubleColon) {
+                scheduleShowingCompletion();
+            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
+                scheduleShowingCompletion();
+            }
+            return super.getCustomInsertTemplate();
+        }
+
+
+        @Override
         public String getInsertPrefix() {
             final String superTemplate = super.getInsertPrefix();
             if (endWithDoubleColon) {
@@ -1020,11 +1031,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(getName());
                 }
                 builder.append("::"); //NOI18N
-                scheduleShowingCompletion();
                 return builder.toString();
-            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
-                scheduleShowingCompletion();
-            }
+            } 
             return superTemplate;
         }
     }
