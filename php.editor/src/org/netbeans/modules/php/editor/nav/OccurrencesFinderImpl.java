@@ -137,7 +137,9 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
             Occurence caretOccurence = occurencesSupport.getOccurence();
             if (caretOccurence != null) {
-                final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES, Accuracy.UNIQUE);
+                final EnumSet<Accuracy> handledAccuracyFlags = EnumSet.<Occurence.Accuracy>of(
+                        Accuracy.EXACT, Accuracy.EXACT_TYPE, Accuracy.MORE, Accuracy.MORE_TYPES,
+                        Accuracy.UNIQUE,  Accuracy.MORE_MEMBERS);
                 if (handledAccuracyFlags.contains(caretOccurence.degreeOfAccuracy())) {
                     PhpElementKind kind = caretOccurence.getKind();
                     if (!kind.equals(PhpElementKind.INCLUDE)) {

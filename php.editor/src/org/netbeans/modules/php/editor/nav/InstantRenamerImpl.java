@@ -78,7 +78,7 @@ public class InstantRenamerImpl implements InstantRenamer {
         Occurence caretOccurence = occurencesSupport.getOccurence();
         if (caretOccurence != null) {
             final Accuracy accuracy = caretOccurence.degreeOfAccuracy();
-            if (accuracy.equals(Occurence.Accuracy.EXACT)) {
+            if (accuracy.equals(Occurence.Accuracy.EXACT) || accuracy.equals(Occurence.Accuracy.UNIQUE)) {
                 if (IS_RENAME_REFACTORING_ENABLED) {
                     final Collection<? extends PhpElement> allDeclarations = caretOccurence.getAllDeclarations();
                     if (allDeclarations.size() != 1) {
