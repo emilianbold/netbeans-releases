@@ -69,7 +69,9 @@ import org.openide.util.ChangeSupport;
  */
 @ProjectServiceProvider(service=JaxWsModel.class, projectType={
     "org-netbeans-modules-j2ee-clientproject",
-    "org-netbeans-modules-java-j2seproject"
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project"
 })
 public final class JaxWsModelImpl implements JaxWsModel {
     private static final String JAX_WS_XML_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"; //NOI18N
@@ -100,7 +102,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
                         try {
                             extProvider.handleJaxWsModelChanges(JaxWsModelImpl.this);
                         } catch (java.io.IOException ex) {
-
+                            Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "failed to implement changes in jaxws-build.xml", ex); //NOI18N
                         }
                     }
                 }
@@ -216,6 +218,13 @@ public final class JaxWsModelImpl implements JaxWsModel {
     @Override
     public Service addService(String name, String implementationClass)
     throws ServiceAlreadyExistsExeption {
+        if (jaxws == null && project != null) {
+            try {
+                WSUtils.createJaxWsFileObject(project);
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "failed to create jax-ws.xml", ex); //NOI18N
+            }
+        }
         if (findService(name)!=null) throw new ServiceAlreadyExistsExeption(name);
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service service = jaxws.getServices().newService();
         service.setName(name);
@@ -228,6 +237,13 @@ public final class JaxWsModelImpl implements JaxWsModel {
     @Override
     public Service addService(String name, String implementationClass, String wsdlUrl, String serviceName, String portName, String packageName)
     throws ServiceAlreadyExistsExeption {
+        if (jaxws == null && project != null) {
+            try {
+                WSUtils.createJaxWsFileObject(project);
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "failed to create jax-ws.xml", ex); //NOI18N
+            }
+        }
         if (findService(name)!=null) throw new ServiceAlreadyExistsExeption(name);
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service service = jaxws.getServices().newService();
         service.setName(name);
@@ -302,7 +318,13 @@ public final class JaxWsModelImpl implements JaxWsModel {
     @Override
     public Client addClient(String name, String wsdlUrl, String packageName)
     throws ClientAlreadyExistsExeption {
-        
+        if (jaxws == null && project != null) {
+            try {
+                WSUtils.createJaxWsFileObject(project);
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "failed to create jax-ws.xml", ex); //NOI18N
+            }
+        }
         if (findClient(name) != null) throw new ClientAlreadyExistsExeption(name);
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client client = jaxws.getClients().newClient();
         client.setName(name);
@@ -379,7 +401,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
                             try {
                                 extProvider.handleJaxWsModelChanges(JaxWsModelImpl.this);
                             } catch (java.io.IOException ex) {
-
+                                Logger.getLogger(JaxWsModelImpl.class.getName()).log(Level.INFO, "failed to implement changes in jaxws-build.xml", ex); //NOI18N
                             }
                         }
                     }

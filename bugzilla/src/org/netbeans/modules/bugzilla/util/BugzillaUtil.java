@@ -39,21 +39,17 @@
 
 package org.netbeans.modules.bugzilla.util;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetTaskDataCommand;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDescriptor;
@@ -105,18 +101,12 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        final TaskData[] taskData = new TaskData[1];
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
-            }
-        };
+        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository.getTaskRepository());
         repository.getExecutor().execute(cmd, handleExceptions);
         if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
         }
-        return taskData[0];
+        return cmd.getTaskData();
     }
 
     public static String getKeywords(String label, String keywordsString, BugzillaRepository repository) {

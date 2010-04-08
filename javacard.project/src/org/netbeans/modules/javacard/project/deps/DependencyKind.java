@@ -69,12 +69,13 @@ public enum DependencyKind {
     public Set<ArtifactKind> supportedArtifacts() {
         switch (this) {
             case CLASSIC_LIB :
+            case EXTENSION_LIB :
             case JAVA_PROJECT :
                 return EnumSet.of(ArtifactKind.ORIGIN);
-            case EXTENSION_LIB :
             case CLASSIC_LIB_JAR :
-                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE);
+                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE, ArtifactKind.EXP_FILE);
             case EXTENSION_LIB_JAR :
+                return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SIG_FILE);
             case RAW_JAR :
                 return EnumSet.of(ArtifactKind.ORIGIN, ArtifactKind.SOURCES_PATH);
             case JAR_WITH_EXP_FILE :
@@ -86,10 +87,12 @@ public enum DependencyKind {
 
     public Set<DeploymentStrategy> supportedDeploymentStrategies() {
         switch (this) {
-            case EXTENSION_LIB:
-            case EXTENSION_LIB_JAR:
             case JAR_WITH_EXP_FILE :
+                return EnumSet.of(DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
+            case EXTENSION_LIB_JAR:
             case CLASSIC_LIB_JAR:
+                return EnumSet.of(DeploymentStrategy.DEPLOY_TO_CARD, DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
+            case EXTENSION_LIB:
             case CLASSIC_LIB :
                 return EnumSet.of(DeploymentStrategy.DEPLOY_TO_CARD, DeploymentStrategy.ALREADY_ON_CARD);
             case RAW_JAR :
