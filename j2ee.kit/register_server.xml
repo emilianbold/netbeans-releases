@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <description>Register servers into qa-funcional tests</description>
+
+    <target name="test-qa-functional" depends="init,test-init,test-build,register-servers" if="exists.test.qa-functional.src.dir">
+        <test test.type="qa-functional"/>
+    </target>
+
+    <target name="register-servers"
+        depends="check-v3ee6-root-property,check-aas-root-property,check-catalinahome-property,register-glassfish,register-tomcat"/>
+
+    <target name="check-v3ee6-root-property" if="org.glassfish.v3ee6.installRoot">
+        <property name="glassfish.home" value="${org.glassfish.v3ee6.installRoot}"/>
+    </target>
+
+    <target name="check-aas-root-property" if="test-qa-functional-sys-prop.com.sun.aas.installRoot">
+        <property name="glassfish.home" value="${test-qa-functional-sys-prop.com.sun.aas.installRoot}"/>
+    </target>
+
+    <target name="check-catalinahome-property" if="org.netbeans.modules.tomcat.autoregister.catalinaHome">
+        <property name="tomcat.home" value="${org.netbeans.modules.tomcat.autoregister.catalinaHome}"/>
+    </target>
+
+    <target name="register-glassfish" if="glassfish.home">
+        <echo message="GlassFish Root Directory: ${glassfish.home}"/>
+        <java classname="org.netbeans.modules.glassfish.common.registration.AutomaticRegistration"
+              fork="true">
+            <arg value="${netbeans.dest.dir}/enterprise"/>
+            <arg value="${glassfish.home}"/>
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="platform/core/core.jar"/>
+                    <include name="platform/lib/boot.jar"/>
+                    <include name="platform/lib/org-openide-modules.jar"/>
+                    <include name="platform/core/org-openide-filesystems.jar"/>
+                    <include name="platform/lib/org-openide-util.jar"/>
+                    <include name="platform/lib/org-openide-util-lookup.jar"/>
+                    <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
+                    <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
+                    <include name="ide/modules/ext/xerces-2.8.0.jar"/>
+                    <include name="ide/modules/org-netbeans-modules-glassfish-common.jar"/>
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+
+    <target name="register-tomcat" if="tomcat.home">
+        <echo message="Tomcat Root Directory: ${tomcat.home}"/>
+         <java classname="org.netbeans.modules.tomcat5.registration.AutomaticRegistration"
+              fork="true">
+            <arg value="${netbeans.dest.dir}/enterprise"/>
+            <arg value="${tomcat.home}"/>
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="platform/core/core.jar"/>
+                    <include name="platform/lib/boot.jar"/>
+                    <include name="platform/lib/org-openide-modules.jar"/>
+                    <include name="platform/core/org-openide-filesystems.jar"/>
+                    <include name="platform/lib/org-openide-util.jar"/>
+                    <include name="platform/lib/org-openide-util-lookup.jar"/>
+                    <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
+                    <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
+                    <include name="ide/modules/ext/xerces-2.8.0.jar"/>
+                    <include name="enterprise/modules/org-netbeans-modules-tomcat5.jar"/>
+                </fileset>
+            </classpath>
+        </java>
+   </target>
+</project>
