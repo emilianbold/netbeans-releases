@@ -73,10 +73,13 @@ public final class AstDynamicMethodElement extends AstMethodElement {
         if (name != null) {
             return name;
         }
+        String result = null;
         if (methodNode.getNodeType() == NodeType.ALIASNODE) {
-            return ((AliasNode) methodNode).getNewName();   
+            result = AstUtilities.getNameOrValue(((AliasNode) methodNode).getNewName());
         }
-        String result = AstUtilities.getNameOrValue(methodNode);
+        if (result == null) {
+            result = AstUtilities.getNameOrValue(methodNode);
+        }
         return result == null ? "" : result;
     }
 

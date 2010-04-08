@@ -531,7 +531,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 AliasNode an = (AliasNode)closest;
 
                 // TODO - determine if the click is over the new name or the old name
-                String newName = an.getNewName();
+                String newName = AstUtilities.getNameOrValue(an.getNewName());
+                if (newName == null) {
+                    return DeclarationLocation.NONE;
+                }
 
                 // XXX I don't know where the old and new names are since the user COULD
                 // have used more than one whitespace character for separation. For now I'll
@@ -550,7 +553,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                         // The problem is that we don't know if it's a local, a dynamic, an instance
                         // variable, etc. (The $ and @ parts are not included in the alias statement).
                         // First see if it's a local variable.
-                        String name = an.getOldName();
+                        String name = AstUtilities.getNameOrValue(an.getOldName());
+                        if (name == null) {
+                            return DeclarationLocation.NONE;
+                        }
                         ignoreAlias = true;
 
                         try {
@@ -1833,7 +1839,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         } else if (node instanceof ArgsNode) {
@@ -1902,7 +1909,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         }
@@ -1929,7 +1937,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         } else if (AstUtilities.isAttr(node)) {
@@ -1973,7 +1982,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
 
@@ -2039,7 +2049,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return getLocation(info, node);
             }
         }
@@ -2068,7 +2079,8 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                 return getLocation(info, node);
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode)node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 // No obvious way to check arity
                 return getLocation(info, node);
             }

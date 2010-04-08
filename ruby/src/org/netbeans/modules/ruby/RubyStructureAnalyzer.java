@@ -743,7 +743,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
         case ALIASNODE: {
             AliasNode aliasNode = (AliasNode) node;
-            addAliasedMethod(aliasNode.getOldName(), aliasNode, parent, in);
+            String aliasedMethodName = AstUtilities.getNameOrValue(aliasNode.getOldName());
+            if (aliasedMethodName != null) {
+                addAliasedMethod(aliasedMethodName, aliasNode, parent, in);
+            }
             break;
         }
         case FCALLNODE: {

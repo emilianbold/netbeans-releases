@@ -173,7 +173,8 @@ final class RubyClassDeclarationFinder extends RubyBaseDeclarationFinder<Indexed
                 return node;
             }
         } else if (!ignoreAlias && node instanceof AliasNode) {
-            if (((AliasNode) node).getNewName().equals(name)) {
+            String newName = AstUtilities.getNameOrValue(((AliasNode)node).getNewName());
+            if (name.equals(newName)) {
                 return node;
             }
         }
