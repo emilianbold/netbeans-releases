@@ -936,7 +936,8 @@ This list is exposed in a popup menu.
 -->
  <answer id="arch-overall">
   <p>
-   This module provides API that works on top of <a href="@org-openide-filesystems@/overview-summary.html">file objects</a>
+   This module provides API (read <a href="@TOP@org/openide/loaders/doc-files/api.html">more</a>)
+   that works on top of <a href="@org-openide-filesystems@/overview-summary.html">file objects</a>
    and gives each file a logical behaviour - icon, name, operations, etc.
   </p>
  </answer>

@@ -65,7 +65,7 @@ import org.openide.util.WeakListeners;
  *  Configures the editor returned and attaches it to the property in question.
   * @author  Tim Boudreau
   */
-final class InplaceEditorFactory {
+final class InplaceEditorFactory implements PropertyChangeListener {
     private InplaceEditor checkbox = null;
     private InplaceEditor text = null;
     private InplaceEditor combo = null;
@@ -79,17 +79,17 @@ final class InplaceEditorFactory {
     InplaceEditorFactory(boolean tableUI, ReusablePropertyEnv env) {
         this.tableUI = tableUI;
         this.reusableEnv = env;
-        
         //reset editors when windows theme is changing (classic <-> xp)
-        PropertyChangeListener weakListener = WeakListeners.propertyChange( new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                checkbox = null;
-                text = null;
-                combo = null;
-                radio = null;
-            }
-        }, Toolkit.getDefaultToolkit() );
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(this, Toolkit.getDefaultToolkit());
         Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", weakListener ); //NOI18N
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        checkbox = null;
+        text = null;
+        combo = null;
+        radio = null;
     }
 
     /** Set a threshold number of tags below which a radio button, not a
