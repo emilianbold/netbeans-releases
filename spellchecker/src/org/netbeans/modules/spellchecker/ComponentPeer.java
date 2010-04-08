@@ -404,18 +404,18 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         String userdir = System.getProperty("netbeans.user");
         File cache = new File(userdir, "private-dictionary-" + locale.toString());
         
-        locale2UsersLocalDictionary.put(locale, d = new DictionaryImpl(cache));
+        locale2UsersLocalDictionary.put(locale, d = new DictionaryImpl(cache, locale));
         
         return d;
     }
     
-    public static synchronized DictionaryImpl getProjectDictionary(Project p) {
+    public static synchronized DictionaryImpl getProjectDictionary(Project p, Locale locale) {
         Reference<DictionaryImpl> r = project2Reference.get(p);
         DictionaryImpl d = r != null ? r.get() : null;
         
         if (d == null) {
             AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(p);
-            project2Reference.put(p, new WeakReference<DictionaryImpl>(d = new DictionaryImpl(p, ac)));
+            project2Reference.put(p, new WeakReference<DictionaryImpl>(d = new DictionaryImpl(p, ac, locale)));
         }
         
         return d;
@@ -451,7 +451,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             Project p = FileOwnerQuery.getOwner(file);
 
             if (p != null) {
-                Dictionary projectDictionary = getProjectDictionary(p);
+                Dictionary projectDictionary = getProjectDictionary(p, locale);
 
                 if (projectDictionary != null) {
                     dictionaries.add(projectDictionary);
@@ -616,9 +616,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
             if (file != null) {
                 Project p = FileOwnerQuery.getOwner(file);
+                Locale locale = LocaleQuery.findLocale(file);
                 
                 if (p != null) {
-                    DictionaryImpl projectDictionary = getProjectDictionary(p);
+                    DictionaryImpl projectDictionary = getProjectDictionary(p, locale);
                     
                     if (projectDictionary != null) {
                         String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToProjectDictionary");
@@ -626,7 +627,6 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     }
                 }
             
-                Locale locale = LocaleQuery.findLocale(file);
                 String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToPrivateDictionary");
 
                 result.add(new AddToDictionaryHint(this, getUsersLocalDictionary(locale), currentWord, displayName, "2" + currentWord));

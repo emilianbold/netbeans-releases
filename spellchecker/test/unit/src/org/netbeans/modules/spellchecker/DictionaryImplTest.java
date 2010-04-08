@@ -42,6 +42,7 @@ package org.netbeans.modules.spellchecker;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Locale;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 
@@ -59,7 +60,7 @@ public class DictionaryImplTest extends NbTestCase {
         clearWorkDir();
         
         File source = new File(getWorkDir(), "dictionary.cache");
-        DictionaryImpl d = new DictionaryImpl(source);
+        DictionaryImpl d = new DictionaryImpl(source, Locale.ENGLISH);
         
         assertEquals(ValidityType.INVALID, d.validateWord("dddd"));
         assertEquals(Collections.emptyList(), d.findProposals("dddd"));
@@ -81,4 +82,16 @@ public class DictionaryImplTest extends NbTestCase {
         assertEquals(Collections.emptyList(), d.findProposals("ddddd"));
     }
     
+    public void testCapitalized() throws Exception {
+        clearWorkDir();
+
+        File source = new File(getWorkDir(), "dictionary.cache");
+        DictionaryImpl d = new DictionaryImpl(source, Locale.ENGLISH);
+
+        d.addEntry("Foo");
+        d.addEntry("bar");
+
+        assertEquals(ValidityType.VALID, d.validateWord("Foo"));
+    }
+
 }
