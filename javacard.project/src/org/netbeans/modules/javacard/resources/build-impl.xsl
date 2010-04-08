@@ -454,7 +454,7 @@ No emulator found at ${emulator.executable}]]>
 
             <target name="build" depends="pack,sign"/>
 
-            <target name="load-bundle">
+            <target name="load-bundle" depends="load-dependencies">
                 <waitfor>
                     <http url="${{javacard.device.cardmanagerurl}}"/>
                 </waitfor>
@@ -693,7 +693,7 @@ run   - Builds and deploys the application and starts the browser.
             <xsl:if test="@deployment = 'DEPLOY_TO_CARD'">
                 <xsl:element name="echo">
                     <xsl:attribute name="message">
-                        <xsl:text>Loading dependency</xsl:text>
+                        <xsl:text>Loading dependency </xsl:text>
                         <xsl:value-of select="@id"/>
                         <xsl:text> (type:</xsl:text>
                         <xsl:value-of select="@kind"/>
@@ -768,7 +768,19 @@ run   - Builds and deploys the application and starts the browser.
                 </xsl:if>
                 <!-- deploying JAR files dependencies -->
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
-                    <fail>Classic and Extension Lib JAR deployement w/o project not implemented yet</fail>
+                    <xsl:element name="jc-load">
+                        <!-- basedir needed or task will misinterpret path -->
+                        <xsl:attribute name="bundlefile">
+                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="signaturefile">
+                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.sigfile}</xsl:text>
+                        </xsl:attribute>
+                    </xsl:element>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
@@ -944,7 +956,6 @@ run   - Builds and deploys the application and starts the browser.
             </xsl:if>
             <!-- deploying JAR files dependencies -->
             <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
-                <fail>Classic and Extension Lib JAR undeployement w/o project not implemented</fail>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
@@ -1030,7 +1041,17 @@ run   - Builds and deploys the application and starts the browser.
                 </xsl:if>
                 <!-- deploying JAR files dependencies -->
                 <xsl:if test="@kind = 'EXTENSION_LIB_JAR' or @kind = 'CLASSIC_LIB_JAR'">
-                    <fail>Classic and Extension Lib JAR undeployement w/o project not implemented yet</fail>
+                    <xsl:element name="jc-unload">
+                        <xsl:attribute name="bundlefile">
+                            <!-- basedir needed or task will misinterpret path -->
+                            <xsl:text>${basedir}/${dependency.</xsl:text>
+                            <xsl:value-of select="@id"/>
+                            <xsl:text>.origin}</xsl:text>
+                        </xsl:attribute>
+                        <xsl:attribute name="force">
+                            <xsl:text>true</xsl:text>
+                        </xsl:attribute>
+                    </xsl:element>
                 </xsl:if>
             </xsl:if>
         </xsl:for-each>
