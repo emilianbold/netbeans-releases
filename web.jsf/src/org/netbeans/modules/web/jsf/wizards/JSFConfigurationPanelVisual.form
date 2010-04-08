@@ -61,28 +61,28 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="rbNoneLibrary" pref="458" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" pref="459" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="279" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="289" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="173" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="173" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="213" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="213" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="rbNewLibrary" alignment="1" pref="458" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="1" pref="459" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lVersion" alignment="1" pref="436" max="32767" attributes="0"/>
-                                  <Component id="lDirectory" alignment="0" pref="436" max="32767" attributes="0"/>
+                                  <Component id="lVersion" alignment="1" pref="437" max="32767" attributes="0"/>
+                                  <Component id="lDirectory" alignment="0" pref="437" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -111,7 +111,7 @@
                           <Component id="jtNewLibraryName" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="lVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="20" max="32767" attributes="0"/>
+                      <EmptySpace pref="27" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -268,7 +268,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lURLPattern" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="tURLPattern" pref="301" max="32767" attributes="0"/>
+                              <Component id="tURLPattern" pref="291" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
