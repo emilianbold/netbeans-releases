@@ -130,8 +130,14 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     public void restart(int startOffset, int matchOffset) {
         doc = textComponent().getDocument();
         docText = DocumentUtilities.getText(doc);
+
+        if (highlightsContainer != null) {
+            highlightsContainer.removeHighlightsChangeListener(this);
+            highlightsContainer = null;
+        }
         highlightsContainer = HighlightingManager.getInstance().getHighlights(textComponent(), null);
         highlightsContainer.addHighlightsChangeListener(this);
+
         lineElementRoot = doc.getDefaultRootElement();
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         fetchLineInfo();
