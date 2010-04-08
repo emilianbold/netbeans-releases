@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.xml.bindingwizard/1
-OpenIDE-Module-Layer: org/netbeans/modules/xml/bindingwizard/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/bindingwizard/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-
