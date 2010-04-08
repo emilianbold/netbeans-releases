@@ -809,7 +809,9 @@ public class CssCompletion implements CodeCompletionHandler {
         int skipPrefixChars = 0;
         if (t.id() == CssTokenId.COLON) {
             return ""; //NOI18N
-        } else if(t.id() == CssTokenId.STRING) {
+        } else if (t.id() == CssTokenId.COMMA) {
+            return ""; //NOI18N
+        } else if (t.id() == CssTokenId.STRING) {
             skipPrefixChars = 1; //skip the leading quotation char
         }
 
