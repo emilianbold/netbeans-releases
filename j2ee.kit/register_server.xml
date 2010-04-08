@@ -48,6 +48,7 @@
         <echo message="Tomcat Root Directory: ${tomcat.home}"/>
          <java classname="org.netbeans.modules.tomcat5.registration.AutomaticRegistration"
               fork="true">
+	    <arg value="--add"/>
             <arg value="${netbeans.dest.dir}/enterprise"/>
             <arg value="${tomcat.home}"/>
             <classpath>
