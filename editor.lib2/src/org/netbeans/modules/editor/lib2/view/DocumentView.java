@@ -215,6 +215,8 @@ public final class DocumentView extends EditorBoxView
 
     private Color defaultLimitLine;
 
+    private int defaultLimitLineWidth;
+    
     private LineWrapType lineWrapType;
 
     private TextLayout newlineTextLayout;
@@ -510,6 +512,15 @@ public final class DocumentView extends EditorBoxView
             if (lineWrapType == null) {
                 lineWrapType = LineWrapType.NONE;
             }
+            Object limitLineFromDoc = getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+            if ((limitLineFromDoc instanceof String)) {
+                try {
+                    defaultLimitLineWidth = Integer.parseInt((String)limitLineFromDoc);
+                } catch (NumberFormatException nfe) {
+                    LOG.log(Level.FINE, "limitLineFromDoc=="+limitLineFromDoc, nfe); // NOI18N
+                }
+            }
+
             DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
         }
     }
@@ -825,6 +836,9 @@ public final class DocumentView extends EditorBoxView
 
     int getTextLimitWidth() {
         checkSettingsInfo();
+        if (defaultLimitLineWidth > 0) {
+            return defaultLimitLineWidth;
+        }
         return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
     }
 
@@ -896,6 +910,18 @@ public final class DocumentView extends EditorBoxView
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
                     lineWrapType = lwt;
                     reinitViews();
+                }
+            }
+            if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
+                Object limitLineFromDoc = getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                if ((limitLineFromDoc instanceof String)) {
+                    try {
+                        LOG.log(Level.FINE, "Changing defaultLimitLineWidth from {0} to {1}", new Object [] { defaultLimitLineWidth, limitLineFromDoc }); //NOI18N
+                        defaultLimitLineWidth = Integer.parseInt((String)limitLineFromDoc);
+                        reinitViews();
+                    } catch (NumberFormatException nfe) {
+                        LOG.log(Level.FINE, "limitLineFromDoc=="+limitLineFromDoc, nfe); // NOI18N
+                    }
                 }
             }
         } else { // an event from JTextComponent

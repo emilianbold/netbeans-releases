@@ -143,6 +143,16 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 return null;
             }
         });
+        putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, new BaseDocument_PropertyHandler() {
+            public @Override Object getValue() {
+                return CodeStylePreferences.get(NbEditorDocument.this).getPreferences().get(SimpleValueNames.TEXT_LIMIT_WIDTH, "80"); //NOI18N
+            }
+
+            public @Override Object setValue(Object value) {
+                // ignore, just let the document to fire the property change event
+                return null;
+            }
+        });
     }
 
     public @Override int getShiftWidth() {
