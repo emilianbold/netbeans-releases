@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.io.BufferedReader;
@@ -65,13 +66,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkuchtiak
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-j2ee-ejbjarproject")
-public class EjbJaxWsOpenHook extends ProjectOpenedHook {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-web-project")
+public class WebJaxWsOpenHook extends ProjectOpenedHook {
     private Project prj;
     private JaxWsModel.ServiceListener serviceListener;
 
-    /** Creates a new instance of EjbJaxWsOpenHook */
-    public EjbJaxWsOpenHook(Project prj) {
+    /** Creates a new instance of WebJaxWsOpenHook */
+    public WebJaxWsOpenHook(Project prj) {
         this.prj = prj;
     }
 
@@ -80,11 +81,10 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
         JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel != null) {
             serviceListener = new JaxWsModel.ServiceListener() {
-
                 @Override
                 public void serviceAdded(String name, String implementationClass) {
                     WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
-                    if (servicesNotifier != null) {
+                    if (servicesNotifier!=null) {
                         servicesNotifier.serviceAdded(name, implementationClass);
                     }
                 }
@@ -92,17 +92,16 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
                 @Override
                 public void serviceRemoved(String name) {
                     WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
-                    if (servicesNotifier != null) {
+                    if (servicesNotifier!=null) {
                         servicesNotifier.serviceRemoved(name);
                     }
                 }
             };
             jaxWsModel.addServiceListener(serviceListener);
 
-
             JaxWsBuildScriptExtensionProvider extProvider = prj.getLookup().lookup(JaxWsBuildScriptExtensionProvider.class);
             AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
-            
+
             if (extProvider != null && ext != null) {
                 boolean buildScriptGenerated = false;
                 FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
@@ -136,9 +135,10 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
                 }
 
                 if (jaxWsFo != null && !buildScriptGenerated) {
-                    URL stylesheet = EjbJaxWsOpenHook.class.getResource(EjbBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
+                    URL stylesheet = WebJaxWsOpenHook.class.getResource(WebBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
                     assert stylesheet != null;
                     try {
+                        byte[] stylesheetData;
                         boolean needToCallTransformer = false;
                         InputStream is = stylesheet.openStream();
                         String crc32 = null;
@@ -153,14 +153,14 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
                             if (ep != null) {
                                 String oldCrc32 = ep.getProperty(TransformerUtils.JAXWS_BUILD_XML_PATH + TransformerUtils.KEY_SUFFIX_JAXWS_BUILD_CRC);
                                 if (!crc32.equals(oldCrc32)) {
-                                    ep.setProperty(TransformerUtils.JAXWS_BUILD_XML_PATH + TransformerUtils.KEY_SUFFIX_JAXWS_BUILD_CRC, crc32);
+                                    ep.setProperty(TransformerUtils.JAXWS_BUILD_XML_PATH + TransformerUtils.KEY_SUFFIX_JAXWS_BUILD_CRC,crc32);
                                     WSUtils.storeEditableProperties(prj, TransformerUtils.GENFILES_PROPERTIES_PATH, ep);
                                     needToCallTransformer = true;
                                 }
                             }
                         }
                         if (needToCallTransformer) {
-                            TransformerUtils.transformClients(prj.getProjectDirectory(), EjbBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE, true);
+                            TransformerUtils.transformClients(prj.getProjectDirectory(), WebBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE, true);
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(this.getClass().getName()).log(Level.FINE, "failed to generate jaxws-build.xml from stylesheet", ex); //NOI18N
@@ -169,7 +169,7 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
             }
         }
     }
-
+            
     @Override
     protected void projectClosed() {
         JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
@@ -190,23 +190,26 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
         String line = null;
         boolean isOldVersion = false;
         while ((line = br.readLine()) != null) {
-            if (line.contains("wsimport-client-compile") || line.contains("wsimport-service-compile")) { //NOI18N
+            if (line.contains("wsimport-client-compile") || line.contains("wsimport-service-compile") || line.contains("wsgen-service-compile")) { //NOI18N
                 isOldVersion = true;
                 break;
             }
         }
         br.close();
         if (isOldVersion) {
-            TransformerUtils.transformClients(prj.getProjectDirectory(), EjbBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
+            TransformerUtils.transformClients(prj.getProjectDirectory(), WebBuildScriptExtensionProvider.JAX_WS_STYLESHEET_RESOURCE);
             AntBuildExtender.Extension extension = ext.getExtension(JaxWsBuildScriptExtensionProvider.JAXWS_EXTENSION);
             if (extension!=null) {
                 extension.removeDependency("-do-compile", "wsimport-client-compile"); //NOI18N
+                extension.removeDependency("-do-ws-compile", "wsimport-client-compile"); //NOI18N
                 extension.removeDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
                 extension.removeDependency("-do-compile", "wsimport-service-compile"); //NOI18N
                 extension.removeDependency("-do-compile-single", "wsimport-service-compile"); //NOI18N
+                extension.removeDependency("-post-compile", "wsgen-service-compile"); //NOI18N
                 ProjectManager.getDefault().saveProject(prj);
             }
         }
 
     }
+    
 }
