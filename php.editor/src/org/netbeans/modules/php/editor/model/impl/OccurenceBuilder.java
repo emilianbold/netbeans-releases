@@ -890,13 +890,8 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
                 ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = nodeInfo.getQualifiedName();
-                if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
-                    if (qualifiedName.getKind().isUnqualified()) {
-                        occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
-                    } else {
-                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
-                    }
+                if (nodeInfo.getName().length() > 0 && NameKind.exact(nodeInfo.getName()).matchesName(phpElement)) {
+                    occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
                 }
             }
 
@@ -918,30 +913,6 @@ class OccurenceBuilder {
 
         }
 
-
-    }
-
-    private void buildConstantInvocations2(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        String idName = nodeCtxInfo.getName();
-        for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
-            ASTNodeInfo<Scalar> nodeInfo = entry.getKey();
-            if (idName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachingSupport.getConstants(idName, fileScope);
-                if (!elems.isEmpty()) {
-                    occurences.add(new OccurenceImpl(elems, nodeInfo.getRange()));
-                }
-            }
-        }
-        for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
-            ASTNodeInfo<Expression> nodeInfo = entry.getKey();
-            Expression originalNode = nodeInfo.getOriginalNode();
-            if (originalNode instanceof NamespaceName && idName.equalsIgnoreCase(nodeInfo.getName())) {
-                List<? extends ModelElement> elems = CachingSupport.getConstants(idName, fileScope);
-                if (!elems.isEmpty()) {
-                    occurences.add(new OccurenceImpl(elems, nodeInfo.getRange()));
-                }
-            }
-        }
 
     }
 
@@ -1009,7 +980,7 @@ class OccurenceBuilder {
             final ElementFilter nameFilter = ElementFilter.forName(name);
             for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
                 ASTNodeInfo<FieldAccess> nodeInfo = entry.getKey();
-                if (name.matchesName(PhpElementKind.FIELD, nodeInfo.getQualifiedName())) {
+                if (name.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
                     final HashSet<TypeScope> types = new HashSet<TypeScope>(getClassName((VariableScope) entry.getValue(), nodeInfo.getOriginalNode()));
                     if (!createTypeFilter(matchingTypeNames.values(), false).filter(types).isEmpty()) {
                         final OccurenceImpl occurence = new OccurenceImpl(declarations, nodeInfo.getRange());
@@ -1605,8 +1576,15 @@ class OccurenceBuilder {
                 if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
                     if (!var.isGloballyVisible()) {
                         Scope nextScope = entry.getValue();
-                        if (ctxVarScope.equals(nextScope)) {
-                            occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                        if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
+                            final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
+                            if (nextScope.getInScope().equals(inScope)) {
+                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                            }
+                        } else {
+                            if (ctxVarScope.equals(nextScope)) {
+                                occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                            }
                         }
                     } else {
                         Scope nextScope = entry.getValue();

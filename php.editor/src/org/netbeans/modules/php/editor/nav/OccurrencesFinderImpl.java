@@ -57,7 +57,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -78,7 +77,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 public class OccurrencesFinderImpl extends OccurrencesFinder {
     private Map<OffsetRange, ColoringAttributes> range2Attribs;
     private int caretPosition;
-    private boolean cancelled;
+    private volatile boolean cancelled;
 
     public void setCaretPosition(int position) {
         this.caretPosition = position;
@@ -100,6 +99,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         range2Attribs = null;
 
         if(cancelled) {
+            cancelled = false;
             return ;
         }
         
@@ -112,6 +112,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         }
 
         if(cancelled) {
+            cancelled = false;
             return ;
         }
 
