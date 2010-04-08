@@ -532,18 +532,25 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<FileObject> getLocationsForIdentifiers(String identifierName) {
         final Set<FileObject> result = new HashSet<FileObject>();
 
-        Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
+        Collection<? extends IndexResult> idIndexResult =search(PHPIndexer.FIELD_IDENTIFIER, identifierName.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE, PHPIndexer.FIELD_IDENTIFIER);
         for (IndexResult indexResult : idIndexResult) {
-            URL url = indexResult.getUrl();
-            FileObject fo = null;
-            try {
-                fo = "file".equals(url.getProtocol()) ? //NOI18N
-                    FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (fo != null) {
-                result.add(fo);
+            String[] values = indexResult.getValues(PHPIndexer.FIELD_IDENTIFIER);
+            for (String val : values) {
+                Signature sig = Signature.get(val);
+
+                if (identifierName.equalsIgnoreCase(sig.string(0))) {
+                    URL url = indexResult.getUrl();
+                    FileObject fo = null;
+                    try {
+                        fo = "file".equals(url.getProtocol()) ? //NOI18N
+                                FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (fo != null) {
+                        result.add(fo);
+                    }
+                } 
             }
         }
         return result;

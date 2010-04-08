@@ -195,9 +195,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         if (underCaret != null) {
             Collection<? extends PhpElement> gotoDeclarations = underCaret.gotoDeclarations();
             if (gotoDeclarations == null || gotoDeclarations.size() == 0) {
-                if (gotoDeclarations == null) {
-                    System.out.println("");
-                }
                 return DeclarationLocation.NONE;
             }
             PhpElement declaration = gotoDeclarations.iterator().next();
@@ -207,7 +204,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
             retval = new DeclarationLocation(declarationFo, declaration.getOffset(), declaration);
             //TODO: if there was 2 classes with the same method or field it jumps directly into one of them
-            Accuracy degreeOfAccuracy = underCaret.degreeOfAccuracy();
             if (info.getSnapshot().getSource().getFileObject() == declaration.getFileObject()) {
                 return retval;
             }

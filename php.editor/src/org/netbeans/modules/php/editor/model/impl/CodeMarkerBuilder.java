@@ -44,6 +44,7 @@ import java.util.Map.Entry;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
@@ -79,11 +80,12 @@ class CodeMarkerBuilder {
     }
 
     void prepare(MethodDeclaration node, Scope scope) {
-        if (scope instanceof TypeScope) {
-            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope)scope);
+        if (scope instanceof MethodScope && scope.getInScope() instanceof TypeScope) {
+            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope)scope.getInScope());
             if (canBePrepared(node, scope)) {
                 methodDeclarations.put(nodeInfo, scope);
             }
+
         }
     }
 
@@ -169,14 +171,18 @@ class CodeMarkerBuilder {
         }
 
         if (currentNodeInfo != null && currentScope != null) {
-            CodeMarkerImpl currentMarkerImpl = new CodeMarkerImpl(currentScope, currentNodeInfo, fileScope);
-            //fileScope.addCodeMarker(currentMarkerImpl);
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             currentNodeInfo = null;
             switch (kind) {
                 case FUNCTION:
+                    buildFunctionDeclarations(fileScope);
+                    buildReturnStatement(fileScope);
+                    break;
                 case STATIC_METHOD:
                 case METHOD:
+                    buildMethodDeclarations(fileScope);
+                    buildReturnStatement(fileScope);
+                    break;
                 case RETURN_MARKER:
                     buildMethodDeclarations(fileScope);
                     buildFunctionDeclarations(fileScope);

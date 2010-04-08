@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,7 +52,11 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -71,14 +76,35 @@ public final class FindUsageSupport {
     private FindUsageSupport(ElementQuery.Index index, ModelElement element) {
         this.element = element;
         this.files = new LinkedHashSet<FileObject>();
-        this.files.add(element.getFileObject());
         String name = element.getName();
         if (name.startsWith("$")) {//NOI18N
             name = name.substring(1);
         }
-        this.files.addAll(index.getLocationsForIdentifiers(name));
         this.index = index;
     }
+
+    public Collection<MethodElement> overridingMethods() {
+        if (element instanceof MethodElement) {
+            MethodElement method = (MethodElement) element;
+            TypeElement type = method.getType();
+            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            for (TypeElement nextType : index.getInheritedByTypes(type)) {
+                inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
+            }
+            return ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedByMethods);
+        } else if (element instanceof MethodScope) {
+            MethodScope method = (MethodScope) element;
+            TypeScope type = (TypeScope)method.getInScope();
+            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            for (TypeElement nextType : index.getInheritedByTypes(type)) {
+                inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
+            }
+            return ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedByMethods);
+        }
+
+        return Collections.emptyList();
+    }
+
 
     public Collection<TypeElement> subclasses() {
         if (element instanceof TypeElement) {
@@ -120,7 +146,18 @@ public final class FindUsageSupport {
     /**
      * @return the files
      */
-    public Set<FileObject> inFiles() {
+    public  Set<FileObject> inFiles() {
+        synchronized(this) {
+            if (this.files.isEmpty()) {
+                this.files.add(element.getFileObject());
+                String name = element.getName();
+                final PhpElementKind kind = element.getPhpElementKind();
+                if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
+                  name = name.startsWith("$") ? name.substring(1) : name;  
+                }
+                this.files.addAll(index.getLocationsForIdentifiers(name));
+            }
+        }
         return files;
     }
 
@@ -130,5 +167,6 @@ public final class FindUsageSupport {
     public ModelElement elementToFind() {
         return element;
     }
+
 
 }

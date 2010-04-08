@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.openide.filesystems.FileObject;
@@ -233,6 +234,29 @@ public abstract class ElementFilter {
                         }
                     }
                     return false;
+                }
+                return true;
+            }
+        };
+    }
+
+    public static ElementFilter forTypesFromNamespaces(final Set<QualifiedName> namespaces) {
+        Set<ElementFilter> filters = new HashSet<ElementFilter>();
+        for (QualifiedName ns : namespaces) {
+            filters.add(ElementFilter.forTypesFromNamespace(ns));
+        }
+        return ElementFilter.anyOf(filters);
+
+    }
+
+    public static ElementFilter forTypesFromNamespace(final QualifiedName namespace) {
+        final Exact nsName = NameKind.exact(namespace);
+        return new ElementFilter() {
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeElement) {
+                    TypeElement type = (TypeElement) element;
+                    return nsName.matchesName(type.getPhpElementKind(), type.getNamespaceName());
                 }
                 return true;
             }

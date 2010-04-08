@@ -39,14 +39,13 @@
 package org.netbeans.modules.refactoring.php.findusages;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Icon;
@@ -67,6 +66,7 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelFactory;
@@ -76,10 +76,6 @@ import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassAttributedElement;
-import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.ClassMemberElement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -153,6 +149,13 @@ public final class WhereUsedSupport {
         return results;
     }
 
+    void overridingMethods() {
+        Collection<MethodElement> methods = usageSupport.overridingMethods();
+        for (MethodElement meth : methods) {
+            results.addEntry(meth);
+        }
+    }
+
     void collectSubclasses() {
         Collection<TypeElement> subclasses = usageSupport.subclasses();
         for (TypeElement typeElement : subclasses) {
@@ -180,7 +183,7 @@ public final class WhereUsedSupport {
         final Set<ModelElement> declarations = new HashSet<ModelElement>();
         final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : Collections.<PhpElement>emptyList();
         boolean canContinue = occurence != null && allDeclarations.size() > 0 && allDeclarations.size() < 5;
-        if (canContinue) {
+        if (canContinue && EnumSet.of(Occurence.Accuracy.EXACT, Occurence.Accuracy.MORE, Occurence.Accuracy.UNIQUE).contains(occurence.degreeOfAccuracy())) {
             for (final PhpElement declarationElement : allDeclarations) {
                 try {
                     final FileObject fileObject = declarationElement.getFileObject();
@@ -215,7 +218,6 @@ public final class WhereUsedSupport {
         return modelElement;
     }
 
-    // XXX !!! needs to be fixed !!!
     public List<ModelElement> getModelElements() {
         return new ArrayList<ModelElement>(declarations);
     }
@@ -227,7 +229,10 @@ public final class WhereUsedSupport {
             if (!variable.isGloballyVisible()) {
                 return Collections.singleton(mElement.getFileObject());
             }
+        } else if (mElement != null && mElement.getPhpModifiers().isPrivate()) {
+            return Collections.singleton(mElement.getFileObject());
         }
+
         return usageSupport.inFiles();
     }
 
@@ -265,16 +270,6 @@ public final class WhereUsedSupport {
         return false;
     }
 
-    public static boolean matchDirectSubclass(ModelElement elemToBeFound, ASTNode node, AttributedElement elem) {
-        boolean retval = false;
-        if (elem != null && elem instanceof ClassAttributedElement && node instanceof ClassDeclaration) {
-            ClassAttributedElement superClass = ((ClassAttributedElement) elem).getSuperClass();
-            if (superClass != null && superClass.getName().equals(elemToBeFound.getName())) {
-                retval = true;
-            }
-        }
-        return retval;
-    }
 
     public class Results {
         Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
@@ -305,44 +300,10 @@ public final class WhereUsedSupport {
                 elements.add(WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon));
             }
 }
-        private void addEntry(FileObject fo, Entry<ASTNode, AttributedElement> entry) {
-            AttributedElement element = entry.getValue();
-            ASTNode node = entry.getKey();
-            if (node instanceof ClassDeclaration) {
-                node = ((ClassDeclaration)node).getName();
-            }
-            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), getModifiers(element));
-            elements.add(WhereUsedElement.create(element.getName(), fo, range, icon));
-        }
         public Collection<WhereUsedElement> getResultElements() {
             return elements;
         }
 
-        private Set<Modifier> getModifiers(AttributedElement attributeElement) {
-            if (modifier == null) {
-                Set<Modifier> retval = Collections.emptySet();
-                if (attributeElement != null && attributeElement.isClassMember()) {
-                    ClassMemberElement element = (ClassMemberElement) attributeElement;
-                    if (element.getModifier() >= 0) {
-                        retval = new HashSet<Modifier>();
-                        if (element.isPrivate()) {
-                            retval.add(Modifier.PRIVATE);
-                        } else if (element.isProtected()) {
-                            retval.add(Modifier.PROTECTED);
-                        }
-                        if (element.isPublic()) {
-                            retval.add(Modifier.PUBLIC);
-                        }
-                        if (element.isStatic()) {
-                            retval.add(Modifier.STATIC);
-                        }
-                    }
-                }
-                modifier = retval;
-            }
-            return modifier;
-        }
 
     }
 }

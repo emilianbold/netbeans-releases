@@ -52,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -62,8 +63,10 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.openide.util.NbPreferences;
+
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
@@ -113,12 +116,15 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         String name = usage.getName();
         String clsName = null;
         if (usage.getModelElements().size() == 1) {
-            if (elem instanceof FullyQualifiedElement) {
+            if (elem instanceof FullyQualifiedElement && !(elem instanceof MethodScope)) {
                 name =  ((FullyQualifiedElement)elem).getFullyQualifiedName().toString();
-            } else if (elem.getInScope() instanceof FullyQualifiedElement) {
-                 clsName =  ((FullyQualifiedElement)elem.getInScope()).getFullyQualifiedName().toString();
             }
-        } 
+            if (elem.getInScope() instanceof TypeScope) {
+                clsName = ((TypeScope) elem.getInScope()).getFullyQualifiedName().toString();
+            }
+        } else if (elem.getInScope() instanceof TypeScope) {
+            clsName = "?";//NOI18N
+        }
         String bKey = bundleKeyForLabel();
         final Set<Modifier> modifiers = usage.getModifiers();
         final String lblText;
@@ -137,7 +143,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             add(methodsPanel, BorderLayout.CENTER);
             methodsPanel.setVisible(true);
             m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-            //m_overriders.setVisible(modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
+            ModelElement modelElement = usage.getModelElement();
+            if (modelElement != null) {
+                final PhpModifiers phpModifiers = modelElement.getPhpModifiers();
+                m_overriders.setVisible(!phpModifiers.isFinal() && !phpModifiers.isPrivate() && !phpModifiers.isStatic());
+            }
             if (methodDeclaringSuperClass != null) {
                 m_isBaseClass.setVisible(true);
                 m_isBaseClass.setSelected(true);

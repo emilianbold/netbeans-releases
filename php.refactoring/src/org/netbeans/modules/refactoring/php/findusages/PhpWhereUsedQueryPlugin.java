@@ -68,6 +68,9 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
     }
 
     public Problem prepare(final RefactoringElementsBag elementsBag) {
+        if (isFindOverridingMethods()) {
+            usages.overridingMethods();
+        }
         if (isFindSubclasses()) {
             usages.collectSubclasses();
         } else if (isFindDirectSubclassesOnly()) {
