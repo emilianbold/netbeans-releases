@@ -88,6 +88,9 @@ import org.openide.util.RequestProcessor.Task;
 public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
 
     private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(HudsonInstanceImpl.class.getName(),
+            // Permit concurrent connections to several servers; semaphore serializes per server.
+            10);
     
     private HudsonInstanceProperties properties;
     private final HudsonConnector connector;
@@ -309,7 +312,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             
             handle.get().start();
             
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     synchThread.set(Thread.currentThread());
                     try {

@@ -266,21 +266,21 @@ public class WebFreeFormActionProvider implements ActionProvider {
         // See corresponding schema.
         
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element properties = Util.findElement(data, "properties", Util.NAMESPACE); // NOI18N
+        Element properties = XMLUtil.findElement(data, "properties", Util.NAMESPACE); // NOI18N
         if (properties != null) {
-            Iterator/*<Element>*/ propertiesIt = Util.findSubElements(properties).iterator();
+            Iterator<Element> propertiesIt = XMLUtil.findSubElements(properties).iterator();
             while (propertiesIt.hasNext()) {
                 Element el = (Element) propertiesIt.next();
                 Element nue = script.getOwnerDocument().createElement("property"); // NOI18N
                 if (el.getLocalName().equals("property")) { // NOI18N
                     String name = el.getAttribute("name"); // NOI18N
                     assert name != null;
-                    String text = Util.findText(el);
+                    String text = XMLUtil.findText(el);
                     assert text != null;
                     nue.setAttribute("name", name); // NOI18N
                     nue.setAttribute("value", text); // NOI18N
                 } else if (el.getLocalName().equals("property-file")) { // NOI18N
-                    String text = Util.findText(el);
+                    String text = XMLUtil.findText(el);
                     assert text != null;
                     nue.setAttribute("file", text); // NOI18N
                 } else {
@@ -460,7 +460,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
         // XXX cannot use FreeformProjectGenerator since that is currently not a public support SPI from ant/freeform
         // XXX should this try to find an existing binding? probably not, since it is assumed that if there was one, we would never get here to begin with
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
+        Element ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             // Probably won't happen, since generator produces it always.
             // Not trivial to just add it now, since order is significant in the schema. (FPG deals with these things.)
@@ -506,9 +506,9 @@ public class WebFreeFormActionProvider implements ActionProvider {
         } else {
             // Add a context menu item, since it applies to the project as a whole.
             // Assume there is already a <context-menu> defined, which is quite likely.
-            Element view = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+            Element view = XMLUtil.findElement(data, "view", Util.NAMESPACE); // NOI18N
             if (view != null) {
-                Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
+                Element contextMenu = XMLUtil.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
                 if (contextMenu != null) {
                     Element ideAction = doc.createElementNS(Util.NAMESPACE, "ide-action"); // NOI18N
                     ideAction.setAttribute("name", command); // NOI18N
@@ -684,17 +684,17 @@ public class WebFreeFormActionProvider implements ActionProvider {
     private String findSourceFolders(String type) {
         StringBuffer result = new StringBuffer();
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
+        Element foldersEl = XMLUtil.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
-            for (Iterator i = Util.findSubElements(foldersEl).iterator(); i.hasNext();) {
+            for (Iterator i = XMLUtil.findSubElements(foldersEl).iterator(); i.hasNext();) {
                 Element sourceFolderEl = (Element)i.next();
-                Element typeEl = Util.findElement(sourceFolderEl , "type", Util.NAMESPACE); // NOI18N
-                if (typeEl == null || !Util.findText(typeEl).equals(type))
+                Element typeEl = XMLUtil.findElement(sourceFolderEl , "type", Util.NAMESPACE); // NOI18N
+                if (typeEl == null || !XMLUtil.findText(typeEl).equals(type))
                     continue;
-                Element locationEl = Util.findElement(sourceFolderEl , "location", Util.NAMESPACE); // NOI18N
+                Element locationEl = XMLUtil.findElement(sourceFolderEl , "location", Util.NAMESPACE); // NOI18N
                 if (locationEl == null)
                     continue;
-                String location = Util.findText(locationEl);
+                String location = XMLUtil.findText(locationEl);
                 if (result.length() > 0)
                     result.append(":"); // NOI18N
                 result.append(location);
@@ -705,13 +705,13 @@ public class WebFreeFormActionProvider implements ActionProvider {
     
     private String findContextPath() {
         Element data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true); // NOI18N
-        Element webModulEl = Util.findElement(data, "web-module", WebProjectNature.NS_WEB_2); // NOI18N
+        Element webModulEl = XMLUtil.findElement(data, "web-module", WebProjectNature.NS_WEB_2); // NOI18N
         if (webModulEl == null)
             return null;
-        Element contextPathEl = Util.findElement(webModulEl, "context-path", WebProjectNature.NS_WEB_2); // NOI18N
+        Element contextPathEl = XMLUtil.findElement(webModulEl, "context-path", WebProjectNature.NS_WEB_2); // NOI18N
         if (contextPathEl == null)
             return null;
-        return Util.findText(contextPathEl);
+        return XMLUtil.findText(contextPathEl);
     }
     
 }

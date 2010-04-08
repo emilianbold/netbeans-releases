@@ -190,9 +190,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         try {
             Document projectXml = loadProjectXml(projectDiskFile);
             if (projectXml != null) {
-                Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
+                Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
                 if (typeEl != null) {
-                    String type = Util.findText(typeEl);
+                    String type = XMLUtil.findText(typeEl);
                     if (type != null) {
                         AntBasedProjectType provider = findAntBasedProjectType(type);
                         if (provider != null) {
@@ -236,12 +236,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             LOG.log(Level.FINE, "could not load {0}", projectDiskFile);
             return null;
         }
-        Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
+        Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
         if (typeEl == null) {
             LOG.log(Level.FINE, "no <type> in {0}", projectDiskFile);
             return null;
         }
-        String type = Util.findText(typeEl);
+        String type = XMLUtil.findText(typeEl);
         if (type == null) {
             LOG.log(Level.FINE, "no <type> text in {0}", projectDiskFile);
             return null;
@@ -338,7 +338,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
             } catch (ParserConfigurationException x) {
                 throw new SAXException(x);
             }
-            builder.setErrorHandler(Util.defaultErrorHandler());
+            builder.setErrorHandler(XMLUtil.defaultErrorHandler());
             Document projectXml = builder.parse(src);
             LOG.fine("parsed document");
 //            dumpFields(projectXml);

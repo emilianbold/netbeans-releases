@@ -53,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
-import org.netbeans.modules.java.freeform.JavaProjectGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -163,17 +162,17 @@ public class JdkConfiguration {
         Element projectE = nbjdkDoc.getDocumentElement();
         Set<String> targetsCreated = new HashSet<String>();
         // XXX remove any definition of ${ant.script}, which will by now be obsolete
-        Element ideActionsE = Util.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
+        Element ideActionsE = XMLUtil.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
         if (ideActionsE != null) {
-            for (Element actionE : Util.findSubElements(ideActionsE)) {
+            for (Element actionE : XMLUtil.findSubElements(ideActionsE)) {
                 rebindAction(actionE, projectE, targetsCreated);
             }
         }
-        Element viewE = Util.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
+        Element viewE = XMLUtil.findElement(generalDataE, "ide-actions", Util.NAMESPACE);
         if (viewE != null) {
-            Element contextMenuE = Util.findElement(viewE, "context-menu", Util.NAMESPACE);
+            Element contextMenuE = XMLUtil.findElement(viewE, "context-menu", Util.NAMESPACE);
             if (contextMenuE != null) {
-                for (Element actionE : Util.findSubElements(contextMenuE)) {
+                for (Element actionE : XMLUtil.findSubElements(contextMenuE)) {
                     if (!actionE.getLocalName().equals("action")) {
                         continue; // ignore <ide-action> here
                     }
@@ -187,10 +186,10 @@ public class JdkConfiguration {
     }
 
     private void rebindAction(Element actionE, Element projectE, Set<String> targetsCreated) {
-        Element scriptE = Util.findElement(actionE, "script", Util.NAMESPACE); // NOI18N
+        Element scriptE = XMLUtil.findElement(actionE, "script", Util.NAMESPACE); // NOI18N
         String script;
         if (scriptE != null) {
-            script = Util.findText(scriptE);
+            script = XMLUtil.findText(scriptE);
             actionE.removeChild(scriptE);
         } else {
             script = "build.xml"; // NOI18N
@@ -199,11 +198,11 @@ public class JdkConfiguration {
         scriptE.appendChild(actionE.getOwnerDocument().createTextNode(NBJDK_XML));
         actionE.insertBefore(scriptE, actionE.getFirstChild());
         List<String> targetNames = new ArrayList<String>();
-        for (Element targetE : Util.findSubElements(actionE)) {
+        for (Element targetE : XMLUtil.findSubElements(actionE)) {
             if (!targetE.getLocalName().equals("target")) { // NOI18N
                 continue;
             }
-            targetNames.add(Util.findText(targetE));
+            targetNames.add(XMLUtil.findText(targetE));
         }
         if (targetNames.isEmpty()) {
             targetNames.add(null);

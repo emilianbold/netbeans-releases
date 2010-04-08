@@ -50,11 +50,14 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.*;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
+
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -121,7 +124,8 @@ public class PropertiesDataNode extends DataNode {
      */
     final class NameUpdater implements PropertyChangeListener {
         
-        @Override
+        /**
+         */
         public void propertyChange(PropertyChangeEvent e) {
             if (DataObject.PROP_FILES.equals(e.getPropertyName())) {
                 PropertiesDataObject propDO = (PropertiesDataObject) getDataObject();
@@ -168,91 +172,103 @@ public class PropertiesDataNode extends DataNode {
         return new BundleNodeCustomizer((PropertiesDataObject)getDataObject());
     }
     
+    /** Creates paste types for this node. Overrides superclass method. 
+     * @param transferable transferable in clipboard 
+     * @param types <code>PasteType</code>'s valid for this node. */
     @Override
-    public void createPasteTypes(Transferable transferable,
-                                 List<PasteType> types) {
+    public void createPasteTypes(Transferable transferable, List<PasteType> types) {
         super.createPasteTypes(transferable, types);
 
-        Element.ItemElem item;
-        Node node = NodeTransfer.node(transferable, NodeTransfer.MOVE);
-        if (node != null && node.canDestroy()) {
-            item = node.getCookie(Element.ItemElem.class);
-            Node itemNode = getChildren().findChild(item.getKey());
-            if (item == null || node.equals(itemNode)) {
+        // Copy/paste mode?
+        int mode = NodeTransfer.COPY;
+        
+        Node node = NodeTransfer.node(transferable, mode);
+        
+        if(node == null || !(node instanceof PropertiesLocaleNode)) {
+            // Cut/paste mode?
+            mode = NodeTransfer.MOVE;
+        
+            node = NodeTransfer.node(transferable, mode);
+
+            if(node == null || !(node instanceof PropertiesLocaleNode))
+                return;
+            
+            PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
+            if(((PropertiesDataObject)getDataObject()).files().contains(entry.getFile())) {
                 return;
             }
-            types.add(new EntryPasteType(item, node));
-        } else {
-            item = NodeTransfer.cookie(transferable, 
-                                       NodeTransfer.COPY,
-                                       Element.ItemElem.class);
-            if (item != null) {
-                types.add(new EntryPasteType(item, null));
-            }
         }
+
+        PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
+        types.add(new EntryPasteType(entry, mode));
     }
 
-
-    private PropertiesDataObject getPropertiesDataObject() {
-        return (PropertiesDataObject)getDataObject();
-    }
-
-    private PropertiesFileEntry getPropertiesFileEntry() {
-        return (PropertiesFileEntry)getPropertiesDataObject().getPrimaryEntry();
-    }
-
-    private PropertiesStructure getPropertiesStructure() {
-        return getPropertiesFileEntry().getHandler().getStructure();
-    }
-
-    /**
-     * A {@link PasteType} for pasting the key nodes of properties files. This
-     * class adds or updates the property key, value and comment of the copied
-     * node to the properties file of this {@link PropertiesDataNode}. Also
-     * destroys the copied node in case a cut action was performed.
-     */
+    /** Paste type for <code>PropertiesDataNode</code>. */
     private class EntryPasteType extends PasteType {
 
-        /**
-         * The {@link Element.ItemElem} to paste.
-         */
-        private final Element.ItemElem item;
+        /** Entry to copy/move. */
+        private  PropertiesFileEntry entry;
+        
+        /** Flag for copying/moving. */
+        private int flag;
+        
 
-        /**
-         * The {@link Node} to destroy in case of a cut action.
-         */
-        private final Node node;
-
-        /**
-         * Creates a new instance of {@link EntryPasteType}.
-         *
-         * @param item the {@link Element.ItemElem} to paste
-         * @param node the {@link Node} to destroy in case a cut action was
-         *   performed, otherwise it should be {@code null}
-         */
-        public EntryPasteType(final Element.ItemElem item, final Node node) {
-            this.item = item;
-            this.node = node;
+        /** Constructor.
+         * @param entry entry to copy/move 
+         * @param flag flag for moving/copying */
+        public EntryPasteType(PropertiesFileEntry entry, int flag) {
+            this.entry = entry;
+            this.flag = flag;
         }
-
-        @Override
+        
+        /** Peforms paste action. Implements superclass abstract method. 
+         * @exception IOException if error occured */
         public Transferable paste() throws IOException {
-            final PropertiesStructure ps = getPropertiesStructure();
-            final Element.ItemElem storedItem = ps.getItem(item.getKey());
-
-            if (storedItem == null) {
-                ps.addItem(item);
-            } else {
-                storedItem.setValue(item.getValue());
-                storedItem.setComment(item.getComment());
+            DataFolder dataFolder = PropertiesDataNode.this.getDataObject().getFolder();
+            
+            if(dataFolder == null)
+                return null;
+            
+            FileObject folder = dataFolder.getPrimaryFile();
+            
+            String newName = getDataObject().getPrimaryFile().getName() + Util.getLocaleSuffix(entry);
+            
+            int entryIndex = ((PropertiesDataObject)getDataObject()).getBundleStructure().getEntryIndexByFileName(newName);
+            
+            // Has such item -> find brother.
+            if(entryIndex != -1) {
+                newName = FileUtil.findFreeFileName(folder, newName, entry.getFile().getExt());
             }
             
-            if (node != null) {
-                node.destroy();
+            if(flag == NodeTransfer.COPY) {
+                FileObject fileObject = entry.getFile();
+                fileObject.copy(folder, newName, fileObject.getExt());
+                
+            } else if(flag == NodeTransfer.MOVE) {
+                FileObject fileObject = entry.getFile();
+                FileLock lock = entry.takeLock();
+                
+                // removing secondary entry from original data object
+                ((PropertiesDataObject) entry.getDataObject()).removeSecondaryEntry2(entry);
+                try {
+                    FileObject fo2 = fileObject.move(lock, folder, newName, fileObject.getExt());
+                    try {
+                        // Invokes the method for recognition fo2's primary fila and data object.
+                        // Secondary entry in destination data object is created and registered
+                        DataObject.find(fo2);
+                    }
+                    catch (Exception e) {
+                    }
+                } finally {
+                    lock.releaseLock ();
+                }
             }
+            
             return null;
         }
-    }
+        
+    } // End of class EntryPasteType.
+    
 
     /** New type for properties node. It creates new locale for ths bundle. */
     private class NewLocaleType extends NewType {
@@ -264,10 +280,8 @@ public class PropertiesDataNode extends DataNode {
         }
 
         /** Overrides superclass method. */
-        @Override
         public void create() throws IOException {
-            final PropertiesDataObject propertiesDataObject =
-                              (PropertiesDataObject)getCookie(DataObject.class);
+            final PropertiesDataObject propertiesDataObject = (PropertiesDataObject)getCookie(DataObject.class);
 
             final Dialog[] dialog = new Dialog[1];
             final LocalePanel panel = new LocalePanel();
@@ -279,7 +293,6 @@ public class PropertiesDataNode extends DataNode {
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
                 new ActionListener() {
-                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                             if (containsLocale(propertiesDataObject, panel.getLocale())) {

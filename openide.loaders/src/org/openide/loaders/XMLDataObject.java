@@ -609,12 +609,7 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Document parse (URL url, ErrorHandler eh, boolean validate) throws IOException, SAXException {
         
-        DocumentBuilder builder = XMLDataObjectImpl.makeBuilder(validate);
-        builder.setErrorHandler(eh);
-        builder.setEntityResolver(getChainingEntityResolver());
-        
-        return builder.parse (new InputSource(url.toExternalForm()));
-
+        return XMLUtil.parse (new InputSource(url.toExternalForm()),validate, false, eh, getChainingEntityResolver());
     }
 
     /** Creates SAX parse that can be used to parse XML files.

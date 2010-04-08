@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -251,7 +250,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
                         try {
                             String ns2 = ns.substring(0, slash + 1) + Integer.toString(Integer.parseInt(ns.substring(slash + 1)) + 1);
                             if (_resolveURI(ns2) != null) {
-                                Element data2 = translateXML(data, ns2);
+                                Element data2 = XMLUtil.translateXML(data, ns2);
                                 data.getParentNode().replaceChild(data2, data);
                                 try {
                                     validate(attempt);
@@ -313,28 +312,6 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
             }
         }
         return null;
-    }
-
-    private static Element translateXML(Element from, String namespace) { // XXX use #136595
-        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i = 0; i < length; i++) {
-            Node node = nl.item(i);
-            Node newNode;
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                newNode = translateXML((Element) node, namespace);
-            } else {
-                newNode = node.cloneNode(true);
-            }
-            to.appendChild(newNode);
-        }
-        NamedNodeMap m = from.getAttributes();
-        for (int i = 0; i < m.getLength(); i++) {
-            Node attr = m.item(i);
-            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
-        }
-        return to;
     }
 
 }

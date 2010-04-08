@@ -70,7 +70,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -85,6 +84,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 
 /**
  * Web module implementation on top of freeform project.
@@ -171,21 +171,21 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         if (web == null) {
             return mods;
         }
-        List/*<Element>*/ webModules = Util.findSubElements(web);
+        List<Element> webModules = XMLUtil.findSubElements(web);
         Iterator it = webModules.iterator();
         while (it.hasNext()) {
             Element webModulesEl = (Element)it.next();
             assert webModulesEl.getLocalName().equals("web-module") : webModulesEl;
             FileObject docRootFO = getFile (webModulesEl, "doc-root"); //NOI18N
-            Element j2eeSpecEl = Util.findElement (webModulesEl, "j2ee-spec-level", WebProjectNature.NS_WEB_2);
-            String j2eeSpec = j2eeSpecEl == null ? null : evaluator.evaluate (Util.findText (j2eeSpecEl));
-            Element contextPathEl = Util.findElement (webModulesEl, "context-path", WebProjectNature.NS_WEB_2);
-            String contextPathText = contextPathEl == null ? null : Util.findText (contextPathEl);
+            Element j2eeSpecEl = XMLUtil.findElement (webModulesEl, "j2ee-spec-level", WebProjectNature.NS_WEB_2);
+            String j2eeSpec = j2eeSpecEl == null ? null : evaluator.evaluate (XMLUtil.findText (j2eeSpecEl));
+            Element contextPathEl = XMLUtil.findElement (webModulesEl, "context-path", WebProjectNature.NS_WEB_2);
+            String contextPathText = contextPathEl == null ? null : XMLUtil.findText (contextPathEl);
             String contextPath = contextPathText == null ? null : evaluator.evaluate (contextPathText);
-            Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB_2);
+            Element classpathEl = XMLUtil.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB_2);
             FileObject [] sources = getSources ();
             ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl, sources);
-            Element webInfEl = Util.findElement (webModulesEl, "web-inf", WebProjectNature.NS_WEB_2);
+            Element webInfEl = XMLUtil.findElement (webModulesEl, "web-inf", WebProjectNature.NS_WEB_2);
             FileObject webInf = null;
             if (webInfEl != null) {
                 webInf = getFile (webModulesEl, "web-inf"); //NOI18N
@@ -196,8 +196,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     }
     
     private FileObject getFile (Element parent, String fileElName) {
-        Element el = Util.findElement (parent, fileElName, WebProjectNature.NS_WEB_2);
-        String fname = Util.findText (el);
+        Element el = XMLUtil.findElement (parent, fileElName, WebProjectNature.NS_WEB_2);
+        String fname = XMLUtil.findText (el);
         if (fname == null) {
             // empty element => cannot find fileobject
             return null;
@@ -240,7 +240,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
      */
     private ClassPath createClasspath(Element classpathEl, FileObject[] sources) {
 //        System.out.println("creating classpath for " + classpathEl);
-        String cp = Util.findText(classpathEl);
+        String cp = XMLUtil.findText(classpathEl);
         if (cp == null) {
             cp = "";
         }

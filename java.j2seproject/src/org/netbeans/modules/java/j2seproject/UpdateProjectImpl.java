@@ -53,13 +53,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Comment;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  *
@@ -153,7 +151,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             if (oldRoot != null) {
                 Document doc = oldRoot.getOwnerDocument();
                 Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                copyDocument (doc, oldRoot, newRoot);
+                XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                 Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
                 Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                 root.setAttribute ("id","src.dir");   //NOI18N
@@ -170,7 +168,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
                 if (oldRoot != null) {
                     Document doc = oldRoot.getOwnerDocument();
                     Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
-                    copyDocument (doc, oldRoot, newRoot);
+                    XMLUtil.copyDocument (oldRoot, newRoot, J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE);
                     cachedElement = newRoot;
                 }
             }
@@ -201,39 +199,6 @@ public class UpdateProjectImpl implements UpdateImplementation {
     private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
         if (prop.get(property)==null) { //NOI18N
             prop.put (property, defaultValue); //NOI18N
-        }
-    }
-
-    private static void copyDocument (Document doc, Element from, Element to) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc,oldElement,newElement);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
         }
     }
 

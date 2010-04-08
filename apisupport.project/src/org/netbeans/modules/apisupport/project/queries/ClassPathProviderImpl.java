@@ -63,7 +63,6 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -74,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
@@ -296,9 +296,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
             final FileObject pkgroot = entry.getKey();
             Element pkgrootEl = entry.getValue();
-            Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+            Element classpathEl = XMLUtil.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             assert classpathEl != null : "no <classpath> in " + pkgrootEl;
-            final String classpathS = Util.findText(classpathEl);
+            final String classpathS = XMLUtil.findText(classpathEl);
             if (classpathS == null) {
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
                 extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
@@ -333,9 +333,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     }
                     public void configurationXmlChanged(AntProjectEvent ev) {
                         Element pkgrootEl = project.getExtraCompilationUnits().get(pkgroot);
-                        Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                        Element classpathEl = XMLUtil.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                         assert classpathEl != null : "no <classpath> in " + pkgrootEl;
-                        cpS = Util.findText(classpathEl);
+                        cpS = XMLUtil.findText(classpathEl);
                         pcs.firePropertyChange(PROP_RESOURCES, null, null);
                     }
                     public void propertiesChanged(AntProjectEvent ev) {}
@@ -344,11 +344,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
                 // Add <built-to> dirs and JARs for ClassPath.EXECUTE.
                 List<PathResourceImplementation> extraEntries = new ArrayList<PathResourceImplementation>();
-                for (Element kid : Util.findSubElements(pkgrootEl)) {
+                for (Element kid : XMLUtil.findSubElements(pkgrootEl)) {
                     if (!kid.getLocalName().equals("built-to")) { // NOI18N
                         continue;
                     }
-                    String rawtext = Util.findText(kid);
+                    String rawtext = XMLUtil.findText(kid);
                     assert rawtext != null : "Null content for <built-to> in " + project;
                     String text = project.evaluator().evaluate(rawtext);
                     if (text == null) {

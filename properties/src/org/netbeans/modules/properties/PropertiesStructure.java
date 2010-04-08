@@ -245,8 +245,7 @@ public class PropertiesStructure extends Element {
      * Adds an item to the end of the file, or before the terminating comment,
      * if there is any.
      *
-     * @return <code>true</code> if the item has been added successfully, 
-     *         <code>false</code> otherwise.
+     * @return <code>true</code> if the item has been added successfully, <code>false</code> otherwise
      */
     public boolean addItem(String key, String value, String comment) {
         Element.ItemElem item = getItem(key);
@@ -286,18 +285,6 @@ public class PropertiesStructure extends Element {
         } catch (BadLocationException ble) {
             return false;
         }
-    }
-
-    /**
-     * Adds the specified {@code item} to the end of the file, or before the
-     * terminating comment, if there is any.
-     *
-     * @param item
-     * @return <code>true</code> if the item has been added successfully,
-     *         <code>false</code> otherwise
-     */
-    boolean addItem(Element.ItemElem item) {
-        return addItem(item.getKey(), item.getValue(), item.getComment());
     }
 
     /** Returns iterator thropugh all items, including empty ones */
