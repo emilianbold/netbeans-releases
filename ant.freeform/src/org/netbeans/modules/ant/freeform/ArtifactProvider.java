@@ -47,16 +47,15 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -76,7 +75,7 @@ final class ArtifactProvider implements AntArtifactProvider {
         List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
         Set<String> ids = new HashSet<String>();
         HashMap<String,FreeformArtifact> uniqueArtifacts = new HashMap<String,FreeformArtifact>();
-        for (Element export : Util.findSubElements(data)) {
+        for (Element export : XMLUtil.findSubElements(data)) {
             if (!export.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
@@ -112,9 +111,9 @@ final class ArtifactProvider implements AntArtifactProvider {
     }
     
     public static URI readArtifactLocation(Element export, PropertyEvaluator eval) {
-        Element locEl = Util.findElement(export, "location", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element locEl = XMLUtil.findElement(export, "location", FreeformProjectType.NS_GENERAL); // NOI18N
         assert locEl != null;
-        String loc = Util.findText(locEl);
+        String loc = XMLUtil.findText(locEl);
         assert loc != null;
         String locationResolved = eval.evaluate(loc);
         if (locationResolved == null) {
@@ -154,40 +153,40 @@ final class ArtifactProvider implements AntArtifactProvider {
         }
 
         public String getType() {
-            Element typeEl = Util.findElement(export, "type", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element typeEl = XMLUtil.findElement(export, "type", FreeformProjectType.NS_GENERAL); // NOI18N
             assert typeEl != null;
-            String type = Util.findText(typeEl);
+            String type = XMLUtil.findText(typeEl);
             assert type != null;
             return type;
         }
 
         public String getTargetName() {
-            Element targetEl = Util.findElement(export, "build-target", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element targetEl = XMLUtil.findElement(export, "build-target", FreeformProjectType.NS_GENERAL); // NOI18N
             assert targetEl != null;
-            String target = Util.findText(targetEl);
+            String target = XMLUtil.findText(targetEl);
             assert target != null;
             return target;
         }
 
         public String getCleanTargetName() {
-            Element targetEl = Util.findElement(export, "clean-target", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element targetEl = XMLUtil.findElement(export, "clean-target", FreeformProjectType.NS_GENERAL); // NOI18N
             if (targetEl != null) {
-                String target = Util.findText(targetEl);
+                String target = XMLUtil.findText(targetEl);
                 assert target != null;
                 return target;
             } else {
                 // Guess based on configured target for 'clean' command, if any.
                 String target = null;
                 Element genldata = project.getPrimaryConfigurationData();
-                Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+                Element actionsEl = XMLUtil.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
                 if (actionsEl != null) {
-                    for (Element actionEl : Util.findSubElements(actionsEl)) {
+                    for (Element actionEl : XMLUtil.findSubElements(actionsEl)) {
                         if (actionEl.getAttribute("name").equals("clean")) { // NOI18N
-                            for (Element actionTargetEl : Util.findSubElements(actionEl)) {
+                            for (Element actionTargetEl : XMLUtil.findSubElements(actionEl)) {
                                 if (!actionTargetEl.getLocalName().equals("target")) { // NOI18N
                                     continue;
                                 }
-                                String possibleTarget = Util.findText(actionTargetEl);
+                                String possibleTarget = XMLUtil.findText(actionTargetEl);
                                 assert possibleTarget != null;
                                 if (target == null) {
                                     // OK, probably use it (unless there is another target for this command).
@@ -213,9 +212,9 @@ final class ArtifactProvider implements AntArtifactProvider {
 
         public File getScriptLocation() {
             String loc = null;
-            Element scriptEl = Util.findElement(export, "script", FreeformProjectType.NS_GENERAL); // NOI18N
+            Element scriptEl = XMLUtil.findElement(export, "script", FreeformProjectType.NS_GENERAL); // NOI18N
             if (scriptEl != null) {
-                String script = Util.findText(scriptEl);
+                String script = XMLUtil.findText(scriptEl);
                 assert script != null;
                 loc = project.evaluator().evaluate(script);
             }

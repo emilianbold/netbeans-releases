@@ -436,9 +436,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public static String getLibrariesLocationText(AuxiliaryConfiguration aux) {
         Element libraries = aux.getConfigurationFragment(EL_LIBRARIES, NAMESPACE, true);
         if (libraries != null) {
-            for (Element definitions : Util.findSubElements(libraries)) {
+            for (Element definitions : XMLUtil.findSubElements(libraries)) {
                 assert definitions.getLocalName().equals(EL_DEFINITIONS) : definitions;
-                String text = Util.findText(definitions);
+                String text = XMLUtil.findText(definitions);
                 assert text != null : aux;
                 return text;
             }
@@ -1012,7 +1012,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         if (libraries == null) {
             libraries = XMLUtil.createDocument("dummy", null, null, null).createElementNS(NAMESPACE, EL_LIBRARIES); // NOI18N
         } else {
-            List<Element> elements = Util.findSubElements(libraries);
+            List<Element> elements = XMLUtil.findSubElements(libraries);
             if (elements.size() == 1) {
                 libraries.removeChild(elements.get(0));
             }

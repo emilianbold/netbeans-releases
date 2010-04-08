@@ -506,19 +506,19 @@ final class JavaActions implements ActionProvider {
         antProject.setAttribute("basedir", /* ".." times count('/', FILE_SCRIPT_PATH) */".."); // NOI18N
         // Look for <properties> in project.xml and make corresponding definitions in the Ant script.
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element properties = Util.findElement(data, "properties", Util.NAMESPACE);
+        Element properties = XMLUtil.findElement(data, "properties", Util.NAMESPACE);
         if (properties != null) {
-            for (Element el : Util.findSubElements(properties)) {
+            for (Element el : XMLUtil.findSubElements(properties)) {
                 Element nue = antProject.getOwnerDocument().createElement("property"); // NOI18N
                 if (el.getLocalName().equals("property")) { // NOI18N
                     String name = el.getAttribute("name"); // NOI18N
                     assert name != null;
-                    String text = Util.findText(el);
+                    String text = XMLUtil.findText(el);
                     assert text != null;
                     nue.setAttribute("name", name);
                     nue.setAttribute("value", text);
                 } else if (el.getLocalName().equals("property-file")) { // NOI18N
-                    String text = Util.findText(el);
+                    String text = XMLUtil.findText(el);
                     assert text != null;
                     nue.setAttribute("file", text);
                 } else {
@@ -615,7 +615,7 @@ final class JavaActions implements ActionProvider {
         if (java == null) {
             return Collections.emptyList();
         }
-        return Util.findSubElements(java);
+        return XMLUtil.findSubElements(java);
     }
     
     /**
@@ -684,9 +684,9 @@ final class JavaActions implements ActionProvider {
      */
     private Element findCompilationUnit(String sources) {
         for (Element compilationUnitEl : compilationUnits()) {
-            for (Element packageRoot : Util.findSubElements(compilationUnitEl)) {
+            for (Element packageRoot : XMLUtil.findSubElements(compilationUnitEl)) {
                 if (packageRoot.getLocalName().equals("package-root")) { // NOI18N
-                    if (Util.findText(packageRoot).equals(sources)) {
+                    if (XMLUtil.findText(packageRoot).equals(sources)) {
                         return compilationUnitEl;
                     }
                 }
@@ -714,9 +714,9 @@ final class JavaActions implements ActionProvider {
      */
     private String findClassesOutputDir(Element compilationUnitEl) {
         // Look for an appropriate <built-to>.
-        for (Element builtTo : Util.findSubElements(compilationUnitEl)) {
+        for (Element builtTo : XMLUtil.findSubElements(compilationUnitEl)) {
             if (builtTo.getLocalName().equals("built-to")) { // NOI18N
-                String rawtext = Util.findText(builtTo);
+                String rawtext = XMLUtil.findText(builtTo);
                 // Check that it is not an archive.
                 String evaltext = evaluator.evaluate(rawtext);
                 if (evaltext != null) {
@@ -745,9 +745,9 @@ final class JavaActions implements ActionProvider {
     String findSourceLevel(String sources) {
         Element compilationUnitEl = findCompilationUnit(sources);
         if (compilationUnitEl != null) {
-            Element sourceLevel = Util.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
+            Element sourceLevel = XMLUtil.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
             if (sourceLevel != null) {
-                return Util.findText(sourceLevel);
+                return XMLUtil.findText(sourceLevel);
             }
         }
         return null;
@@ -761,11 +761,11 @@ final class JavaActions implements ActionProvider {
     String findCUClasspath(String sources, String moud) {
         Element compilationUnitEl = findCompilationUnit(sources);
         if (compilationUnitEl != null) {
-            for (Element classpath : Util.findSubElements(compilationUnitEl)) {
+            for (Element classpath : XMLUtil.findSubElements(compilationUnitEl)) {
                 if (classpath.getLocalName().equals("classpath")) { // NOI18N
                     String mode = classpath.getAttribute("mode"); // NOI18N
                     if (mode.equals(moud)) {
-                        return Util.findText(classpath);
+                        return XMLUtil.findText(classpath);
                     }
                 }
             }
@@ -810,11 +810,11 @@ final class JavaActions implements ActionProvider {
         // XXX cannot use FreeformProjectGenerator since that is currently not a public support SPI from ant/freeform
         // XXX should this try to find an existing binding? probably not, since it is assumed that if there was one, we would never get here to begin with
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
+        Element ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             //fix for #58442:
             ideActions = data.getOwnerDocument().createElementNS(Util.NAMESPACE, "ide-actions"); // NOI18N
-            Util.appendChildElement(data, ideActions, rootElementsOrder);
+            XMLUtil.appendChildElement(data, ideActions, rootElementsOrder);
         }
         Document doc = data.getOwnerDocument();
         Element action = doc.createElementNS(Util.NAMESPACE, "action"); // NOI18N
@@ -854,9 +854,9 @@ final class JavaActions implements ActionProvider {
         } else {
             // Add a context menu item, since it applies to the project as a whole.
             // Assume there is already a <context-menu> defined, which is quite likely.
-            Element view = Util.findElement(data, "view", Util.NAMESPACE); // NOI18N
+            Element view = XMLUtil.findElement(data, "view", Util.NAMESPACE); // NOI18N
             if (view != null) {
-                Element contextMenu = Util.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
+                Element contextMenu = XMLUtil.findElement(view, "context-menu", Util.NAMESPACE); // NOI18N
                 if (contextMenu != null) {
                     Element ideAction = doc.createElementNS(Util.NAMESPACE, "ide-action"); // NOI18N
                     ideAction.setAttribute("name", command); // NOI18N
@@ -994,7 +994,7 @@ final class JavaActions implements ActionProvider {
                 return null;
             }
         }
-        for (Element target : Util.findSubElements(doc.getDocumentElement())) {
+        for (Element target : XMLUtil.findSubElements(doc.getDocumentElement())) {
             if (target.getLocalName().equals("target") && targetName.equals(target.getAttribute("name"))) { // NOI18N
                 return target;
             }
@@ -1010,23 +1010,23 @@ final class JavaActions implements ActionProvider {
      */
     String[] findCommandBinding(String command) {
         Element data = Util.getPrimaryConfigurationData(helper);
-        Element ideActions = Util.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
+        Element ideActions = XMLUtil.findElement(data, "ide-actions", Util.NAMESPACE); // NOI18N
         if (ideActions == null) {
             return null;
         }
         String scriptName = "build.xml"; // NOI18N
-        for (Element action : Util.findSubElements(ideActions)) {
+        for (Element action : XMLUtil.findSubElements(ideActions)) {
             assert action.getLocalName().equals("action");
             if (action.getAttribute("name").equals(command)) {
-                Element script = Util.findElement(action, "script", Util.NAMESPACE); // NOI18N
+                Element script = XMLUtil.findElement(action, "script", Util.NAMESPACE); // NOI18N
                 if (script != null) {
-                    scriptName = Util.findText(script);
+                    scriptName = XMLUtil.findText(script);
                 }
                 List<String> scriptPlusTargetNames = new ArrayList<String>();
                 scriptPlusTargetNames.add(scriptName);
-                for (Element target : Util.findSubElements(action)) {
+                for (Element target : XMLUtil.findSubElements(action)) {
                     if (target.getLocalName().equals("target")) { // NOI18N
-                        scriptPlusTargetNames.add(Util.findText(target));
+                        scriptPlusTargetNames.add(XMLUtil.findText(target));
                     }
                 }
                 if (scriptName.equals(JdkConfiguration.NBJDK_XML) && scriptPlusTargetNames.size() > 1) {
@@ -1069,7 +1069,7 @@ final class JavaActions implements ActionProvider {
     Element targetUsesTaskExactlyOnce(Element target, String taskName) {
         // XXX should maybe also look for any other usage of the task in the same script in case there is none in the mentioned target
         Element foundTask = null;
-        for (Element task : Util.findSubElements(target)) {
+        for (Element task : XMLUtil.findSubElements(target)) {
             if (task.getLocalName().equals(taskName)) {
                 if (foundTask != null) {
                     // Duplicate.

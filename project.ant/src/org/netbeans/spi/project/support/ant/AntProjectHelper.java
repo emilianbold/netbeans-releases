@@ -63,7 +63,6 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
-import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -301,7 +300,7 @@ public final class AntProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
             return doc;
         } catch (IOException e) {
@@ -416,7 +415,7 @@ public final class AntProjectHelper {
         Document doc = getConfigurationXml(shared);
         if (shared) {
             Element project = doc.getDocumentElement();
-            Element config = Util.findElement(project, "configuration", PROJECT_NS); // NOI18N
+            Element config = XMLUtil.findElement(project, "configuration", PROJECT_NS); // NOI18N
             assert config != null;
             return config;
         } else {
@@ -892,7 +891,7 @@ public final class AntProjectHelper {
             public Element run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         return cloneSafely(data);
                     } else {
@@ -930,7 +929,7 @@ public final class AntProjectHelper {
             public Void run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                    Element existing = XMLUtil.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
                     // XXX first compare to existing and return if the same
                     if (existing != null) {
                         root.removeChild(existing);
@@ -972,7 +971,7 @@ public final class AntProjectHelper {
             public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
                     Element root = getConfigurationDataRoot(shared);
-                    Element data = Util.findElement(root, elementName, namespace);
+                    Element data = XMLUtil.findElement(root, elementName, namespace);
                     if (data != null) {
                         root.removeChild(data);
                         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);

@@ -87,6 +87,7 @@ import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -603,18 +604,18 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
      */
     private String computeModuleClasspath(ModuleList ml) {
         Element data = project.getPrimaryConfigurationData();
-        Element moduleDependencies = Util.findElement(data,
+        Element moduleDependencies = XMLUtil.findElement(data,
             "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
         StringBuffer cp = new StringBuffer();
-        for (Element dep : Util.findSubElements(moduleDependencies)) {
-            if (Util.findElement(dep, "compile-dependency", // NOI18N
+        for (Element dep : XMLUtil.findSubElements(moduleDependencies)) {
+            if (XMLUtil.findElement(dep, "compile-dependency", // NOI18N
                     NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
-            Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", // NOI18N
                 NbModuleProject.NAMESPACE_SHARED);
-            String cnb = Util.findText(cnbEl);
+            String cnb = XMLUtil.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));

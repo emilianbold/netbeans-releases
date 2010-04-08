@@ -41,20 +41,18 @@
 
 package org.netbeans.modules.j2ee.earproject.classpath;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Defines the various class paths for a web project.
@@ -135,8 +133,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                         Element library = (Element) ch.item(i);
                         Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
                         NodeList pathInEarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_EAR);
-                        earIncludesMap.put(findText(webFile), pathInEarElements.getLength() > 0 ?
-                            findText(pathInEarElements.item(0)) : null);
+                        earIncludesMap.put(XMLUtil.findText(webFile), pathInEarElements.getLength() > 0 ?
+                            XMLUtil.findText(pathInEarElements.item(0)) : null);
                     }
                 }
             }
@@ -144,15 +142,5 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
         return earIncludesMap;
     }
 
-    private static String findText(Node parent) {
-        NodeList l = parent.getChildNodes();
-        for (int i = 0; i < l.getLength(); i++) {
-            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
-                Text text = (Text)l.item(i);
-                return text.getNodeValue();
-            }
-        }
-        return null;
-    }
 }
 

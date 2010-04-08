@@ -65,7 +65,7 @@ final class ProjectParser {
     public static String parse(File dotProject, Set<String> natures, List<Link> links, Set<Variable> variables) throws IOException {
         Document dotProjectXml;
         try {
-            dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -75,9 +75,9 @@ final class ProjectParser {
             throw new IllegalStateException("given file is not eclipse .project file"); // NOI18N
         }
         
-        Element naturesEl = Util.findElement(projectDescriptionEl, "natures", null); // NOI18N
+        Element naturesEl = XMLUtil.findElement(projectDescriptionEl, "natures", null); // NOI18N
         if (naturesEl != null) {
-            List<Element> natureEls = Util.findSubElements(naturesEl);
+            List<Element> natureEls = XMLUtil.findSubElements(naturesEl);
             if (natureEls != null) {
                 for (Element nature : natureEls) {
                     natures.add(nature.getTextContent());
@@ -85,30 +85,30 @@ final class ProjectParser {
             }
         }
         
-        Element linksEl = Util.findElement(projectDescriptionEl, "linkedResources", null); // NOI18N
+        Element linksEl = XMLUtil.findElement(projectDescriptionEl, "linkedResources", null); // NOI18N
         if (linksEl != null) {
-            List<Element> linkEls = Util.findSubElements(linksEl);
+            List<Element> linkEls = XMLUtil.findSubElements(linksEl);
             if (linkEls != null) {
                 for (Element link : linkEls) {
-                    Element locationElement = Util.findElement(link, "location", null); // NOI18N
+                    Element locationElement = XMLUtil.findElement(link, "location", null); // NOI18N
                     String loc;
                     if (locationElement == null) {
-                        assert Util.findElement(link, "locationURI", null) != null : Util.findSubElements(link); // NOI18N
+                        assert XMLUtil.findElement(link, "locationURI", null) != null : XMLUtil.findSubElements(link); // NOI18N
                         // XXX external source root can be defined using IDE variable. For some reason (in Eclipse)
                         // these variables are stored/managed separately from variables which can be used
                         // in classpath. For now these variables are not transfer to NetBeans and normalized
                         // path will be returned instead.
-                        loc = resolveLink(Util.findElement(link, "locationURI", null).getTextContent(), variables); // NOI18N
+                        loc = resolveLink(XMLUtil.findElement(link, "locationURI", null).getTextContent(), variables); // NOI18N
                     } else {
                         loc = locationElement.getTextContent();
                     }
-                    links.add(new Link(Util.findElement(link, "name", null).getTextContent(),  // NOI18N
-                            "1".equals(Util.findElement(link, "type", null).getTextContent()), // NOI18N
+                    links.add(new Link(XMLUtil.findElement(link, "name", null).getTextContent(),  // NOI18N
+                            "1".equals(XMLUtil.findElement(link, "type", null).getTextContent()), // NOI18N
                             loc));
                 }
             }
         }
-        return Util.findElement(projectDescriptionEl, "name", null).getTextContent(); //NOI18N
+        return XMLUtil.findElement(projectDescriptionEl, "name", null).getTextContent(); //NOI18N
     }
     
     public static Facets readProjectFacets(File projectDir, Set<String> natures) throws IOException {
@@ -121,7 +121,7 @@ final class ProjectParser {
         }
         Document doc;
         try {
-            doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -132,7 +132,7 @@ final class ProjectParser {
         }
         
         List<Facets.Facet> facets = new ArrayList<Facets.Facet>();
-        List<Element> elements = Util.findSubElements(root);
+        List<Element> elements = XMLUtil.findSubElements(root);
         for (Element element : elements) {
             if (!"installed".equals(element.getNodeName())) { // NOI18N
                 continue;
