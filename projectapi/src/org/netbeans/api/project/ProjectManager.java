@@ -246,7 +246,8 @@ public final class ProjectManager {
                                     dir2Proj.wait();
                                     LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                 } catch (InterruptedException e) {
-                                    LOG.log(Level.WARNING, null, e);
+                                    LOG.log(Level.INFO, null, e);
+                                    return null;
                                 }
                             }
                         } while (LoadStatus.LOADING_PROJECT.is(o));
@@ -443,7 +444,8 @@ public final class ProjectManager {
                             try {
                                 dir2Proj.wait();
                             } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                LOG.log(Level.INFO, null, e);
+                                return null;
                             }
                         }
                     } while (LoadStatus.LOADING_PROJECT.is(o));
