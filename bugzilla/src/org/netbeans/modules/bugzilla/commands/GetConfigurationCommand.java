@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends BugzillaCommand {
+public class GetConfigurationCommand extends BugzillaCommand {
 
-    private final TaskRepository taskRepository;
+    private final boolean forceRefresh;
+    private BugzillaRepository repository;
+    private RepositoryConfiguration conf;
 
-    public ValidateCommand(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public GetConfigurationCommand(boolean forceRefresh, BugzillaRepository repository) {
+        this.forceRefresh = forceRefresh;
+        this.repository = repository;
     }
 
     @Override
-    public void execute() throws CoreException {
-        try {
-            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-            client.validate(new NullProgressMonitor());
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
+    public void execute() throws CoreException, IOException, MalformedURLException {
+        boolean refresh = forceRefresh;
+        String b = System.getProperty("org.netbeans.modules.bugzilla.persistentRepositoryConfiguration", "false"); // NOI18N
+        if("true".equals(b)) {                                                  // NOI18N
+            refresh = true;
         }
+        Bugzilla.LOG.log(Level.FINE, " Refresh bugzilla configuration [{0}, forceRefresh={1}]", new Object[]{repository.getUrl(), refresh}); // NOI18N
+        conf = Bugzilla.getInstance().getRepositoryConfiguration(repository, refresh);
+    }
+
+    public RepositoryConfiguration getConf() {
+        return hasFailed() ? null : conf;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("ValidateCommand [repository=");                              // NOI18N
-        sb.append(taskRepository.getUrl());
+        sb.append("GetConfigurationCommand [repository=");                      // NOI18N
+        sb.append(repository.getUrl());
         sb.append("]");                                                         // NOI18N
         return sb.toString();
     }
-
 
 }

@@ -92,7 +92,7 @@ public class Bugzilla {
         // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
         // in the BugzillaRepositoryConnector-s constructor
         brc = new BugzillaRepositoryConnector();
-        clientManager = getRepositoryConnector().getClientManager();
+        clientManager = brc.getClientManager();
 
         // lazy ping tasklist issue provider to load issues ...
         getRequestProcessor().post(new Runnable() {

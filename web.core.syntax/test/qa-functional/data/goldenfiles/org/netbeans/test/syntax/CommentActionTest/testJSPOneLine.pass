@@ -7,7 +7,7 @@
 
 
 <div class="f-page-cell bg-sky" >
-    <%--<h2>NetBeans Analytics Community</h2>--%>
+<!--    <h2>NetBeans Analytics Community</h2>-->
     <p>
         This is home of the NetBeans Analytics Community that collects UI gestures from
         users when they work within any application based on the <a href="http://platform.netbeans.org">NetBeans

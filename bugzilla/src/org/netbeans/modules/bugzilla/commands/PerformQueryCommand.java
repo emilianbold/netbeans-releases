@@ -84,8 +84,10 @@ public class PerformQueryCommand extends BugzillaCommand {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("PerformQueryCommand [");
+        StringBuilder sb = new StringBuilder();
+        sb.append("PerformQueryCommand [repository=");
+        sb.append(repository.getUrl());
+        sb.append(", queryUrl=");
         sb.append(queryUrl);
         sb.append("]");
         return super.toString();
