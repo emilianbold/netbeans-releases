@@ -60,8 +60,15 @@ public class GnomeProvider implements KeyringProvider {
             LOG.fine("native keyring integration disabled");
             return false;
         }
-        if (System.getenv("GNOME_KEYRING_SOCKET") == null) { // NOI18N
-            LOG.fine("GNOME_KEYRING_SOCKET not set");
+        boolean envVarSet = false;
+        for (String key : System.getenv().keySet()) {
+            if (key.startsWith("GNOME_KEYRING_")) { // NOI18N
+                envVarSet = true;
+                break;
+            }
+        }
+        if (!envVarSet) {
+            LOG.fine("no GNOME_KEYRING_* environment variable set");
             return false;
         }
         String appName;

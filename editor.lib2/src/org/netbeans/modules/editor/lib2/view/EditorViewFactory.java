@@ -104,8 +104,12 @@ public abstract class EditorViewFactory {
      * Restart this view factory to start producing views.
      *
      * @param startOffset first offset from which the views will be produced.
+     * @param matchOffset offset where the view creation should end (original views
+     *  should match with the new views at that offset).
+     *  However during the views creation it may be found out that this offset
+     *  will be exceeded.
      */
-    public abstract void restart(int startOffset);
+    public abstract void restart(int startOffset, int matchOffset);
 
     /**
      * Return starting offset of the next view to be produced by this view factory.

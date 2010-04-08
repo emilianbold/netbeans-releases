@@ -118,7 +118,7 @@ public final class HighlightingManager {
         // The factories changes tracking
         private Lookup.Result<HighlightsLayerFactory> factories = null;
         private LookupListener factoriesTracker = new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+            public @Override void resultChanged(LookupEvent ev) {
                 rebuildAllLayers();
             }
         };
@@ -126,7 +126,7 @@ public final class HighlightingManager {
         // The FontColorSettings changes tracking
         private Lookup.Result<FontColorSettings> settings = null;
         private LookupListener settingsTracker = new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
+            public @Override void resultChanged(LookupEvent ev) {
 //                System.out.println("Settings tracker for '" + (lastKnownMimePaths == null ? "null" : lastKnownMimePaths[0].getPath()) + "'");
                 rebuildAllLayers();
             }
@@ -143,9 +143,12 @@ public final class HighlightingManager {
         private List<HighlightsContainer> allLayerContainers = null;
         
         // CompoundHighlightsContainers with containers from filtered layers
-        private final WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>> containers = 
-            new WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>>();
-        
+        private final WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>> containers =
+            new WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>>();
+
+        private static final boolean LINEWRAP_ENABLED = !Boolean.getBoolean("org.netbeans.editor.linewrap.disable"); //NOI18N
+
+        @SuppressWarnings("LeakingThisInConstructor")
         public Highlighting(JTextComponent pane) {
             this.pane = pane;
             this.paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
@@ -155,14 +158,14 @@ public final class HighlightingManager {
         }
 
         public synchronized HighlightsContainer getContainer(HighlightsLayerFilter filter) {
-            WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-            CompoundHighlightsContainer container = ref == null ? null : ref.get();
+            WeakReference<MultiLayerContainer> ref = containers.get(filter);
+            MultiLayerContainer container = ref == null ? null : ref.get();
 
             if (container == null) {
-                container = new CompoundHighlightsContainer();
+                container = LINEWRAP_ENABLED ? new ProxyHighlightsContainer() : new CompoundHighlightsContainer();
                 rebuildContainer(pane.getDocument(), filter, container);
                 
-                containers.put(filter, new WeakReference<CompoundHighlightsContainer>(container));
+                containers.put(filter, new WeakReference<MultiLayerContainer>(container));
             }
 
             return container;
@@ -172,7 +175,7 @@ public final class HighlightingManager {
         //  PropertyChangeListener implementation
         // ----------------------------------------------------------------------
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 rebuildAll();
             }
@@ -259,16 +262,16 @@ public final class HighlightingManager {
             }
         }
         
-        private synchronized void resetAllContainers() {
-            for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                CompoundHighlightsContainer container = ref == null ? null : ref.get();
-                
-                if (container != null) {
-                    container.resetCache();
-                }
-            }
-        }
+//        private synchronized void resetAllContainers() {
+//            for(HighlightsLayerFilter filter : containers.keySet()) {
+//                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
+//                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+//
+//                if (container != null) {
+//                    container.resetCache();
+//                }
+//            }
+//        }
 
         private synchronized void rebuildAllLayers() {
             if (inRebuildAllLayers) {
@@ -343,8 +346,8 @@ public final class HighlightingManager {
             }
 
             for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+                WeakReference<MultiLayerContainer> ref = containers.get(filter);
+                MultiLayerContainer container = ref == null ? null : ref.get();
 
                 if (container != null) {
                     rebuildContainer(document, filter, container);
@@ -352,7 +355,7 @@ public final class HighlightingManager {
             }
         }
 
-        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, CompoundHighlightsContainer container) {
+        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, MultiLayerContainer container) {
             if (allLayers != null) {
                 List<? extends HighlightsLayer> filteredLayers = paneFilter.filterLayers(Collections.unmodifiableList(allLayers));
                 filteredLayers = filter.filterLayers(Collections.unmodifiableList(filteredLayers));
@@ -425,6 +428,7 @@ public final class HighlightingManager {
             this.excludes = buildPatterns(excludes);
         }
 
+        @Override
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             List<? extends HighlightsLayer> includedLayers;
             

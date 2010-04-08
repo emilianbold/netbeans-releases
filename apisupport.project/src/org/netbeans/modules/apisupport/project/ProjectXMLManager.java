@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -88,6 +90,8 @@ import org.w3c.dom.NodeList;
  * changes <em>physically</em>.
  */
 public final class ProjectXMLManager {
+
+    private static final Logger LOG = Logger.getLogger(ProjectXMLManager.class.getName());
 
     /** Equal to AntProjectHelper.PROJECT_NS which is package private. */
     // XXX is there a better way? (impact of imposibility to use ProjectGenerator)
@@ -394,9 +398,22 @@ public final class ProjectXMLManager {
     public String getDependencyCycleWarning(final Set<ModuleDependency> candidates) {
         for (ModuleDependency md : candidates) {
             File srcLoc = md.getModuleEntry().getSourceLocation();
-            if (srcLoc == null)
+            if (srcLoc == null) {
                 continue;
-            Project candidate = FileOwnerQuery.getOwner(FileUtil.toFileObject(srcLoc));
+            }
+            FileObject srcLocFO = FileUtil.toFileObject(srcLoc);
+            if (srcLocFO == null) {
+                continue;
+            }
+            Project candidate;
+            try {
+                candidate = ProjectManager.getDefault().findProject(srcLocFO);
+            } catch (IOException x) {
+                continue;
+            }
+            if (candidate == null) {
+                continue;
+            }
             boolean cyclicDep = ProjectUtils.hasSubprojectCycles(project, candidate);
             if (cyclicDep) {
                 String c = ProjectUtils.getInformation(candidate).getDisplayName();
@@ -425,9 +442,21 @@ public final class ProjectXMLManager {
      * introduce dependency cycle and leaves current dependencies untouched.
      */
     public void replaceDependencies(final Set<ModuleDependency> newDeps) throws CyclicDependencyException {
-        String warning = getDependencyCycleWarning(newDeps);
-        if (warning != null)
-            throw new CyclicDependencyException(warning);
+        Set<ModuleDependency> addedDeps = new HashSet<ModuleDependency>(newDeps);
+        try {
+            SortedSet<ModuleDependency> currentDeps = getDirectDependencies();
+            addedDeps.removeAll(currentDeps);
+            String warning = getDependencyCycleWarning(addedDeps);
+            if (warning != null) {
+                if (ProjectUtils.hasSubprojectCycles(project, null)) {
+                    LOG.log(Level.WARNING, "Starting out with subproject cycles in {0} before even changing them", project);
+                } else {
+                    throw new CyclicDependencyException(warning);
+                }
+            }
+        } catch (IOException x) { // getDirectDependencies
+            LOG.log(Level.INFO, null, x); // and skip check
+        }
 
         Element _confData = getConfData();
         Document doc = _confData.getOwnerDocument();

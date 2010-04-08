@@ -160,7 +160,11 @@ public final class FolderObj extends BaseFileObj {
         mutexPrivileged.enterWriteAccess();
 
         try {
-            folder2Create = BaseFileObj.getFile(getFileName().getFile(), name, null);
+            final File myFile = getFileName().getFile();
+            folder2Create = BaseFileObj.getFile( myFile, name, null);
+            if (!myFile.canWrite()) {
+                FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N
+            }
             createFolder(folder2Create, name);
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);

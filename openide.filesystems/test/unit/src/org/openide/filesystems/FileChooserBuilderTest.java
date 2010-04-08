@@ -39,11 +39,13 @@
 
 package org.openide.filesystems;
 
+import java.awt.Component;
+import java.awt.Dialog;
+import javax.swing.UIManager;
 import javax.swing.JRootPane;
 import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CountDownLatch;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.io.File;
@@ -52,12 +54,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractButton;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.RootPaneContainer;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
@@ -246,17 +249,62 @@ public class FileChooserBuilderTest extends NbTestCase {
         }
     }
 
-    private static AbstractButton findDefaultButton(Container c) {
+    private static AbstractButton findDefaultButton(Container c, String txt) {
         if (c instanceof RootPaneContainer) {
             JRootPane root = ((RootPaneContainer) c).getRootPane();
-            return root == null ? null : root.getDefaultButton();
+            if (root == null) {
+                return null;
+            }
+            AbstractButton btn = root.getDefaultButton();
+            if (btn == null) {
+                //Metal L&F does not set default button for JFileChooser
+                Container parent = c;
+                while (parent.getParent() != null && !(parent instanceof Dialog)) {
+                    parent = parent.getParent();
+                }
+                if (parent instanceof Dialog) {
+                    return findFileChooserAcceptButton ((Dialog) parent, txt);
+                }
+            }
         }
         return null;
     }
 
-    @RandomlyFails // #182734: have a button
-    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException, InvocationTargetException {
-        FileChooserBuilder instance = new FileChooserBuilder("i");
+    private static AbstractButton findFileChooserAcceptButton(Dialog dlg, String txt) {
+        for (Component c : dlg.getComponents()) {
+            if (c instanceof Container) {
+                AbstractButton result = scanForButton((Container) c, txt);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static AbstractButton scanForButton(Container container, String txt) {
+        assertNotNull (container);
+        assertNotNull (txt);
+        if (container instanceof AbstractButton) {
+            if (txt.equals(((AbstractButton) container).getText())) {
+                return ((AbstractButton) container);
+            }
+        } else {
+            for (Component c : container.getComponents()) {
+                if (c instanceof Container) {
+                    AbstractButton b = scanForButton ((Container) c, txt);
+                    if (b != null) {
+                        return b;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public void testForceUseOfDefaultWorkingDirectory() throws InterruptedException, IOException, InvocationTargetException, UnsupportedLookAndFeelException {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
+        FileChooserBuilder instance = new FileChooserBuilder("i").setApproveText("__OK");
         instance.setDirectoriesOnly(true);
         final File toDir = getWorkDir();
         final File selDir = new File(toDir, "sel" + System.currentTimeMillis());
@@ -265,6 +313,7 @@ public class FileChooserBuilderTest extends NbTestCase {
         }
 
         final JFileChooser ch = instance.createFileChooser();
+        assertEquals ("__OK", ch.getApproveButtonText());
         final CountDownLatch showLatch = new CountDownLatch(1);
         ch.addAncestorListener (new AncestorListener() {
 
@@ -319,7 +368,7 @@ public class FileChooserBuilderTest extends NbTestCase {
 
             @Override
             public void run() {
-                AbstractButton defButton = findDefaultButton(ch.getTopLevelAncestor());
+                AbstractButton defButton = findDefaultButton(ch.getTopLevelAncestor(), ch.getApproveButtonText());
                 btn.set(defButton);
             }
 

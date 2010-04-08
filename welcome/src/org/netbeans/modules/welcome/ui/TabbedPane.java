@@ -49,7 +49,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,9 +60,11 @@ import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.MouseAdapter;
+import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
@@ -77,75 +78,75 @@ import org.openide.util.ImageUtilities;
  */
 class TabbedPane extends JPanel implements Constants {// , Scrollable {
 
-    private JComponent leftTab;
-    private JComponent rightTab;
-    private JComponent tabHeader;
-    private JPanel tabContent;
-    private boolean leftTabAdded = false;
-    private boolean rightTabAdded = false;
+    private final JComponent[] tabs;
+    private final TabButton[] buttons;
+    private final JComponent tabHeader;
+    private final JPanel tabContent;
+    private boolean[] tabAdded;
+    private int selTabIndex = -1;
     
-    public TabbedPane( String leftTabTitle, JComponent leftTab,
-            String rightTabTitle, final JComponent rightTab) {
-        
+    public TabbedPane( JComponent ... tabs ) {
         super( new BorderLayout() );
 
         setOpaque(false);
         
-        this.leftTab = leftTab;
-        this.rightTab = rightTab;
+        this.tabs = tabs;
+        tabAdded = new boolean[tabs.length];
+        Arrays.fill(tabAdded, false);
 
         // vlv: print
-        leftTab.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        leftTab.putClientProperty("print.name", leftTabTitle); // NOI18N
-        rightTab.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        rightTab.putClientProperty("print.name", rightTabTitle); // NOI18N
+        for( JComponent c : tabs ) {
+            c.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+            c.putClientProperty("print.name", c.getName()); // NOI18N
+        }
         
-        final TabButton leftButton = new TabButton( leftTabTitle );
-        final TabButton rightButton = new TabButton( rightTabTitle );
-
-
         ActionListener al = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                boolean isLeftTabSelected = e.getSource() == leftButton;
-                leftButton.setSelected( isLeftTabSelected );
-                rightButton.setSelected( !isLeftTabSelected );
-                switchTab( isLeftTabSelected );
-                WelcomeOptions.getDefault().setLastActiveTab( isLeftTabSelected ? 0 : 1 );
+                TabButton btn = (TabButton) e.getSource();
+                switchTab( btn.getTabIndex() );
+                WelcomeOptions.getDefault().setLastActiveTab( btn.getTabIndex() );
             }
         };
         
-        leftButton.addActionListener( al );
-        rightButton.addActionListener( al );
+        buttons = new TabButton[tabs.length];
+        for( int i=0; i<buttons.length; i++ ) {
+            buttons[i] = new TabButton(tabs[i].getName(), i);
+            buttons[i].addActionListener(al);
+        }
+
         
-        tabHeader = new TabHeader(leftButton, rightButton);
+        tabHeader = new TabHeader(buttons);
         add( tabHeader, BorderLayout.NORTH );
         
-        tabContent = new JPanel( new GridBagLayout() );
-        tabContent.setOpaque(false);
-        tabContent.setBorder(new ContentBorder());
+        tabContent = new TabContentPane();//JPanel( new GridBagLayout() );
+//        tabContent.setOpaque(false);
+//        tabContent.setBorder(new ContentBorder());
 
         add( tabContent, BorderLayout.CENTER );
         int activeTabIndex = WelcomeOptions.getDefault().getLastActiveTab();
-        boolean selectLeftTab = activeTabIndex <= 0;
         if( WelcomeOptions.getDefault().isSecondStart() && activeTabIndex < 0 ) {
-            selectLeftTab = false;
+            activeTabIndex = 1;
             WelcomeOptions.getDefault().setLastActiveTab( 1 );
         }
-        leftButton.setSelected( selectLeftTab );
-        rightButton.setSelected( !selectLeftTab );
-        switchTab( selectLeftTab );
+        activeTabIndex = Math.max(0, activeTabIndex);
+        activeTabIndex = Math.min(activeTabIndex, tabs.length-1);
+//        buttons[activeTabIndex].setSelected(true);
+        switchTab( activeTabIndex );
     }
 
-    private void switchTab( boolean showLeftTab ) {
-        if( showLeftTab && !leftTabAdded ) {
-            tabContent.add( leftTab, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) ); //NOI18N
-            leftTabAdded = true;
-        } else if( !showLeftTab && !rightTabAdded ) {
-            tabContent.add( rightTab, new GridBagConstraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) ); //NOI18N
-            rightTabAdded = true;
+    private void switchTab( int tabIndex ) {
+        if( !tabAdded[tabIndex] ) {
+            tabContent.add( tabs[tabIndex], new GridBagConstraints(tabIndex, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0) ); //NOI18N
+            tabAdded[tabIndex] = true;
         }
-        JComponent compToShow = showLeftTab ? leftTab : rightTab;
-        JComponent compToHide = showLeftTab ? rightTab : leftTab;
+        if( selTabIndex >= 0 ) {
+            buttons[selTabIndex].setSelected(false);
+        }
+        JComponent compToShow = tabs[tabIndex];
+        JComponent compToHide = selTabIndex >= 0 ? tabs[selTabIndex] : null;
+        selTabIndex = tabIndex;
+        buttons[selTabIndex].setSelected(true);
 
         if( null != compToHide )
             compToHide.setVisible( false );
@@ -174,10 +175,11 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
     private static class TabButton extends JLabel {
         private boolean isSelected = false;
         private ActionListener actionListener;
+        private final int tabIndex;
         
-        
-        public TabButton( String title ) {
+        public TabButton( String title, int tabIndex ) {
             super( title );
+            this.tabIndex = tabIndex;
             setOpaque( false );
             setFont( TAB_FONT );
             setForeground( Utils.getColor( isSelected
@@ -186,38 +188,29 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
             setHorizontalAlignment( JLabel.CENTER );
             setFocusable(true);
             
-            addKeyListener( new KeyListener() {
+            addKeyListener( new KeyAdapter() {
 
-                public void keyTyped(KeyEvent e) {
-                }
-
+                @Override
                 public void keyPressed(KeyEvent e) {
                     if( e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
-                        setSelected( !isSelected );
+//                        setSelected( !isSelected );
                         if( null != actionListener ) {
                             actionListener.actionPerformed( new ActionEvent( TabButton.this, 0, "clicked") );
                         }
                     }
                 }
-
-                public void keyReleased(KeyEvent e) {
-                }
             });
 
-            addMouseListener( new MouseListener() {
+            addMouseListener( new MouseAdapter() {
+                @Override
                 public void mouseClicked(MouseEvent e) {
-                    setSelected( !isSelected );
+//                    setSelected( !isSelected );
                     if( null != actionListener ) {
                         actionListener.actionPerformed( new ActionEvent( TabButton.this, 0, "clicked") );
                     }
                 }
 
-                public void mousePressed(MouseEvent e) {
-                }
-
-                public void mouseReleased(MouseEvent e) {
-                }
-
+                @Override
                 public void mouseEntered(MouseEvent e) {
                     if( !isSelected ) {
                         setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
@@ -228,6 +221,7 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
                     }
                 }
 
+                @Override
                 public void mouseExited(MouseEvent e) {
                     setCursor( Cursor.getDefaultCursor() );
                     setForeground( Utils.getColor( isSelected
@@ -237,11 +231,11 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
             });
             
             addFocusListener( new FocusListener() {
-
+                @Override
                 public void focusGained(FocusEvent e) {
                     setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
                 }
-
+                @Override
                 public void focusLost(FocusEvent e) {
                     setForeground( Utils.getColor( isSelected
                             ? COLOR_TAB_SEL_FOREGROUND 
@@ -267,51 +261,198 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
             if( null != getParent() )
                 getParent().repaint();
         }
+
+        public int getTabIndex() {
+            return tabIndex;
+        }
     }
 
+    private static final Color COLOR_UNSEL = new Color(173,175,176);
+    private static final Color COLOR_SEL = new Color(255,255,255);
 
-    private static class TabHeader extends JPanel {
-        private Image topLeftCornerSel;
-        private Image topLeftCornerUnsel;
-        private Image topRightCornerSel;
-        private Image topRightCornerUnsel;
-        private Image topGradientSel;
-        private Image topGradientUnsel;
-        private Image topMiddleLeftSel;
-        private Image topMiddleRightSel;
-        private Image middleShadowRightSel;
-        private Image middleShadowLeftSel;
-        private Image leftShadow;
-        private Image rightShadow;
-        private Image bottomShadowUnsel;
+    private static final Insets insets = new Insets(23, 19, 6, 10);
 
-        private final TabButton leftButton;
-        private final TabButton rightButton;
+    private class TabHeader extends JPanel {
+        // ABBBBBBBBBBBBBBBCBBBBBBBBBBBBBBBBD
+        // 5666666666666666788888888888888889
+        // 4               5                6
+        // 4 <fill color>  5  <fill color>  6
+        // 4               5                6
+        // 4               5                6
+        // 0111111111111111211111111111111113
 
-        public TabHeader( TabButton leftButton, TabButton rightButton ) {
+        private final Image[] sel;
+        private final Image[] unsel;
+
+        private final TabButton[] buttons;
+
+        private final Image imgSelTopLeft1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_topleft1.png"); //NOI18N
+        private final Image imgSelTopLeft2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_topleft2.png"); //NOI18N
+        private final Image imgSelTop = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_top.png"); //NOI18N
+        private final Image imgSelLeft1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_left1.png"); //NOI18N
+        private final Image imgSelLeft2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_left2.png"); //NOI18N
+        private final Image imgSelTopRight1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_topright1.png"); //NOI18N
+        private final Image imgSelTopRight2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_topright2.png"); //NOI18N
+        private final Image imgSelRight1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_right1.png"); //NOI18N
+        private final Image imgSelRight2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_right2.png"); //NOI18N
+
+        private final Image imgUnselTopLeft1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_topleft1.png"); //NOI18N
+        private final Image imgUnselLeft1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_left1.png"); //NOI18N
+        private final Image imgUnselLeftTop1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_lefttop1.png"); //NOI18N
+        private final Image imgUnselBottomLeft1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottomleft1.png"); //NOI18N
+
+        private final Image imgUnselTopRight1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_topright1.png"); //NOI18N
+        private final Image imgUnselRight1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_right1.png"); //NOI18N
+        private final Image imgUnselRightTop1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_righttop1.png"); //NOI18N
+        private final Image imgUnselBottomRight1 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottomright1.png"); //NOI18N
+
+        private final Image imgUnselTopLeft2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_topleft2.png"); //NOI18N
+        private final Image imgUnselLeft2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_left2.png"); //NOI18N
+        private final Image imgUnselBottomLeft2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottomleft2.png"); //NOI18N
+
+        private final Image imgUnselTopRight2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_topright2.png"); //NOI18N
+        private final Image imgUnselRight2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_right2.png"); //NOI18N
+        private final Image imgUnselBottomRight2 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottomright2.png"); //NOI18N
+
+        private final Image imgUnselTopRight3 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_topright3.png"); //NOI18N
+        private final Image imgUnselRight3 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_right3.png"); //NOI18N
+        private final Image imgUnselBottomRight3 = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottomright3.png"); //NOI18N
+
+        private final Image imgUnselTop = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_top.png"); //NOI18N
+        private final Image imgUnselBottom = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_bottom.png"); //NOI18N
+        private final Image imgUnselFiller = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_filler.png"); //NOI18N
+
+        public TabHeader( TabButton ... buttons ) {
             super( new GridLayout(1,0) );
             setOpaque(false);
-            this.leftButton = leftButton;
-            this.rightButton = rightButton;
-            Border b = BorderFactory.createEmptyBorder( 8, 19, 2, 24 );
-            leftButton.setBorder(b);
-            rightButton.setBorder(b);
-            add( leftButton );
-            add( rightButton );
+            this.buttons = buttons;
+            Border b = BorderFactory.createEmptyBorder( 12, 19, 2, 24 );
+            for( TabButton btn : buttons ) {
+                btn.setBorder(b);
+                add( btn );
+            }
 
-            topLeftCornerSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_left_corner_sel.png"); //NOI18N
-            topLeftCornerUnsel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_left_corner_unsel.png"); //NOI18N
-            topRightCornerSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_right_corner_sel.png"); //NOI18N
-            topRightCornerUnsel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_right_corner_unsel.png"); //NOI18N
-            topGradientUnsel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_gradient_unsel.png"); //NOI18N
-            topGradientSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_gradient_sel.png"); //NOI18N
-            leftShadow = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/left_shadow.png"); //NOI18N
-            rightShadow = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/right_shadow.png"); //NOI18N
-            bottomShadowUnsel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_bottom_shadow_unsel.png"); //NOI18N
-            topMiddleRightSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_middle_right_sel.png"); //NOI18N
-            topMiddleLeftSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_top_middle_left_sel.png"); //NOI18N
-            middleShadowRightSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_middle_shadow_right_sel.png"); //NOI18N
-            middleShadowLeftSel = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_middle_shadow_left_sel.png"); //NOI18N
+            sel = new Image[13];
+            unsel = new Image[13];
+            for( int i=0; i<sel.length; i++ ) {
+                sel[i] = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_sel_"+i+".png");
+                unsel[i] = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/tab_unsel_"+i+".png");
+            }
+        }
+
+        private void paintTab( Graphics2D g, int tabIndex ) {
+            int width = getWidth();
+            int height = getHeight();
+            boolean selected = tabIndex == selTabIndex;
+            int tabWidth = width / buttons.length;
+            int x = tabWidth * tabIndex;
+            if( tabIndex == buttons.length-1 )
+                tabWidth += width % buttons.length;
+
+            if( selected ) {
+                Image imgTopLeft = tabIndex == 0 ? imgSelTopLeft1 : imgSelTopLeft2;
+                g.drawImage(imgTopLeft, x, 0, this);
+                int topLeftWidth = imgTopLeft.getWidth(this);
+                int topLeftHeight = imgTopLeft.getHeight(this);
+
+                Image imgTopRight = tabIndex == buttons.length-1 ? imgSelTopRight1 : imgSelTopRight2;
+                int topRightWidth = imgTopRight.getWidth(this);
+                int topRightHeight = imgTopRight.getHeight(this);
+                g.drawImage(imgTopRight, x+tabWidth-topRightWidth, 0, this);
+
+                g.drawImage(imgSelTop, x+topLeftWidth, 0, tabWidth-topLeftWidth-topRightWidth, imgSelTop.getHeight(this), this);
+
+                Image imgLeft = tabIndex == 0 ? imgSelLeft1 : imgSelLeft2;
+                int leftWidth = imgLeft.getWidth(this);
+                g.drawImage(imgLeft, x, topLeftHeight, leftWidth, height-topLeftHeight, this);
+
+                Image imgRight = tabIndex == buttons.length-1 ? imgSelRight1 : imgSelRight2;
+                int rightWidth = imgRight.getWidth(this);
+                g.drawImage(imgRight, x+tabWidth-rightWidth, topRightHeight, rightWidth, height-topRightHeight, this);
+
+                g.setColor(COLOR_SEL);
+                g.fillRect(x+leftWidth, topLeftHeight, tabWidth-leftWidth-rightWidth, height-topLeftHeight);
+            } else {
+                Rectangle fillRect = new Rectangle(x, 0, tabWidth, height);
+                //left arc
+                if( tabIndex == 0 ) {
+                    g.drawImage(imgUnselTopLeft1, x, 0, this);
+                    int topHeight = imgUnselTopLeft1.getHeight(this);
+                    int topWidth = imgUnselTopLeft1.getWidth(this);
+                    fillRect.x += topWidth;
+                    fillRect.width -= topWidth;
+                    g.drawImage(imgUnselLeftTop1, x, topHeight, this);
+                    topHeight += imgUnselLeftTop1.getHeight(this);
+                    fillRect.y += topHeight;
+                    fillRect.height -= topHeight;
+
+                    int bottomHeight = imgUnselBottomLeft1.getHeight(this);
+                    g.drawImage(imgUnselBottomLeft1, x, height-bottomHeight, this);
+
+                    g.drawImage(imgUnselLeft1, x, topHeight, imgUnselLeft1.getWidth(this), height-topHeight-bottomHeight, this);
+
+                } else {
+                    int topHeight = imgUnselTopLeft1.getHeight(this);
+                    topHeight += imgUnselLeftTop1.getHeight(this);
+                    fillRect.y += topHeight;
+                    fillRect.height -= topHeight;
+
+                    g.drawImage(imgUnselTopLeft2, x, 0, this);
+                    topHeight = imgUnselTopLeft2.getHeight(this);
+                    int topWidth = imgUnselTopLeft2.getWidth(this);
+                    fillRect.x += topWidth;
+                    fillRect.width -= topWidth;
+
+                    int bottomHeight = imgUnselBottomLeft2.getHeight(this);
+                    g.drawImage(imgUnselBottomLeft2, x, height-bottomHeight, this);
+
+                    g.drawImage(imgUnselLeft2, x, topHeight, imgUnselLeft2.getWidth(this), height-topHeight-bottomHeight, this);
+                }
+
+                //right arc
+                if( tabIndex == buttons.length-1 ) {
+                    int topHeight = imgUnselTopRight1.getHeight(this);
+                    int topWidth = imgUnselTopRight1.getWidth(this);
+                    g.drawImage(imgUnselTopRight1, x+tabWidth-topWidth, 0, this);
+                    fillRect.width -= topWidth;
+                    g.drawImage(imgUnselRightTop1, x+tabWidth-topWidth, topHeight, this);
+                    topHeight += imgUnselRightTop1.getHeight(this);
+
+                    int bottomHeight = imgUnselBottomRight1.getHeight(this);
+                    g.drawImage(imgUnselBottomRight1, x+tabWidth-topWidth, height-bottomHeight, this);
+
+                    g.drawImage(imgUnselRight1, x+tabWidth-topWidth, topHeight, imgUnselRight1.getWidth(this), height-topHeight-bottomHeight, this);
+
+                } else if( tabIndex+1 == selTabIndex ) {
+                    int topHeight = imgUnselTopRight2.getHeight(this);
+                    int topWidth = imgUnselTopRight2.getWidth(this);
+                    g.drawImage(imgUnselTopRight2, x+tabWidth-topWidth, 0, this);
+                    fillRect.width -= topWidth;
+
+                    int bottomHeight = imgUnselBottomRight2.getHeight(this);
+                    g.drawImage(imgUnselBottomRight2, x+tabWidth-topWidth, height-bottomHeight, this);
+
+                    g.drawImage(imgUnselRight2, x+tabWidth-topWidth, topHeight, imgUnselRight2.getWidth(this), height-topHeight-bottomHeight, this);
+                } else {
+                    int topHeight = imgUnselTopRight3.getHeight(this);
+                    int topWidth = imgUnselTopRight3.getWidth(this);
+                    g.drawImage(imgUnselTopRight3, x+tabWidth-topWidth, 0, this);
+                    fillRect.width -= topWidth;
+
+                    int bottomHeight = imgUnselBottomRight3.getHeight(this);
+                    g.drawImage(imgUnselBottomRight3, x+tabWidth-topWidth, height-bottomHeight, this);
+
+                    g.drawImage(imgUnselRight3, x+tabWidth-topWidth, topHeight, imgUnselRight3.getWidth(this), height-topHeight-bottomHeight, this);
+                }
+                
+                fillRect.height -= imgUnselBottom.getHeight(this);
+                g.drawImage(imgUnselFiller, fillRect.x, fillRect.y-imgUnselFiller.getHeight(this), fillRect.width, imgUnselFiller.getHeight(this), this);
+                g.drawImage(imgUnselTop, fillRect.x, 0, fillRect.width, imgUnselTop.getHeight(this), this);
+                g.drawImage(imgUnselBottom, fillRect.x, height-imgUnselBottom.getHeight(this), fillRect.width, imgUnselBottom.getHeight(this), this);
+
+                g.setColor(COLOR_UNSEL);
+                g.fill(fillRect);
+            }
         }
 
         @Override
@@ -319,65 +460,69 @@ class TabbedPane extends JPanel implements Constants {// , Scrollable {
             super.paintComponent(g);
 
             Graphics2D g2d = (Graphics2D) g;
-            boolean isLeftSelection = leftButton.isSelected;
 
-            int height = getHeight();
-            int width = getWidth();
-            Color background = isLeftSelection ? Color.white : new Color(193,193,193);
-            Image topGradient = isLeftSelection ? topGradientSel : topGradientUnsel;
-            //left tab background
-            g2d.setColor(background);
-            int backgroundWidth = width/2-4;
-            if( isLeftSelection )
-                backgroundWidth -= 4;
-            g2d.fillRect(4, 21, backgroundWidth, height-21);
-            //left tab top gradient
-            int gradientWidth = width/2-19;
-            if( isLeftSelection )
-                gradientWidth -= 22;
-            g2d.drawImage(topGradient, 19, 0, gradientWidth, 21, this);
-            //top left corner curve
-            g2d.drawImage(isLeftSelection ? topLeftCornerSel : topLeftCornerUnsel, 0, 0, this);
-            //left shadow
-            g2d.drawImage(leftShadow, 0, 21, 4, height-21, this);
-
-
-            if( isLeftSelection ) {
-                //middle section, left tab is selected
-                g2d.drawImage(topMiddleLeftSel, width/2-22, 0, this);
-                g2d.drawImage(middleShadowLeftSel, width/2-4, 24, 4, height-24, this );
-            } else {
-                //middle section, right tab is selected
-                g2d.drawImage(topMiddleRightSel, width/2, 0, this);
-                g2d.drawImage(middleShadowRightSel, width/2, 24, 4, height-24, this );
+            for( int i=0; i<buttons.length; i++ ) {
+                paintTab( g2d, i );
             }
-
-            //top right corner curve
-            g2d.drawImage(isLeftSelection ? topRightCornerUnsel : topRightCornerSel, width-20, 0, this);
-            int rightCornerHeight = isLeftSelection ? 21 : 24;
-            //right shadow
-            g2d.drawImage(rightShadow, width-6, rightCornerHeight, 6, height-rightCornerHeight, this);
-
-            background = !isLeftSelection ? Color.white : new Color(193,193,193);
-            topGradient = !isLeftSelection ? topGradientSel : topGradientUnsel;
-            //right tab background
-            g2d.setColor(background);
-            int backgroundStart = width/2;
-            if( !isLeftSelection )
-                backgroundStart += 4;
-            g2d.fillRect(backgroundStart, 21, width-backgroundStart-6, height-21);
-            //right tab top gradient
-            int gradientStart = width/2;
-            if( !isLeftSelection )
-                gradientStart += 22;
-            g2d.drawImage(topGradient, gradientStart, 0, width-gradientStart-20, 21, this);
-
-            //bottom shadow of unselected tab
-            if( isLeftSelection ) {
-                g2d.drawImage(bottomShadowUnsel, width/2, height-4, width/2-6, 5, this);
-            } else {
-                g2d.drawImage(bottomShadowUnsel, 4, height-4, width/2, 5, this);
-            }
+//            boolean isLeftSelection = false;//leftButton.isSelected;
+//
+//            int height = getHeight();
+//            int width = getWidth();
+//            Color background = isLeftSelection ? Color.white : new Color(193,193,193);
+//            Image topGradient = isLeftSelection ? topGradientSel : topGradientUnsel;
+//            //left tab background
+//            g2d.setColor(background);
+//            int backgroundWidth = width/2-4;
+//            if( isLeftSelection )
+//                backgroundWidth -= 4;
+//            g2d.fillRect(4, 21, backgroundWidth, height-21);
+//            //left tab top gradient
+//            int gradientWidth = width/2-19;
+//            if( isLeftSelection )
+//                gradientWidth -= 22;
+//            g2d.drawImage(topGradient, 19, 0, gradientWidth, 21, this);
+//            //top left corner curve
+//            g2d.drawImage(isLeftSelection ? topLeftCornerSel : topLeftCornerUnsel, 0, 0, this);
+//            //left shadow
+//            g2d.drawImage(leftShadow, 0, 21, 4, height-21, this);
+//
+//
+//            if( isLeftSelection ) {
+//                //middle section, left tab is selected
+//                g2d.drawImage(topMiddleLeftSel, width/2-22, 0, this);
+//                g2d.drawImage(middleShadowLeftSel, width/2-4, 24, 4, height-24, this );
+//            } else {
+//                //middle section, right tab is selected
+//                g2d.drawImage(topMiddleRightSel, width/2, 0, this);
+//                g2d.drawImage(middleShadowRightSel, width/2, 24, 4, height-24, this );
+//            }
+//
+//            //top right corner curve
+//            g2d.drawImage(isLeftSelection ? topRightCornerUnsel : topRightCornerSel, width-20, 0, this);
+//            int rightCornerHeight = isLeftSelection ? 21 : 24;
+//            //right shadow
+//            g2d.drawImage(rightShadow, width-6, rightCornerHeight, 6, height-rightCornerHeight, this);
+//
+//            background = !isLeftSelection ? Color.white : new Color(193,193,193);
+//            topGradient = !isLeftSelection ? topGradientSel : topGradientUnsel;
+//            //right tab background
+//            g2d.setColor(background);
+//            int backgroundStart = width/2;
+//            if( !isLeftSelection )
+//                backgroundStart += 4;
+//            g2d.fillRect(backgroundStart, 21, width-backgroundStart-6, height-21);
+//            //right tab top gradient
+//            int gradientStart = width/2;
+//            if( !isLeftSelection )
+//                gradientStart += 22;
+//            g2d.drawImage(topGradient, gradientStart, 0, width-gradientStart-20, 21, this);
+//
+//            //bottom shadow of unselected tab
+//            if( isLeftSelection ) {
+//                g2d.drawImage(bottomShadowUnsel, width/2, height-4, width/2-6, 5, this);
+//            } else {
+//                g2d.drawImage(bottomShadowUnsel, 4, height-4, width/2, 5, this);
+//            }
         }
 
         @Override

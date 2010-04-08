@@ -3489,14 +3489,16 @@ public class JavaCompletionProvider implements CompletionProvider {
             DeclaredType clsType = (DeclaredType)te.asType();            
             for (ExecutableElement ee : GeneratorUtils.findUndefs(controller, te)) {
                 if (startsWith(env, ee.getSimpleName().toString(), prefix)) {
-                    ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
-                    results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, true));
+                    TypeMirror tm = types.asMemberOf(clsType, ee);
+                    if (tm.getKind() == TypeKind.EXECUTABLE)
+                        results.add(JavaCompletionItem.createOverrideMethodItem(ee, (ExecutableType)tm, anchorOffset, true));
                 }
             }            
             for (ExecutableElement ee : GeneratorUtils.findOverridable(controller, te)) {
                 if (startsWith(env, ee.getSimpleName().toString(), prefix)) {
-                    ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
-                    results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, false));
+                    TypeMirror tm = types.asMemberOf(clsType, ee);
+                    if (tm.getKind() == TypeKind.EXECUTABLE)
+                        results.add(JavaCompletionItem.createOverrideMethodItem(ee, (ExecutableType)tm, anchorOffset, false));
                 }
             }
             if (prefix == null || startsWith(env, prefix, "get") || startsWith(env, prefix, "set") || startsWith(env, prefix, "is") ||
