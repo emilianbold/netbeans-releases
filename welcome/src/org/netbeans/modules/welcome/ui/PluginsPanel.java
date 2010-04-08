@@ -85,6 +85,7 @@ class PluginsPanel extends JPanel implements Constants {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                logUsage();
                 new ShowPluginManagerAction("installed").actionPerformed(e); //NOI18N
             }
         };
@@ -99,6 +100,7 @@ class PluginsPanel extends JPanel implements Constants {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                logUsage();
                 new ShowPluginManagerAction("available").actionPerformed(e); //NOI18N
             }
         };

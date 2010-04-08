@@ -119,9 +119,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Font used for drawing line numbers */
     private Font font;
     
-    /** Height of the line as it was calculated in EditorUI. */
-    private int lineHeight;
-
     /** Flag whether the gutter was initialized or not. The painting is disabled till the
      * gutter is not initialized */
     private boolean init;
@@ -322,13 +319,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             font = new Font("Monospaced", Font.PLAIN, font.getSize()-1); //NOI18N
         }
 
-        lineHeight = editorUI.getLineHeight();
-
         showLineNumbers = editorUI.lineNumberVisibleSetting;
-
         drawOverLineNumbers = AnnotationTypes.getTypes().isGlyphsOverLineNumbers().booleanValue();
-        
-        
         
         init = true;
 
@@ -349,7 +341,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         
         // enlarge the gutter so that inserting new lines into 
         // document does not cause resizing too often
-        dim.height += ENLARGE_GUTTER_HEIGHT * lineHeight;
+        dim.height += ENLARGE_GUTTER_HEIGHT * editorUI.getLineHeight();
         
         setPreferredSize(dim);
 
@@ -427,11 +419,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         JComponent comp = editorUI.getComponent();
         if (comp == null)
             return 0;
-        return highestLineNumber * lineHeight + (int)comp.getSize().getHeight();
+        return highestLineNumber * editorUI.getLineHeight() + (int)comp.getSize().getHeight();
     }
     
 
-    void paintGutterForView(Graphics g, View view, int y){
+    void paintGutterForView(Graphics g, View view, int y) {
         if (editorUI == null)
             return ;
         JTextComponent component = editorUI.getComponent();
@@ -451,18 +443,19 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
         int count = annos.getNumberOfAnnotations(line);
         AnnotationDesc anno = annos.getActiveAnnotation(line);
+        Image annoGlyph = anno != null ? anno.getGlyph() : null;
         
         if (showLineNumbers){
             boolean glyphHasIcon = false;
             if (line == lineWithAnno){
-                if (anno != null && !(anno.isDefaultGlyph()&&count == 1) && anno.getGlyph()!=null){
+                if (anno != null && !(anno.isDefaultGlyph() && count == 1) && annoGlyph != null){
                     glyphHasIcon = true;
                 }
             }
             if ((!glyphHasIcon) ||
                     (!drawOverLineNumbers) || 
                     (drawOverLineNumbers && line != lineWithAnno) ) {
-                g.drawString(String.valueOf(line + 1), glyphGutterWidth-lineNumberWidth-rightGap, y + editorUI.getLineAscent());
+                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + editorUI.getLineAscent());
             }
         }
 
@@ -471,26 +464,29 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             int xPos = (showLineNumbers) ? getLineNumberWidth() : 0;
             if (drawOverLineNumbers) {
                 xPos = getWidth() - glyphWidth;
-                if (count > 1)
+                if (count > 1) {
                     xPos -= glyphButtonWidth;
-            }
-
-            if (anno != null) {
-                // draw the glyph only when the annotation type has its own icon (no the default one)
-                // or in case there is more than one annotations on the line
-                if ( ! (count == 1 && anno.isDefaultGlyph()) ) {
-                    if (anno.getGlyph() != null)
-                        g.drawImage(anno.getGlyph(), xPos, y + (lineHeight-anno.getGlyph().getHeight(null)) / 2 + 1, null);
                 }
             }
 
-            // draw cycling button if there is more than one annotations on the line
-            if (count > 1)
-                if (anno.getGlyph() != null)
-                    g.drawImage(gutterButton, xPos+glyphWidth-1, y + (lineHeight-anno.getGlyph().getHeight(null)) / 2, null);
+            if (annoGlyph != null) {
+                int lineHeight = editorUI.getLineHeight();
+                int glyphHeight = annoGlyph.getHeight(null);
+
+                // draw the glyph only when the annotation type has its own icon (no the default one)
+                // or in case there is more than one annotations on the line
+                if ( ! (count == 1 && anno.isDefaultGlyph()) ) {
+                    g.drawImage(annoGlyph, xPos, y + (lineHeight - glyphHeight) / 2 + 1, null);
+                }
+
+                // draw cycling button if there is more than one annotations on the line
+                if (count > 1) {
+                    g.drawImage(gutterButton, xPos + glyphWidth - 1, y + (lineHeight - glyphHeight) / 2, null);
+                }
+            }
 
             // update the value with next line with some anntoation
-            lineWithAnno = annos.getNextLineWithAnnotation(line+1);
+            lineWithAnno = annos.getNextLineWithAnnotation(line + 1);
         }
     }
     
@@ -589,7 +585,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 int lineOffset = lineElem.getStartOffset();
                 Rectangle mtvRect = textUI.modelToView(component, lineOffset);
                 if (mtvRect == null) return;
-                repaint(0, mtvRect.y, (int)getSize().getWidth(), 3*lineHeight);
+                repaint(0, mtvRect.y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
                 checkSize();
             }catch(BadLocationException ble){
                 ErrorManager.getDefault().notify(ble);

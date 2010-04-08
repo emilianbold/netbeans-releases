@@ -380,10 +380,13 @@ public class ParameterInfoSupport {
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
-                        PhpElement declaration = occurence.getDeclaration();
-                        if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
-                            FunctionScope functionScope = (FunctionScope) declaration;
-                            return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                        Collection<? extends PhpElement> allDeclarations = occurence.getAllDeclarations();
+                        if (allDeclarations.size() > 0) {
+                            PhpElement declaration = allDeclarations.iterator().next();
+                            if (declaration instanceof FunctionScope && occurence.getAllDeclarations().size() == 1) {
+                                FunctionScope functionScope = (FunctionScope) declaration;
+                                return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                            }
                         }
                     }
                 }
