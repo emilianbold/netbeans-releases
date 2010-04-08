@@ -45,14 +45,15 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -84,20 +85,32 @@ public class Logo extends JPanel implements Constants, MouseListener {
         this.url = url;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_START_PAGE_LINK"); //NOI18N
+        rec.setParameters(new Object[] {url} );
+        rec.setLoggerName(Constants.USAGE_LOGGER.getName());
+        rec.setResourceBundle(NbBundle.getBundle(BundleSupport.BUNDLE_NAME));
+        rec.setResourceBundleName(BundleSupport.BUNDLE_NAME);
+
+        Constants.USAGE_LOGGER.log(rec);
         Utils.showURL( url );
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( url );
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( null );
     }
