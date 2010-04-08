@@ -621,17 +621,20 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                     DictionaryImpl projectDictionary = getProjectDictionary(p);
                     
                     if (projectDictionary != null) {
-                        result.add(new AddToDictionaryHint(this, projectDictionary, currentWord, "Add \"%s\" to the project's dictionary.", "1" + currentWord));
+                        String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToProjectDictionary");
+                        result.add(new AddToDictionaryHint(this, projectDictionary, currentWord, displayName, "1" + currentWord));
                     }
                 }
             
                 Locale locale = LocaleQuery.findLocale(file);
+                String displayName = NbBundle.getMessage(ComponentPeer.class, "FIX_ToPrivateDictionary");
 
-                result.add(new AddToDictionaryHint(this, getUsersLocalDictionary(locale), currentWord, "Add \"%s\" to your private dictionary.", "2" + currentWord));
+                result.add(new AddToDictionaryHint(this, getUsersLocalDictionary(locale), currentWord, displayName, "2" + currentWord));
             }
             
             if (!result.isEmpty()) {
-                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, "Misspelled word", result, document, span[0], span[1])));
+                String displayName = NbBundle.getMessage(ComponentPeer.class, "ERR_MisspelledWord");
+                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, result, document, span[0], span[1])));
             } else {
                 HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
             }
