@@ -303,8 +303,8 @@ public class ProjectXMLManagerTest extends TestBase {
                     Document doc = XMLUtil.parse(new InputSource(projectXML.toURI().toString()),
                             false, true, null, null);
                     Element project = doc.getDocumentElement();
-                    Element config = Util.findElement(project, "configuration", null); // NOI18N
-                    data = Util.findElement(config, "data", NbModuleProject.NAMESPACE_SHARED);
+                    Element config = XMLUtil.findElement(project, "configuration", null); // NOI18N
+                    data = XMLUtil.findElement(config, "data", NbModuleProject.NAMESPACE_SHARED);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 } catch (SAXException e) {

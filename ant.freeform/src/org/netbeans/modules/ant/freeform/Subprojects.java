@@ -46,15 +46,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -88,11 +87,11 @@ final class Subprojects implements SubprojectProvider {
      */
     private Set<Project> createSubprojects(Set<Project> subprojects) {
         Element config = project.getPrimaryConfigurationData();
-        Element subprjsEl = Util.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element subprjsEl = XMLUtil.findElement(config, "subprojects", FreeformProjectType.NS_GENERAL); // NOI18N
         if (subprjsEl != null) {
-            for (Element prjEl : Util.findSubElements(subprjsEl)) {
+            for (Element prjEl : XMLUtil.findSubElements(subprjsEl)) {
                 assert prjEl.getLocalName().equals("project") : "Bad element " + prjEl + " in <subprojects> for " + project;
-                String rawtext = Util.findText(prjEl);
+                String rawtext = XMLUtil.findText(prjEl);
                 assert rawtext != null : "Need text content for <project> in " + project;
                 String evaltext = project.evaluator().evaluate(rawtext);
                 if (evaltext == null) {

@@ -77,6 +77,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -456,7 +457,7 @@ public class ClasspathsTest extends TestBase {
         FileUtil.createData(new File(d, "s/ignored/file"));
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
-        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE)).
+        Element sf = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), XMLUtil.findElement(data, "view", Util.NAMESPACE)).
                 appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode(JavaProjectConstants.SOURCES_TYPE_JAVA));
@@ -547,7 +548,7 @@ public class ClasspathsTest extends TestBase {
         data.getElementsByTagName("properties").item(0).
                 appendChild(doc.createElementNS(Util.NAMESPACE, "property-file")).
                 appendChild(doc.createTextNode("config.properties"));
-        Element folders = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), Util.findElement(data, "view", Util.NAMESPACE));
+        Element folders = (Element) data.insertBefore(doc.createElementNS(Util.NAMESPACE, "folders"), XMLUtil.findElement(data, "view", Util.NAMESPACE));
         Element sf = (Element) folders.appendChild(doc.createElementNS(Util.NAMESPACE, "source-folder"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "label")).appendChild(doc.createTextNode("Sources #1"));
         sf.appendChild(doc.createElementNS(Util.NAMESPACE, "type")).appendChild(doc.createTextNode(JavaProjectConstants.SOURCES_TYPE_JAVA));
