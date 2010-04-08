@@ -998,8 +998,9 @@ public class RegistriesManagerImpl implements RegistriesManager {
             if (!temp.exists()) {
                 FileUtils.mkdirs(temp);
             }
-            
-            Locale.setDefault(new Locale("en", "US"));
+
+            //Issue #183611
+            //Locale.setDefault(new Locale("en", "US"));
             
             DownloadManager.getInstance().setLocalDirectory(temp);
             DownloadManager.getInstance().setFinishHandler(DummyFinishHandler.INSTANCE);

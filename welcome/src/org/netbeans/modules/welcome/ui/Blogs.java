@@ -59,13 +59,13 @@ import org.netbeans.modules.welcome.content.WebLink;
 class Blogs extends RSSFeedReaderPanel {
 
     public Blogs() {
-        super( InstallConfig.getDefault().isJavaFXInstalled() ? "BlogsJavaFX" : "Blogs", false ); // NOI18N
+        super( "Blogs", false ); // NOI18N
 
         add( buildBottomContent(), BorderLayout.SOUTH );
     }
 
     protected JComponent buildBottomContent() {
-        WebLink allBlogs = new WebLink( "AllBlogs", false ); // NOI18N
+        WebLink allBlogs = new WebLink( "AllBlogs", true ); // NOI18N
         BundleSupport.setAccessibilityProperties( allBlogs, "AllBlogs" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );

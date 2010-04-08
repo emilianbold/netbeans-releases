@@ -73,53 +73,45 @@ made subject to such option by the copyright holder.
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
-            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
+            <file name="tour.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
             </file>
 
-            <file name="whatsnew_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="200"/>
-            </file>
-
-            <file name="sampleproject_default.instance">
+            <file name="sampleproject.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ui.SampleProjectAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="200"/>
             </file>
 
-            <file name="learnmore_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learnmore.url">
+            <file name="whatsnew.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
-        
-        <folder name="GettingStartedLinksJavaFX">
 
-            <file name="sampleproject_default.instance">
+        <folder name="TutorialsLinks">
+            <file name="tutorial1.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial1.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ui.SampleProjectAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
                 <attr name="position" intvalue="100"/>
             </file>
-
-            <file name="getstarted_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/getstarted.url">
+            <file name="tutorial2.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial2.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
             </file>
-
-            <file name="tutorials_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorials.url">
+            <file name="tutorial3.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial3.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
             </file>
-
-            <file name="tour_default.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
+            <file name="tutorial4.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial4.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
             </file>
-
+            <file name="tutorial5.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tutorial5.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="500"/>
+            </file>
         </folder>
     </folder>
 

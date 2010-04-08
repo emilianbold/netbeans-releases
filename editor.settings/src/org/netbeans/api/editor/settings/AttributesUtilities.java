@@ -42,6 +42,7 @@
 package org.netbeans.api.editor.settings;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -139,21 +140,18 @@ public final class AttributesUtilities {
             LinkedList<AttributeSet> all = new LinkedList<AttributeSet>();
 
             for(AttributeSet s : sets) {
-                if (s instanceof AttributesUtilities.Composite) {
-                    all.addAll(((AttributesUtilities.Composite) s).getDelegates());
-                } else if (s instanceof AttributesUtilities.Proxy) {
-                    all.add(((AttributesUtilities.Proxy) s).getDelegate());
+                if (s instanceof AttributesUtilities.CompositeAttributeSet) {
+                    all.addAll(((AttributesUtilities.CompositeAttributeSet) s).getDelegates());
                 } else if (s != null && s != SimpleAttributeSet.EMPTY) {
                     all.add(s);
                 }
             }
 
-            if (all.size() == 0) {
-                return SimpleAttributeSet.EMPTY;
-            } if (all.size() == 1) {
-                return all.get(0);
-            } else {
-                return new Composite(all);
+            switch (all.size()) {
+                case 0: return SimpleAttributeSet.EMPTY;
+                case 1: return all.get(0);
+                case 2: return new Composite2(all.get(0), all.get(1));
+                default: return new BigComposite(all);
             }
         }
     }
@@ -161,10 +159,8 @@ public final class AttributesUtilities {
     private static List<AttributeSet> dismantle(AttributeSet set) {
         ArrayList<AttributeSet> sets = new ArrayList<AttributeSet>();
         
-        if (set instanceof Proxy) {
-            sets.addAll(dismantle(((Proxy) set).getDelegate()));
-        } else if (set instanceof Composite) {
-            List<AttributeSet> delegates = ((Composite) set).getDelegates();
+        if (set instanceof CompositeAttributeSet) {
+            Collection<? extends AttributeSet> delegates = ((CompositeAttributeSet) set).getDelegates();
             for(AttributeSet delegate : delegates) {
                 sets.addAll(dismantle(delegate));
             }
@@ -281,7 +277,7 @@ public final class AttributesUtilities {
 
     } // End of Immutable class
     
-    private static final class Proxy implements AttributeSet {
+    private static final class Proxy implements AttributeSet, CompositeAttributeSet {
         
         private AttributeSet original;
         
@@ -289,8 +285,8 @@ public final class AttributesUtilities {
             this.original = original;
         }
 
-        public AttributeSet getDelegate() {
-            return original;
+        public Collection<? extends AttributeSet> getDelegates() {
+            return Arrays.asList(original);
         }
         
         public boolean isEqual(AttributeSet attr) {
@@ -334,16 +330,20 @@ public final class AttributesUtilities {
         }
     } // End of Proxy class
 
-    private static final class Composite implements AttributeSet {
+    private static interface CompositeAttributeSet {
+        public Collection<? extends AttributeSet> getDelegates();
+    }
+
+    private static final class BigComposite implements AttributeSet, CompositeAttributeSet {
         
-        private final List<AttributeSet> delegates;
+        private final AttributeSet[] delegates;
         
-        public Composite(List<AttributeSet> delegates) {
-            this.delegates = Collections.unmodifiableList(delegates);
+        public BigComposite(List<AttributeSet> delegates) {
+            this.delegates = delegates.toArray(new AttributeSet[delegates.size()]);
         }
 
-        public List<AttributeSet> getDelegates() {
-            return delegates;
+        public Collection<? extends AttributeSet> getDelegates() {
+            return Arrays.asList(delegates);
         }
         
         public boolean isEqual(AttributeSet attr) {
@@ -429,5 +429,92 @@ public final class AttributesUtilities {
 
             return allKeys;
         }
-    } // End of Composite class
+    } // End of BigComposite class
+
+    private static final class Composite2 implements AttributeSet, CompositeAttributeSet {
+
+        private final AttributeSet delegate0;
+        private final AttributeSet delegate1;
+
+        public Composite2(AttributeSet delegate0, AttributeSet delegate1) {
+            this.delegate0 = delegate0;
+            this.delegate1 = delegate1;
+        }
+
+        public Collection<? extends AttributeSet> getDelegates() {
+            return Arrays.asList(delegate0, delegate1);
+        }
+
+        public boolean isEqual(AttributeSet attr) {
+            return containsAttributes(attr) && attr.containsAttributes(this);
+        }
+
+        public boolean containsAttributes(AttributeSet attributes) {
+            for(Enumeration<?> keys = attributes.getAttributeNames(); keys.hasMoreElements(); ) {
+                Object key = keys.nextElement();
+                Object value = attributes.getAttribute(key);
+
+                if (!containsAttribute(key, value)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public boolean isDefined(Object key) {
+            return delegate0.isDefined(key) || delegate1.isDefined(key);
+        }
+
+        public Object getAttribute(Object key) {
+            if (key instanceof String && key.equals(ATTR_DISMANTLED_STRUCTURE)) {
+                return dismantle(this);
+            }
+
+            for(AttributeSet delegate : new AttributeSet[] {delegate0, delegate1}) {
+            	AttributeSet current = delegate;
+            	while (current != null) {
+            		if (current.isDefined(key)) {
+                            return current.getAttribute(key);
+            		}
+            		current = current.getResolveParent();
+            	}
+            }
+
+            return null;
+        }
+
+        public AttributeSet getResolveParent() {
+            return null;
+        }
+
+        public Enumeration<?> getAttributeNames() {
+            return Collections.enumeration(getAllKeys());
+        }
+
+        public int getAttributeCount() {
+            return getAllKeys().size();
+        }
+
+        public AttributeSet copyAttributes() {
+            return createImmutable(delegate0, delegate1);
+        }
+
+        public boolean containsAttribute(Object key, Object value) {
+            return delegate0.containsAttribute(key, value) || delegate1.containsAttribute(key, value);
+        }
+
+        private Collection<?> getAllKeys() {
+            HashSet<Object> allKeys = new HashSet<Object>();
+
+            for(AttributeSet delegate : new AttributeSet[] {delegate0, delegate1}) {
+                for(Enumeration<?> keys = delegate.getAttributeNames(); keys.hasMoreElements(); ) {
+                    Object key = keys.nextElement();
+                    allKeys.add(key);
+                }
+            }
+
+            return allKeys;
+        }
+    } // End of Composite2 class
 }

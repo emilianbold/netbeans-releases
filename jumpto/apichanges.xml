@@ -105,8 +105,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
-        
+        <change id="GoToFile">
+            <api name="general"/>
+            <summary>Added SPI for Go to File dialog</summary>
+            <version major="1" minor="15"/>
+            <date day="7" month="4" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                 Added SPI to allow friend modules to participate on searching files
+                 in the Go To File dialog. The supplied FileProvider can handle file
+                 search in recognized source groups.
+            </description>
+            <class package="org.netbeans.spi.jumpto.file" name="FileProviderFactory"/>
+            <class package="org.netbeans.spi.jumpto.file" name="FileProvider"/>
+            <issue number="182884"/>
+        </change>
         <change id="GoToSymbol">
             <api name="general"/>
             <summary>Added SPI for Go to Symbol dialog</summary>
@@ -119,7 +134,7 @@ is the proper place.
                  Added SPI to provide content of the for Go to Symbol dialog.
             </description>
             <issue number="138345"/>
-        </change>                
+        </change>
 
         <change id="(Provider.Result.pendingResult">
             <api name="general"/>

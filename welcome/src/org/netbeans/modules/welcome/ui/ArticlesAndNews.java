@@ -64,12 +64,10 @@ class ArticlesAndNews extends RSSFeedReaderPanel {
 
     private RSSFeed feed;
 
-    private static final int MAX_ARTICLES_COUNT = 3;
+    private static final int MAX_ARTICLES_COUNT = 5;
 
     public ArticlesAndNews() {
-        super( InstallConfig.getDefault().isJavaFXInstalled()
-                ? "ArticlesAndNewsJavaFX"  // NOI18N
-                : "ArticlesAndNews", true ); // NOI18N
+        super( "ArticlesAndNews", true ); // NOI18N
         add( buildBottomContent(), BorderLayout.SOUTH );
     }
 
@@ -87,34 +85,30 @@ class ArticlesAndNews extends RSSFeedReaderPanel {
                 url += ideId;
             }
         }
-        feed = new ArticlesAndNewsRSSFeed( url, BundleSupport.getURL(
-                InstallConfig.getDefault().isJavaFXInstalled() ? "NewsJavaFX" : "News"), showProxyButton ); // NOI18N
+        feed = new ArticlesAndNewsRSSFeed( url, BundleSupport.getURL("News"), showProxyButton ); // NOI18N
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
     
     protected JComponent buildBottomContent() {
-        InstallConfig ic = InstallConfig.getDefault();
-        WebLink news = new WebLink( ic.isJavaFXInstalled() ? "AllNewsJavaFX" : "AllNews", false ); // NOI18N
-        BundleSupport.setAccessibilityProperties( news, ic.isJavaFXInstalled() ? "AllNewsJavaFX" : "AllNews" ); //NOI18N
+        WebLink news = new WebLink("AllNews", true); // NOI18N
+        BundleSupport.setAccessibilityProperties( news, "AllNews" ); //NOI18N
         
-        WebLink articles = new WebLink( "AllArticles", false ); // NOI18N
+        WebLink articles = new WebLink( "AllArticles", true); // NOI18N
         BundleSupport.setAccessibilityProperties( articles, "AllArticles" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque(false);
 
-        panel.add( new JLabel(), new GridBagConstraints(0,1,1,1,1.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
-                new Insets(5,5,0,5),0,0) );
-        panel.add( news, new GridBagConstraints(1,1,1,1,0.0,0.0,
+        panel.add( news, new GridBagConstraints(0,1,1,1,0.0,0.0,
                 GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,
-                new Insets(5,5,0,15),0,0) );
-        if( ! ic.isJavaFXInstalled() ) {
-            panel.add( articles, new GridBagConstraints(2,1,1,1,0.0,0.0,
-                    GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,
-                    new Insets(5,5,0,5),0,0) );
-        }
+                new Insets(5,0,0,15),0,0) );
+        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
+                new Insets(5,5,0,0),0,0) );
+        panel.add( articles, new GridBagConstraints(2,1,1,1,0.0,0.0,
+                GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,
+                new Insets(5,5,0,0),0,0) );
 
         return panel;
     }
