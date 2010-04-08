@@ -57,6 +57,8 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -100,17 +102,24 @@ public final class RefactoringContextActionsProvider
         return new RefactoringContextActionsProvider(fileObjectList);
     }
 
+    /**
+      * @deprecated use @see #getMenuItems(boolean,Lookup)
+      */
     public JComponent[] getMenuItems(boolean reset) {
+        return getMenuItems(reset, null);
+    }
+
+    public JComponent[] getMenuItems(boolean reset, Lookup context) {
         assert EventQueue.isDispatchThread();
         if (menuItems == null || reset) {
-            List<JComponent> l = createMenuItems();
+            List<JComponent> l = createMenuItems(context);
             menuItems = l.toArray(new JComponent[l.size()]);
         }
 
         return menuItems;
     }
 
-    private List<JComponent> createMenuItems() {
+    private List<JComponent> createMenuItems(Lookup context) {
         if (fileObjectList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -122,6 +131,11 @@ public final class RefactoringContextActionsProvider
                 InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
                 if (ic != null) {
                     Object instance = ic.instanceCreate();
+
+                    if(instance instanceof ContextAwareAction) {
+                        instance = ((ContextAwareAction)instance).createContextAwareInstance(context);
+                    }
+                    
                     resolveInstance(instance, result);
                 }
             } catch (DataObjectNotFoundException ex) {
