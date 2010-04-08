@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,49 +34,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
-import java.util.logging.Level;
+import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends BugzillaCommand {
+public class SubmitCommand extends BugzillaCommand {
 
     private final TaskRepository taskRepository;
+    private final TaskData data;
+    private RepositoryResponse rr;
+    private boolean wasNew;
+    private String stringValue;
 
-    public ValidateCommand(TaskRepository taskRepository) {
+    public SubmitCommand(TaskRepository taskRepository, TaskData data) {
         this.taskRepository = taskRepository;
+        this.data = data;
+        wasNew = data.isNew();
     }
 
     @Override
-    public void execute() throws CoreException {
-        try {
-            BugzillaClient client = Bugzilla.getInstance().getRepositoryConnector().getClientManager().getClient(taskRepository, new NullProgressMonitor());
-            client.validate(new NullProgressMonitor());
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex); // XXX handle errors
-        }
+    public void execute() throws CoreException, IOException, MalformedURLException {
+        rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
+        // XXX evaluate rr
+    }
+
+    public RepositoryResponse getRepositoryResponse() {
+        return rr;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ValidateCommand [repository=");                              // NOI18N
-        sb.append(taskRepository.getUrl());
-        sb.append("]");                                                         // NOI18N
-        return sb.toString();
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder();
+            if(wasNew) {
+                sb.append("SubmitCommand new issue [repository=");              // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            } else {
+                sb.append("SubmitCommand [issue #");                            // NOI18N
+                sb.append(BugzillaIssue.getID(data));
+                sb.append(",repository=");                                      // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            }
+            stringValue = sb.toString();
+        }
+        return stringValue;
     }
-
-
 }
