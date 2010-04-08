@@ -102,7 +102,7 @@ public class Utils {
             Font systemDefaultFont = UIManager.getFont("TextField.font"); // NOI18N
             return (systemDefaultFont != null)
                 ? systemDefaultFont.getSize()
-                : 12;
+                : 11;
         }
     }
 
