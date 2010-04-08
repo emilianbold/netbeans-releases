@@ -99,7 +99,20 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
 
     public boolean isValid() {
-        boolean result = kind != null && component != null && component.valid();
+        boolean result;
+        synchronized (this) {
+            result = validationError == null;
+            if (!result) {
+                //if we don't do this, the error message is immediately hidden
+                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, validationError);
+            }
+        }
+        if (result) {
+            result = kind != null && component != null && component.valid();
+        }
+        if (result) {
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        }
         return result;
     }
 
@@ -117,6 +130,9 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         this.kind = k;
         if (component != null) {
             component.setDepKind(k);
+        }
+        synchronized(this) {
+            validationError = null;
         }
     }
     public void storeSettings(Map<String, Object> settings) {
@@ -138,11 +154,31 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
 
     public void stateChanged(ChangeEvent e) {
+        boolean removeError = false;
+        synchronized(this) {
+            removeError = validationError != null;
+            validationError = null;
+        }
+        if (removeError) {
+            this.wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        }
         supp.fireChange();
     }
-    private static final String MANIFEST_APP_TYPE = "Application-Type"; //NOI18N
-
+    //Cache the error message from asynch validation, otherwise it will be
+    //lost immediately
+    private String validationError;
     public void validate() throws WizardValidationException {
+        try {
+            doValidate();
+        } catch (WizardValidationException ex) {
+            synchronized(this) {
+                validationError = ex.getLocalizedMessage();
+            }
+            throw ex;
+        }
+    }
+
+    private void doValidate() throws WizardValidationException {
         assert !EventQueue.isDispatchThread();
         //Here we do the heavy lifting.  Validate that the files are real and
         //correctly directories or files.  Then actually read the JAR files
@@ -179,6 +215,7 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                         throw new WizardValidationException(component, msg, msg);
                     }
                     ProjectKind jarKind = ProjectKind.forJarFile(origin);
+                    System.err.println("JAR KIND IS " + jarKind);
                     if (jarKind != null) {
                         if (jarKind.isApplication()) {
                             String msg = NbBundle.getMessage (ChooseSigOrExpFilePanelVisual.class,
@@ -232,7 +269,7 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                 //XXX check for circular dependencies if target is library project
                 JCProject jp = p.getLookup().lookup(JCProject.class);
                 if (jp != null) {
-                    if (pkind != null && (pkind.isClassic() && !jp.kind().isClassic())) {
+                    if (pkind != null && (pkind.isClassic() != jp.kind().isClassic())) {
                         throw new WizardValidationException(component,
                                 "Classic -> Extended dep not allowed", NbBundle.getMessage(ChooseOriginWizardPanel.class, //NOI18N
                                 "ERR_CLASSIC_TO_EXT_DEPENDENCY")); //NOI18N
@@ -269,19 +306,18 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         }
         assert realKind != null : "Kind not found"; //NOI18N
         settings.put(PROP_ACTUAL_DEP_KIND, realKind);
+        System.err.println("ACTUAL DEP KIND: " + realKind);
         switch (realKind) {
-            case CLASSIC_LIB_JAR:
             case EXTENSION_LIB_JAR:
-                settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.SIG_FILE);
-                iter.setIntermediatePanelKind(IntermediatePanelKind.SIG_FILE);
+                settings.remove(PROP_INTERMEDIATE_PANEL_KIND);
+                iter.setIntermediatePanelKind(null);
                 break;
-
+            case CLASSIC_LIB_JAR:
             case JAVA_PROJECT:
             case RAW_JAR:
                 settings.put(PROP_INTERMEDIATE_PANEL_KIND, IntermediatePanelKind.EXP_FILE);
                 iter.setIntermediatePanelKind(IntermediatePanelKind.EXP_FILE);
                 break;
-
             default:
                 settings.remove(PROP_INTERMEDIATE_PANEL_KIND);
                 iter.setIntermediatePanelKind(null);
@@ -289,6 +325,9 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
     }
     
     public void prepareValidation() {
+        synchronized(this) {
+            validationError = null;
+        }
         //do nothing
     }
 }
