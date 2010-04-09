@@ -165,8 +165,10 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             e.printStackTrace();
         }
         MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-        //same fallback is in nbm-maven-plugin
-        return prj.getGroupId() + "." + prj.getArtifactId(); //NOI18N
+        //same fallback is in nbm-maven-plugin, keep it synchronized with AbstractNbmMojo.createDefaultDescriptor
+        String codename = prj.getGroupId() + "." + prj.getArtifactId(); //NOI18N
+        codename = codename.replaceAll( "-", "." ); //NOI18N
+        return codename;
     }
 
     @Override

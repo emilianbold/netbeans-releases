@@ -466,10 +466,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
             // preinitialize outside of AWT
             new DynaMenuModel();
         }
-        DataFolder master;
-        boolean icon;
-        MenuFolder slave;
-        DynaMenuModel dynaModel;
+        final DataFolder master;
+        final boolean icon;
+        final MenuFolder slave;
+        final DynaMenuModel dynaModel;
 	
         /** Constructor. */
         public LazyMenu(final DataFolder df, boolean icon) {
@@ -556,7 +556,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
         @Override
         public void run() {
             if (master == null) {
-                Mutex.EVENT.readAccess(this);
                 return;
             }
             updateUI();
