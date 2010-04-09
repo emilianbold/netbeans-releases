@@ -55,13 +55,18 @@ import org.openide.xml.XMLUtil;
 
 /* package */ abstract class Task {
 
+    private static int scheduledTasks;
+
     private final IOContainer container;
     private final Terminal terminal;
 
     /**
      * Schedule this task to be performed on the EDT, or perform it now.
      */
-    public final void dispatch() {
+    public final void post() {
+
+	scheduledTasks++;
+
 	if (! SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
 		@Override
@@ -70,12 +75,26 @@ import org.openide.xml.XMLUtil;
 		}
 	    });
 	    return;
+	} else {
+	    dispatch();
 	}
-	if (terminal().isDisposed()) {
-	    // closeInputOutput has been called
-	    return;
+    }
+
+    private void dispatch() {
+	try {
+	    if (terminal().isDisposed()) {
+		// closeInputOutput has been called
+		return;
+	    } else {
+		perform();
+	    }
+	} finally {
+	    scheduledTasks--;
 	}
-	perform();
+    }
+
+    static boolean isQuiescent() {
+	return scheduledTasks == 0;
     }
 
     protected abstract void perform();

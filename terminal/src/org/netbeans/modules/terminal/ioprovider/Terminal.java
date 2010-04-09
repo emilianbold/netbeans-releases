@@ -565,7 +565,7 @@ public final class Terminal extends JComponent {
 
     private void updateName() {
 	Task task = new Task.UpdateName(ioContainer, this);
-	task.dispatch();
+	task.post();
     }
 
     private boolean isBooleanStateAction(Action a) {
