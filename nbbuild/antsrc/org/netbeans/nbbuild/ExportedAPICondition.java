@@ -39,7 +39,6 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.IOException;
 import java.util.Hashtable;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -51,8 +50,6 @@ import org.apache.tools.ant.taskdefs.condition.Condition;
  * This is true if any of the following hold:
  * <ol>
  * <li>The module lists public API packages.
- * <li>The module lists friend API packages, and at least one friend is external (not known in module universe).
- * <li>The module lists friend API packages, and at least one friend is located in a different cluster.
  * </ol>
  * This condition must be called from a module build, which is why it accepts no parameters:
  * various properties are picked up from the project. Only works for nb.org modules.
@@ -71,6 +68,7 @@ public class ExportedAPICondition extends ProjectComponent implements Condition 
             log("Public API", Project.MSG_VERBOSE);
             return true;
         }
+        /* Disabled to avoid spamming api-changes@netbeans.org.
         ModuleListParser mlp;
         try {
             mlp = new ModuleListParser(props, ModuleType.NB_ORG, getProject());
@@ -91,6 +89,7 @@ public class ExportedAPICondition extends ProjectComponent implements Condition 
             }
         }
         log("No friends outside cluster", Project.MSG_VERBOSE);
+         */
         return false;
     }
 
