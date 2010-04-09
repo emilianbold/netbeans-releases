@@ -106,7 +106,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
         public void propertyChange(PropertyChangeEvent evt) {
             Object newV = evt.getNewValue();
             if (Boolean.TRUE.equals(newV)) {
-                puChanged();
+                //puChanged();//see issue #183473
             }
         }
     };
