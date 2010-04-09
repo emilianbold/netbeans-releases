@@ -103,7 +103,6 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             if (expFile != null && kind.supportedArtifacts().contains(ArtifactKind.EXP_FILE)) {
                 paths.put(ArtifactKind.EXP_FILE, expFile.getAbsolutePath());
             }
-            System.err.println("sigFile is " + sigFile);
             if (sigFile != null && kind.supportedArtifacts().contains(ArtifactKind.SIG_FILE)) {
                 paths.put(ArtifactKind.SIG_FILE, sigFile.getAbsolutePath());
             }
@@ -129,7 +128,6 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
 
     void setIntermediatePanelKind(IntermediatePanelKind kind) {
         assert !EventQueue.isDispatchThread();
-        System.err.println("setIntermediatePanelKind " + kind);
         synchronized (this) {
             this.intermediatePanelKind = kind;
         }
@@ -139,9 +137,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             //get the previously computed set of panels
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    System.err.println("Firing steps change");
                     supp.fireChange();
-                    System.err.println("GetPanels length returns " + getPanels().length);
                 }
             });
         } catch (InterruptedException ex) {

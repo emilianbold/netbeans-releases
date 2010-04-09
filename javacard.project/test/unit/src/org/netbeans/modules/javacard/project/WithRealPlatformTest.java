@@ -172,8 +172,6 @@ public class WithRealPlatformTest extends AbstractJCProjectTest {
         assertNotNull (project.getPlatform());
         assertTrue (project.getPlatform() instanceof DOB.PForm);
         assertTrue (project.getCard() instanceof DOB.PForm.C.CD);
-        System.err.println("PROJECT PLATFORM " + project.getPlatform());
-        System.err.println("PROJECT CARD " + project.getCard());
         DOB.PForm pform = (DOB.PForm) project.getPlatform();
         ClassPath processorPath = project.getProcessorClassPath();
         assertNotNull (processorPath);
@@ -218,7 +216,6 @@ public class WithRealPlatformTest extends AbstractJCProjectTest {
 
         @Override
         protected DataObject handleFindDataObject(FileObject fo, RecognizedFiles recognized) throws IOException {
-            System.err.println("Find data object " + fo.getPath());
             if (ext.equals (fo.getExt())) {
                 DataObject result = new DOB (fo, this);
                 recognized.markRecognized(fo);
