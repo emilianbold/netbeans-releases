@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.wlm.project</friend>
                 <friend>org.netbeans.modules.xml.validation</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
+                <friend>org.netbeans.modules.soa.wsdlui.api</friend>
                 <friend>org.netbeans.modules.xml.xam.ui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
