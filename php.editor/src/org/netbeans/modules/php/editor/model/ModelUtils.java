@@ -38,11 +38,13 @@
  */
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -266,7 +268,9 @@ public class ModelUtils {
             final QuerySupport.Kind nameKind, final String... elementName) {
         return filter(allElements, new ElementFilter<T>() {
             public boolean isAccepted(T element) {
-                return (elementName.length == 0 || nameKindMatch(element.getName(), nameKind, elementName));
+                final PhpElementKind kind = element.getPhpElementKind();
+                boolean caseSensitive = EnumSet.of(PhpElementKind.VARIABLE, PhpElementKind.FIELD).contains(kind);
+                return (elementName.length == 0 || nameKindMatch(!caseSensitive, element.getName(), nameKind, elementName));
             }
         });
     }

@@ -409,7 +409,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        public String getInsertPrefix() {
+        public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             String superTemplate = super.getInsertPrefix();
             if (superTemplate != null) {
@@ -427,7 +427,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 if (param.startsWith("&")) {//NOI18N
                     param = param.substring(1);
                 }
-                template.append(param);
+                template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
 
                 if (i < params.size() - 1){
                     template.append(", "); //NOI18N
@@ -492,11 +492,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     formatter.appendText(", "); // NOI18N
                 }
 
+                final String paramTpl = parameter.asString(true);
                 if (!parameter.isMandatory()) {
-                    formatter.appendText(parameter.asString(true));
+                    formatter.appendText(paramTpl);
                 } else {
                     formatter.emphasis(true);
-                    formatter.appendText(parameter.asString(true));
+                    formatter.appendText(paramTpl);
                     formatter.emphasis(false);
                 }
             }
