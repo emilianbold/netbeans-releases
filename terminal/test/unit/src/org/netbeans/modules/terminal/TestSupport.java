@@ -96,8 +96,11 @@ public class TestSupport extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+	setUp(true);
+    }
+
+    protected void setUp(boolean select) throws Exception {
 	System.out.printf("TestSupport.setUp()\n");
-	System.out.printf("setUp()\n");
 
 	if (defaultContainer) {
 	    ioContainer = IOContainer.getDefault();
@@ -135,8 +138,10 @@ public class TestSupport extends NbTestCase {
 
 	io = ioProvider.getIO("test", actions, ioContainer);
 	assertNotNull ("Could not get InputOutput", io);
-	io.select();
-	sleep(1);	// give select time to take effect
+	if (select) {
+	    io.select();
+	    sleep(1);	// give select time to take effect
+	}
     }
 
     @Override

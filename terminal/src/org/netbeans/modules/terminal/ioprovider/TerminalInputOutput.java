@@ -263,7 +263,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         @Override
         protected void setIcon(Icon icon) {
 	    TerminalInputOutput.this.icon = icon;
-	    ioContainer.setIcon(terminal, icon);
+	    Task task = new Task.SetIcon(ioContainer, terminal, icon);
+	    task.dispatch();
         }
 
         @Override
@@ -273,8 +274,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         @Override
         protected void setToolTipText(String text) {
-	    TerminalInputOutput.this.toolTipText = toolTipText;
-	    ioContainer.setToolTipText(terminal, toolTipText);
+	    TerminalInputOutput.this.toolTipText = text;
+	    Task task = new Task.SetToolTipText(ioContainer, terminal, text);
+	    task.dispatch();
         }
     }
 

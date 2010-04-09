@@ -57,12 +57,13 @@ public class ShellTermAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+	Config config = Config.getShellConfig();
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport(config);
 
 	IOContainer container = TerminalIOProviderSupport.getIOContainer();
 	container = null;	// work with default IO container
 
 	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeRichCommand(iop, container, Config.getShellConfig());
+	support.executeRichCommand(iop, container);
     }
 }
