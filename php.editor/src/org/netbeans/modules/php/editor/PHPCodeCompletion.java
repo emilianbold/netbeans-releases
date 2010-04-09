@@ -386,21 +386,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             LOGGER.fine(String.format("complete() took %d ms, result contains %d items", time, completionResult.getItems().size()));
         }
 
-        // a hotfix for #151890
-        // TODO: move the check forward to optimize performance
-        /*List<CompletionProposal> filteredProposals = completionResult;
-
-        if (!completionContext.isPrefixMatch()){
-            filteredProposals = new ArrayList<CompletionProposal>();
-
-            for (CompletionProposal proposal : completionResult){
-                if (prefix.equals(proposal.getName())){
-                    filteredProposals.add(proposal);
-                }
-            }
-        }*/
-        // end of hotfix for #151890
-
         return completionResult;
     }
 
@@ -460,6 +445,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private void autoCompleteNewClass(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
+        if (request.prefix.isEmpty()) {
+            autoCompleteClassNames(completionResult, request, false);
+            return;
+        }
         final QualifiedName prefix = QualifiedName.create(request.prefix).toNotFullyQualified();
         final boolean isCamelCase = isCamelCaseForTypeNames(request.prefix);
         
