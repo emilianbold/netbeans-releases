@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
+import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -54,6 +57,8 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
 
     private final TplTopColoringLexer scanner;
     private TokenFactory<TplTopTokenId> tokenFactory;
+    private final InputAttributes inputAttributes;
+    private final TplMetaData tplMetaData;
 
     private class CompoundState {
         private State lexerState;
@@ -105,7 +110,13 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             state = (CompoundState)info.state();
         }
         this.tokenFactory = info.tokenFactory();
-        scanner = new TplTopColoringLexer(info, state);
+        this.inputAttributes = info.inputAttributes();
+        if (inputAttributes != null) {
+            this.tplMetaData = (TplMetaData) inputAttributes.getValue(LanguagePath.get(TplTopTokenId.language()), TplMetaData.class);
+        } else {
+            this.tplMetaData = TplUtils.getProjectPropertiesForFileObject(null);
+        }
+        scanner = new TplTopColoringLexer(info, state, tplMetaData);
     }
 
     /**
@@ -157,11 +168,16 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private State state;
         private final LexerInput input;
         private SubState subState;
+        private final TplMetaData metadata;
 
-        public TplTopColoringLexer(LexerRestartInfo<TplTopTokenId> info, CompoundState state) {
+        public TplTopColoringLexer(LexerRestartInfo<TplTopTokenId> info, CompoundState state, TplMetaData metadata) {
             this.input = info.input();
             this.state = state.lexerState;
             this.subState = state.lexerSubState;
+            if (metadata != null)
+                this.metadata = metadata;
+            else
+                this.metadata = TplUtils.getProjectPropertiesForFileObject(null);
         }
 
         public TplTopTokenId nextToken() {
@@ -378,31 +394,19 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         private boolean isSmartyOpenDelimiter(CharSequence text) {
-            if (SmartyFramework.useCustomDelimiters) {
-                return (text.toString().endsWith(SmartyFramework.DELIMITER_CUSTOM_OPEN));
-            }
-            else {
-                return (text.toString().endsWith(SmartyFramework.DELIMITER_DEFAULT_OPEN));
-            }
+            return (text.toString().endsWith(metadata.getOpenDelimiter()));
         }
 
         private boolean isSmartyCloseDelimiter(CharSequence text) {
-            if (SmartyFramework.useCustomDelimiters) {
-                return (text.toString().endsWith(SmartyFramework.DELIMITER_CUSTOM_CLOSE));
-            }
-            else {
-                return (text.toString().endsWith(SmartyFramework.DELIMITER_DEFAULT_CLOSE));
-                }
+            return (text.toString().endsWith(metadata.getCloseDelimiter()));
         }
         
         private int getOpenDelimiterLength() {
-            return (SmartyFramework.useCustomDelimiters?
-                SmartyFramework.DELIMITER_CUSTOM_OPEN.length() : SmartyFramework.DELIMITER_DEFAULT_OPEN.length());
+            return metadata.getOpenDelimiter().length();
         }
 
         private int getCloseDelimiterLength() {
-            return (SmartyFramework.useCustomDelimiters?
-                SmartyFramework.DELIMITER_CUSTOM_CLOSE.length() : SmartyFramework.DELIMITER_DEFAULT_CLOSE.length());
+            return metadata.getCloseDelimiter().length();
         }
 
         private String readNextWord(int lastChar) {

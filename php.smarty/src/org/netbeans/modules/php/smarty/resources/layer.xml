@@ -6,7 +6,7 @@
     <folder name="CslPlugins">
         <folder name="text">
             <folder name="x-tpl">
-                <attr name="useCustomEditorKit" boolvalue="false"/>
+                <attr name="useCustomEditorKit" boolvalue="true"/>
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.smarty.editor.gsf.TplLanguage"/>
                 </file>
@@ -30,7 +30,13 @@
                     <file name="org-netbeans-modules-php-editor-PHPCodeCompletion.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
                 </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.smarty.editor.TplKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.php.smarty.editor.TplKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
+                </file>
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
@@ -52,12 +58,60 @@
                         </folder>
                     </folder>
                 </folder>
-            </folder>
-            <folder name="x-tpl-inner">
-                <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId.language"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
-                </file>
+                <folder name="Popup">
+                    <file name="in-place-refactoring">
+                    <attr intvalue="680" name="position"/></file>
+
+                    <folder name="goto">
+                        <attr intvalue="500" name="position"/>
+                        <attr name="displayName" stringvalue="org.netbeans.modules.csl.core.Bundle#generate-goto-popup"/>
+                        <file name="goto">
+                        <attr intvalue="600" name="position"/></file>
+                    </folder>
+
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr intvalue="1200" name="position"/>
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
+
+                    <file name="format">
+                    <attr intvalue="750" name="position"/></file>
+
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr intvalue="780" name="position"/>
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
+                </folder>
+
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-csl-hints-GsfUpToDateStateProviderFactory.instance"/>
+
+                    <file name="org-netbeans-modules-csl-editor-semantic-OccurrencesMarkProviderCreator.instance"/>
+                </folder>
+
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
+                    <attr intvalue="1200" name="position"/></file>
+                </folder>
+
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder>
+
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance"/>
+                </folder>
+
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
+                </folder>
+
+                <file name="org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance">
+                    <attr methodvalue="org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create" name="instanceCreate"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>
+
+                <!--<file name="org-netbeans-modules-csl-core-TLIndexerFactory.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/></file>-->
             </folder>
         </folder>
     </folder>
@@ -70,7 +124,7 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <!-- eof GSF -->
-                    <folder name="Actions">
+                <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="500"/>
@@ -96,9 +150,9 @@
                         <attr name="position" intvalue="1300"/>
                     </file>
                     <file name="RefactoringAll.shadow">
-			<attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
-			<attr name="position" intvalue="850"/>
-		    </file>
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="850"/>
+                    </file>
                     <file name="org-openide-actions-ToolsAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="1200"/>
@@ -119,6 +173,11 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1100"/>
                     </file>
+                </folder>
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-php-smarty-editor-TplDataLoader.instance">
+                        <attr intvalue="10998" name="position"/>
+                    <attr name="displayName" stringvalue="TPL"/></file>
                 </folder>
             </folder>
         </folder>
@@ -156,6 +215,25 @@
             <folder name="text">
                 <file name="x-tpl" url="TplExample"/>
             </folder>
+        </folder>
+    </folder>
+
+    <!-- PHP registrations -->
+    <folder name="PHP">
+        <folder name="Frameworks">
+            <file name="org-netbeans-modules-php-smarty-SmartyPhpFrameworkProvider.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.SmartyPhpFrameworkProvider.getInstance"/>
+                <attr name="position" intvalue="80"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Hidden">
+        <folder name="PathRecognizers">
+            <file name="org-netbeans-modules-csl-core-PathRecognizerImpl-text-x-tpl.instance">
+                <attr name="mimeType" stringvalue="text/x-tpl"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.PathRecognizer"/>
+            <attr methodvalue="org.netbeans.modules.csl.core.PathRecognizerImpl.createInstance" name="instanceCreate"/></file>
         </folder>
     </folder>
 

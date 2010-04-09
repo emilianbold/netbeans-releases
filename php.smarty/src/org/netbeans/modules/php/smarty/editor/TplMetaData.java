@@ -38,71 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.smarty.editor.gsf;
+package org.netbeans.modules.php.smarty.editor;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.CommentHandler;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+/** Holds data relevant to the TPL coloring for one TPL page.
+ *
+ * @author Martin Fousek
+ */
+public final class TplMetaData {
 
-@LanguageRegistration(mimeType="text/x-tpl", useCustomEditorKit=true) //NOI18N
-public class TplLanguage extends DefaultLanguageConfig {
-    
-    public TplLanguage() {
+    private String openDelimiter, closeDelimiter;
+    private boolean initialized;
+
+    public TplMetaData(String openDelimiter, String closeDelimiter) {
+        this.openDelimiter = openDelimiter;
+        this.closeDelimiter = closeDelimiter;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public boolean initialized() {
+        boolean oldVal = initialized;
+        this.initialized = true;
+        return oldVal;
+    }
+
+    /** Updates coloring data. The update is initiated by saving project properties. */
+    public void updateMetaData(String openDelimiter, String closeDelimiter) {
+        this.openDelimiter = openDelimiter;
+        this.closeDelimiter = closeDelimiter;
+    }
+
+    public String getOpenDelimiter() {
+        return openDelimiter;
+    }
+
+    public String getCloseDelimiter() {
+        return closeDelimiter;
     }
 
     @Override
-    public CommentHandler getCommentHandler() {
-        return null;
-    }
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("TplMetaData:");
+        buf.append(" openDelim=");
+        buf.append(getOpenDelimiter());
+        buf.append("; closeDelim=");
+        buf.append(getCloseDelimiter());
+        buf.append(')');
 
-    @Override
-    public Language getLexerLanguage() {
-        return TplTopTokenId.language();
+        return buf.toString();
     }
-
-    @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isLetter(c);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "TPL";
-    }
-    
-    @Override
-    public String getPreferredExtension() {
-        return "tpl"; // NOI18N
-    }
-
-    // Service registrations
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    @Override
-    public Parser getParser() {
-        return new TplGSFParser();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new TplStructureScanner();
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
-        return false;
-    }
-
 }

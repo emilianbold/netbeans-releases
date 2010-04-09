@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,55 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.smarty.editor.utlis;
 
-package org.netbeans.modules.php.smarty;
-
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.SmartyPhpModuleCustomizerExtender;
+import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
-
+import org.openide.filesystems.FileObject;
 
 /**
+ *
  * @author Martin Fousek
  */
-public class SmartyFramework extends PhpProgram {
+public class TplUtils {
 
-    public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
+    public static TplMetaData getProjectPropertiesForFileObject(FileObject fo) {
+        String oDelim = SmartyOptions.getInstance().getDefaultOpenDelimiter();
+        String cDelim = SmartyOptions.getInstance().getDefaultCloseDelimiter();
 
-    /**
-     * Open delimiter in SMARTY templates
-     */
-    public static String DELIMITER_DEFAULT_OPEN = SmartyOptions.getInstance().getDefaultOpenDelimiter();
-    /**
-     * Close delimiter in SMARTY templates
-     */
-    public static String DELIMITER_DEFAULT_CLOSE = SmartyOptions.getInstance().getDefaultCloseDelimiter();
+        if (fo != null) {
+            PhpModule phpModule = PhpModule.forFileObject(fo);
 
-    public SmartyFramework() {
-        super(null);
+            // file outside of any project
+            if (phpModule != null) {
+                if (!SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).equals("")) {
+                    oDelim = SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule);
+                }
+                if (!SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule).equals("")) {
+                    cDelim = SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule);
+                }
+            }
+        }
+        return new TplMetaData(oDelim, cDelim);
     }
-
-    @Override
-    public String validate() {
-        return null;
-    }
-
-    /**
-     * @return full IDE options Smarty path
-     */
-    public static String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
-    }
-
-    /**
-     * @return IDE options Smarty subpath
-     */
-    public static String getOptionsSubPath() {
-        return OPTIONS_SUB_PATH;
-    }
-
-
-
 }

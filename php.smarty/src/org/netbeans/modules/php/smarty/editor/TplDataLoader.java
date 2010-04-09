@@ -38,71 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.smarty.editor.gsf;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.CommentHandler;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+package org.netbeans.modules.php.smarty.editor;
 
-@LanguageRegistration(mimeType="text/x-tpl", useCustomEditorKit=true) //NOI18N
-public class TplLanguage extends DefaultLanguageConfig {
-    
-    public TplLanguage() {
-    }
+import java.io.IOException;
+import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
-    @Override
-    public CommentHandler getCommentHandler() {
-        return null;
-    }
+/**
+ * Loader for Tpl DataObjects.
+ *
+ * @author Martin Fousek
+ */
+public class TplDataLoader extends UniFileLoader {
 
-    @Override
-    public Language getLexerLanguage() {
-        return TplTopTokenId.language();
-    }
+    private static final long serialVersionUID = -5805535261731217882L;
 
-    @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isLetter(c);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "TPL";
+    public TplDataLoader() {
+        super("org.netbeans.modules.php.smarty.editor.TplDataObject"); // NOI18N
     }
     
-    @Override
-    public String getPreferredExtension() {
-        return "tpl"; // NOI18N
+    protected void initialize() {
+        super.initialize();
+        getExtensions().addMimeType("text/x-tpl"); // NOI18N
     }
-
-    // Service registrations
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
+    
+    protected MultiDataObject createMultiObject(final FileObject primaryFile)
+    throws DataObjectExistsException, IOException {
+        return new TplDataObject(primaryFile, this);
     }
-
-    @Override
-    public Parser getParser() {
-        return new TplGSFParser();
+    
+    /** Get the default display name of this loader.
+     * @return default display name
+     */
+    protected String defaultDisplayName() {
+        return NbBundle.getMessage(TplDataLoader.class, "PROP_TplLoader_Name");
     }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
+    
+    protected String actionsContext() {
+        return "Loaders/text/x-tpl/Actions/"; // NOI18N
     }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new TplStructureScanner();
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
-        return false;
-    }
-
+    
 }

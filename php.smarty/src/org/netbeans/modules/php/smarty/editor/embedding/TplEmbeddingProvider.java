@@ -43,15 +43,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Provides model for TPL files.
@@ -59,11 +64,20 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
  */
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
-    private boolean isPhpEnabled = false;
     public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+//        // sending project data into lexer
+//        Source source = snapshot.getSource();
+//        if (source != null ) {
+//            FileObject fobj = source.getFileObject();
+//            InputAttributes inputAttributes = new InputAttributes();
+//            TplMetaData tplMetaData = TplUtils.getProjectPropertiesForFileObject(fobj);
+//            inputAttributes.setValue(TplTopTokenId.language(), TplMetaData.class, tplMetaData, false);
+//            source.getDocument(true).putProperty(InputAttributes.class, inputAttributes);
+//        }
+
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
 
