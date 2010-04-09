@@ -187,7 +187,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.sca.refactoring</friend>
                 <friend>org.netbeans.modules.wsdlextensions.file</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
-                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
+                <friend>org.netbeans.modules.soa.wsdlui.api</friend>
                 <friend>org.netbeans.modules.wsdlextensions.email</friend>
                 <friend>org.netbeans.modules.wsdlextensions.jms</friend>
                 <friend>org.netbeans.modules.wsdlextensions.ftp</friend>

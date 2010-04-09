@@ -293,7 +293,7 @@ class RfsLocalController implements Runnable {
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
-        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: file list took {0} ms", (System.currentTimeMillis() - time));
+        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: sorting file list took {0} ms", (System.currentTimeMillis() - time));
         try {
             time = System.currentTimeMillis();
             readFileInitResponse();

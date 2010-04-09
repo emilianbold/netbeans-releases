@@ -334,19 +334,25 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
 
 typedef struct file_elem {
     struct file_elem* next;
+    enum file_state state;
+    char* real_path;
     char filename[]; // have to be the last field
 } file_elem;
 
 /**
  * adds info about new file to the tail of the list
  */
-static file_elem* add_file_to_list(file_elem* tail, const char* filename) {
+static file_elem* add_file_to_list(file_elem* tail, const char* filename, enum file_state state, const char* real_path) {
     trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
     int namelen = strlen(filename);
-    int size = sizeof(file_elem) + namelen + 1;
+    int realpath_len = strlen(real_path);
+    int size = sizeof(file_elem) + namelen + realpath_len + 2;
     file_elem *fe = (file_elem*) malloc(size);
     fe->next = NULL;
     strcpy(fe->filename, filename);
+    fe->state = state;
+    fe->real_path = fe->filename + namelen + 1;
+    strcpy(fe->real_path, real_path);
     if (tail != NULL) {
         tail->next = fe;
     }
@@ -419,13 +425,6 @@ static int init_files() {
                 touch = true;
             } else if (state == COPIED || state == TOUCHED) {
                 touch = !file_exists(path, file_size);
-                if (state == COPIED && touch) {
-                    // inform local controller that he is not right about copied status of file
-                    tail = add_file_to_list(tail, path);
-                    if (list == NULL) {
-                        list = tail;
-                    }
-                }
             } else if (state == UNCONTROLLED || state == INEXISTENT) {
                 // nothing
             } else {
@@ -458,7 +457,7 @@ static int init_files() {
                         strcpy(real_path, path);
                     } else {
                         // NB: we modify the path!
-                        *file = 0;
+                        *file = 0; // replace the '/' that separates file from dir by zero
                         file++; 
                         if (!realpath(dir, real_path)) {
                             report_unresolved_path(dir);
@@ -479,6 +478,11 @@ static int init_files() {
                 }
                 trace("\t\tadded %s with state '%c' (0x%x)\n", real_path, (char) new_state, (char) new_state);
                 add_file_data(real_path, new_state);
+                // inform local controller that he is not right about copied status of file
+                tail = add_file_to_list(tail, path, new_state, real_path);
+                if (list == NULL) {
+                    list = tail;
+                }
             } else {
                 report_error("prodocol error: %s is not absoulte\n", path);
                 break;
@@ -491,7 +495,7 @@ static int init_files() {
         // send info about touched files which were passed as copied files
         tail = list;
         while (tail != NULL) {
-            fprintf(stdout, "t %s\n", tail->filename);
+            fprintf(stdout, "*%c%s\n%s\n", tail->state, tail->filename, tail->real_path);
             fflush(stdout);
             tail = tail->next;
         }
