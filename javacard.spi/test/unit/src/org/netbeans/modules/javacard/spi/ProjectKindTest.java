@@ -134,8 +134,6 @@ public class ProjectKindTest {
             File jar = m.get(kind);
             assertTrue (jar.exists());
             ProjectKind foundKind = ProjectKind.forJarFile(jar);
-            System.err.println("JAR is " + jar.getAbsolutePath());
-            System.err.println("Expected " + kind + " found " + foundKind);
             assertEquals (kind, foundKind);
         }
     }

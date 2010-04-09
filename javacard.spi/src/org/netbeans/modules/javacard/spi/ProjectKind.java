@@ -430,18 +430,27 @@ public enum ProjectKind {
         try {
             Manifest m = jf.getManifest();
             String appType = m.getMainAttributes().getValue("Application-Type"); //NOI18N
+            Logger log = Logger.getLogger(ProjectKind.class.getName());
+            ProjectKind result = null;
             if (appType == null) {
                 //Classic library can only be identified by the presence of
                 //$PACKAGE/javacard/ConstantPool.cap and friends
+                log.log (Level.FINER, "Could not detect JAR type from " + //NOI18N
+                        "manifest attributes: {0}.  Scanning contents", jarFile); //NOI18N
                 for (JarEntry je : NbCollections.iterable(jf.entries())) {
                     String name = je.getName();
                     if (name.endsWith("javacard/ConstantPool.cap")) { //NOI18N
-                        return CLASSIC_LIBRARY;
+                        result = CLASSIC_LIBRARY;
+                        log.log (Level.FINEST, "Detected as classic library due to {0}: {1}",  //NOI18N
+                                new Object[] { name, jarFile}); //NOI18N
+                        break;
                     }
                 }
-                return null;
             }
-            return forManifestType(appType);
+            result = result == null ? appType == null ? null : forManifestType(appType) : result;
+            log.log (Level.FINE, "Detected jar type {0} for {1}", //NOI18N
+                    new Object[] { result, jarFile });
+            return result;
         } finally {
             jf.close();
         }
