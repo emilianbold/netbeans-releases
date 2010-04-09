@@ -412,6 +412,7 @@ public enum ProjectKind {
             case WEB :
                 return "war";
             case EXTENSION_LIBRARY:
+                return "jar";
             case EXTENDED_APPLET :
                 return "eap";
             case CLASSIC_APPLET:
