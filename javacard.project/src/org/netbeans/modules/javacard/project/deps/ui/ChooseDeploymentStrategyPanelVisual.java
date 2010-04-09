@@ -182,26 +182,6 @@ final class ChooseDeploymentStrategyPanelVisual extends JPanel implements ItemLi
             buttonConstraints.gridy +=2;
             labelConstraints.gridy += 2;
         }
-        //XXX remove once build-time support for new project metadata is
-        //implemented
-        labelConstraints.gridy++;
-        JTextArea area = new JTextArea(NbBundle.getMessage(
-                ChooseDeploymentStrategyPanelVisual.class,
-                "WARNING_DEPLOYMENT_STRATEGY")); //NOI18N
-        Color errColor = UIManager.getColor("nb.errorForeground"); //NOI18N
-        errColor = errColor == null ? Color.RED : errColor;
-        area.setForeground (errColor);
-        JScrollPane lbl = new JScrollPane (area);
-        area.setBackground (ctrl);
-        lbl.setBackground (ctrl);
-        lbl.getViewport().setBackground (ctrl);
-        area.getCaret().setVisible(false);
-        area.setBorder(empty);
-        lbl.setBorder(empty);
-        lbl.setViewportBorder(empty);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        add (lbl, labelConstraints);
         insertUpdate(null);
     }
 

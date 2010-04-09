@@ -154,6 +154,8 @@ public final class FindUsageSupport {
                 final PhpElementKind kind = element.getPhpElementKind();
                 if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
                   name = name.startsWith("$") ? name.substring(1) : name;  
+                } else if (kind.equals(PhpElementKind.METHOD) && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(name)) {
+                    name = element.getInScope().getName();
                 }
                 this.files.addAll(index.getLocationsForIdentifiers(name));
             }

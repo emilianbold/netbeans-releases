@@ -590,6 +590,17 @@ class OccurenceBuilder {
                     break;
                 case METHOD:
                     buildMethods(index, fileScope, cachedOccurences);
+                    if (elementInfo.getModelElemnt() != null) {
+                        //168149  -  Searching for usages of the __construct method
+                        Scope scope = elementInfo.getScope();
+                        if (scope instanceof MethodScope && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(elementInfo.getName())) {
+                            buildMethods(index, fileScope, cachedOccurences);
+                            setElementInfo((TypeScope)scope.getInScope());
+                            if (elementInfo.setDeclarations(index.getTypes(NameKind.exact(elementInfo.getQualifiedName())))) {
+                                buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
+                            }
+                        }
+                    }
                     break;
                 case INCLUDE:
                     buildIncludes(elementInfo, fileScope, cachedOccurences);
