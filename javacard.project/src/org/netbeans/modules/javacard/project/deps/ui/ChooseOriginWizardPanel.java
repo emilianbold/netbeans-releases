@@ -215,7 +215,6 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
                         throw new WizardValidationException(component, msg, msg);
                     }
                     ProjectKind jarKind = ProjectKind.forJarFile(origin);
-                    System.err.println("JAR KIND IS " + jarKind);
                     if (jarKind != null) {
                         if (jarKind.isApplication()) {
                             String msg = NbBundle.getMessage (ChooseSigOrExpFilePanelVisual.class,
@@ -306,7 +305,6 @@ final class ChooseOriginWizardPanel implements WizardDescriptor.AsynchronousVali
         }
         assert realKind != null : "Kind not found"; //NOI18N
         settings.put(PROP_ACTUAL_DEP_KIND, realKind);
-        System.err.println("ACTUAL DEP KIND: " + realKind);
         switch (realKind) {
             case EXTENSION_LIB_JAR:
                 settings.remove(PROP_INTERMEDIATE_PANEL_KIND);

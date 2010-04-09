@@ -118,7 +118,6 @@ public class PreupgradedAntTasksTest extends NbTestCase {
         private synchronized File getFile() throws IOException {
             if (fakeAntTasksJar == null) {
                 fakeAntTasksJar = File.createTempFile("anttasks", ".jar");
-                System.err.println("FAKE ANT TASKS REQUESTED " + fakeAntTasksJar.getAbsolutePath());
             }
             return fakeAntTasksJar;
         }
