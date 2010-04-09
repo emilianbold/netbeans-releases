@@ -99,7 +99,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
                 moduleclasspathproperty="module.classpath"
                 publicpackagejardir="${public.package.jar.dir}"
                 modulerunclasspathproperty="module.run.classpath"
-                domainproperty="nbm.domain"
+                commitmailproperty="commit.mail"
                 classpathextensionsproperty="class.path.extensions">
             <testtype name="unit" 
                       folder="test.unit.folder" 
@@ -584,10 +584,10 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
             <or>
                 <exportedapi/>
-                <not><isset property="nbm.domain"/></not>
+                <not><isset property="commit.mail"/></not>
             </or>
         </condition>
-        <property name="sigtest.mail" value="cvs@${nbm.domain}.netbeans.org"/>
+        <property name="sigtest.mail" value="${commit.mail}"/>
 
         <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}</echo>
     </target>
