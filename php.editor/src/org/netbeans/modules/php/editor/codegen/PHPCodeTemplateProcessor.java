@@ -89,6 +89,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         this.request = request;
     }
 
+    @Override
     public void updateDefaultValues() {
         for (CodeTemplateParameter param : request.getMasterParameters()) {
             String value = getProposedValue(param);
@@ -98,10 +99,12 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
 
+    @Override
     public void parameterValueChanged(CodeTemplateParameter masterParameter, boolean typingChange) {
         // No op.
     }
 
+    @Override
     public void release() {
         // No op.
     }
