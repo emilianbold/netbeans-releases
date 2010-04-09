@@ -789,13 +789,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             addComment(comment);
         }
 
-        JiraCommand submitCmd = new JiraCommand() {
-            @Override
-            public void execute() throws CoreException, IOException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     /**

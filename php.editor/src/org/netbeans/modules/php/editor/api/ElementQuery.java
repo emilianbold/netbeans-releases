@@ -82,6 +82,8 @@ public interface ElementQuery {
 
     Set<InterfaceElement> getInterfaces(NameKind query);
 
+    Set<TypeElement> getTypes(NameKind query);
+
     Set<FunctionElement> getFunctions();
 
     Set<FunctionElement> getFunctions(NameKind query);
@@ -135,6 +137,8 @@ public interface ElementQuery {
         public LinkedHashSet<ClassElement> getDirectInheritedClasses(final TypeElement typeElement);
 
         public LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
+
+        public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
 
         public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
         /**

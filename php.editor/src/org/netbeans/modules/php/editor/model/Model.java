@@ -39,65 +39,86 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.openide.util.Parameters;
 
 /**
  * @author Radek Matous
  */
 public final class Model {
     private ModelVisitor modelVisitor;
-    private ParserResult info;
-    private int offset;
+    private final ParserResult info;
+    private OccurencesSupport occurencesSupport;
 
     Model(ParserResult info) {
         this.info = info;
-        this.offset = -1;
+    }
+
+//    Model(FileObject fo) {
+//        ParserManager.
+//    }
+
+    public Model getExtendedModel() {
+        getModelVisitor().extendModel();
+        return this;
     }
 
     public FileScope getFileScope() {
-        return getModelVisitor(-1).getFileScope();
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.getFileScope();
     }
 
     public IndexScope getIndexScope() {
         return ModelVisitor.getIndexScope(info);
     }
 
+    public OccurencesSupport getOccurencesSupport(final OffsetRange range) {
+        final ModelVisitor visitor = getModelVisitor();
+        synchronized(this) {
+            if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
+                occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
+            }
+        }
+        return occurencesSupport;
+    }
+
     public OccurencesSupport getOccurencesSupport(final int offset) {
-        return new OccurencesSupport(getModelVisitor(offset), offset);
+        final ModelVisitor visitor = getModelVisitor();
+        synchronized(this) {
+            if (occurencesSupport == null || occurencesSupport.offset != offset) {
+                occurencesSupport = new OccurencesSupport(visitor, offset);
+            }
+        }
+        return occurencesSupport;
     }
 
     public ParameterInfoSupport getParameterInfoSupport(final int offset) {
-        return new ParameterInfoSupport(getModelVisitor(-1), offset);
+        final ModelVisitor visitor = getModelVisitor();
+        return new ParameterInfoSupport(visitor, offset);
     }
 
     public VariableScope getVariableScope(final int offset) {
-        return getModelVisitor(-1).getVariableScope(offset);
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.getVariableScope(offset);
+    }
+
+    public ModelElement findDeclaration(final PhpElement element) {
+        final ModelVisitor visitor = getModelVisitor();
+        return visitor.findDeclaration(element);
     }
 
     /**
      * @return the modelVisitor
      */
-    private ModelVisitor getModelVisitor(int offset) {
-        if (modelVisitor == null || (offset >= 0 && this.offset != offset)) {
-            if (offset < 0) {
-                modelVisitor = new ModelVisitor(info);
-            } else {
-                modelVisitor = new ModelVisitor(info, offset);
-            }
+    synchronized ModelVisitor getModelVisitor() {
+        if (modelVisitor == null) {
+            modelVisitor = new ModelVisitor(info);
             modelVisitor.scan(Utils.getRoot(info));
         }
 
-        return modelVisitor;
-    }
-    ModelVisitor getModelVisitor(ModelElement element) {
-        Parameters.notNull("element", element);
-        if (modelVisitor == null) {
-            modelVisitor = new ModelVisitor(info, element);
-            modelVisitor.scan(Utils.getRoot(info));
-        }
         return modelVisitor;
     }
 }

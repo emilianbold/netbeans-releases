@@ -104,11 +104,7 @@ public final class Dependency {
     }
 
     private String getOriginPropertyName() {
-        return DEP_PROPERTY_PREFIX + id + '.' + "origin"; //NOI18N
-    }
-
-    public String getDeploymentStrategyPropertyName() {
-        return DEP_PROPERTY_PREFIX + id + '.' + "deployment"; //NOI18N
+        return DEP_PROPERTY_PREFIX + getID() + '.' + "origin"; //NOI18N
     }
 
     private String getSourceLocationPropertyName() {
@@ -120,7 +116,7 @@ public final class Dependency {
     }
 
     private String getSigFilePropertyName() {
-        return DEP_PROPERTY_PREFIX + '.' + getID() + ".sigfile"; //NOI18N
+        return DEP_PROPERTY_PREFIX + getID() + ".sigfile"; //NOI18N
     }
 
     public DependencyKind getKind() {

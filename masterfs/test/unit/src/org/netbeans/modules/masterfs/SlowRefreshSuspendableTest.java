@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -85,6 +86,7 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         System.setSecurityManager(new FileChangedManager());
     }
 
+    @RandomlyFails // NB-Core-Build #4386: Background I/O access needs to stop before we finish our task
     public void testRefreshCanBeSuspended() throws Exception {
         long lm = System.currentTimeMillis();
         LOG.info("starting testRefreshCanBeSuspended " + lm);
@@ -100,7 +102,6 @@ public class SlowRefreshSuspendableTest extends NbTestCase {
         arr = null;
         fileObject1 = null;
         assertGC("File Object can disappear", ref);
-
 
         class L extends FileChangeAdapter {
             int cnt;

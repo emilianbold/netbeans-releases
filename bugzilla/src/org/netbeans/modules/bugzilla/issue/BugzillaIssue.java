@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,8 +59,6 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
@@ -86,9 +83,11 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
+import org.netbeans.modules.bugzilla.commands.SubmitCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -786,21 +785,12 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
         a.setValue(contentType);
 
-        BugzillaCommand cmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                refresh();
-                Bugzilla.getInstance().getClient(repository)
-                        .postAttachment(
-                            getID(),
-                            comment,
-                            attachmentSource,
-                            attAttribute,
-                            new NullProgressMonitor());
-                refresh(getID(), true); // XXX to much refresh - is there no other way?
-            }
-        };
+        refresh(); // refresh might fail, but be optimistic and still try to force add attachment
+        AddAttachmentCommand cmd = new AddAttachmentCommand(getID(), repository, comment, attachmentSource, file, attAttribute);
         repository.getExecutor().execute(cmd);
+        if(!cmd.hasFailed()) {
+            refresh(getID(), true); // XXX to much refresh - is there no other way?
+        }
     }
 
     Comment[] getComments() {
@@ -826,23 +816,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
         // resolved attrs
         if(close) {
+            Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
             resolve(RESOLVE_FIXED); // XXX constant?
         }
         if(comment != null) {
             addComment(comment);
         }
-
-        BugzillaCommand submitCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                submitAndRefresh();
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
+        submitAndRefresh();
     }
 
     public void addComment(String comment) {
         if(comment != null) {
+            Bugzilla.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
             TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
         }
@@ -873,31 +858,28 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         prepareSubmit();
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        final RepositoryResponse[] rr = new RepositoryResponse[1];
-        final BugzillaCommand submitCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                // submit
-                rr[0] = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), data, null, new NullProgressMonitor());
-                // XXX evaluate rr
-            }
-        };
+        
+        SubmitCommand submitCmd = new SubmitCommand(getTaskRepository(), data);
         repository.getExecutor().execute(submitCmd);
 
-        BugzillaCommand refreshCmd = new BugzillaCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                if (!wasNew) {
-                    refresh();
+        if (!wasNew) {
+            refresh();
+        } else {
+            RepositoryResponse rr = submitCmd.getRepositoryResponse();
+            if(!submitCmd.hasFailed()) {
+                assert rr != null;
+                String id = rr.getTaskId();
+                Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
+                refresh(id, true);
+            } else {
+                Bugzilla.LOG.log(Level.FINE, "submiting failed");
+                if(rr != null) {
+                    Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
                 } else {
-                    if(!submitCmd.hasFailed()) {
-                        assert rr[0] != null;
-                        refresh(rr[0].getTaskId(), true);
-                    }
+                    Bugzilla.LOG.log(Level.FINE, "no repository response available");
                 }
             }
-        };
-        repository.getExecutor().execute(refreshCmd);
+        }
 
         if(submitCmd.hasFailed()) {
             return false;
@@ -935,6 +917,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
+            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", id);
             TaskData td = BugzillaUtil.getTaskData(repository, id);
             if(td == null) {
                 return false;
@@ -1144,14 +1127,8 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         }
 
         public void getAttachementData(final OutputStream os) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-            BugzillaCommand cmd = new BugzillaCommand() {
-                @Override
-                public void execute() throws CoreException, IOException, MalformedURLException {
-                    Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
-                }
-            };
-            repository.getExecutor().execute(cmd);
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+            repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
 
         void open() {

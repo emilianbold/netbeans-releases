@@ -171,7 +171,7 @@ public class RepositoryController extends BugtrackingController implements Docum
             new URI(url);
         } catch (Exception ex) {
             errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
-            Bugzilla.LOG.log(Level.FINEST, errorMessage, ex);
+            Bugzilla.LOG.log(Level.FINE, errorMessage, ex);
             return false;
         }
 
@@ -326,7 +326,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                         fireDataChanged();
                     } else {
                         panel.connectionLabel.setVisible(true);
-                        logValidateMessage("validate for [{0},{1},{2},****{3},****] worked.", // NOI18N
+                        logValidateMessage("validate for [{0},{1},{2},****{3},****] ok.", // NOI18N
                                            Level.INFO, name, url, user, httpUser);
                     }
             }

@@ -74,7 +74,7 @@ public class SvnHookImpl extends SvnHook {
 
     private HookPanel panel;
     private final String name;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
 
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
 
@@ -105,7 +105,7 @@ public class SvnHookImpl extends SvnHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "svn beforeCommit start for " + file);                // NOI18N
+        LOG.log(Level.FINE, "svn beforeCommit start for {0}", file);                // NOI18N
 
         String msg = context.getMessage();
         List<LogEntry> logEntries = null;
@@ -117,7 +117,7 @@ public class SvnHookImpl extends SvnHook {
 
             Issue issue = getIssue();
             if (issue == null) {
-                LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+                LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
                 return null;
             }
             String issueInfo = new MessageFormat(formatString).format(
@@ -125,7 +125,7 @@ public class SvnHookImpl extends SvnHook {
                     new StringBuffer(),
                     null).toString();
 
-            LOG.log(Level.FINER, " svn commit hook issue info '" + issueInfo + "'");     // NOI18N
+            LOG.log(Level.FINER, " svn commit hook issue info ''{0}''", issueInfo);     // NOI18N
             if(format.isAbove()) {
                 msg = issueInfo + "\n" + msg;                                   // NOI18N
             } else {
@@ -149,11 +149,11 @@ public class SvnHookImpl extends SvnHook {
         }
 
         File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "svn afterCommit start for " + file);               // NOI18N
+        LOG.log(Level.FINE, "svn afterCommit start for {0}", file);               // NOI18N
 
         Issue issue = getIssue();
         if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for " + file);                   // NOI18N
+            LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
             return;
         }
 
@@ -163,7 +163,7 @@ public class SvnHookImpl extends SvnHook {
         if(!isLinkSelected() &&
            !isResolveSelected())
         {
-            LOG.log(Level.FINER, " nothing to do in svn afterCommit for " + file); // NOI18N
+            LOG.log(Level.FINER, " nothing to do in svn afterCommit for {0}", file); // NOI18N
             return;
         }
 
@@ -192,12 +192,12 @@ public class SvnHookImpl extends SvnHook {
                     null).toString();
         }
         if(isLinkSelected() || isResolveSelected()) {
-            LOG.log(Level.FINER, " svn commit hook message '" + msg + "', resolved " + isResolveSelected());     // NOI18N
+            LOG.log(Level.FINER, " svn commit hook message ''{0}'', resolved {1}", new Object[]{msg, isResolveSelected()});     // NOI18N
             issue.addComment(msg, isResolveSelected());
             issue.open();
         }
         
-        LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
+        LOG.log(Level.FINE, "svn commit hook end for {0}", file);                 // NOI18N
         VCSHooksConfig.logHookUsage("SVN", getSelectedRepository());            // NOI18N
     }
 

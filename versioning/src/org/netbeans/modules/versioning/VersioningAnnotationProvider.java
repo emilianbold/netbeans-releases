@@ -789,7 +789,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     private static long getMaxAge () {
-        String cacheItemAgeProp = System.getProperty("versioning.annotator.cacheItem.maxAge", "60000"); //NOI18N
+        String cacheItemAgeProp = System.getProperty("versioning.annotator.cacheItem.maxAge", "600000"); //NOI18N - 10 minutes is the default value
         long cacheItemAge = 0;
         try {
             if (cacheItemAgeProp != null) {
@@ -799,8 +799,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             LOG.log(Level.INFO, "Max cache item age: " + cacheItemAgeProp, ex); //NOI18N
             cacheItemAge = 0;
         }
-        if (cacheItemAge != -1 && cacheItemAge < 60000) {
-            cacheItemAge = 10 * 60 * 1000;
+        if (cacheItemAge != -1 && cacheItemAge < 60000) { // 1 minute is the minimal value
+            cacheItemAge = 10 * 60 * 1000; // 10 minutes as default
         }
         LOG.log(Level.FINE, "getMaxAge(): " + cacheItemAge);            //NOI18N
         return cacheItemAge;

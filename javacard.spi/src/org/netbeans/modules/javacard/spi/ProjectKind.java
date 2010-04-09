@@ -426,7 +426,7 @@ public enum ProjectKind {
         JarFile jf = new JarFile(jarFile);
         try {
             Manifest m = jf.getManifest();
-            String appType = (String) m.getMainAttributes().get("Application-Type");
+            String appType = (String) m.getMainAttributes().getValue("Application-Type");
             if (appType == null) {
                 return null;
             }

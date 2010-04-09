@@ -49,6 +49,13 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-core-ui-warmup-DnDWarmUpTask.instance"/>
         <file name="org-netbeans-core-ui-warmup-DiagnosticTask.instance"/>
     </folder>
+
+    <folder name="Shortcuts">
+        <file name="AS-Y.shadow">
+            <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"/>
+        </file>
+    </folder>
+
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
 
@@ -91,6 +98,17 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Replace"/>
             </file>
             <file name="org-openide-actions-UndoAction.instance"/>
+        </folder>
+
+        <folder name="Profile">
+            <file name="org-netbeans-modules-profiler-actions-SelfSamplerAction.instance">
+                <attr name="displayName" bundlevalue="org.netbeans.core.ui.sampler.Bundle#SelfSamplerAction_ActionNameStart"/>
+                <attr name="ShortDescription" bundlevalue="org.netbeans.core.ui.sampler.Bundle#SelfSamplerAction_ActionDescription"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/ui/sampler/selfSampler.png"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="delegate" methodvalue="org.netbeans.core.ui.sampler.SelfSamplerAction.getInstance"/>
+            </file>
         </folder>
 
         <folder name="System">
@@ -416,6 +434,10 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-GarbageCollectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-GarbageCollectAction.instance"/>
                 <attr name="position" intvalue="100"/>
+            </file>
+            <file name="org-netbeans-modules-profiler-actions-SelfSamplerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"/>
+                <attr name="position" intvalue="2000"/>
             </file>
         </folder>
 

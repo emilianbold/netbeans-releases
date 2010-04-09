@@ -69,4 +69,14 @@ public class ValidateCommand extends BugzillaCommand {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ValidateCommand [repository=");                              // NOI18N
+        sb.append(taskRepository.getUrl());
+        sb.append("]");                                                         // NOI18N
+        return sb.toString();
+    }
+
+
 }

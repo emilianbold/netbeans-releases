@@ -55,11 +55,14 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,6 +78,8 @@ public abstract class LinkButton extends JButton
 
     private final static Border regularBorder = ButtonBorder.createRegular();
     private final static Border mouseoverBorder = ButtonBorder.createMouseOver();
+
+    private String usageTrackingId;
 
     public LinkButton( String label ) {
         this( label, false );
@@ -205,5 +210,22 @@ public abstract class LinkButton extends JButton
     
     protected boolean isVisited() {
         return false;
+    }
+    
+    public void setUsageTrackingId( String id ) {
+        this.usageTrackingId = id;
+    }
+
+    protected void logUsage() {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_START_PAGE_LINK"); //NOI18N
+        String id = usageTrackingId;
+        if( null == id )
+            id = getText();
+        rec.setParameters(new Object[] {id} );
+        rec.setLoggerName(Constants.USAGE_LOGGER.getName());
+        rec.setResourceBundle(NbBundle.getBundle(BundleSupport.BUNDLE_NAME));
+        rec.setResourceBundleName(BundleSupport.BUNDLE_NAME);
+
+        Constants.USAGE_LOGGER.log(rec);
     }
 }

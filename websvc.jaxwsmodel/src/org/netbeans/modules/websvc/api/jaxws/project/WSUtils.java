@@ -609,4 +609,24 @@ public class WSUtils {
         return found;
     }
 
+    public static boolean hasServiceOrClient(FileObject jaxWsFo) throws IOException {
+        BufferedReader br = null;
+        boolean found = false;
+        try {
+            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (line.contains("<client>") || line.contains("<service>")) { //NOI18N
+                    found = true;
+                    break;
+                }
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+        return found;
+    }
+
 }

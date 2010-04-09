@@ -44,6 +44,7 @@ package org.netbeans.modules.welcome.content;
 import java.awt.BasicStroke;
 import java.awt.Font;
 import java.awt.Stroke;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
@@ -68,7 +69,7 @@ public interface Constants {
     static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
     static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+3 ); //NOI18N
-    static final Font GET_STARTED_FONT = new Font( null, Font.BOLD, (int)(FONT_SIZE*1.4) ); //NOI18N
+    static final Font GET_STARTED_FONT = SECTION_HEADER_FONT;
 
     static final String ORACLE_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/oracle_logo.png"; // NOI18N
     static final String JAVA_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/java_logo.png"; // NOI18N
@@ -97,4 +98,6 @@ public interface Constants {
     static final Border HEADER_TEXT_BORDER = BorderFactory.createEmptyBorder( 1, TEXT_INSETS_LEFT, 1, TEXT_INSETS_RIGHT );
     
     static final int START_PAGE_MIN_WIDTH = 600;
+
+    static final Logger USAGE_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.projects"); //NOI18N
 }

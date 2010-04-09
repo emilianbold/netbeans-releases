@@ -10,6 +10,14 @@
         <copy file="../CustomerDBAccess/dist/CustomerDBAccess.jar" tofile="${cluster}/modules/ext/CustomerDBAccess.jar"/>
         <antcall target="projectized-common.compile"/>
     </target>
+    <target name="netbeans-extra">
+        <property name="external_dir" value="external"/>
+        <copy todir="${cluster}/modules/ext/persistence/" failonerror="false" overwrite="true" verbose="true">
+            <fileset dir="${external_dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+    </target>
     <target name="clean">
         <ant dir="../CustomerDBAccess" inheritall="false" target="clean"/>
     </target>

@@ -398,6 +398,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private int used;
         /** #141110: expensive to repeatedly look for them */
         private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
+        private final Set<File> warnedFiles = Collections.synchronizedSet(new HashSet<File>()); // #183696
         
         JarSource(File file) throws IOException {
             this(file, toURI(file));
@@ -508,7 +509,9 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 jf = getJarFile(path);
             } catch (ZipException ex) {
-                LOGGER.log(Level.INFO, "Cannot open " + file, ex);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, ex);
+                }
                 return null;
             }
             try {
@@ -554,11 +557,17 @@ public class JarClassLoader extends ProxyClassLoader {
                     }
                 }
             } catch (ZipException x) { // Unix
-                LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                }
             } catch (FileNotFoundException x) { // Windows
-                LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.INFO, "Cannot open " + file, x);
+                }
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "problems with " + file, ioe);
+                if (warnedFiles.add(file)) {
+                    LOGGER.log(Level.WARNING, "problems with " + file, ioe);
+                }
             } finally {
                 releaseJarFile();
             }

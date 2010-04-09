@@ -103,6 +103,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
             if (expFile != null && kind.supportedArtifacts().contains(ArtifactKind.EXP_FILE)) {
                 paths.put(ArtifactKind.EXP_FILE, expFile.getAbsolutePath());
             }
+            System.err.println("sigFile is " + sigFile);
             if (sigFile != null && kind.supportedArtifacts().contains(ArtifactKind.SIG_FILE)) {
                 paths.put(ArtifactKind.SIG_FILE, sigFile.getAbsolutePath());
             }
