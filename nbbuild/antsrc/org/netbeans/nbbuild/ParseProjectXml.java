@@ -192,13 +192,13 @@ public final class ParseProjectXml extends Task {
         codeNameBaseSlashesProperty = s;
     }
 
-    private String domainProperty;
+    private String commitMailProperty;
     /**
-     * Set the property to set the module's netbeans.org domain to.
-     * Only applicable to modules in netbeans.org (i.e. no <path>).
+     * Set the property to set the module's commit mail address(es) to.
+     * Only applicable to modules in netbeans.org (i.e. no {@code <path>}).
      */
-    public void setDomainProperty(String s) {
-        domainProperty = s;
+    public void setCommitMailProperty(String s) {
+        commitMailProperty = s;
     }
 
     private String moduleClassPathProperty;
@@ -484,26 +484,37 @@ public final class ParseProjectXml extends Task {
                 String cp = computeClasspath(cnb, pDoc, modules, translatedDeps, true);
                 define(moduleRunClassPathProperty, cp);
             }
-            if (domainProperty != null) {
+            if (commitMailProperty != null) {
                 if (getModuleType(pDoc) != ModuleType.NB_ORG) {
-                    throw new BuildException("Cannot set " + domainProperty + " for a non-netbeans.org module", getLocation());
+                    throw new BuildException("Cannot set " + commitMailProperty + " for a non-netbeans.org module", getLocation());
                 }
-                File nball = new File(getProject().getProperty("nb_all"));
-                File basedir = getProject().getBaseDir();
-                Pattern p = Pattern.compile("([^/]+)(/([^/]+))*//([^/]+)/" + Pattern.quote(basedir.getName()));
-                Reader r = new FileReader(new File(nball, "nbbuild/translations"));
+                String name = getProject().getBaseDir().getName() + "/";
+                StringBuilder aliases = null;
+                Reader r = new FileReader(new File(getProject().getProperty("nb_all"), ".hgmail"));
                 try {
                     BufferedReader br = new BufferedReader(r);
                     String line;
                     while ((line = br.readLine()) != null) {
-                        Matcher m = p.matcher(line);
-                        if (m.matches()) {
-                            define(domainProperty, m.group(1));
-                            break;
+                        int equals = line.indexOf('=');
+                        if (equals == -1) {
+                            continue;
+                        }
+                        for (String piece: line.substring(equals + 1).split(",")) {
+                            if (name.matches(piece.replace(".", "[.]").replace("*", ".*"))) {
+                                if (aliases == null) {
+                                    aliases = new StringBuilder();
+                                } else {
+                                    aliases.append(' ');
+                                }
+                                aliases.append(line.substring(0, equals));
+                            }
                         }
                     }
                 } finally {
                     r.close();
+                }
+                if (aliases != null) {
+                    define(commitMailProperty, aliases.toString());
                 }
             }
             if (classPathExtensionsProperty != null) {
