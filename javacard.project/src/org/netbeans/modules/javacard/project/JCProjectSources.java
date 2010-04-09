@@ -206,7 +206,7 @@ public class JCProjectSources implements Sources, ChangeListener,
                 delegate = null;
             }
         }
-        ChangeListener[] l = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+        ChangeListener[] l = listeners.toArray(new ChangeListener[listeners.size()]);
         for (ChangeListener cl : l) {
             try {
                 cl.stateChanged(new ChangeEvent(this));
