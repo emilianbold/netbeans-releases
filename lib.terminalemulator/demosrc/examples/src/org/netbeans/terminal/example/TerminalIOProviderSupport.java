@@ -49,9 +49,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
+import org.openide.windows.IOTab;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -173,10 +176,15 @@ public final class TerminalIOProviderSupport {
 	}
 
 	private class CloseListener implements PropertyChangeListener {
+	    private final Config config;
+
+	    public CloseListener(Config config) {
+		this.config = config;
+	    }
 	    public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(IOVisibility.PROP_VISIBILITY) &&
 		    evt.getNewValue().equals(Boolean.FALSE)) {
-		    checkClose();
+		    checkClose(config);
 		}
 	    }
 	}
@@ -187,12 +195,13 @@ public final class TerminalIOProviderSupport {
 	/**
 	 * Terminal actually closed.
 	 */
-	private void checkClose() {
+	private void checkClose(Config config) {
 	    assert SwingUtilities.isEventDispatchThread();
 	    if (streamClosed) {
 		// process already reaped and it's io drained
 		// clean up all resources
-		io.closeInputOutput();
+		if (! config.isKeep())
+		    io.closeInputOutput();
 	    } else {
 
 		if (hupOnClose) {
@@ -206,41 +215,97 @@ public final class TerminalIOProviderSupport {
 	    }
 	}
 
-	private void checkTermination() {
+	private void checkTermination(Config config) {
 	    assert SwingUtilities.isEventDispatchThread();
 	   if (terminated) {
 		// clean up all resources
-		io.closeInputOutput();
+		if (! config.isKeep())
+		    io.closeInputOutput();
 	    } else {
 		streamClosed = true;
 	    }
 	}
 
-	private OutputListener makeClosable = new OutputListener() {
+	private abstract static class AbstractOutputListener implements OutputListener {
+	    private static InputOutput chosen;
+	    private InputOutput io;
 
-	    public void outputLineSelected(OutputEvent ev) {
-	    }
+	    public void outputLineSelected(OutputEvent ev) { }
+	    public void outputLineCleared(OutputEvent ev) { }
 
 	    public void outputLineAction(OutputEvent ev) {
-		InputOutput io = ev.getInputOutput();
-		IOVisibility.setClosable(io, true);
+		io = ev.getInputOutput();
+		outputAction(ev, io);
 	    }
 
-	    public void outputLineCleared(OutputEvent ev) {
+	    abstract void outputAction(OutputEvent ev, InputOutput io);
+
+	    protected static void choose(InputOutput io) {
+		chosen = io;
+	    }
+
+	    protected final InputOutput chosen() {
+		if (chosen != null)
+		    return chosen;
+		else
+		    return io;
+	    }
+	}
+
+
+	private OutputListener choose = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		choose(io);
 	    }
 	};
 
-	private OutputListener makeUnClosable = new OutputListener() {
-
-	    public void outputLineSelected(OutputEvent ev) {
+	private OutputListener unChoose = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		choose(null);
 	    }
+	};
 
-	    public void outputLineAction(OutputEvent ev) {
-		InputOutput io = ev.getInputOutput();
-		IOVisibility.setClosable(io, false);
+	private OutputListener selectChosen = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		if (chosen() != null)
+		    chosen().select();
 	    }
+	};
 
-	    public void outputLineCleared(OutputEvent ev) {
+	private OutputListener makeClosable = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		IOVisibility.setClosable(chosen(), true);
+	    }
+	};
+
+	private OutputListener makeUnClosable = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		IOVisibility.setClosable(chosen(), false);
+	    }
+	};
+
+	private OutputListener enableToolTip = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		IOTab.setToolTipText(chosen(), "Tooltip");
+	    }
+	};
+
+	private OutputListener disableToolTip = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		IOTab.setToolTipText(chosen(), null);
+	    }
+	};
+
+	private OutputListener enableIcon = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		String iconResource = "org/netbeans/terminal/example/resources/sunsky.png";
+		IOTab.setIcon(chosen(), ImageUtilities.loadImageIcon(iconResource, false));
+	    }
+	};
+
+	private OutputListener disableIcon = new AbstractOutputListener() {
+	    public void outputAction(OutputEvent ev, InputOutput io) {
+		IOTab.setIcon(chosen(), null);
 	    }
 	};
 
@@ -261,7 +326,7 @@ public final class TerminalIOProviderSupport {
 
 	    if (IONotifier.isSupported(io)) {
 		IONotifier.addVetoableChangeListener(io, new VetoListener());
-		IONotifier.addPropertyChangeListener(io, new CloseListener());
+		IONotifier.addPropertyChangeListener(io, new CloseListener(config));
 	    }
 
 	    if (IOVisibility.isSupported(io)) {
@@ -277,8 +342,32 @@ public final class TerminalIOProviderSupport {
 	    }
 	    tprintln("GREETINGS");
 	    try {
+		if (IOColorPrint.isSupported(io)) {
+		    IOColorPrint.print(io, "Choose ", choose, false, Color.BLUE);
+		    IOColorPrint.print(io, "Unchoose ", unChoose, false, Color.RED);
+		    IOColorPrint.print(io, "Select chosen\r\n", selectChosen, false, Color.ORANGE);
+		} else {
+		    IOColorLines.println(io, "Choose\r", choose, false, Color.BLUE);
+		    IOColorLines.println(io, "Unchoose\r", unChoose, false, Color.RED);
+		    IOColorLines.println(io, "Select chosen\r", selectChosen, false, Color.ORANGE);
+		}
+		IOColorLines.println(io, "\r", null, false, Color.RED);
+
 		IOColorLines.println(io, "Make closable\r", makeClosable, false, Color.BLUE);
 		IOColorLines.println(io, "Make unClosable\r", makeUnClosable, false, Color.RED);
+		IOColorLines.println(io, "\r", null, false, Color.RED);
+
+		if (IOTab.isSupported(io)) {
+		    IOColorLines.println(io, "enableToolTip\r", enableToolTip, false, Color.BLUE);
+		    IOColorLines.println(io, "disableToolTip\r", disableToolTip, false, Color.RED);
+		    IOColorLines.println(io, "\r", null, false, Color.RED);
+
+		    IOColorLines.println(io, "enableIcon\r", enableIcon, false, Color.BLUE);
+		    IOColorLines.println(io, "disableIcon\r", disableIcon, false, Color.RED);
+		    IOColorLines.println(io, "\r", null, false, Color.RED);
+		} else {
+		    IOColorLines.println(io, "IOTab is not supported\r", null, false, Color.BLACK);
+		}
 	    } catch (IOException ex) {
 		Exceptions.printStackTrace(ex);
 	    }
@@ -291,7 +380,7 @@ public final class TerminalIOProviderSupport {
 	 * the io is setup and we'll be in a situatin of disconnecting before
 	 * connecting.
 	 */
-	protected final void startReaper() {
+	protected final void startReaper(final Config config) {
 	    //
 	    // Start a reaper and wait for processes completion
 	    //
@@ -301,20 +390,20 @@ public final class TerminalIOProviderSupport {
 		    final int exitValue = waitFor();
 
 		    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
-			System.out.printf("Process exited. Calling disconnect ...\n");
+//			System.out.printf("Process exited. Calling disconnect ...\n");
 			IOTerm.disconnect(io, new Runnable() {
 			    public void run() {
-				System.out.printf("Disconnected.\n");
+//				System.out.printf("Disconnected.\n");
 				String exitMsg = String.format("Exited with %d", exitValue);
 				tprintln(exitMsg);
 				io.getOut().close();
 				setState(ExecutionSupport.State.EXITED);
 
-				checkTermination();
+				checkTermination(config);
 			    }
 			});
 		    } else {
-			System.out.printf("Process exited.\n");
+//			System.out.printf("Process exited.\n");
 		    }
 		}
 	    };
@@ -336,7 +425,7 @@ public final class TerminalIOProviderSupport {
 	public abstract void hangup();
     }
 
-    private static final class RichExecutionSupport extends ExecutionSupport {
+    private final class RichExecutionSupport extends ExecutionSupport {
 	private PtyProcess richProcess;
 	private Pty pty;
 	private Program lastProgram;
@@ -395,8 +484,6 @@ public final class TerminalIOProviderSupport {
 
 	    setState(State.RUNNING);
 
-	    // OLD startReaper();
-
 	    //
 	    // connect them up
 	    //
@@ -413,7 +500,7 @@ public final class TerminalIOProviderSupport {
 		startShuttle(pin, pout);
 	    }
 
-	    startReaper();
+	    startReaper(config);
 	}
 
 	public void reRun() {
@@ -430,10 +517,9 @@ public final class TerminalIOProviderSupport {
 	}
     }
 
-    private static final class NativeExecutionSupport extends ExecutionSupport {
+    private final class NativeExecutionSupport extends ExecutionSupport {
 	private String cmd;
 	private NativeProcess nativeProcess;
-	// OLD private PtyImplementation impl;
 
 	public void execute(String cmd) {
 	    this.cmd = cmd;
@@ -471,7 +557,6 @@ public final class TerminalIOProviderSupport {
 	    org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty
 	    pty = PtySupport.getPty(nativeProcess);
 	    PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
-	    // OLD impl = (PtyImplementation) ptyImpl;
 	    if (isInternalIOShuttle() && IOTerm.isSupported(io)) {
 		IOTerm.connect(io,
 			       ptyImpl.getOutputStream(),
@@ -492,7 +577,7 @@ public final class TerminalIOProviderSupport {
 		});
 	    }
 
-	    startReaper();
+	    startReaper(config);
 	}
 
 	public int waitFor() {
@@ -523,8 +608,14 @@ public final class TerminalIOProviderSupport {
 	}
     }
 
+    private final Config config;
+
     private ExecutionSupport richExecutionSupport = new RichExecutionSupport();
     private ExecutionSupport nativeExecutionSupport = new NativeExecutionSupport();
+
+    public TerminalIOProviderSupport(Config config) {
+	this.config = config;
+    }
 
     private final class RerunAction extends AbstractAction {
 	private final ExecutionSupport executionSupport;
@@ -546,7 +637,7 @@ public final class TerminalIOProviderSupport {
         }
 
         public void actionPerformed(ActionEvent e) {
-            System.out.printf("Re-run pressed!\n");
+//            System.out.printf("Re-run pressed!\n");
             if (!isEnabled())
                 return;
 	    if (executionSupport.getState() == ExecutionSupport.State.RUNNING)
@@ -576,7 +667,7 @@ public final class TerminalIOProviderSupport {
         }
 
         public void actionPerformed(ActionEvent e) {
-            System.out.printf("Stop pressed!\n");
+//            System.out.printf("Stop pressed!\n");
             if (!isEnabled())
                 return;
 	    if (executionSupport.getState() != ExecutionSupport.State.RUNNING)
@@ -595,7 +686,7 @@ public final class TerminalIOProviderSupport {
     public static IOProvider getIOProvider() {
         IOProvider iop = IOProvider.get("Terminal");       // NOI18N
         if (iop == null) {
-            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
+//            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
             iop = IOProvider.getDefault();
         }
         return iop;
@@ -615,7 +706,7 @@ public final class TerminalIOProviderSupport {
     }
 
 
-    public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer, Config config) {
+    public InputOutput executeRichCommand(IOProvider iop, IOContainer ioContainer) {
 	if (richExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 
@@ -633,7 +724,7 @@ public final class TerminalIOProviderSupport {
 	return io;
     }
 
-    public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer, Config config) {
+    public InputOutput executeNativeCommand(IOProvider iop, IOContainer ioContainer) {
 	if (nativeExecutionSupport.isRunning())
             throw new IllegalStateException("Process already running");
 

@@ -47,11 +47,11 @@ public final class CommandTerminalAction implements ActionListener {
 
 	Object closer = DialogDisplayer.getDefault().notify(dd);
 	if (closer == DialogDescriptor.CANCEL_OPTION) {
-	    System.out.printf("Dialog cancelled\n");
+//	    System.out.printf("Dialog cancelled\n");
 	    return;
 	}
 	if (closer == DialogDescriptor.CLOSED_OPTION) {
-	    System.out.printf("Dialog closed\n");
+//	    System.out.printf("Dialog closed\n");
 	    return;
 	}
 
@@ -61,7 +61,7 @@ public final class CommandTerminalAction implements ActionListener {
         if (cmd == null || cmd.trim().equals(""))
             return;
 
-	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport(config);
 	final IOContainer container;
 	final IOProvider iop;
 
@@ -90,10 +90,10 @@ public final class CommandTerminalAction implements ActionListener {
 		final InputOutput io;
 		switch (config.getExecution()) {
 		    case RICH:
-			io = support.executeRichCommand(iop, container, config);
+			io = support.executeRichCommand(iop, container);
 			break;
 		    case NATIVE:
-			io = support.executeNativeCommand(iop, container, config);
+			io = support.executeNativeCommand(iop, container);
 			break;
 		    default:
 			io = null;

@@ -41,6 +41,7 @@ package org.netbeans.modules.terminal.ioprovider;
 
 import java.io.CharConversionException;
 import javax.swing.Action;
+import javax.swing.Icon;
 
 import javax.swing.SwingUtilities;
 
@@ -54,13 +55,18 @@ import org.openide.xml.XMLUtil;
 
 /* package */ abstract class Task {
 
+    private static int scheduledTasks;
+
     private final IOContainer container;
     private final Terminal terminal;
 
     /**
      * Schedule this task to be performed on the EDT, or perform it now.
      */
-    public final void dispatch() {
+    public final void post() {
+
+	scheduledTasks++;
+
 	if (! SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
 		@Override
@@ -69,12 +75,26 @@ import org.openide.xml.XMLUtil;
 		}
 	    });
 	    return;
+	} else {
+	    dispatch();
 	}
-	if (terminal().isDisposed()) {
-	    // closeInputOutput has been called
-	    return;
+    }
+
+    private void dispatch() {
+	try {
+	    if (terminal().isDisposed()) {
+		// closeInputOutput has been called
+		return;
+	    } else {
+		perform();
+	    }
+	} finally {
+	    scheduledTasks--;
 	}
-	perform();
+    }
+
+    static boolean isQuiescent() {
+	return scheduledTasks == 0;
     }
 
     protected abstract void perform();
@@ -101,15 +121,21 @@ import org.openide.xml.XMLUtil;
 
 	@Override
 	public void perform() {
+	    // It's important to add first because otherwise output2's
+	    // container impl will assert.
 	    container().add(terminal(), terminal().callBacks());
+
 	    container().setToolbarActions(terminal(), terminal().getActions());
 	    terminal().setVisibleInContainer(true);
 	    /* OLD bug #181064
 	    container().open();
 	    container().requestActive();
 	     */
-	    if (terminal().name() != null)
-		terminal().setTitle(terminal().name());
+	    // output2 tacks on this " ".
+	    // If anything it protects against null names.
+	    terminal().setTitle(terminal().name() + " ");	// NOI18N
+
+	    // TMP container().add(terminal(), terminal().callBacks());
 	}
     }
 
@@ -178,6 +204,34 @@ import org.openide.xml.XMLUtil;
 		newTitle = "<html><b>" + escaped + "</b></html>";	// NOI18N
 	    }
 	    container().setTitle(terminal(), newTitle);
+	}
+    }
+
+    static class SetIcon extends Task {
+	private final Icon icon;
+
+	public SetIcon(IOContainer container, Terminal terminal, Icon icon) {
+	    super(container, terminal);
+	    this.icon = icon;
+	}
+
+	@Override
+	public void perform() {
+	    container().setIcon(terminal(), icon);
+	}
+    }
+
+    static class SetToolTipText extends Task {
+	private final String text;
+
+	public SetToolTipText(IOContainer container, Terminal terminal, String text) {
+	    super(container, terminal);
+	    this.text = text;
+	}
+
+	@Override
+	public void perform() {
+	    container().setToolTipText(terminal(), text);
 	}
     }
 }

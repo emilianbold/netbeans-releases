@@ -1,8 +1,8 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.terminal.example;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
-import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
+package org.netbeans.modules.terminal.test;
+
+import org.netbeans.modules.terminal.api.*;
+import org.openide.util.Lookup;
+import org.openide.windows.InputOutput;
 
 /**
- * Action which starts a shell under a Term component.
+ * Capability of an InputOutput which allows unit tests to access
+ * useful information and functionality. Sort-of an analog of the
+ * JTAG interface used in microelectronics.
  */
-public class ShellTermAction extends AbstractAction {
+public abstract class IOTest {
 
-    public ShellTermAction() {
-        super(NbBundle.getMessage(ShellTermAction.class, "CTL_ShellTermAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
+    private static IOTest find(InputOutput io) {
+        if (io instanceof Lookup.Provider) {
+            Lookup.Provider p = (Lookup.Provider) io;
+            return p.getLookup().lookup(IOTest.class);
+        }
+        return null;
     }
 
-    public void actionPerformed(ActionEvent evt) {
-	Config config = Config.getShellConfig();
-	final TerminalIOProviderSupport support = new TerminalIOProviderSupport(config);
-
-	IOContainer container = TerminalIOProviderSupport.getIOContainer();
-	container = null;	// work with default IO container
-
-	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-	support.executeRichCommand(iop, container);
+    /**
+     * Return true if the Task queue associated with this IO's provider
+     * has no more work items.
+     * @param io IO to operate on.
+     * @return If true the Task queue associated with this IO's provider
+     * has no more work items.
+     */
+    public static boolean isQuiescent(InputOutput io) {
+	IOTest ior = find(io);
+	if (ior != null) {
+	    return ior.isQuiescent();
+	} else {
+	    assert false : "isQuiesent isn't implemented";
+	    return false;
+	}
     }
+
+    /**
+     * Checks whether this feature is supported for provided IO
+     * @param io IO to check on
+     * @return true if supported
+     */
+    public static boolean isSupported(InputOutput io) {
+        return find(io) != null;
+    }
+
+    abstract protected boolean isQuiescent();
 }
