@@ -93,7 +93,6 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         //instance from the previous run which is still held by the project
         //manager
         ct++;
-        System.err.println("run " + ct);
     /*
     Create a project with the following dependency tree:
     - project
@@ -211,10 +210,6 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         ClassPath path = prov.findClassPath(srcDir, ClassPath.COMPILE);
 
         FileObject[] roots = path.getRoots();
-        System.err.println("Classpath roots: ");
-        for (FileObject fo : roots) {
-            System.err.println("   " + fo.getPath());
-        }
 
         String classpathClosure = project.getClasspathClosureAsString();
         String[] components = classpathClosure.split(File.pathSeparator);
@@ -228,9 +223,6 @@ public class ProjectDependenciesTest extends AbstractJCProjectTest {
         };
         assertTrue (Arrays.equals(expected, components));
 
-        System.err.println("Classpath closure: " + project.getClasspathClosureAsString());
-        
-        System.err.println("Lib classpath closure " + lib.getClasspathClosureAsString());
         assertEquals (jar4.getAbsolutePath(), lib.getClasspathClosureAsString());
     }
 
