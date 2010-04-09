@@ -61,7 +61,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
  */
 public class DoxygenDocumentation {
 
-    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]", Pattern.MULTILINE); // NOI18N
+    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]?", Pattern.MULTILINE); // NOI18N
     private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen) {
