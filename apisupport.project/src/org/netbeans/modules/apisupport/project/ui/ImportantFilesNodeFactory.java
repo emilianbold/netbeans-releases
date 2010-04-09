@@ -186,6 +186,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         if (handle != null && handle.getLayerFile() != null) {
             return new SpecialFileNode(new LayerNode(handle), null);
         }
+        // XXX consider also displaying node for generated-layer.xml where applicable
         return null;
     }
     
