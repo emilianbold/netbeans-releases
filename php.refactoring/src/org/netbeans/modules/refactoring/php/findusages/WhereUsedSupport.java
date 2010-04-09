@@ -199,6 +199,13 @@ public final class WhereUsedSupport {
                             }
                         });
                     } else {
+//                        if (declarationElement.getPhpElementKind().equals(PhpElementKind.METHOD) && declarationElement instanceof MethodElement) {
+//                            MethodElement methodElement = (MethodElement)declarationElement;
+//                            if (methodElement.isConstructor()) {
+//                                declarations.add(model.findDeclaration(methodElement.getType()));
+//                                continue;
+//                            }
+//                        }
                         declarations.add(model.findDeclaration(declarationElement));
                     }
                 } catch (ParseException ex) {
