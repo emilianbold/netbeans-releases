@@ -55,6 +55,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -72,6 +73,7 @@ import org.openide.windows.IOContainer;
 
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.netbeans.lib.terminalemulator.Term;
 
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
@@ -215,6 +217,8 @@ public final class Terminal extends JComponent {
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
 
+	applyDebugFlags();
+
         this.term.setCursorVisible(true);
 
         findState = new DefaultFindState(term);
@@ -303,6 +307,33 @@ public final class Terminal extends JComponent {
     public boolean requestFocusInWindow() {
 	// redirect focus into terminal's screen
 	return term.getScreen().requestFocusInWindow();
+    }
+
+    private void applyDebugFlags() {
+	String value = System.getProperty("Term.debug");
+	if (value == null)
+	    return;
+
+	int flags = 0;
+	StringTokenizer st = new StringTokenizer(value, ",");
+	while (st.hasMoreTokens()) {
+	    String s = st.nextToken();
+	    if (s.toLowerCase().equals("ops"))
+		flags |= Term.DEBUG_OPS;
+	    else if (s.toLowerCase().equals("keys"))
+		flags |= Term.DEBUG_KEYS;
+	    else if (s.toLowerCase().equals("input"))
+		flags |= Term.DEBUG_INPUT;
+	    else if (s.toLowerCase().equals("output"))
+		flags |= Term.DEBUG_OUTPUT;
+	    else if (s.toLowerCase().equals("wrap"))
+		flags |= Term.DEBUG_WRAP;
+	    else if (s.toLowerCase().equals("margins"))
+		flags |= Term.DEBUG_MARGINS;
+	    else
+		;
+	}
+	term.setDebugFlags(flags);
     }
 
     private void applyTermOptions(boolean initial) {
