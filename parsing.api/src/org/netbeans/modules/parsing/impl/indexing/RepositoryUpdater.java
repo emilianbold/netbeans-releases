@@ -1930,11 +1930,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
                         final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
                         final SourceIndexers indexers = SourceIndexers.load(false);
+                        invalidateSources(resources);
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
                             if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
                                 crawler.storeTimestamps();
-                                invalidateSources(resources);
                                 return true;
                             }
                         } finally {
@@ -3183,6 +3183,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
                             delete(deleted, root);
+                            invalidateSources(resources);
                             if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
                                 crawler.storeTimestamps();
                                 outOfDateFiles[0] = resources.size();
@@ -3198,7 +3199,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         SFEC_LOGGER.log(r);
                                     }
                                 }
-                                invalidateSources(resources);
                                 return true;
                             }
                         } finally {
