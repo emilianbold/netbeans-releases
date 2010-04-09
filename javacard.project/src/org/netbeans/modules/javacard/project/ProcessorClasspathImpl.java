@@ -107,7 +107,7 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
                 URL url = e.getURL();
                 l.add(url);
             }
-            URL[] urls = (URL[]) l.toArray(new URL[l.size()]);
+            URL[] urls = l.toArray(new URL[l.size()]);
             return urls;
         }
 
@@ -181,7 +181,7 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
                 URL[] urls = getURLs(abs);
                 result.addAll(Arrays.asList(urls));
             }
-            URL[] urls = (URL[]) result.toArray(new URL[result.size()]);
+            URL[] urls = result.toArray(new URL[result.size()]);
             return urls;
         }
 

@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 public class Man2HTML {
     public static int MAX_WIDTH = 65;
 
-    private static final Pattern ESC_PATTERN = Pattern.compile("\u001B\\[(?:\\d+)(?:;\\d+)*m"); // NOI18N
+    private static final Pattern ESC_PATTERN = Pattern.compile("\u001B\\[[0-9;]*m"); // NOI18N
 
     private enum MODE {
 
