@@ -1174,14 +1174,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private static boolean isCamelCaseForTypeNames(final String query) {
-        final char[] chars = query.toCharArray();
-        if (chars.length > 0 && Character.isUpperCase(chars[0])) {
-            for (int i = 1; i < chars.length; i++) {
-                if (Character.isUpperCase(chars[i])) {
-                    return true;
-                }
-            }
-        }
+//        final char[] chars = query.toCharArray();
+//        if (chars.length > 0 && Character.isUpperCase(chars[0])) {
+//            for (int i = 1; i < chars.length; i++) {
+//                if (Character.isUpperCase(chars[i])) {
+//                    return true;
+//                }
+//            }
+//        }
         return false;
     }
  }
