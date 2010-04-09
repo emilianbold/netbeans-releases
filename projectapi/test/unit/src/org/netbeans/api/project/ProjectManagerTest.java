@@ -391,15 +391,7 @@ public class ProjectManagerTest extends NbTestCase {
         
         assertFalse("project3 is not valid", pm.isValid(project3));
         
-        boolean wasException = false;
-        try {
-            pm.isModified(project3);
-        } catch (IllegalArgumentException e) {
-            //the project is no longer recognized by the ProjectManager.
-            wasException = true;
-        }
-        
-        assertTrue("the project is no longer recognized by the ProjectManager", wasException);
+        assertFalse(pm.isModified(project3)); // please do not throw an exception here
         
         FileObject p4 = scratch.createFolder("p4");
         FileObject p4TestProject = p4.createFolder("testproject");
@@ -411,15 +403,7 @@ public class ProjectManagerTest extends NbTestCase {
         
         assertFalse("project4 is not valid", pm.isValid(project3));
         
-        wasException = false;
-        try {
-            TestUtil.notifyDeleted(project4);
-        } catch (IllegalStateException e) {
-            //the project is no longer recognized by the ProjectManager.
-            wasException = true;
-        }
-        
-        assertTrue("An IllegalStateException was thrown when calling notifyDeleted twice.", wasException);
+        TestUtil.notifyDeleted(project4); // please do not throw an exception here
     }
 
     public void testClearNonProjectCacheInWriteAccess() throws Exception {

@@ -104,19 +104,25 @@ public class GnomeProvider implements KeyringProvider {
         } finally {
             LIBRARY.gnome_keyring_attribute_list_free(attributes);
         }
-        if (found[0] == null) {
-            return null;
-        }
-        try {
-            if (LIBRARY.g_list_length(found[0]) > 0) {
-                GnomeKeyringFound result = LIBRARY.g_list_nth_data(found[0], 0);
-                return result.secret.toCharArray();
-            } else {
-                return null;
+        if (found[0] != null) {
+            try {
+                if (LIBRARY.g_list_length(found[0]) > 0) {
+                    GnomeKeyringFound result = LIBRARY.g_list_nth_data(found[0], 0);
+                    if (result != null) {
+                        if (result.secret != null) {
+                            return result.secret.toCharArray();
+                        } else {
+                            LOG.warning("#183670: GnomeKeyringFound.secret == null");
+                        }
+                    } else {
+                        LOG.warning("#183670: GList<GnomeKeyringFound>[0].result == null");
+                    }
+                }
+            } finally {
+                LIBRARY.gnome_keyring_found_list_free(found[0]);
             }
-        } finally {
-            LIBRARY.gnome_keyring_found_list_free(found[0]);
         }
+        return null;
     }
 
     public @Override void save(String key, char[] password, String description) {
