@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -317,7 +318,7 @@ public class TokenFormatter {
 
 
     public void reformat(Context context, ParserResult info) {
-        final AtomicLong start = new AtomicLong(System.currentTimeMillis());
+	final AtomicLong start = new AtomicLong(System.currentTimeMillis());
 
 	final Context formatContext = context;
 	PHPParseResult phpParseResult = ((PHPParseResult) info);
@@ -331,7 +332,6 @@ public class TokenFormatter {
 
 	if (LOGGER.isLoggable(Level.FINE)) {
 	    long end = System.currentTimeMillis();
-
 	    LOGGER.fine("Creating formating stream took: " + (end - start.get()));
 	}
 
@@ -347,13 +347,18 @@ public class TokenFormatter {
 		    LOGGER.fine("Format tokens: " + formatTokens.size());
 		}
 		MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                try {
+                    try {
                     mti.tokenHierarchyControl().setActive(false);
 
                     start.set(System.currentTimeMillis());
 
                     int delta = 0;
                     int indent = docOptions.initialIndent;
+                    final boolean templateEdit = doc.getProperty("code-template-insert-handler") != null; //NOI18N
+                    final int caretOffset = EditorRegistry.lastFocusedComponent() != null
+                            ? EditorRegistry.lastFocusedComponent().getCaretPosition()
+                            : 0;
+                    boolean caretInTemplateSolved = false;
                     int lastPHPIndent = 0;
                     int htmlIndent = -1;
                     int index = 0;
@@ -1000,9 +1005,25 @@ public class TokenFormatter {
                                 if (wsBetweenBraces && newLines > 1) {
                                     newLines = 1;
                                 }
+
                                 newText = createWhitespace(newLines, countSpaces);
                                 if (wsBetweenBraces) {
                                     newText = createWhitespace(1, indent + docOptions.indentSize) + createWhitespace(1, indent);
+                                }
+                                int realOffset = changeOffset + delta;
+                                if (templateEdit && !caretInTemplateSolved && oldText != null
+                                        && formatContext.startOffset() - 1 <= realOffset
+                                    && realOffset <= formatContext.endOffset() + 1) {
+
+                                    int caretPosition = caretOffset + delta;
+                                    if (realOffset <= caretPosition && caretPosition <= realOffset + oldText.length() + 1) {
+                                        int positionOldText = caretPosition - realOffset - 1;
+                                        if (positionOldText > -1  && positionOldText < oldText.length()
+                                                && oldText.charAt(positionOldText) ==  ' ') {
+                                            newText = ' ' + newText;   // templates like public, return ...
+                                        }
+                                        caretInTemplateSolved = true;
+                                    }
                                 }
                             }
                             index--;
@@ -1043,7 +1064,7 @@ public class TokenFormatter {
                                                     int phpIndent = indent - docOptions.initialIndent;
                                                     int finalIndent = lineIndent + phpIndent;
                                                     if (lineIndent < finalIndent) {
-                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(0, finalIndent - lineIndent), delta);
+                                                        delta = replaceString(doc, currentOffset - delta, "", createWhitespace(0, finalIndent - lineIndent), delta, false);
                                                     }
     //						else if (lineIndent > indent) {
     //						    delta = replaceString(doc, currentOffset - delta, createWhitespace(0, lineIndent - finalIndent), "", delta);
@@ -1058,28 +1079,11 @@ public class TokenFormatter {
                                         oldText = null;
                                         newText = null;
                                     }
-        //			    Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
-        //			    if (suggestedLineIndents != null) {
-        //				try {
-        //				    int startLine = Utilities.getLineOffset(doc, formatToken.getOffset());
-        //				    int endLine = Utilities.getLineOffset(doc, formatToken.getOffset() + formatToken.getOldText().length());
-        //				    for (int i = startLine; i <= endLine; i++) {
-        //					Integer original = suggestedLineIndents.get(i);
-        //					oldText =
-        //					//suggestedLineIndents.put(new Integer(i), column)
-        //
-        //				    }
-        //				    System.out.println("-----");
-        //				}
-        //				catch (BadLocationException e) {
-        //				    LOGGER.throwing(this.getClass().getName(), "HTML in php formatter", e); // NOI18N
-        //				}
-        //			    }
                                     break;
                             }
                         }
 
-                        delta = replaceString(doc, changeOffset, oldText, newText, delta);
+                        delta = replaceString(doc, changeOffset, oldText, newText, delta, templateEdit);
                         if (newText == null) {
                             column += (formatToken.getOldText() == null) ? 0 : formatToken.getOldText().length();
                         } else {
@@ -1098,7 +1102,7 @@ public class TokenFormatter {
                 }
 		if (LOGGER.isLoggable(Level.FINE)) {
 		    long end = System.currentTimeMillis();
-		    LOGGER.fine("Applaying format stream took: " + (end - start.get()));
+		    LOGGER.fine("Applaying format stream took: " + (end - start.get())); // NOI18N
 		}
 	    }
 
@@ -1345,46 +1349,90 @@ public class TokenFormatter {
 
 //	    private int countOfChanges = 0;
 
-	    private int replaceString(BaseDocument document, int offset, String oldText, String newText, int delta) {
+            private int startOffset = -1;
+            private int endOffset = -1;
+
+	    private int replaceString(BaseDocument document, int offset, String oldText, String newText, int delta, boolean templateEdit) {
 		if (oldText == null) {
 		    oldText = "";
 		}
-		try {
-		    if (newText != null && !oldText.equals(newText)) {
-			int realOffset = offset + delta;
-			int shift = realOffset > 0 ? 1 : 0; // format plus one char around the context.
-			if (formatContext.startOffset() - 1 <= realOffset
-				&& realOffset <= formatContext.endOffset() + 1) {
-			    if (oldText.length() > 0)  {
-				int removeLength = realOffset + oldText.length() < document.getLength()
-				    ? oldText.length()
-				    : document.getLength() - realOffset;
-				document.remove(realOffset, removeLength);
-			    }
+                if(startOffset == -1) {
+                    startOffset = formatContext.startOffset();
+                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
+                        startOffset --;
+                    }
+                    if (startOffset > 0) {
+                        startOffset ++;
+                    }
+                    endOffset = formatContext.endOffset();
+                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
+                        endOffset ++;
+                    }
+                    if (endOffset < document.getLength()) {
+                        endOffset --;
+                    }
 
-			    document.insertString(realOffset, newText, null);
-			    delta = delta - oldText.length() + newText.length();
-			}
-			
+                }
+                if (newText != null && !oldText.equals(newText)) {
+                    int realOffset = offset + delta;
+                    if (startOffset <= realOffset
+                            && realOffset <= endOffset + delta) {
 
-//			if (Math.abs(newText.length() - oldText.length()) > 1000) {
-//			    System.out.println("zmena vetsi: " + (newText.length() - oldText.length()));
-//			    System.out.println("oldText length: " + oldText.length());
-//			    System.out.println("newText length: " + newText.length());
-//			    System.out.println("oldText: " + oldText);
-//			    System.out.println("newText: " + newText);
-//			}
-//			countOfChanges++;
-//			if ((countOfChanges % 1000) == 0) {
-//			    System.out.println("provedenych zmen: " + countOfChanges);
-//			}
-		    }
-		} catch (BadLocationException ex) {
-		    Exceptions.printStackTrace(ex);
-		}
-		
+                        if (!templateEdit) { // if is not in template, then replace simply
+                            delta = replaceSimpleString(document, realOffset, oldText, newText, delta);
+                        } else {
+                            // the replacing has to be done line by line.
+                            int indexOldTextLine = 0;
+                            int indexNewTextLine = 0;
+                            int indexOldText = 0;
+                            int indexNewText = 0;
+
+                            do {
+                                indexOldTextLine = oldText.indexOf('\n', indexOldText); // NOI18N
+                                indexNewTextLine = newText.indexOf('\n', indexNewText); // NOI18N
+                                if (indexOldTextLine == -1)
+                                    indexOldTextLine = oldText.length() - 1;
+                                if (indexNewTextLine == -1)
+                                    indexNewTextLine = newText.length() - 1;
+                                delta = replaceSimpleString(document, realOffset + indexOldText,
+                                        oldText.substring(indexOldText, indexOldTextLine),
+                                        indexNewText == indexNewTextLine && indexNewText != 0 ? "\n" : newText.substring(indexNewText, indexNewTextLine), delta); // NOI18N
+                                indexOldText = indexOldTextLine + 1;
+                                indexNewText = indexNewTextLine + (indexNewText == indexNewTextLine && indexNewText != 0 ? 2 : 1);
+                                realOffset = offset + delta;
+
+                            } while (indexOldText < oldText.length()
+                                    && indexNewText < newText.length());
+
+                            if (indexOldText >= oldText.length()
+                                    && indexNewText < newText.length()) {
+                                delta = replaceSimpleString(document, realOffset + oldText.length(),
+                                        "", newText.substring(indexNewText), delta);
+                            }
+
+                        }
+                    }
+                }
 		return delta;
 	    }
+
+            private int replaceSimpleString (BaseDocument document, int realOffset, String oldText, String newText, int delta) {
+                try {
+                    if (oldText.length() > 0) {
+
+                        int removeLength = realOffset + oldText.length() < document.getLength()
+                                ? oldText.length()
+                                : document.getLength() - realOffset;
+                        document.remove(realOffset, removeLength);
+
+                    }
+                    document.insertString(realOffset, newText, null);
+                    delta = delta - oldText.length() + newText.length();
+                } catch (BadLocationException ex) {
+                    LOGGER.throwing(this.getClass().getName(), "replaceSimpleSring", ex); //NOI18N
+                }
+                return delta;
+            }
 
 	    private int countLengthOfNextSequence(int index) {
 		FormatToken token = formatTokens.get(index);
