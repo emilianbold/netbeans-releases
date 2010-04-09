@@ -58,10 +58,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.NbCollections;
 
 /**
  * Enum of project subtypes.  Use toString() to get the value expected in
@@ -427,8 +429,16 @@ public enum ProjectKind {
         JarFile jf = new JarFile(jarFile);
         try {
             Manifest m = jf.getManifest();
-            String appType = (String) m.getMainAttributes().getValue("Application-Type");
+            String appType = m.getMainAttributes().getValue("Application-Type"); //NOI18N
             if (appType == null) {
+                //Classic library can only be identified by the presence of
+                //$PACKAGE/javacard/ConstantPool.cap and friends
+                for (JarEntry je : NbCollections.iterable(jf.entries())) {
+                    String name = je.getName();
+                    if (name.endsWith("javacard/ConstantPool.cap")) { //NOI18N
+                        return CLASSIC_LIBRARY;
+                    }
+                }
                 return null;
             }
             return forManifestType(appType);
