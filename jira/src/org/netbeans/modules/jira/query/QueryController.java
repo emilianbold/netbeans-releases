@@ -416,7 +416,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            populateList(panel.projectList, jc.getProjects());
+                            populateList(panel.projectList, jc.getProjects());                            
                             if (jc.getProjects().length == 1) {
                                 panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
                             } else if (filterDefinition != null) {
@@ -429,12 +429,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
                             populateList(panel.statusList, jc.getStatuses());
                             populateList(panel.resolutionList, jc.getResolutions());
                             populateList(panel.priorityList, jc.getPriorities());
+                            populateList(panel.fixForList, new Object[]{});
+                            populateList(panel.affectsVersionList, new Object[]{});
+                            populateList(panel.componentsList, new Object[]{});
+
                             reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
                             assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
 
                             if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
                                 setFilterDefinition(filterDefinition);
                             }
+                            setListVisibility();
                         }
                     });
                 }
@@ -453,6 +458,15 @@ public class QueryController extends BugtrackingController implements DocumentLi
             model.addElement(v);
         }
         list.setModel(model);
+    }
+
+    private void setListVisibility() {
+        panel.fixForScrollPane.setVisible(panel.fixForList.getModel().getSize() > 0);
+        panel.fixForLabel.setVisible(panel.fixForList.getModel().getSize() > 0);
+        panel.affectsVersionsScrollPane.setVisible(panel.affectsVersionList.getModel().getSize() > 0);
+        panel.affectsVersionsLabel.setVisible(panel.affectsVersionList.getModel().getSize() > 0);
+        panel.componentsScrollPane.setVisible(panel.componentsList.getModel().getSize() > 0);
+        panel.componentsLabel.setVisible(panel.componentsList.getModel().getSize() != 0);
     }
 
     private void setFilterDefinition(FilterDefinition fd) {
@@ -1145,12 +1159,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         populateList(panel.affectsVersionList, versionsArray);
         populateList(panel.componentsList, componentsArray);
 
-        panel.fixForScrollPane.setVisible(versionsArray.length != 0);
-        panel.fixForLabel.setVisible(versionsArray.length != 0);
-        panel.affectsVersionsScrollPane.setVisible(versionsArray.length != 0);
-        panel.affectsVersionsLabel.setVisible(versionsArray.length != 0);
-        panel.componentsScrollPane.setVisible(componentsArray.length != 0);
-        panel.componentsLabel.setVisible(componentsArray.length != 0);
+        setListVisibility();
 
         panel.byDetailsPanel.validate();
     }
