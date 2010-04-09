@@ -100,6 +100,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         return false;
     }
 
+    private static final RequestProcessor RP = new RequestProcessor("JavaEEServerModuleFactory");
+
     @Override
     public Object createModule(Lookup instanceLookup) {
         // When creating JavaEE support, also ensure this instance is added to j2eeserver
@@ -137,7 +139,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     GlassfishModule.GLASSFISH_FOLDER_ATTR);
             final String installRoot = commonModule.getInstanceProperties().get(
                     GlassfishModule.INSTALL_FOLDER_ATTR);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     ensureEclipseLinkSupport(glassfishRoot);
@@ -485,8 +487,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         }
 
         private void removeFromListenerList(final PropertyChangeListener pcl) {
-            final RequestProcessor cleaner = new RequestProcessor("listener-remover");
-            cleaner.post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -497,7 +498,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                         name = null;
                     }
                     }
-                    cleaner.shutdown();
                 }
             });
         }
