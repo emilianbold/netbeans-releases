@@ -52,6 +52,7 @@ import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 
 import org.netbeans.modules.terminal.api.IOConnect;
+import org.netbeans.modules.terminal.test.IOTest;
 
 /**
  * An implementation of {@link InputOutput} based on
@@ -110,7 +111,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
                                                 new MyIOTab(),
 						new MyIOVisibility(),
 						new MyIOConnect(),
-						new MyIONotifier()
+						new MyIONotifier(),
+						new MyIOTest()
                                                 );
 
 
@@ -263,7 +265,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         @Override
         protected void setIcon(Icon icon) {
 	    TerminalInputOutput.this.icon = icon;
-	    ioContainer.setIcon(terminal, icon);
+	    Task task = new Task.SetIcon(ioContainer, terminal, icon);
+	    task.post();
         }
 
         @Override
@@ -273,8 +276,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
         @Override
         protected void setToolTipText(String text) {
-	    TerminalInputOutput.this.toolTipText = toolTipText;
-	    ioContainer.setToolTipText(terminal, toolTipText);
+	    TerminalInputOutput.this.toolTipText = text;
+	    Task task = new Task.SetToolTipText(ioContainer, terminal, text);
+	    task.post();
         }
     }
 
@@ -362,7 +366,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	    } else {
 		task = new Task.DeSelect(ioContainer, terminal);
 	    }
-	    task.dispatch();
+	    task.post();
 	}
 
 	@Override
@@ -446,6 +450,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	public void removeVetoableChangeListener(VetoableChangeListener listener ) {
 	    vcs().removeVetoableChangeListener(listener);
+	}
+    }
+
+    private class MyIOTest extends IOTest {
+	@Override
+	protected boolean isQuiescent() {
+	    return Task.isQuiescent();
 	}
     }
 
@@ -555,7 +566,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         terminal = new Terminal(ioContainer, this, actions, name);
 
 	Task task = new Task.Add(ioContainer, terminal);
-	task.dispatch();
+	task.post();
 
         term = terminal.term();
 
@@ -672,7 +683,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	if (outputWriter != null)
 	    outputWriter.close();
 	Task task = new Task.StrongClose(ioContainer, terminal);
-	task.dispatch();
+	task.post();
     }
 
     @Override
@@ -698,7 +709,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     @Override
     public void select() {
 	Task task = new Task.Select(ioContainer, terminal);
-	task.dispatch();
+	task.post();
     }
 
     @Override

@@ -51,7 +51,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.test.IOTest;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.windows.IOContainer;
@@ -96,8 +98,11 @@ public class TestSupport extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+	setUp(true);
+    }
+
+    protected void setUp(boolean select) throws Exception {
 	System.out.printf("TestSupport.setUp()\n");
-	System.out.printf("setUp()\n");
 
 	if (defaultContainer) {
 	    ioContainer = IOContainer.getDefault();
@@ -135,8 +140,10 @@ public class TestSupport extends NbTestCase {
 
 	io = ioProvider.getIO("test", actions, ioContainer);
 	assertNotNull ("Could not get InputOutput", io);
-	io.select();
-	sleep(1);	// give select time to take effect
+	if (select) {
+	    io.select();
+	    sleep(1);	// give select time to take effect
+	}
     }
 
     @Override
@@ -162,11 +169,34 @@ public class TestSupport extends NbTestCase {
 	});
     }
 
-    protected static void sleep(int seconds) {
+    private static final int quantuum = 100;
+
+    /**
+     * Sleep 100 milliseconds
+     */
+    protected static void mSleep(int amount) {
 	try {
-	    Thread.sleep(seconds * 1000);
+	    Thread.sleep(amount);
 	} catch(InterruptedException x) {
 	    fail("sleep interrupted");
+	}
+    }
+
+    protected void sleep(int seconds) {
+	int mSeconds = seconds * 1000;	// milliseconds
+	if (IOTest.isSupported(io)) {
+	    for (int t = 0; t < mSeconds; t += quantuum) {
+		mSleep(quantuum);
+		if (IOTest.isQuiescent(io))
+		    return;
+	    }
+	    fail(String.format("Task queue not empty after %d seconds\n", seconds));
+	} else {
+	    try {
+		Thread.sleep(mSeconds);
+	    } catch(InterruptedException x) {
+		fail("sleep interrupted");
+	    }
 	}
     }
 
